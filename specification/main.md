@@ -20,10 +20,12 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - [Functions](docs/functions) — `fn`, return rules, no lambdas
 - [Variables](docs/variables) — `as`, explicit typing, reassignment
 - [Types](docs/types) — validator types (`type`), structs (`struct` / `struct+` / `struct*`)
-- [Collections](docs/collections) — `List<T>`, `List<T, N>`, mutation verbs
+- [Collections](docs/collections) — `list<T>`, `list<T, N>`, mutation verbs
 - [Loops](docs/loops) — `for` collection and numeric iteration
 - [Destructuring](docs/destructuring) — field extraction with `in`
 - [Imports](docs/imports) — module imports with `in`
 - [Immutability](docs/immutability) — immutability rules, equality, record update (`with`)
 - [Examples](docs/examples) — full worked example with Rust translation
 - [Open Questions](docs/open-questions) — future work and undecided areas
+- [Enforced Practices](docs/enforced_practices) — naming and ordering rules the transpiler warns on
+- [Best Practices](docs/best_practices) — style recommendations not enforced by the transpiler

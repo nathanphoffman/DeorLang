@@ -58,7 +58,7 @@ Any value that depends on a function call or other runtime computation must use 
 ```
 int t = rand(1, 10)
 string pick = random_room_name(rooms)
-List<int> result = []
+list<int> result = []
 ```
 
 ```rust
@@ -67,7 +67,7 @@ let pick: String = random_room_name(&rooms);
 let mut result: Vec<i32> = Vec::new();
 ```
 
-**Conversion notes:** a `List<T> name = []` binding that's later `append`ed must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
+**Conversion notes:** a `list<T> name = []` binding that's later `append`ed must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
 
 ---
 
@@ -80,3 +80,27 @@ total = total + 1
 ```rust
 total += 1;
 ```
+
+---
+
+## Constants
+
+Constants are immutable primitive bindings. They use `const` as a prefix, must be named in SCREAMING_SNAKE_CASE, and are always explicitly typed. Only primitive types can be `const`.
+
+```
+const int DELAY_TIME = 500
+const string APP_NAME = "Deor"
+const bool DEBUG = false
+const float PI = 3.14159
+```
+
+```rust
+const DELAY_TIME: i32 = 500;
+const APP_NAME: &str = "Deor";
+const DEBUG: bool = false;
+const PI: f64 = 3.14159;
+```
+
+- Valid at any scope — top-level or inside a function
+- Reassignment is a compile-time error
+- `list`, structs, and validator types cannot be `const` (structs are already immutable; `list` constants are not yet specified)

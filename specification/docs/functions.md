@@ -76,8 +76,8 @@ fn abs(x: i32) -> i32 {
 All callable values are named `fn`s — top-level or nested inside another `fn`. There is no anonymous-function syntax.
 
 ```
-fn List<int> doubled(List<int> nums)
-    List<int> result = []
+fn list<int> doubled(list<int> nums)
+    list<int> result = []
     for n in nums
         result append n * 2
     return result

@@ -60,22 +60,22 @@ struct Room {
 
 | Form | Meaning | Rust representation |
 |---|---|---|
-| `struct Name` | Transpiler decides | `Name` (value) or `Rc<Name>` (reference), based on size + whether any field is an unsized `List<T>` |
+| `struct Name` | Transpiler decides | `Name` (value) or `Rc<Name>` (reference), based on size + whether any field is an unsized `list<T>` |
 | `struct+ Name` | Force value, always | `Name`, `.clone()` is a full (possibly deep) copy |
 | `struct* Name` | Force reference, always | `Rc<Name>`, `.clone()` is a refcount bump |
 
 ```
 struct House
     string address
-    List<Room> rooms       # unsized List -> auto becomes struct*
+    list<Room> rooms       # unsized list -> auto becomes struct*
 
 struct+ House               # explicit override: always a value, full clone on copy
     string address
-    List<Room> rooms
+    list<Room> rooms
 ```
 
 **Conversion notes:**
 - The **struct definition itself is identical** regardless of `+`/`*`/auto — only how *usages* are represented changes (`House` vs `Rc<House>`).
-- An **unsized `List<T>` field** makes a struct's clone cost O(n) and unbounded, so it defaults to `*` (reference) unless overridden with `+`.
+- An **unsized `list<T>` field** makes a struct's clone cost O(n) and unbounded, so it defaults to `*` (reference) unless overridden with `+`.
 - `==` is always `#[derive(PartialEq)]` on the underlying struct. `Rc<T>`'s default `PartialEq` already delegates to `T`'s impl in Rust, so structural equality holds for `struct*` types **with no extra work**.
-- A struct containing only primitives and/or `List<T, N>` (fixed-size) fields has a fully known size and is `Copy`-eligible if every field is `Copy`.
+- A struct containing only primitives and/or `list<T, N>` (fixed-size) fields has a fully known size and is `Copy`-eligible if every field is `Copy`.

@@ -15,24 +15,24 @@ struct Room
 
 struct House
     string address
-    List<Room> rooms
+    list<Room> rooms
 
-fn int total_area(List<Room> rooms)
+fn int total_area(list<Room> rooms)
     sum as 0
     for room in rooms
         area in room
         sum = sum + area
     return sum
 
-fn List<Room> occupied_rooms(List<Room> rooms)
-    List<Room> result = []
+fn list<Room> occupied_rooms(list<Room> rooms)
+    list<Room> result = []
     for room in rooms
         occupied in room
         if occupied
             result append room
     return result
 
-fn string random_room_name(List<Room> rooms)
+fn string random_room_name(list<Room> rooms)
     int idx = rand(0, len(rooms) - 1)
     name in rooms[idx]
     return name
@@ -62,7 +62,7 @@ fn main()
     rooms in house
     print(total_area(rooms))
 
-    List<Room> occ = occupied_rooms(rooms)
+    list<Room> occ = occupied_rooms(rooms)
     for room in occ
         name in room
         print(name)
@@ -156,7 +156,7 @@ fn main() {
 
 ## Notable Conversion Decisions
 
-- `House` contains an unsized `List<Room>`, so per the structs spec it would normally default to `struct*` (`Rc<House>`). In this particular `main`, `house` isn't shared across multiple owners, so the transpiler may reasonably keep it a plain value here — the heuristic is a default, not an absolute.
+- `House` contains an unsized `list<Room>`, so per the structs spec it would normally default to `struct*` (`Rc<House>`). In this particular `main`, `house` isn't shared across multiple owners, so the transpiler may reasonably keep it a plain value here — the heuristic is a default, not an absolute.
 - `Room` contains a `String` field, so it can never be `Copy` — only `Clone`. Every place a `Room` is duplicated (`vec![kitchen.clone(), ...]`, `result.push(room.clone())`) needs an explicit `.clone()` in Rust, even though source never writes anything special.
 - `rooms[idx]` requires an `as usize` cast, since Rust indexes with `usize` but `idx` is `i32` — the transpiler inserts this cast on every list-index operation.
 - `print(...)` → `println!("{}", ...)`. Values that aren't already `Display` (like `Room`) would need `{:?}` and `#[derive(Debug)]` instead — already included above for safety.

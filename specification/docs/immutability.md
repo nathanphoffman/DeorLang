@@ -6,7 +6,7 @@
 |---|---|---|
 | Primitives (`int`, `float`, `bool`, ...) | Mutable value types | `x = x + 1` always legal |
 | `struct` / `struct+` / `struct*` | **Immutable** | No field-assignment syntax exists. The only way to get a "changed" struct is `with` |
-| `List<T>` / `List<T, N>` | Mutable container | `append` (growable) or index-assignment (fixed); elements may themselves be immutable structs |
+| `list<T>` / `list<T, N>` | Mutable container | `append` (growable) or index-assignment (fixed); elements may themselves be immutable structs |
 
 ---
 
