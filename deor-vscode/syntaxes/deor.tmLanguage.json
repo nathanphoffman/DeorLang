@@ -1,0 +1,93 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Deor",
+  "scopeName": "source.deor",
+  "fileTypes": ["deor"],
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#string" },
+    { "include": "#struct-definition" },
+    { "include": "#type-definition" },
+    { "include": "#keyword-fn" },
+    { "include": "#keywords-control" },
+    { "include": "#keywords-other" },
+    { "include": "#list-type" },
+    { "include": "#builtin-types" },
+    { "include": "#boolean" },
+    { "include": "#number" },
+    { "include": "#user-type" },
+    { "include": "#function-call" },
+    { "include": "#operator" }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.number-sign.deor",
+      "match": "#.*$"
+    },
+    "string": {
+      "name": "string.quoted.double.deor",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "name": "constant.character.escape.deor", "match": "\\\\." }
+      ]
+    },
+    "struct-definition": {
+      "match": "\\b(struct[+*]?)\\s+([A-Z][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "storage.type.deor" },
+        "2": { "name": "entity.name.type.deor" }
+      }
+    },
+    "type-definition": {
+      "match": "\\b(type)\\s+([A-Z][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "storage.type.deor" },
+        "2": { "name": "entity.name.type.deor" }
+      }
+    },
+    "keyword-fn": {
+      "name": "storage.type.function.deor",
+      "match": "\\bfn\\b"
+    },
+    "keywords-control": {
+      "name": "keyword.control.deor",
+      "match": "\\b(if|else|for|return)\\b"
+    },
+    "keywords-other": {
+      "name": "keyword.other.deor",
+      "match": "\\b(as|in|with|append|and|or|not)\\b"
+    },
+    "list-type": {
+      "match": "\\b(List)(<[A-Za-z0-9_,\\s]*>)?",
+      "captures": {
+        "1": { "name": "support.type.deor" },
+        "2": { "name": "support.type.deor" }
+      }
+    },
+    "builtin-types": {
+      "name": "support.type.deor",
+      "match": "\\b(int|float|bool|string)\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.deor",
+      "match": "\\b(true|false)\\b"
+    },
+    "number": {
+      "name": "constant.numeric.deor",
+      "match": "\\b\\d+(\\.\\d+)?\\b"
+    },
+    "user-type": {
+      "name": "entity.name.type.deor",
+      "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+    },
+    "function-call": {
+      "name": "entity.name.function.deor",
+      "match": "\\b([a-z_][a-z0-9_]*)\\s*(?=\\()"
+    },
+    "operator": {
+      "name": "keyword.operator.deor",
+      "match": "==|!=|<=|>=|[+\\-*/%<>]|(?<![=!<>])=(?![=])"
+    }
+  }
+}

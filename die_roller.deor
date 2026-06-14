@@ -1,0 +1,97 @@
+# Dice roller — showcases Deor language features
+
+(rand, floor, sqrt) in math
+
+# Validator type: a roll value must be in range 1-100
+type Roll(int n)
+    n >= 1 and n <= 100
+
+# Validator type: die sides must be a perfect square or common die face
+type Sides(int n)
+    n >= 2
+
+struct Die
+    Sides sides
+    string label
+
+struct+ RollResult
+    Roll value
+    string source
+
+fn RollResult roll_die(Die die)
+    (sides, label) in die
+    int raw = rand(1, sides)
+    Roll val = raw
+    result as {value: val, source: label}
+    return result
+
+fn List<RollResult> roll_many(Die die, int count)
+    List<RollResult> results = []
+    for i in range(count)
+        RollResult r = roll_die(die)
+        results append r
+    return results
+
+fn int sum_rolls(List<RollResult> rolls)
+    sum as 0
+    for roll in rolls
+        value in roll
+        sum = sum + value
+    return sum
+
+fn bool is_critical(RollResult r)
+    value in r
+    return value == 20
+
+fn bool is_fumble(RollResult r)
+    value in r
+    return value == 1
+
+fn string describe_roll(RollResult r)
+    if is_critical(r)
+        return "Critical hit!"
+    else
+        if is_fumble(r)
+            return "Fumble!"
+        else
+            value in r
+            return value
+
+fn main()
+    d4  as {sides: 4,  label: "d4"}
+    d6  as {sides: 6,  label: "d6"}
+    d20 as {sides: 20, label: "d20"}
+
+    # Single attack roll
+    RollResult attack = roll_die(d20)
+    string desc = describe_roll(attack)
+    print(desc)
+
+    # Roll 4d6 and sum them for a stat
+    List<RollResult> stat_roll = roll_many(d6, 4)
+    int stat_total = sum_rolls(stat_roll)
+    print(stat_total)
+
+    # Print each individual die in the stat roll
+    for roll in stat_roll
+        (value, source) in roll
+        print(source)
+        print(value)
+
+    # Upgrade the d4 to a d8 using record update
+    d8 as d4 with sides=8
+    RollResult upgraded = roll_die(d8)
+    source in upgraded
+    print(source)
+
+    # Accumulate damage from multiple dice types
+    List<RollResult> damage = []
+    RollResult hit1 = roll_die(d6)
+    RollResult hit2 = roll_die(d6)
+    RollResult bonus = roll_die(d4)
+    damage append hit1
+    damage append hit2
+    damage append bonus
+
+    int total_damage = sum_rolls(damage)
+    print(total_damage)

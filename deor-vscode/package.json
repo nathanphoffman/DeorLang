@@ -1,0 +1,26 @@
+{
+  "name": "deor-lang",
+  "publisher": "local",
+  "displayName": "Deor Language",
+  "description": "Syntax highlighting for the Deor language (.deor)",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.60.0" },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "deor",
+        "aliases": ["Deor", "deor"],
+        "extensions": [".deor"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "deor",
+        "scopeName": "source.deor",
+        "path": "./syntaxes/deor.tmLanguage.json"
+      }
+    ]
+  }
+}
