@@ -69,6 +69,19 @@ let bad: Option<Squarefeet> = Squarefeet::new(-1);
 
 A validator type variable is truthy when `Some`, falsy when `None`. Use `if` / `if not` to check presence before using the value.
 
+**Only validator types and `bool` have truthiness.** Plain `int`, `float`, `string`, `list<T>`, and structs are never truthy or falsy on their own — they have no presence/absence concept. Use explicit comparisons instead:
+
+```
+if len(my_list) > 0    # correct — explicit non-empty check
+if my_list             # transpiler error — list has no truthiness
+
+if my_int != 0         # correct
+if my_int              # transpiler error
+
+if my_string != ""     # correct
+if my_string           # transpiler error
+```
+
 ```
 Squarefeet area = 9
 if area
@@ -217,7 +230,7 @@ int bonus = crit else 0
 - Constructor becomes `fn new(n: T) -> Option<Self>` — never panics, returns `None` on predicate failure.
 - Truthy/falsy maps to `.is_some()` / `.is_none()`.
 - `is known` → `.unwrap().0`; `value else default` → `.map(|v| v.0).unwrap_or(default)`.
-- Equality (`==`) falls through to Rust's `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
+- Equality (`is` / `is not`) transpiles to `==` / `!=` in Rust and falls through to `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
 - `and` / `or` / `not` map to `&&` / `||` / `!`.
 - Literal predicate failures (`Squarefeet bad = -1`) will eventually be caught at transpile time — currently runtime `None`.
 

@@ -195,6 +195,136 @@ The alias name used in the body must match exactly what was declared in `[using 
 
 ---
 
+## Unified `()` Rule — Named Variables, Declaration Order
+
+Everything placed inside `()` must be a named variable already in scope, and must appear in the order the receiving side declares its fields/parameters. This rule applies uniformly to:
+
+| Context | Example | Order source |
+|---|---|---|
+| Function call | `add(value1, value2)` | Function parameter order |
+| Struct construction | `room as (area, name, occupied)` | Struct field declaration order |
+| Tuple return | `return (quotient, remainder)` | Function return type declaration order |
+
+**Correct:**
+```
+struct Room
+    Squarefeet area
+    string name
+
+area as 20
+name as "Office"
+room as (area, name)      # correct — matches declaration order
+```
+
+**Incorrect — transpiler errors:**
+```
+room as (name, area)      # wrong order — area must come first
+room as ("Office", area)  # literal not allowed — name must be a variable
+```
+
+For tuple capture with `in`, your chosen names are positional but not required to match the function's declared return names:
+```
+fn (int quotient, int remainder) divmod(int a, int b)
+    ...
+
+(q, r) in divmod(a, b)    # q = quotient, r = remainder — names are yours
+```
+
+---
+
+## Named Arguments — No Inline Literals in Calls
+
+All arguments passed to a user-defined function must be named variables defined before the call. Passing literals directly as function arguments is a transpiler error.
+
+**Correct:**
+```
+fn int add(int a, int b)
+    return a + b
+
+int x = 5
+int y = 3
+int result = add(x, y)
+```
+
+**Incorrect — transpiler errors:**
+```
+int result = add(5, 3)    # literals not allowed
+```
+
+This applies to all user-defined function calls regardless of parameter count. Built-in functions (`print`, `len`, `range`, `rand`, etc.) are exempt — their parameters are documented by the language itself, so brief literal arguments are legible there.
+
+The rationale: named variables make long parameter lists self-documenting. `connect(host, port, timeout, retries)` is clear; `connect("localhost", 8080, 30, 3)` is not.
+
+---
+
+## Top-to-Bottom Declaration Order
+
+All top-level declarations must appear before any code that references them. This applies to `struct`, `type`, `const`, and `fn` definitions within a file.
+
+**Correct:**
+```
+type Roll(int n)
+    n >= 1 and n <= 20
+
+struct RollResult
+    Roll value
+    string source
+
+fn RollResult roll_die(Die die)
+    ...
+```
+
+**Incorrect — transpiler errors:**
+```
+fn RollResult roll_die(Die die)    # uses RollResult before it's declared
+    ...
+
+struct RollResult
+    Roll value
+    string source
+```
+
+Recommended file layout:
+1. `const` declarations
+2. `type` definitions
+3. `struct` definitions
+4. Helper functions (called by others below them)
+5. Main logic functions
+6. Entry point (`fn main`)
+
+This makes files readable top-to-bottom without needing to jump around to understand what a name means.
+
+---
+
+## No Nested Functions
+
+Functions may only be declared at the top level of a file. Defining a `fn` inside another `fn` body is a transpiler error.
+
+**Correct:**
+```
+fn bool is_valid(int n)
+    return n > 0
+
+fn string describe(int n)
+    if is_valid(n)
+        return "positive"
+    return "invalid"
+```
+
+**Incorrect — transpiler errors:**
+```
+fn string describe(int n)
+    fn bool is_valid(int x)    # not allowed
+        return x > 0
+    if is_valid(n)
+        return "positive"
+    return "invalid"
+```
+
+Move all helper functions to the top level of the file and call them by name.
+
+---
+
 ## `rust` Blocks Must Be Indented
 
 A `rust` block always requires a newline and indented body. One-liner `rust` is not allowed — the block form makes inline Rust visually obvious.

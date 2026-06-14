@@ -27,14 +27,22 @@ int n = pow(2, 10)    # 1024
 
 ## Comparison
 
-| Operator | Meaning |
-|---|---|
-| `==` | Structural equality (always deep) |
-| `!=` | Not equal |
-| `<` | Less than |
-| `>` | Greater than |
-| `<=` | Less than or equal |
-| `>=` | Greater than or equal |
+| Operator | Meaning | Rust equivalent |
+|---|---|---|
+| `is` | Structural equality (always deep) | `==` |
+| `is not` | Not equal | `!=` |
+| `<` | Less than | `<` |
+| `>` | Greater than | `>` |
+| `<=` | Less than or equal | `<=` |
+| `>=` | Greater than or equal | `>=` |
+
+`is` and `is not` are two-word keyword operators — not symbols. `known` is a reserved word that changes the meaning of `is`:
+
+```
+x is 5          # equality — x == 5
+x is not 5      # inequality — x != 5
+(x is known)    # forced unwrap — panics if None (validator types only)
+```
 
 ---
 
@@ -44,7 +52,7 @@ int n = pow(2, 10)    # 1024
 |---|---|---|
 | `and` | Logical AND | `&&` |
 | `or` | Logical OR | `\|\|` |
-| `not` | Logical NOT | `!` |
+| `not` | Logical NOT (unary) | `!` |
 
 ```
 if x > 0 and x < 100
@@ -53,6 +61,45 @@ if x > 0 and x < 100
 if not is_valid
     ...
 ```
+
+---
+
+## Banned Symbolic Operators
+
+The following are **transpiler errors** — they must never appear in Deor source:
+
+| Banned | Use instead |
+|---|---|
+| `==` | `is` |
+| `!=` | `is not` |
+| `&&` | `and` |
+| `\|\|` | `or` |
+
+Using symbols where keywords are required reads as an error in source review, not just at compile time.
+
+---
+
+## Operator Precedence
+
+Deor follows Rust's operator precedence. From highest to lowest, the operators you'll use in practice:
+
+| Level | Operators | Notes |
+|---|---|---|
+| 1 (highest) | `not` | Unary logical NOT |
+| 2 | `*` `/` `%` | Multiplicative |
+| 3 | `+` `-` | Additive |
+| 4 | `is` `is not` `<` `>` `<=` `>=` | Comparison |
+| 5 | `and` | Logical AND |
+| 6 (lowest) | `or` | Logical OR |
+
+```
+not x and y           # (not x) and y  — not binds tighter than and
+a + b * c             # a + (b * c)    — standard math precedence
+x is 0 or y > 5      # (x is 0) or (y > 5) — comparisons before logical
+x is not 0 and y > 0  # (x is not 0) and (y > 0)
+```
+
+When in doubt, use parentheses. Deor has no operator precedence surprises beyond the standard math rules.
 
 ---
 

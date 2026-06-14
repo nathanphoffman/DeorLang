@@ -107,6 +107,28 @@ const PI: f64 = 3.14159;
 
 ---
 
+## Numeric Literals
+
+Underscores may appear anywhere in a numeric literal as a visual separator. They are stripped by the transpiler and have no effect on the value.
+
+```
+int population = 1_000_000
+float rate = 0.000_001
+int port = 8_080
+```
+
+```rust
+let population: i32 = 1_000_000;
+let rate: f64 = 0.000_001;
+let port: i32 = 8_080;
+```
+
+Underscore placement is free-form — `1_000_000`, `10_00_00`, and `1000000` are all the same value.
+
+Hex literals (`0xFF`) and binary literals (`0b1010`) are deferred to v2. Use a `rust` block for code that requires them.
+
+---
+
 ## Validator Type Variables
 
 Declaring a variable with a validator type makes it an option-type. Assignment runs the predicate — the variable is truthy (`Some`) or falsy (`None`) as a result.

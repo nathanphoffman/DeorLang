@@ -10,7 +10,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - **`as`** = "derive this binding's type/shape from a literal" (compile-time only).
 - **`in`** = "extract something from a source" — struct fields, collection elements, or module contents, all one grammar.
 - **Structs are immutable.** Primitives and lists are mutable.
-- **`==` is always structural**, regardless of how a struct is represented internally.
+- **`is` is always structural equality**, regardless of how a struct is represented internally. `is not` is inequality. `&&`, `||`, `==`, `!=` are transpiler errors — use `and`, `or`, `is`, `is not`.
 - **No lambdas.** Only named `fn`s (top-level or nested). No built-in `filter`/`map`/`reduce` — write explicit loops.
 - **Void functions omit the return type.** `fn run()` returns nothing. No `void` keyword.
 - **`[using alias: T->O]` for behavior injection.** Annotate a function to accept a named external function. Call site provides it with `using fn_name`. Alias is called in the body. Required — omitting `using fn_name` at the call site is a transpiler error.
@@ -33,6 +33,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - [Examples](docs/examples) — full worked example with Rust translation
 - [Operators](docs/operators) — arithmetic, comparison, logical, what's excluded
 - [Strings](docs/strings) — concatenation, interpolation, length
+- [Built-ins](docs/builtins) — `print`, `len`, `range`, math, random, type conversion
 - [Open Questions](docs/open-questions) — future work and undecided areas
 - [V2 Roadmap](docs/v2) — deferred features
 - [Annotations](docs/functions#annotations) — `[test]`, `[deprecated]`, `[pure]`, `[using]`

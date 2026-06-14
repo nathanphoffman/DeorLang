@@ -1,5 +1,34 @@
 # Collections
 
+## Index Read
+
+Elements are read by index using bracket notation. Zero-indexed, matching Rust's behavior.
+
+```
+list<int> scores = [10, 20, 30, 40]
+int first = scores[0]    # 10
+int last = scores[3]     # 40
+```
+
+```rust
+let scores: Vec<i32> = vec![10, 20, 30, 40];
+let first: i32 = scores[0];
+let last: i32 = scores[3];
+```
+
+Index must be a concrete integer expression — a variable or literal. Dynamic or computed indices are fine:
+
+```
+int i = 2
+int mid = scores[i]    # 30
+```
+
+Out-of-bounds access is a runtime panic (same as Rust). No bounds-checking syntax in v1.
+
+Fixed-size lists (`list<T, N>`) support index read identically.
+
+---
+
 ## `list<T>` — Dynamic (Vec)
 
 A `list<T>` with no size is heap-allocated and growable. The transpiler marks the binding `mut` automatically based on usage.

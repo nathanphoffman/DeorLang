@@ -36,9 +36,13 @@ The entry point `fn main()` follows this same rule — no return type, already c
 
 ### Multiple return values
 
+Tuple return types must name each element — the names document what each position means and must match what the body returns.
+
 ```
-fn (int, int) divmod(int a, int b)
-    a / b, a % b
+fn (int quotient, int remainder) divmod(int a, int b)
+    int quotient = a / b
+    int remainder = a % b
+    return (quotient, remainder)
 ```
 
 ```rust
@@ -47,7 +51,30 @@ fn divmod(a: i32, b: i32) -> (i32, i32) {
 }
 ```
 
-**Conversion notes:** a bare comma-separated tuple in source becomes a parenthesized tuple literal in Rust.
+The body must define variables with exactly the declared return names before returning them. This is consistent with the general rule that everything inside `()` must be named variables already in scope.
+
+**Conversion notes:** the named return types are a Deor-only concept — they don't appear in generated Rust, which uses positional tuple elements.
+
+### Capturing multiple return values
+
+Use `in` to destructure a tuple return. Your chosen names are bound positionally — first declared element goes to the first name you provide, second to the second, and so on.
+
+```
+(q, r) in divmod(a, b)    # q = quotient, r = remainder
+print(q)
+print(r)
+
+(x, y) in divmod(c, d)    # different names for a second call — no conflict
+```
+
+```rust
+let (q, r) = divmod(a, b);
+println!("{}", q);
+println!("{}", r);
+let (x, y) = divmod(c, d);
+```
+
+The declared return names (`quotient`, `remainder`) tell you what each position means. Your capture names are your choice. As with all `in` extractions, this must appear before any logic that uses the bound variables in the same block.
 
 ---
 
@@ -113,7 +140,7 @@ Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
 
 ```
 fn int divide(int a, int b)
-    if b == 0
+    if b is 0
         throw "division by zero"
     return a / b
 ```
@@ -131,9 +158,9 @@ fn divide(a: i32, b: i32) -> i32 {
 
 ---
 
-## No Lambdas / Closures
+## No Lambdas / Closures / Nested Functions
 
-All callable values are named `fn`s — top-level or nested inside another `fn`. There is no anonymous-function syntax. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
+All callable values are named top-level `fn`s. There is no anonymous-function syntax, and functions may not be defined inside other function bodies. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
 
 ```
 fn list<int> doubled(list<int> nums)
@@ -153,7 +180,7 @@ fn doubled(nums: &Vec<i32>) -> Vec<i32> {
 }
 ```
 
-**Conversion notes:** avoids `Fn`/`FnMut`/`FnOnce`, closure capture, and capture-related lifetime issues entirely in generated Rust. Nested `fn`s map to Rust's nested `fn` items, which also can't capture outer variables — the same restriction applies in source, so there's no surprise gap.
+**Conversion notes:** avoids `Fn`/`FnMut`/`FnOnce`, closure capture, and capture-related lifetime issues entirely in generated Rust. All functions are top-level items, which maps cleanly to Rust's own top-level `fn` declarations.
 
 ---
 

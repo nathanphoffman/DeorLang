@@ -52,12 +52,13 @@ let n: i32 = label.len() as i32;
 
 ## Equality
 
-`==` is structural — same content, same result, regardless of how the string was created.
+`is` is structural — same content, same result, regardless of how the string was created.
 
 ```
 string a = "hello"
 string b = "hello"
-bool same = a == b    # true
+bool same = a is b        # true
+bool diff = a is not b    # false
 ```
 
 ---

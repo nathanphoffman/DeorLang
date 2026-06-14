@@ -47,12 +47,12 @@ fn int sum_rolls(list<RollResult> rolls)
 fn bool is_critical(RollResult r)
     value in r
 
-    return (value is known) == 20
+    return (value is known) is 20
 
 fn bool is_fumble(RollResult r)
     value in r
 
-    return (value is known) == 1
+    return (value is known) is 1
 
 fn string describe_roll(RollResult r)
     source in r
