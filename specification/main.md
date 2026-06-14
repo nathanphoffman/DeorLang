@@ -6,13 +6,13 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 
 - **No dots.** Field access is via destructuring (`area in room`), not `.field`.
 - **No colons for blocks.** Indentation alone opens a block after a header keyword (`fn`, `if`, `for`, `type`, `struct`).
-- **One statement per line.** Multi-line expressions only wrap inside `()`, `[]`, or `{}`.
+- **One statement per line.** Multi-line expressions only wrap inside `()` or `[]`.
 - **`as`** = "derive this binding's type/shape from a literal" (compile-time only).
 - **`in`** = "extract something from a source" — struct fields, collection elements, or module contents, all one grammar.
 - **Structs are immutable.** Primitives and lists are mutable.
 - **`==` is always structural**, regardless of how a struct is represented internally.
 - **No lambdas.** Only named `fn`s (top-level or nested).
-- **Struct literals are shorthand-only.** Every field must already exist as a variable in scope with a name matching the field. No `field: value` pairs.
+- **Struct construction uses `()`, always.** `room as (area, name)` — every field is a variable already in scope matching the field name. No `{}`, no `field: value` pairs. Mirrors destructuring: `(area, name) in room` extracts, `room as (area, name)` constructs.
 
 ## Index
 

@@ -41,23 +41,23 @@ fn main()
     area as 9
     name as "Kitchen"
     occupied as true
-    kitchen as {area, name, occupied}
+    kitchen as (area, name, occupied)
 
     area as 16
     name as "Office"
     occupied as false
-    office as {area, name, occupied}
+    office as (area, name, occupied)
 
     area as 25
     name as "Bedroom"
     occupied as true
-    bedroom as {area, name, occupied}
+    bedroom as (area, name, occupied)
 
     room_list as [kitchen, office, bedroom]
 
     address as "12 Main St"
     rooms as room_list
-    house as {address, rooms}
+    house as (address, rooms)
 
     rooms in house
     print(total_area(rooms))

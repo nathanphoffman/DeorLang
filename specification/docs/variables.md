@@ -16,15 +16,15 @@ let room_list = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 
 **Conversion notes:** if `Room` isn't already declared via `struct`, the transpiler must **synthesize a matching struct definition** from the literal's shape — this is the core "derive a type from data" feature inherited from TS's `as const`. String literals become `.to_string()` (owned) or `&str` (borrowed) depending on how the binding is used downstream.
 
-### Struct Literals — Shorthand Only
+### Struct Construction
 
-Struct literals use shorthand syntax exclusively. Every field must already be a variable in scope, and the variable name must match the struct field name exactly. There is no `field: value` pair syntax.
+Structs are constructed with `()`. Every field must already be a variable in scope, and the variable name must match the struct field name exactly. There is no `field: value` pair syntax. Parens are always required, even for a single field.
 
 ```
 area as 9
 name as "Office"
 occupied as true
-room as {area, name, occupied}
+room as (area, name, occupied)
 ```
 
 ```rust
@@ -34,12 +34,19 @@ let occupied = true;
 let room = Room { area, name, occupied };
 ```
 
+This mirrors destructuring exactly — `in` and `as` are the direction:
+
+```
+(area, name) in room      # extract fields from a struct
+room as (area, name)      # construct a struct from variables
+```
+
 If you need a field name that differs from the variable you have, rename it first:
 
 ```
 name in other_room
 label = name
-entry as {label}
+entry as (label)
 ```
 
 ---

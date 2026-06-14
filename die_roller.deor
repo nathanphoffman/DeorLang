@@ -21,7 +21,7 @@ fn RollResult roll_die(Die die)
 
     int raw = rand(1, sides)
     Roll value = raw
-    result as {value, source}
+    result as (value, source)
     
     return result
 
@@ -64,15 +64,15 @@ fn string describe_roll(RollResult r)
 fn main()
     sides as 4
     label as "d4"
-    d4 as {sides, label}
+    d4 as (sides, label)
 
     sides as 6
     label as "d6"
-    d6 as {sides, label}
+    d6 as (sides, label)
 
     sides as 20
     label as "d20"
-    d20 as {sides, label}
+    d20 as (sides, label)
 
     # Single attack roll
     RollResult attack = roll_die(d20)

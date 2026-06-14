@@ -28,7 +28,7 @@ fn abs(x: i32) -> i32 {
 
 ## One Statement Per Line
 
-No line continuations except inside delimiters. Long expressions wrap inside `()`/`[]`/`{}`:
+No line continuations except inside delimiters. Long expressions wrap inside `()` or `[]`:
 
 ```
 Connection conn = Connect(
