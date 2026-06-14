@@ -17,6 +17,23 @@ fn add(a: i32, b: i32) -> i32 {
 
 **Conversion notes:** the prefix return type becomes Rust's trailing `-> Type`. The transpiler must ensure the final expression has no trailing `;` for it to act as the return value.
 
+### Void Functions
+
+Omitting the return type means the function returns nothing. No `void` keyword.
+
+```
+fn greet(string name)
+    print(name)
+```
+
+```rust
+fn greet(name: String) {
+    println!("{}", name);
+}
+```
+
+The entry point `fn main()` follows this same rule — no return type, already correct.
+
 ### Multiple return values
 
 ```
@@ -92,13 +109,13 @@ Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
 
 ## No Lambdas / Closures
 
-All callable values are named `fn`s — top-level or nested inside another `fn`. There is no anonymous-function syntax.
+All callable values are named `fn`s — top-level or nested inside another `fn`. There is no anonymous-function syntax. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
 
 ```
 fn list<int> doubled(list<int> nums)
     list<int> result = []
     for n in nums
-        result append n * 2
+        result insert n * 2
     return result
 ```
 
@@ -113,3 +130,124 @@ fn doubled(nums: &Vec<i32>) -> Vec<i32> {
 ```
 
 **Conversion notes:** avoids `Fn`/`FnMut`/`FnOnce`, closure capture, and capture-related lifetime issues entirely in generated Rust. Nested `fn`s map to Rust's nested `fn` items, which also can't capture outer variables — the same restriction applies in source, so there's no surprise gap.
+
+---
+
+## Annotations (`[]`)
+
+Annotations appear on the line(s) immediately above `fn`. Multiple annotations stack.
+
+```
+[test]
+[deprecated]
+fn Roll old_roll(int n)
+    Roll r = n
+    return r
+```
+
+| Annotation | Effect | Rust equivalent |
+|---|---|---|
+| `[test]` | Marks as a test function | `#[test]` |
+| `[deprecated]` | Warns callers at compile time | `#[deprecated]` |
+| `[pure]` | Signals no side effects, enables transpiler optimizations | `#[inline]` / optimizer hint |
+| `[main]` | Explicit entry point — alternative to naming the function `main` | `#[main]` |
+| `[using alias: T->O]` | Declares a behavior injection slot (see below) | hidden `fn` pointer parameter |
+| `[using alias: T]` | Same, handler returns nothing | hidden `fn()` parameter |
+
+---
+
+## `[using]` — Behavior Injection
+
+`[using]` declares that a function accepts an externally-provided named function. The annotation, the body, and the call site all use the same concept — only the keyword `using` appears at the call site; the body uses the alias name.
+
+The annotation is **required at the call site** — calling a `[using]`-annotated function without `using fn_name` is a transpiler error.
+
+### Syntax
+
+```
+[using alias: InputType->OutputType]    # handler with return value
+[using alias: InputType]                # void handler
+```
+
+### Example — predicate injection
+
+```
+[using predicate: Room->bool]
+fn list<Room> filter(list<Room> items)
+    list<Room> result = []
+
+    for item in items
+        if predicate(item)              # alias called in body
+            result insert item
+
+    return result
+```
+
+```
+filter(rooms) using match_name          # call site provides the function
+```
+
+The injected function must match the declared signature — `match_name` must take a `Room` and return `bool`.
+
+### Single-param constraint
+
+All injectable functions take exactly one parameter. If more context is needed, package it into a struct first:
+
+```
+struct RoomSearch
+    Room room
+    string query
+
+[using predicate: RoomSearch->bool]
+fn list<Room> filter(list<Room> items, string query)
+    list<Room> result = []
+
+    for item in items
+        search as (item, query)
+        if predicate(search)
+            result insert item
+
+    return result
+
+filter(rooms, "Kitchen") using match_by_query
+```
+
+### Example — void error handler
+
+`[using alias: T]` with no `->O` means the handler returns nothing. Inline struct construction works inside the alias call — the type is known from the annotation.
+
+```
+struct Error
+    string message
+    string body
+
+[using error_handler: Error]
+fn Roll parse_roll(string input)
+    Roll result = none
+
+    message as "Parse failed"
+    body as input
+    error_handler((message, body))      # constructs Error inline, calls handler
+
+    return result
+```
+
+```
+fn log_error(Error e)
+    (message, body) in e
+    print(message)
+    print(body)
+
+fn panic_error(Error e)
+    (message, body) in e
+    # hard stop
+
+Roll r = parse_roll("abc") using log_error
+Roll r2 = parse_roll("abc") using panic_error
+```
+
+**Conversion notes:**
+- `[using predicate: Room->bool]` adds a hidden Rust parameter `predicate: fn(Room) -> bool`
+- `predicate(item)` in the body calls directly through the fn pointer
+- At call site, `using match_name` passes `match_name` as the fn pointer
+- Uses Rust `fn` pointers (not closures) — cannot capture environment, consistent with Deor's no-lambda rule

@@ -1,0 +1,30 @@
+ Foundational — needed for almost any real program:
+  - Operators — never formally listed. We use +, -, *, / in examples but % (modulo), != (or is it not =?), integer division are all undefined
+  - String operations — concatenation, length, interpolation. You can't write meaningful programs without these
+  - Type conversion — int to float, float to int, int to string. No casting syntax defined
+  - Void functions — fn main() has no return type in the sample but it's never defined. What do you write for functions that return nothing?
+  - Built-ins — print, range, rand, floor, sqrt appear in examples but live nowhere in the spec. Are these deor: stdlib? Global built-ins?
+
+  List gaps:
+  - Index read — scores[0] for writing is shown, but reading by index is never defined
+  - List length — no syntax for getting the count of elements
+  - remove collapse — just discussed, should add explicit note to docs
+
+  Language mechanics not defined:
+  - Module system — how do you import your own .deor files? What does (something) in utils resolve to — a file called utils.deor?
+  - Scope and shadowing — variable scope rules within blocks, whether shadowing is allowed 
+  - Nested functions — mentioned as allowed, never formally shown
+  - Comments — # is used in examples, never specced
+  - Numeric literals — underscores (1_000_000)? Hex (0xFF)? Float suffixes?
+  - Truthiness beyond validator types — can you do if my_list to check non-empty? if my_string?
+
+  Still in open-questions.md (from before):
+  - Pattern matching / match
+  - Error handling (Result-like for recoverable errors)
+  - String semantics (&str vs String inference)
+  - User-defined generics
+
+  Discussed this session, not written yet:
+  - First-class functions / function type parameter syntax
+  - No built-in filter/map/reduce (the opinionated decision should be noted somewhere)
+  - remove shrinks dynamic lists (explicit doc note)

@@ -8,7 +8,7 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 
 | Category | Convention | Examples |
 |---|---|---|
-| Built-in primitives | lowercase | `int`, `float`, `bool`, `string` |
+| Built-in primitives | lowercase | `int`, `float`, `bool`, `string`, `bytes` |
 | Built-in generics | lowercase | `list<T>`, `list<T, N>` |
 | User-defined types (structs, validator types) | PascalCase | `Room`, `RollResult`, `Squarefeet` |
 | Functions, variables, parameters, struct fields | snake_case | `roll_die`, `total_area`, `room_list` |
@@ -42,3 +42,120 @@ fn RollResult roll_die(Die die)
 ```
 
 This keeps blocks consistent: you always see what a block unpacks before reading its logic, the same way function parameters are declared before the body.
+
+---
+
+## Compact Ternary — No Blank Lines
+
+In a compact ternary expression, the assignment line, `if` line, and `else` line must be vertically adjacent with no blank lines between them. The visual tightness is the signal that they form one expression.
+
+**Correct:**
+```
+int result = value
+    if value > 0
+    else 0
+```
+
+**Incorrect — transpiler errors:**
+```
+int result = value
+
+    if value > 0
+    else 0
+```
+
+---
+
+## Validator Type Predicate Required
+
+A `type` definition must have a predicate body. A type with no constraint adds no meaning over the base type — use the base type directly instead.
+
+**Correct:**
+```
+type Positive(int n)
+    n > 0
+```
+
+**Incorrect — transpiler errors:**
+```
+type Positive(int n)
+```
+
+---
+
+## `none` at Declaration Only
+
+`= none` is only valid at the point of first declaration for a validator type variable. Assigning `none` to a variable after it has been declared is a transpiler error.
+
+**Correct:**
+```
+Roll best = none
+```
+
+**Incorrect — transpiler errors:**
+```
+Roll best = roll_die(d20)
+best = none
+```
+
+---
+
+## No `return none`
+
+Returning `none` directly from a function is a transpiler error. Always return a named validator type variable — its `None`-ness is determined by the type system, not by an explicit `return none`.
+
+**Correct:**
+```
+fn Roll find_best(list<RollResult> rolls)
+    Roll best = none
+    for roll in rolls
+        value in roll
+        if roll
+            best = value
+
+    return best
+```
+
+**Incorrect — transpiler errors:**
+```
+fn Roll find_best(list<RollResult> rolls)
+    return none
+```
+
+---
+
+## `[using]` — Required at Call Site
+
+Calling a `[using]`-annotated function without `using fn_name` is a transpiler error. The injection slot must always be filled.
+
+**Correct:**
+```
+filter(rooms) using match_name
+```
+
+**Incorrect — transpiler errors:**
+```
+filter(rooms)
+```
+
+The alias name used in the body must match exactly what was declared in `[using alias: T]`.
+
+---
+
+## `rust` Blocks Must Be Indented
+
+A `rust` block always requires a newline and indented body. One-liner `rust` is not allowed — the block form makes inline Rust visually obvious.
+
+**Correct:**
+```
+fn string read_file(string path)
+    rust
+        std::fs::read_to_string(path.as_str())
+            .unwrap_or_default()
+```
+
+**Incorrect — transpiler errors:**
+```
+fn string read_file(string path)
+    rust std::fs::read_to_string(path.as_str()).unwrap_or_default()
+```

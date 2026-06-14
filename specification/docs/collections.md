@@ -6,7 +6,7 @@ A `list<T>` with no size is heap-allocated and growable. The transpiler marks th
 
 ```
 list<int> result = []
-result append 4
+result insert 4
 ```
 
 ```rust
@@ -18,7 +18,7 @@ result.push(4);
 
 ## `list<T, N>` — Fixed-Size (Array)
 
-A `list<T, N>` with a size is stack-allocated and fixed. `append` is a compile-time error on fixed arrays.
+A `list<T, N>` with a size is stack-allocated and fixed. `insert` and `remove` are compile-time errors on fixed arrays — use index-assignment instead.
 
 ```
 list<int, 4> scores = [10, 20, 30, 40]
@@ -31,7 +31,7 @@ scores[0] = 15;
 ```
 
 **Conversion notes:**
-- `list<T, N>` → `[T; N]`: supports **index-assignment** (element mutation), but `append` is a **compile-time error** — fixed arrays can't grow.
+- `list<T, N>` → `[T; N]`: supports **index-assignment** (element mutation), but `insert`/`remove` are **compile-time errors** — fixed arrays can't grow or shrink.
 - A `list<T, N>` field contributes a known size (`N * sizeof(T)`) toward a struct's size cap and `struct+`/auto-value eligibility. An unsized `list<T>` field does not.
 
 ---
@@ -49,14 +49,46 @@ list<int> scores = [10, 20, 30]     # correct — Deor integer list
 
 ## Mutation Verbs
 
-`append` is the current mutation verb for growable lists.
+### `insert` — Add Elements
+
+`insert` without a position adds to the end of the list. `insert` with `at [n]` inserts at a specific index, pushing existing elements back.
 
 ```
-result append n
+result insert item                      # add to end
+result insert item at [2]               # insert at index 2
+result insert (item1, item2) at [2]     # insert both starting at index 2
 ```
 
 ```rust
-result.push(n);
+result.push(item);
+result.insert(2, item);
+result.insert(2, item1);
+result.insert(3, item2);
 ```
 
-**Conversion notes:** `append` is currently the only verb-keyword mutation. Any future verbs (e.g., for pop/remove) would follow the same "verb → `Vec` method" pattern.
+For multi-insert `at [n]`, items are inserted in order from that index — `item1` at `n`, `item2` at `n+1`, etc.
+
+### `remove` — Remove by Position
+
+`remove` takes a list of indices in brackets. The transpiler removes from highest to lowest index to avoid index-shifting errors — the order you write them doesn't matter.
+
+```
+result remove [2]           # remove at index 2
+result remove [2, 5, 1]     # remove at indices 1, 2, and 5
+```
+
+```rust
+result.remove(2);
+// multi: sorted high-to-low, then each .remove()
+result.remove(5);
+result.remove(2);
+result.remove(1);
+```
+
+Brackets are always required, even for a single index. `remove` is a compile-time error on fixed-size `list<T, N>`.
+
+**Conversion notes:**
+- `insert` without `at` → `Vec::push`
+- `insert at [n]` → `Vec::insert(n, item)`
+- `remove [n]` → `Vec::remove(n)`
+- Multi-remove transpiles to multiple `Vec::remove` calls in descending index order

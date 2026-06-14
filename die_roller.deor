@@ -31,7 +31,7 @@ fn list<RollResult> roll_many(Die die, int count)
 
     for i in range(count)
         RollResult r = roll_die(die)
-        results append r
+        results insert r
 
     return results
 
@@ -115,16 +115,16 @@ fn main()
     RollResult hit1 = roll_die(d6)
     RollResult hit2 = roll_die(d6)
     RollResult bonus = roll_die(d4)
-    damage append hit1
-    damage append hit2
-    damage append bonus
+    damage insert hit1
+    damage insert hit2
+    damage insert bonus
 
     int total_damage = sum_rolls(damage)
     print(total_damage)
 
     # Check if the attack was a critical and apply bonus damage
     list<RollResult> attack_pool = []
-    attack_pool append attack
+    attack_pool insert attack
     Roll crit = find_crit_value(attack_pool)
     int crit_bonus = crit else 0
     print(crit_bonus)
