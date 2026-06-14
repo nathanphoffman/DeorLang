@@ -1,8 +1,37 @@
 # Types
 
+## Primitive Types
+
+Deor's built-in primitive types and their Rust equivalents:
+
+| Deor | Rust | Notes |
+|---|---|---|
+| `int` | `i32` | General-purpose integer |
+| `float` | `f64` | General-purpose decimal |
+| `bool` | `bool` | |
+| `string` | `String` | Owned; available as `&str` via `.as_str()` in `rust` blocks |
+| `bytes` | `Vec<u8>` | Raw binary data — HTTP bodies, files, crypto, pixel buffers |
+
+`bytes` is the bridge for raw binary data crossing the Deor/Rust boundary. Any byte-level processing (bit manipulation, `u8`/`u16` arithmetic, SIMD) happens inside `rust` blocks; `bytes` carries the data in and out.
+
+```
+fn bytes read_raw(string path)
+    rust
+        std::fs::read(path.as_str())
+            .unwrap_or_default()
+
+fn int byte_count(bytes data)
+    rust
+        data.len() as i32
+```
+
+---
+
 ## Validator Types (`type`)
 
-A `type` definition wraps a base primitive with a predicate. The body is an implicit `bool` expression over the parameter. A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.
+A `type` definition wraps a base primitive with a predicate. The predicate body is required — a `type` with no constraint adds no meaning over the base type, so use the base type directly instead. The transpiler errors on a `type` definition with an empty body.
+
+The body is an implicit `bool` expression over the parameter. A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.
 
 ```
 type Squarefeet(int n)

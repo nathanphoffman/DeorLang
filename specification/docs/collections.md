@@ -36,6 +36,17 @@ scores[0] = 15;
 
 ---
 
+## `bytes` vs `list<int>`
+
+Raw binary data should use `bytes` (`Vec<u8>`), not `list<int>`. `list<int>` is `Vec<i32>` — the wrong width for byte manipulation and incompatible with crate APIs that expect `&[u8]`. Use `bytes` when crossing the Rust interop boundary with binary data; use `list<int>` for collections of integers in Deor logic.
+
+```
+bytes data = read_raw("file.bin")   # correct — raw binary
+list<int> scores = [10, 20, 30]     # correct — Deor integer list
+```
+
+---
+
 ## Mutation Verbs
 
 `append` is the current mutation verb for growable lists.
