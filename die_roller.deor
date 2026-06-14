@@ -1,12 +1,10 @@
-# Dice roller — showcases Deor language features
-
 (rand, floor, sqrt) in math
 
-# Validator type: a roll value must be in range 1-100
+# comments look like this
+
 type Roll(int n)
     n >= 1 and n <= 100
 
-# Validator type: die sides must be a perfect square or common die face
 type Sides(int n)
     n >= 2
 
@@ -20,23 +18,29 @@ struct+ RollResult
 
 fn RollResult roll_die(Die die)
     (sides, label) in die
+
     int raw = rand(1, sides)
     Roll val = raw
     result as {value: val, source: label}
+
     return result
 
 fn List<RollResult> roll_many(Die die, int count)
     List<RollResult> results = []
+
     for i in range(count)
         RollResult r = roll_die(die)
         results append r
+
     return results
 
 fn int sum_rolls(List<RollResult> rolls)
     sum as 0
+
     for roll in rolls
         value in roll
         sum = sum + value
+        
     return sum
 
 fn bool is_critical(RollResult r)

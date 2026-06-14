@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="default">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NewWeb</title>
+  <style>
+/* ── image frames ─────────────────────────────────────── */
+.nw-image-frame {
+  display: inline-block;
+  margin: 1em 0;
+  padding: 0.5em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  background: var(--code-bg);
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.nw-image-frame__img {
+  display: block;
+  max-width: 320px;
+  max-height: 320px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.nw-image-frame__caption {
+  display: block;
+  margin-top: 0.4em;
+  font-size: 0.82em;
+  color: var(--muted);
+  font-family: inherit;
+  text-align: center;
+}
+
+/* ── image load button (oversized fallback) ───────────── */
+.nw-img-load-btn {
+  display: inline-block;
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.nw-img-load-btn:hover {
+  color: var(--fg);
+  border-color: var(--link);
+}
+
+/* ── lightbox ─────────────────────────────────────────── */
+.nw-lightbox {
+  position: relative;
+  max-width: 85vw;
+  max-height: 94vh;
+  width: fit-content;
+  padding: 0.75rem;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.nw-lightbox img {
+  display: block;
+  max-width: calc(85vw - 1.5rem);
+  max-height: 82vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.nw-lightbox__close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.4rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+
+.nw-lightbox__close:hover {
+  color: var(--fg);
+  background: var(--code-bg);
+}
+
+.nw-lightbox__caption {
+  display: block;
+  margin-top: 0.5em;
+  font-size: 1.1em;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ── animation pause ──────────────────────────────────── */
+.nw-paused *, .nw-paused *::before, .nw-paused *::after {
+  animation-play-state: paused !important;
+}
+
+/* ── reset ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: var(--font-size);
+  line-height: 1.6;
+}
+
+/* ── page content ─────────────────────────────────────── */
+#content {
+  max-width: var(--width);
+  margin: 0 auto;
+  padding: 1rem 2rem 2rem;
+}
+
+#content h1, #content h2, #content h3 { margin: 1.2em 0 0.4em; }
+#content p   { margin: 0.6em 0; }
+#content hr  { margin: 1.8em 0; border: none; border-top: 1px solid var(--border); }
+#content ul, #content ol { margin: 1em 0 1em 1.5em; }
+#content li  { margin: 0.3em 0; }
+#content a, dialog a { color: var(--link); }
+#content blockquote {
+  margin: 1.2em 0;
+  border-left: 3px solid var(--border);
+  padding-left: 1em;
+  color: var(--muted);
+}
+#content code {
+  font-family: var(--font-mono);
+  background: var(--code-bg);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+#content pre {
+  font-family: var(--font-mono);
+  background: var(--code-bg);
+  padding: 0.8em;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+#content pre code { background: none; padding: 0; }
+
+/* ── link icons ───────────────────────────────────────── */
+.nw-link-icon {
+  font-size: 1em;
+  opacity: 0.5;
+  margin-left: 0.2em;
+  user-select: none;
+}
+
+.nw-wasm-info {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 0.2em;
+  font-size: 1em;
+  opacity: 0.5;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  user-select: none;
+  vertical-align: baseline;
+}
+
+/* ── spinner ──────────────────────────────────────────── */
+#nw-spinner {
+  position: fixed; top: 0.5rem; right: 1rem;
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--link);
+  border-radius: 50%;
+  animation: nw-spin 0.6s linear infinite;
+  display: none;
+}
+@keyframes nw-spin { to { transform: rotate(360deg); } }
+
+/* ── toasts ───────────────────────────────────────────── */
+.nw-toast {
+  position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%);
+  padding: 0.5em 1.2em; border-radius: 4px; font-size: 0.88em;
+  font-family: system-ui, sans-serif; z-index: 200;
+  border: 1px solid var(--border);
+}
+.nw-toast-info  { background: var(--code-bg); color: var(--fg); }
+.nw-toast-error { background: #fdd; color: #600; }
+
+/* ── suspended bar ────────────────────────────────────── */
+#nw-suspended {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #fff3cd; color: #333;
+  padding: 0.5em 1rem; border-top: 1px solid #e0c060;
+  display: flex; gap: 0.5rem; align-items: center;
+  font-family: system-ui, sans-serif; font-size: 0.88em;
+}
+#nw-suspended button { padding: 0.2em 0.8em; cursor: pointer; }
+
+/* ── modal ────────────────────────────────────────────── */
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  background: var(--bg); color: var(--fg);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 1.5rem; max-width: 540px; width: 90%;
+}
+dialog::backdrop { background: rgba(0,0,0,0.45); }
+.nw-modal-close { margin-top: 1rem; padding: 0.3em 1em; cursor: pointer; }
+
+/* ── top bar ──────────────────────────────────────────── */
+#nw-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.5rem;
+  background: var(--bar-bg);
+  border-bottom: 1px solid var(--bar-border);
+  color: var(--bar-fg);
+  font-family: system-ui, sans-serif;
+  font-size: 1.1rem;
+}
+
+#nw-bar .nw-logo {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-right: auto;
+  opacity: 0.7;
+  font-size: 1.2rem;
+}
+
+#nw-hamburger {
+  display: none;
+  background: none;
+  border: 1px solid var(--bar-border);
+  border-radius: 6px;
+  color: var(--bar-fg);
+  font-size: 1.4rem;
+  padding: 0.2em 0.6em;
+  cursor: pointer;
+}
+
+#nw-bar-menu {
+  display: contents;
+}
+
+@media (max-width: 768px) {
+  #nw-bar {
+    flex-wrap: wrap;
+    padding: 1rem 1.2rem;
+  }
+
+  #nw-hamburger {
+    display: block;
+  }
+
+  #nw-bar-menu {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0 0.5rem;
+    border-top: 1px solid var(--bar-border);
+  }
+
+  #nw-bar-menu.open {
+    display: flex;
+  }
+}
+
+#nw-bar button {
+  padding: 0.4em 1em;
+  border: 1px solid var(--bar-border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--bar-fg);
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#nw-bar select {
+  padding: 0.4em 0.7em;
+  border: 1px solid var(--bar-border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* ── settings modal ───────────────────────────────────── */
+.nw-settings-modal {
+  max-width: 480px;
+  width: 90%;
+}
+
+.nw-settings-modal h2 {
+  margin-bottom: 1.2rem;
+  font-size: 1.1rem;
+}
+
+.nw-settings-section {
+  margin-bottom: 1.2rem;
+}
+
+.nw-settings-section h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.nw-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.nw-settings-row input[type="number"] {
+  width: 80px;
+  padding: 0.3em 0.5em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  text-align: right;
+}
+
+.nw-settings-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 0.3rem;
+}
+
+.nw-settings-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 1.4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.nw-settings-save {
+  padding: 0.4em 1.2em;
+  background: var(--link);
+  color: var(--bg);
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.nw-settings-cancel {
+  padding: 0.4em 1.2em;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+[data-theme="aurora"] {
+  --bg:        #070d1a;
+  --fg:        #dff6e8;
+  --muted:     #4a8a68;
+  --link:      #34d399;
+  --border:    rgba(52,211,153,0.15);
+  --code-bg:   rgba(0,25,15,0.85);
+  --bar-bg:    rgba(4,8,20,0.97);
+  --bar-fg:    #34d399;
+  --bar-border:rgba(52,211,153,0.2);
+  --font:      system-ui, -apple-system, sans-serif;
+}
+
+/* shifting aurora curtains */
+@keyframes nw-aurora-drift {
+  0%   { background-position: 0% 50%;   opacity: 0.55; }
+  50%  { background-position: 100% 50%; opacity: 0.75; }
+  100% { background-position: 0% 50%;   opacity: 0.55; }
+}
+
+[data-theme="aurora"] body {
+  background-color: #070d1a;
+}
+
+[data-theme="aurora"] body::before {
+  content: '';
+  position: fixed;
+  top: -60%;
+  left: -25%;
+  width: 150%;
+  height: 110%;
+  background: linear-gradient(
+    135deg,
+    rgba(16,185,129,0.22) 0%,
+    rgba(6,182,212,0.18) 20%,
+    rgba(139,92,246,0.22) 45%,
+    rgba(16,185,129,0.16) 70%,
+    rgba(59,130,246,0.12) 100%
+  );
+  background-size: 200% 200%;
+  animation: nw-aurora-drift 14s ease-in-out infinite;
+  filter: blur(70px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+[data-theme="aurora"] body::after {
+  content: '';
+  position: fixed;
+  top: -40%;
+  left: 5%;
+  width: 140%;
+  height: 90%;
+  background: linear-gradient(
+    160deg,
+    rgba(139,92,246,0.14) 0%,
+    rgba(52,211,153,0.18) 35%,
+    rgba(6,182,212,0.12) 65%,
+    rgba(139,92,246,0.1) 100%
+  );
+  background-size: 200% 200%;
+  animation: nw-aurora-drift 19s ease-in-out infinite reverse;
+  filter: blur(55px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+[data-theme="aurora"] #content {
+  position: relative;
+  z-index: 1;
+  background: rgba(7,13,26,0.72);
+  border: 1px solid rgba(52,211,153,0.1);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+[data-theme="aurora"] #content h1,
+[data-theme="aurora"] #content h2,
+[data-theme="aurora"] #content h3 {
+  color: #6ee7b7;
+  text-shadow: 0 0 24px rgba(52,211,153,0.45), 0 0 60px rgba(139,92,246,0.2);
+  letter-spacing: 0.01em;
+}
+
+[data-theme="aurora"] #content a {
+  color: #34d399;
+  text-decoration: none;
+  text-shadow: 0 0 10px rgba(52,211,153,0.45);
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+[data-theme="aurora"] #content a:hover {
+  color: #a7f3d0;
+  text-shadow: 0 0 18px rgba(52,211,153,0.75), 0 0 40px rgba(139,92,246,0.3);
+}
+
+[data-theme="aurora"] #content blockquote {
+  border-left-color: rgba(139,92,246,0.6);
+  color: #4a8a68;
+}
+
+[data-theme="aurora"] #nw-bar {
+  box-shadow: 0 1px 30px rgba(52,211,153,0.12);
+}
+
+[data-theme="aurora"] .nw-logo {
+  color: #34d399;
+  text-shadow: 0 0 14px rgba(52,211,153,0.6);
+}
+
+[data-theme="aurora"] #nw-bar select {
+  background: rgba(4,8,20,0.95);
+  border-color: rgba(52,211,153,0.3);
+}
+
+[data-theme="aurora"] dialog {
+  background: rgba(4,8,20,0.96);
+  border-color: rgba(52,211,153,0.3);
+  box-shadow: 0 0 40px rgba(52,211,153,0.12), 0 0 80px rgba(139,92,246,0.08);
+}
+
+[data-theme="aurora"] .nw-image-frame {
+  border-color: rgba(52,211,153,0.25);
+  box-shadow: 0 0 20px rgba(52,211,153,0.1), 0 0 50px rgba(139,92,246,0.06);
+}
+
+[data-theme="carbon"] {
+  --bg:        #0f1117;
+  --fg:        #e2e8f0;
+  --muted:     #64748b;
+  --link:      #60a5fa;
+  --border:    #1e2532;
+  --code-bg:   #080b10;
+  --bar-bg:    #0a0d13;
+  --bar-fg:    #94a3b8;
+  --bar-border:#1e2532;
+  --font:      system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="carbon"] #nw-bar {
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05);
+}
+
+[data-theme="carbon"] #content h1,
+[data-theme="carbon"] #content h2,
+[data-theme="carbon"] #content h3 {
+  color: #f1f5f9;
+  letter-spacing: -0.02em;
+}
+
+[data-theme="carbon"] #content a {
+  text-decoration: none;
+  border-bottom: 1px solid rgba(96,165,250,0.25);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+[data-theme="carbon"] #content a:hover {
+  color: #93c5fd;
+  border-bottom-color: #60a5fa;
+}
+
+[data-theme="carbon"] #content blockquote {
+  border-left-color: #2563eb;
+  color: #94a3b8;
+}
+
+[data-theme="carbon"] .nw-image-frame {
+  box-shadow: 0 0 0 1px rgba(96,165,250,0.08), 0 4px 16px rgba(0,0,0,0.5);
+}
+
+[data-theme="cats"] {
+  --bg:        #0d0a1a;
+  --fg:        #f0e8d0;
+  --muted:     #8a7a60;
+  --link:      #ffb347;
+  --border:    rgba(255,179,71,0.2);
+  --code-bg:   rgba(20,10,35,0.85);
+  --bar-bg:    rgba(10,7,20,0.97);
+  --bar-fg:    #ffb347;
+  --bar-border:rgba(80,40,120,0.9);
+  --font:      system-ui, sans-serif;
+}
+
+/* moon + night sky + tiled stars on body background */
+[data-theme="cats"] body {
+  background-color: #0d0a1a;
+  background-image:
+    radial-gradient(circle 80px at 75% 15%, rgba(255,252,220,1) 0%, rgba(255,245,180,0.9) 45%, transparent 70%),
+    radial-gradient(circle 220px at 75% 15%, rgba(255,240,150,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 65% 45% at 20% 65%, rgba(80,20,120,0.38) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 55% at 82% 82%, rgba(40,10,80,0.28) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 30% at 48% 28%, rgba(60,15,100,0.18) 0%, transparent 65%),
+    radial-gradient(circle, rgba(255,255,255,0.55) 1px, transparent 1px) 30px  60px  / 180px 160px,
+    radial-gradient(circle, rgba(255,255,255,0.4)  1px, transparent 1px) 90px  20px  / 220px 200px,
+    radial-gradient(circle, rgba(255,255,255,0.5)  1px, transparent 1px) 150px 90px  / 160px 180px,
+    radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1px) 60px  140px / 240px 220px,
+    radial-gradient(circle, rgba(255,255,255,0.45) 1px, transparent 1px) 120px 50px  / 200px 170px,
+    radial-gradient(circle, rgba(255,255,255,0.3)  1px, transparent 1px) 10px  100px / 190px 210px;
+  background-attachment: fixed;
+}
+
+@keyframes nw-catspin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.nw-spinning-cat {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  animation: nw-catspin linear infinite;
+  filter: drop-shadow(0 0 6px rgba(255,179,71,0.55));
+  transform-origin: center center;
+}
+
+[data-theme="cats"] #content {
+  position: relative;
+  z-index: 1;
+  background: rgba(13,10,26,0.76);
+  border: 1px solid rgba(255,179,71,0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+[data-theme="cats"] #content h1,
+[data-theme="cats"] #content h2,
+[data-theme="cats"] #content h3 {
+  color: #ffd080;
+  text-shadow: 0 0 16px rgba(255,179,71,0.4);
+}
+
+[data-theme="cats"] #content a {
+  display: inline-block;
+  padding: 0.3em 1.1em;
+  border: 1.5px solid rgba(255,179,71,0.55);
+  border-radius: 20px;
+  color: #ffb347;
+  text-decoration: none;
+  font-size: 0.88em;
+  background: rgba(255,179,71,0.06);
+  box-shadow: 0 0 10px rgba(255,179,71,0.12);
+  transition: all 0.2s;
+}
+
+[data-theme="cats"] #content a:hover {
+  background: rgba(255,179,71,0.16);
+  border-color: #ffb347;
+  box-shadow: 0 0 20px rgba(255,179,71,0.42);
+}
+
+[data-theme="cats"] #nw-bar {
+  box-shadow: 0 1px 20px rgba(80,20,120,0.5);
+}
+
+[data-theme="cats"] .nw-logo {
+  color: #ffb347;
+  text-shadow: 0 0 10px rgba(255,179,71,0.5);
+}
+
+[data-theme="cats"] #nw-bar select {
+  background: rgba(10,7,20,0.95);
+  border-color: rgba(255,179,71,0.35);
+}
+
+[data-theme="cats"] dialog {
+  background: rgba(10,7,20,0.96);
+  border-color: rgba(255,179,71,0.35);
+  box-shadow: 0 0 40px rgba(255,179,71,0.18);
+}
+
+[data-theme="cats"] .nw-image-frame {
+  border: 1.5px solid rgba(255,179,71,0.55);
+  border-radius: 16px;
+  background: rgba(20,10,35,0.85);
+  box-shadow: 0 0 14px rgba(255,179,71,0.16);
+}
+
+[data-theme="cats"] .nw-image-frame__caption {
+  color: #8a7a60;
+}
+
+[data-theme="cyber"] {
+  --bg:        #08000f;
+  --fg:        #f0e6ff;
+  --muted:     #7c3aed;
+  --link:      #00f5d4;
+  --border:    rgba(247,37,133,0.2);
+  --code-bg:   rgba(18,0,36,0.9);
+  --bar-bg:    rgba(4,0,12,0.97);
+  --bar-fg:    #f72585;
+  --bar-border:rgba(114,9,183,0.55);
+  --font:      'Courier New', monospace;
+}
+
+/* purple grid */
+[data-theme="cyber"] body {
+  background-color: #08000f;
+  background-image:
+    linear-gradient(rgba(114,9,183,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(114,9,183,0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* pulsing neon glow at top */
+@keyframes nw-cyber-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1;   }
+}
+
+[data-theme="cyber"] body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 220px;
+  background: radial-gradient(ellipse 70% 100% at 50% 0%, rgba(247,37,133,0.18) 0%, transparent 75%);
+  pointer-events: none;
+  z-index: -1;
+  animation: nw-cyber-pulse 3.5s ease-in-out infinite;
+}
+
+[data-theme="cyber"] body::after {
+  content: '';
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 180px;
+  background: radial-gradient(ellipse 50% 100% at 50% 100%, rgba(0,245,212,0.09) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+[data-theme="cyber"] #content {
+  position: relative;
+  z-index: 1;
+  background: rgba(8,0,15,0.82);
+  border: 1px solid rgba(247,37,133,0.18);
+  border-radius: 2px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+[data-theme="cyber"] #content h1,
+[data-theme="cyber"] #content h2,
+[data-theme="cyber"] #content h3 {
+  color: #f72585;
+  text-shadow: 0 0 12px rgba(247,37,133,0.85), 0 0 40px rgba(247,37,133,0.3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-theme="cyber"] #content a {
+  color: #00f5d4;
+  text-decoration: none;
+  text-shadow: 0 0 8px rgba(0,245,212,0.55);
+  transition: color 0.15s, text-shadow 0.15s;
+}
+
+[data-theme="cyber"] #content a:hover {
+  color: #80ffed;
+  text-shadow: 0 0 18px rgba(0,245,212,0.9), 0 0 40px rgba(0,245,212,0.3);
+}
+
+[data-theme="cyber"] #content blockquote {
+  border-left-color: rgba(247,37,133,0.5);
+  color: #7c3aed;
+}
+
+[data-theme="cyber"] #nw-bar {
+  box-shadow: 0 0 24px rgba(247,37,133,0.25);
+  letter-spacing: 0.03em;
+}
+
+[data-theme="cyber"] .nw-logo {
+  color: #f72585;
+  text-shadow: 0 0 12px rgba(247,37,133,0.9), 0 0 30px rgba(247,37,133,0.4);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+[data-theme="cyber"] #nw-bar select {
+  background: rgba(4,0,12,0.95);
+  border-color: rgba(247,37,133,0.3);
+  color: #f72585;
+}
+
+[data-theme="cyber"] dialog {
+  background: rgba(4,0,12,0.96);
+  border-color: rgba(247,37,133,0.3);
+  border-radius: 2px;
+  box-shadow: 0 0 40px rgba(247,37,133,0.18), 0 0 80px rgba(114,9,183,0.12);
+}
+
+[data-theme="cyber"] .nw-image-frame {
+  border-color: rgba(247,37,133,0.35);
+  border-radius: 2px;
+  box-shadow: 0 0 16px rgba(247,37,133,0.18), 0 0 40px rgba(114,9,183,0.1);
+}
+
+[data-theme="cyber"] .nw-image-frame__caption {
+  color: #7c3aed;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.75em;
+}
+
+[data-theme="dark"] {
+  --bg:        #1a1a1a;
+  --fg:        #e0e0e0;
+  --muted:     #999999;
+  --link:      #66aaff;
+  --border:    #333333;
+  --code-bg:   #242424;
+  --bar-bg:    #252525;
+  --bar-fg:    #cccccc;
+  --bar-border:#333333;
+}
+
+[data-theme="dark"] .nw-image-frame {
+  box-shadow: 0 0 10px rgba(102,170,255,0.12);
+}
+
+:root {
+  --font-mono: 'Courier New', monospace;
+  --width:     1024px;
+  --font-size: 18px;
+}
+
+[data-theme="default"] {
+  --bg:        #ffffff;
+  --fg:        #111111;
+  --muted:     #555555;
+  --link:      #0066cc;
+  --border:    #dddddd;
+  --code-bg:   #f4f4f4;
+  --bar-bg:    #f0f0f0;
+  --bar-fg:    #333333;
+  --bar-border:#cccccc;
+  --font:      system-ui, sans-serif;
+}
+
+[data-theme="nasa"] {
+  --bg:        #060b1a;
+  --fg:        #c8e6ff;
+  --muted:     #5a8ab0;
+  --link:      #4fc3f7;
+  --border:    rgba(79,195,247,0.2);
+  --code-bg:   rgba(0,20,60,0.85);
+  --bar-bg:    rgba(4,10,30,0.97);
+  --bar-fg:    #4fc3f7;
+  --bar-border:rgba(11,61,145,0.9);
+  --font:      system-ui, sans-serif;
+}
+
+/* nebula on body background — frees ::before and ::after for warp layers */
+[data-theme="nasa"] body {
+  background-color: #060b1a;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 10% 35%, rgba(11,61,145,0.5)  0%, transparent 70%),
+    radial-gradient(ellipse 55% 55% at 88% 60%, rgba(80,0,180,0.28)  0%, transparent 65%),
+    radial-gradient(ellipse 45% 35% at 60% 8%,  rgba(252,61,33,0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 35% 92%, rgba(0,80,180,0.22)  0%, transparent 55%);
+  background-attachment: fixed;
+}
+
+/* warp keyframes — ease-in so stars accelerate like jumping to warp */
+@keyframes nw-warp {
+  0%   { transform: scale(0.55); opacity: 0;   filter: blur(0px); }
+  6%   {                         opacity: 1;                       }
+  80%  {                                        filter: blur(0px); }
+  92%  {                         opacity: 0.8;  filter: blur(0.8px); }
+  100% { transform: scale(2.5);  opacity: 0;   filter: blur(1.5px); }
+}
+
+/* star layer 1 */
+[data-theme="nasa"] body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 1px; height: 1px;
+  z-index: -1;
+  pointer-events: none;
+  transform-origin: 50% 45%;
+  animation: nw-warp 5s ease-in infinite;
+  box-shadow:
+    47px 91px 0 rgba(255,255,255,0.35),  183px 37px 0 rgba(255,255,255,0.45),
+    291px 155px 0 rgba(255,255,255,0.3),  412px 68px 0 rgba(255,255,255,0.4),
+    538px 201px 0 rgba(255,255,255,0.35), 673px 44px 0 rgba(255,255,255,0.5),
+    789px 178px 0 rgba(255,255,255,0.3),  923px 92px 0 rgba(255,255,255,0.4),
+    1047px 166px 0 rgba(255,255,255,0.35),1182px 41px 0 rgba(255,255,255,0.45),
+    1298px 127px 0 rgba(255,255,255,0.3), 1421px 83px 0 rgba(255,255,255,0.4),
+    1543px 205px 0 rgba(255,255,255,0.35),78px 312px 0 rgba(255,255,255,0.3),
+    203px 278px 0 rgba(255,255,255,0.4),  341px 398px 0 rgba(255,255,255,0.35),
+    467px 343px 0 rgba(255,255,255,0.45), 589px 417px 0 rgba(255,255,255,0.3),
+    712px 289px 0 rgba(255,255,255,0.4),  834px 371px 0 rgba(255,255,255,0.35),
+    961px 245px 0 rgba(255,255,255,0.5),  1083px 389px 0 rgba(255,255,255,0.3),
+    1207px 322px 0 rgba(255,255,255,0.4), 1331px 456px 0 rgba(255,255,255,0.35),
+    1453px 278px 0 rgba(255,255,255,0.45),92px 521px 0 rgba(255,255,255,0.3),
+    217px 583px 0 rgba(255,255,255,0.4),  356px 498px 0 rgba(255,255,255,0.35),
+    478px 612px 0 rgba(255,255,255,0.3),  601px 534px 0 rgba(255,255,255,0.45),
+    724px 489px 0 rgba(255,255,255,0.35), 847px 567px 0 rgba(255,255,255,0.4),
+    972px 623px 0 rgba(255,255,255,0.3),  1095px 511px 0 rgba(255,255,255,0.35),
+    1218px 589px 0 rgba(255,255,255,0.45),1342px 532px 0 rgba(255,255,255,0.3),
+    1465px 601px 0 rgba(255,255,255,0.4), 63px 712px 0 rgba(255,255,255,0.35),
+    187px 678px 0 rgba(255,255,255,0.3),  309px 745px 0 rgba(255,255,255,0.45),
+    432px 689px 0 rgba(255,255,255,0.35), 558px 731px 0 rgba(255,255,255,0.3),
+    681px 698px 0 rgba(255,255,255,0.4),  803px 756px 0 rgba(255,255,255,0.35),
+    928px 723px 0 rgba(255,255,255,0.45), 1051px 789px 0 rgba(255,255,255,0.3),
+    1174px 712px 0 rgba(255,255,255,0.4), 1297px 768px 0 rgba(255,255,255,0.35),
+    1420px 734px 0 rgba(255,255,255,0.3), 104px 834px 0 rgba(255,255,255,0.4),
+    228px 867px 0 rgba(255,255,255,0.35), 352px 823px 0 rgba(255,255,255,0.45),
+    476px 891px 0 rgba(255,255,255,0.3),  601px 858px 0 rgba(255,255,255,0.4),
+    725px 912px 0 rgba(255,255,255,0.35), 848px 843px 0 rgba(255,255,255,0.3),
+    972px 887px 0 rgba(255,255,255,0.45), 1096px 834px 0 rgba(255,255,255,0.35),
+    1219px 901px 0 rgba(255,255,255,0.3), 1342px 856px 0 rgba(255,255,255,0.4),
+    1465px 923px 0 rgba(255,255,255,0.35),
+    280px 220px 0 rgba(150,200,255,0.7),  850px 440px 0 rgba(150,200,255,0.8),
+    1150px 670px 0 rgba(150,200,255,0.6), 730px 580px 0 rgba(180,220,255,0.75),
+    1400px 180px 0 rgba(150,200,255,0.7), 510px 350px 0 rgba(180,220,255,0.6),
+    600px 300px 0 1px white,              600px 300px 4px 0 rgba(255,255,255,0.12),
+    1000px 150px 0 1px rgba(200,230,255,0.95), 1000px 150px 4px 0 rgba(150,200,255,0.2),
+    400px 700px 0 1px white,              400px 700px 5px 0 rgba(255,255,255,0.1),
+    1300px 450px 0 1px rgba(200,230,255,0.9), 1300px 450px 3px 0 rgba(150,200,255,0.15),
+    200px 550px 0 1px white,              200px 550px 4px 0 rgba(255,255,255,0.12),
+    1100px 380px 0 1px rgba(255,240,200,0.9), 1100px 380px 5px 0 rgba(255,220,150,0.15);
+}
+
+/* star layer 2 — same stars, offset by half the period for seamless loop */
+[data-theme="nasa"] body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 1px; height: 1px;
+  z-index: -1;
+  pointer-events: none;
+  transform-origin: 50% 45%;
+  animation: nw-warp 5s ease-in infinite -2.5s;
+  box-shadow:
+    47px 91px 0 rgba(255,255,255,0.35),  183px 37px 0 rgba(255,255,255,0.45),
+    291px 155px 0 rgba(255,255,255,0.3),  412px 68px 0 rgba(255,255,255,0.4),
+    538px 201px 0 rgba(255,255,255,0.35), 673px 44px 0 rgba(255,255,255,0.5),
+    789px 178px 0 rgba(255,255,255,0.3),  923px 92px 0 rgba(255,255,255,0.4),
+    1047px 166px 0 rgba(255,255,255,0.35),1182px 41px 0 rgba(255,255,255,0.45),
+    1298px 127px 0 rgba(255,255,255,0.3), 1421px 83px 0 rgba(255,255,255,0.4),
+    1543px 205px 0 rgba(255,255,255,0.35),78px 312px 0 rgba(255,255,255,0.3),
+    203px 278px 0 rgba(255,255,255,0.4),  341px 398px 0 rgba(255,255,255,0.35),
+    467px 343px 0 rgba(255,255,255,0.45), 589px 417px 0 rgba(255,255,255,0.3),
+    712px 289px 0 rgba(255,255,255,0.4),  834px 371px 0 rgba(255,255,255,0.35),
+    961px 245px 0 rgba(255,255,255,0.5),  1083px 389px 0 rgba(255,255,255,0.3),
+    1207px 322px 0 rgba(255,255,255,0.4), 1331px 456px 0 rgba(255,255,255,0.35),
+    1453px 278px 0 rgba(255,255,255,0.45),92px 521px 0 rgba(255,255,255,0.3),
+    217px 583px 0 rgba(255,255,255,0.4),  356px 498px 0 rgba(255,255,255,0.35),
+    478px 612px 0 rgba(255,255,255,0.3),  601px 534px 0 rgba(255,255,255,0.45),
+    724px 489px 0 rgba(255,255,255,0.35), 847px 567px 0 rgba(255,255,255,0.4),
+    972px 623px 0 rgba(255,255,255,0.3),  1095px 511px 0 rgba(255,255,255,0.35),
+    1218px 589px 0 rgba(255,255,255,0.45),1342px 532px 0 rgba(255,255,255,0.3),
+    1465px 601px 0 rgba(255,255,255,0.4), 63px 712px 0 rgba(255,255,255,0.35),
+    187px 678px 0 rgba(255,255,255,0.3),  309px 745px 0 rgba(255,255,255,0.45),
+    432px 689px 0 rgba(255,255,255,0.35), 558px 731px 0 rgba(255,255,255,0.3),
+    681px 698px 0 rgba(255,255,255,0.4),  803px 756px 0 rgba(255,255,255,0.35),
+    928px 723px 0 rgba(255,255,255,0.45), 1051px 789px 0 rgba(255,255,255,0.3),
+    1174px 712px 0 rgba(255,255,255,0.4), 1297px 768px 0 rgba(255,255,255,0.35),
+    1420px 734px 0 rgba(255,255,255,0.3), 104px 834px 0 rgba(255,255,255,0.4),
+    228px 867px 0 rgba(255,255,255,0.35), 352px 823px 0 rgba(255,255,255,0.45),
+    476px 891px 0 rgba(255,255,255,0.3),  601px 858px 0 rgba(255,255,255,0.4),
+    725px 912px 0 rgba(255,255,255,0.35), 848px 843px 0 rgba(255,255,255,0.3),
+    972px 887px 0 rgba(255,255,255,0.45), 1096px 834px 0 rgba(255,255,255,0.35),
+    1219px 901px 0 rgba(255,255,255,0.3), 1342px 856px 0 rgba(255,255,255,0.4),
+    1465px 923px 0 rgba(255,255,255,0.35),
+    280px 220px 0 rgba(150,200,255,0.7),  850px 440px 0 rgba(150,200,255,0.8),
+    1150px 670px 0 rgba(150,200,255,0.6), 730px 580px 0 rgba(180,220,255,0.75),
+    1400px 180px 0 rgba(150,200,255,0.7), 510px 350px 0 rgba(180,220,255,0.6),
+    600px 300px 0 1px white,              600px 300px 4px 0 rgba(255,255,255,0.12),
+    1000px 150px 0 1px rgba(200,230,255,0.95), 1000px 150px 4px 0 rgba(150,200,255,0.2),
+    400px 700px 0 1px white,              400px 700px 5px 0 rgba(255,255,255,0.1),
+    1300px 450px 0 1px rgba(200,230,255,0.9), 1300px 450px 3px 0 rgba(150,200,255,0.15),
+    200px 550px 0 1px white,              200px 550px 4px 0 rgba(255,255,255,0.12),
+    1100px 380px 0 1px rgba(255,240,200,0.9), 1100px 380px 5px 0 rgba(255,220,150,0.15);
+}
+
+[data-theme="nasa"] #content {
+  background: rgba(6,11,26,0.72);
+  border: 1px solid rgba(79,195,247,0.12);
+  border-radius: 4px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+[data-theme="nasa"] #content h1,
+[data-theme="nasa"] #content h2,
+[data-theme="nasa"] #content h3 {
+  color: #7dd4f8;
+  text-shadow: 0 0 18px rgba(79,195,247,0.35);
+  letter-spacing: 0.03em;
+}
+
+[data-theme="nasa"] #content a {
+  display: inline-block;
+  padding: 0.28em 0.85em;
+  border: 1px solid rgba(79,195,247,0.55);
+  border-radius: 2px;
+  color: #4fc3f7;
+  text-decoration: none;
+  font-family: 'Courier New', monospace;
+  font-size: 0.82em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(79,195,247,0.04);
+  box-shadow: 0 0 8px rgba(79,195,247,0.12), inset 0 0 6px rgba(79,195,247,0.04);
+  transition: background 0.18s, box-shadow 0.18s, text-shadow 0.18s, border-color 0.18s;
+}
+
+[data-theme="nasa"] #content a:hover {
+  background: rgba(79,195,247,0.13);
+  border-color: #4fc3f7;
+  box-shadow: 0 0 18px rgba(79,195,247,0.38), inset 0 0 10px rgba(79,195,247,0.08);
+  text-shadow: 0 0 8px rgba(79,195,247,0.7);
+}
+
+[data-theme="nasa"] #nw-bar {
+  box-shadow: 0 1px 24px rgba(11,61,145,0.5);
+  letter-spacing: 0.03em;
+}
+
+[data-theme="nasa"] .nw-logo {
+  color: #4fc3f7;
+  text-shadow: 0 0 12px rgba(79,195,247,0.55);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 900;
+}
+
+[data-theme="nasa"] #nw-bar select {
+  background: rgba(4,10,30,0.95);
+  border-color: rgba(79,195,247,0.35);
+}
+
+[data-theme="nasa"] dialog {
+  background: rgba(4,10,30,0.96);
+  border-color: rgba(79,195,247,0.35);
+  box-shadow: 0 0 40px rgba(79,195,247,0.18);
+}
+
+[data-theme="nasa"] .nw-image-frame {
+  background: rgba(0,20,60,0.85);
+  border-color: rgba(79,195,247,0.45);
+  box-shadow: 0 0 16px rgba(79,195,247,0.22), inset 0 0 8px rgba(79,195,247,0.06);
+  border-radius: 2px;
+}
+
+[data-theme="nasa"] .nw-image-frame__caption {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75em;
+  letter-spacing: 0.08em;
+  color: #5a8ab0;
+  text-transform: uppercase;
+}
+
+[data-theme="newspaper"] {
+  --bg:        #f5f0e8;
+  --fg:        #1a1209;
+  --muted:     #5a4a3a;
+  --link:      #8b0000;
+  --border:    #c8b89a;
+  --code-bg:   #ede5d8;
+  --bar-bg:    #e8e0d0;
+  --bar-fg:    #1a1209;
+  --bar-border:#b8a890;
+  --font:      Georgia, 'Times New Roman', serif;
+}
+
+[data-theme="newspaper"] .nw-image-frame {
+  border: 3px double var(--border);
+  box-shadow: none;
+}
+
+[data-theme="newspaper"] .nw-image-frame__caption {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 0.78em;
+}
+
+[data-theme="stone"] {
+  --bg:        #fafaf9;
+  --fg:        #1c1917;
+  --muted:     #78716c;
+  --link:      #0f766e;
+  --border:    #e7e5e4;
+  --code-bg:   #f5f5f4;
+  --bar-bg:    #ffffff;
+  --bar-fg:    #1c1917;
+  --bar-border:#e7e5e4;
+  --font:      system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="stone"] #nw-bar {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+[data-theme="stone"] #content h1,
+[data-theme="stone"] #content h2,
+[data-theme="stone"] #content h3 {
+  color: #0c0a09;
+  letter-spacing: -0.02em;
+}
+
+[data-theme="stone"] #content a {
+  text-decoration: none;
+  border-bottom: 1px solid rgba(15,118,110,0.3);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+[data-theme="stone"] #content a:hover {
+  color: #0d9488;
+  border-bottom-color: #0f766e;
+}
+
+[data-theme="stone"] #content blockquote {
+  border-left-color: #0f766e;
+  color: #78716c;
+}
+
+[data-theme="stone"] .nw-image-frame {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+[data-theme="terminal"] {
+  --bg:        #0d0d0d;
+  --fg:        #00ff41;
+  --muted:     #00aa2a;
+  --link:      #00ff41;
+  --border:    #005515;
+  --code-bg:   #001a07;
+  --bar-bg:    #050505;
+  --bar-fg:    #00ff41;
+  --bar-border:#005515;
+  --font:      'Courier New', monospace;
+}
+
+[data-theme="terminal"] .nw-image-frame {
+  box-shadow: 0 0 8px rgba(0,255,65,0.15);
+}
+
+[data-theme="warm"] {
+  --bg:        #fdf6ec;
+  --fg:        #3d2b1f;
+  --muted:     #7a5c44;
+  --link:      #b05c2a;
+  --border:    #e0cdb8;
+  --code-bg:   #f5ece0;
+  --bar-bg:    #f0e4d0;
+  --bar-fg:    #3d2b1f;
+  --bar-border:#d4b898;
+  --font:      Georgia, serif;
+}
+
+[data-theme="warm"] .nw-image-frame {
+  border: 2px solid #c8a87a;
+  box-shadow: 0 2px 6px rgba(100,60,20,0.12);
+}
+
+[data-theme="warm"] .nw-image-frame__caption {
+  font-family: Georgia, serif;
+  font-style: italic;
+}
+</style>
+</head>
+<body>
+  <div id="nw-bar">
+    <span class="nw-logo">Powered by NewWeb</span>
+    <button id="nw-hamburger" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <div id="nw-bar-menu">
+      <button id="nw-view-data">View Data</button>
+      <button id="nw-anim-toggle">Stop Animations</button>
+      <button id="nw-settings">Settings</button>
+      <label for="nw-theme-select" style="opacity:0.6">Theme</label>
+      <select id="nw-theme-select">
+        <option value="default">Default</option>
+        <option value="carbon">Carbon</option>
+        <option value="stone">Stone</option>
+        <option value="newspaper">Newspaper</option>
+        <option value="dark">Dark</option>
+        <option value="terminal">Terminal</option>
+        <option value="warm">Warm</option>
+        <option value="nasa">NASA</option>
+        <option value="aurora">Aurora</option>
+        <option value="cyber">Cyber</option>
+        <option value="cats">Cats</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="content"><p>Loading…</p></div>
+  <div id="nw-spinner"></div>
+
+  <script type="module">
+// build/pkg/engine.js
+function render(md) {
+  let deferred2_0;
+  let deferred2_1;
+  try {
+    const ptr0 = passStringToWasm0(md, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.render(ptr0, len0);
+    deferred2_0 = ret[0];
+    deferred2_1 = ret[1];
+    return getStringFromWasm0(ret[0], ret[1]);
+  } finally {
+    wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+  }
+}
+function __wbg_get_imports() {
+  const import0 = {
+    __proto__: null,
+    __wbindgen_init_externref_table: function() {
+      const table = wasm.__wbindgen_externrefs;
+      const offset = table.grow(4);
+      table.set(0, void 0);
+      table.set(offset + 0, void 0);
+      table.set(offset + 1, null);
+      table.set(offset + 2, true);
+      table.set(offset + 3, false);
+    }
+  };
+  return {
+    __proto__: null,
+    "./engine_bg.js": import0
+  };
+}
+function getStringFromWasm0(ptr, len) {
+  return decodeText(ptr >>> 0, len);
+}
+var cachedUint8ArrayMemory0 = null;
+function getUint8ArrayMemory0() {
+  if (cachedUint8ArrayMemory0 === null || cachedUint8ArrayMemory0.byteLength === 0) {
+    cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
+  }
+  return cachedUint8ArrayMemory0;
+}
+function passStringToWasm0(arg, malloc, realloc) {
+  if (realloc === void 0) {
+    const buf = cachedTextEncoder.encode(arg);
+    const ptr2 = malloc(buf.length, 1) >>> 0;
+    getUint8ArrayMemory0().subarray(ptr2, ptr2 + buf.length).set(buf);
+    WASM_VECTOR_LEN = buf.length;
+    return ptr2;
+  }
+  let len = arg.length;
+  let ptr = malloc(len, 1) >>> 0;
+  const mem = getUint8ArrayMemory0();
+  let offset = 0;
+  for (; offset < len; offset++) {
+    const code = arg.charCodeAt(offset);
+    if (code > 127) break;
+    mem[ptr + offset] = code;
+  }
+  if (offset !== len) {
+    if (offset !== 0) {
+      arg = arg.slice(offset);
+    }
+    ptr = realloc(ptr, len, len = offset + arg.length * 3, 1) >>> 0;
+    const view = getUint8ArrayMemory0().subarray(ptr + offset, ptr + len);
+    const ret = cachedTextEncoder.encodeInto(arg, view);
+    offset += ret.written;
+    ptr = realloc(ptr, len, offset, 1) >>> 0;
+  }
+  WASM_VECTOR_LEN = offset;
+  return ptr;
+}
+var cachedTextDecoder = new TextDecoder("utf-8", { ignoreBOM: true, fatal: true });
+cachedTextDecoder.decode();
+var MAX_SAFARI_DECODE_BYTES = 2146435072;
+var numBytesDecoded = 0;
+function decodeText(ptr, len) {
+  numBytesDecoded += len;
+  if (numBytesDecoded >= MAX_SAFARI_DECODE_BYTES) {
+    cachedTextDecoder = new TextDecoder("utf-8", { ignoreBOM: true, fatal: true });
+    cachedTextDecoder.decode();
+    numBytesDecoded = len;
+  }
+  return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
+}
+var cachedTextEncoder = new TextEncoder();
+if (!("encodeInto" in cachedTextEncoder)) {
+  cachedTextEncoder.encodeInto = function(arg, view) {
+    const buf = cachedTextEncoder.encode(arg);
+    view.set(buf);
+    return {
+      read: arg.length,
+      written: buf.length
+    };
+  };
+}
+var WASM_VECTOR_LEN = 0;
+var wasmModule;
+var wasmInstance;
+var wasm;
+function __wbg_finalize_init(instance, module) {
+  wasmInstance = instance;
+  wasm = instance.exports;
+  wasmModule = module;
+  cachedUint8ArrayMemory0 = null;
+  wasm.__wbindgen_start();
+  return wasm;
+}
+async function __wbg_load(module, imports) {
+  if (typeof Response === "function" && module instanceof Response) {
+    if (typeof WebAssembly.instantiateStreaming === "function") {
+      try {
+        return await WebAssembly.instantiateStreaming(module, imports);
+      } catch (e) {
+        const validResponse = module.ok && expectedResponseType(module.type);
+        if (validResponse && module.headers.get("Content-Type") !== "application/wasm") {
+          console.warn("`WebAssembly.instantiateStreaming` failed because your server does not serve Wasm with `application/wasm` MIME type. Falling back to `WebAssembly.instantiate` which is slower. Original error:\n", e);
+        } else {
+          throw e;
+        }
+      }
+    }
+    const bytes = await module.arrayBuffer();
+    return await WebAssembly.instantiate(bytes, imports);
+  } else {
+    const instance = await WebAssembly.instantiate(module, imports);
+    if (instance instanceof WebAssembly.Instance) {
+      return { instance, module };
+    } else {
+      return instance;
+    }
+  }
+  function expectedResponseType(type) {
+    switch (type) {
+      case "basic":
+      case "cors":
+      case "default":
+        return true;
+    }
+    return false;
+  }
+}
+async function __wbg_init(module_or_path) {
+  if (wasm !== void 0) return wasm;
+  if (module_or_path !== void 0) {
+    if (Object.getPrototypeOf(module_or_path) === Object.prototype) {
+      ({ module_or_path } = module_or_path);
+    } else {
+      console.warn("using deprecated parameters for the initialization function; pass a single object instead");
+    }
+  }
+  if (module_or_path === void 0) {
+    module_or_path = new URL("engine_bg.wasm", import.meta.url);
+  }
+  const imports = __wbg_get_imports();
+  if (typeof module_or_path === "string" || typeof Request === "function" && module_or_path instanceof Request || typeof URL === "function" && module_or_path instanceof URL) {
+    module_or_path = fetch(module_or_path);
+  }
+  const { instance, module } = await __wbg_load(await module_or_path, imports);
+  return __wbg_finalize_init(instance, module);
+}
+
+// src/settings.ts
+var MAX_IMAGE_KB_KEY = "nw-settings-max-image-kb";
+var DEFAULT_MAX_IMAGE_KB = 200;
+function getMaxImageKb() {
+  const val = parseInt(localStorage.getItem(MAX_IMAGE_KB_KEY) ?? "", 10);
+  return isNaN(val) || val <= 0 ? DEFAULT_MAX_IMAGE_KB : val;
+}
+function setMaxImageKb(kb) {
+  localStorage.setItem(MAX_IMAGE_KB_KEY, String(kb));
+}
+function showSettingsModal() {
+  document.querySelectorAll("dialog").forEach((d) => d.remove());
+  const dlg = document.createElement("dialog");
+  dlg.className = "nw-settings-modal";
+  const h2 = document.createElement("h2");
+  h2.textContent = "Settings";
+  dlg.appendChild(h2);
+  const section = document.createElement("section");
+  section.className = "nw-settings-section";
+  const h3 = document.createElement("h3");
+  h3.textContent = "Images";
+  section.appendChild(h3);
+  const row = document.createElement("label");
+  row.className = "nw-settings-row";
+  const rowLabel = document.createElement("span");
+  rowLabel.textContent = "Max auto-load size (KB)";
+  const input = document.createElement("input");
+  input.type = "number";
+  input.id = "nw-setting-max-img-kb";
+  input.min = "1";
+  input.max = "10240";
+  input.value = String(getMaxImageKb());
+  row.appendChild(rowLabel);
+  row.appendChild(input);
+  section.appendChild(row);
+  const hint = document.createElement("p");
+  hint.className = "nw-settings-hint";
+  hint.textContent = "Images larger than this require a manual click to load.";
+  section.appendChild(hint);
+  dlg.appendChild(section);
+  const actions = document.createElement("div");
+  actions.className = "nw-settings-actions";
+  const save = document.createElement("button");
+  save.className = "nw-settings-save";
+  save.textContent = "Save";
+  save.addEventListener("click", () => {
+    const val = parseInt(input.value, 10);
+    if (!isNaN(val) && val > 0) setMaxImageKb(val);
+    dlg.remove();
+  });
+  const cancel = document.createElement("button");
+  cancel.className = "nw-settings-cancel";
+  cancel.textContent = "Cancel";
+  cancel.addEventListener("click", () => dlg.remove());
+  actions.appendChild(save);
+  actions.appendChild(cancel);
+  dlg.appendChild(actions);
+  document.body.appendChild(dlg);
+  dlg.showModal();
+}
+document.getElementById("nw-settings").addEventListener("click", showSettingsModal);
+
+// src/ui.ts
+function closeModals() {
+  document.querySelectorAll("dialog").forEach((d) => d.remove());
+}
+function parseWasmDirectives(a) {
+  let node = a.parentElement;
+  let desc = "";
+  const keys = [];
+  while (node) {
+    node = node.previousSibling;
+    if (!node) break;
+    if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim() === "") continue;
+    if (node.nodeType !== Node.COMMENT_NODE) break;
+    const text = node.data.trim();
+    const reasonMatch = text.match(/^script_reasoning\s*:\s*([\s\S]*)/i);
+    const dataMatch = text.match(/^data\s*:\s*([\s\S]*)/i);
+    if (reasonMatch) desc = reasonMatch[1].trim();
+    if (dataMatch) keys.push(...dataMatch[1].split(",").map((s) => s.trim()).filter(Boolean));
+  }
+  return { desc, keys };
+}
+async function checkSize(src) {
+  if (src.startsWith("data:")) return true;
+  try {
+    const res = await fetch(src, { method: "HEAD" });
+    const cl = res.headers.get("content-length");
+    if (cl === null) return true;
+    return parseInt(cl, 10) <= getMaxImageKb() * 1024;
+  } catch {
+    return true;
+  }
+}
+function showLightbox(src, alt) {
+  const dlg = document.createElement("dialog");
+  dlg.className = "nw-lightbox";
+  const close = document.createElement("button");
+  close.className = "nw-lightbox__close";
+  close.textContent = "\xD7";
+  close.setAttribute("aria-label", "Close");
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = alt;
+  dlg.appendChild(close);
+  dlg.appendChild(img);
+  if (alt) {
+    const cap = document.createElement("figcaption");
+    cap.className = "nw-lightbox__caption";
+    cap.textContent = alt;
+    dlg.appendChild(cap);
+  }
+  dlg.addEventListener("click", () => dlg.remove());
+  document.body.appendChild(dlg);
+  dlg.showModal();
+}
+function buildFrame(src, alt) {
+  const fig = document.createElement("figure");
+  fig.className = "nw-image-frame";
+  const img = document.createElement("img");
+  img.src = src;
+  img.alt = alt;
+  img.className = "nw-image-frame__img";
+  fig.appendChild(img);
+  if (alt) {
+    const cap = document.createElement("figcaption");
+    cap.className = "nw-image-frame__caption";
+    cap.textContent = alt;
+    fig.appendChild(cap);
+  }
+  fig.addEventListener("click", () => showLightbox(src, alt));
+  return fig;
+}
+function buildFallback(src, alt) {
+  const btn = document.createElement("button");
+  const text = "Image size is beyond set limit, click to load it anyway.";
+  btn.className = "nw-img-load-btn";
+  btn.textContent = alt ? `${alt} \u2014 ${text}` : text;
+  btn.addEventListener("click", () => btn.replaceWith(buildFrame(src, alt)));
+  return btn;
+}
+async function processImages(container) {
+  const placeholders = Array.from(
+    container.querySelectorAll("span.nw-img-placeholder")
+  );
+  await Promise.all(placeholders.map(async (span) => {
+    const src = span.dataset.src ?? "";
+    const alt = span.dataset.alt ?? "";
+    const allowed = await checkSize(src);
+    span.replaceWith(allowed ? buildFrame(src, alt) : buildFallback(src, alt));
+  }));
+}
+function annotateLinks(container) {
+  container.querySelectorAll("a[href]").forEach((el) => {
+    const a = el;
+    const href = a.getAttribute("href");
+    if (href.startsWith("http://") || href.startsWith("https://")) {
+      a.insertAdjacentHTML("beforeend", `<span class="nw-link-icon" aria-hidden="true">\u{1F310}</span>`);
+    } else if (href.startsWith("wasm:")) {
+      const { desc, keys } = parseWasmDirectives(a);
+      a.dataset.desc = desc;
+      a.dataset.keys = keys.join(",");
+      a.insertAdjacentHTML(
+        "afterend",
+        `<button class="nw-wasm-info" data-href="${href}" data-desc="${desc}" data-keys="${keys.join(",")}" aria-label="Script info">\u2699</button>`
+      );
+    }
+  });
+}
+function renderPage(md) {
+  closeModals();
+  const content = document.getElementById("content");
+  const html = window.newwebRender(md).replace(
+    /<img\b([^>]*)>/gi,
+    (_, attrs) => {
+      const src = (attrs.match(/src="([^"]*)"/) ?? [])[1] ?? "";
+      const alt = (attrs.match(/alt="([^"]*)"/) ?? [])[1] ?? "";
+      return `<span class="nw-img-placeholder" data-src="${src}" data-alt="${alt}"></span>`;
+    }
+  );
+  content.innerHTML = html;
+  annotateLinks(content);
+  void processImages(content);
+}
+function showToast(md, type) {
+  const el = document.createElement("div");
+  el.className = `nw-toast nw-toast-${type}`;
+  el.innerHTML = window.newwebRender ? window.newwebRender(md) : md;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3e3);
+}
+function showModal(md, closeLabel = "Close") {
+  closeModals();
+  const dlg = document.createElement("dialog");
+  dlg.innerHTML = `<div class="nw-modal-body">${window.newwebRender ? window.newwebRender(md) : md}</div>
+    <button class="nw-modal-close" autofocus>${closeLabel}</button>`;
+  dlg.querySelector(".nw-modal-close").addEventListener("click", () => {
+    if (dlg.onCancel) dlg.onCancel();
+    dlg.remove();
+  });
+  document.body.appendChild(dlg);
+  dlg.showModal();
+  return dlg;
+}
+function showSpinner() {
+  let s = document.getElementById("nw-spinner");
+  if (!s) {
+    s = document.createElement("div");
+    s.id = "nw-spinner";
+    document.body.appendChild(s);
+  }
+  s.style.display = "block";
+}
+function hideSpinner() {
+  const s = document.getElementById("nw-spinner");
+  if (s) s.style.display = "none";
+}
+function showSuspendedBar(url) {
+  const bar = document.createElement("div");
+  bar.id = "nw-suspended";
+  bar.innerHTML = `Redirect to <b>${url}</b> was cancelled.
+    <button id="nw-continue">Continue</button>
+    <button id="nw-dismiss">Dismiss</button>`;
+  bar.querySelector("#nw-continue").addEventListener("click", () => {
+    window.location.href = url;
+  });
+  bar.querySelector("#nw-dismiss").addEventListener("click", () => bar.remove());
+  document.body.appendChild(bar);
+}
+
+// src/wasm.ts
+var GoTiny = null;
+async function loadTinyRuntime() {
+  if (GoTiny) return;
+  await new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "engine/lib/wasm_exec_tiny.js";
+    s.onload = () => {
+      GoTiny = Go;
+      resolve();
+    };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+async function loadAndExecute(file) {
+  await loadTinyRuntime();
+  const bytes = await fetch(file).then((r) => r.arrayBuffer());
+  const go = new GoTiny();
+  const module = await WebAssembly.instantiate(bytes, go.importObject);
+  await go.run(module.instance);
+}
+async function handleWasm(a) {
+  if (a.dataset.pending) return;
+  a.dataset.pending = "true";
+  showSpinner();
+  const { file } = parseWasmUrl(a.getAttribute("href"));
+  await loadAndExecute(file);
+  delete a.dataset.pending;
+  hideSpinner();
+}
+function parseWasmUrl(href) {
+  const withoutProtocol = href.replace("wasm:", "");
+  const [file, qs] = withoutProtocol.split("?");
+  const params = {};
+  if (qs) qs.split("&").forEach((p) => {
+    const [k, v] = p.split("=");
+    params[k] = v;
+  });
+  return { file, params };
+}
+
+// src/theme.ts
+var CAT_DEFS = [
+  { x: "6%", y: "22%", size: 64, dur: 4, delay: 0 },
+  { x: "83%", y: "14%", size: 48, dur: 6.2, delay: -2.1 },
+  { x: "13%", y: "70%", size: 56, dur: 5.1, delay: -1.3 },
+  { x: "77%", y: "66%", size: 52, dur: 7.8, delay: -3.5 },
+  { x: "46%", y: "80%", size: 44, dur: 3.4, delay: -0.7 },
+  { x: "90%", y: "44%", size: 60, dur: 8.3, delay: -4.1 },
+  { x: "2%", y: "48%", size: 46, dur: 4.7, delay: -1.8 },
+  { x: "60%", y: "30%", size: 50, dur: 5.9, delay: -2.9 }
+];
+function addCats() {
+  removeCats();
+  CAT_DEFS.forEach((d) => {
+    const img = document.createElement("img");
+    img.src = "engine/img/cat.svg";
+    img.className = "nw-spinning-cat";
+    img.style.cssText = `left:${d.x};top:${d.y};width:${d.size}px;height:${d.size}px;animation-duration:${d.dur}s;animation-delay:${d.delay}s`;
+    document.body.appendChild(img);
+  });
+}
+function removeCats() {
+  document.querySelectorAll(".nw-spinning-cat").forEach((el) => el.remove());
+}
+var VALID_THEMES = ["default", "carbon", "stone", "dark", "newspaper", "terminal", "warm", "nasa", "aurora", "cyber", "cats"];
+var pageSuggestions = [];
+function getSuggestedTheme() {
+  for (const name of pageSuggestions) {
+    const q = name.trim().toLowerCase();
+    const match = VALID_THEMES.find((t) => t.startsWith(q));
+    if (match) return match;
+  }
+  return null;
+}
+function annotateSuggestion(suggested) {
+  const sel = document.getElementById("nw-theme-select");
+  Array.from(sel.options).forEach((opt) => {
+    const base = opt.text.replace(" (site default)", "");
+    opt.text = opt.value === suggested ? `${base} (site default)` : base;
+  });
+}
+function suggestTheme(names) {
+  pageSuggestions = names;
+  const suggested = getSuggestedTheme();
+  annotateSuggestion(suggested);
+  if (suggested && !localStorage.getItem("nw-theme")) {
+    applyTheme(suggested);
+  }
+}
+function applyTheme(theme) {
+  const sel = document.getElementById("nw-theme-select");
+  document.documentElement.setAttribute("data-theme", theme);
+  sel.value = theme;
+  if (theme === "cats") addCats();
+  else removeCats();
+}
+function applyAnimPaused(paused) {
+  const btn = document.getElementById("nw-anim-toggle");
+  document.documentElement.classList.toggle("nw-paused", paused);
+  btn.textContent = paused ? "Resume Animations" : "Stop Animations";
+}
+var hamburger = document.getElementById("nw-hamburger");
+var barMenu = document.getElementById("nw-bar-menu");
+hamburger.addEventListener("click", () => {
+  const open = barMenu.classList.toggle("open");
+  hamburger.setAttribute("aria-expanded", String(open));
+});
+var savedPaused = localStorage.getItem("nw-paused") === "true";
+applyAnimPaused(savedPaused);
+document.getElementById("nw-anim-toggle").addEventListener("click", () => {
+  const paused = !document.documentElement.classList.contains("nw-paused");
+  applyAnimPaused(paused);
+  localStorage.setItem("nw-paused", String(paused));
+});
+var savedTheme = localStorage.getItem("nw-theme");
+if (savedTheme) applyTheme(savedTheme);
+document.getElementById("nw-theme-select").addEventListener("change", (e) => {
+  const value = e.target.value;
+  applyTheme(value);
+  localStorage.setItem("nw-theme", value);
+});
+
+// src/template.ts
+function interpolate(text, ctx) {
+  return text.replace(/\$\{([^}]+)\}/g, (_, key) => {
+    const val = ctx[key.trim()];
+    return val != null ? String(val) : "";
+  });
+}
+async function processForeach(md, data) {
+  const pattern = /<!--\s*foreach:\s+(\S+)\s+use\s+(\S+)\s*-->/g;
+  const matches = [...md.matchAll(pattern)];
+  if (matches.length === 0) return md;
+  const urls = [...new Set(
+    matches.filter((m) => Array.isArray(data[m[1]]) && data[m[1]].length > 0).map((m) => m[2])
+  )];
+  const partialMap = /* @__PURE__ */ new Map();
+  await Promise.all(urls.map(async (url) => {
+    partialMap.set(url, await fetch(url).then((r) => r.text()));
+  }));
+  return md.replace(pattern, (_, arrayKey, url) => {
+    const arr = data[arrayKey];
+    if (!Array.isArray(arr)) return "";
+    const partial = partialMap.get(url);
+    return arr.map((item) => {
+      const ctx = typeof item === "object" && item !== null ? item : {};
+      return interpolate(partial, ctx);
+    }).join("\n");
+  });
+}
+async function processIf(md, data) {
+  const pattern = /<!--\s*if:\s+(\S+)\s+use\s+(\S+)\s*-->/g;
+  const matches = [...md.matchAll(pattern)];
+  if (matches.length === 0) return md;
+  const urls = [...new Set(matches.filter((m) => data[m[1]]).map((m) => m[2]))];
+  const partialMap = /* @__PURE__ */ new Map();
+  await Promise.all(urls.map(async (url) => {
+    partialMap.set(url, await fetch(url).then((r) => r.text()));
+  }));
+  return md.replace(pattern, (_, boolKey, url) => {
+    if (!data[boolKey]) return "";
+    return interpolate(partialMap.get(url), data);
+  });
+}
+async function processTemplate(md, data) {
+  let result = interpolate(md, data);
+  result = await processForeach(result, data);
+  result = await processIf(result, data);
+  return result;
+}
+
+// src/nav.ts
+var COMMON_TLDS = [".com", ".org", ".net", ".io", ".dev", ".app", ".co", ".edu", ".gov", ".uk", ".ca", ".au"];
+function looksLikeBareUrl(href) {
+  return COMMON_TLDS.some((tld) => href.includes(tld));
+}
+function fetchMd(url) {
+  return fetch(url).then((r) => r.text());
+}
+function applyThemeSuggestion(md) {
+  const match = md.match(/<!--\s*themes?\s*:\s*([^-]+?)-->/i);
+  if (match) suggestTheme(match[1].split(","));
+}
+function extractRefreshWasm(md) {
+  const match = md.match(/<!--\s*refresh\s*:\s*(\S+)\s*-->/i);
+  return match ? match[1] : null;
+}
+async function navigateTo(path) {
+  const mdPath = path.endsWith(".md") ? path : `${path}.md`;
+  const md = await fetchMd(mdPath);
+  applyThemeSuggestion(md);
+  history.pushState({ mdUrl: mdPath }, "", "#" + mdPath);
+  renderPage(md);
+}
+async function navigateWithData(path, data) {
+  const mdPath = path.endsWith(".md") ? path : `${path}.md`;
+  const raw = await fetchMd(mdPath);
+  applyThemeSuggestion(raw);
+  const md = await processTemplate(raw, data);
+  history.pushState({ mdUrl: mdPath }, "", "#" + mdPath);
+  renderPage(md);
+}
+async function renderNoData(mdPath) {
+  const raw = await fetchMd(mdPath);
+  applyThemeSuggestion(raw);
+  const refreshWasm = extractRefreshWasm(raw);
+  if (refreshWasm) {
+    const notice = `> _This page requires data to display._ [Load now](wasm:${refreshWasm})
+
+`;
+    renderPage(await processTemplate(notice + raw, {}));
+  } else {
+    renderPage(raw);
+  }
+}
+async function replacePage(path) {
+  const mdPath = path.endsWith(".md") ? path : `${path}.md`;
+  history.replaceState({ mdUrl: mdPath }, "", "#" + mdPath);
+  await renderNoData(mdPath);
+}
+async function handleMore(a) {
+  const url = a.getAttribute("href").replace("more:", "");
+  const md = await fetchMd(url);
+  showModal(md);
+}
+async function handleNav(a) {
+  await navigateTo(a.getAttribute("href"));
+}
+function warnBareUrl(href) {
+  showToast(`Link "${href}" looks like a URL \u2014 did you mean https://${href}?`, "error");
+}
+function handleRedirect(url, reason) {
+  let crossDomain = false;
+  try {
+    crossDomain = new URL(url).hostname !== window.location.hostname;
+  } catch (_) {
+  }
+  if (!crossDomain) {
+    window.location.href = url;
+    return;
+  }
+  let count = 3;
+  const dlg = showModal(
+    `### Leaving site
+${reason ? `_${reason}_
+
+` : ""}Navigating to \`${url}\` in <span id="nw-countdown">${count}</span>s\u2026`,
+    "Cancel Redirect"
+  );
+  const countEl = () => dlg.querySelector("#nw-countdown");
+  const interval = setInterval(() => {
+    count--;
+    if (countEl()) countEl().textContent = String(count);
+    if (count === 0) {
+      clearInterval(interval);
+      dlg.remove();
+      window.location.href = url;
+    }
+  }, 1e3);
+  dlg.onCancel = () => {
+    clearInterval(interval);
+    suspendPage(url);
+  };
+}
+function suspendPage(url) {
+  document.querySelectorAll('a[href^="wasm:"]').forEach((a) => a.dataset.suspended = "true");
+  showSuspendedBar(url);
+}
+
+// src/engine.ts
+var store = /* @__PURE__ */ new Map();
+var allowedKeys = /* @__PURE__ */ new Set();
+function dataModalMd() {
+  const entries = [...store.entries()];
+  const dataBlock = entries.length ? "```\n" + JSON.stringify(Object.fromEntries(entries), null, 2) + "\n```" : "_No data stored yet._";
+  return `### Your Session Data
+
+This data exists only for your current browser session \u2014 it is cleared when you leave or refresh the page. Sites use session data for logins, personalization, and data access.
+
+---
+
+${dataBlock}
+
+[Clear all data](nw:cleardata)`;
+}
+function showDataModal() {
+  showModal(dataModalMd());
+}
+function buildInfoMd(desc, keys) {
+  const reasonSection = desc.trim() ? `### Why this script?
+${desc}` : `### \u26A0 No description provided
+The author of this page did not explain why this script needs to run.`;
+  const dataSection = keys.length ? `
+
+### Data requested
+This script will access: ${keys.map((k) => `\`${k}\``).join(", ")}
+
+These values will be read from your session.` : "";
+  return reasonSection + dataSection + `
+
+[View your session data](nw:viewdata)`;
+}
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".nw-wasm-info");
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const desc = btn.dataset.desc ?? "";
+  const keys = btn.dataset.keys ? btn.dataset.keys.split(",").filter(Boolean) : [];
+  showModal(buildInfoMd(desc, keys));
+});
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a");
+  if (!a) return;
+  const href = a.getAttribute("href");
+  if (!href || href.startsWith("#")) return;
+  if (href === "nw:viewdata") {
+    e.preventDefault();
+    showDataModal();
+    return;
+  }
+  if (href === "nw:cleardata") {
+    e.preventDefault();
+    store.clear();
+    const body = document.querySelector("dialog .nw-modal-body");
+    if (body) body.innerHTML = window.newwebRender(dataModalMd());
+    return;
+  }
+  if (href.startsWith("wasm:")) {
+    e.preventDefault();
+    allowedKeys = new Set((a.dataset.keys ?? "").split(",").filter(Boolean));
+    handleWasm(a).finally(() => {
+      allowedKeys = /* @__PURE__ */ new Set();
+    });
+    return;
+  }
+  if (href.startsWith("more:")) {
+    e.preventDefault();
+    handleMore(a);
+    return;
+  }
+  if (href.startsWith("custom://")) {
+    e.preventDefault();
+    handleNav(a);
+    return;
+  }
+  if (href.startsWith("http://") || href.startsWith("https://")) return;
+  e.preventDefault();
+  if (window.location.hostname === "localhost" && looksLikeBareUrl(href)) {
+    warnBareUrl(href);
+    return;
+  }
+  navigateTo(href);
+});
+window.addEventListener("popstate", async (e) => {
+  const url = e.state?.mdUrl ?? "main.md";
+  await renderNoData(url);
+});
+(async () => {
+  await __wbg_init(new URL("engine/build/pkg/engine_bg.wasm", location.href));
+  window.newwebRender = render;
+  window.newweb = {
+    redirect: (url, reason) => {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        handleRedirect(url, reason);
+      } else {
+        navigateTo(url);
+      }
+    },
+    replace: (url) => replacePage(url),
+    info: (md) => showToast(md, "info"),
+    error: (md) => showToast(md, "error"),
+    more: (md) => showModal(md),
+    load: (url, data) => navigateWithData(url, data),
+    store: (key, value) => {
+      store.set(key, value);
+    },
+    get: (key) => allowedKeys.has(key) ? store.get(key) ?? "" : ""
+  };
+  document.getElementById("nw-view-data").addEventListener("click", showDataModal);
+  const initial = location.hash ? location.hash.slice(1) : "main";
+  await replacePage(initial);
+})().catch((err) => {
+  document.getElementById("content").innerHTML = `<pre>Boot error: ${err}</pre>`;
+});
+</script>
+</body>
+</html>
