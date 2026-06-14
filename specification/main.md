@@ -12,6 +12,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - **Structs are immutable.** Primitives and lists are mutable.
 - **`==` is always structural**, regardless of how a struct is represented internally.
 - **No lambdas.** Only named `fn`s (top-level or nested).
+- **Struct literals are shorthand-only.** Every field must already exist as a variable in scope with a name matching the field. No `field: value` pairs.
 
 ## Index
 

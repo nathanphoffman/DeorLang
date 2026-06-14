@@ -20,9 +20,9 @@ fn RollResult roll_die(Die die)
     (sides, label) in die
 
     int raw = rand(1, sides)
-    Roll val = raw
-    result as {value: val, source: label}
-
+    Roll value = raw
+    result as {value, source}
+    
     return result
 
 fn List<RollResult> roll_many(Die die, int count)
@@ -62,9 +62,17 @@ fn string describe_roll(RollResult r)
             return value
 
 fn main()
-    d4  as {sides: 4,  label: "d4"}
-    d6  as {sides: 6,  label: "d6"}
-    d20 as {sides: 20, label: "d20"}
+    sides as 4
+    label as "d4"
+    d4 as {sides, label}
+
+    sides as 6
+    label as "d6"
+    d6 as {sides, label}
+
+    sides as 20
+    label as "d20"
+    d20 as {sides, label}
 
     # Single attack roll
     RollResult attack = roll_die(d20)
@@ -83,7 +91,8 @@ fn main()
         print(value)
 
     # Upgrade the d4 to a d8 using record update
-    d8 as d4 with sides=8
+    sides as 8
+    d8 as d4 with sides
     RollResult upgraded = roll_die(d8)
     source in upgraded
     print(source)

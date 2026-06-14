@@ -38,12 +38,26 @@ fn string random_room_name(List<Room> rooms)
     return name
 
 fn main()
-    kitchen as {area: 9, name: "Kitchen", occupied: true}
-    office as {area: 16, name: "Office", occupied: false}
-    bedroom as {area: 25, name: "Bedroom", occupied: true}
+    area as 9
+    name as "Kitchen"
+    occupied as true
+    kitchen as {area, name, occupied}
+
+    area as 16
+    name as "Office"
+    occupied as false
+    office as {area, name, occupied}
+
+    area as 25
+    name as "Bedroom"
+    occupied as true
+    bedroom as {area, name, occupied}
 
     room_list as [kitchen, office, bedroom]
-    house as {address: "12 Main St", rooms: room_list}
+
+    address as "12 Main St"
+    rooms as room_list
+    house as {address, rooms}
 
     rooms in house
     print(total_area(rooms))
@@ -53,7 +67,8 @@ fn main()
         name in room
         print(name)
 
-    biggerKitchen as kitchen with area=25
+    area as 25
+    biggerKitchen as kitchen with area
 
     string pick = random_room_name(rooms)
     print(pick)
