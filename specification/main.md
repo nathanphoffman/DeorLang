@@ -13,6 +13,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - **`==` is always structural**, regardless of how a struct is represented internally.
 - **No lambdas.** Only named `fn`s (top-level or nested).
 - **Struct construction uses `()`, always.** `room as (area, name)` — every field is a variable already in scope matching the field name. No `{}`, no `field: value` pairs. Mirrors destructuring: `(area, name) in room` extracts, `room as (area, name)` constructs.
+- **Validator types are option-types.** A `type` definition produces `Option<T>` under the hood — truthy when `Some`, falsy when `None`. Primitives and structs are never null. Three null-related forms: `Roll r = none` (declare absent), `(r is known)` (forced unwrap — panics if None), `r else 0` (safe default).
 
 ## Index
 

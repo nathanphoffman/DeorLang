@@ -21,8 +21,9 @@ fn RollResult roll_die(Die die)
 
     int raw = rand(1, sides)
     Roll value = raw
+    string source = label
     result as (value, source)
-    
+
     return result
 
 fn list<RollResult> roll_many(Die die, int count)
@@ -39,27 +40,39 @@ fn int sum_rolls(list<RollResult> rolls)
 
     for roll in rolls
         value in roll
-        sum = sum + value
-        
+        sum = sum + (value is known)
+
     return sum
 
 fn bool is_critical(RollResult r)
     value in r
-    return value == 20
+
+    return (value is known) == 20
 
 fn bool is_fumble(RollResult r)
     value in r
-    return value == 1
+
+    return (value is known) == 1
 
 fn string describe_roll(RollResult r)
+    source in r
+
     if is_critical(r)
         return "Critical hit!"
-    else
-        if is_fumble(r)
-            return "Fumble!"
-        else
-            value in r
-            return value
+    if is_fumble(r)
+        return "Fumble!"
+
+    return source
+
+fn Roll find_crit_value(list<RollResult> rolls)
+    Roll found = none
+
+    for roll in rolls
+        value in roll
+        if is_critical(roll)
+            found = value
+
+    return found
 
 fn main()
     sides as 4
@@ -84,11 +97,11 @@ fn main()
     int stat_total = sum_rolls(stat_roll)
     print(stat_total)
 
-    # Print each individual die in the stat roll
+    # Print each individual die result
     for roll in stat_roll
         (value, source) in roll
         print(source)
-        print(value)
+        print(value else 0)
 
     # Upgrade the d4 to a d8 using record update
     sides as 8
@@ -108,3 +121,10 @@ fn main()
 
     int total_damage = sum_rolls(damage)
     print(total_damage)
+
+    # Check if the attack was a critical and apply bonus damage
+    list<RollResult> attack_pool = []
+    attack_pool append attack
+    Roll crit = find_crit_value(attack_pool)
+    int crit_bonus = crit else 0
+    print(crit_bonus)

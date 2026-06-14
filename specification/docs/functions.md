@@ -71,6 +71,25 @@ fn abs(x: i32) -> i32 {
 
 ---
 
+## Validator Type Returns
+
+A function whose return type is a validator type may return `None` through its return variable — the caller knows to check. `return none` is a transpiler error; always return a named typed variable.
+
+```
+fn Roll find_best(list<Roll> rolls)
+    Roll best = none
+
+    for r in rolls
+        if r
+            best = r
+
+    return best    # may be None if rolls is empty or all None
+```
+
+Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
+
+---
+
 ## No Lambdas / Closures
 
 All callable values are named `fn`s — top-level or nested inside another `fn`. There is no anonymous-function syntax.

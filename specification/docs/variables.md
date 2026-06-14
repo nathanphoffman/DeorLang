@@ -104,3 +104,39 @@ const PI: f64 = 3.14159;
 - Valid at any scope — top-level or inside a function
 - Reassignment is a compile-time error
 - `list`, structs, and validator types cannot be `const` (structs are already immutable; `list` constants are not yet specified)
+
+---
+
+## Validator Type Variables
+
+Declaring a variable with a validator type makes it an option-type. Assignment runs the predicate — the variable is truthy (`Some`) or falsy (`None`) as a result.
+
+```
+Roll r = rand(1, 20)    # Some if predicate passes, None if not
+```
+
+### Initializing to None
+
+A validator type variable can be declared as `none` to start explicitly absent. Valid only at first declaration — `= none` after that point is a transpiler error.
+
+```
+Roll best = none
+```
+
+```rust
+let mut best: Option<Roll> = None;
+```
+
+This is the preferred way to declare a "not yet determined" validator type value. It is more readable than relying on a known-failing literal (e.g. `Roll best = 0`), even though both produce `None`.
+
+### Reassignment
+
+Reassigning a validator type re-runs the predicate. The variable may transition between `Some` and `None` through a failing value — this is expected behavior, not an error.
+
+```
+Roll r = 5      # Some(Roll(5))
+r = 150         # None — fails Roll predicate (n <= 100)
+r = 10          # Some(Roll(10)) again
+```
+
+The transpiler will eventually catch predicate failures on literals at transpile time. Currently all non-literal predicate failures are runtime.
