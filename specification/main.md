@@ -31,6 +31,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - [Imports](docs/imports) — module imports with `in`
 - [Immutability](docs/immutability) — immutability rules, equality, record update (`with`)
 - [Examples](docs/examples) — full worked example with Rust translation
+- [Operators](docs/operators) — arithmetic, comparison, logical, what's excluded
 - [Strings](docs/strings) — concatenation, interpolation, length
 - [Open Questions](docs/open-questions) — future work and undecided areas
 - [V2 Roadmap](docs/v2) — deferred features
