@@ -124,6 +124,59 @@ fn Roll find_best(list<RollResult> rolls)
 
 ---
 
+## Variable Shadowing
+
+Re-declaring a variable with the same name in the same block is a transpiler error. Shadowing in an inner block (inside an `if`, `for`, or nested `fn` body) is allowed.
+
+**Correct — inner block shadows outer:**
+```
+int x = 5
+if condition
+    int x = 10    # shadows outer x within this block only
+    print(x)      # 10
+print(x)          # 5
+```
+
+**Incorrect — same block re-declaration:**
+```
+int x = 5
+int x = 10    # transpiler error
+```
+
+Use reassignment instead:
+```
+int x = 5
+x = 10    # correct
+```
+
+---
+
+## Multiple `using` Clauses — No Blank Lines, Indented
+
+When a function call has multiple `using` clauses (`using shape` and/or `using fn_name`), they must be written on consecutive indented lines immediately below the call with no blank lines between them. `using shape` always comes first.
+
+**Correct:**
+```
+filter(rooms)
+    using shape Room
+    using match_name
+```
+
+**Incorrect — blank line between clauses:**
+```
+filter(rooms)
+    using shape Room
+
+    using match_name
+```
+
+**Incorrect — on same line as call:**
+```
+filter(rooms) using shape Room using match_name
+```
+
+---
+
 ## `[using]` — Required at Call Site
 
 Calling a `[using]`-annotated function without `using fn_name` is a transpiler error. The injection slot must always be filled.

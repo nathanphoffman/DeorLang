@@ -107,6 +107,30 @@ Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
 
 ---
 
+## `throw`
+
+`throw` is an unrecoverable hard stop — transpiles to `panic!()` in Rust. Takes a string message. Use `[using error_handler]` for recoverable/handled errors instead.
+
+```
+fn int divide(int a, int b)
+    if b == 0
+        throw "division by zero"
+    return a / b
+```
+
+```rust
+fn divide(a: i32, b: i32) -> i32 {
+    if b == 0 {
+        panic!("division by zero");
+    }
+    a / b
+}
+```
+
+`throw` accepts a string only. Struct-based throw (e.g. `throw Error`) is flagged for v2.
+
+---
+
 ## No Lambdas / Closures
 
 All callable values are named `fn`s — top-level or nested inside another `fn`. There is no anonymous-function syntax. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
@@ -153,6 +177,7 @@ fn Roll old_roll(int n)
 | `[main]` | Explicit entry point — alternative to naming the function `main` | `#[main]` |
 | `[using alias: T->O]` | Declares a behavior injection slot (see below) | hidden `fn` pointer parameter |
 | `[using alias: T]` | Same, handler returns nothing | hidden `fn()` parameter |
+| `[shape: T]` | Declares a generic type parameter (see below) | `<T>` in Rust |
 
 ---
 
@@ -251,3 +276,54 @@ Roll r2 = parse_roll("abc") using panic_error
 - `predicate(item)` in the body calls directly through the fn pointer
 - At call site, `using match_name` passes `match_name` as the fn pointer
 - Uses Rust `fn` pointers (not closures) — cannot capture environment, consistent with Deor's no-lambda rule
+
+---
+
+## `[shape: T]` — Generics
+
+Generics are intentionally anti-pattern in Deor — the `[shape: T]` annotation makes them visually deliberate. `using shape ConcreteType` is always required at the call site; there is no implicit type inference from arguments.
+
+```
+[shape: T]
+[using predicate: T->bool]
+fn list<T> filter(list<T> items)
+    list<T> result = []
+
+    for item in items
+        if predicate(item)
+            result insert item
+
+    return result
+```
+
+### Call site — multi-line `using` syntax
+
+When a function has multiple `using` clauses (shape and/or behavior), they stack on indented lines below the call with no blank lines between them — the same rule as compact ternaries.
+
+```
+filter(rooms)
+    using shape Room
+    using match_name
+```
+
+All `using` clauses are required. Missing any is a transpiler error. The `using shape` line always comes first when present.
+
+```rust
+fn filter<T: Clone>(items: Vec<T>, predicate: fn(T) -> bool) -> Vec<T> {
+    let mut result: Vec<T> = Vec::new();
+    for item in items {
+        if predicate(item.clone()) {
+            result.push(item);
+        }
+    }
+    result
+}
+
+// called as:
+filter::<Room>(rooms, match_name)
+```
+
+**Notes:**
+- One `[shape: T]` parameter per function — multiple shape parameters are v2
+- `T` can be used anywhere in the function signature: parameters, return type, local variables
+- `[shape: T]` stacks with `[using]` — declare both, both required at call site

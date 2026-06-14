@@ -31,7 +31,9 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - [Imports](docs/imports) — module imports with `in`
 - [Immutability](docs/immutability) — immutability rules, equality, record update (`with`)
 - [Examples](docs/examples) — full worked example with Rust translation
+- [Strings](docs/strings) — concatenation, interpolation, length
 - [Open Questions](docs/open-questions) — future work and undecided areas
+- [V2 Roadmap](docs/v2) — deferred features
 - [Annotations](docs/functions#annotations) — `[test]`, `[deprecated]`, `[pure]`, `[using]`
 - [Interop](docs/interop) — `rust` blocks, `rust:` file imports, `bytes`, `deps`, `deor:` stdlib
 - [Enforced Practices](docs/enforced_practices) — naming and ordering rules the transpiler warns on
