@@ -63,14 +63,14 @@ export class Lexer {
     while (pos < line.length) {
       const ch = line[pos];
 
-      if (ch === ' ' || ch === '\t') { pos++; continue; }
-      if (ch === '#') break;
+      if (isWhitespace(ch))  { pos++; continue; }
+      if (isLineComment(ch)) break;
 
-      if (ch === '"') {
+      if (isStringStart(ch)) {
         pos++;
         const start = pos;
-        while (pos < line.length && line[pos] !== '"') {
-          if (line[pos] === '\\') pos++;
+        while (pos < line.length && !isStringEnd(line[pos])) {
+          if (isEscapeChar(line[pos])) pos++;
           pos++;
         }
         const s = line.slice(start, pos);
@@ -79,16 +79,17 @@ export class Lexer {
         continue;
       }
 
-      if (/\d/.test(ch)) {
+      if (isDigit(ch)) {
         const start = pos;
-        while (pos < line.length && /[\d_]/.test(line[pos])) pos++;
+        // checks for digit or _ seperator as both are valid numbers
+        while (pos < line.length && isDigitOrSeparator(line[pos])) pos++;
         this.emit({ type: TokenType.INT, literal: line.slice(start, pos), line: lineNum });
         continue;
       }
 
-      if (/[a-zA-Z_]/.test(ch)) {
+      if (isIdentStart(ch)) {
         const start = pos;
-        while (pos < line.length && /[a-zA-Z0-9_]/.test(line[pos])) pos++;
+        while (pos < line.length && isIdentContinue(line[pos])) pos++;
         const word = line.slice(start, pos);
         this.emit(toKeywordToken(word, lineNum));
         continue;
@@ -119,6 +120,16 @@ function measureIndent(line: string): [number, number] {
   }
   return [level, pos];
 }
+
+function isWhitespace(ch: string):        boolean { return ch === ' ' || ch === '\t'; }
+function isLineComment(ch: string):       boolean { return ch === '#'; }
+function isStringStart(ch: string):       boolean { return ch === '"'; }
+function isStringEnd(ch: string):         boolean { return ch === '"'; }
+function isEscapeChar(ch: string):        boolean { return ch === '\\'; }
+function isDigit(ch: string):             boolean { return /\d/.test(ch); }
+function isDigitOrSeparator(ch: string):  boolean { return /[\d_]/.test(ch); }
+function isIdentStart(ch: string):        boolean { return /[a-zA-Z_]/.test(ch); }
+function isIdentContinue(ch: string):     boolean { return /[a-zA-Z0-9_]/.test(ch); }
 
 function toKeywordToken(word: string, line: number): Token {
   switch (word) {
