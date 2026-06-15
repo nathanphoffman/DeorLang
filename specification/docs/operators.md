@@ -20,7 +20,9 @@ float flt = 5.0 / 2   # 2.5
 
 Exponentiation uses the `pow` built-in — no `**` operator:
 ```
-int val = pow(2, 10)    # 1024
+base as 2
+exp as 10
+int val = pow(base, exp)    # 1024
 ```
 
 ---

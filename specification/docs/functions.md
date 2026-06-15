@@ -10,8 +10,8 @@ fn int add(int left, int right)
 ```
 
 ```rust
-fn add(a: i32, b: i32) -> i32 {
-    a + b
+fn add(left: i32, right: i32) -> i32 {
+    left + right
 }
 ```
 
@@ -46,8 +46,8 @@ fn (int quotient, int remainder) divmod(int left, int right)
 ```
 
 ```rust
-fn divmod(a: i32, b: i32) -> (i32, i32) {
-    (a / b, a % b)
+fn divmod(left: i32, right: i32) -> (i32, i32) {
+    (left / right, left % right)
 }
 ```
 
@@ -68,10 +68,10 @@ print(rem)
 ```
 
 ```rust
-let (q, r) = divmod(a, b);
-println!("{}", q);
-println!("{}", r);
-let (x, y) = divmod(c, d);
+let (quo, rem) = divmod(num, div);
+println!("{}", quo);
+println!("{}", rem);
+let (out, rst) = divmod(val, amt);
 ```
 
 The declared return names (`quotient`, `remainder`) tell you what each position means. Your capture names are your choice. As with all `in` extractions, this must appear before any logic that uses the bound variables in the same block.
@@ -90,8 +90,8 @@ fn int square(int val)
 ```
 
 ```rust
-fn square(x: i32) -> i32 {
-    x * x
+fn square(val: i32) -> i32 {
+    val * val
 }
 ```
 
@@ -103,11 +103,11 @@ fn int abs(int val)
 ```
 
 ```rust
-fn abs(x: i32) -> i32 {
-    if x < 0 {
-        return -x;
+fn abs(val: i32) -> i32 {
+    if val < 0 {
+        return -val;
     }
-    return x;
+    return val;
 }
 ```
 
@@ -146,11 +146,11 @@ fn int divide(int left, int right)
 ```
 
 ```rust
-fn divide(a: i32, b: i32) -> i32 {
-    if b == 0 {
+fn divide(left: i32, right: i32) -> i32 {
+    if right == 0 {
         panic!("division by zero");
     }
-    a / b
+    left / right
 }
 ```
 

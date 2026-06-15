@@ -37,14 +37,14 @@ Are all top-level declarations importable by other files? The caller already opt
 
 ## `is not known`
 
-Is `x is not known` valid syntax for a None check? Currently `if not x` is the only way. `is not known` would be more explicit and symmetric with `is known`:
+Is `val is not known` valid syntax for a None check? Currently `if not val` is the only way. `is not known` would be more explicit and symmetric with `is known`:
 
 ```
-if x is known       # Some — currently (x is known) with parens for unwrap
-if x is not known   # None — not currently specced
+if val is known       # Some — currently (val is known) with parens for unwrap
+if val is not known   # None — not currently specced
 ```
 
-Needs a clear decision on whether this form is valid and whether it's an alias for `if not x`.
+Needs a clear decision on whether this form is valid and whether it's an alias for `if not val`.
 
 ---
 

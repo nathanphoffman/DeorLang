@@ -111,15 +111,16 @@ export class Parser {
     }
 
     const ident = this.advance();
+    const currentType = this.current.type;
 
-    if (this.current.type === TokenType.KW_AS) {
+    if (currentType === TokenType.KW_AS) {
       this.advance();
       const value = this.parseExpr();
       this.skipNewline();
       return { kind: 'AsBinding', name: ident.literal, value };
     }
 
-    if (this.current.type === TokenType.LPAREN) {
+    if (currentType === TokenType.LPAREN) {
       this.advance();
       const args = this.parseArgList();
       this.expect(TokenType.RPAREN);

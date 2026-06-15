@@ -119,8 +119,8 @@ fn total_area(rooms: &Vec<Room>) -> i32 {
     let mut sum = 0;
     for room in rooms {
         let area = room.area;
-        let sq: i32 = area.map(|v| v.0).unwrap_or(0);
-        sum += sq;
+        let sqm: i32 = area.map(|v| v.0).unwrap_or(0);
+        sum += sqm;
     }
     return sum;
 }

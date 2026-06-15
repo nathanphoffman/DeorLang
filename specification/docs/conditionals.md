@@ -18,13 +18,13 @@ else
 ```
 
 ```rust
-if x > 10 {
+if val > 10 {
     do_something();
     do_more();
-} else if x > 5 {
+} else if val > 5 {
     do_medium();
     also_this();
-} else if x > 0 {
+} else if val > 0 {
     do_small();
 } else {
     do_default();
