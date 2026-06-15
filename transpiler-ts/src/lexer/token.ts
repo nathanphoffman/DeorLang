@@ -16,6 +16,12 @@ export enum TokenType {
   LPAREN,
   RPAREN,
   COMMA,
+
+  PLUS,
+  MINUS,
+  STAR,
+  SLASH,
+  EQUALS,
 }
 
 export interface Token {

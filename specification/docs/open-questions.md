@@ -4,20 +4,9 @@ These are active design decisions not yet resolved.
 
 ---
 
-## Struct Field Extraction Order
+## Struct Field Extraction Order — Resolved
 
-Construction enforces declaration order (`room as (area, name, occupied)` must match struct field order). Should extraction also enforce order? Consistent with "both ordered and named" principle:
-
-```
-struct Room
-    Squarefeet area
-    string name
-
-(area, name) in room    # enforced order?
-(name, area) in room    # transpiler error?
-```
-
-Likely yes — needs decision and doc update to `destructuring.md` and `enforced_practices.md`.
+Extraction enforces declaration order, symmetric with construction. `(name, area) in room` is a transpiler error when `area` is declared first. See [Destructuring](destructuring.md#field-extraction-order) and [Enforced Practices](enforced_practices.md#field-extraction-order).
 
 ---
 
@@ -27,11 +16,9 @@ Is `list<Roll>` valid? It would be `Vec<Option<Roll>>` in Rust. Iterating it giv
 
 ---
 
-## Visibility
+## Visibility — Resolved
 
-Are all top-level declarations importable by other files? The caller already opts in explicitly (`(fn) in "./utils"`), so there's some natural scoping. But the defining file has no say in what's exported. Options:
-- All declarations are always importable (simple, consistent)
-- A `pub` prefix or similar marks things as exported (more control, more syntax)
+Public by default. `private` prefix restricts a declaration to the current file. See [Enforced Practices](enforced_practices.md#visibility--private) and [Imports](imports.md).
 
 ---
 

@@ -1,6 +1,6 @@
 import * as AST from '../parser/ast';
-import { renderFunction, renderParam } from './emitters/function';
-import { renderAsBinding } from './emitters/binding';
+import { renderFunction, renderParam, renderRustType } from './emitters/function';
+import { renderAsBinding, renderTypedBinding } from './emitters/binding';
 import { renderCallStmt } from './emitters/builtins';
 
 export class Generator {
@@ -36,6 +36,12 @@ export class Generator {
       return `${pad}${renderAsBinding(node.name, val, isString)}\n`;
     }
 
+    if (node.kind === 'TypedBinding') {
+      const rustType = renderRustType(node.varType);
+      const val = this.genExpr(node.value);
+      return `${pad}${renderTypedBinding(node.name, rustType, val)}\n`;
+    }
+
     if (node.kind === 'CallStmt') {
       const args = node.args.map(a => this.genExpr(a));
       return `${pad}${renderCallStmt(node.func, args)}\n`;
@@ -49,6 +55,7 @@ export class Generator {
       case 'StringLiteral': return JSON.stringify(node.value);
       case 'IntLiteral': return node.value;
       case 'Identifier': return node.name;
+      case 'BinaryExpr': return `${this.genExpr(node.left)} ${node.op} ${this.genExpr(node.right)}`;
       default:
         throw new Error(`unknown expression node: ${(node as AST.Node).kind}`);
     }

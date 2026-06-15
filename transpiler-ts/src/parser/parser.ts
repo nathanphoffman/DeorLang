@@ -72,7 +72,7 @@ export class Parser {
   private buildParams(): AST.Param[] {
     const params: AST.Param[] = [];
     while (this.current.type !== TokenType.RPAREN && this.current.type !== TokenType.EOF) {
-     
+
       // right now user types and primitives are all the same structurally 
       //  so there is little reason to treat them as anything but generic IDENT
       //   as mapping happens later in the process
@@ -128,6 +128,16 @@ export class Parser {
       return { kind: 'CallStmt', func: ident.literal, args };
     }
 
+    // typed declaration: int sum = x + y
+    if (currentType === TokenType.IDENT && this.peekToken.type === TokenType.EQUALS) {
+      const varType = ident.literal;
+      const name = this.advance().literal; // consume variable name
+      this.advance();                          // consume =
+      const value = this.parseExpr();
+      this.skipNewline();
+      return { kind: 'TypedBinding', varType, name, value };
+    }
+
     throw new Error(
       `line ${this.current.line}: unexpected token after identifier ${JSON.stringify(ident.literal)}: ${TokenType[this.current.type]}`
     );
@@ -143,6 +153,18 @@ export class Parser {
   }
 
   private parseExpr(): AST.Node {
+    const left = this.parsePrimary();
+
+    if (isOperator(this.current.type)) {
+      const op = this.advance().literal;
+      const right = this.parsePrimary();
+      return { kind: 'BinaryExpr', left, op, right };
+    }
+
+    return left;
+  }
+
+  private parsePrimary(): AST.Node {
     switch (this.current.type) {
       case TokenType.STRING: return { kind: 'StringLiteral', value: this.advance().literal };
       case TokenType.INT: return { kind: 'IntLiteral', value: this.advance().literal };
@@ -157,4 +179,11 @@ export class Parser {
   private skipNewline(): void {
     if (this.current.type === TokenType.NEWLINE) this.advance();
   }
+}
+
+function isOperator(type: TokenType): boolean {
+  return type === TokenType.PLUS ||
+    type === TokenType.MINUS ||
+    type === TokenType.STAR ||
+    type === TokenType.SLASH;
 }

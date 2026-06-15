@@ -2,7 +2,9 @@ export type Node =
   | Program
   | FunctionDecl
   | AsBinding
+  | TypedBinding
   | CallStmt
+  | BinaryExpr
   | StringLiteral
   | IntLiteral
   | Identifier;
@@ -29,6 +31,20 @@ export interface AsBinding {
   kind: 'AsBinding';
   name: string;
   value: Node;
+}
+
+export interface TypedBinding {
+  kind: 'TypedBinding';
+  varType: string;
+  name: string;
+  value: Node;
+}
+
+export interface BinaryExpr {
+  kind: 'BinaryExpr';
+  left: Node;
+  op: string;
+  right: Node;
 }
 
 export interface CallStmt {

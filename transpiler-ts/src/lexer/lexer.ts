@@ -2,6 +2,7 @@ import { Token, TokenType } from './token';
 import { scanString } from './kinds/string';
 import { scanInt } from './kinds/int';
 import { scanWord } from './kinds/word';
+import { scanOperator }    from './kinds/operators';
 import { scanPunctuation } from './kinds/punctuation';
 import { isWhitespace } from './kinds/whitespace';
 import { isLineComment } from './kinds/comment';
@@ -98,9 +99,10 @@ export class Lexer {
       if (isLineComment(ch)) break;
 
       const result =
-        scanString(line, pos, lineNum) ??
-        scanInt(line, pos, lineNum) ??
-        scanWord(line, pos, lineNum) ??
+        scanString(line, pos, lineNum)   ??
+        scanInt(line, pos, lineNum)      ??
+        scanWord(line, pos, lineNum)     ??
+        scanOperator(line, pos, lineNum) ??
         scanPunctuation(line, pos, lineNum);
 
       this.addToken(result.token);
