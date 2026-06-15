@@ -101,3 +101,22 @@ if val > 0
 else
     label = compute_label(val)
 ```
+
+---
+
+## No Pattern Matching — By Design
+
+Deor has no `match` keyword and no pattern matching syntax. This is intentional.
+
+Dispatching on union types uses `if`/`else if` chains with `is` comparisons — the same operator used for equality everywhere else in Deor:
+
+```
+if color is Red
+    print(msg_red)
+else if color is Green
+    print(msg_green)
+else if color is Blue
+    print(msg_blue)
+```
+
+For complex multi-arm dispatch that genuinely requires destructuring, use a `rust` block — Rust's `match` is fully available inside one. Deor's `if`/`else if` chains are the right tool for the tag-only unions Deor supports in v1. See [Shapes — Union Shapes](shapes.md#union-shapes).

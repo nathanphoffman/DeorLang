@@ -8,9 +8,10 @@ A `shape` is a named type alias for a parameterized or named type. Shapes are th
 shape roomList = list of Room
 shape filterFunc = func of Room to bool
 shape requestBody = bytes
+shape colorTag = union of Red | Green | Blue
 ```
 
-Shapes are declared at the top level of a file, after imports and before structs. Three kinds exist: list shapes, func shapes, and bytes shapes.
+Shapes are declared at the top level of a file, after imports and before structs. Four kinds exist: list shapes, func shapes, bytes shapes, and union shapes.
 
 ---
 
@@ -168,6 +169,8 @@ Shape names are camelCase — enforced by the transpiler. By convention (not enf
 |---|---|---|
 | List shapes | `List` | `roomList`, `intList`, `rollList` |
 | Func shapes | `Func` | `filterFunc`, `predicateFunc`, `handlerFunc` |
+| Bytes shapes | — | `requestBody`, `frameData`, `imageBuffer` |
+| Union shapes | `Tag` | `colorTag`, `statusTag`, `directionTag` |
 
 camelCase distinguishes shapes from every other identifier category:
 - Primitives and keywords: lowercase (`int`, `list`, `func`, `of`)
@@ -255,6 +258,91 @@ struct Request
 
 ---
 
+## Union Shapes
+
+A union shape defines a closed set of named variants — a tagged union with no associated data per variant. It is the only way to express a discriminated type in Deor.
+
+```
+shape colorTag = union of Red | Green | Blue
+shape directionTag = union of North | South | East | West
+shape statusTag = union of Active | Inactive | Pending
+```
+
+```rust
+#[derive(Clone, PartialEq, Debug)]
+enum ColorTag { Red, Green, Blue }
+
+#[derive(Clone, PartialEq, Debug)]
+enum DirectionTag { North, South, East, West }
+
+#[derive(Clone, PartialEq, Debug)]
+enum StatusTag { Active, Inactive, Pending }
+```
+
+**Variant names are PascalCase.** This is the one context where PascalCase does not mean struct or validator type — union variants are PascalCase because they are type constructors, matching Rust enum convention. The parser distinguishes them by context: after `union of` in a declaration, or as a value assigned to a union-typed variable.
+
+**Assignment:**
+
+```
+colorTag color = Red
+statusTag current = Pending
+```
+
+```rust
+let color: ColorTag = ColorTag::Red;
+let current: StatusTag = StatusTag::Pending;
+```
+
+**Checking variants — `if`/`else if` with `is`:**
+
+Deor has no pattern matching. Check which variant a union variable holds using `is` in an `if`/`else if` chain:
+
+```
+if color is Red
+    print(msg_red)
+else if color is Green
+    print(msg_green)
+else if color is Blue
+    print(msg_blue)
+```
+
+```rust
+if color == ColorTag::Red {
+    println!("{}", msg_red);
+} else if color == ColorTag::Green {
+    println!("{}", msg_green);
+} else if color == ColorTag::Blue {
+    println!("{}", msg_blue);
+}
+```
+
+Exhaustiveness is not enforced in v1 — write an `else` branch as a catch-all if needed. V2 may add exhaustiveness warnings.
+
+**Union shapes in structs and function signatures:**
+
+Union shapes work everywhere list and bytes shapes do — as struct fields, function parameters, and return types:
+
+```
+struct Task
+    string name
+    statusTag status
+
+fn void handle(Task task, statusTag next)
+    ...
+```
+
+**Tag-only in v1.** Variants carry no associated data. To attach context to a variant, pair the union with a struct:
+
+```
+struct Event
+    statusTag kind
+    string payload
+```
+
+Payload variants — where each arm carries its own distinct type — are a v2 consideration. See [V2 — Union Variants with Associated Data](v2.md#union-variants-with-associated-data).
+
+---
+
 ## Conversion Notes
 
 | Deor | Rust |
@@ -263,6 +351,8 @@ struct Request
 | `shape filterFunc = func of Room to bool` | `type FilterFunc = fn(Room) -> bool;` |
 | `shape handlerFunc = func of Error` | `type HandlerFunc = fn(Error);` |
 | `shape requestBody = bytes` | `type RequestBody = Vec<u8>;` |
+| `shape colorTag = union of Red \| Green \| Blue` | `#[derive(Clone, PartialEq, Debug)] enum ColorTag { Red, Green, Blue }` |
+| `colorTag color = Red` | `let color: ColorTag = ColorTag::Red;` |
 | `roomList result = []` | `let mut result: Vec<Room> = Vec::new();` |
 | `filter(rooms, by_name)` | `filter(&rooms, by_name)` |
 

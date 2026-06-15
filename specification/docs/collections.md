@@ -52,6 +52,24 @@ Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts
 
 ---
 
+## Index Write
+
+Elements are replaced by index using the same bracket notation as index read. The right-hand side must be a named variable of the list's element type — the named-args rule applies.
+
+```
+rooms[idx] = new_room
+scores[idx] = updated_score
+```
+
+```rust
+rooms[idx as usize] = new_room;
+scores[idx as usize] = updated_score;
+```
+
+Out-of-bounds assignment is a runtime panic. The transpiler inserts `as usize` casts automatically.
+
+---
+
 ## In Function Signatures and Struct Fields
 
 The shape name stands in for the full list type wherever a type is expected:
@@ -156,10 +174,59 @@ result.remove(1);
 Brackets are always required, even for a single index.
 
 **Conversion notes:**
+- `list[idx]` (read) → `list[idx as usize]` (clone for struct types)
+- `list[idx] = val` (write) → `list[idx as usize] = val`
 - `insert` without `at` → `Vec::push`
 - `insert at [n]` → `Vec::insert(n, item)`
 - `remove [n]` → `Vec::remove(n)`
 - Multi-remove transpiles to multiple `Vec::remove` calls in descending index order
+
+---
+
+## Updating a Struct Inside a List
+
+Deor does not allow in-place field mutation — `rooms[0].area = 9` is a transpiler error. Struct values inside a list are replaced, not mutated. The pattern is explicit by design: extract the struct, build an updated copy with `with`, write it back at the same index.
+
+```
+# 1. Read the existing struct
+Room old_room = rooms[idx]
+
+# 2. Build the updated version
+Squarefeet new_area = 25
+Room new_room = old_room with (new_area)
+
+# 3. Write back
+rooms[idx] = new_room
+```
+
+```rust
+let old_room: Room = rooms[idx as usize].clone();
+let new_area: Option<Squarefeet> = Squarefeet::new(25);
+let new_room: Room = Room { area: new_area, ..old_room };
+rooms[idx as usize] = new_room;
+```
+
+**When the index is not known ahead of time**, find it with a loop first:
+
+```
+int count = len(rooms)
+int target = -1
+for idx in range(count)
+    Room room = rooms[idx]
+    name in room
+    if name is search_name
+        target = idx
+        break
+
+neg as -1
+if target is not neg
+    Room old_room = rooms[target]
+    Squarefeet new_area = 25
+    Room new_room = old_room with (new_area)
+    rooms[target] = new_room
+```
+
+Every step is visible: which item is changing, what field is changing, and where it lands back in the list. See [Immutability — `with`](immutability.md) for full `with` syntax.
 
 ---
 

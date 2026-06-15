@@ -23,6 +23,27 @@ fn string http_get(string url)
 - Full Rust inside: any types, closures, method chaining, `?`, SIMD intrinsics, raw pointers — no restrictions.
 - `std::` is always in scope inside `rust` blocks. No import or `deps` declaration needed for standard library usage.
 
+**Block boundary — indentation only:**
+
+The transpiler delimits a `rust` block purely by indentation. Every line indented deeper than the `rust` keyword is captured verbatim and emitted directly into the generated Rust output. The block ends when a non-blank line returns to the same indentation level as `rust` or shallower. Blank lines inside the block are always considered part of the block, regardless of their indentation, as long as indented content resumes afterward.
+
+Inside the block, Rust's own formatting conventions apply freely — curly braces, `match` arms, nested closures, Rust-style indentation. The transpiler does not parse or validate any of it. It strips the leading Deor indent level and passes the rest through as a raw string:
+
+```
+fn string classify(string input)
+    rust
+        let result = match input.as_str() {
+            "a" | "e" | "i" | "o" | "u" => {
+                let upper = input.to_uppercase();
+                format!("vowel: {}", upper)
+            },
+            _ => String::from("consonant"),
+        };
+        result
+```
+
+Everything from `let result` through `result` is captured verbatim. The Deor transpiler sees only the indentation boundary — the curly braces, `match` syntax, and Rust-style nesting inside are invisible to it.
+
 ```
 fn string read_file(string path)
     rust

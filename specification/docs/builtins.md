@@ -108,6 +108,8 @@ int small = min(low, high)
 
 `sqrt` returns `NonNegFloat` — a stdlib validator type — so the result must be unwrapped before use in arithmetic. Use `else` for a safe default or `avow` when you are certain the input is non-negative.
 
+`pow`'s `exp` parameter is typed `NonNeg` — a stdlib validator type that enforces `val >= 0`. Negative exponents produce fractions, not integers; Deor catches this at the parameter type rather than at runtime. See [Stdlib Numeric Types](#stdlib-numeric-types) for the full constraint table.
+
 ---
 
 ## Random
