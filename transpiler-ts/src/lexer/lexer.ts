@@ -14,7 +14,7 @@ export class Lexer {
     this.tokenize(input);
   }
 
-  getEOFTokenIfEOF(): Token | undefined {
+  private getEOFTokenIfEOF(): Token | undefined {
     if (this.pos >= this.tokens.length) {
       return { type: TokenType.EOF, literal: '', line: 0 };
     }
