@@ -1,1 +1,8 @@
 deor-vscode/deor-lang-*.vsix
+
+# transpiler build output
+transpiler/bin/
+transpiler-ts/node_modules/
+
+# generated rust files and compiled binaries
+output/

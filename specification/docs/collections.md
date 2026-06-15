@@ -19,8 +19,8 @@ let last: i32 = scores[3];
 Index must be a concrete integer expression — a variable or literal. Dynamic or computed indices are fine:
 
 ```
-int i = 2
-int mid = scores[i]    # 30
+int idx = 2
+int mid = scores[idx]    # 30
 ```
 
 Out-of-bounds access is a runtime panic (same as Rust). No bounds-checking syntax in v1.

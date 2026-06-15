@@ -10,11 +10,31 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 |---|---|---|
 | Built-in primitives | lowercase | `int`, `float`, `bool`, `string`, `bytes` |
 | Built-in generics | lowercase | `list<T>`, `list<T, N>` |
-| User-defined types (structs, validator types) | PascalCase | `Room`, `RollResult`, `Squarefeet` |
-| Functions, variables, parameters, struct fields | snake_case | `roll_die`, `total_area`, `room_list` |
-| Constants | SCREAMING_SNAKE_CASE | `DELAY_TIME`, `MAX_RETRIES` |
+| User-defined types (structs, validator types) | PascalCase, 3+ chars | `Room`, `RollResult`, `Squarefeet` |
+| Functions, variables, parameters, struct fields | snake_case, 3+ chars | `roll_die`, `total_area`, `room_list` |
+| Constants | SCREAMING_SNAKE_CASE, 3+ chars | `DELAY_TIME`, `MAX_RETRIES` |
 
 **The key signal:** PascalCase exclusively marks user-defined types. Seeing `Room` or `SquareFeet` in code guarantees it was declared with `struct` or `type` — never a built-in, never a function, never a variable.
+
+---
+
+## Minimum Name Length — 3 Characters
+
+All identifiers must be at least 3 characters long. This applies to every named thing in Deor source: variables, function parameters, function names, struct names, validator type names, struct field names, and list names.
+
+```
+int val = 5      # correct
+int vl = 5       # transpiler error — 2 characters
+int v = 5        # transpiler error — 1 character
+
+fn int add(int left, int right)   # correct
+fn int add(int a, int b)          # transpiler error — parameters too short
+
+type Roll(int val)    # correct
+type Roll(int n)      # transpiler error — parameter too short
+```
+
+**The only exception** is generic type parameters declared with `[shape: T]` — single-letter type parameter names (`T`, `U`) follow universal convention and are exempt. Runtime identifiers (variables, parameters, fields, functions, types) are never exempt.
 
 ---
 
@@ -72,13 +92,13 @@ A `type` definition must have a predicate body. A type with no constraint adds n
 
 **Correct:**
 ```
-type Positive(int n)
-    n > 0
+type Positive(int val)
+    val > 0
 ```
 
 **Incorrect — transpiler errors:**
 ```
-type Positive(int n)
+type Positive(int val)
 ```
 
 ---
@@ -124,29 +144,49 @@ fn Roll find_best(list<RollResult> rolls)
 
 ---
 
+## `as` — No Type Annotation, No Variable Rebinding
+
+`as` is the type-inferring binding form. Two things are always transpiler errors with `as`:
+
+**Type annotation with `as`:** when you have an explicit type, use `=` instead.
+
+```
+count as 0          # correct — int inferred
+int count as 0      # transpiler error — annotation not allowed with as
+int count = 0       # correct
+```
+
+**Rebinding from an existing variable:** `as` requires a structural RHS — a scalar literal, `(fields)`, `[items]`, or `name with field`. Pointing it at a plain variable name is not a structural form.
+
+```
+copy as original    # transpiler error — use Type name = original
+```
+
+---
+
 ## Variable Shadowing
 
 Re-declaring a variable with the same name in the same block is a transpiler error. Shadowing in an inner block (inside an `if`, `for`, or nested `fn` body) is allowed.
 
 **Correct — inner block shadows outer:**
 ```
-int x = 5
+int val = 5
 if condition
-    int x = 10    # shadows outer x within this block only
-    print(x)      # 10
-print(x)          # 5
+    int val = 10    # shadows outer val within this block only
+    print(val)      # 10
+print(val)          # 5
 ```
 
 **Incorrect — same block re-declaration:**
 ```
-int x = 5
-int x = 10    # transpiler error
+int val = 5
+int val = 10    # transpiler error
 ```
 
 Use reassignment instead:
 ```
-int x = 5
-x = 10    # correct
+int val = 5
+val = 10    # correct
 ```
 
 ---
@@ -224,36 +264,57 @@ room as ("Office", area)  # literal not allowed — name must be a variable
 
 For tuple capture with `in`, your chosen names are positional but not required to match the function's declared return names:
 ```
-fn (int quotient, int remainder) divmod(int a, int b)
+fn (int quotient, int remainder) divmod(int left, int right)
     ...
 
-(q, r) in divmod(a, b)    # q = quotient, r = remainder — names are yours
+(quo, rem) in divmod(num, div)    # quo = quotient, rem = remainder — names are yours
 ```
 
 ---
 
-## Named Arguments — No Inline Literals in Calls
+## Named Arguments — No Inline Literals, Expressions, or Inline Construction in Calls
 
-All arguments passed to a user-defined function must be named variables defined before the call. Passing literals directly as function arguments is a transpiler error.
+All arguments passed to any function — user-defined or built-in — must be named variables already in scope. Literals, arithmetic expressions, inline function call results, and inline struct constructions are not valid as arguments.
 
 **Correct:**
 ```
-fn int add(int a, int b)
-    return a + b
+fn int add(int left, int right)
+    return left + right
 
-int x = 5
-int y = 3
-int result = add(x, y)
+num as 5
+amt as 3
+int result = add(num, amt)
+```
+
+```
+min as 1
+max as 6
+int roll = rand(min, max)
+```
+
+```
+msg as "Hello"
+print(msg)
+```
+
+```
+message as "Parse failed"
+body as input
+Error err = (message, body)
+error_handler(err)
 ```
 
 **Incorrect — transpiler errors:**
 ```
-int result = add(5, 3)    # literals not allowed
+int result = add(5, 3)           # literals not allowed
+int roll = rand(1, 6)            # literals not allowed — even for builtins
+print("hello")                   # literal not allowed — even for builtins
+int val = pow(2, 10)             # literals not allowed
+error_handler((message, body))   # inline struct construction not allowed
+int idx = rand(0, len(rooms) - 1)  # expression not allowed
 ```
 
-This applies to all user-defined function calls regardless of parameter count. Built-in functions (`print`, `len`, `range`, `rand`, etc.) are exempt — their parameters are documented by the language itself, so brief literal arguments are legible there.
-
-The rationale: named variables make long parameter lists self-documenting. `connect(host, port, timeout, retries)` is clear; `connect("localhost", 8080, 30, 3)` is not.
+This rule applies uniformly to all function calls. The rationale: named variables make every argument self-documenting at the call site, and intermediate bindings keep expressions readable and debuggable. There are no exemptions for built-ins.
 
 ---
 
@@ -263,8 +324,8 @@ All top-level declarations must appear before any code that references them. Thi
 
 **Correct:**
 ```
-type Roll(int n)
-    n >= 1 and n <= 20
+type Roll(int val)
+    val >= 1 and val <= 20
 
 struct RollResult
     Roll value
@@ -302,21 +363,21 @@ Functions may only be declared at the top level of a file. Defining a `fn` insid
 
 **Correct:**
 ```
-fn bool is_valid(int n)
-    return n > 0
+fn bool is_valid(int val)
+    return val > 0
 
-fn string describe(int n)
-    if is_valid(n)
+fn string describe(int val)
+    if is_valid(val)
         return "positive"
     return "invalid"
 ```
 
 **Incorrect — transpiler errors:**
 ```
-fn string describe(int n)
-    fn bool is_valid(int x)    # not allowed
-        return x > 0
-    if is_valid(n)
+fn string describe(int val)
+    fn bool is_valid(int num)    # not allowed
+        return num > 0
+    if is_valid(val)
         return "positive"
     return "invalid"
 ```

@@ -4,9 +4,9 @@
 
 | Kind | Mutability | Notes |
 |---|---|---|
-| Primitives (`int`, `float`, `bool`, ...) | Mutable value types | `x = x + 1` always legal |
+| Primitives (`int`, `float`, `bool`, ...) | Mutable value types | `val = val + 1` always legal |
 | `struct` / `struct+` / `struct*` | **Immutable** | No field-assignment syntax exists. The only way to get a "changed" struct is `with` |
-| `list<T>` / `list<T, N>` | Mutable container | `append` (growable) or index-assignment (fixed); elements may themselves be immutable structs |
+| `list<T>` / `list<T, N>` | Mutable container | `insert` (growable) or index-assignment (fixed); elements may themselves be immutable structs |
 
 ---
 
@@ -27,16 +27,16 @@
 area as 2
 newRoom as room with area
 
-area as 20
+area = 20
 name as "Bigger Office"
 biggerOffice as office with (area, name)
 ```
 
 ```rust
-let area = Squarefeet::new(2);
+let mut area: Option<Squarefeet> = Squarefeet::new(2);
 let new_room = Room { area, ..room };
 
-let area = Squarefeet::new(20);
+area = Squarefeet::new(20);
 let name = "Bigger Office".to_string();
 let bigger_office = Room { area, name, ..office };
 ```

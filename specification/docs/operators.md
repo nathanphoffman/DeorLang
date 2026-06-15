@@ -14,13 +14,13 @@
 **Integer division** truncates toward zero — `5 / 2 = 2`, not `2.5`. Mix `int` and `float` to get a float result: `5.0 / 2 = 2.5`. This follows Rust's behavior and may surprise developers coming from Python or JavaScript.
 
 ```
-int a = 5 / 2       # 2 — truncated
-float b = 5.0 / 2   # 2.5
+int quo = 5 / 2       # 2 — truncated
+float flt = 5.0 / 2   # 2.5
 ```
 
 Exponentiation uses the `pow` built-in — no `**` operator:
 ```
-int n = pow(2, 10)    # 1024
+int val = pow(2, 10)    # 1024
 ```
 
 ---
@@ -39,9 +39,9 @@ int n = pow(2, 10)    # 1024
 `is` and `is not` are two-word keyword operators — not symbols. `known` is a reserved word that changes the meaning of `is`:
 
 ```
-x is 5          # equality — x == 5
-x is not 5      # inequality — x != 5
-(x is known)    # forced unwrap — panics if None (validator types only)
+val is 5          # equality — val == 5
+val is not 5      # inequality — val != 5
+(val is known)    # forced unwrap — panics if None (validator types only)
 ```
 
 ---
@@ -55,7 +55,7 @@ x is not 5      # inequality — x != 5
 | `not` | Logical NOT (unary) | `!` |
 
 ```
-if x > 0 and x < 100
+if val > 0 and val < 100
     ...
 
 if not is_valid
@@ -93,10 +93,10 @@ Deor follows Rust's operator precedence. From highest to lowest, the operators y
 | 6 (lowest) | `or` | Logical OR |
 
 ```
-not x and y           # (not x) and y  — not binds tighter than and
-a + b * c             # a + (b * c)    — standard math precedence
-x is 0 or y > 5      # (x is 0) or (y > 5) — comparisons before logical
-x is not 0 and y > 0  # (x is not 0) and (y > 0)
+not val and flag           # (not val) and flag  — not binds tighter than and
+left + right * mul         # left + (right * mul)    — standard math precedence
+val is 0 or num > 5      # (val is 0) or (num > 5) — comparisons before logical
+val is not 0 and num > 0  # (val is not 0) and (num > 0)
 ```
 
 When in doubt, use parentheses. Deor has no operator precedence surprises beyond the standard math rules.

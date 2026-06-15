@@ -37,15 +37,15 @@ let msg = format!("Hello {}, welcome to Deor", name);
 
 ## Length
 
-`len(s)` returns the number of characters as `int`. Works on strings and lists.
+`len(val)` returns the number of characters as `int`. Works on strings and lists.
 
 ```
 string label = "hello"
-int n = len(label)
+int cnt = len(label)
 ```
 
 ```rust
-let n: i32 = label.len() as i32;
+let cnt: i32 = label.len() as i32;
 ```
 
 ---
@@ -55,10 +55,10 @@ let n: i32 = label.len() as i32;
 `is` is structural — same content, same result, regardless of how the string was created.
 
 ```
-string a = "hello"
-string b = "hello"
-bool same = a is b        # true
-bool diff = a is not b    # false
+string str1 = "hello"
+string str2 = "hello"
+bool same = str1 is str2        # true
+bool diff = str1 is not str2    # false
 ```
 
 ---

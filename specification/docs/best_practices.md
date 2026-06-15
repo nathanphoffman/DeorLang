@@ -15,13 +15,14 @@ fn int sum_rolls(list<RollResult> rolls)
 
     for roll in rolls
         value in roll
-        sum = sum + value
+        int val = value else 0
+        sum = sum + val
 
     return sum
 ```
 
 **Exempt — one-liner, no blank line needed:**
 ```
-fn int square(int x)
-    x * x
+fn int square(int val)
+    val * val
 ```

@@ -1,24 +1,28 @@
 # Variables
 
-## `as` — Literal-Derived Bindings (Compile-Time Only)
+## `as` — Shape-Derived Bindings
 
-`as` derives a binding's type from a literal value. It cannot be used with runtime expressions.
+`as` creates a binding whose type is derived from the shape of the right-hand side at compile time. It is used in three forms:
+
+### Scalar literals
+
+The type is inferred from the literal value. String, int, float, and bool literals each produce their respective types.
 
 ```
 sum as 0
-room_list as [kitchen, office, bedroom]
+label as "Office"
+flag as true
 ```
 
 ```rust
 let sum = 0;
-let room_list = vec![kitchen.clone(), office.clone(), bedroom.clone()];
+let label = "Office".to_string();
+let flag = true;
 ```
 
-**Conversion notes:** if `Room` isn't already declared via `struct`, the transpiler must **synthesize a matching struct definition** from the literal's shape — this is the core "derive a type from data" feature inherited from TS's `as const`. String literals become `.to_string()` (owned) or `&str` (borrowed) depending on how the binding is used downstream.
+### Struct construction
 
-### Struct Construction
-
-Structs are constructed with `()`. Every field must already be a variable in scope, and the variable name must match the struct field name exactly. There is no `field: value` pair syntax. Parens are always required, even for a single field.
+Structs are constructed with `()`. Every field must already be a variable in scope, and the variable name must match the struct field name exactly. There is no `field: value` pair syntax. Parens are always required, even for a single field. The type is inferred from which declared struct matches the given field names.
 
 ```
 area as 9
@@ -34,7 +38,7 @@ let occupied = true;
 let room = Room { area, name, occupied };
 ```
 
-This mirrors destructuring exactly — `in` and `as` are the direction:
+This mirrors destructuring exactly — `in` and `as` are opposite directions:
 
 ```
 (area, name) in room      # extract fields from a struct
@@ -49,6 +53,52 @@ label = name
 entry as (label)
 ```
 
+### List construction
+
+A list literal `[item1, item2, ...]` constructs a `list<T>` whose element type is inferred from the items. All items must be named variables of the same type already in scope.
+
+```
+room_list as [kitchen, office, bedroom]
+```
+
+```rust
+let room_list = vec![kitchen.clone(), office.clone(), bedroom.clone()];
+```
+
+An empty list `[]` cannot infer its element type — use an explicit typed declaration instead:
+
+```
+list<Room> result = []    # correct — type explicit
+result as []              # transpiler error — element type unknown
+```
+
+---
+
+**What `as` is not for:**
+
+`as` is the type-inferring form — like `:=` in Go. An explicit type annotation is never written with `as`. When you have a type, use `=`.
+
+```
+count as 0          # correct — type inferred as int
+int count as 0      # transpiler error — type annotation not allowed with as
+int count = 0       # correct — explicit type with =
+```
+
+`as` is also not for function calls, arithmetic, or expressions where the type does not come from structural shape. Those use `Type name = expr`:
+
+```
+int val = rand(1, 10)          # runtime computation — explicit type required
+Room room = some_function()  # function return — explicit type required
+```
+
+Rebinding from an existing variable is not a valid use of `as`:
+
+```
+copy as original    # transpiler error — use Type name = original instead
+```
+
+Record update (`with`) also uses `as` — see [Immutability](immutability.md).
+
 ---
 
 ## Explicit Typing — Runtime Values
@@ -56,18 +106,18 @@ entry as (label)
 Any value that depends on a function call or other runtime computation must use `Type name = expr`.
 
 ```
-int t = rand(1, 10)
+int val = rand(1, 10)
 string pick = random_room_name(rooms)
 list<int> result = []
 ```
 
 ```rust
-let t: i32 = rand(1, 10);
+let val: i32 = rand(1, 10);
 let pick: String = random_room_name(&rooms);
 let mut result: Vec<i32> = Vec::new();
 ```
 
-**Conversion notes:** a `list<T> name = []` binding that's later `append`ed must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
+**Conversion notes:** a `list<T> name = []` binding that's later `insert`ed into must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
 
 ---
 
@@ -91,7 +141,7 @@ Constants are immutable primitive bindings. They use `const` as a prefix, must b
 const int DELAY_TIME = 500
 const string APP_NAME = "Deor"
 const bool DEBUG = false
-const float PI = 3.14159
+const float PHI = 1.61803
 ```
 
 ```rust
@@ -134,7 +184,7 @@ Hex literals (`0xFF`) and binary literals (`0b1010`) are deferred to v2. Use a `
 Declaring a variable with a validator type makes it an option-type. Assignment runs the predicate — the variable is truthy (`Some`) or falsy (`None`) as a result.
 
 ```
-Roll r = rand(1, 20)    # Some if predicate passes, None if not
+Roll roll = rand(1, 20)    # Some if predicate passes, None if not
 ```
 
 ### Initializing to None
@@ -156,9 +206,9 @@ This is the preferred way to declare a "not yet determined" validator type value
 Reassigning a validator type re-runs the predicate. The variable may transition between `Some` and `None` through a failing value — this is expected behavior, not an error.
 
 ```
-Roll r = 5      # Some(Roll(5))
-r = 150         # None — fails Roll predicate (n <= 100)
-r = 10          # Some(Roll(10)) again
+Roll roll = 5      # Some(Roll(5))
+roll = 150         # None — fails Roll predicate (val <= 100)
+roll = 10          # Some(Roll(10)) again
 ```
 
 The transpiler will eventually catch predicate failures on literals at transpile time. Currently all non-literal predicate failures are runtime.

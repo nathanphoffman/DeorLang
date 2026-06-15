@@ -56,12 +56,12 @@ let conn: Connection = Connect(
 
 ```
 # this is a comment
-int x = 5    # inline comment
+int val = 5    # inline comment
 ```
 
 ```rust
 // this is a comment
-let x: i32 = 5;    // inline comment
+let val: i32 = 5;    // inline comment
 ```
 
 Only `#` is valid — `//`, `/*`, `*/`, and `--` are syntax errors in Deor.

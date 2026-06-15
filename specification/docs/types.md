@@ -31,21 +31,30 @@ fn int byte_count(bytes data)
 
 A `type` definition wraps a base primitive with a predicate. The predicate body is required — a `type` with no constraint adds no meaning over the base type, so use the base type directly instead. The transpiler errors on a `type` definition with an empty body.
 
-The body is an implicit `bool` expression over the parameter. A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.
+The body evaluates to a `bool`. Simple predicates are a single boolean expression; predicates that need intermediate values may declare bindings before the final bool expression, following the same rules as a function body.
+
+A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.
 
 ```
-type Squarefeet(int n)
-    n >= 0 and sqrt(n) == floor(sqrt(n))
+type Squarefeet(int val)
+    float flt = to_float(val)
+    NonNegFloat root_nf = sqrt(flt)
+    float root_f = root_nf else 0.0
+    int root = floor(root_f)
+    root * root is val
 ```
+
+`sqrt` returns `NonNegFloat` (a stdlib validator type — `None` for negative input). Each call result is stored before being passed to the next function. Using `else 0.0` recovers safely: a negative `val` makes `sqrt` return `None`, `else` gives `0.0`, `floor` gives `0`, and `0 * 0 is val` fails — no separate `val >= 0` guard needed.
 
 ```rust
 #[derive(Clone, Copy, PartialEq, Debug)]
 struct Squarefeet(i32);
 
 impl Squarefeet {
-    fn new(n: i32) -> Option<Self> {
-        if n >= 0 && (n as f64).sqrt().fract() == 0.0 {
-            Some(Squarefeet(n))
+    fn new(val: i32) -> Option<Self> {
+        let root: i32 = NonNegFloat::new(val as f64).map(|v| v.0).unwrap_or(0.0).floor() as i32;
+        if root * root == val {
+            Some(Squarefeet(val))
         } else {
             None
         }
@@ -85,14 +94,14 @@ if my_string           # transpiler error
 ```
 Squarefeet area = 9
 if area
-    int n = (area is known)
+    int val = (area is known)
 if not area
     print("no value")
 ```
 
 ```rust
 if area.is_some() {
-    let n: i32 = area.unwrap().0;
+    let val: i32 = area.unwrap().0;
 }
 if area.is_none() {
     print("no value");
@@ -119,17 +128,17 @@ let mut area: Option<Squarefeet> = None;
 
 ### Forced Unwrap — `is known`
 
-`(v is known)` asserts the value is `Some` and extracts the inner primitive. Panics at runtime if `None`. Use only when you are certain the value is present — typically inside an `if v` block where presence is already confirmed.
+`(val is known)` asserts the value is `Some` and extracts the inner primitive. Panics at runtime if `None`. Use only when you are certain the value is present — typically inside an `if val` block where presence is already confirmed.
 
 ```
-Roll r = roll_die(d20)
-if r
-    int n = (r is known)    # always safe inside if r
+Roll roll = roll_die(d20)
+if roll
+    int val = (roll is known)    # always safe inside if roll
 ```
 
 ```rust
-if r.is_some() {
-    let n: i32 = r.unwrap().0;
+if roll.is_some() {
+    let val: i32 = roll.unwrap().0;
 }
 ```
 
@@ -150,11 +159,11 @@ let sum: i32 = value.unwrap().0 + 2;
 `value else default` returns the inner primitive if `Some`, or the default if `None`. Always safe — no panic risk.
 
 ```
-int n = area else 0
+int val = area else 0
 ```
 
 ```rust
-let n: i32 = area.map(|v| v.0).unwrap_or(0);
+let val: i32 = area.map(|v| v.0).unwrap_or(0);
 ```
 
 `else` here is null-coalescing — distinct from `if/else` block syntax. `or` and `and` remain the logical `||` / `&&` operators.

@@ -5,8 +5,8 @@
 Return type is written as a prefix before the function name. Parameters follow `Type name` order.
 
 ```
-fn int add(int a, int b)
-    a + b
+fn int add(int left, int right)
+    left + right
 ```
 
 ```rust
@@ -39,9 +39,9 @@ The entry point `fn main()` follows this same rule — no return type, already c
 Tuple return types must name each element — the names document what each position means and must match what the body returns.
 
 ```
-fn (int quotient, int remainder) divmod(int a, int b)
-    int quotient = a / b
-    int remainder = a % b
+fn (int quotient, int remainder) divmod(int left, int right)
+    int quotient = left / right
+    int remainder = left % right
     return (quotient, remainder)
 ```
 
@@ -60,11 +60,11 @@ The body must define variables with exactly the declared return names before ret
 Use `in` to destructure a tuple return. Your chosen names are bound positionally — first declared element goes to the first name you provide, second to the second, and so on.
 
 ```
-(q, r) in divmod(a, b)    # q = quotient, r = remainder
-print(q)
-print(r)
+(quo, rem) in divmod(num, div)    # quo = quotient, rem = remainder
+print(quo)
+print(rem)
 
-(x, y) in divmod(c, d)    # different names for a second call — no conflict
+(out, rst) in divmod(val, amt)    # different names for a second call — no conflict
 ```
 
 ```rust
@@ -85,8 +85,8 @@ The declared return names (`quotient`, `remainder`) tell you what each position 
 - **Non-tail exits always require `return`**, regardless of bindings.
 
 ```
-fn int square(int x)
-    x * x
+fn int square(int val)
+    val * val
 ```
 
 ```rust
@@ -96,10 +96,10 @@ fn square(x: i32) -> i32 {
 ```
 
 ```
-fn int abs(int x)
-    if x < 0
-        return -x
-    return x
+fn int abs(int val)
+    if val < 0
+        return -val
+    return val
 ```
 
 ```rust
@@ -123,9 +123,9 @@ A function whose return type is a validator type may return `None` through its r
 fn Roll find_best(list<Roll> rolls)
     Roll best = none
 
-    for r in rolls
-        if r
-            best = r
+    for roll in rolls
+        if roll
+            best = roll
 
     return best    # may be None if rolls is empty or all None
 ```
@@ -139,10 +139,10 @@ Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
 `throw` is an unrecoverable hard stop — transpiles to `panic!()` in Rust. Takes a string message. Use `[using error_handler]` for recoverable/handled errors instead.
 
 ```
-fn int divide(int a, int b)
-    if b is 0
+fn int divide(int left, int right)
+    if right is 0
         throw "division by zero"
-    return a / b
+    return left / right
 ```
 
 ```rust
@@ -165,16 +165,16 @@ All callable values are named top-level `fn`s. There is no anonymous-function sy
 ```
 fn list<int> doubled(list<int> nums)
     list<int> result = []
-    for n in nums
-        result insert n * 2
+    for num in nums
+        result insert num * 2
     return result
 ```
 
 ```rust
 fn doubled(nums: &Vec<i32>) -> Vec<i32> {
     let mut result: Vec<i32> = Vec::new();
-    for n in nums {
-        result.push(n * 2);
+    for num in nums {
+        result.push(num * 2);
     }
     return result;
 }
@@ -191,9 +191,9 @@ Annotations appear on the line(s) immediately above `fn`. Multiple annotations s
 ```
 [test]
 [deprecated]
-fn Roll old_roll(int n)
-    Roll r = n
-    return r
+fn Roll old_roll(int val)
+    Roll roll = val
+    return roll
 ```
 
 | Annotation | Effect | Rust equivalent |
@@ -266,7 +266,7 @@ filter(rooms, "Kitchen") using match_by_query
 
 ### Example — void error handler
 
-`[using alias: T]` with no `->O` means the handler returns nothing. Inline struct construction works inside the alias call — the type is known from the annotation.
+`[using alias: T]` with no `->O` means the handler returns nothing. The struct must be captured in a named variable before being passed — inline construction at the call site is not allowed, consistent with the named-args rule.
 
 ```
 struct Error
@@ -279,23 +279,24 @@ fn Roll parse_roll(string input)
 
     message as "Parse failed"
     body as input
-    error_handler((message, body))      # constructs Error inline, calls handler
+    Error err = (message, body)
+    error_handler(err)
 
     return result
 ```
 
 ```
-fn log_error(Error e)
-    (message, body) in e
+fn log_error(Error err)
+    (message, body) in err
     print(message)
     print(body)
 
-fn panic_error(Error e)
-    (message, body) in e
+fn panic_error(Error err)
+    (message, body) in err
     # hard stop
 
-Roll r = parse_roll("abc") using log_error
-Roll r2 = parse_roll("abc") using panic_error
+Roll roll = parse_roll("abc") using log_error
+Roll roll2 = parse_roll("abc") using panic_error
 ```
 
 **Conversion notes:**
