@@ -10,9 +10,9 @@ if (!inputPath || !outputPath) {
   process.exit(1);
 }
 
-const src = readFileSync(inputPath, 'utf8');
+const fileAsText = readFileSync(inputPath, 'utf8');
 
-const lexer  = new Lexer(src);
+const lexer  = new Lexer(fileAsText);
 const parser = new Parser(lexer);
 const prog   = parser.parseProgram();
 
