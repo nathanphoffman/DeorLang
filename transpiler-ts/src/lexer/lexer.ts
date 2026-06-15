@@ -14,18 +14,18 @@ export class Lexer {
     this.tokenize(input);
   }
 
-  nextToken(): Token {
+  getEOFTokenIfEOF(): Token | undefined {
     if (this.pos >= this.tokens.length) {
       return { type: TokenType.EOF, literal: '', line: 0 };
     }
-    return this.tokens[this.pos++];
+  }
+
+  nextToken(): Token {
+    return this.getEOFTokenIfEOF() ?? this.tokens[this.pos++];
   }
 
   peek(): Token {
-    if (this.pos >= this.tokens.length) {
-      return { type: TokenType.EOF, literal: '', line: 0 };
-    }
-    return this.tokens[this.pos];
+    return this.getEOFTokenIfEOF() ?? this.tokens[this.pos];
   }
 
   private tokenize(input: string): void {
@@ -37,7 +37,8 @@ export class Lexer {
       const line = lines[i].trimEnd();
       if (!line) continue;
 
-      const [indentLevel, charPos] = measureIndent(line);
+      const indentLevel = measureIndent(line);
+      const charPos = indentLevel;
 
       if (charPos < line.length && line[charPos] === '#') continue;
 
@@ -88,14 +89,10 @@ export class Lexer {
   }
 }
 
-function measureIndent(line: string): [number, number] {
+function measureIndent(line: string): number {
+  const TAB = '\t';
   let level = 0;
-  let pos = 0;
-  while (pos < line.length) {
-    if (line[pos] === ' ') { level++; pos++; }
-    else if (line[pos] === '\t') { level = Math.floor(level / 4 + 1) * 4; pos++; }
-    else break;
-  }
-  return [level, pos];
+  while (level < line.length && line[level] === TAB) level++;
+  return level;
 }
 
