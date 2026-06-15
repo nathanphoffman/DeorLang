@@ -10,9 +10,9 @@ Extraction enforces declaration order, symmetric with construction. `(name, area
 
 ---
 
-## `list<ValidatorType>`
+## List of Validator Type
 
-Is `list<Roll>` valid? It would be `Vec<Option<Roll>>` in Rust. Iterating it gives `Option<Roll>` elements, each truthy/falsy. Useful but semantics need to be explicit — especially around `insert`, construction, and whether a failed predicate on assignment silently inserts `None` into the list.
+Is `Roll list rolls` valid (a list whose element type is a validator type)? It would be `Vec<Option<Roll>>` in Rust. Iterating it gives `Option<Roll>` elements, each truthy/falsy. Useful but semantics need to be explicit — especially around `insert`, construction, and whether a failed predicate on assignment silently inserts `None` into the list.
 
 ---
 

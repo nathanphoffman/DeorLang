@@ -10,7 +10,7 @@ Add a blank line before `return` in any function body that contains more than on
 
 **Recommended:**
 ```
-fn int sum_rolls(list<RollResult> rolls)
+fn int sum_rolls(RollResult list rolls)
     sum as 0
 
     for roll in rolls

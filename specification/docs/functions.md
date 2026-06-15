@@ -38,7 +38,7 @@ Void functions **cannot contain `return` statements**. Early exit is a transpile
 
 ```
 # Correct — use if/else to express all paths
-fn process(list<Item> items, bool skip_invalid)
+fn process(Item list items, bool skip_invalid)
     for item in items
         valid in item
         if skip_invalid and not valid
@@ -49,7 +49,7 @@ fn process(list<Item> items, bool skip_invalid)
 
 ```
 # Transpiler error — early return not allowed in void functions
-fn process(list<Item> items, bool skip_invalid)
+fn process(Item list items, bool skip_invalid)
     for item in items
         valid in item
         if skip_invalid and not valid
@@ -145,7 +145,7 @@ fn abs(val: i32) -> i32 {
 A function whose return type is a validator type may return `None` through its return variable — the caller knows to check. `return none` is a transpiler error; always return a named typed variable.
 
 ```
-fn Roll find_best(list<Roll> rolls)
+fn Roll find_best(Roll list rolls)
     Roll best = none
 
     for roll in rolls
@@ -188,8 +188,9 @@ fn divide(left: i32, right: i32) -> i32 {
 All callable values are named top-level `fn`s. There is no anonymous-function syntax, and functions may not be defined inside other function bodies. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
 
 ```
-fn list<int> doubled(list<int> nums)
-    list<int> result = []
+fn int list doubled(int list nums)
+    list result = []
+        using shape int
     for num in nums
         result insert num * 2
     return result
@@ -278,8 +279,9 @@ The annotation is **required at the call site** — calling a `[using]`-annotate
 
 ```
 [using predicate: Room->bool]
-fn list<Room> filter(list<Room> items)
-    list<Room> result = []
+fn Room list filter(Room list items)
+    list result = []
+        using shape Room
 
     for item in items
         if predicate(item)              # alias called in body
@@ -304,8 +306,9 @@ struct RoomSearch
     string query
 
 [using predicate: RoomSearch->bool]
-fn list<Room> filter(list<Room> items, string query)
-    list<Room> result = []
+fn Room list filter(Room list items, string query)
+    list result = []
+        using shape Room
 
     for item in items
         search as (item, query)
@@ -360,15 +363,53 @@ Roll roll2 = parse_roll("abc") using panic_error
 
 ---
 
+## The Decorator + `using` System
+
+Deor uses one unified mechanism wherever a function needs something provided by its caller: declare the requirement with a `[...]` decorator, fulfill it with `using` at the call site.
+
+Two flavors of the same pattern:
+
+| Decorator | Provides | `using` form |
+|---|---|---|
+| `[using alias: T->O]` | A named function (first-class function passing) | `using fn_name` |
+| `[shape: T]` | A concrete type (generic type parameter) | `using shape ConcreteType` |
+
+Both follow the same contract — the decorator makes the requirement visible; `using` at the call site fulfills it. Both are required; omitting either is a transpiler error.
+
+**This is how Deor passes functions as values.** There are no lambdas, no anonymous functions, no closures. Instead, define a named top-level function and pass it with `using fn_name`. The decorator on the receiving function declares the expected signature; the body uses the alias name to call it.
+
+```
+[using transform: int->int]
+fn int list apply_all(int list nums)
+    list result = []
+        using shape int
+    for num in nums
+        int out = transform(num)
+        result insert out
+    return result
+
+fn int double(int num)
+    return num * 2
+
+apply_all(nums)
+    using double
+```
+
+`using double` is the equivalent of passing a lambda. The function `double` is named, top-level, and fills the `transform` slot declared by the decorator — consistent with Deor's rule that everything must be nameable.
+
+---
+
 ## `[shape: T]` — Generics
 
-Generics are intentionally anti-pattern in Deor — the `[shape: T]` annotation makes them visually deliberate. `using shape ConcreteType` is always required at the call site; there is no implicit type inference from arguments.
+No angle brackets anywhere. Generics in Deor are declared with the `[shape: T]` decorator and provided by the caller with `using shape ConcreteType`. `using shape` is always required at the call site; there is no implicit type inference from arguments.
+
+Inside a `[shape: T]` function, `list` means a list of T throughout the signature and body. Write bare `list` — T is implicit.
 
 ```
 [shape: T]
 [using predicate: T->bool]
-fn list<T> filter(list<T> items)
-    list<T> result = []
+fn list filter(list items)
+    list result = []
 
     for item in items
         if predicate(item)
@@ -377,9 +418,9 @@ fn list<T> filter(list<T> items)
     return result
 ```
 
-### Call site — multi-line `using` syntax
+### Call site
 
-When a function has multiple `using` clauses (shape and/or behavior), they stack on indented lines below the call with no blank lines between them — the same rule as compact ternaries.
+When a function has multiple `using` clauses, they stack on indented lines below the call. `using shape` always comes first.
 
 ```
 filter(rooms)
@@ -387,7 +428,7 @@ filter(rooms)
     using match_name
 ```
 
-All `using` clauses are required. Missing any is a transpiler error. The `using shape` line always comes first when present.
+All `using` clauses are required. Missing any is a transpiler error.
 
 ```rust
 fn filter<T: Clone>(items: Vec<T>, predicate: fn(T) -> bool) -> Vec<T> {
@@ -404,7 +445,39 @@ fn filter<T: Clone>(items: Vec<T>, predicate: fn(T) -> bool) -> Vec<T> {
 filter::<Room>(rooms, match_name)
 ```
 
+### Concrete (non-generic) list functions
+
+When the element type is fixed at definition time, use prefix notation in the signature. No `[shape: T]` decorator, no `using shape` at call sites.
+
+```
+fn Room list occupied_rooms(Room list rooms)
+    list result = []
+        using shape Room
+    for room in rooms
+        occupied in room
+        if occupied
+            result insert room
+    return result
+```
+
+```
+list occ = occupied_rooms(rooms)    # shape inferred from return type
+```
+
+```rust
+fn occupied_rooms(rooms: &Vec<Room>) -> Vec<Room> {
+    let mut result: Vec<Room> = Vec::new();
+    for room in rooms {
+        if room.occupied {
+            result.push(room.clone());
+        }
+    }
+    result
+}
+```
+
 **Notes:**
 - One `[shape: T]` parameter per function — multiple shape parameters are v2
-- `T` can be used anywhere in the function signature: parameters, return type, local variables
+- `T` flows through the entire signature: parameters, return type, and local `list` declarations
 - `[shape: T]` stacks with `[using]` — declare both, both required at call site
+- The `[...]` + `using` pattern for types (`[shape: T]` / `using shape`) and for functions (`[using alias]` / `using fn_name`) is the same mechanism applied to different kinds of requirements

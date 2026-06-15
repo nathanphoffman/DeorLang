@@ -1,4 +1,4 @@
-import * as AST from '../parser/ast';
+import * as AST from './ast';
 import { renderFunction, renderParam, renderRustType } from './emitters/function';
 import { renderAsBinding, renderTypedBinding } from './emitters/binding';
 import { renderCallStmt } from './emitters/builtins';

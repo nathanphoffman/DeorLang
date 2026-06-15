@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'fs';
-import { Lexer } from './lexer/lexer';
-import { Parser } from './parser/parser';
-import { Generator } from './codegen/codegen';
+import { Lexer } from './lexer';
+import { Parser } from './parser';
+import { Generator } from './codegen';
 
 const [,, inputPath, outputPath] = process.argv;
 

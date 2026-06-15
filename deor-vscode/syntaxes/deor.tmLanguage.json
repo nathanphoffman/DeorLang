@@ -76,11 +76,8 @@
       "match": "\\b(insert|remove|at)\\b"
     },
     "list-type": {
-      "match": "\\b(list)(<[A-Za-z0-9_,\\s]*>)?",
-      "captures": {
-        "1": { "name": "support.type.deor" },
-        "2": { "name": "support.type.deor" }
-      }
+      "name": "support.type.deor",
+      "match": "\\blist\\b"
     },
     "builtin-types": {
       "name": "support.type.deor",

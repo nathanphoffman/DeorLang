@@ -1,5 +1,5 @@
-import { Lexer } from '../lexer/lexer';
-import { Token, TokenType } from '../lexer/token';
+import { Lexer } from './lexer';
+import { Token, TokenType } from './token';
 import * as AST from './ast';
 
 export class Parser {
@@ -171,8 +171,9 @@ export class Parser {
 
     while (this.current.type === TokenType.KW_ELSE) {
       this.advance(); // consume 'else'
+      const afterElse = this.current.type as TokenType;
 
-      if (this.current.type === TokenType.KW_IF) {
+      if (afterElse === TokenType.KW_IF) {
         // else if branch
         this.advance(); // consume 'if'
         const elseIfCondition = this.parseExpr();

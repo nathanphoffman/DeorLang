@@ -9,7 +9,7 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 | Category | Convention | Examples |
 |---|---|---|
 | Built-in primitives | lowercase | `int`, `float`, `bool`, `string`, `bytes` |
-| Built-in generics | lowercase | `list<T>`, `list<T, N>` |
+| Built-in generics | lowercase | `list` |
 | User-defined types (structs, validator types) | PascalCase, 3+ chars | `Room`, `RollResult`, `Squarefeet` |
 | Functions, variables, parameters, struct fields | snake_case, 3+ chars | `roll_die`, `total_area`, `room_list` |
 | Constants | SCREAMING_SNAKE_CASE, 3+ chars | `DELAY_TIME`, `MAX_RETRIES` |
@@ -69,8 +69,10 @@ All `in` extractions must appear before any logic (assignments, expressions, con
 fn RollResult roll_die(Die die)
     (sides, label) in die
 
-    int raw = rand(1, sides)
+    min as 1
+    int raw = rand(min, sides)
     Roll value = raw
+    string source = label
     result as (value, source)
 
     return result
@@ -148,7 +150,7 @@ Returning `none` directly from a function is a transpiler error. Always return a
 
 **Correct:**
 ```
-fn Roll find_best(list<RollResult> rolls)
+fn Roll find_best(RollResult list rolls)
     Roll best = none
     for roll in rolls
         value in roll
@@ -160,7 +162,7 @@ fn Roll find_best(list<RollResult> rolls)
 
 **Incorrect — transpiler errors:**
 ```
-fn Roll find_best(list<RollResult> rolls)
+fn Roll find_best(RollResult list rolls)
     return none
 ```
 

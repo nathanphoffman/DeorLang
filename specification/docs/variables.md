@@ -55,7 +55,7 @@ entry as (label)
 
 ### List construction
 
-A list literal `[item1, item2, ...]` constructs a `list<T>` whose element type is inferred from the items. All items must be named variables of the same type already in scope.
+A list literal `[item1, item2, ...]` constructs a list whose element type is inferred from the items. All items must be named variables of the same type already in scope.
 
 ```
 room_list as [kitchen, office, bedroom]
@@ -65,11 +65,12 @@ room_list as [kitchen, office, bedroom]
 let room_list = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 ```
 
-An empty list `[]` cannot infer its element type — use an explicit typed declaration instead:
+An empty list `[]` cannot infer its element type — use an explicit typed declaration with `using shape` instead:
 
 ```
-list<Room> result = []    # correct — type explicit
-result as []              # transpiler error — element type unknown
+list result = []        # correct — shape declared on continuation line
+    using shape Room
+result as []            # transpiler error — element type unknown
 ```
 
 ---
@@ -108,7 +109,8 @@ Any value that depends on a function call or other runtime computation must use 
 ```
 int val = rand(1, 10)
 string pick = random_room_name(rooms)
-list<int> result = []
+list result = []
+    using shape int
 ```
 
 ```rust
@@ -117,7 +119,7 @@ let pick: String = random_room_name(&rooms);
 let mut result: Vec<i32> = Vec::new();
 ```
 
-**Conversion notes:** a `list<T> name = []` binding that's later `insert`ed into must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
+**Conversion notes:** a `list` binding that's later `insert`ed into must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
 
 ---
 

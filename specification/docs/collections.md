@@ -1,11 +1,41 @@
 # Collections
 
+## Declaring a List
+
+`list` is the only collection type. Its element type is always provided with `using shape` on the continuation line. The transpiler marks the binding `mut` automatically when the list is mutated.
+
+```
+list result = []
+    using shape int
+
+list rooms = [kitchen, office, bedroom]
+    using shape Room
+```
+
+```rust
+let mut result: Vec<i32> = Vec::new();
+let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
+```
+
+When a list is the return value of a function with a known concrete element type, the shape is inferred from the return type — no `using shape` required at the assignment:
+
+```
+[shape: Room]
+fn Room list occupied_rooms(Room list rooms)
+    ...
+
+list occ = occupied_rooms(rooms)    # shape inferred from fn return type
+```
+
+---
+
 ## Index Read
 
 Elements are read by index using bracket notation. Zero-indexed, matching Rust's behavior.
 
 ```
-list<int> scores = [10, 20, 30, 40]
+list scores = [10, 20, 30, 40]
+    using shape int
 int first = scores[0]    # 10
 int last = scores[3]     # 40
 ```
@@ -16,62 +46,56 @@ let first: i32 = scores[0];
 let last: i32 = scores[3];
 ```
 
-Index must be a concrete integer expression — a variable or literal. Dynamic or computed indices are fine:
+Index must be an integer variable or literal. Dynamic computed indices are fine:
 
 ```
 int idx = 2
 int mid = scores[idx]    # 30
 ```
 
-Out-of-bounds access is a runtime panic (same as Rust). No bounds-checking syntax in v1.
-
-Fixed-size lists (`list<T, N>`) support index read identically.
+Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts on all index operations automatically.
 
 ---
 
-## `list<T>` — Dynamic (Vec)
+## In Function Signatures and Struct Fields
 
-A `list<T>` with no size is heap-allocated and growable. The transpiler marks the binding `mut` automatically based on usage.
+In inline type positions — function parameters, return types, and struct fields — the element type is written as a prefix before `list`. No `using shape` continuation line is needed because the type is already explicit in-place.
 
 ```
-list<int> result = []
-result insert 4
+fn int total_area(Room list rooms)
+    ...
+
+fn Room list occupied_rooms(Room list rooms)
+    ...
+
+struct House
+    string address
+    Room list rooms
 ```
 
 ```rust
-let mut result: Vec<i32> = Vec::new();
-result.push(4);
+fn total_area(rooms: &Vec<Room>) -> i32 { ... }
+fn occupied_rooms(rooms: &Vec<Room>) -> Vec<Room> { ... }
+
+struct House {
+    address: String,
+    rooms: Vec<Room>,
+}
 ```
+
+The pattern is consistent with all other Deor type declarations: `Type name`. A list field `Room list rooms` reads "a list of Room named rooms."
 
 ---
 
-## `list<T, N>` — Fixed-Size (Array)
+## `bytes` vs `list`
 
-A `list<T, N>` with a size is stack-allocated and fixed. `insert` and `remove` are compile-time errors on fixed arrays — use index-assignment instead.
-
-```
-list<int, 4> scores = [10, 20, 30, 40]
-scores[0] = 15
-```
-
-```rust
-let mut scores: [i32; 4] = [10, 20, 30, 40];
-scores[0] = 15;
-```
-
-**Conversion notes:**
-- `list<T, N>` → `[T; N]`: supports **index-assignment** (element mutation), but `insert`/`remove` are **compile-time errors** — fixed arrays can't grow or shrink.
-- A `list<T, N>` field contributes a known size (`N * sizeof(T)`) toward a struct's size cap and `struct+`/auto-value eligibility. An unsized `list<T>` field does not.
-
----
-
-## `bytes` vs `list<int>`
-
-Raw binary data should use `bytes` (`Vec<u8>`), not `list<int>`. `list<int>` is `Vec<i32>` — the wrong width for byte manipulation and incompatible with crate APIs that expect `&[u8]`. Use `bytes` when crossing the Rust interop boundary with binary data; use `list<int>` for collections of integers in Deor logic.
+Raw binary data uses `bytes` (`Vec<u8>`), not `list` with `using shape int`. A list of int is `Vec<i32>` — wrong width for byte manipulation and incompatible with APIs expecting `&[u8]`.
 
 ```
-bytes data = read_raw("file.bin")   # correct — raw binary
-list<int> scores = [10, 20, 30]     # correct — Deor integer list
+bytes data = read_raw("file.bin")    # correct — raw binary
+
+list scores = [10, 20, 30]          # correct — integer list
+    using shape int
 ```
 
 ---
@@ -114,10 +138,16 @@ result.remove(2);
 result.remove(1);
 ```
 
-Brackets are always required, even for a single index. `remove` is a compile-time error on fixed-size `list<T, N>`.
+Brackets are always required, even for a single index.
 
 **Conversion notes:**
 - `insert` without `at` → `Vec::push`
 - `insert at [n]` → `Vec::insert(n, item)`
 - `remove [n]` → `Vec::remove(n)`
 - Multi-remove transpiles to multiple `Vec::remove` calls in descending index order
+
+---
+
+## Fixed-Size Lists
+
+Fixed-size lists (Rust arrays `[T; N]`) are a v2 feature. For v1, use a `rust` block when fixed-size stack allocation is required.

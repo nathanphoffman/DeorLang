@@ -43,7 +43,7 @@ Only these types cross the Deor/Rust boundary — as function parameters into `r
 | `bool` | `bool` |
 | `string` | `String` (available as `&str` via `.as_str()`) |
 | `bytes` | `Vec<u8>` |
-| `list<T>` | `Vec<T>` |
+| `list` (element type `T`) | `Vec<T>` |
 | validator types | `Option<T>` |
 | structs | Rust struct |
 

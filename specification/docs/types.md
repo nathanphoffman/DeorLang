@@ -78,7 +78,7 @@ let bad: Option<Squarefeet> = Squarefeet::new(-1);
 
 A validator type variable is truthy when `Some`, falsy when `None`. Use `if` / `if not` to check presence before using the value.
 
-**Only validator types and `bool` have truthiness.** Plain `int`, `float`, `string`, `list<T>`, and structs are never truthy or falsy on their own — they have no presence/absence concept. Use explicit comparisons instead:
+**Only validator types and `bool` have truthiness.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — they have no presence/absence concept. Use explicit comparisons instead:
 
 ```
 if len(my_list) > 0    # correct — explicit non-empty check
@@ -202,7 +202,7 @@ let safe_cap: i32 = max_capacity.map(|v| v.0).unwrap_or(0);
 A function whose return type is a validator type may return a `None` value through its return variable. `return none` is a transpiler error — always return a named typed variable. The caller knows the return may be `None` because the return type is a validator type.
 
 ```
-fn Roll find_crit(list<RollResult> rolls)
+fn Roll find_crit(RollResult list rolls)
     Roll found = none
 
     for roll in rolls
@@ -267,22 +267,22 @@ struct Room {
 
 | Form | Meaning | Rust representation |
 |---|---|---|
-| `struct Name` | Transpiler decides | `Name` (value) or `Rc<Name>` (reference), based on size + whether any field is an unsized `list<T>` |
+| `struct Name` | Transpiler decides | `Name` (value) or `Rc<Name>` (reference), based on size + whether any field is an unsized `list` |
 | `struct+ Name` | Force value, always | `Name`, `.clone()` is a full (possibly deep) copy |
 | `struct* Name` | Force reference, always | `Rc<Name>`, `.clone()` is a refcount bump |
 
 ```
 struct House
     string address
-    list<Room> rooms       # unsized list -> auto becomes struct*
+    Room list rooms        # unsized list -> auto becomes struct*
 
 struct+ House               # explicit override: always a value, full clone on copy
     string address
-    list<Room> rooms
+    Room list rooms
 ```
 
 **Conversion notes:**
 - The **struct definition itself is identical** regardless of `+`/`*`/auto — only how *usages* are represented changes (`House` vs `Rc<House>`).
-- An **unsized `list<T>` field** makes a struct's clone cost O(n) and unbounded, so it defaults to `*` (reference) unless overridden with `+`.
+- An **unsized `list` field** makes a struct's clone cost O(n) and unbounded, so it defaults to `*` (reference) unless overridden with `+`.
 - `==` is always `#[derive(PartialEq)]` on the underlying struct. `Rc<T>`'s default `PartialEq` already delegates to `T`'s impl in Rust, so structural equality holds for `struct*` types **with no extra work**.
-- A struct containing only primitives and/or `list<T, N>` (fixed-size) fields has a fully known size and is `Copy`-eligible if every field is `Copy`.
+- A struct containing only primitives has a fully known size and is `Copy`-eligible if every field is `Copy`.

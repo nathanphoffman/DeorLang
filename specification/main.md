@@ -24,7 +24,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - [Functions](docs/functions) — `fn`, return rules, no lambdas
 - [Variables](docs/variables) — `as`, explicit typing, reassignment
 - [Types](docs/types) — validator types (`type`), structs (`struct` / `struct+` / `struct*`)
-- [Collections](docs/collections) — `list<T>`, `list<T, N>`, mutation verbs
+- [Collections](docs/collections) — `list`, `using shape`, prefix type syntax, mutation verbs
 - [Conditionals](docs/conditionals) — `if`, `else if`, `else`, compact ternary form
 - [Loops](docs/loops) — `for` collection and numeric iteration
 - [Destructuring](docs/destructuring) — field extraction with `in`

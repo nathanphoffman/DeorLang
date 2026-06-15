@@ -19,9 +19,9 @@ struct Room
 
 struct House
     string address
-    list<Room> rooms
+    Room list rooms
 
-fn int total_area(list<Room> rooms)
+fn int total_area(Room list rooms)
     sum as 0
     for room in rooms
         area in room
@@ -29,15 +29,16 @@ fn int total_area(list<Room> rooms)
         sum = sum + sqm
     return sum
 
-fn list<Room> occupied_rooms(list<Room> rooms)
-    list<Room> result = []
+fn Room list occupied_rooms(Room list rooms)
+    list result = []
+        using shape Room
     for room in rooms
         occupied in room
         if occupied
             result insert room
     return result
 
-fn string random_room_name(list<Room> rooms)
+fn string random_room_name(Room list rooms)
     int count = len(rooms)
     int last = count - 1
     start as 0
@@ -66,15 +67,16 @@ fn main()
     address as "12 Main St"
     house as (address, rooms)
 
-    print(total_area(rooms))
+    int area_sum = total_area(rooms)
+    print(area_sum)
 
-    list<Room> occ = occupied_rooms(rooms)
+    list occ = occupied_rooms(rooms)
     for room in occ
         name in room
         print(name)
 
     area = 25
-    biggerKitchen as kitchen with area
+    bigger_kitchen as kitchen with area
 
     string pick = random_room_name(rooms)
     print(pick)
@@ -165,7 +167,8 @@ fn main() {
     let house = House { address: "12 Main St".to_string(), rooms: rooms.clone() };
     let _ = house; // house constructed; rooms used directly below
 
-    println!("{}", total_area(&rooms));
+    let area_sum: i32 = total_area(&rooms);
+    println!("{}", area_sum);
 
     let occ: Vec<Room> = occupied_rooms(&rooms);
     for room in &occ {
@@ -185,7 +188,7 @@ fn main() {
 
 ## Notable Conversion Decisions
 
-- `House` contains an unsized `list<Room>`, so per the structs spec it would normally default to `struct*` (`Rc<House>`). In this particular `main`, `house` isn't shared across multiple owners, so the transpiler may reasonably keep it a plain value here — the heuristic is a default, not an absolute.
+- `House` contains an unsized `Room list rooms` field, so per the structs spec it would normally default to `struct*` (`Rc<House>`). In this particular `main`, `house` isn't shared across multiple owners, so the transpiler may reasonably keep it a plain value here — the heuristic is a default, not an absolute.
 - `area`, `name`, and `occupied` are declared once with `as` then reassigned with `=` to build multiple rooms. The transpiler emits them as `let mut` because they are reassigned after first declaration. `name` is cloned on each struct construction because `String` is not `Copy`.
 - `Room` contains a `String` field, so it can never be `Copy` — only `Clone`. Every place a `Room` is duplicated (`vec![kitchen.clone(), ...]`, `result.push(room.clone())`) needs an explicit `.clone()` in Rust, even though source never writes anything special.
 - `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` uses `area else 0` (→ `.map(|v| v.0).unwrap_or(0)`) to safely extract the inner `i32` before adding to the sum.
