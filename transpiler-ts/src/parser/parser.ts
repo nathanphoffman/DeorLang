@@ -112,6 +112,11 @@ export class Parser {
       );
     }
 
+    // if / else if / else conditional
+    if (this.current.type === TokenType.KW_IF) {
+      return this.parseIf();
+    }
+
     if (this.current.type !== TokenType.IDENT) {
       throw new Error(
         `line ${this.current.line}: expected identifier to start statement, got ${TokenType[this.current.type]}`
@@ -153,6 +158,39 @@ export class Parser {
     );
   }
 
+  // if condition\n INDENT body DEDENT, with optional else if / else branches
+  private parseIf(): AST.IfStmt {
+    this.advance(); // consume 'if'
+    const condition = this.parseExpr();
+    this.expect(TokenType.NEWLINE);
+    this.expect(TokenType.INDENT);
+    const thenBlock = this.parseBlock();
+
+    const elseIfClauses: AST.ElseIfClause[] = [];
+    let elseBlock: AST.Node[] | null = null;
+
+    while (this.current.type === TokenType.KW_ELSE) {
+      this.advance(); // consume 'else'
+
+      if (this.current.type === TokenType.KW_IF) {
+        // else if branch
+        this.advance(); // consume 'if'
+        const elseIfCondition = this.parseExpr();
+        this.expect(TokenType.NEWLINE);
+        this.expect(TokenType.INDENT);
+        elseIfClauses.push({ condition: elseIfCondition, block: this.parseBlock() });
+      } else {
+        // plain else — must be last branch
+        this.expect(TokenType.NEWLINE);
+        this.expect(TokenType.INDENT);
+        elseBlock = this.parseBlock();
+        break;
+      }
+    }
+
+    return { kind: 'IfStmt', condition, thenBlock, elseIfClauses, elseBlock };
+  }
+
   // comma-separated expressions inside ( ) — used for function call arguments
   private parseArgList(): AST.Node[] {
     const args: AST.Node[] = [];
@@ -164,10 +202,32 @@ export class Parser {
   }
 
   // parses an expression — handles binary ops by checking for an operator after the left side
+  // precedence: arithmetic/comparison first, then and/or chains
   private parseExpr(): AST.Node {
+    let left = this.parseBinaryOp();
+
+    // and/or have lower precedence than comparisons — loop for chaining
+    while (this.current.type === TokenType.KW_AND || this.current.type === TokenType.KW_OR) {
+      const op = this.advance().literal; // 'and' or 'or'
+      const right = this.parseBinaryOp();
+      left = { kind: 'BinaryExpr', left, op, right };
+    }
+
+    return left;
+  }
+
+  // parses arithmetic and comparison operations: left op right
+  private parseBinaryOp(): AST.Node {
     const left = this.parsePrimary();
 
-    // binary expression: left op right
+    // is not — two-word operator, must be checked before plain 'is'
+    if (this.current.type === TokenType.KW_IS && this.peekToken.type === TokenType.KW_NOT) {
+      this.advance(); // consume 'is'
+      this.advance(); // consume 'not'
+      const right = this.parsePrimary();
+      return { kind: 'BinaryExpr', left, op: 'is not', right };
+    }
+
     if (isOperator(this.current.type)) {
       const op = this.advance().literal;
       const right = this.parsePrimary();
@@ -196,8 +256,14 @@ export class Parser {
 }
 
 function isOperator(type: TokenType): boolean {
-  return type === TokenType.PLUS ||
-    type === TokenType.MINUS ||
-    type === TokenType.STAR ||
-    type === TokenType.SLASH;
+  return type === TokenType.PLUS    ||
+    type === TokenType.MINUS        ||
+    type === TokenType.STAR         ||
+    type === TokenType.SLASH        ||
+    type === TokenType.PERCENT      ||
+    type === TokenType.GT           ||
+    type === TokenType.LT           ||
+    type === TokenType.GTE          ||
+    type === TokenType.LTE          ||
+    type === TokenType.KW_IS;
 }

@@ -2,6 +2,7 @@ import * as AST from '../parser/ast';
 import { renderFunction, renderParam, renderRustType } from './emitters/function';
 import { renderAsBinding, renderTypedBinding } from './emitters/binding';
 import { renderCallStmt } from './emitters/builtins';
+import { renderIf, mapOperator } from './emitters/if';
 
 export class Generator {
   private out = '';
@@ -47,6 +48,19 @@ export class Generator {
       return `${pad}${renderCallStmt(node.func, args)}\n`;
     }
 
+    if (node.kind === 'IfStmt') {
+      const condition = this.genExpr(node.condition);
+      const thenBlock = node.thenBlock.map(s => this.genStmt(s, depth + 1)).join('');
+      const elseIfClauses = node.elseIfClauses.map(c => ({
+        condition: this.genExpr(c.condition),
+        block: c.block.map(s => this.genStmt(s, depth + 1)).join(''),
+      }));
+      const elseBlock = node.elseBlock
+        ? node.elseBlock.map(s => this.genStmt(s, depth + 1)).join('')
+        : null;
+      return renderIf(condition, thenBlock, elseIfClauses, elseBlock, pad);
+    }
+
     throw new Error(`unknown statement node: ${(node as AST.Node).kind}`);
   }
 
@@ -55,7 +69,7 @@ export class Generator {
       case 'StringLiteral': return JSON.stringify(node.value);
       case 'IntLiteral': return node.value;
       case 'Identifier': return node.name;
-      case 'BinaryExpr': return `${this.genExpr(node.left)} ${node.op} ${this.genExpr(node.right)}`;
+      case 'BinaryExpr': return `${this.genExpr(node.left)} ${mapOperator(node.op)} ${this.genExpr(node.right)}`;
       default:
         throw new Error(`unknown expression node: ${(node as AST.Node).kind}`);
     }

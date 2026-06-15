@@ -1,5 +1,10 @@
 fn main()
 	x as 10
-	int y = 20 + 10
+	y as 20
 	int sum = x + y
-	print(sum)
+	if sum > 40
+		print(y)
+	else if sum > 25
+		print(sum)
+	else
+		print(x)

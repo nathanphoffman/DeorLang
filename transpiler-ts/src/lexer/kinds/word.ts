@@ -17,6 +17,12 @@ function toKeywordToken(word: string, line: number): Token {
     case 'fn':     return { type: TokenType.KW_FN,     literal: word, line };
     case 'as':     return { type: TokenType.KW_AS,     literal: word, line };
     case 'return': return { type: TokenType.KW_RETURN, literal: word, line };
+    case 'if':     return { type: TokenType.KW_IF,     literal: word, line };
+    case 'else':   return { type: TokenType.KW_ELSE,   literal: word, line };
+    case 'and':    return { type: TokenType.KW_AND,    literal: word, line };
+    case 'or':     return { type: TokenType.KW_OR,     literal: word, line };
+    case 'not':    return { type: TokenType.KW_NOT,    literal: word, line };
+    case 'is':     return { type: TokenType.KW_IS,     literal: word, line };
     default:       return { type: TokenType.IDENT,     literal: word, line };
   }
 }

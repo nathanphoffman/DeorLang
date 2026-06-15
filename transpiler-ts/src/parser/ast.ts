@@ -4,6 +4,7 @@ export type Node =
   | AsBinding
   | TypedBinding
   | CallStmt
+  | IfStmt
   | BinaryExpr
   | StringLiteral
   | IntLiteral
@@ -51,6 +52,19 @@ export interface CallStmt {
   kind: 'CallStmt';
   func: string;
   args: Node[];
+}
+
+export interface ElseIfClause {
+  condition: Node;
+  block: Node[];
+}
+
+export interface IfStmt {
+  kind: 'IfStmt';
+  condition: Node;
+  thenBlock: Node[];
+  elseIfClauses: ElseIfClause[];
+  elseBlock: Node[] | null;
 }
 
 export interface StringLiteral {

@@ -12,6 +12,12 @@ export enum TokenType {
   KW_FN,
   KW_AS,
   KW_RETURN,
+  KW_IF,
+  KW_ELSE,
+  KW_AND,
+  KW_OR,
+  KW_NOT,
+  KW_IS,
 
   LPAREN,
   RPAREN,
@@ -21,7 +27,12 @@ export enum TokenType {
   MINUS,
   STAR,
   SLASH,
+  PERCENT,
   EQUALS,
+  GT,
+  LT,
+  GTE,
+  LTE,
 }
 
 export interface Token {
