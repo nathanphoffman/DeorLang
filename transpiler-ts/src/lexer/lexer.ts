@@ -37,33 +37,49 @@ export class Lexer {
       const line = lines[i].trimEnd();
       if (!line) continue;
 
+      // the number of tabs inward of the line we are on
       const indentLevel = measureIndent(line);
 
       // Indents are single characters = 1 tab, and indents start lines
       //  so the charPos indents leave off at is literally the number of tab-levels
       const charPos = indentLevel;
 
+      // comments shouldn't be processed, hence: continue
       const charPosIsInsideLine = charPos < line.length;
       if (charPosIsInsideLine && isLineComment(line[charPos])) continue;
 
-      const top = indentStack[indentStack.length - 1];
-      if (indentLevel > top) {
-        indentStack.push(indentLevel);
-        this.addToken({ type: TokenType.INDENT, literal: 'INDENT', line: lineNum });
-      } else if (indentLevel < top) {
-        while (indentStack.length > 1 && indentStack[indentStack.length - 1] > indentLevel) {
-          indentStack.pop();
-          this.addToken({ type: TokenType.DEDENT, literal: 'DEDENT', line: lineNum });
-        }
-      }
-
+      this.processIndent(indentStack, indentLevel, lineNum);
       this.lexLine(line.slice(charPos), lineNum);
+
+      // line is completed, 
+      //   therefore a new line must exist between this and the next line
       this.addToken({ type: TokenType.NEWLINE, literal: '\n', line: lineNum });
     }
 
     // add closing dedents & EOF token after all lines are read
     this.addClosingDedents(indentStack);
     this.addToken({ type: TokenType.EOF, literal: '', line: 0 });
+  }
+
+  private processIndent(indentStack: number[], indentLevel: number, lineNum: number): void {
+    const currentIndentLevel = indentStack[indentStack.length - 1];
+    if (indentLevel > currentIndentLevel) {
+      this.indentDeeper(indentStack, indentLevel, lineNum);
+    } else if (indentLevel < currentIndentLevel) {
+      this.indentShallower(indentStack, indentLevel, lineNum);
+    }
+  }
+
+  private indentDeeper(indentStack: number[], indentLevel: number, lineNum: number): void {
+    indentStack.push(indentLevel);
+    this.addToken({ type: TokenType.INDENT, literal: 'INDENT', line: lineNum });
+  }
+
+  private indentShallower(indentStack: number[], indentLevel: number, lineNum: number): void {
+    while (indentStack.length > 1 && indentStack[indentStack.length - 1] > indentLevel) {
+      indentStack.pop();
+      this.addToken({ type: TokenType.DEDENT, literal: 'DEDENT', line: lineNum });
+    }
   }
 
   private addClosingDedents(indentStack: number[]) {
