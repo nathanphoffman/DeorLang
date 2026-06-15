@@ -38,9 +38,13 @@ export class Lexer {
       if (!line) continue;
 
       const indentLevel = measureIndent(line);
+
+      // Indents are single characters = 1 tab, and indents start lines
+      //  so the charPos indents leave off at is literally the number of tab-levels
       const charPos = indentLevel;
 
-      if (charPos < line.length && line[charPos] === '#') continue;
+      const charPosIsInsideLine = charPos < line.length;
+      if (charPosIsInsideLine && isLineComment(line[charPos])) continue;
 
       const top = indentStack[indentStack.length - 1];
       if (indentLevel > top) {
@@ -57,12 +61,16 @@ export class Lexer {
       this.addToken({ type: TokenType.NEWLINE, literal: '\n', line: lineNum });
     }
 
+    // add closing dedents & EOF token after all lines are read
+    this.addClosingDedents(indentStack);
+    this.addToken({ type: TokenType.EOF, literal: '', line: 0 });
+  }
+
+  private addClosingDedents(indentStack: number[]) {
     while (indentStack.length > 1) {
       indentStack.pop();
       this.addToken({ type: TokenType.DEDENT, literal: 'DEDENT', line: 0 });
     }
-
-    this.addToken({ type: TokenType.EOF, literal: '', line: 0 });
   }
 
   private lexLine(line: string, lineNum: number): void {
