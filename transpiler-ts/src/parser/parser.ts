@@ -7,8 +7,13 @@ export class Parser {
   private peekToken: Token;
 
   constructor(private lexer: Lexer) {
-    this.current  = { type: TokenType.EOF, literal: '', line: 0 };
-    this.peekToken = { type: TokenType.EOF, literal: '', line: 0 };
+    
+    // purely to avoid nulls, just default EOF -- as no processing = EOF = none
+    const defaultEOF = { type: TokenType.EOF, literal: '', line: 0 };
+    this.current  = defaultEOF;
+    this.peekToken = defaultEOF;
+
+    // 2 advances required to load the 2nd token as current, and 1st as peekToken
     this.advance();
     this.advance();
   }

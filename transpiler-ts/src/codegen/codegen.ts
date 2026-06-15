@@ -20,7 +20,7 @@ export class Generator {
 
   private genFunctionDecl(fn: AST.FunctionDecl): void {
     const params = fn.params.map(p => `${p.name}: ${rustType(p.type)}`).join(', ');
-    const ret    = fn.returnType ? ` -> ${rustType(fn.returnType)}` : '';
+    const ret = fn.returnType ? ` -> ${rustType(fn.returnType)}` : '';
     this.out += `fn ${fn.name}(${params})${ret} {\n`;
     for (const stmt of fn.body) {
       this.genStmt(stmt, 1);
@@ -55,8 +55,8 @@ export class Generator {
   private genExpr(node: AST.Node): string {
     switch (node.kind) {
       case 'StringLiteral': return JSON.stringify(node.value);
-      case 'IntLiteral':    return node.value;
-      case 'Identifier':    return node.name;
+      case 'IntLiteral': return node.value;
+      case 'Identifier': return node.name;
       default:
         throw new Error(`unknown expression node: ${(node as AST.Node).kind}`);
     }
@@ -65,10 +65,10 @@ export class Generator {
 
 function rustType(t: string): string {
   switch (t) {
-    case 'int':    return 'i32';
-    case 'float':  return 'f64';
-    case 'bool':   return 'bool';
+    case 'int': return 'i32';
+    case 'float': return 'f64';
+    case 'bool': return 'bool';
     case 'string': return 'String';
-    default:       return t;
+    default: return t;
   }
 }
