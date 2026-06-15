@@ -34,6 +34,7 @@ export class Parser {
     return this.advance();
   }
 
+  // entry point — collects all top-level declarations until EOF
   parseProgram(): AST.Program {
     const topLevelDeclarations: AST.Node[] = [];
 
@@ -45,13 +46,16 @@ export class Parser {
     return { kind: 'Program', decls: topLevelDeclarations };
   }
 
+  // routes to the correct top-level declaration parser based on current token
   private parseTopLevel(): AST.Node {
+    // fn name(...) — function declaration
     if (this.current.type === TokenType.KW_FN) {
       return this.parseFunctionDecl();
     }
     throw new Error(`line ${this.current.line}: unexpected token ${JSON.stringify(this.current.literal)} at top level`);
   }
 
+  // fn name(params) + indented body block
   private parseFunctionDecl(): AST.FunctionDecl {
     this.advance(); // consume 'fn'
 
@@ -69,11 +73,12 @@ export class Parser {
     return { kind: 'FunctionDecl', name, returnType: '', params, body };
   }
 
+  // comma-separated list of `Type name` pairs inside ( )
   private buildParams(): AST.Param[] {
     const params: AST.Param[] = [];
     while (this.current.type !== TokenType.RPAREN && this.current.type !== TokenType.EOF) {
 
-      // right now user types and primitives are all the same structurally 
+      // right now user types and primitives are all the same structurally
       //  so there is little reason to treat them as anything but generic IDENT
       //   as mapping happens later in the process
       const type = this.expect(TokenType.IDENT).literal;
@@ -85,6 +90,7 @@ export class Parser {
     return params;
   }
 
+  // collects statements until DEDENT — represents one indented block
   private parseBlock(): AST.Node[] {
     const stmts: AST.Node[] = [];
 
@@ -97,7 +103,9 @@ export class Parser {
     return stmts;
   }
 
+  // routes to the correct statement parser based on the token after the leading identifier
   private parseStatement(): AST.Node {
+    // fn inside a block is always an error in Deor — functions must be top-level
     if (this.current.type === TokenType.KW_FN) {
       throw new Error(
         `line ${this.current.line}: functions must be declared at the top level, not inside a block`
@@ -113,6 +121,7 @@ export class Parser {
     const ident = this.advance();
     const currentType = this.current.type as TokenType;
 
+    // inferred binding: name as expr
     if (currentType === TokenType.KW_AS) {
       this.advance();
       const value = this.parseExpr();
@@ -120,6 +129,7 @@ export class Parser {
       return { kind: 'AsBinding', name: ident.literal, value };
     }
 
+    // function call: name(args)
     if (currentType === TokenType.LPAREN) {
       this.advance();
       const args = this.parseArgList();
@@ -128,11 +138,11 @@ export class Parser {
       return { kind: 'CallStmt', func: ident.literal, args };
     }
 
-    // typed declaration: int sum = x + y
+    // typed declaration: Type name = expr
     if (currentType === TokenType.IDENT && this.peekToken.type === TokenType.EQUALS) {
       const varType = ident.literal;
       const name = this.advance().literal; // consume variable name
-      this.advance();                          // consume =
+      this.advance();                       // consume =
       const value = this.parseExpr();
       this.skipNewline();
       return { kind: 'TypedBinding', varType, name, value };
@@ -143,6 +153,7 @@ export class Parser {
     );
   }
 
+  // comma-separated expressions inside ( ) — used for function call arguments
   private parseArgList(): AST.Node[] {
     const args: AST.Node[] = [];
     while (this.current.type !== TokenType.RPAREN && this.current.type !== TokenType.EOF) {
@@ -152,9 +163,11 @@ export class Parser {
     return args;
   }
 
+  // parses an expression — handles binary ops by checking for an operator after the left side
   private parseExpr(): AST.Node {
     const left = this.parsePrimary();
 
+    // binary expression: left op right
     if (isOperator(this.current.type)) {
       const op = this.advance().literal;
       const right = this.parsePrimary();
@@ -164,11 +177,12 @@ export class Parser {
     return left;
   }
 
+  // parses a single value — a literal or identifier, no operators
   private parsePrimary(): AST.Node {
     switch (this.current.type) {
       case TokenType.STRING: return { kind: 'StringLiteral', value: this.advance().literal };
-      case TokenType.INT: return { kind: 'IntLiteral', value: this.advance().literal };
-      case TokenType.IDENT: return { kind: 'Identifier', name: this.advance().literal };
+      case TokenType.INT:    return { kind: 'IntLiteral',    value: this.advance().literal };
+      case TokenType.IDENT:  return { kind: 'Identifier',    name:  this.advance().literal };
       default:
         throw new Error(
           `line ${this.current.line}: unexpected token in expression: ${TokenType[this.current.type]} (${JSON.stringify(this.current.literal)})`
