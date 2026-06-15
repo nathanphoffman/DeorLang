@@ -12,6 +12,8 @@ function punctuationType(ch: string): TokenType {
   switch (ch) {
     case '(': return TokenType.LPAREN;
     case ')': return TokenType.RPAREN;
+    case '[': return TokenType.LBRACKET;
+    case ']': return TokenType.RBRACKET;
     case ',': return TokenType.COMMA;
     default:  return TokenType.ILLEGAL;
   }

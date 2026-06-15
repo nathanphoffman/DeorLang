@@ -1,9 +1,14 @@
 export type Node =
   | Program
+  | StructDecl
+  | ShapeDecl
+  | EnumDecl
   | FunctionDecl
   | AsBinding
+  | StructConstruct
   | TypedBinding
   | AssignStmt
+  | InsertStmt
   | ReturnStmt
   | CallStmt
   | CallExpr
@@ -12,17 +17,45 @@ export type Node =
   | DestructureStmt
   | BreakStmt
   | ContinueStmt
+  | RustBlock
   | BinaryExpr
   | UnaryExpr
   | StringLiteral
   | IntLiteral
   | BoolLiteral
   | NoneLiteral
+  | EmptyList
+  | ListLiteral
   | Identifier;
 
 export interface Program {
   kind: 'Program';
   decls: Node[];
+}
+
+// --- top-level declarations ---
+
+export interface FieldDecl {
+  type: string;
+  name: string;
+}
+
+export interface StructDecl {
+  kind: 'StructDecl';
+  name: string;
+  fields: FieldDecl[];
+}
+
+export interface ShapeDecl {
+  kind: 'ShapeDecl';
+  name: string;     // camelCase Deor name, e.g. rollList
+  elemType: string; // element type, e.g. Roll
+}
+
+export interface EnumDecl {
+  kind: 'EnumDecl';
+  name: string;       // camelCase Deor name, e.g. colorTag
+  variants: string[]; // PascalCase variant names, e.g. ['Red', 'Green', 'Blue']
 }
 
 export interface FunctionDecl {
@@ -38,10 +71,19 @@ export interface Param {
   name: string;
 }
 
+// --- statements ---
+
 export interface AsBinding {
   kind: 'AsBinding';
   name: string;
   value: Node;
+}
+
+// name as (field1, field2) — struct construction from fields already in scope
+export interface StructConstruct {
+  kind: 'StructConstruct';
+  name: string;
+  fields: string[];
 }
 
 export interface TypedBinding {
@@ -54,6 +96,13 @@ export interface TypedBinding {
 export interface AssignStmt {
   kind: 'AssignStmt';
   name: string;
+  value: Node;
+}
+
+// list insert item — append to list
+export interface InsertStmt {
+  kind: 'InsertStmt';
+  list: string;
   value: Node;
 }
 
@@ -118,6 +167,14 @@ export interface ContinueStmt {
   kind: 'ContinueStmt';
 }
 
+// verbatim Rust code block — content has Deor base indent stripped, relative indentation preserved
+export interface RustBlock {
+  kind: 'RustBlock';
+  content: string;
+}
+
+// --- expressions ---
+
 export interface BinaryExpr {
   kind: 'BinaryExpr';
   left: Node;
@@ -148,6 +205,15 @@ export interface BoolLiteral {
 
 export interface NoneLiteral {
   kind: 'NoneLiteral';
+}
+
+export interface EmptyList {
+  kind: 'EmptyList';
+}
+
+export interface ListLiteral {
+  kind: 'ListLiteral';
+  items: Node[];
 }
 
 export interface Identifier {

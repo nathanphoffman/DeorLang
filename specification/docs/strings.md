@@ -1,12 +1,6 @@
-# deor:strings
+# Strings
 
-Standard string operations beyond the built-in `len`, `+`, and `{name}` interpolation. Import explicitly — none of these are global built-ins.
-
-```
-(contains, trim, split, to_upper, to_lower, starts_with, ends_with) in deor:strings
-```
-
-Import only what you use — the named import list is the contract.
+String operations are built into the language — no import required. All string functions accept literals directly since they are built-ins. See [Built-ins](builtins.md#string-operations) for the full function table.
 
 ---
 
@@ -37,6 +31,38 @@ No other escape sequences are supported in v1. For Unicode escapes or raw byte s
 
 ---
 
+## Concatenation
+
+`+` joins strings. It works with literals, variables, or any combination:
+
+```
+string greeting = "hello " + name
+string line = prefix + content + "\n"
+string full = first + " " + last
+```
+
+```rust
+let greeting: String = format!("{}{}", "hello ", name);
+let line: String = format!("{}{}", prefix, format!("{}{}", content, "\n"));
+let full: String = format!("{}{}", first, format!("{} {}", " ", last));
+```
+
+Chains of `+` are evaluated left to right. Mixed string/int `+` in the same expression is a transpiler error — use a `rust` block if you need to format an integer into a string.
+
+```
+# Transpiler error — mixed types in one + chain
+string bad = "count: " + count    # count is int — not allowed
+
+# Correct — convert first with a rust block
+fn string int_to_str(int n)
+    rust
+        n.to_string()
+
+string msg = "count: " + int_to_str(count)
+```
+
+---
+
 ## Functions
 
 | Function | Signature | Notes |
@@ -49,7 +75,7 @@ No other escape sequences are supported in v1. For Unicode escapes or raw byte s
 | `to_lower(str)` | `string → string` | all characters lowercased |
 | `split(str, delimiter)` | `string, string → nameList` | split on every occurrence of `delimiter`; result type requires `shape nameList = list of string` |
 
-All arguments must be named variables already in scope — the named-args rule applies. All functions return a new string and never mutate the original. An empty `delimiter` in `split` is a transpiler error.
+All functions return a new string and never mutate the original. An empty `delimiter` in `split` is a transpiler error.
 
 For operations not covered here (`replace`, `index_of`, one-sided trim, character access), use a `rust` block.
 
@@ -58,18 +84,13 @@ For operations not covered here (`replace`, `index_of`, one-sided trim, characte
 ## Examples
 
 ```
-(contains, trim, split, to_lower) in deor:strings
+string clean = trim("  Hello, World!  ")
 
-raw as "  Hello, World!  "
-string clean = trim(raw)
-
-query as "world"
 string lower = to_lower(clean)
-bool found = contains(lower, query)
+bool found = contains(lower, "world")
 
-csv as "apple,banana,cherry"
-sep as ","
-nameList parts = split(csv, sep)    # requires shape nameList = list of string at top of file
+shape nameList = list of string
+nameList parts = split("apple,banana,cherry", ",")
 ```
 
 ```rust
@@ -84,15 +105,9 @@ let parts: Vec<String> = csv.split(sep.as_str()).map(|s| s.to_string()).collect(
 ```
 
 ```
-(starts_with, ends_with) in deor:strings
+bool is_abs = starts_with("/api/users", "/")
 
-path as "/api/users"
-slash as "/"
-bool is_abs = starts_with(path, slash)
-
-filename as "report.pdf"
-ext as ".pdf"
-bool is_pdf = ends_with(filename, ext)
+bool is_pdf = ends_with("report.pdf", ".pdf")
 ```
 
 ```rust
@@ -112,6 +127,7 @@ let is_pdf: bool = filename.ends_with(ext.as_str());
 
 | Deor | Rust |
 |---|---|
+| `a + b` | `format!("{}{}", a, b)` |
 | `contains(str, needle)` | `str.contains(needle.as_str())` |
 | `starts_with(str, prefix)` | `str.starts_with(prefix.as_str())` |
 | `ends_with(str, suffix)` | `str.ends_with(suffix.as_str())` |

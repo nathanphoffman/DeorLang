@@ -49,10 +49,35 @@ export class Lexer {
       const charPosIsInsideLine = charPos < line.length;
       if (charPosIsInsideLine && isLineComment(line[charPos])) continue;
 
+      // rust block: capture all deeper-indented lines verbatim as a single RUST_BLOCK token
+      if (line.slice(charPos) === 'rust') {
+        this.processIndent(indentStack, indentLevel, lineNum);
+        this.addToken({ type: TokenType.KW_RUST, literal: 'rust', line: lineNum });
+        this.addToken({ type: TokenType.NEWLINE, literal: '\n', line: lineNum });
+
+        const baseIndent = indentLevel + 1;
+        const contentLines: string[] = [];
+        i++;
+        while (i < lines.length) {
+          const rawLine = lines[i].trimEnd();
+          if (rawLine === '') { contentLines.push(''); i++; continue; }
+          const lineIndent = measureIndent(rawLine);
+          if (lineIndent < baseIndent) { i--; break; }
+          contentLines.push(rawLine.slice(baseIndent));
+          i++;
+        }
+        // trim trailing blank lines so the block content is clean
+        while (contentLines.length > 0 && contentLines[contentLines.length - 1] === '') {
+          contentLines.pop();
+        }
+        this.addToken({ type: TokenType.RUST_BLOCK, literal: contentLines.join('\n'), line: lineNum });
+        continue;
+      }
+
       this.processIndent(indentStack, indentLevel, lineNum);
       this.lexLine(line.slice(charPos), lineNum);
 
-      // line is completed, 
+      // line is completed,
       //   therefore a new line must exist between this and the next line
       this.addToken({ type: TokenType.NEWLINE, literal: '\n', line: lineNum });
     }

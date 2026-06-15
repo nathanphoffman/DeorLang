@@ -30,6 +30,12 @@ function toKeywordToken(word: string, line: number): Token {
     case 'true':     return { type: TokenType.KW_TRUE,     literal: word, line };
     case 'false':    return { type: TokenType.KW_FALSE,    literal: word, line };
     case 'none':     return { type: TokenType.KW_NONE,     literal: word, line };
+    case 'struct':   return { type: TokenType.KW_STRUCT,   literal: word, line };
+    case 'shape':    return { type: TokenType.KW_SHAPE,    literal: word, line };
+    case 'list':     return { type: TokenType.KW_LIST,     literal: word, line };
+    case 'of':       return { type: TokenType.KW_OF,       literal: word, line };
+    case 'insert':   return { type: TokenType.KW_INSERT,   literal: word, line };
+    case 'enum':     return { type: TokenType.KW_ENUM,     literal: word, line };
     default:       return { type: TokenType.IDENT,     literal: word, line };
   }
 }

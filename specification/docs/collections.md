@@ -25,14 +25,14 @@ The shape name is the type everywhere — no suffix, no continuation line, no pr
 
 ## Index Read
 
-Elements are read by index using bracket notation. Zero-indexed, matching Rust's behavior.
+Elements are read by index using `at`. Zero-indexed, matching Rust's behavior.
 
 ```
 shape intList = list of int
 
 intList scores = [10, 20, 30, 40]
-int first = scores[0]    # 10
-int last = scores[3]     # 40
+int first = scores at 0    # 10
+int last = scores at 3     # 40
 ```
 
 ```rust
@@ -41,11 +41,11 @@ let first: i32 = scores[0];
 let last: i32 = scores[3];
 ```
 
-Index must be an integer variable or literal. Dynamic computed indices are fine:
+Dynamic computed indices are fine:
 
 ```
 int idx = 2
-int mid = scores[idx]    # 30
+int mid = scores at idx    # 30
 ```
 
 Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts on all index operations automatically.
@@ -54,11 +54,11 @@ Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts
 
 ## Index Write
 
-Elements are replaced by index using the same bracket notation as index read. The right-hand side must be a named variable of the list's element type — the named-args rule applies.
+Elements are replaced by index using `at` on the left side of an assignment. The right-hand side must be a named variable of the list's element type.
 
 ```
-rooms[idx] = new_room
-scores[idx] = updated_score
+rooms at idx = new_room
+scores at idx = updated_score
 ```
 
 ```rust
@@ -66,7 +66,86 @@ rooms[idx as usize] = new_room;
 scores[idx as usize] = updated_score;
 ```
 
-Out-of-bounds assignment is a runtime panic. The transpiler inserts `as usize` casts automatically.
+Out-of-bounds assignment is a runtime panic.
+
+---
+
+## Append
+
+`at end` appends a new element to the end of the list. `end` is a reserved keyword meaning "the position after the last element" — it is only valid in this position.
+
+```
+result at end = item
+rooms at end = new_room
+```
+
+```rust
+result.push(item);
+rooms.push(new_room.clone());
+```
+
+---
+
+## Remove
+
+`remove at` removes the element at a given index, shifting subsequent elements left.
+
+```
+result remove at 2
+```
+
+```rust
+result.remove(2);
+```
+
+For removing multiple elements, remove from highest index to lowest to avoid index-shifting errors:
+
+```
+result remove at 5
+result remove at 2
+result remove at 1
+```
+
+```rust
+result.remove(5);
+result.remove(2);
+result.remove(1);
+```
+
+---
+
+## Slice
+
+`in range(start, end)` extracts a contiguous sublist. Returns a new list of the same shape type. `end` is exclusive — the element at `end` is not included.
+
+```
+roomList first_ten = rooms in range(0, 10)
+```
+
+```rust
+let first_ten: Vec<Room> = rooms[0..10].to_vec();
+```
+
+`end` is a reserved keyword meaning "the length of this list" when used as the second argument to `range()` in a slice:
+
+```
+int mid = 5
+roomList tail = rooms in range(mid, end)
+```
+
+```rust
+let tail: Vec<Room> = rooms[5..].to_vec();
+```
+
+Both forms are valid:
+
+```
+start as 0
+roomList head = rooms in range(start, mid)     # from 0 to mid
+roomList tail = rooms in range(mid, end)       # from mid to end of list
+```
+
+The `range()` arguments follow the same rules as everywhere else — built-in function, so literals are valid directly.
 
 ---
 
@@ -116,7 +195,7 @@ To give a byte buffer a semantic name, declare a bytes shape — see [Shapes —
 
 ## No Membership Test
 
-Deor has no built-in membership operator. `item in list` would conflict with the `in` destructuring and import grammar, and `item not in list` does not exist. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
+Deor has no built-in membership operator. `item in list` would conflict with the `in` destructuring and import grammar. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
 
 ```
 shape matchFunc = func of Room to bool
@@ -129,74 +208,22 @@ fn bool any_match(roomList items, matchFunc predicate)
     return found
 ```
 
-This is intentional — the language surface is kept small. Membership checks are just loops.
-
----
-
-## Mutation Verbs
-
-### `insert` — Add Elements
-
-`insert` without a position adds to the end of the list. `insert` with `at [n]` inserts at a specific index, pushing existing elements back.
-
-```
-result insert item                      # add to end
-result insert item at [2]               # insert at index 2
-result insert (item1, item2) at [2]     # insert both starting at index 2
-```
-
-```rust
-result.push(item);
-result.insert(2, item);
-result.insert(2, item1);
-result.insert(3, item2);
-```
-
-For multi-insert `at [n]`, items are inserted in order from that index — `item1` at `n`, `item2` at `n+1`, etc.
-
-### `remove` — Remove by Position
-
-`remove` takes a list of indices in brackets. The transpiler removes from highest to lowest index to avoid index-shifting errors — the order you write them doesn't matter.
-
-```
-result remove [2]           # remove at index 2
-result remove [2, 5, 1]     # remove at indices 1, 2, and 5
-```
-
-```rust
-result.remove(2);
-// multi: sorted high-to-low, then each .remove()
-result.remove(5);
-result.remove(2);
-result.remove(1);
-```
-
-Brackets are always required, even for a single index.
-
-**Conversion notes:**
-- `list[idx]` (read) → `list[idx as usize]` (clone for struct types)
-- `list[idx] = val` (write) → `list[idx as usize] = val`
-- `insert` without `at` → `Vec::push`
-- `insert at [n]` → `Vec::insert(n, item)`
-- `remove [n]` → `Vec::remove(n)`
-- Multi-remove transpiles to multiple `Vec::remove` calls in descending index order
-
 ---
 
 ## Updating a Struct Inside a List
 
-Deor does not allow in-place field mutation — `rooms[0].area = 9` is a transpiler error. Struct values inside a list are replaced, not mutated. The pattern is explicit by design: extract the struct, build an updated copy with `with`, write it back at the same index.
+Deor does not allow in-place field mutation — `rooms at 0` followed by field assignment is a transpiler error. Struct values inside a list are replaced, not mutated. Extract the struct, build an updated copy with `with`, write it back.
 
 ```
 # 1. Read the existing struct
-Room old_room = rooms[idx]
+Room old_room = rooms at idx
 
 # 2. Build the updated version
 Squarefeet new_area = 25
 Room new_room = old_room with (new_area)
 
 # 3. Write back
-rooms[idx] = new_room
+rooms at idx = new_room
 ```
 
 ```rust
@@ -211,8 +238,8 @@ rooms[idx as usize] = new_room;
 ```
 int count = len(rooms)
 int target = -1
-for idx in range(count)
-    Room room = rooms[idx]
+for idx in range(0, count)
+    Room room = rooms at idx
     name in room
     if name is search_name
         target = idx
@@ -220,16 +247,21 @@ for idx in range(count)
 
 neg as -1
 if target is not neg
-    Room old_room = rooms[target]
+    Room old_room = rooms at target
     Squarefeet new_area = 25
     Room new_room = old_room with (new_area)
-    rooms[target] = new_room
+    rooms at target = new_room
 ```
-
-Every step is visible: which item is changing, what field is changing, and where it lands back in the list. See [Immutability — `with`](immutability.md) for full `with` syntax.
 
 ---
 
-## Fixed-Size Lists
+## Conversion Notes
 
-Fixed-size lists (Rust arrays `[T; N]`) are a v2 feature. For v1, use a `rust` block when fixed-size stack allocation is required.
+| Deor | Rust |
+|---|---|
+| `rooms at idx` | `rooms[idx as usize]` (+ `.clone()` for non-Copy types) |
+| `rooms at idx = val` | `rooms[idx as usize] = val` |
+| `rooms at end = item` | `rooms.push(item)` |
+| `rooms remove at idx` | `rooms.remove(idx as usize)` |
+| `rooms in range(start, end_val)` | `rooms[start..end_val].to_vec()` |
+| `rooms in range(start, end)` | `rooms[start..].to_vec()` |

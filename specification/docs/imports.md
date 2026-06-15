@@ -1,12 +1,26 @@
 # Imports
 
-Imports use the same `in` grammar as destructuring. The source is either a bare identifier (stdlib/external crate) or a string path (local module).
+Imports use the same `in` grammar as destructuring. The source is a string path for local modules or the `rust:` prefix for raw `.rs` files.
 
 ```
-(sqrt, floor) in math
+(Room, House, Squarefeet, total_area) in "./models"
 
-(trim, split) in strings
+(calculate, transform) in rust:math_utils
+```
 
+```rust
+use my_crate::models::{Room, House, Squarefeet, total_area};
+```
+
+**Private declarations:** a declaration marked `private` in its source file cannot be imported. Attempting to name it in an `in` import is a transpiler error. See [Enforced Practices — Visibility](enforced_practices.md#visibility--private).
+
+---
+
+## Multi-line Import
+
+For many names, wrap in parentheses with trailing commas:
+
+```
 (
     Room,
     House,
@@ -14,27 +28,39 @@ Imports use the same `in` grammar as destructuring. The source is either a bare 
     total_area,
     occupied_rooms,
 ) in "./models"
+```
 
+---
+
+## Two-Step Import
+
+A module can be imported as a namespace first, then destructured:
+
+```
 geo in "./geometry"
 (distance, midpoint) in geo
-
-(format_address as fmt_addr) in "./utils"
 ```
 
-```rust
-use my_crate::models::{Room, House, Squarefeet, total_area, occupied_rooms};
-use my_crate::geometry::{self as geo, distance, midpoint};
-use my_crate::utils::format_address as fmt_addr;
-// (sqrt, floor) resolve to whatever crate/std path the
-// stdlib-equivalence table maps `math` to
+If the intermediate `geo` binding is never used directly, the transpiler emits only the destructured `use` statements.
+
+---
+
+## `rust:` File Imports
+
+Raw `.rs` files import via the `rust:` prefix. Functions imported this way can only be called from inside `rust` blocks — they have Rust signatures, not Deor ones.
+
+```
+(compress, decompress) in rust:codec
+
+fn bytes compress_data(bytes data)
+    rust
+        codec::compress(&data)
 ```
 
-**Private declarations:** a declaration marked `private` in its source file cannot be imported. Attempting to name it in an `in` import is a transpiler error. See [Enforced Practices — Visibility](enforced_practices.md#visibility--private).
+See [Rust Interop](interop.md#external-rs-file-imports) for full details.
 
 ---
 
 **Conversion notes:**
-- **Bare identifier source** (`math`, `strings`) → external crate or `std` module path, via a curated stdlib-equivalence table maintained by the transpiler.
-- **String path source** (`"./models"`) → local module path, resolved relative to the current file and translated into Rust's `crate::`/`super::` system. The transpiler must also emit the corresponding `mod` declarations.
-- **`Name as alias in source`** maps almost exactly onto Rust's `use path::Name as alias;` — one of the cleanest 1:1 conversions in the spec.
-- **Two-step imports** (`geo in "./geometry"` then `(distance, midpoint) in geo`) — if the intermediate `geo` namespace binding is never used directly, the transpiler can drop it and emit only the destructured `use` statements.
+- **String path source** (`"./models"`) → local module path, resolved relative to the current file and translated into Rust's `crate::`/`super::` system.
+- **`rust:` source** → `mod math_utils;` in generated output; functions callable only from `rust` blocks.

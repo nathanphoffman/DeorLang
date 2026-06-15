@@ -1,6 +1,6 @@
 # Built-in Functions
 
-These are part of the `deor:` standard library and available without an explicit import. For string operations beyond `len` and concatenation, see [deor:strings](strings.md) — those require an explicit import.
+All built-in functions are available without any import. Because they are part of the language, they accept literals and expressions directly — no named variable required. See [Enforced Practices — Named Arguments](enforced_practices.md#named-arguments--user-defined-functions-only).
 
 ---
 
@@ -9,25 +9,20 @@ These are part of the `deor:` standard library and available without an explicit
 | Function | Signature | Notes |
 |---|---|---|
 | `print(value)` | any type → void | Converts value to string and writes to stdout with newline |
-
-Reading from stdin requires an explicit import from `deor:io`:
-
-```
-(read_line) in deor:io
-```
-
-| Function | Signature | Notes |
-|---|---|---|
 | `read_line()` | → `string` | Reads one line from stdin, strips the trailing newline |
 
 ```
-(read_line) in deor:io
+print("Hello, world!")
+print(count)
 
 string input = read_line()
 print(input)
 ```
 
 ```rust
+println!("{}", "Hello, world!");
+println!("{}", count);
+
 use std::io::{self, BufRead};
 let mut line = String::new();
 io::stdin().lock().read_line(&mut line).unwrap();
@@ -35,19 +30,7 @@ let input: String = line.trim_end_matches('\n').to_string();
 println!("{}", input);
 ```
 
-`read_line()` takes no arguments. It always returns a `string` — if you need to parse the result as a number, use `parse_int` or `parse_float` from [Built-ins — Fallible Parsing](builtins.md#fallible-parsing).
-
-```
-msg as "Hello, world!"
-print(msg)
-print(count)
-```
-
-```rust
-let msg = "Hello, world!".to_string();
-println!("{}", msg);
-println!("{}", count);
-```
+`read_line()` always returns a `string` — parse the result with `parse_int` or `parse_float` if a number is needed.
 
 ---
 
@@ -68,10 +51,10 @@ int size = len(rooms)
 
 | Function | Signature | Notes |
 |---|---|---|
-| `range(count)` | `int` → range | Produces values `0` through `count-1`; see [Loops](loops.md) |
-| `range(start, end)` | `int, int` → range | Produces values `start` through `end-1`; `range(count)` is shorthand for `range(0, count)` |
+| `range(count)` | `int` → range | Produces values `0` through `count-1` |
+| `range(start, end)` | `int, int` → range | Produces values `start` through `end-1`; exclusive upper bound |
 
-Both arguments must be named integer variables. `end` is always exclusive.
+`range(count)` is shorthand for `range(0, count)`. See [Loops](loops.md) for full usage including the no-variable form `for range(n)`.
 
 ---
 
@@ -89,64 +72,68 @@ Both arguments must be named integer variables. `end` is always exclusive.
 | `max(left, right)` | `int, int` → `int` | Larger of two values |
 
 ```
-base as 2
-exp as 10
-int val = pow(base, exp)                  # 1024
+int val = pow(2, 10)                      # 1024
 
-num as 2.0
-NonNegFloat res = sqrt(num)               # Some(1.414...)
-float root = res else 0.0                 # 1.414...
+NonNegFloat res = sqrt(4.0)               # Some(2.0)
+float root = res else 0.0                 # 2.0
 
-num2 as 4.0
-NonNegFloat res2 = sqrt(num2)
-float root2 = res2 else 0.0               # 2.0
+NonNegFloat bad = sqrt(-1.0)              # None
+float safe = bad else 0.0                 # 0.0
 
-low as 3
-high as 7
-int small = min(low, high)
+int small = min(3, 7)                     # 3
 ```
 
-`sqrt` returns `NonNegFloat` — a stdlib validator type — so the result must be unwrapped before use in arithmetic. Use `else` for a safe default or `avow` when you are certain the input is non-negative.
+`sqrt` returns `NonNegFloat` — unwrap with `else` for a safe default or `avow` when certain the input is non-negative.
 
-`pow`'s `exp` parameter is typed `NonNeg` — a stdlib validator type that enforces `val >= 0`. Negative exponents produce fractions, not integers; Deor catches this at the parameter type rather than at runtime. See [Stdlib Numeric Types](#stdlib-numeric-types) for the full constraint table.
+`pow`'s `exp` parameter is typed `NonNeg` — enforces `val >= 0` at the type level. See [Stdlib Numeric Types](#stdlib-numeric-types).
 
 ---
 
 ## Random
-
-Random number generation requires an explicit import — it is not a global built-in:
-
-```
-(random) in deor:math
-```
 
 | Function | Signature | Notes |
 |---|---|---|
 | `random(min, max)` | `int, int` → `int` | Random integer in `[min, max]` inclusive; `throw` if `min > max` |
 
 ```
-(random) in deor:math
-
-min as 1
-max as 6
-int roll = random(min, max)
+int roll = random(1, 6)
 ```
 
 ```rust
 use rand::Rng;
-let min: i32 = 1;
-let max: i32 = 6;
 // transpiler emits a guard: if min > max { panic!("rand: min > max") }
-let roll: i32 = rand::thread_rng().gen_range(min..=max);
+let roll: i32 = rand::thread_rng().gen_range(1..=6);
 ```
 
-`min > max` is a programming error, not a data error — `random` throws rather than returning `None`. If the bounds come from user input, validate them before calling `random`.
+`min > max` is a programming error — `random` throws rather than returning `None`. If the bounds come from user input, validate them before calling `random`.
+
+---
+
+## String Operations
+
+| Function | Signature | Notes |
+|---|---|---|
+| `contains(str, needle)` | `string, string → bool` | true if `needle` appears anywhere in `str` |
+| `starts_with(str, prefix)` | `string, string → bool` | true if `str` begins with `prefix` |
+| `ends_with(str, suffix)` | `string, string → bool` | true if `str` ends with `suffix` |
+| `trim(str)` | `string → string` | strips leading and trailing whitespace |
+| `to_upper(str)` | `string → string` | all characters uppercased |
+| `to_lower(str)` | `string → string` | all characters lowercased |
+| `split(str, delimiter)` | `string, string → nameList` | split on every occurrence of `delimiter`; result type requires `shape nameList = list of string` |
+
+```
+string clean = trim("  Hello, World!  ")
+bool found = contains(clean, "World")
+
+shape nameList = list of string
+nameList parts = split("apple,banana,cherry", ",")
+```
+
+For operations not covered here (`replace`, `index_of`, character access), use a `rust` block.
 
 ---
 
 ## Type Conversion
-
-These convert between primitive types explicitly. `as` is not used for type conversion — it already carries three meanings in Deor (literal binding, struct construction, import aliasing).
 
 | Function | Signature | Notes |
 |---|---|---|
@@ -172,8 +159,6 @@ let label: String = score.to_string();
 
 ## Fallible Parsing
 
-`parse_int` and `parse_float` parse strings that may or may not be valid numbers. They return stdlib validator types (`ParsedInt`, `ParsedFloat`) — `Some` on success, `None` on failure. The caller handles the result the same way as any other validator type.
-
 | Function | Signature | Notes |
 |---|---|---|
 | `parse_int(str)` | `string` → `ParsedInt` | `None` if `str` is not a valid integer |
@@ -184,6 +169,8 @@ ParsedInt result = parse_int(user_input)
 if result
     int val = (avow result)
     print(val)
+
+int port = parse_int(port_str) else 8080    # default if unparseable
 ```
 
 ```rust
@@ -192,45 +179,33 @@ if let Some(r) = result {
     let val: i32 = r.0;
     println!("{}", val);
 }
+let port: i32 = port_str.parse::<i32>().ok().map(ParsedInt).map(|v| v.0).unwrap_or(8080);
 ```
 
-`ParsedInt` and `ParsedFloat` are stdlib validator types whose predicate is always `true` — `None` comes from the parse itself failing, not a domain constraint. From the caller's perspective they behave identically to any other validator type: check presence, then unwrap or provide a default.
-
-```
-int port = parse_int(port_str) else 8080    # default if unparseable
-```
+`ParsedInt` and `ParsedFloat` behave identically to user-defined validator types — check presence, then unwrap or provide a default.
 
 ---
 
 ## Stdlib Numeric Types
 
-These validator types are part of the `deor:` stdlib and available without an explicit import. They represent constrained numeric domains and are used as parameter and return types for builtins that operate on restricted ranges.
+These validator types are built into the language. They represent constrained numeric domains and are used as parameter and return types for built-ins that operate on restricted ranges.
 
 | Type | Base | Predicate | Use |
 |---|---|---|---|
-| `NonNeg` | `int` | `val >= 0` | Non-negative integers — array indices, sizes, exponents |
+| `NonNeg` | `int` | `val >= 0` | Non-negative integers — indices, sizes, exponents |
 | `Positive` | `int` | `val > 0` | Strictly positive integers — divisors, counts |
-| `NonNegFloat` | `float` | `val >= 0.0` | Non-negative floats — `sqrt` return type, lengths |
-| `PositiveFloat` | `float` | `val > 0.0` | Strictly positive floats — logarithm inputs, rates |
+| `NonNegFloat` | `float` | `val >= 0.0` | Non-negative floats — `sqrt` return type |
+| `PositiveFloat` | `float` | `val > 0.0` | Strictly positive floats — rates, logarithm inputs |
 
-These behave identically to user-defined `type` declarations — they are `Option<T>` under the hood, support `avow`, `else`, and `if`/`if not` checks, and can be used as struct fields.
+These behave identically to user-defined `type` declarations — `Option<T>` under the hood, support `avow`, `else`, and `if`/`if not` checks, usable as struct fields.
 
 ```
 NonNeg exp = 10
-base as 2
 if exp
-    int result = pow(base, exp)     # exp is NonNeg — passes type check
+    int result = pow(2, exp)
 
-num as 4.0
-NonNegFloat res = sqrt(num)            # Some(2.0)
-float root = res else 0.0             # 2.0
-
-neg as -1.0
-NonNegFloat bad = sqrt(neg)        # None
-float safe = bad else 0.0          # 0.0
+NonNegFloat res = sqrt(4.0)    # Some(2.0)
+float root = res else 0.0      # 2.0
 ```
 
-**Conversion notes:**
-- Each type compiles to a Rust newtype struct with a `fn new(n: T) -> Option<Self>` constructor, identical to user-defined validator types.
-- `NonNeg` → `struct NonNeg(i32)`, `NonNegFloat` → `struct NonNegFloat(f64)`, etc.
-- The stdlib provides these definitions — the transpiler never synthesizes them from user code.
+**Conversion notes:** each type compiles to a Rust newtype struct with `fn new(n: T) -> Option<Self>`, identical to user-defined validator types.

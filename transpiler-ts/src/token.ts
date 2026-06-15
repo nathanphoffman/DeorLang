@@ -25,9 +25,20 @@ export enum TokenType {
   KW_TRUE,
   KW_FALSE,
   KW_NONE,
+  KW_STRUCT,
+  KW_SHAPE,
+  KW_LIST,
+  KW_OF,
+  KW_INSERT,
+  KW_RUST,
+  KW_ENUM,
+
+  RUST_BLOCK,
 
   LPAREN,
   RPAREN,
+  LBRACKET,
+  RBRACKET,
   COMMA,
 
   PLUS,

@@ -25,7 +25,9 @@ Add a blank line before `return` in any function body that contains more than on
 
 **Recommended:**
 ```
-fn int sum_rolls(RollResult list rolls)
+shape rollResultList = list of RollResult
+
+fn int sum_rolls(rollResultList rolls)
     sum as 0
 
     for roll in rolls

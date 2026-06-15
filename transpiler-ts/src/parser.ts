@@ -36,23 +36,73 @@ export class Parser {
 
   // entry point — collects all top-level declarations until EOF
   parseProgram(): AST.Program {
-    const topLevelDeclarations: AST.Node[] = [];
+    const decls: AST.Node[] = [];
 
     while (this.current.type !== TokenType.EOF) {
       if (this.current.type === TokenType.NEWLINE) { this.advance(); continue; }
-      topLevelDeclarations.push(this.parseTopLevel());
+      decls.push(this.parseTopLevel());
     }
 
-    return { kind: 'Program', decls: topLevelDeclarations };
+    return { kind: 'Program', decls };
   }
 
-  // routes to the correct top-level declaration parser based on current token
+  // routes to the correct top-level declaration parser
   private parseTopLevel(): AST.Node {
-    // fn name(...) — function declaration
-    if (this.current.type === TokenType.KW_FN) {
-      return this.parseFunctionDecl();
-    }
+    if (this.current.type === TokenType.KW_FN)     return this.parseFunctionDecl();
+    if (this.current.type === TokenType.KW_STRUCT)  return this.parseStructDecl();
+    if (this.current.type === TokenType.KW_SHAPE)   return this.parseShapeDecl();
+    if (this.current.type === TokenType.KW_ENUM)    return this.parseEnumDecl();
     throw new Error(`line ${this.current.line}: unexpected token ${JSON.stringify(this.current.literal)} at top level`);
+  }
+
+  // enum name\n INDENT variants DEDENT
+  private parseEnumDecl(): AST.EnumDecl {
+    this.advance(); // consume 'enum'
+    const name = this.expect(TokenType.IDENT).literal;
+    this.expect(TokenType.NEWLINE);
+    this.expect(TokenType.INDENT);
+
+    const variants: string[] = [];
+    while (this.current.type !== TokenType.DEDENT && this.current.type !== TokenType.EOF) {
+      if (this.current.type === TokenType.NEWLINE) { this.advance(); continue; }
+      variants.push(this.expect(TokenType.IDENT).literal);
+      this.skipNewline();
+    }
+    if (this.current.type === TokenType.DEDENT) this.advance();
+
+    return { kind: 'EnumDecl', name, variants };
+  }
+
+  // struct Name\n INDENT fields DEDENT
+  private parseStructDecl(): AST.StructDecl {
+    this.advance(); // consume 'struct'
+    const name = this.expect(TokenType.IDENT).literal;
+    this.expect(TokenType.NEWLINE);
+    this.expect(TokenType.INDENT);
+
+    const fields: AST.FieldDecl[] = [];
+    while (this.current.type !== TokenType.DEDENT && this.current.type !== TokenType.EOF) {
+      if (this.current.type === TokenType.NEWLINE) { this.advance(); continue; }
+      const type = this.expect(TokenType.IDENT).literal;
+      const fieldName = this.expect(TokenType.IDENT).literal;
+      this.skipNewline();
+      fields.push({ type, name: fieldName });
+    }
+    if (this.current.type === TokenType.DEDENT) this.advance();
+
+    return { kind: 'StructDecl', name, fields };
+  }
+
+  // shape name = list of ElemType
+  private parseShapeDecl(): AST.ShapeDecl {
+    this.advance(); // consume 'shape'
+    const name = this.expect(TokenType.IDENT).literal;
+    this.expect(TokenType.EQUALS);
+    this.expect(TokenType.KW_LIST);
+    this.expect(TokenType.KW_OF);
+    const elemType = this.expect(TokenType.IDENT).literal;
+    this.skipNewline();
+    return { kind: 'ShapeDecl', name, elemType };
   }
 
   // fn [ReturnType] name(params) + indented body block
@@ -109,8 +159,16 @@ export class Parser {
     return stmts;
   }
 
-  // routes to the correct statement parser based on the token after the leading identifier
+  // routes to the correct statement parser based on the leading token
   private parseStatement(): AST.Node {
+    // rust block — verbatim Rust code; RUST_BLOCK token holds raw content
+    if (this.current.type === TokenType.KW_RUST) {
+      this.advance(); // consume 'rust'
+      this.skipNewline();
+      const content = this.expect(TokenType.RUST_BLOCK).literal;
+      return { kind: 'RustBlock', content };
+    }
+
     // fn inside a block is always an error in Deor — functions must be top-level
     if (this.current.type === TokenType.KW_FN) {
       throw new Error(
@@ -164,15 +222,28 @@ export class Parser {
     const ident = this.advance();
     const currentType = this.current.type as TokenType;
 
-    // inferred binding: name as expr
+    // inferred binding: name as expr  OR  name as (f1, f2) struct construction
     if (currentType === TokenType.KW_AS) {
-      this.advance();
+      this.advance(); // consume 'as'
+      // as (f1, f2, ...) — struct construction: all fields must be identifiers
+      if (this.current.type === TokenType.LPAREN) {
+        this.advance(); // consume '('
+        const fields: string[] = [];
+        while (this.current.type !== TokenType.RPAREN && this.current.type !== TokenType.EOF) {
+          fields.push(this.expect(TokenType.IDENT).literal);
+          if (this.current.type === TokenType.COMMA) this.advance();
+        }
+        this.expect(TokenType.RPAREN);
+        this.skipNewline();
+        return { kind: 'StructConstruct', name: ident.literal, fields };
+      }
+      // regular as-binding from a literal or expression
       const value = this.parseExpr();
       this.skipNewline();
       return { kind: 'AsBinding', name: ident.literal, value };
     }
 
-    // function call: name(args)
+    // function call statement: name(args)
     if (currentType === TokenType.LPAREN) {
       this.advance();
       const args = this.parseArgList();
@@ -187,6 +258,14 @@ export class Parser {
       const source = this.parseExpr();
       this.skipNewline();
       return { kind: 'DestructureStmt', fields: [ident.literal], source };
+    }
+
+    // list mutation: name insert expr
+    if (currentType === TokenType.KW_INSERT) {
+      this.advance(); // consume 'insert'
+      const value = this.parseExpr();
+      this.skipNewline();
+      return { kind: 'InsertStmt', list: ident.literal, value };
     }
 
     // assignment: name = expr  (must come before typed binding check)
@@ -346,13 +425,29 @@ export class Parser {
     return left;
   }
 
-  // parses a single value — a literal, identifier, or prefix unary
+  // parses a single value — a literal, identifier, prefix unary, or list literal
   private parsePrimary(): AST.Node {
     // not expr — prefix unary, binds to the immediately following primary
     if (this.current.type === TokenType.KW_NOT) {
       this.advance();
       const operand = this.parsePrimary();
       return { kind: 'UnaryExpr', op: 'not', operand };
+    }
+
+    // [ ] or [ items ] — list literal
+    if (this.current.type === TokenType.LBRACKET) {
+      this.advance(); // consume '['
+      if (this.current.type === TokenType.RBRACKET) {
+        this.advance(); // consume ']'
+        return { kind: 'EmptyList' };
+      }
+      const items: AST.Node[] = [];
+      while (this.current.type !== TokenType.RBRACKET && this.current.type !== TokenType.EOF) {
+        items.push(this.parseExpr());
+        if (this.current.type === TokenType.COMMA) this.advance();
+      }
+      this.expect(TokenType.RBRACKET);
+      return { kind: 'ListLiteral', items };
     }
 
     switch (this.current.type) {

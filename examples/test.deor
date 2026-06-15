@@ -1,0 +1,17 @@
+
+
+
+# insert
+roomList at 2 = new_room
+
+# get
+new_room = original_rooms at 2
+
+# push onto
+roomList insert at 2 = new_room
+
+# push onto end
+roomList insert new_room
+
+# get range
+roomList in range(0,10)  <-- there is no option to go to the end or start, it is user defined

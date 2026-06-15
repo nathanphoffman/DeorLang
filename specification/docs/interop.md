@@ -197,43 +197,22 @@ deps
 - Deor-idiomatic: indentation for features, no TOML syntax
 - Same crate declared in multiple files: deduped by the transpiler
 - Version conflict across files: transpiler error with a helpful message
-- `deor:` stdlib modules have their deps pre-bundled — never need to declare them
 - `std` never needs a `deps` declaration — it's always available
 - Crates used only inside `.rs` files still need a `deps` block somewhere in the project
+- Built-in functions that use crates (e.g. `random` uses `rand`) have their deps bundled by the transpiler automatically
 
 ---
 
 ## Import Tiers
 
-Three import tiers, all using the same `in` syntax:
+Two import tiers, both using the same `in` syntax:
 
 ```
-(something) in utils              # another .deor file in your project
+(something) in "./utils"          # another .deor file in your project
 (something) in rust:math_utils    # raw .rs file in your project
-(something) in deor:http          # official Deor stdlib wrapper
-(something) in reqwest            # cargo crate (declared in deps)
 ```
 
----
-
-## `deor:` Standard Library
-
-Official Deor wrappers around common Rust crates and `std` modules. Written as `.deor` files using `rust` blocks internally. Pre-bundled deps, importable with the `deor:` prefix. They handle `Result<T, E>` internally so Deor-typed return values come out cleanly.
-
-```
-(get, post) in deor:http                                          # wraps reqwest
-(read, write, exists) in deor:fs                                  # wraps std::fs
-(read_line) in deor:io                                            # wraps std::io stdin
-(args, var) in deor:env                                           # wraps std::env
-(now, elapsed) in deor:time                                       # wraps std::time
-(random) in deor:math                                             # wraps rand crate
-(parse_int, to_string) in deor:convert
-(contains, trim, split, to_upper, to_lower, starts_with, ends_with) in deor:strings  # wraps std::str
-```
-
-See [deor:strings](strings.md) for full documentation on the string functions.
-
-The `deor:` namespace is reserved. Third-party packages use bare crate names via `deps`.
+Built-in functions (`print`, `len`, `range`, `sqrt`, `random`, `contains`, etc.) are always available — no import needed. See [Built-ins](builtins.md).
 
 ---
 
@@ -241,8 +220,7 @@ The `deor:` namespace is reserved. Third-party packages use bare crate names via
 
 | Scenario | Approach |
 |---|---|
-| Common `std` operations (fs, env, time) | `deor:` stdlib wrappers |
-| Popular crates (reqwest, serde) | `deor:` stdlib wrappers |
+| Common operations (math, strings, I/O, parsing) | Built-in functions — no import |
 | Custom crate usage | `deps` block + `rust` block |
 | Large or complex raw Rust | `rust:myfile` external import |
 | Obscure `std` / one-off call | `rust` block — `std::` works inline, no declaration needed |

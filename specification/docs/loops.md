@@ -19,41 +19,51 @@ for room in &rooms {
 
 ## Numeric Iteration
 
-`range(count)` is a builtin function that produces values from `0` to `count - 1`. When called with two arguments, `range(start, end)` produces values from `start` up to but not including `end`. Both arguments must be named integer variables — inline literals are a transpiler error.
+`range(count)` produces values from `0` to `count - 1`. `range(start, end)` produces values from `start` up to but not including `end`. `range` is a built-in, so literals are valid directly.
 
 ```
 for idx in range(count)
     ...
+
+for idx in range(1, 11)
+    print(idx)    # prints 1 through 10
 ```
 
 ```rust
 for idx in 0..count {
     ...
 }
-```
-
-**Conversion notes:** `range(count)` transpiles to Rust's `0..count`. `range(start, end)` transpiles to `start..end`.
-
----
-
-## Explicit Range
-
-`range(start, end)` produces values from `start` up to but not including `end`. Use this when the range does not start at zero. Both arguments must be named integer variables — inline literals are a transpiler error.
-
-```
-start as 1
-end as 11
-for idx in range(start, end)
-    print(idx)    # prints 1 through 10
-```
-
-```rust
 for idx in 1..11 {
     println!("{}", idx);
 }
 ```
 
-`range(count)` is shorthand for `range(0, count)`. `end` is always exclusive.
+`range(count)` is shorthand for `range(0, count)`. `end` as the second argument is exclusive.
+
+---
+
+## Repeat Without an Index
+
+When the loop index is not needed, omit the variable and `in` entirely:
+
+```
+for range(10)
+    do_something()
+
+for range(1, 11)
+    do_something()
+```
+
+```rust
+for _ in 0..10 {
+    do_something();
+}
+for _ in 1..11 {
+    do_something();
+}
+```
+
+The parser recognises `for range(` as the no-variable form. This is the idiomatic way to repeat an action N times without caring about the iteration count.
 
 ---
 

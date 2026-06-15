@@ -12,7 +12,7 @@ Extraction enforces declaration order, symmetric with construction. `(name, area
 
 ## List of Validator Type
 
-Is `Roll list rolls` valid (a list whose element type is a validator type)? It would be `Vec<Option<Roll>>` in Rust. Iterating it gives `Option<Roll>` elements, each truthy/falsy. Useful but semantics need to be explicit — especially around `insert`, construction, and whether a failed predicate on assignment silently inserts `None` into the list.
+Is `shape rollList = list of Roll` valid (a list whose element type is a validator type)? It would be `Vec<Option<Roll>>` in Rust. Iterating it gives `Option<Roll>` elements, each truthy/falsy. Useful but semantics need to be explicit — especially around `at end =`, `remove at`, and whether a failed predicate on assignment silently inserts `None` into the list.
 
 ---
 
@@ -22,31 +22,27 @@ Public by default. `private` prefix restricts a declaration to the current file.
 
 ---
 
-## `is known` / `avow` — Resolved
+## `avow` — Resolved
 
-Presence checks use `if val` (truthy = Some) and `if not val` (falsy = None). The forced unwrap uses the dedicated keyword `avow`:
-
-```
-if roll              # presence check — if roll is Some
-if not roll          # absence check — if roll is None
-int val = (avow roll)   # forced unwrap — panics if None, extracts inner value
-```
-
-`(val is known)` was replaced by `(avow val)` — `avow` is a cleaner, standalone keyword with no ambiguity with the `is` equality operator. Using `avow` on a non-validator-type is a transpiler error. Parens are always required.
-
-**Decision:** `is known` removed. `avow` is the forced-unwrap keyword. `if val` / `if not val` are the idiomatic presence checks.
+Presence checks use `if val` (truthy = Some) and `if not val` (falsy = None). Forced unwrap uses `(avow val)` — parens always required. Using `avow` on a non-validator-type is a transpiler error.
 
 ---
 
 ## Async / Concurrency
 
-Not addressed. Likely handled via `rust` blocks for v1. Decide whether async is in scope for v2 or permanently delegated to Rust interop.
+Not addressed. Handled via `rust` blocks for v1. Decide whether async is in scope for v2 or permanently delegated to Rust interop.
 
 ---
 
-## String Operations — Resolved
+## Collection Index Access — Resolved
 
-Specced as `deor:strings`. See [deor:strings](strings.md). Functions provided: `contains`, `trim`, `split`, `to_upper`, `to_lower`, `starts_with`, `ends_with`. Operations not covered (`replace`, `index_of`, character access) use `rust` blocks. Character-level indexing deferred to v2 due to UTF-8 complexity.
+`rooms[idx]` replaced with `rooms at idx`. Append is `rooms at end = item`. Slice is `rooms in range(start, end)` where `end` as a keyword means "length of this list." Remove is `rooms remove at idx`. No mid-list insertion in v1 — use `remove at` + `at end` rebuild pattern or a `rust` block.
+
+---
+
+## Built-ins and Import System — Resolved
+
+All standard functions (`print`, `len`, `range`, math, strings, random, parsing, type conversion) are built into the language with no import required. The `deor:` import prefix is removed. Local module imports use string paths (`"./file"`); raw Rust files use `rust:` prefix. Import aliasing removed — rename in source instead.
 
 ---
 
@@ -54,6 +50,6 @@ Specced as `deor:strings`. See [deor:strings](strings.md). Functions provided: `
 - Literal predicate validation (compile-time `None` for known-bad literals)
 - `throw` with struct support
 - String `&str` performance inference
-- Multi-shape func types (e.g. two-input `func` shapes — currently transpiler error, may be revisited)
 - Hex/binary numeric literals (`0xFF`, `0b1010`)
-- Additional mutation verbs beyond `insert`/`remove` (pop, etc.)
+- List concatenation / spread syntax
+- Function annotations (test, deprecated, pure)

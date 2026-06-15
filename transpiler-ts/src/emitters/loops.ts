@@ -19,7 +19,7 @@ export function renderFor(
     return `${pad}for ${node.varName} in ${start}..${end} {\n${body}${pad}}\n`;
   }
 
-  // ForCollection — always borrow; Copy types work fine with &, non-Copy need it
+  // ForCollection — move into loop (list is consumed); revisit when ownership tracking lands
   const source = genExpr(node.iterable.source);
-  return `${pad}for ${node.varName} in &${source} {\n${body}${pad}}\n`;
+  return `${pad}for ${node.varName} in ${source} {\n${body}${pad}}\n`;
 }

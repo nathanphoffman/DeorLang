@@ -86,6 +86,7 @@ Open an indented block when followed by a newline.
 | `type` | Validator type declaration |
 | `struct` | Struct declaration (`struct`, `struct+`, `struct*`) |
 | `shape` | Shape declaration (`shape name = list of T` / `func of T to O`) |
+| `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
 | `deps` | Cargo dependency block |
 
@@ -112,7 +113,8 @@ Open an indented block when followed by a newline.
 | `in` | Destructuring / import / loop iteration source |
 | `as` | Shape-derived binding / import alias |
 | `with` | Record update (inside `as` binding) |
-| `at` | Position modifier for `insert` |
+| `at` | Index access and write (`list at idx`, `list at idx = val`, `list at end = val`) |
+| `end` | Reserved sentinel — "end of list" in `at end` and `in range(start, end)` |
 | `of` | Element type connector in shape declarations (`list of Room`) |
 | `to` | Return type connector in func shapes (`func of Room to bool`) |
 
@@ -139,4 +141,4 @@ These are not standalone words but reserved prefix forms in import paths.
 | `deor:` | Official stdlib module |
 | `rust:` | Raw `.rs` file import |
 
-**Note:** `insert` and `remove` are reserved as mutation verbs for lists and cannot be used as identifiers. `range` is a built-in function and should not be shadowed.
+**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a built-in function and should not be shadowed. `end` is a reserved sentinel — only valid as `list at end = val` and as the second argument to `range()` in a slice (`list in range(start, end)`).

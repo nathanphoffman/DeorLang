@@ -1,0 +1,14 @@
+fn int add_raw(int a, int b)
+	rust
+		a + b
+
+fn string repeat_str(string s, int n)
+	rust
+		s.repeat(n as usize)
+
+fn main()
+	int sum = add_raw(3, 4)
+	print(sum)
+	string prefix = "ab"
+	string repeated = repeat_str(prefix, 3)
+	print(repeated)

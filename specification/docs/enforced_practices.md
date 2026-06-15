@@ -10,15 +10,17 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 |---|---|---|
 | Built-in primitives and keywords | lowercase | `int`, `float`, `bool`, `string`, `bytes`, `list`, `func` |
 | Shapes | camelCase, 3+ chars | `roomList`, `intList`, `filterFunc`, `handlerFunc` |
+| Enums | camelCase, 3+ chars | `colorTag`, `statusTag`, `directionTag` |
+| Enum variants | PascalCase, 3+ chars | `Red`, `Green`, `Active`, `Pending` |
 | User-defined types (structs, validator types) | PascalCase, 3+ chars | `Room`, `RollResult`, `Squarefeet` |
 | Functions, variables, parameters, struct fields | snake_case, 3+ chars | `roll_die`, `total_area`, `room_list` |
 | Constants | SCREAMING_SNAKE_CASE, 3+ chars | `DELAY_TIME`, `MAX_RETRIES` |
 
 **The key signals:**
-- camelCase exclusively marks shapes — declared with `shape`, always a list or func type alias
-- PascalCase exclusively marks user-defined types — declared with `struct` or `type`
+- camelCase marks shapes and enums — `roomList` is a shape (type alias, never a value); `colorTag` is an enum (instantiable type, always a value)
+- PascalCase marks user-defined types and enum variants — `Room` is a struct or validator type; `Red` is an enum variant
 
-Seeing `roomList` guarantees it is a shape. Seeing `Room` guarantees it is a struct or validator type. There is no overlap between these categories.
+Seeing `roomList` guarantees it is a shape. Seeing `colorTag` guarantees it is an enum. Seeing `Room` guarantees it is a struct or validator type. Seeing `Red` in value position guarantees it is an enum variant.
 
 ---
 
@@ -324,9 +326,9 @@ fn (int quotient, int remainder) divmod(int left, int right)
 
 ---
 
-## Named Arguments — No Inline Literals, Expressions, or Inline Construction in Calls
+## Named Arguments — User-Defined Functions Only
 
-All arguments passed to any function — user-defined or built-in — must be named variables already in scope. Literals, arithmetic expressions, inline function call results, and inline struct constructions are not valid as arguments.
+All arguments passed to **user-defined functions** must be named variables already in scope. Literals, arithmetic expressions, inline function call results, and inline struct constructions are not valid arguments to user-defined functions.
 
 **Correct:**
 ```
@@ -339,17 +341,6 @@ int result = add(num, amt)
 ```
 
 ```
-min as 1
-max as 6
-int roll = random(min, max)
-```
-
-```
-msg as "Hello"
-print(msg)
-```
-
-```
 message as "Parse failed"
 body as input
 Error err = (message, body)
@@ -358,15 +349,26 @@ error_handler(err)
 
 **Incorrect — transpiler errors:**
 ```
-int result = add(5, 3)           # literals not allowed
-int roll = random(1, 6)            # literals not allowed — even for builtins
-print("hello")                   # literal not allowed — even for builtins
-int val = pow(2, 10)             # literals not allowed
-error_handler((message, body))   # inline struct construction not allowed
-int idx = random(0, len(rooms) - 1)  # expression not allowed
+int result = add(5, 3)               # literals not allowed in user function call
+error_handler((message, body))       # inline struct construction not allowed
+int result = add(num + 1, amt)       # expression not allowed in user function call
 ```
 
-This rule applies uniformly to all function calls. The rationale: named variables make every argument self-documenting at the call site, and intermediate bindings keep expressions readable and debuggable. There are no exemptions for built-ins.
+**Built-in functions** accept literals and expressions directly — no named variable required:
+
+```
+print("Hello, world!")
+int roll = random(1, 6)
+int val = pow(2, 10)
+NonNegFloat root = sqrt(4.0)
+int cnt = len(rooms)
+for idx in range(0, 10)
+    ...
+for range(5)
+    ...
+```
+
+The rationale: named variables make call sites self-documenting for user-defined functions, where the parameter names may not be universally known. Built-ins like `range`, `print`, `sqrt`, and `pow` are part of the language and universally understood — requiring named variables for them adds ceremony with no clarity benefit. This same logic applies to system constructs: `if` conditions, `for` headers, and compound assignments accept expressions freely.
 
 ---
 
