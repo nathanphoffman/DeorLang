@@ -67,3 +67,72 @@ let val: i32 = 5;    // inline comment
 Only `#` is valid — `//`, `/*`, `*/`, and `--` are syntax errors in Deor.
 
 **Conversion notes:** `#` → `//` in generated Rust. No multi-line comment form is needed in source since generated Rust is not intended to be hand-read.
+
+---
+
+## Reserved Words
+
+These identifiers have fixed meaning in Deor and cannot be used as variable, function, parameter, struct, or type names.
+
+### Block Headers
+Open an indented block when followed by a newline.
+
+| Word | Use |
+|---|---|
+| `fn` | Function declaration |
+| `if` | Conditional block |
+| `else` | Else branch / null-coalescing (`value else default`) |
+| `for` | Loop |
+| `type` | Validator type declaration |
+| `struct` | Struct declaration (`struct`, `struct+`, `struct*`) |
+| `rust` | Inline Rust block |
+| `deps` | Cargo dependency block |
+
+### Statement Keywords
+
+| Word | Use |
+|---|---|
+| `return` | Return a value from a function |
+| `throw` | Unrecoverable hard stop (`panic!`) |
+| `avow` | Forced unwrap of a validator type — panics if None |
+| `break` | Exit the innermost loop |
+| `continue` | Skip to the next loop iteration |
+| `const` | Constant declaration |
+| `private` | Restrict a declaration to the current file |
+
+### Operators and Expression Keywords
+
+| Word | Use |
+|---|---|
+| `and` | Logical AND (`&&`) |
+| `or` | Logical OR (`\|\|`) |
+| `not` | Logical NOT (`!`) |
+| `is` | Structural equality (`is`) and inequality (`is not`) |
+| `in` | Destructuring / import / loop iteration source |
+| `as` | Shape-derived binding / import alias |
+| `with` | Record update (inside `as` binding) |
+| `at` | Position modifier for `insert` |
+| `using` | Behavior injection at call site |
+
+### Values
+
+| Word | Use |
+|---|---|
+| `true` | Boolean true |
+| `false` | Boolean false |
+| `none` | Absent validator type value (declaration only) |
+
+### Annotation Keywords
+These are only meaningful inside `[]` annotation syntax on a `fn` declaration.
+
+`test`, `deprecated`, `pure`, `main`, `using`, `shape`
+
+### Import Prefixes
+These are not standalone words but reserved prefix forms in import paths.
+
+| Prefix | Use |
+|---|---|
+| `deor:` | Official stdlib module |
+| `rust:` | Raw `.rs` file import |
+
+**Note:** `insert` and `remove` are reserved as mutation verbs for lists and cannot be used as identifiers. `range` is a built-in function and should not be shadowed.

@@ -34,6 +34,31 @@ fn greet(name: String) {
 
 The entry point `fn main()` follows this same rule — no return type, already correct.
 
+Void functions **cannot contain `return` statements**. Early exit is a transpiler error — all conditional paths must be expressed with `if/else` block structure:
+
+```
+# Correct — use if/else to express all paths
+fn process(list<Item> items, bool skip_invalid)
+    for item in items
+        valid in item
+        if skip_invalid and not valid
+            # skip — continue to next iteration
+        else
+            handle(item)
+```
+
+```
+# Transpiler error — early return not allowed in void functions
+fn process(list<Item> items, bool skip_invalid)
+    for item in items
+        valid in item
+        if skip_invalid and not valid
+            return    # not allowed
+        handle(item)
+```
+
+This is intentional: early returns in void functions are usually a sign the logic should be restructured. Use `if/else` or `continue` inside loops instead.
+
 ### Multiple return values
 
 Tuple return types must name each element — the names document what each position means and must match what the body returns.
@@ -181,6 +206,34 @@ fn doubled(nums: &Vec<i32>) -> Vec<i32> {
 ```
 
 **Conversion notes:** avoids `Fn`/`FnMut`/`FnOnce`, closure capture, and capture-related lifetime issues entirely in generated Rust. All functions are top-level items, which maps cleanly to Rust's own top-level `fn` declarations.
+
+---
+
+## Recursion
+
+Functions may call themselves. Recursion follows the same rules as any other function call — arguments must be named variables in scope, and the return type must match.
+
+```
+fn int factorial(int val)
+    if val <= 1
+        return 1
+    int prev = val - 1
+    int sub = factorial(prev)
+    return val * sub
+```
+
+```rust
+fn factorial(val: i32) -> i32 {
+    if val <= 1 {
+        return 1;
+    }
+    let prev: i32 = val - 1;
+    let sub: i32 = factorial(prev);
+    return val * sub;
+}
+```
+
+No tail-call optimization is guaranteed — deep recursion can stack-overflow just as in Rust. For large inputs, prefer iterative loops.
 
 ---
 

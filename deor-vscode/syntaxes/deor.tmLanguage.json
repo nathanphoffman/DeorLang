@@ -5,18 +5,22 @@
   "fileTypes": ["deor"],
   "patterns": [
     { "include": "#comment" },
+    { "include": "#annotation" },
     { "include": "#string" },
     { "include": "#struct-definition" },
     { "include": "#type-definition" },
     { "include": "#keyword-fn" },
+    { "include": "#keywords-storage" },
     { "include": "#keywords-control" },
     { "include": "#keywords-other" },
+    { "include": "#mutation-verbs" },
     { "include": "#list-type" },
     { "include": "#builtin-types" },
-    { "include": "#boolean" },
+    { "include": "#constants" },
     { "include": "#number" },
     { "include": "#user-type" },
     { "include": "#function-call" },
+    { "include": "#banned-operators" },
     { "include": "#operator" }
   ],
   "repository": {
@@ -24,11 +28,16 @@
       "name": "comment.line.number-sign.deor",
       "match": "#.*$"
     },
+    "annotation": {
+      "name": "storage.modifier.deor",
+      "match": "\\[(test|deprecated|pure|main|using[^\\]]*|shape[^\\]]*)\\]"
+    },
     "string": {
       "name": "string.quoted.double.deor",
       "begin": "\"",
       "end": "\"",
       "patterns": [
+        { "name": "variable.other.interpolated.deor", "match": "\\{[a-z_][a-z0-9_]*\\}" },
         { "name": "constant.character.escape.deor", "match": "\\\\." }
       ]
     },
@@ -50,16 +59,24 @@
       "name": "storage.type.function.deor",
       "match": "\\bfn\\b"
     },
+    "keywords-storage": {
+      "name": "storage.modifier.deor",
+      "match": "\\b(const|private)\\b"
+    },
     "keywords-control": {
       "name": "keyword.control.deor",
-      "match": "\\b(if|else|for|return)\\b"
+      "match": "\\b(if|else|for|return|break|continue|throw)\\b"
     },
     "keywords-other": {
       "name": "keyword.other.deor",
-      "match": "\\b(as|in|with|append|and|or|not)\\b"
+      "match": "\\b(as|in|with|is|and|or|not|avow|using|rust|deps)\\b"
+    },
+    "mutation-verbs": {
+      "name": "keyword.operator.mutation.deor",
+      "match": "\\b(insert|remove|at)\\b"
     },
     "list-type": {
-      "match": "\\b(List)(<[A-Za-z0-9_,\\s]*>)?",
+      "match": "\\b(list)(<[A-Za-z0-9_,\\s]*>)?",
       "captures": {
         "1": { "name": "support.type.deor" },
         "2": { "name": "support.type.deor" }
@@ -67,15 +84,15 @@
     },
     "builtin-types": {
       "name": "support.type.deor",
-      "match": "\\b(int|float|bool|string)\\b"
+      "match": "\\b(int|float|bool|string|bytes)\\b"
     },
-    "boolean": {
-      "name": "constant.language.boolean.deor",
-      "match": "\\b(true|false)\\b"
+    "constants": {
+      "name": "constant.language.deor",
+      "match": "\\b(true|false|none)\\b"
     },
     "number": {
       "name": "constant.numeric.deor",
-      "match": "\\b\\d+(\\.\\d+)?\\b"
+      "match": "\\b\\d[\\d_]*(\\.[\\d_]+)?\\b"
     },
     "user-type": {
       "name": "entity.name.type.deor",
@@ -85,9 +102,13 @@
       "name": "entity.name.function.deor",
       "match": "\\b([a-z_][a-z0-9_]*)\\s*(?=\\()"
     },
+    "banned-operators": {
+      "name": "invalid.illegal.deor",
+      "match": "==|!=|&&|\\|\\|"
+    },
     "operator": {
       "name": "keyword.operator.deor",
-      "match": "==|!=|<=|>=|[+\\-*/%<>]|(?<![=!<>])=(?![=])"
+      "match": "\\+=|-=|\\*=|/=|%=|<=|>=|[+\\-*/%<>]|(?<![=!<>+\\-*/%])=(?![=])"
     }
   }
 }

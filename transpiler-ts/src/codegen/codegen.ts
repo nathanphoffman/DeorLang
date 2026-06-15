@@ -1,4 +1,7 @@
 import * as AST from '../parser/ast';
+import { renderFunction, renderParam } from './emitters/function';
+import { renderAsBinding } from './emitters/binding';
+import { renderCallStmt } from './emitters/builtins';
 
 export class Generator {
   private out = '';
@@ -19,37 +22,26 @@ export class Generator {
   }
 
   private genFunctionDecl(fn: AST.FunctionDecl): void {
-    const params = fn.params.map(p => `${p.name}: ${rustType(p.type)}`).join(', ');
-    const ret = fn.returnType ? ` -> ${rustType(fn.returnType)}` : '';
-    this.out += `fn ${fn.name}(${params})${ret} {\n`;
-    for (const stmt of fn.body) {
-      this.genStmt(stmt, 1);
-    }
-    this.out += '}\n';
+    const params = fn.params.map(p => renderParam(p.name, p.type)).join(', ');
+    const body = fn.body.map(stmt => this.genStmt(stmt, 1)).join('');
+    this.out += renderFunction(fn.name, params, fn.returnType, body);
   }
 
-  private genStmt(node: AST.Node, depth: number): void {
+  private genStmt(node: AST.Node, depth: number): string {
     const pad = '    '.repeat(depth);
 
     if (node.kind === 'AsBinding') {
       const val = this.genExpr(node.value);
-      if (node.value.kind === 'StringLiteral') {
-        this.out += `${pad}let ${node.name} = ${val}.to_string();\n`;
-      } else {
-        this.out += `${pad}let ${node.name} = ${val};\n`;
-      }
-    } else if (node.kind === 'CallStmt') {
-      const args = node.args.map(a => this.genExpr(a));
-      if (node.func === 'print') {
-        this.out += args.length === 1
-          ? `${pad}println!("{}", ${args[0]});\n`
-          : `${pad}println!(${args.join(', ')});\n`;
-      } else {
-        this.out += `${pad}${node.func}(${args.join(', ')});\n`;
-      }
-    } else {
-      throw new Error(`unknown statement node: ${(node as AST.Node).kind}`);
+      const isString = node.value.kind === 'StringLiteral';
+      return `${pad}${renderAsBinding(node.name, val, isString)}\n`;
     }
+
+    if (node.kind === 'CallStmt') {
+      const args = node.args.map(a => this.genExpr(a));
+      return `${pad}${renderCallStmt(node.func, args)}\n`;
+    }
+
+    throw new Error(`unknown statement node: ${(node as AST.Node).kind}`);
   }
 
   private genExpr(node: AST.Node): string {
@@ -60,15 +52,5 @@ export class Generator {
       default:
         throw new Error(`unknown expression node: ${(node as AST.Node).kind}`);
     }
-  }
-}
-
-function rustType(t: string): string {
-  switch (t) {
-    case 'int': return 'i32';
-    case 'float': return 'f64';
-    case 'bool': return 'bool';
-    case 'string': return 'String';
-    default: return t;
   }
 }

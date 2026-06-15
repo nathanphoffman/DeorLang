@@ -38,13 +38,20 @@ int val = pow(base, exp)    # 1024
 | `<=` | Less than or equal | `<=` |
 | `>=` | Greater than or equal | `>=` |
 
-`is` and `is not` are two-word keyword operators — not symbols. `known` is a reserved word that changes the meaning of `is`:
+`is` and `is not` are two-word keyword operators — not symbols.
 
 ```
-val is 5          # equality — val == 5
-val is not 5      # inequality — val != 5
-(val is known)    # forced unwrap — panics if None (validator types only)
+val is 5        # equality — val == 5
+val is not 5    # inequality — val != 5
 ```
+
+Forced unwrap of a validator type uses the separate `avow` keyword — it is not part of the `is` operator:
+
+```
+(avow val)    # forced unwrap — panics if None (validator types only)
+```
+
+See [Types — Forced Unwrap](types.md#forced-unwrap--avow) for full details.
 
 ---
 
@@ -105,16 +112,34 @@ When in doubt, use parentheses. Deor has no operator precedence surprises beyond
 
 ---
 
-## No Compound Assignment
+## Compound Assignment
 
-Deor has no `+=`, `-=`, `*=`, etc. Use explicit reassignment instead:
+`+=`, `-=`, `*=`, `/=`, and `%=` are supported shorthand for the explicit reassignment form.
 
 ```
-sum = sum + value    # correct
-sum += value         # not valid
+sum += value
+sum -= value
+sum *= value
+sum /= value
+sum %= value
 ```
 
-This is intentional — explicit reassignment keeps mutations visible and readable.
+```rust
+sum += value;
+sum -= value;
+sum *= value;
+sum /= value;
+sum %= value;
+```
+
+The explicit form (`sum = sum + value`) is always equally valid — use whichever reads more clearly for the context. The RHS of a compound assignment follows the same rules as any expression: literals and arithmetic are allowed, since this is not a function call.
+
+```
+count += 1      # correct — literal RHS in assignment expression, not a function arg
+count -= 1      # correct
+```
+
+`++` and `--` are not supported — use `+= 1` and `-= 1`.
 
 ---
 

@@ -29,6 +29,10 @@ use my_crate::utils::format_address as fmt_addr;
 // stdlib-equivalence table maps `math` to
 ```
 
+**Private declarations:** a declaration marked `private` in its source file cannot be imported. Attempting to name it in an `in` import is a transpiler error. See [Enforced Practices — Visibility](enforced_practices.md#visibility--private).
+
+---
+
 **Conversion notes:**
 - **Bare identifier source** (`math`, `strings`) → external crate or `std` module path, via a curated stdlib-equivalence table maintained by the transpiler.
 - **String path source** (`"./models"`) → local module path, resolved relative to the current file and translated into Rust's `crate::`/`super::` system. The transpiler must also emit the corresponding `mod` declarations.

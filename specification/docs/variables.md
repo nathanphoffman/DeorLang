@@ -124,12 +124,15 @@ let mut result: Vec<i32> = Vec::new();
 ## Reassignment
 
 ```
-total = total + 1
+total = total + 1    # explicit form
+total += 1           # compound assignment — equivalent
 ```
 
 ```rust
 total += 1;
 ```
+
+Both forms are valid. `+=`, `-=`, `*=`, `/=`, and `%=` are all supported. See [Operators](operators.md#compound-assignment).
 
 ---
 

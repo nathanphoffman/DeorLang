@@ -35,22 +35,31 @@ Are all top-level declarations importable by other files? The caller already opt
 
 ---
 
-## `is not known`
+## `is known` / `avow` — Resolved
 
-Is `val is not known` valid syntax for a None check? Currently `if not val` is the only way. `is not known` would be more explicit and symmetric with `is known`:
+Presence checks use `if val` (truthy = Some) and `if not val` (falsy = None). The forced unwrap uses the dedicated keyword `avow`:
 
 ```
-if val is known       # Some — currently (val is known) with parens for unwrap
-if val is not known   # None — not currently specced
+if roll              # presence check — if roll is Some
+if not roll          # absence check — if roll is None
+int val = (avow roll)   # forced unwrap — panics if None, extracts inner value
 ```
 
-Needs a clear decision on whether this form is valid and whether it's an alias for `if not val`.
+`(val is known)` was replaced by `(avow val)` — `avow` is a cleaner, standalone keyword with no ambiguity with the `is` equality operator. Using `avow` on a non-validator-type is a transpiler error. Parens are always required.
+
+**Decision:** `is known` removed. `avow` is the forced-unwrap keyword. `if val` / `if not val` are the idiomatic presence checks.
 
 ---
 
 ## Async / Concurrency
 
 Not addressed. Likely handled via `rust` blocks for v1. Decide whether async is in scope for v2 or permanently delegated to Rust interop.
+
+---
+
+## String Operations — Resolved
+
+Specced as `deor:strings`. See [deor:strings](strings.md). Functions provided: `contains`, `trim`, `split`, `to_upper`, `to_lower`, `starts_with`, `ends_with`. Operations not covered (`replace`, `index_of`, character access) use `rust` blocks. Character-level indexing deferred to v2 due to UTF-8 complexity.
 
 ---
 

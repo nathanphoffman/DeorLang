@@ -38,6 +38,28 @@ type Roll(int n)      # transpiler error — parameter too short
 
 ---
 
+## Field Extraction Order
+
+Struct field extraction with `in` must follow declaration order — the same rule as struct construction with `as`. The field you write first must match the first declared field of the struct.
+
+**Correct:**
+```
+struct Room
+    Squarefeet area
+    string name
+
+(area, name) in room    # correct — matches declaration order
+```
+
+**Incorrect — transpiler errors:**
+```
+(name, area) in room    # wrong order — area is declared first
+```
+
+Single-field extraction has no ordering constraint.
+
+---
+
 ## Destructuring at Top of Block
 
 All `in` extractions must appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
@@ -315,6 +337,24 @@ int idx = rand(0, len(rooms) - 1)  # expression not allowed
 ```
 
 This rule applies uniformly to all function calls. The rationale: named variables make every argument self-documenting at the call site, and intermediate bindings keep expressions readable and debuggable. There are no exemptions for built-ins.
+
+---
+
+## Visibility — `private`
+
+By default, all top-level declarations (`fn`, `type`, `struct`, `const`) are importable by other files. The `private` prefix restricts a declaration to the current file — it cannot be named in an `in` import from anywhere else. Attempting to import a `private` declaration is a transpiler error.
+
+```
+private fn build_key(string base)
+    ...
+
+private type InternalScore(int val)
+    val >= 0 and val <= 255
+
+private const int MAX_RETRIES = 3
+```
+
+`private` is file-level only. It has no effect on visibility within the same file — everything in a file can see everything else in that file regardless of `private`. Struct fields have no visibility modifier; when a struct is importable, all its fields are accessible via destructuring.
 
 ---
 

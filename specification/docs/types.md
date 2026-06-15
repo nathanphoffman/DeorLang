@@ -94,7 +94,7 @@ if my_string           # transpiler error
 ```
 Squarefeet area = 9
 if area
-    int val = (area is known)
+    int val = (avow area)
 if not area
     print("no value")
 ```
@@ -126,14 +126,14 @@ let mut area: Option<Squarefeet> = None;
 
 ---
 
-### Forced Unwrap — `is known`
+### Forced Unwrap — `avow`
 
-`(val is known)` asserts the value is `Some` and extracts the inner primitive. Panics at runtime if `None`. Use only when you are certain the value is present — typically inside an `if val` block where presence is already confirmed.
+`(avow val)` asserts the value is `Some` and extracts the inner primitive. Panics at runtime if `None`. Use only when you are certain the value is present — typically inside an `if val` block where presence is already confirmed. Using `avow` on a non-validator-type variable is a transpiler error.
 
 ```
 Roll roll = roll_die(d20)
 if roll
-    int val = (roll is known)    # always safe inside if roll
+    int val = (avow roll)    # always safe inside if roll
 ```
 
 ```rust
@@ -142,10 +142,10 @@ if roll.is_some() {
 }
 ```
 
-Outside an `if` check, this is the programmer's assertion that the value is Some:
+Outside an `if` check, `avow` is the programmer's explicit assertion that the value is Some:
 
 ```
-int sum = (value is known) + 2
+int sum = (avow value) + 2
 ```
 
 ```rust
@@ -183,7 +183,7 @@ struct Room
 ```
 (area, max_capacity) in room
 if max_capacity
-    int cap = (max_capacity is known)
+    int cap = (avow max_capacity)
 int safe_cap = max_capacity else 0
 ```
 
@@ -238,7 +238,7 @@ int bonus = crit else 0
 **Conversion notes:**
 - Constructor becomes `fn new(n: T) -> Option<Self>` — never panics, returns `None` on predicate failure.
 - Truthy/falsy maps to `.is_some()` / `.is_none()`.
-- `is known` → `.unwrap().0`; `value else default` → `.map(|v| v.0).unwrap_or(default)`.
+- `(avow val)` → `.unwrap().0`; `value else default` → `.map(|v| v.0).unwrap_or(default)`.
 - Equality (`is` / `is not`) transpiles to `==` / `!=` in Rust and falls through to `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
 - `and` / `or` / `not` map to `&&` / `||` / `!`.
 - Literal predicate failures (`Squarefeet bad = -1`) will eventually be caught at transpile time — currently runtime `None`.

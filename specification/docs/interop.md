@@ -132,13 +132,16 @@ Three import tiers, all using the same `in` syntax:
 Official Deor wrappers around common Rust crates and `std` modules. Written as `.deor` files using `rust` blocks internally. Pre-bundled deps, importable with the `deor:` prefix. They handle `Result<T, E>` internally so Deor-typed return values come out cleanly.
 
 ```
-(get, post) in deor:http          # wraps reqwest
-(read, write, exists) in deor:fs  # wraps std::fs
-(args, var) in deor:env           # wraps std::env
-(now, elapsed) in deor:time       # wraps std::time
-(random) in deor:rand             # wraps rand crate
+(get, post) in deor:http                                          # wraps reqwest
+(read, write, exists) in deor:fs                                  # wraps std::fs
+(args, var) in deor:env                                           # wraps std::env
+(now, elapsed) in deor:time                                       # wraps std::time
+(random) in deor:rand                                             # wraps rand crate
 (parse_int, to_string) in deor:convert
+(contains, trim, split, to_upper, to_lower, starts_with, ends_with) in deor:strings  # wraps std::str
 ```
+
+See [deor:strings](strings.md) for full documentation on the string functions.
 
 The `deor:` namespace is reserved. Third-party packages use bare crate names via `deps`.
 

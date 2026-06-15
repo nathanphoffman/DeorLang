@@ -1,6 +1,6 @@
 # Built-in Functions
 
-These are part of the `deor:` standard library and available without an explicit import.
+These are part of the `deor:` standard library and available without an explicit import. For string operations beyond `len` and concatenation, see [deor:strings](strings.md) — those require an explicit import.
 
 ---
 
@@ -78,7 +78,7 @@ high as 7
 int small = min(low, high)
 ```
 
-`sqrt` returns `NonNegFloat` — a stdlib validator type — so the result must be unwrapped before use in arithmetic. Use `else` for a safe default or `is known` when you are certain the input is non-negative.
+`sqrt` returns `NonNegFloat` — a stdlib validator type — so the result must be unwrapped before use in arithmetic. Use `else` for a safe default or `avow` when you are certain the input is non-negative.
 
 ---
 
@@ -145,7 +145,7 @@ let label: String = score.to_string();
 ```
 ParsedInt result = parse_int(user_input)
 if result
-    int val = (result is known)
+    int val = (avow result)
     print(val)
 ```
 
@@ -176,7 +176,7 @@ These validator types are part of the `deor:` stdlib and available without an ex
 | `NonNegFloat` | `float` | `val >= 0.0` | Non-negative floats — `sqrt` return type, lengths |
 | `PositiveFloat` | `float` | `val > 0.0` | Strictly positive floats — logarithm inputs, rates |
 
-These behave identically to user-defined `type` declarations — they are `Option<T>` under the hood, support `is known`, `else`, and `if`/`if not` checks, and can be used as struct fields.
+These behave identically to user-defined `type` declarations — they are `Option<T>` under the hood, support `avow`, `else`, and `if`/`if not` checks, and can be used as struct fields.
 
 ```
 NonNeg exp = 10

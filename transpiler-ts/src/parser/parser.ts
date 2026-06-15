@@ -111,7 +111,7 @@ export class Parser {
     }
 
     const ident = this.advance();
-    const currentType = this.current.type;
+    const currentType = this.current.type as TokenType;
 
     if (currentType === TokenType.KW_AS) {
       this.advance();
