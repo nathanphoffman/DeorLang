@@ -7,10 +7,10 @@ export class Parser {
   private peekToken: Token;
 
   constructor(private lexer: Lexer) {
-    
+
     // purely to avoid nulls, just default EOF -- as no processing = EOF = none
     const defaultEOF = { type: TokenType.EOF, literal: '', line: 0 };
-    this.current  = defaultEOF;
+    this.current = defaultEOF;
     this.peekToken = defaultEOF;
 
     // 2 advances required to load the 2nd token as current, and 1st as peekToken
@@ -19,8 +19,8 @@ export class Parser {
   }
 
   private advance(): Token {
-    const prev    = this.current;
-    this.current  = this.peekToken;
+    const prev = this.current;
+    this.current = this.peekToken;
     this.peekToken = this.lexer.nextToken();
     return prev;
   }
@@ -35,14 +35,14 @@ export class Parser {
   }
 
   parseProgram(): AST.Program {
-    const decls: AST.Node[] = [];
+    const topLevelDeclarations: AST.Node[] = [];
 
     while (this.current.type !== TokenType.EOF) {
       if (this.current.type === TokenType.NEWLINE) { this.advance(); continue; }
-      decls.push(this.parseTopLevel());
+      topLevelDeclarations.push(this.parseTopLevel());
     }
 
-    return { kind: 'Program', decls };
+    return { kind: 'Program', decls: topLevelDeclarations };
   }
 
   private parseTopLevel(): AST.Node {
@@ -58,13 +58,7 @@ export class Parser {
     const name = this.expect(TokenType.IDENT).literal;
     this.expect(TokenType.LPAREN);
 
-    const params: AST.Param[] = [];
-    while (this.current.type !== TokenType.RPAREN && this.current.type !== TokenType.EOF) {
-      const type     = this.expect(TokenType.IDENT).literal;
-      const paramName = this.expect(TokenType.IDENT).literal;
-      params.push({ type, name: paramName });
-      if (this.current.type === TokenType.COMMA) this.advance();
-    }
+    const params = this.buildParams();
 
     this.expect(TokenType.RPAREN);
     this.expect(TokenType.NEWLINE);
@@ -73,6 +67,22 @@ export class Parser {
     const body = this.parseBlock();
 
     return { kind: 'FunctionDecl', name, returnType: '', params, body };
+  }
+
+  private buildParams(): AST.Param[] {
+    const params: AST.Param[] = [];
+    while (this.current.type !== TokenType.RPAREN && this.current.type !== TokenType.EOF) {
+     
+      // right now user types and primitives are all the same structurally 
+      //  so there is little reason to treat them as anything but generic IDENT
+      //   as mapping happens later in the process
+      const type = this.expect(TokenType.IDENT).literal;
+      const paramName = this.expect(TokenType.IDENT).literal;
+
+      params.push({ type, name: paramName });
+      if (this.current.type === TokenType.COMMA) this.advance();
+    }
+    return params;
   }
 
   private parseBlock(): AST.Node[] {
@@ -88,6 +98,12 @@ export class Parser {
   }
 
   private parseStatement(): AST.Node {
+    if (this.current.type === TokenType.KW_FN) {
+      throw new Error(
+        `line ${this.current.line}: functions must be declared at the top level, not inside a block`
+      );
+    }
+
     if (this.current.type !== TokenType.IDENT) {
       throw new Error(
         `line ${this.current.line}: expected identifier to start statement, got ${TokenType[this.current.type]}`
@@ -128,8 +144,8 @@ export class Parser {
   private parseExpr(): AST.Node {
     switch (this.current.type) {
       case TokenType.STRING: return { kind: 'StringLiteral', value: this.advance().literal };
-      case TokenType.INT:    return { kind: 'IntLiteral',    value: this.advance().literal };
-      case TokenType.IDENT:  return { kind: 'Identifier',    name:  this.advance().literal };
+      case TokenType.INT: return { kind: 'IntLiteral', value: this.advance().literal };
+      case TokenType.IDENT: return { kind: 'Identifier', name: this.advance().literal };
       default:
         throw new Error(
           `line ${this.current.line}: unexpected token in expression: ${TokenType[this.current.type]} (${JSON.stringify(this.current.literal)})`
