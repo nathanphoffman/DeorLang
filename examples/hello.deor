@@ -1,6 +1,10 @@
 fn main()
 	x as 10
 	y as 20
+
+	SquareFeet sqft = 9
+	
+
 	int sum = x + y
 	if sum > 40
 		print(y)

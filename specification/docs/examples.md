@@ -3,7 +3,8 @@
 ## Source
 
 ```
-(sqrt, floor, rand) in math
+(sqrt, floor) in math
+(random) in deor:math
 
 shape roomList = list of Room
 
@@ -43,30 +44,30 @@ fn string random_room_name(roomList rooms)
     int count = len(rooms)
     int last = count - 1
     start as 0
-    int idx = rand(start, last)
+    int idx = random(start, last)
     name in rooms[idx]
     return name
 
 fn main()
-    area as 9
+    Squarefeet area = 9
     name as "Kitchen"
     occupied as true
-    kitchen as (area, name, occupied)
+    Room kitchen = (area, name, occupied)
 
     area = 16
     name = "Office"
     occupied = false
-    office as (area, name, occupied)
+    Room office = (area, name, occupied)
 
     area = 25
     name = "Bedroom"
     occupied = true
-    bedroom as (area, name, occupied)
+    Room bedroom = (area, name, occupied)
 
     rooms as [kitchen, office, bedroom]
 
     address as "12 Main St"
-    house as (address, rooms)
+    House house = (address, rooms)
 
     int area_sum = total_area(rooms)
     print(area_sum)
@@ -77,7 +78,7 @@ fn main()
         print(name)
 
     area = 25
-    bigger_kitchen as kitchen with area
+    bigger_kitchen as kitchen with (area)
 
     string pick = random_room_name(rooms)
     print(pick)
@@ -165,7 +166,8 @@ fn main() {
     let bedroom = Room { area, name: name.clone(), occupied };
 
     let rooms: Vec<Room> = vec![kitchen.clone(), office.clone(), bedroom.clone()];
-    let house = House { address: "12 Main St".to_string(), rooms: rooms.clone() };
+    let address = "12 Main St".to_string();
+    let house = House { address, rooms: rooms.clone() };
     let _ = house;
 
     let area_sum: i32 = total_area(&rooms);

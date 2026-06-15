@@ -37,8 +37,10 @@ The entry point `fn main()` follows this same rule — no return type, already c
 Void functions **cannot contain `return` statements**. Early exit is a transpiler error — all conditional paths must be expressed with `if/else` block structure:
 
 ```
+shape itemList = list of Item
+
 # Correct — use if/else to express all paths
-fn process(Item list items, bool skip_invalid)
+fn process(itemList items, bool skip_invalid)
     for item in items
         valid in item
         if skip_invalid and not valid
@@ -48,8 +50,10 @@ fn process(Item list items, bool skip_invalid)
 ```
 
 ```
+shape itemList = list of Item
+
 # Transpiler error — early return not allowed in void functions
-fn process(Item list items, bool skip_invalid)
+fn process(itemList items, bool skip_invalid)
     for item in items
         valid in item
         if skip_invalid and not valid
@@ -103,13 +107,13 @@ The struct name documents what the paired values represent — `DivResult` commu
 
 ## Return Rules
 
-- If a function body contains **no bindings** (`as`, `=`, or `Type name = expr`), the **tail expression is implicitly returned** — `return` is optional there.
-- If the body contains **any binding**, `return` is **mandatory** at every exit, including the tail.
-- **Non-tail exits always require `return`**, regardless of bindings.
+A function body that is a **single expression** — one line, nothing else — implicitly returns that expression. `return` is optional there.
+
+Any function body with **more than one statement** requires explicit `return` at every exit point.
 
 ```
 fn int square(int val)
-    val * val
+    val * val    # single expression — return implicit
 ```
 
 ```rust
@@ -120,7 +124,7 @@ fn square(val: i32) -> i32 {
 
 ```
 fn int abs(int val)
-    if val < 0
+    if val < 0       # multiple statements — return required everywhere
         return -val
     return val
 ```
@@ -134,7 +138,7 @@ fn abs(val: i32) -> i32 {
 }
 ```
 
-**Conversion notes:** the transpiler can always emit explicit `return` safely — implicit-tail is a source-level convenience, not a Rust requirement.
+**Conversion notes:** the transpiler can always emit explicit `return` safely — implicit single-expression return is a source-level convenience, not a Rust requirement.
 
 ---
 
@@ -159,12 +163,13 @@ Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
 
 ## `throw`
 
-`throw` is an unrecoverable hard stop — transpiles to `panic!()` in Rust. Takes a string message. For recoverable error handling, accept an error handler as a `func` shape parameter instead.
+`throw` is an unrecoverable hard stop — transpiles to `panic!()` in Rust. Takes a named string variable — inline string literals are a transpiler error, the same as any other function argument. For recoverable error handling, accept an error handler as a `func` shape parameter instead.
 
 ```
 fn int divide(int left, int right)
     if right is 0
-        throw "division by zero"
+        msg as "division by zero"
+        throw msg
     return left / right
 ```
 

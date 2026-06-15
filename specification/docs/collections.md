@@ -92,6 +92,27 @@ bytes data = read_raw("file.bin")    # correct — raw binary
 intList scores = [10, 20, 30]        # correct — integer list (requires shape intList = list of int)
 ```
 
+To give a byte buffer a semantic name, declare a bytes shape — see [Shapes — Bytes Shapes](shapes.md#bytes-shapes).
+
+---
+
+## No Membership Test
+
+Deor has no built-in membership operator. `item in list` would conflict with the `in` destructuring and import grammar, and `item not in list` does not exist. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
+
+```
+shape matchFunc = func of Room to bool
+
+fn bool any_match(roomList items, matchFunc predicate)
+    for item in items
+        if predicate(item)
+            return true
+    found as false
+    return found
+```
+
+This is intentional — the language surface is kept small. Membership checks are just loops.
+
 ---
 
 ## Mutation Verbs

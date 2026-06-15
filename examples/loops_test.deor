@@ -1,0 +1,36 @@
+fn int sum_to(int n)
+
+	total as 0
+	for i in range(n)
+		total = total + i
+
+	return total
+
+fn int sum_range(int start, int end)
+
+	total as 0
+	for i in (start, end)
+		total = total + i
+
+	return total
+
+fn int count_down(int n)
+	result as 0
+	for i in range(n)
+		if i < 2
+			continue
+		result = result + i
+	return result
+
+fn main()
+	int s = sum_to(5)
+	print(s)
+	int r = sum_range(3, 7)
+	print(r)
+	int d = count_down(5)
+	print(d)
+	flag as true
+	if not flag
+		print("no")
+	else
+		print("yes")

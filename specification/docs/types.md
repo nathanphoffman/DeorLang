@@ -27,6 +27,21 @@ fn int byte_count(bytes data)
 
 ---
 
+## `raw` Variables
+
+`raw` is a special variable kind for holding an opaque Rust value — produced by a `rust` block and consumed only inside `rust` blocks. It has no type annotation, no Deor operators, and cannot appear in Deor expressions or struct fields.
+
+```
+raw index = rust
+    entries.iter()
+        .map(|e| (e.key.clone(), e.value.clone()))
+        .collect::<std::collections::HashMap<String, String>>()
+```
+
+See [Rust Interop — The `raw` Type](interop.md#the-raw-type) for full documentation, rules, and the build-once pattern.
+
+---
+
 ## Validator Types (`type`)
 
 A `type` definition wraps a base primitive with a predicate. The predicate body is required — a `type` with no constraint adds no meaning over the base type, so use the base type directly instead. The transpiler errors on a `type` definition with an empty body.
@@ -128,17 +143,23 @@ let mut area: Option<Squarefeet> = None;
 
 ### Forced Unwrap — `avow`
 
-`(avow val)` asserts the value is `Some` and extracts the inner primitive. Panics at runtime if `None`. Use only when you are certain the value is present — typically inside an `if val` block where presence is already confirmed. Using `avow` on a non-validator-type variable is a transpiler error.
+`(avow val)` is Deor's equivalent of Rust's `.unwrap()` — it asserts the value is `Some` and extracts the underlying primitive. Panics at runtime if `None`. Use only when you are certain the value is present — typically inside an `if val` block. Using `avow` on a non-validator-type variable is a transpiler error.
+
+The parentheses are always required — this is intentional. Without them, `avow val + 2` would be ambiguous: does `avow` bind to `val` or to `val + 2`? The parens make the boundary explicit, which matters most when `avow` is used inline inside a larger expression like `(avow value) + 2`. Writing `avow val` on its own line would be unambiguous, but the rule is uniform: parens always.
+
+`avow` gives you the raw primitive beneath the validator type — `int` from a `Roll`, `float` from a `Squarefeet`. When you need to pass a validator type value to a function that accepts that validator type, pass the variable directly — no `avow` needed. Only reach for `avow` when you specifically need the underlying primitive.
 
 ```
 Roll roll = roll_die(d20)
 if roll
-    int val = (avow roll)    # always safe inside if roll
+    int val = (avow roll)          # need the raw int — use avow
+    bool crit = is_critical(roll)  # function takes Roll — pass directly, no avow
 ```
 
 ```rust
 if roll.is_some() {
     let val: i32 = roll.unwrap().0;
+    let crit: bool = is_critical(roll);
 }
 ```
 
@@ -166,7 +187,7 @@ int val = area else 0
 let val: i32 = area.map(|v| v.0).unwrap_or(0);
 ```
 
-`else` here is null-coalescing — distinct from `if/else` block syntax. `or` and `and` remain the logical `||` / `&&` operators.
+`else` here is null-coalescing — only valid on validator type variables. It extracts the inner primitive if `Some`, or returns the default if `None`. This is distinct from `if/else` block syntax and from the compact ternary `else` branch — see [Conditionals — The Three Uses of `else`](conditionals.md#the-three-uses-of-else).
 
 ---
 
@@ -202,7 +223,9 @@ let safe_cap: i32 = max_capacity.map(|v| v.0).unwrap_or(0);
 A function whose return type is a validator type may return a `None` value through its return variable. `return none` is a transpiler error — always return a named typed variable. The caller knows the return may be `None` because the return type is a validator type.
 
 ```
-fn Roll find_crit(RollResult list rolls)
+shape rollResultList = list of RollResult
+
+fn Roll find_crit(rollResultList rolls)
     Roll found = none
 
     for roll in rolls
@@ -282,6 +305,8 @@ struct+ House               # explicit override: always a value, full clone on c
 ```
 
 Struct fields may use list shapes (`roomList`) but not func shapes — structs are pure data. A func shape as a struct field is a transpiler error.
+
+**All struct fields are always public.** There are no visibility modifiers on fields. Structs carry data only — no methods, no encapsulation. When a struct is importable, all its fields are accessible via destructuring. If you want to restrict access to a struct's internals, mark the struct itself `private` rather than its fields.
 
 **Conversion notes:**
 - The **struct definition itself is identical** regardless of `+`/`*`/auto — only how *usages* are represented changes (`House` vs `Rc<House>`).

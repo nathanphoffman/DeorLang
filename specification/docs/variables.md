@@ -1,71 +1,40 @@
 # Variables
 
-## `as` — Shape-Derived Bindings
+## `as` — Type-Inferred Bindings
 
-`as` creates a binding whose type is derived from the shape of the right-hand side at compile time. It is used in three forms:
+`as` creates a binding whose type is derived from the right-hand side at compile time. It has two valid forms:
 
 ### Scalar literals
 
-The type is inferred from the literal value. String, int, float, and bool literals each produce their respective types.
+The type is inferred from the literal value.
 
 ```
 sum as 0
 label as "Office"
 flag as true
+rate as 3.14
 ```
 
 ```rust
 let sum = 0;
 let label = "Office".to_string();
 let flag = true;
-```
-
-### Struct construction
-
-Structs are constructed with `()`. Every field must already be a variable in scope, and the variable name must match the struct field name exactly. There is no `field: value` pair syntax. Parens are always required, even for a single field. The type is inferred from which declared struct matches the given field names.
-
-```
-area as 9
-name as "Office"
-occupied as true
-room as (area, name, occupied)
-```
-
-```rust
-let area = Squarefeet::new(9);
-let name = "Office".to_string();
-let occupied = true;
-let room = Room { area, name, occupied };
-```
-
-This mirrors destructuring exactly — `in` and `as` are opposite directions:
-
-```
-(area, name) in room      # extract fields from a struct
-room as (area, name)      # construct a struct from variables
-```
-
-If you need a field name that differs from the variable you have, rename it first:
-
-```
-name in other_room
-label = name
-entry as (label)
+let rate = 3.14_f64;
 ```
 
 ### List construction
 
-A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope. The type comes from a declared shape — declare the shape at the top of the file, then use it as the variable's type.
+A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope.
 
 ```
-room_list as [kitchen, office, bedroom]    # type inferred from items (all Room)
+rooms as [kitchen, office, bedroom]    # type inferred from items (all Room)
 ```
 
 ```rust
-let room_list = vec![kitchen.clone(), office.clone(), bedroom.clone()];
+let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 ```
 
-An empty list `[]` requires an explicit shape type on the left — there are no items to infer from:
+An empty list `[]` cannot be typed by inference — there are no items to infer from:
 
 ```
 roomList result = []    # correct — shape name gives the type
@@ -76,48 +45,124 @@ result as []            # transpiler error — element type unknown
 
 **What `as` is not for:**
 
-`as` is the type-inferring form — like `:=` in Go. An explicit type annotation is never written with `as`. When you have a type, use `=`.
+**Struct construction** — `(fields)` alone does not identify which struct is being built. Use explicit `Type name = (fields)` instead — see [Struct Construction](#struct-construction) below.
 
 ```
-count as 0          # correct — type inferred as int
-int count as 0      # transpiler error — type annotation not allowed with as
-int count = 0       # correct — explicit type with =
+room as (area, name)      # transpiler error — which struct?
+Room room = (area, name)  # correct
 ```
 
-`as` is also not for function calls, arithmetic, or expressions where the type does not come from structural shape. Those use `Type name = expr`:
+**Validator type bindings** — a literal alone doesn't say whether a validator should run. Use explicit `ValidatorType name = value` — see [Validator Type Bindings](#validator-type-bindings) below.
 
 ```
-int val = rand(1, 10)          # runtime computation — explicit type required
-Room room = some_function()  # function return — explicit type required
+area as 9             # transpiler error — int or Squarefeet?
+Squarefeet area = 9   # correct
 ```
 
-Rebinding from an existing variable is not a valid use of `as`:
+**Type annotation** — `as` never takes an explicit type prefix:
 
 ```
-copy as original    # transpiler error — use Type name = original instead
+int count as 0      # transpiler error
+int count = 0       # correct
 ```
 
-Record update (`with`) also uses `as` — see [Immutability](immutability.md).
+**Variable copying** — `as` requires a literal or `[items]` on the right:
+
+```
+copy as original    # transpiler error — use Room copy = original
+```
+
+Record update (`with`) uses `as` — the type is known from the source struct. See [Immutability](immutability.md).
+
+---
+
+## Struct Construction
+
+Struct construction always uses `Type name = (fields)`. The type name is mandatory — there is no anonymous struct construction in Deor. Every field must already be a variable in scope matching the field name exactly, in declaration order. No `{}`, no `field: value` pairs.
+
+```
+Squarefeet area = 9
+name as "Office"
+occupied as true
+Room room = (area, name, occupied)
+```
+
+```rust
+let area: Option<Squarefeet> = Squarefeet::new(9);
+let name = "Office".to_string();
+let occupied = true;
+let room = Room { area, name, occupied };
+```
+
+Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in. Both always follow the struct's declared field order.
+
+If you need a field name that differs from the variable you have, rename it first:
+
+```
+name in other_room
+label = name
+Entry entry = (label)
+```
+
+---
+
+## Validator Type Bindings
+
+Declaring a variable with a validator type runs the predicate at assignment. The variable is `Option<T>` under the hood — truthy (`Some`) if the predicate passes, falsy (`None`) if it fails.
+
+```
+Squarefeet area = 9            # Some(Squarefeet(9)) — predicate passes
+Squarefeet bad = -1            # None — predicate fails
+Roll roll = random(min, max)   # Some or None depending on the value
+```
+
+```rust
+let area: Option<Squarefeet> = Squarefeet::new(9);
+let bad: Option<Squarefeet> = Squarefeet::new(-1);
+let roll: Option<Roll> = Roll::new(random(min, max));
+```
+
+### Initializing to None
+
+A validator type variable can be declared as `none` to start explicitly absent. Valid only at first declaration — `= none` after that point is a transpiler error.
+
+```
+Roll best = none
+```
+
+```rust
+let mut best: Option<Roll> = None;
+```
+
+### Reassignment
+
+Reassigning a validator type re-runs the predicate. The variable may transition between `Some` and `None`.
+
+```
+Squarefeet area = 9   # Some(Squarefeet(9))
+area = 16             # Some(Squarefeet(16))
+area = -1             # None — predicate fails
+```
 
 ---
 
 ## Explicit Typing — Runtime Values
 
-Any value that depends on a function call or other runtime computation must use `Type name = expr`. For list types, the type is the shape name.
+Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
 
 ```
-int val = rand(min, max)
+int val = random(min, max)
 string pick = random_room_name(rooms)
-intList result = []
+roomList result = []
 ```
 
 ```rust
-let val: i32 = rand(min, max);
+let val: i32 = random(min, max);
 let pick: String = random_room_name(&rooms);
 let mut result: Vec<i32> = Vec::new();
 ```
 
-**Conversion notes:** a list binding that's later `insert`ed into must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
+**Conversion notes:** a list binding that's later `insert`ed into must be emitted as `let mut` — the transpiler infers `mut` from usage.
 
 ---
 
@@ -182,36 +227,3 @@ Hex literals (`0xFF`) and binary literals (`0b1010`) are deferred to v2. Use a `
 
 ---
 
-## Validator Type Variables
-
-Declaring a variable with a validator type makes it an option-type. Assignment runs the predicate — the variable is truthy (`Some`) or falsy (`None`) as a result.
-
-```
-Roll roll = rand(1, 20)    # Some if predicate passes, None if not
-```
-
-### Initializing to None
-
-A validator type variable can be declared as `none` to start explicitly absent. Valid only at first declaration — `= none` after that point is a transpiler error.
-
-```
-Roll best = none
-```
-
-```rust
-let mut best: Option<Roll> = None;
-```
-
-This is the preferred way to declare a "not yet determined" validator type value. It is more readable than relying on a known-failing literal (e.g. `Roll best = 0`), even though both produce `None`.
-
-### Reassignment
-
-Reassigning a validator type re-runs the predicate. The variable may transition between `Some` and `None` through a failing value — this is expected behavior, not an error.
-
-```
-Roll roll = 5      # Some(Roll(5))
-roll = 150         # None — fails Roll predicate (val <= 100)
-roll = 10          # Some(Roll(10)) again
-```
-
-The transpiler will eventually catch predicate failures on literals at transpile time. Currently all non-literal predicate failures are runtime.

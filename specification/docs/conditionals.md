@@ -1,5 +1,19 @@
 # Conditionals
 
+## The Three Uses of `else`
+
+`else` appears in three distinct positions in Deor — the parser distinguishes them by context:
+
+| Form | Where | Meaning |
+|---|---|---|
+| `if ... else` | Block keyword after `if` or `else if` | Opens the fallback branch |
+| `value` *(newline)* `    else branch` | Indented below an assignment | Compact ternary false branch |
+| `validatorVar else default` | Inline expression | Null-coalescing — extracts inner primitive or returns default |
+
+Null-coalescing `else` only applies to **validator type** variables. It is never valid on plain `int`, `float`, `string`, `bool`, `list`, or structs.
+
+---
+
 ## `if / else if / else`
 
 Standard conditional blocks. No parentheses around the condition. All branches support multi-line bodies. `else if` is a flat two-word keyword pair — not a nested `if` inside an `else` block.

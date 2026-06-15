@@ -10,6 +10,33 @@ Import only what you use — the named import list is the contract.
 
 ---
 
+## Escape Sequences
+
+Standard escape sequences are supported inside string literals:
+
+| Sequence | Meaning |
+|---|---|
+| `\n` | Newline |
+| `\t` | Horizontal tab |
+| `\\` | Literal backslash |
+| `\"` | Literal double quote |
+
+```
+msg as "Hello\nWorld"
+path as "C:\\Users\\name"
+quote as "She said \"hello\""
+```
+
+```rust
+let msg = "Hello\nWorld".to_string();
+let path = "C:\\Users\\name".to_string();
+let quote = "She said \"hello\"".to_string();
+```
+
+No other escape sequences are supported in v1. For Unicode escapes or raw byte strings, use a `rust` block.
+
+---
+
 ## Functions
 
 | Function | Signature | Notes |

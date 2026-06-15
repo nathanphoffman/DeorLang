@@ -32,6 +32,72 @@ fn string read_file(string path)
 
 ---
 
+## The `raw` Type
+
+`raw` is a Deor variable that holds an opaque Rust value — one the transpiler cannot name or inspect. It is the bridge between `rust` blocks when intermediate computation produces a Rust-native structure that has no Deor equivalent.
+
+```
+raw index = rust
+    entries.iter()
+        .map(|e| (e.key.clone(), e.value.clone()))
+        .collect::<std::collections::HashMap<String, String>>()
+
+string result = rust
+    index.get(search_key.as_str()).cloned().unwrap_or_default()
+```
+
+**Rules:**
+- A `raw` variable is always assigned from a `rust` block return value — never from a Deor expression.
+- A `raw` variable may only be consumed inside a `rust` block.
+- A `raw` variable may be passed as a parameter to a Deor function, provided that function uses it only inside `rust` blocks.
+- `raw` cannot appear as a struct field.
+- No Deor operator (`avow`, `else`, `if`, `is`, `+`, etc.) works on a `raw` variable — it is opaque to the transpiler.
+- `raw` parameters count toward the 3-parameter limit.
+
+**Zero cost:** The transpiler emits the `raw` variable name into the generated Rust without wrapping or boxing. Rust's type inference assigns the concrete type at compile time. No `Box<dyn Any>`, no type erasure, no runtime overhead — the generated Rust is identical to code you would write by hand.
+
+**Passing `raw` down the call hierarchy:**
+
+A Deor function that accepts a `raw` parameter generates a generic Rust function. Rust monomorphizes it to the concrete type at each call site — zero runtime cost:
+
+```
+fn string lookup(raw index, string key)
+    rust
+        index.get(key.as_str()).cloned().unwrap_or_default()
+```
+
+```rust
+fn lookup<T>(index: &T, key: String) -> String {
+    index.get(key.as_str()).cloned().unwrap_or_default()
+}
+```
+
+**The build-once pattern:**
+
+Build a Rust-native structure once, capture it in `raw`, pass it through the call graph wherever it is needed:
+
+```
+shape entryList = list of Entry
+
+raw index = rust
+    entries.iter()
+        .map(|e| (e.key.clone(), e.value.clone()))
+        .collect::<std::collections::HashMap<String, String>>()
+
+string name = lookup(index, search_key)
+string alt  = lookup(index, fallback_key)
+```
+
+This performs identically to hand-written Rust. The `entryList` is already `Vec<Entry>` in Rust. The HashMap build is O(n) once; each `lookup` call is O(1). Passing `raw` down through multiple function calls adds no overhead — Rust's monomorphization ensures the concrete type is resolved at compile time.
+
+**Why Deor deliberately omits dict, while, and more:**
+
+Deor has no native `dict` type, no `while` loop, no ring buffer, no async runtime. This is a boundary decision, not an oversight. Every one of these constructs lives comfortably in Rust and uncomfortably in a high-level transpiled language. A native `dict` would require a two-type generic (`HashMap<K, V>`) that conflicts with Deor's one-type-per-generic constraint. A `while` loop obscures termination guarantees that `for` makes explicit, and truly unbounded loops always coincide with low-level systems concerns that belong in Rust anyway.
+
+Rather than design half-measures, Deor draws a clean line: bounded, typed data belongs in Deor; data structures and algorithms that require Rust's full type system belong in `rust` blocks. The `raw` type makes that boundary clean and explicit — build it in Rust, name it in Deor, pass it where it is needed.
+
+---
+
 ## Boundary Types
 
 Only these types cross the Deor/Rust boundary — as function parameters into `rust` blocks and return values out of them. Everything else stays inside.
@@ -46,6 +112,8 @@ Only these types cross the Deor/Rust boundary — as function parameters into `r
 | list shape (e.g. `roomList`) | `Vec<T>` where T is the shape's element type |
 | validator types | `Option<T>` |
 | structs | Rust struct |
+
+`raw` is not listed here — it does not cross a type boundary. A `raw` variable *is* the Rust value; the transpiler passes its name through directly. See [The `raw` Type](#the-raw-type).
 
 If two crate calls both need `u64`, keep both in one `rust` block — never cross the boundary mid-computation. The `rust` block is the right place to cast:
 
@@ -134,9 +202,10 @@ Official Deor wrappers around common Rust crates and `std` modules. Written as `
 ```
 (get, post) in deor:http                                          # wraps reqwest
 (read, write, exists) in deor:fs                                  # wraps std::fs
+(read_line) in deor:io                                            # wraps std::io stdin
 (args, var) in deor:env                                           # wraps std::env
 (now, elapsed) in deor:time                                       # wraps std::time
-(random) in deor:rand                                             # wraps rand crate
+(random) in deor:math                                             # wraps rand crate
 (parse_int, to_string) in deor:convert
 (contains, trim, split, to_upper, to_lower, starts_with, ends_with) in deor:strings  # wraps std::str
 ```
@@ -156,3 +225,4 @@ The `deor:` namespace is reserved. Third-party packages use bare crate names via
 | Custom crate usage | `deps` block + `rust` block |
 | Large or complex raw Rust | `rust:myfile` external import |
 | Obscure `std` / one-off call | `rust` block — `std::` works inline, no declaration needed |
+| HashMap, BTreeMap, ring buffer, or any Rust-native structure passed between calls | `rust` block to build → `raw` variable to carry |

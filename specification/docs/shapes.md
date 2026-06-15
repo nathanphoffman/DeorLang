@@ -1,15 +1,16 @@
 # Shapes
 
-A `shape` is a named type alias for a parameterized type. Shapes are the only way to use lists and function types in Deor — there is no anonymous inline syntax like `list of Room` outside of a shape declaration.
+A `shape` is a named type alias for a parameterized or named type. Shapes are the only way to use lists, function types, and named byte buffers in Deor — there is no anonymous inline syntax like `list of Room` outside of a shape declaration.
 
 ## Declaration
 
 ```
 shape roomList = list of Room
 shape filterFunc = func of Room to bool
+shape requestBody = bytes
 ```
 
-Shapes are declared at the top level of a file, after imports and before structs. Two kinds exist: list shapes and func shapes.
+Shapes are declared at the top level of a file, after imports and before structs. Three kinds exist: list shapes, func shapes, and bytes shapes.
 
 ---
 
@@ -221,6 +222,39 @@ fn roomList filter(roomList items, filterFunc predicate)
 
 ---
 
+## Bytes Shapes
+
+A bytes shape gives a semantic name to a raw byte buffer. `bytes` is not parameterized — it is always `Vec<u8>` — so the declaration has no `of` clause.
+
+```
+shape requestBody = bytes
+shape frameData = bytes
+shape imageBuffer = bytes
+```
+
+```rust
+type RequestBody = Vec<u8>;
+type FrameData = Vec<u8>;
+type ImageBuffer = Vec<u8>;
+```
+
+Bytes shape variables are used exactly like list shapes — as parameter types, return types, struct fields, and variable declarations:
+
+```
+shape requestBody = bytes
+
+fn void send(requestBody data)
+    ...
+
+struct Request
+    string url
+    requestBody body
+```
+
+`len()` works on bytes shapes. `insert` and `remove` work at the element level (individual `u8` values). For any actual byte-level computation — bit manipulation, encoding, parsing — use a `rust` block; bytes shapes carry the data in and out.
+
+---
+
 ## Conversion Notes
 
 | Deor | Rust |
@@ -228,6 +262,7 @@ fn roomList filter(roomList items, filterFunc predicate)
 | `shape roomList = list of Room` | `type RoomList = Vec<Room>;` |
 | `shape filterFunc = func of Room to bool` | `type FilterFunc = fn(Room) -> bool;` |
 | `shape handlerFunc = func of Error` | `type HandlerFunc = fn(Error);` |
+| `shape requestBody = bytes` | `type RequestBody = Vec<u8>;` |
 | `roomList result = []` | `let mut result: Vec<Room> = Vec::new();` |
 | `filter(rooms, by_name)` | `filter(&rooms, by_name)` |
 

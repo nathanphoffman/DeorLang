@@ -55,9 +55,15 @@ export class Parser {
     throw new Error(`line ${this.current.line}: unexpected token ${JSON.stringify(this.current.literal)} at top level`);
   }
 
-  // fn name(params) + indented body block
+  // fn [ReturnType] name(params) + indented body block
+  // if two IDENTs appear before '(', the first is the return type
   private parseFunctionDecl(): AST.FunctionDecl {
     this.advance(); // consume 'fn'
+
+    let returnType = '';
+    if (this.current.type === TokenType.IDENT && this.peekToken.type === TokenType.IDENT) {
+      returnType = this.advance().literal;
+    }
 
     const name = this.expect(TokenType.IDENT).literal;
     this.expect(TokenType.LPAREN);
@@ -70,7 +76,7 @@ export class Parser {
 
     const body = this.parseBlock();
 
-    return { kind: 'FunctionDecl', name, returnType: '', params, body };
+    return { kind: 'FunctionDecl', name, returnType, params, body };
   }
 
   // comma-separated list of `Type name` pairs inside ( )
@@ -112,9 +118,41 @@ export class Parser {
       );
     }
 
+    // return expr
+    if (this.current.type === TokenType.KW_RETURN) {
+      this.advance();
+      const value = this.parseExpr();
+      this.skipNewline();
+      return { kind: 'ReturnStmt', value };
+    }
+
+    // for loop
+    if (this.current.type === TokenType.KW_FOR) {
+      return this.parseFor();
+    }
+
+    // break
+    if (this.current.type === TokenType.KW_BREAK) {
+      this.advance();
+      this.skipNewline();
+      return { kind: 'BreakStmt' };
+    }
+
+    // continue
+    if (this.current.type === TokenType.KW_CONTINUE) {
+      this.advance();
+      this.skipNewline();
+      return { kind: 'ContinueStmt' };
+    }
+
     // if / else if / else conditional
     if (this.current.type === TokenType.KW_IF) {
       return this.parseIf();
+    }
+
+    // multi-field destructuring: (a, b) in source
+    if (this.current.type === TokenType.LPAREN) {
+      return this.parseMultiDestructure();
     }
 
     if (this.current.type !== TokenType.IDENT) {
@@ -143,6 +181,22 @@ export class Parser {
       return { kind: 'CallStmt', func: ident.literal, args };
     }
 
+    // single-field destructuring: name in source
+    if (currentType === TokenType.KW_IN) {
+      this.advance(); // consume 'in'
+      const source = this.parseExpr();
+      this.skipNewline();
+      return { kind: 'DestructureStmt', fields: [ident.literal], source };
+    }
+
+    // assignment: name = expr  (must come before typed binding check)
+    if (currentType === TokenType.EQUALS) {
+      this.advance(); // consume '='
+      const value = this.parseExpr();
+      this.skipNewline();
+      return { kind: 'AssignStmt', name: ident.literal, value };
+    }
+
     // typed declaration: Type name = expr
     if (currentType === TokenType.IDENT && this.peekToken.type === TokenType.EQUALS) {
       const varType = ident.literal;
@@ -156,6 +210,60 @@ export class Parser {
     throw new Error(
       `line ${this.current.line}: unexpected token after identifier ${JSON.stringify(ident.literal)}: ${TokenType[this.current.type]}`
     );
+  }
+
+  // for varName in iterable\n INDENT body DEDENT
+  private parseFor(): AST.ForStmt {
+    this.advance(); // consume 'for'
+    const varName = this.expect(TokenType.IDENT).literal;
+    this.expect(TokenType.KW_IN);
+
+    let iterable: AST.ForIterable;
+
+    // for i in range(n) — sugar for 0..n
+    if (this.current.type === TokenType.IDENT && this.current.literal === 'range'
+        && this.peekToken.type === TokenType.LPAREN) {
+      this.advance(); // consume 'range'
+      this.advance(); // consume '('
+      const end = this.parseExpr();
+      this.expect(TokenType.RPAREN);
+      iterable = { kind: 'ForRange', end };
+    }
+    // for i in (start, end) — explicit range
+    else if (this.current.type === TokenType.LPAREN) {
+      this.advance(); // consume '('
+      const start = this.parseExpr();
+      this.expect(TokenType.COMMA);
+      const end = this.parseExpr();
+      this.expect(TokenType.RPAREN);
+      iterable = { kind: 'ForExplicitRange', start, end };
+    }
+    // for x in collection — borrow iteration
+    else {
+      const source = this.parseExpr();
+      iterable = { kind: 'ForCollection', source };
+    }
+
+    this.expect(TokenType.NEWLINE);
+    this.expect(TokenType.INDENT);
+    const body = this.parseBlock();
+
+    return { kind: 'ForStmt', varName, iterable, body };
+  }
+
+  // (field1, field2) in source — extracts fields from a struct
+  private parseMultiDestructure(): AST.DestructureStmt {
+    this.advance(); // consume '('
+    const fields: string[] = [];
+    while (this.current.type !== TokenType.RPAREN && this.current.type !== TokenType.EOF) {
+      fields.push(this.expect(TokenType.IDENT).literal);
+      if (this.current.type === TokenType.COMMA) this.advance();
+    }
+    this.expect(TokenType.RPAREN);
+    this.expect(TokenType.KW_IN);
+    const source = this.parseExpr();
+    this.skipNewline();
+    return { kind: 'DestructureStmt', fields, source };
   }
 
   // if condition\n INDENT body DEDENT, with optional else if / else branches
@@ -238,12 +346,32 @@ export class Parser {
     return left;
   }
 
-  // parses a single value — a literal or identifier, no operators
+  // parses a single value — a literal, identifier, or prefix unary
   private parsePrimary(): AST.Node {
+    // not expr — prefix unary, binds to the immediately following primary
+    if (this.current.type === TokenType.KW_NOT) {
+      this.advance();
+      const operand = this.parsePrimary();
+      return { kind: 'UnaryExpr', op: 'not', operand };
+    }
+
     switch (this.current.type) {
-      case TokenType.STRING: return { kind: 'StringLiteral', value: this.advance().literal };
-      case TokenType.INT:    return { kind: 'IntLiteral',    value: this.advance().literal };
-      case TokenType.IDENT:  return { kind: 'Identifier',    name:  this.advance().literal };
+      case TokenType.STRING:   return { kind: 'StringLiteral', value: this.advance().literal };
+      case TokenType.INT:      return { kind: 'IntLiteral',    value: this.advance().literal };
+      case TokenType.IDENT: {
+        const name = this.advance().literal;
+        // name(args) in expression position — function call as a value
+        if (this.current.type === TokenType.LPAREN) {
+          this.advance(); // consume '('
+          const args = this.parseArgList();
+          this.expect(TokenType.RPAREN);
+          return { kind: 'CallExpr', func: name, args };
+        }
+        return { kind: 'Identifier', name };
+      }
+      case TokenType.KW_TRUE:  this.advance(); return { kind: 'BoolLiteral', value: true };
+      case TokenType.KW_FALSE: this.advance(); return { kind: 'BoolLiteral', value: false };
+      case TokenType.KW_NONE:  this.advance(); return { kind: 'NoneLiteral' };
       default:
         throw new Error(
           `line ${this.current.line}: unexpected token in expression: ${TokenType[this.current.type]} (${JSON.stringify(this.current.literal)})`

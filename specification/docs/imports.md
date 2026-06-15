@@ -3,7 +3,7 @@
 Imports use the same `in` grammar as destructuring. The source is either a bare identifier (stdlib/external crate) or a string path (local module).
 
 ```
-(sqrt, floor, rand) in math
+(sqrt, floor) in math
 
 (trim, split) in strings
 
@@ -25,7 +25,7 @@ geo in "./geometry"
 use my_crate::models::{Room, House, Squarefeet, total_area, occupied_rooms};
 use my_crate::geometry::{self as geo, distance, midpoint};
 use my_crate::utils::format_address as fmt_addr;
-// (sqrt, floor, rand) resolve to whatever crate/std path the
+// (sqrt, floor) resolve to whatever crate/std path the
 // stdlib-equivalence table maps `math` to
 ```
 

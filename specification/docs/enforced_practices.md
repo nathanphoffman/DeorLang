@@ -74,10 +74,10 @@ fn RollResult roll_die(Die die)
     (sides, label) in die
 
     min as 1
-    int raw = rand(min, sides)
+    int raw = random(min, sides)
     Roll value = raw
     string source = label
-    result as (value, source)
+    RollResult result = (value, source)
 
     return result
 ```
@@ -85,7 +85,7 @@ fn RollResult roll_die(Die die)
 **Incorrect — transpiler warns:**
 ```
 fn RollResult roll_die(Die die)
-    int raw = rand(1, die)
+    int raw = random(1, die)
     (sides, label) in die
 ```
 
@@ -154,7 +154,9 @@ Returning `none` directly from a function is a transpiler error. Always return a
 
 **Correct:**
 ```
-fn Roll find_best(RollResult list rolls)
+shape rollResultList = list of RollResult
+
+fn Roll find_best(rollResultList rolls)
     Roll best = none
     for roll in rolls
         value in roll
@@ -166,7 +168,9 @@ fn Roll find_best(RollResult list rolls)
 
 **Incorrect — transpiler errors:**
 ```
-fn Roll find_best(RollResult list rolls)
+shape rollResultList = list of RollResult
+
+fn Roll find_best(rollResultList rolls)
     return none
 ```
 
@@ -289,7 +293,7 @@ Everything placed inside `()` must be a named variable already in scope, and mus
 | Context | Example | Order source |
 |---|---|---|
 | Function call | `add(value1, value2)` | Function parameter order |
-| Struct construction | `room as (area, name, occupied)` | Struct field declaration order |
+| Struct construction | `Room room = (area, name, occupied)` | Struct field declaration order |
 | Tuple return | `return (quotient, remainder)` | Function return type declaration order |
 
 **Correct:**
@@ -298,15 +302,16 @@ struct Room
     Squarefeet area
     string name
 
-area as 20
+Squarefeet area = 20
 name as "Office"
-room as (area, name)      # correct — matches declaration order
+Room room = (area, name)      # correct — matches declaration order
 ```
 
 **Incorrect — transpiler errors:**
 ```
-room as (name, area)      # wrong order — area must come first
-room as ("Office", area)  # literal not allowed — name must be a variable
+Room room = (name, area)      # wrong order — area must come first
+Room room = ("Office", area)  # literal not allowed — name must be a variable
+room as (area, name)          # no anonymous struct construction — type required
 ```
 
 For tuple capture with `in`, your chosen names are positional but not required to match the function's declared return names:
@@ -336,7 +341,7 @@ int result = add(num, amt)
 ```
 min as 1
 max as 6
-int roll = rand(min, max)
+int roll = random(min, max)
 ```
 
 ```
@@ -354,11 +359,11 @@ error_handler(err)
 **Incorrect — transpiler errors:**
 ```
 int result = add(5, 3)           # literals not allowed
-int roll = rand(1, 6)            # literals not allowed — even for builtins
+int roll = random(1, 6)            # literals not allowed — even for builtins
 print("hello")                   # literal not allowed — even for builtins
 int val = pow(2, 10)             # literals not allowed
 error_handler((message, body))   # inline struct construction not allowed
-int idx = rand(0, len(rooms) - 1)  # expression not allowed
+int idx = random(0, len(rooms) - 1)  # expression not allowed
 ```
 
 This rule applies uniformly to all function calls. The rationale: named variables make every argument self-documenting at the call site, and intermediate bindings keep expressions readable and debuggable. There are no exemptions for built-ins.
@@ -367,7 +372,7 @@ This rule applies uniformly to all function calls. The rationale: named variable
 
 ## Visibility — `private`
 
-By default, all top-level declarations (`fn`, `type`, `struct`, `const`) are importable by other files. The `private` prefix restricts a declaration to the current file — it cannot be named in an `in` import from anywhere else. Attempting to import a `private` declaration is a transpiler error.
+By default, all top-level declarations (`fn`, `type`, `struct`, `shape`, `const`) are importable by other files. The `private` prefix restricts a declaration to the current file — it cannot be named in an `in` import from anywhere else. Attempting to import a `private` declaration is a transpiler error.
 
 ```
 private fn build_key(string base)
@@ -375,6 +380,8 @@ private fn build_key(string base)
 
 private type InternalScore(int val)
     val >= 0 and val <= 255
+
+private shape internalList = list of InternalItem
 
 private const int MAX_RETRIES = 3
 ```
@@ -448,6 +455,32 @@ fn string describe(int val)
 ```
 
 Move all helper functions to the top level of the file and call them by name.
+
+---
+
+## `raw` — Assigned from `rust` Blocks Only
+
+A `raw` variable must be assigned from a `rust` block return value. Assigning a `raw` variable from a Deor expression is a transpiler error. Consuming a `raw` variable outside a `rust` block is a transpiler error. A `raw` variable cannot be declared as a struct field.
+
+**Correct:**
+```
+raw index = rust
+    entries.iter()
+        .map(|e| (e.key.clone(), e.value.clone()))
+        .collect::<std::collections::HashMap<String, String>>()
+
+string result = lookup(index, search_key)    # passing raw to a function that uses it in rust — ok
+```
+
+**Incorrect — transpiler errors:**
+```
+raw index = some_list           # raw must come from a rust block
+string val = index              # raw cannot be used in a Deor expression
+int cnt = len(index)            # len does not accept raw
+
+struct Config
+    raw lookup_table            # raw cannot be a struct field
+```
 
 ---
 

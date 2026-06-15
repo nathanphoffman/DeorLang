@@ -4,11 +4,38 @@ These are part of the `deor:` standard library and available without an explicit
 
 ---
 
-## Output
+## Input / Output
 
 | Function | Signature | Notes |
 |---|---|---|
 | `print(value)` | any type → void | Converts value to string and writes to stdout with newline |
+
+Reading from stdin requires an explicit import from `deor:io`:
+
+```
+(read_line) in deor:io
+```
+
+| Function | Signature | Notes |
+|---|---|---|
+| `read_line()` | → `string` | Reads one line from stdin, strips the trailing newline |
+
+```
+(read_line) in deor:io
+
+string input = read_line()
+print(input)
+```
+
+```rust
+use std::io::{self, BufRead};
+let mut line = String::new();
+io::stdin().lock().read_line(&mut line).unwrap();
+let input: String = line.trim_end_matches('\n').to_string();
+println!("{}", input);
+```
+
+`read_line()` takes no arguments. It always returns a `string` — if you need to parse the result as a number, use `parse_int` or `parse_float` from [Built-ins — Fallible Parsing](builtins.md#fallible-parsing).
 
 ```
 msg as "Hello, world!"
@@ -41,9 +68,10 @@ int size = len(rooms)
 
 | Function | Signature | Notes |
 |---|---|---|
-| `range(cnt)` | `int` → range tuple | Produces values `0` through `cnt-1`; see [Loops](loops.md) |
+| `range(count)` | `int` → range | Produces values `0` through `count-1`; see [Loops](loops.md) |
+| `range(start, end)` | `int, int` → range | Produces values `start` through `end-1`; `range(count)` is shorthand for `range(0, count)` |
 
-`range(cnt)` is sugar for `(0, cnt)` in a `for` loop. Use an explicit tuple `(start, end)` for non-zero starts.
+Both arguments must be named integer variables. `end` is always exclusive.
 
 ---
 
@@ -84,18 +112,25 @@ int small = min(low, high)
 
 ## Random
 
-| Function | Signature | Notes |
-|---|---|---|
-| `rand(min, max)` | `int, int` → `int` | Random integer in `[min, max]` inclusive; `throw` if `min > max` |
+Random number generation requires an explicit import — it is not a global built-in:
 
 ```
+(random) in deor:math
+```
+
+| Function | Signature | Notes |
+|---|---|---|
+| `random(min, max)` | `int, int` → `int` | Random integer in `[min, max]` inclusive; `throw` if `min > max` |
+
+```
+(random) in deor:math
+
 min as 1
 max as 6
-int roll = rand(min, max)
+int roll = random(min, max)
 ```
 
 ```rust
-// transpiles using rand crate (included in deor: stdlib)
 use rand::Rng;
 let min: i32 = 1;
 let max: i32 = 6;
@@ -103,7 +138,7 @@ let max: i32 = 6;
 let roll: i32 = rand::thread_rng().gen_range(min..=max);
 ```
 
-`min > max` is a programming error, not a data error — `rand` throws rather than returning `None`. If the bounds come from user input, validate them before calling `rand`.
+`min > max` is a programming error, not a data error — `random` throws rather than returning `None`. If the bounds come from user input, validate them before calling `random`.
 
 ---
 

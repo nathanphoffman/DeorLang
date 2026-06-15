@@ -20,12 +20,12 @@
 
 `with` produces a new struct with one or more fields overridden. The original is unchanged. Each field name must already exist as a variable in scope — the same rule as struct literals.
 
-- Single field: `newRoom as room with area` (parens optional: `with (area)` also valid)
-- Multiple fields: `newRoom as room with (area, name)` (parens required)
+- Single field: `newRoom as room with (area)` — parens always required
+- Multiple fields: `newRoom as room with (area, name)`
 
 ```
-area as 2
-newRoom as room with area
+Squarefeet area = 2
+newRoom as room with (area)
 
 area = 20
 name as "Bigger Office"
