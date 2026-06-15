@@ -28,7 +28,7 @@ println!("{}", count);
 
 | Function | Signature | Notes |
 |---|---|---|
-| `len(value)` | `string` or `list` → `int` | Number of characters or elements |
+| `len(value)` | `string` or any list shape → `int` | Number of characters or elements |
 
 ```
 int cnt = len(name)

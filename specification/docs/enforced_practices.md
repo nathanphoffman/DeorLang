@@ -8,13 +8,17 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 
 | Category | Convention | Examples |
 |---|---|---|
-| Built-in primitives | lowercase | `int`, `float`, `bool`, `string`, `bytes` |
-| Built-in generics | lowercase | `list` |
+| Built-in primitives and keywords | lowercase | `int`, `float`, `bool`, `string`, `bytes`, `list`, `func` |
+| Shapes | camelCase, 3+ chars | `roomList`, `intList`, `filterFunc`, `handlerFunc` |
 | User-defined types (structs, validator types) | PascalCase, 3+ chars | `Room`, `RollResult`, `Squarefeet` |
 | Functions, variables, parameters, struct fields | snake_case, 3+ chars | `roll_die`, `total_area`, `room_list` |
 | Constants | SCREAMING_SNAKE_CASE, 3+ chars | `DELAY_TIME`, `MAX_RETRIES` |
 
-**The key signal:** PascalCase exclusively marks user-defined types. Seeing `Room` or `SquareFeet` in code guarantees it was declared with `struct` or `type` — never a built-in, never a function, never a variable.
+**The key signals:**
+- camelCase exclusively marks shapes — declared with `shape`, always a list or func type alias
+- PascalCase exclusively marks user-defined types — declared with `struct` or `type`
+
+Seeing `roomList` guarantees it is a shape. Seeing `Room` guarantees it is a struct or validator type. There is no overlap between these categories.
 
 ---
 
@@ -34,7 +38,7 @@ type Roll(int val)    # correct
 type Roll(int n)      # transpiler error — parameter too short
 ```
 
-**The only exception** is generic type parameters declared with `[shape: T]` — single-letter type parameter names (`T`, `U`) follow universal convention and are exempt. Runtime identifiers (variables, parameters, fields, functions, types) are never exempt.
+There are no exceptions. All runtime identifiers — variables, parameters, fields, functions, type names, and shape names — must be at least 3 characters.
 
 ---
 
@@ -215,47 +219,66 @@ val = 10    # correct
 
 ---
 
-## Multiple `using` Clauses — No Blank Lines, Indented
+## Maximum 3 Parameters per Function
 
-When a function call has multiple `using` clauses (`using shape` and/or `using fn_name`), they must be written on consecutive indented lines immediately below the call with no blank lines between them. `using shape` always comes first.
+Functions may accept at most 3 parameters. If more context is needed, bundle values into a struct first. This is enforced by the transpiler.
+
+```
+fn roomList filter(roomList items, string query, filterFunc predicate)    # correct — 3 params
+```
+
+```
+fn roomList filter(roomList items, string query, int limit, filterFunc predicate)    # transpiler error — 4 params
+```
+
+`func` shape parameters count toward the limit the same as data parameters.
+
+---
+
+## No `func` Shapes as Struct Fields
+
+Struct fields must be data types — primitives, validator types, other structs, or list shapes. A `func` shape field would make the struct a closure in disguise, which Deor does not allow.
 
 **Correct:**
 ```
-filter(rooms)
-    using shape Room
-    using match_name
+fn roomList apply(roomList items, filterFunc predicate)    # func as parameter — fine
 ```
 
-**Incorrect — blank line between clauses:**
+**Incorrect — transpiler error:**
 ```
-filter(rooms)
-    using shape Room
-
-    using match_name
-```
-
-**Incorrect — on same line as call:**
-```
-filter(rooms) using shape Room using match_name
+struct Config
+    roomList items
+    filterFunc predicate    # func shape as struct field — not allowed
 ```
 
 ---
 
-## `[using]` — Required at Call Site
+## File Declaration Order
 
-Calling a `[using]`-annotated function without `using fn_name` is a transpiler error. The injection slot must always be filled.
+Top-level declarations must appear in this order: imports, shapes, structs, functions. The transpiler enforces this ordering. Declaring a struct before shapes, or a function before structs, is a transpiler error.
 
-**Correct:**
 ```
-filter(rooms) using match_name
+# 1. Imports
+(sqrt, floor) in math
+
+# 2. Shapes
+shape roomList = list of Room
+shape filterFunc = func of Room to bool
+
+# 3. Structs
+struct House
+    string address
+    roomList rooms
+
+# 4. Functions
+fn roomList filter(roomList items, filterFunc predicate)
+    ...
+
+fn main()
+    ...
 ```
 
-**Incorrect — transpiler errors:**
-```
-filter(rooms)
-```
-
-The alias name used in the body must match exactly what was declared in `[using alias: T]`.
+This mirrors the block-level rule that destructuring (`in`) must appear before logic — declarations flow from abstract to concrete, top to bottom.
 
 ---
 

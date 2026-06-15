@@ -55,21 +55,20 @@ entry as (label)
 
 ### List construction
 
-A list literal `[item1, item2, ...]` constructs a list whose element type is inferred from the items. All items must be named variables of the same type already in scope.
+A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope. The type comes from a declared shape — declare the shape at the top of the file, then use it as the variable's type.
 
 ```
-room_list as [kitchen, office, bedroom]
+room_list as [kitchen, office, bedroom]    # type inferred from items (all Room)
 ```
 
 ```rust
 let room_list = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 ```
 
-An empty list `[]` cannot infer its element type — use an explicit typed declaration with `using shape` instead:
+An empty list `[]` requires an explicit shape type on the left — there are no items to infer from:
 
 ```
-list result = []        # correct — shape declared on continuation line
-    using shape Room
+roomList result = []    # correct — shape name gives the type
 result as []            # transpiler error — element type unknown
 ```
 
@@ -104,22 +103,21 @@ Record update (`with`) also uses `as` — see [Immutability](immutability.md).
 
 ## Explicit Typing — Runtime Values
 
-Any value that depends on a function call or other runtime computation must use `Type name = expr`.
+Any value that depends on a function call or other runtime computation must use `Type name = expr`. For list types, the type is the shape name.
 
 ```
-int val = rand(1, 10)
+int val = rand(min, max)
 string pick = random_room_name(rooms)
-list result = []
-    using shape int
+intList result = []
 ```
 
 ```rust
-let val: i32 = rand(1, 10);
+let val: i32 = rand(min, max);
 let pick: String = random_room_name(&rooms);
 let mut result: Vec<i32> = Vec::new();
 ```
 
-**Conversion notes:** a `list` binding that's later `insert`ed into must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
+**Conversion notes:** a list binding that's later `insert`ed into must be emitted as `let mut` even though source never writes a mutability marker — the transpiler infers `mut` from usage.
 
 ---
 

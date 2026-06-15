@@ -13,7 +13,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - **`is` is always structural equality**, regardless of how a struct is represented internally. `is not` is inequality. `&&`, `||`, `==`, `!=` are transpiler errors — use `and`, `or`, `is`, `is not`.
 - **No lambdas.** Only named top-level `fn`s. No built-in `filter`/`map`/`reduce` — write explicit loops.
 - **Void functions omit the return type.** `fn run()` returns nothing. No `void` keyword.
-- **`[using alias: T->O]` for behavior injection.** Annotate a function to accept a named external function. Call site provides it with `using fn_name`. Alias is called in the body. Required — omitting `using fn_name` at the call site is a transpiler error.
+- **`shape` for named type aliases.** `shape roomList = list of Room` names a list type. `shape filterFunc = func of Room to bool` names a function signature. Shapes are camelCase and the only way to use parameterized types in Deor. Functions-as-values are passed by name as typed `func` shape parameters — no lambdas, no decorators.
 - **Struct construction uses `()`, always.** `room as (area, name)` — every field is a variable already in scope matching the field name. No `{}`, no `field: value` pairs. Mirrors destructuring: `(area, name) in room` extracts, `room as (area, name)` constructs.
 - **Validator types are option-types.** A `type` definition produces `Option<T>` under the hood — truthy when `Some`, falsy when `None`. Primitives and structs are never null. Three null-related forms: `Roll roll = none` (declare absent), `(avow roll)` (forced unwrap — panics if None), `roll else 0` (safe default).
 - **Rust interop is a first-class escape hatch.** `rust` blocks drop into raw Rust inside any function. External `.rs` files import via `rust:myfile`. Cargo deps declared with `deps` blocks. `deor:` stdlib wraps common crates and `std` modules. `bytes` (`Vec<u8>`) is the boundary type for raw binary data.
@@ -24,7 +24,8 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - [Functions](docs/functions) — `fn`, return rules, no lambdas
 - [Variables](docs/variables) — `as`, explicit typing, reassignment
 - [Types](docs/types) — validator types (`type`), structs (`struct` / `struct+` / `struct*`)
-- [Collections](docs/collections) — `list`, `using shape`, prefix type syntax, mutation verbs
+- [Shapes](docs/shapes) — `shape`, list shapes, func shapes, naming, file ordering
+- [Collections](docs/collections) — list shapes, mutation verbs, index read
 - [Conditionals](docs/conditionals) — `if`, `else if`, `else`, compact ternary form
 - [Loops](docs/loops) — `for` collection and numeric iteration
 - [Destructuring](docs/destructuring) — field extraction with `in`
@@ -36,7 +37,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - [Built-ins](docs/builtins) — `print`, `len`, `range`, math, random, type conversion
 - [Open Questions](docs/open-questions) — future work and undecided areas
 - [V2 Roadmap](docs/v2) — deferred features
-- [Annotations](docs/functions#annotations) — `[test]`, `[deprecated]`, `[pure]`, `[using]`
+- [Functions](docs/functions) — declaration, parameters (max 3), return rules, entry point
 - [Interop](docs/interop) — `rust` blocks, `rust:` file imports, `bytes`, `deps`, `deor:` stdlib
 - [Enforced Practices](docs/enforced_practices) — naming and ordering rules the transpiler warns on
 - [Best Practices](docs/best_practices) — style recommendations not enforced by the transpiler

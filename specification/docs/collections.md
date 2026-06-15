@@ -2,30 +2,24 @@
 
 ## Declaring a List
 
-`list` is the only collection type. Its element type is always provided with `using shape` on the continuation line. The transpiler marks the binding `mut` automatically when the list is mutated.
+Lists are declared using a list shape. Declare the shape at the top of the file, then use the shape name as the type everywhere — in variables, function signatures, and struct fields.
 
 ```
-list result = []
-    using shape int
+shape intList = list of int
+shape roomList = list of Room
+```
 
-list rooms = [kitchen, office, bedroom]
-    using shape Room
+```
+intList result = []
+roomList rooms = [kitchen, office, bedroom]
 ```
 
 ```rust
 let mut result: Vec<i32> = Vec::new();
-let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
+let rooms: Vec<Room> = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 ```
 
-When a list is the return value of a function with a known concrete element type, the shape is inferred from the return type — no `using shape` required at the assignment:
-
-```
-[shape: Room]
-fn Room list occupied_rooms(Room list rooms)
-    ...
-
-list occ = occupied_rooms(rooms)    # shape inferred from fn return type
-```
+The shape name is the type everywhere — no suffix, no continuation line, no prefix notation. See [Shapes](shapes.md) for full shape declaration syntax.
 
 ---
 
@@ -34,8 +28,9 @@ list occ = occupied_rooms(rooms)    # shape inferred from fn return type
 Elements are read by index using bracket notation. Zero-indexed, matching Rust's behavior.
 
 ```
-list scores = [10, 20, 30, 40]
-    using shape int
+shape intList = list of int
+
+intList scores = [10, 20, 30, 40]
 int first = scores[0]    # 10
 int last = scores[3]     # 40
 ```
@@ -59,18 +54,20 @@ Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts
 
 ## In Function Signatures and Struct Fields
 
-In inline type positions — function parameters, return types, and struct fields — the element type is written as a prefix before `list`. No `using shape` continuation line is needed because the type is already explicit in-place.
+The shape name stands in for the full list type wherever a type is expected:
 
 ```
-fn int total_area(Room list rooms)
+shape roomList = list of Room
+
+fn int total_area(roomList rooms)
     ...
 
-fn Room list occupied_rooms(Room list rooms)
+fn roomList occupied_rooms(roomList rooms)
     ...
 
 struct House
     string address
-    Room list rooms
+    roomList rooms
 ```
 
 ```rust
@@ -83,19 +80,16 @@ struct House {
 }
 ```
 
-The pattern is consistent with all other Deor type declarations: `Type name`. A list field `Room list rooms` reads "a list of Room named rooms."
-
 ---
 
 ## `bytes` vs `list`
 
-Raw binary data uses `bytes` (`Vec<u8>`), not `list` with `using shape int`. A list of int is `Vec<i32>` — wrong width for byte manipulation and incompatible with APIs expecting `&[u8]`.
+Raw binary data uses `bytes` (`Vec<u8>`), not an `intList`. A list of int is `Vec<i32>` — wrong width for byte manipulation and incompatible with APIs expecting `&[u8]`.
 
 ```
 bytes data = read_raw("file.bin")    # correct — raw binary
 
-list scores = [10, 20, 30]          # correct — integer list
-    using shape int
+intList scores = [10, 20, 30]        # correct — integer list (requires shape intList = list of int)
 ```
 
 ---

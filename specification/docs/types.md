@@ -267,19 +267,21 @@ struct Room {
 
 | Form | Meaning | Rust representation |
 |---|---|---|
-| `struct Name` | Transpiler decides | `Name` (value) or `Rc<Name>` (reference), based on size + whether any field is an unsized `list` |
+| `struct Name` | Transpiler decides | `Name` (value) or `Rc<Name>` (reference), based on size + whether any field is an unsized list shape |
 | `struct+ Name` | Force value, always | `Name`, `.clone()` is a full (possibly deep) copy |
 | `struct* Name` | Force reference, always | `Rc<Name>`, `.clone()` is a refcount bump |
 
 ```
 struct House
     string address
-    Room list rooms        # unsized list -> auto becomes struct*
+    roomList rooms         # unsized list shape -> auto becomes struct*
 
 struct+ House               # explicit override: always a value, full clone on copy
     string address
-    Room list rooms
+    roomList rooms
 ```
+
+Struct fields may use list shapes (`roomList`) but not func shapes — structs are pure data. A func shape as a struct field is a transpiler error.
 
 **Conversion notes:**
 - The **struct definition itself is identical** regardless of `+`/`*`/auto — only how *usages* are represented changes (`House` vs `Rc<House>`).

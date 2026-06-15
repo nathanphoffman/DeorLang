@@ -54,6 +54,6 @@ Specced as `deor:strings`. See [deor:strings](strings.md). Functions provided: `
 - Literal predicate validation (compile-time `None` for known-bad literals)
 - `throw` with struct support
 - String `&str` performance inference
-- Multiple `[shape: T, U]` parameters
+- Multi-shape func types (e.g. two-input `func` shapes — currently transpiler error, may be revisited)
 - Hex/binary numeric literals (`0xFF`, `0b1010`)
 - Additional mutation verbs beyond `insert`/`remove` (pop, etc.)

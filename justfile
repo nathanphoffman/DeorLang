@@ -11,8 +11,9 @@ run-ts file="examples/hello.deor":
     ./output/out
 
 install-ext:
+    cd deor-vscode && npm install --silent && npm run compile
     cd deor-vscode && vsce package --allow-missing-repository --skip-license
-    code --install-extension deor-vscode/deor-lang-0.0.1.vsix
+    code --install-extension $(ls deor-vscode/*.vsix | tail -1)
     @echo "Done — reload VS Code window to apply."
 
 run-spec:

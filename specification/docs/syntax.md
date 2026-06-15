@@ -85,6 +85,7 @@ Open an indented block when followed by a newline.
 | `for` | Loop |
 | `type` | Validator type declaration |
 | `struct` | Struct declaration (`struct`, `struct+`, `struct*`) |
+| `shape` | Shape declaration (`shape name = list of T` / `func of T to O`) |
 | `rust` | Inline Rust block |
 | `deps` | Cargo dependency block |
 
@@ -112,7 +113,8 @@ Open an indented block when followed by a newline.
 | `as` | Shape-derived binding / import alias |
 | `with` | Record update (inside `as` binding) |
 | `at` | Position modifier for `insert` |
-| `using` | Behavior injection at call site |
+| `of` | Element type connector in shape declarations (`list of Room`) |
+| `to` | Return type connector in func shapes (`func of Room to bool`) |
 
 ### Values
 
@@ -122,10 +124,12 @@ Open an indented block when followed by a newline.
 | `false` | Boolean false |
 | `none` | Absent validator type value (declaration only) |
 
-### Annotation Keywords
-These are only meaningful inside `[]` annotation syntax on a `fn` declaration.
+### Built-in Type Keywords
 
-`test`, `deprecated`, `pure`, `main`, `using`, `shape`
+| Word | Use |
+|---|---|
+| `list` | Parameterized list — always used inside a `shape` declaration |
+| `func` | Parameterized function type — always used inside a `shape` declaration |
 
 ### Import Prefixes
 These are not standalone words but reserved prefix forms in import paths.

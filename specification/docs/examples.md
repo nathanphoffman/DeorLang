@@ -5,6 +5,8 @@
 ```
 (sqrt, floor, rand) in math
 
+shape roomList = list of Room
+
 type Squarefeet(int val)
     float flt = to_float(val)
     NonNegFloat root_nf = sqrt(flt)
@@ -19,9 +21,9 @@ struct Room
 
 struct House
     string address
-    Room list rooms
+    roomList rooms
 
-fn int total_area(Room list rooms)
+fn int total_area(roomList rooms)
     sum as 0
     for room in rooms
         area in room
@@ -29,16 +31,15 @@ fn int total_area(Room list rooms)
         sum = sum + sqm
     return sum
 
-fn Room list occupied_rooms(Room list rooms)
-    list result = []
-        using shape Room
+fn roomList occupied_rooms(roomList rooms)
+    roomList result = []
     for room in rooms
         occupied in room
         if occupied
             result insert room
     return result
 
-fn string random_room_name(Room list rooms)
+fn string random_room_name(roomList rooms)
     int count = len(rooms)
     int last = count - 1
     start as 0
@@ -70,7 +71,7 @@ fn main()
     int area_sum = total_area(rooms)
     print(area_sum)
 
-    list occ = occupied_rooms(rooms)
+    roomList occ = occupied_rooms(rooms)
     for room in occ
         name in room
         print(name)
@@ -163,9 +164,9 @@ fn main() {
     occupied = true;
     let bedroom = Room { area, name: name.clone(), occupied };
 
-    let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
+    let rooms: Vec<Room> = vec![kitchen.clone(), office.clone(), bedroom.clone()];
     let house = House { address: "12 Main St".to_string(), rooms: rooms.clone() };
-    let _ = house; // house constructed; rooms used directly below
+    let _ = house;
 
     let area_sum: i32 = total_area(&rooms);
     println!("{}", area_sum);
@@ -188,9 +189,10 @@ fn main() {
 
 ## Notable Conversion Decisions
 
-- `House` contains an unsized `Room list rooms` field, so per the structs spec it would normally default to `struct*` (`Rc<House>`). In this particular `main`, `house` isn't shared across multiple owners, so the transpiler may reasonably keep it a plain value here — the heuristic is a default, not an absolute.
-- `area`, `name`, and `occupied` are declared once with `as` then reassigned with `=` to build multiple rooms. The transpiler emits them as `let mut` because they are reassigned after first declaration. `name` is cloned on each struct construction because `String` is not `Copy`.
-- `Room` contains a `String` field, so it can never be `Copy` — only `Clone`. Every place a `Room` is duplicated (`vec![kitchen.clone(), ...]`, `result.push(room.clone())`) needs an explicit `.clone()` in Rust, even though source never writes anything special.
-- `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` uses `area else 0` (→ `.map(|v| v.0).unwrap_or(0)`) to safely extract the inner `i32` before adding to the sum.
-- `rooms[idx]` requires an `as usize` cast, since Rust indexes with `usize` but `idx` is `i32` — the transpiler inserts this cast on every list-index operation.
-- `print(...)` → `println!("{}", ...)`. Values that aren't already `Display` (like `Room`) would need `{:?}` and `#[derive(Debug)]` instead — already included above for safety.
+- `shape roomList = list of Room` compiles to `type RoomList = Vec<Room>` — the shape name is a type alias used throughout the generated Rust.
+- `House` contains a `roomList rooms` field. Since `Vec<Room>` is unsized, the struct defaults to `struct*` (`Rc<House>`) per the auto-representation rule. In this `main` it isn't shared, so the transpiler may keep it a plain value — the heuristic is a default, not an absolute.
+- `area`, `name`, and `occupied` are declared once with `as` then reassigned with `=` to build multiple rooms. The transpiler emits them as `let mut` because they are reassigned after first declaration.
+- `Room` contains a `String` field so it can never be `Copy` — only `Clone`. Every place a `Room` is duplicated needs an explicit `.clone()` in Rust, even though source never writes it.
+- `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` uses `area else 0` (→ `.map(|v| v.0).unwrap_or(0)`) to safely extract the inner `i32`.
+- `rooms[idx]` requires an `as usize` cast — the transpiler inserts this on every list-index operation.
+- `print(...)` → `println!("{}", ...)`.

@@ -2,10 +2,12 @@
   "name": "deor-lang",
   "publisher": "local",
   "displayName": "Deor Language",
-  "description": "Syntax highlighting for the Deor language (.deor)",
-  "version": "0.0.1",
-  "engines": { "vscode": "^1.60.0" },
+  "description": "Syntax highlighting and diagnostics for the Deor language (.deor)",
+  "version": "0.0.2",
+  "engines": { "vscode": "^1.82.0" },
   "categories": ["Programming Languages"],
+  "activationEvents": ["onLanguage:deor"],
+  "main": "./out/client/extension.js",
   "contributes": {
     "languages": [
       {
@@ -22,5 +24,22 @@
         "path": "./syntaxes/deor.tmLanguage.json"
       }
     ]
+  },
+  "scripts": {
+    "compile": "npm run compile:client && npm run compile:server",
+    "compile:client": "esbuild client/extension.ts --bundle --outfile=out/client/extension.js --platform=node --external:vscode",
+    "compile:server": "esbuild server/server.ts --bundle --outfile=out/server.js --platform=node --external:vscode",
+    "vscode:prepublish": "npm run compile"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.82.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.0.0",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.11"
   }
 }

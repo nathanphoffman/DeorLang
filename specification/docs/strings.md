@@ -20,7 +20,7 @@ Import only what you use — the named import list is the contract.
 | `trim(str)` | `string → string` | strips leading and trailing whitespace |
 | `to_upper(str)` | `string → string` | all characters uppercased |
 | `to_lower(str)` | `string → string` | all characters lowercased |
-| `split(str, delimiter)` | `string, string → string list` | split on every occurrence of `delimiter` |
+| `split(str, delimiter)` | `string, string → nameList` | split on every occurrence of `delimiter`; result type requires `shape nameList = list of string` |
 
 All arguments must be named variables already in scope — the named-args rule applies. All functions return a new string and never mutate the original. An empty `delimiter` in `split` is a transpiler error.
 
@@ -42,7 +42,7 @@ bool found = contains(lower, query)
 
 csv as "apple,banana,cherry"
 sep as ","
-list parts = split(csv, sep)    # shape inferred — split returns string list
+nameList parts = split(csv, sep)    # requires shape nameList = list of string at top of file
 ```
 
 ```rust

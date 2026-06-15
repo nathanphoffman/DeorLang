@@ -61,45 +61,43 @@ This is intentional: early returns in void functions are usually a sign the logi
 
 ### Multiple return values
 
-Tuple return types must name each element — the names document what each position means and must match what the body returns.
+There are no anonymous tuple return types. A function returning multiple values must declare a named struct for the return type. The struct is then constructed and destructured using the existing `as`/`in` syntax — no new keywords.
 
 ```
-fn (int quotient, int remainder) divmod(int left, int right)
+struct DivResult
+    int quotient
+    int remainder
+
+fn DivResult divmod(int left, int right)
     int quotient = left / right
     int remainder = left % right
     return (quotient, remainder)
 ```
 
 ```rust
-fn divmod(left: i32, right: i32) -> (i32, i32) {
-    (left / right, left % right)
+struct DivResult { quotient: i32, remainder: i32 }
+
+fn divmod(left: i32, right: i32) -> DivResult {
+    let quotient = left / right;
+    let remainder = left % right;
+    DivResult { quotient, remainder }
 }
 ```
 
-The body must define variables with exactly the declared return names before returning them. This is consistent with the general rule that everything inside `()` must be named variables already in scope.
-
-**Conversion notes:** the named return types are a Deor-only concept — they don't appear in generated Rust, which uses positional tuple elements.
-
-### Capturing multiple return values
-
-Use `in` to destructure a tuple return. Your chosen names are bound positionally — first declared element goes to the first name you provide, second to the second, and so on.
+Capturing the result uses standard struct destructuring:
 
 ```
-(quo, rem) in divmod(num, div)    # quo = quotient, rem = remainder
-print(quo)
-print(rem)
-
-(out, rst) in divmod(val, amt)    # different names for a second call — no conflict
+(quotient, remainder) in divmod(num, div)
+print(quotient)
+print(remainder)
 ```
 
 ```rust
-let (quo, rem) = divmod(num, div);
-println!("{}", quo);
-println!("{}", rem);
-let (out, rst) = divmod(val, amt);
+let result = divmod(num, div);
+let (quotient, remainder) = (result.quotient, result.remainder);
 ```
 
-The declared return names (`quotient`, `remainder`) tell you what each position means. Your capture names are your choice. As with all `in` extractions, this must appear before any logic that uses the bound variables in the same block.
+The struct name documents what the paired values represent — `DivResult` communicates more than an anonymous `(int, int)`. If you need a general-purpose pair, declare a `struct Pair` with `value1` and `value2` fields.
 
 ---
 
@@ -161,7 +159,7 @@ Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
 
 ## `throw`
 
-`throw` is an unrecoverable hard stop — transpiles to `panic!()` in Rust. Takes a string message. Use `[using error_handler]` for recoverable/handled errors instead.
+`throw` is an unrecoverable hard stop — transpiles to `panic!()` in Rust. Takes a string message. For recoverable error handling, accept an error handler as a `func` shape parameter instead.
 
 ```
 fn int divide(int left, int right)
@@ -187,26 +185,36 @@ fn divide(left: i32, right: i32) -> i32 {
 
 All callable values are named top-level `fn`s. There is no anonymous-function syntax, and functions may not be defined inside other function bodies. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
 
+To pass behavior as a value, declare a `func` shape and accept it as a typed parameter. The caller passes a named top-level function by name — this is Deor's equivalent of a lambda.
+
 ```
-fn int list doubled(int list nums)
-    list result = []
-        using shape int
+shape intList = list of int
+shape doubleFunc = func of int to int
+
+fn intList apply_all(intList nums, doubleFunc transform)
+    intList result = []
     for num in nums
-        result insert num * 2
+        int out = transform(num)
+        result insert out
     return result
+
+fn int double(int num)
+    return num * 2
+
+apply_all(nums, double)    # double satisfies doubleFunc — no special syntax
 ```
 
 ```rust
-fn doubled(nums: &Vec<i32>) -> Vec<i32> {
+fn apply_all(nums: &Vec<i32>, transform: fn(i32) -> i32) -> Vec<i32> {
     let mut result: Vec<i32> = Vec::new();
     for num in nums {
-        result.push(num * 2);
+        result.push(transform(*num));
     }
-    return result;
+    result
 }
 ```
 
-**Conversion notes:** avoids `Fn`/`FnMut`/`FnOnce`, closure capture, and capture-related lifetime issues entirely in generated Rust. All functions are top-level items, which maps cleanly to Rust's own top-level `fn` declarations.
+**Conversion notes:** func shapes compile to Rust `fn` pointers — not `Fn`/`FnMut`/`FnOnce` traits. This means no closure capture, no lifetime complications, and no `Box<dyn Fn>` overhead. All functions are top-level items.
 
 ---
 
@@ -238,246 +246,41 @@ No tail-call optimization is guaranteed — deep recursion can stack-overflow ju
 
 ---
 
-## Annotations (`[]`)
+## Parameters
 
-Annotations appear on the line(s) immediately above `fn`. Multiple annotations stack.
-
-```
-[test]
-[deprecated]
-fn Roll old_roll(int val)
-    Roll roll = val
-    return roll
-```
-
-| Annotation | Effect | Rust equivalent |
-|---|---|---|
-| `[test]` | Marks as a test function | `#[test]` |
-| `[deprecated]` | Warns callers at compile time | `#[deprecated]` |
-| `[pure]` | Signals no side effects, enables transpiler optimizations | `#[inline]` / optimizer hint |
-| `[main]` | Explicit entry point — alternative to naming the function `main` | `#[main]` |
-| `[using alias: T->O]` | Declares a behavior injection slot (see below) | hidden `fn` pointer parameter |
-| `[using alias: T]` | Same, handler returns nothing | hidden `fn()` parameter |
-| `[shape: T]` | Declares a generic type parameter (see below) | `<T>` in Rust |
-
----
-
-## `[using]` — Behavior Injection
-
-`[using]` declares that a function accepts an externally-provided named function. The annotation, the body, and the call site all use the same concept — only the keyword `using` appears at the call site; the body uses the alias name.
-
-The annotation is **required at the call site** — calling a `[using]`-annotated function without `using fn_name` is a transpiler error.
-
-### Syntax
+Functions accept at most **3 parameters**. If more context is needed, bundle values into a struct first. This is enforced by the transpiler.
 
 ```
-[using alias: InputType->OutputType]    # handler with return value
-[using alias: InputType]                # void handler
+fn roomList filter(roomList items, string query, filterFunc predicate)
+    # 3 params: list, data, behavior — the natural ceiling
 ```
 
-### Example — predicate injection
+Parameters follow `Type name` order. All types — including shape names — are written as a prefix. `func` shape parameters are regular parameters: no special keyword, no annotation, just a typed name.
 
 ```
-[using predicate: Room->bool]
-fn Room list filter(Room list items)
-    list result = []
-        using shape Room
+shape filterFunc = func of Room to bool
 
-    for item in items
-        if predicate(item)              # alias called in body
-            result insert item
-
-    return result
-```
-
-```
-filter(rooms) using match_name          # call site provides the function
-```
-
-The injected function must match the declared signature — `match_name` must take a `Room` and return `bool`.
-
-### Single-param constraint
-
-All injectable functions take exactly one parameter. If more context is needed, package it into a struct first:
-
-```
-struct RoomSearch
-    Room room
-    string query
-
-[using predicate: RoomSearch->bool]
-fn Room list filter(Room list items, string query)
-    list result = []
-        using shape Room
-
-    for item in items
-        search as (item, query)
-        if predicate(search)
-            result insert item
-
-    return result
-
-filter(rooms, "Kitchen") using match_by_query
-```
-
-### Example — void error handler
-
-`[using alias: T]` with no `->O` means the handler returns nothing. The struct must be captured in a named variable before being passed — inline construction at the call site is not allowed, consistent with the named-args rule.
-
-```
-struct Error
-    string message
-    string body
-
-[using error_handler: Error]
-fn Roll parse_roll(string input)
-    Roll result = none
-
-    message as "Parse failed"
-    body as input
-    Error err = (message, body)
-    error_handler(err)
-
-    return result
-```
-
-```
-fn log_error(Error err)
-    (message, body) in err
-    print(message)
-    print(body)
-
-fn panic_error(Error err)
-    (message, body) in err
-    # hard stop
-
-Roll roll = parse_roll("abc") using log_error
-Roll roll2 = parse_roll("abc") using panic_error
-```
-
-**Conversion notes:**
-- `[using predicate: Room->bool]` adds a hidden Rust parameter `predicate: fn(Room) -> bool`
-- `predicate(item)` in the body calls directly through the fn pointer
-- At call site, `using match_name` passes `match_name` as the fn pointer
-- Uses Rust `fn` pointers (not closures) — cannot capture environment, consistent with Deor's no-lambda rule
-
----
-
-## The Decorator + `using` System
-
-Deor uses one unified mechanism wherever a function needs something provided by its caller: declare the requirement with a `[...]` decorator, fulfill it with `using` at the call site.
-
-Two flavors of the same pattern:
-
-| Decorator | Provides | `using` form |
-|---|---|---|
-| `[using alias: T->O]` | A named function (first-class function passing) | `using fn_name` |
-| `[shape: T]` | A concrete type (generic type parameter) | `using shape ConcreteType` |
-
-Both follow the same contract — the decorator makes the requirement visible; `using` at the call site fulfills it. Both are required; omitting either is a transpiler error.
-
-**This is how Deor passes functions as values.** There are no lambdas, no anonymous functions, no closures. Instead, define a named top-level function and pass it with `using fn_name`. The decorator on the receiving function declares the expected signature; the body uses the alias name to call it.
-
-```
-[using transform: int->int]
-fn int list apply_all(int list nums)
-    list result = []
-        using shape int
-    for num in nums
-        int out = transform(num)
-        result insert out
-    return result
-
-fn int double(int num)
-    return num * 2
-
-apply_all(nums)
-    using double
-```
-
-`using double` is the equivalent of passing a lambda. The function `double` is named, top-level, and fills the `transform` slot declared by the decorator — consistent with Deor's rule that everything must be nameable.
-
----
-
-## `[shape: T]` — Generics
-
-No angle brackets anywhere. Generics in Deor are declared with the `[shape: T]` decorator and provided by the caller with `using shape ConcreteType`. `using shape` is always required at the call site; there is no implicit type inference from arguments.
-
-Inside a `[shape: T]` function, `list` means a list of T throughout the signature and body. Write bare `list` — T is implicit.
-
-```
-[shape: T]
-[using predicate: T->bool]
-fn list filter(list items)
-    list result = []
-
+fn roomList filter(roomList items, filterFunc predicate)
+    roomList result = []
     for item in items
         if predicate(item)
             result insert item
-
     return result
 ```
 
-### Call site
+## Entry Point
 
-When a function has multiple `using` clauses, they stack on indented lines below the call. `using shape` always comes first.
-
-```
-filter(rooms)
-    using shape Room
-    using match_name
-```
-
-All `using` clauses are required. Missing any is a transpiler error.
-
-```rust
-fn filter<T: Clone>(items: Vec<T>, predicate: fn(T) -> bool) -> Vec<T> {
-    let mut result: Vec<T> = Vec::new();
-    for item in items {
-        if predicate(item.clone()) {
-            result.push(item);
-        }
-    }
-    result
-}
-
-// called as:
-filter::<Room>(rooms, match_name)
-```
-
-### Concrete (non-generic) list functions
-
-When the element type is fixed at definition time, use prefix notation in the signature. No `[shape: T]` decorator, no `using shape` at call sites.
+The function named `main` is always the program entry point. No annotation is needed or allowed — naming the function `main` is sufficient.
 
 ```
-fn Room list occupied_rooms(Room list rooms)
-    list result = []
-        using shape Room
-    for room in rooms
-        occupied in room
-        if occupied
-            result insert room
-    return result
-```
-
-```
-list occ = occupied_rooms(rooms)    # shape inferred from return type
+fn main()
+    # program starts here
 ```
 
 ```rust
-fn occupied_rooms(rooms: &Vec<Room>) -> Vec<Room> {
-    let mut result: Vec<Room> = Vec::new();
-    for room in rooms {
-        if room.occupied {
-            result.push(room.clone());
-        }
-    }
-    result
+fn main() {
+    // program starts here
 }
 ```
 
-**Notes:**
-- One `[shape: T]` parameter per function — multiple shape parameters are v2
-- `T` flows through the entire signature: parameters, return type, and local `list` declarations
-- `[shape: T]` stacks with `[using]` — declare both, both required at call site
-- The `[...]` + `using` pattern for types (`[shape: T]` / `using shape`) and for functions (`[using alias]` / `using fn_name`) is the same mechanism applied to different kinds of requirements
+Only one `fn main()` may exist per project. Naming any other function `main` is a transpiler error if a `main` already exists.
