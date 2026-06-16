@@ -85,11 +85,39 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg,
 fn ParseResult gen_for(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names)
 	int token_count = len(tokens)
 	string pad = str_repeat("    ", depth)
-	int var_pos = pos + 1
-	Token var_token = tokens at var_pos
-	string var_name = tok_value(var_token)
-	int in_pos = var_pos + 1
-	int iter_pos = in_pos + 1
+	int next_pos = pos + 1
+	Token next_token = tokens at next_pos
+	string next_kind = tok_kind(next_token)
+
+	# for if condition → while loop
+	if next_kind is "KW_IF"
+		int cond_pos = next_pos + 1
+		ParseResult cond_r = gen_expr(tokens, cond_pos, variant_reg, shape_reg)
+		string cond_code = pr_code(cond_r)
+		int cond_end = pr_pos(cond_r)
+		ParseResult cond_nl_r = skip_newline(tokens, cond_end)
+		int while_body_start = pr_pos(cond_nl_r)
+		if while_body_start < token_count
+			string indent_kind = tok_kind(tokens at while_body_start)
+			if indent_kind is "INDENT"
+				while_body_start = while_body_start + 1
+		ParseResult while_body_r = gen_block(tokens, while_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names)
+		string while_body_code = pr_code(while_body_r)
+		int while_body_end = pr_pos(while_body_r)
+		string while_code = s_join([pad, "while ", cond_code, " {\n", while_body_code, pad, "}\n"])
+		return make_result(while_code, while_body_end)
+
+	# determine variable name and iterator start position
+	string var_name = "_"
+	int iter_pos = 0
+	if next_kind is "KW_IN"
+		# for in ... (no variable)
+		iter_pos = next_pos + 1
+	else
+		# for x in ... (has variable)
+		var_name = tok_value(next_token)
+		int in_pos = next_pos + 1
+		iter_pos = in_pos + 1
 
 	Token iter_token = tokens at iter_pos
 	string iter_kind = tok_kind(iter_token)
