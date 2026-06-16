@@ -98,27 +98,23 @@ fn tokenList tokenize(string source)
 		int char_count = len(chars)
 		int char_index = 0
 
-		for raw_ci in range(char_count)
-			if raw_ci < char_index
-				continue
-
-			string character = chars at raw_ci
+		for if char_index < char_count
+			string character = chars at char_index
 
 			if character is " "
-				char_index = raw_ci + 1
+				char_index = char_index + 1
 				continue
 
 			# comment: skip rest of line
 			if character is "#"
-				char_index = char_count
-				continue
+				break
 
 			# string literal
 			if character is "\""
 				string val = ""
 				bool escape_next = false
-				int str_start = raw_ci + 1
-				char_index = raw_ci + 1
+				int str_start = char_index + 1
+				char_index = char_index + 1
 				for string_index in (str_start, char_count)
 					string string_char = chars at string_index
 					if escape_next
@@ -150,8 +146,8 @@ fn tokenList tokenize(string source)
 			# integer literal
 			if is_digit(character)
 				string num = s_cat("", character)
-				int num_start = raw_ci + 1
-				char_index = raw_ci + 1
+				int num_start = char_index + 1
+				char_index = char_index + 1
 				for number_index in (num_start, char_count)
 					string number_char = chars at number_index
 					if is_digit(number_char)
@@ -165,8 +161,8 @@ fn tokenList tokenize(string source)
 			# identifier or keyword
 			if is_alpha(character)
 				string word = s_cat("", character)
-				int word_start = raw_ci + 1
-				char_index = raw_ci + 1
+				int word_start = char_index + 1
+				char_index = char_index + 1
 				for word_index in (word_start, char_count)
 					string word_char = chars at word_index
 					if is_alnum(word_char)
@@ -178,18 +174,18 @@ fn tokenList tokenize(string source)
 				continue
 
 			# two-char operators
-			int peek_idx = raw_ci + 1
+			int peek_idx = char_index + 1
 			string peek = ""
 			if peek_idx < char_count
 				peek = chars at peek_idx
 
 			if character is ">" and peek is "="
 				tokens at end = make_token("GTE", ">=", cur_line)
-				char_index = raw_ci + 2
+				char_index = char_index + 2
 				continue
 			if character is "<" and peek is "="
 				tokens at end = make_token("LTE", "<=", cur_line)
-				char_index = raw_ci + 2
+				char_index = char_index + 2
 				continue
 
 			# single-char tokens
@@ -219,7 +215,7 @@ fn tokenList tokenize(string source)
 				tokens at end = make_token("RBRACKET", "]", cur_line)
 			else if character is ","
 				tokens at end = make_token("COMMA", ",", cur_line)
-			char_index = raw_ci + 1
+			char_index = char_index + 1
 
 		tokens at end = make_token("NEWLINE", "", cur_line)
 

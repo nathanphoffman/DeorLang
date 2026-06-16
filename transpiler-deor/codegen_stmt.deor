@@ -278,9 +278,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, strList variant_re
 			if after_as_kind is "LPAREN"
 				strList fields = []
 				int fend = after_as + 1
-				for fii in range(32)
-					if fend >= token_count
-						break
+				for if fend < token_count
 					Token field_token = tokens at fend
 					string field_kind = tok_kind(field_token)
 					string field_value = tok_value(field_token)
