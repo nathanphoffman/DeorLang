@@ -263,6 +263,9 @@ fn word_to_kind(word: String) -> String {
     if word == "avow" {
         return "KW_AVOW".to_string();
     }
+    if word == "empty" {
+        return "KW_EMPTY".to_string();
+    }
     if word == "type" {
         return "KW_TYPE".to_string();
     }
@@ -1523,6 +1526,10 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, 
                 let mut stmt_code: String = s_join(vec![pad.clone(), "let ".to_string(), mut_kw.clone(), value.clone(), " = ".to_string(), struct_name.clone(), " { ".to_string(), fields_code.clone(), " };\n".to_string()]);
                 return make_result(stmt_code.clone(), pr_pos(nl_r.clone()));
             }
+            if after_as_kind == "KW_EMPTY" {
+                let mut nl_r: ParseResult = skip_newline(tokens.clone(), after_as + 1.clone());
+                return make_result(s_join(vec![pad.clone(), "let mut ".to_string(), value.clone(), " = Vec::new();\n".to_string()]), pr_pos(nl_r.clone()));
+            }
             let mut val_r: ParseResult = gen_expr(tokens.clone(), after_as.clone(), variant_reg.clone(), shape_reg.clone());
             let mut val_code: String = pr_code(val_r.clone());
             let mut val_end: i32 = pr_pos(val_r.clone());
@@ -1644,6 +1651,18 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, 
                     let mut rust_type: String = resolve_type(var_type.clone(), shape_reg.clone(), variant_reg.clone());
                     let mut val_token: Token = tokens[val_pos as usize].clone();
                     let mut val_kind: String = tok_kind(val_token.clone());
+                    if val_kind == "KW_EMPTY" {
+                        let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
+                        let mut is_shape: bool = reg_has(shape_reg.clone(), var_type.clone());
+                        let mut nl_r: ParseResult = skip_newline(tokens.clone(), val_pos + 1.clone());
+                        if is_validator {
+                            return make_result(s_join(vec![pad.clone(), "let mut ".to_string(), var_name.clone(), ": Option<".to_string(), var_type.clone(), "> = None;\n".to_string()]), pr_pos(nl_r.clone()));
+                        }
+                        if is_shape {
+                            return make_result(s_join(vec![pad.clone(), "let mut ".to_string(), var_name.clone(), ": ".to_string(), rust_type.clone(), " = Vec::new();\n".to_string()]), pr_pos(nl_r.clone()));
+                        }
+                        return make_result(s_join(vec![pad.clone(), "/* error: empty only valid for validator types and list shapes */\n".to_string()]), pr_pos(nl_r.clone()));
+                    }
                     if val_kind == "LPAREN" {
                         let mut fields: Vec<String> = Vec::new();
                         let mut fend: i32 = val_pos + 1.clone();
@@ -1677,8 +1696,13 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, 
                         let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), variant_reg.clone(), shape_reg.clone());
                         let mut val_code: String = pr_code(val_r.clone());
                         let mut val_end: i32 = pr_pos(val_r.clone());
+                        let mut is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+                        let mut mut_kw: String = "".to_string();
+                        if is_mut {
+                            mut_kw = "mut ".to_string();
+                        }
                         let mut nl_r: ParseResult = skip_newline(tokens.clone(), val_end.clone());
-                        return make_result(s_join(vec![pad.clone(), "let ".to_string(), var_name.clone(), " = ".to_string(), var_type.clone(), "::new(".to_string(), val_code.clone(), ");\n".to_string()]), pr_pos(nl_r.clone()));
+                        return make_result(s_join(vec![pad.clone(), "let ".to_string(), mut_kw.clone(), var_name.clone(), ": Option<".to_string(), var_type.clone(), "> = ".to_string(), var_type.clone(), "::new(".to_string(), val_code.clone(), ");\n".to_string()]), pr_pos(nl_r.clone()));
                     }
                     if val_kind == "KW_NONE" {
                         let mut nl_r: ParseResult = skip_newline(tokens.clone(), val_pos + 1.clone());
@@ -1860,7 +1884,7 @@ fn gen_type_decl(tokens: Vec<Token>, pos: i32, variant_reg: Vec<String>, shape_r
         }
     }
     let mut struct_code: String = s_join(vec!["#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ".to_string(), type_name.clone(), "(".to_string(), rust_param_type.clone(), ");\n\n".to_string()]);
-    let mut impl_code: String = s_join(vec!["impl ".to_string(), type_name.clone(), " {\n    fn new(".to_string(), param_name.clone(), ": ".to_string(), rust_param_type.clone(), ") -> Self {\n        assert!(".to_string(), pred_code.clone(), ", \"invalid ".to_string(), type_name.clone(), ": {}\", ".to_string(), param_name.clone(), ");\n        ".to_string(), type_name.clone(), "(".to_string(), param_name.clone(), ")\n    }\n}\n\n".to_string()]);
+    let mut impl_code: String = s_join(vec!["impl ".to_string(), type_name.clone(), " {\n    fn new(".to_string(), param_name.clone(), ": ".to_string(), rust_param_type.clone(), ") -> Option<Self> {\n        if ".to_string(), pred_code.clone(), " {\n            Some(".to_string(), type_name.clone(), "(".to_string(), param_name.clone(), "))\n        } else {\n            None\n        }\n    }\n}\n\n".to_string()]);
     return make_result(s_cat(struct_code.clone(), impl_code.clone()), cur.clone());
 }
 

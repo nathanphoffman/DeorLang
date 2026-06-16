@@ -309,6 +309,10 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, strList variant_re
 				ParseResult nl_r = skip_newline(tokens, fend)
 				string stmt_code = s_join([pad, "let ", mut_kw, value, " = ", struct_name, " { ", fields_code, " };\n"])
 				return make_result(stmt_code, pr_pos(nl_r))
+			# empty → empty list
+			if after_as_kind is "KW_EMPTY"
+				ParseResult nl_r = skip_newline(tokens, after_as + 1)
+				return make_result(s_join([pad, "let mut ", value, " = Vec::new();\n"]), pr_pos(nl_r))
 			# regular as-binding
 			ParseResult val_r = gen_expr(tokens, after_as, variant_reg, shape_reg)
 			string val_code = pr_code(val_r)
@@ -430,6 +434,16 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, strList variant_re
 					string rust_type = resolve_type(var_type, shape_reg, variant_reg)
 					Token val_token = tokens at val_pos
 					string val_kind = tok_kind(val_token)
+					# empty → None for validator types, Vec::new() for list shapes
+					if val_kind is "KW_EMPTY"
+						bool is_validator = reg3_has(type_reg, var_type)
+						bool is_shape = reg_has(shape_reg, var_type)
+						ParseResult nl_r = skip_newline(tokens, val_pos + 1)
+						if is_validator
+							return make_result(s_join([pad, "let mut ", var_name, ": Option<", var_type, "> = None;\n"]), pr_pos(nl_r))
+						if is_shape
+							return make_result(s_join([pad, "let mut ", var_name, ": ", rust_type, " = Vec::new();\n"]), pr_pos(nl_r))
+						return make_result(s_join([pad, "/* error: empty only valid for validator types and list shapes */\n"]), pr_pos(nl_r))
 					# struct construction: Type name = (f1, f2, ...)
 					if val_kind is "LPAREN"
 						strList fields = []
@@ -462,8 +476,12 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, strList variant_re
 						ParseResult val_r = gen_expr(tokens, val_pos, variant_reg, shape_reg)
 						string val_code = pr_code(val_r)
 						int val_end = pr_pos(val_r)
+						bool is_mut = list_has(mut_names, var_name)
+						string mut_kw = ""
+						if is_mut
+							mut_kw = "mut "
 						ParseResult nl_r = skip_newline(tokens, val_end)
-						return make_result(s_join([pad, "let ", var_name, " = ", var_type, "::new(", val_code, ");\n"]), pr_pos(nl_r))
+						return make_result(s_join([pad, "let ", mut_kw, var_name, ": Option<", var_type, "> = ", var_type, "::new(", val_code, ");\n"]), pr_pos(nl_r))
 					# none → Option<T>
 					if val_kind is "KW_NONE"
 						ParseResult nl_r = skip_newline(tokens, val_pos + 1)

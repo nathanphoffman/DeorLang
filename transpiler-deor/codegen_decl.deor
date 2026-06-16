@@ -105,7 +105,7 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, strList variant_reg, str
 		if tok_kind(t) is "DEDENT"
 			break
 	string struct_code = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ", type_name, "(", rust_param_type, ");\n\n"])
-	string impl_code = s_join(["impl ", type_name, " {\n    fn new(", param_name, ": ", rust_param_type, ") -> Self {\n        assert!(", pred_code, ", \"invalid ", type_name, ": {}\", ", param_name, ");\n        ", type_name, "(", param_name, ")\n    }\n}\n\n"])
+	string impl_code = s_join(["impl ", type_name, " {\n    fn new(", param_name, ": ", rust_param_type, ") -> Option<Self> {\n        if ", pred_code, " {\n            Some(", type_name, "(", param_name, "))\n        } else {\n            None\n        }\n    }\n}\n\n"])
 	return make_result(s_cat(struct_code, impl_code), cur)
 
 fn ParseResult gen_fn_decl(tokenList tokens, int pos, strList variant_reg, strList shape_reg, strList struct_reg, strList enum_reg, strList type_reg)
