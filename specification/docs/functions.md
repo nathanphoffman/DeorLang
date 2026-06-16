@@ -39,7 +39,9 @@ fn void main()
     # program starts here
 ```
 
-Void functions **cannot contain `return` statements**. Early exit is a transpiler error — all conditional paths must be expressed with `if/else` block structure:
+Void functions **cannot contain `return` statements**.
+
+Early exit is a transpiler error — all conditional paths must be expressed with `if/else` block structure:
 
 ```
 shape itemList = list of Item
@@ -204,7 +206,7 @@ shape intList = list of int
 shape doubleFunc = func of int to int
 
 fn intList apply_all(intList nums, doubleFunc transform)
-    intList result = []
+    intList result = empty
     for num in nums
         int out = transform(num)
         result at end = out
@@ -273,7 +275,7 @@ Parameters follow `Type name` order. All types — including shape names — are
 shape filterFunc = func of Room to bool
 
 fn roomList filter(roomList items, filterFunc predicate)
-    roomList result = []
+    roomList result = empty
     for item in items
         if predicate(item)
             result at end = item

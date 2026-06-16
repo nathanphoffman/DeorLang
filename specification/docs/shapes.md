@@ -33,7 +33,7 @@ type RollList = Vec<Roll>;
 List shape variables are declared and used like any other typed variable:
 
 ```
-roomList result = []
+roomList result = empty
 roomList rooms = [kitchen, office, bedroom]
 int cnt = len(rooms)
 ```
@@ -100,7 +100,7 @@ A function matching a func shape can be passed as a regular typed argument. No s
 shape filterFunc = func of Room to bool
 
 fn roomList filter(roomList items, filterFunc predicate)
-    roomList result = []
+    roomList result = empty
     for item in items
         if predicate(item)
             result at end = item
@@ -264,8 +264,7 @@ struct Request
 | `shape roomList = list of Room` | `type RoomList = Vec<Room>;` |
 | `shape filterFunc = func of Room to bool` | `type FilterFunc = fn(Room) -> bool;` |
 | `shape handlerFunc = func of Error` | `type HandlerFunc = fn(Error);` |
-| `shape requestBody = bytes` | `type RequestBody = Vec<u8>;` |
-| `roomList result = []` | `let mut result: Vec<Room> = Vec::new();` |
+| `roomList result = empty` | `let mut result: Vec<Room> = Vec::new();` |
 | `filter(rooms, by_name)` | `filter(&rooms, by_name)` |
 
 Func shapes use Rust `fn` pointers, not closures — they cannot capture environment, consistent with Deor's no-lambda rule.

@@ -34,11 +34,12 @@ rooms as [kitchen, office, bedroom]    # type inferred from items (all Room)
 let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 ```
 
-An empty list `[]` cannot be typed by inference — there are no items to infer from:
+`[]` is not valid for initializing an empty list — use `empty` with an explicit shape type. `as []` is also a transpiler error because the element type is unknown:
 
 ```
-roomList result = []    # correct — shape name gives the type
-result as []            # transpiler error — element type unknown
+roomList result = empty  # correct
+result as []             # transpiler error — element type unknown
+roomList result = []     # transpiler error — use empty instead
 ```
 
 ---
@@ -52,7 +53,7 @@ room as (area, name)      # transpiler error — which struct?
 Room room = (area, name)  # correct
 ```
 
-**Validator type bindings** — a literal alone doesn't say whether a validator should run. Use explicit `ValidatorType name = value` — see [Validator Type Bindings](#validator-type-bindings) below.
+**Validator type bindings** — `as` has no way to know whether you want a plain `int` (no predicate, stored directly) or a `Squarefeet` validator type (predicate runs, result is `Option<T>`). Without an explicit type the transpiler cannot decide which behaviour you intend, so it errors. Use explicit `ValidatorType name = value` — see [Validator Type Bindings](#validator-type-bindings) below.
 
 ```
 area as 9             # transpiler error — int or Squarefeet?
@@ -134,7 +135,7 @@ Roll best = empty
 let mut best: Option<Roll> = None;
 ```
 
-`empty` also works for list shapes, as an alternative to `[]`:
+`empty` is also the only valid way to initialize an empty list shape — `[]` is a transpiler error:
 
 ```
 roomList rooms = empty
@@ -163,7 +164,7 @@ Any value from a function call or other runtime computation uses `Type name = ex
 ```
 int val = random(min, max)
 string pick = random_room_name(rooms)
-roomList result = []
+roomList result = empty
 ```
 
 ```rust

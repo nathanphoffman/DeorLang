@@ -10,7 +10,7 @@ shape roomList = list of Room
 ```
 
 ```
-intList result = []
+intList result = empty
 roomList rooms = [kitchen, office, bedroom]
 ```
 

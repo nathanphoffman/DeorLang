@@ -88,7 +88,7 @@ Open an indented block when followed by a newline.
 | `shape` | Shape declaration (`shape name = list of T` / `func of T to O`) |
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
-| `deps` | Cargo dependency block |
+| `deps` | Inline Cargo dependency declarations — lists crate dependencies directly in a `.deor` file so they are added to `Cargo.toml` at transpile time |
 | `using` | State-threading block — threads a value through a sequence of calls |
 
 ### Statement Keywords

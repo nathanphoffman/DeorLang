@@ -1,0 +1,50 @@
+# === If/else code generation ===
+
+fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names, strList type_reg)
+	int token_count = len(tokens)
+	string pad = str_repeat("    ", depth)
+	int cond_pos = pos + 1
+	ParseResult cond_r = gen_expr(tokens, cond_pos, variant_reg, shape_reg)
+	string cond_code = pr_code(cond_r)
+	int cond_end = pr_pos(cond_r)
+	int body_start = skip_to_body(tokens, cond_end)
+	ParseResult then_r = gen_block(tokens, body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
+	string then_code = pr_code(then_r)
+	int then_end = pr_pos(then_r)
+	string result_code = s_join([pad, "if ", cond_code, " {\n", then_code, pad, "}"])
+	int cur = then_end
+	# handle else / else if chains
+	for if true
+		if cur >= token_count
+			break
+		Token else_token = tokens at cur
+		string else_kind = tok_kind(else_token)
+		bool is_else = else_kind is "KW_ELSE"
+		if not is_else
+			break
+		int after_else = cur + 1
+		if after_else >= token_count
+			break
+		Token after_else_token = tokens at after_else
+		string after_else_kind = tok_kind(after_else_token)
+		if after_else_kind is "KW_IF"
+			int ei_cond_pos = after_else + 1
+			ParseResult ei_cond_r = gen_expr(tokens, ei_cond_pos, variant_reg, shape_reg)
+			string ei_cond_code = pr_code(ei_cond_r)
+			int ei_cond_end = pr_pos(ei_cond_r)
+			int ei_body_start = skip_to_body(tokens, ei_cond_end)
+			ParseResult ei_body_r = gen_block(tokens, ei_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
+			string ei_body_code = pr_code(ei_body_r)
+			int ei_body_end = pr_pos(ei_body_r)
+			result_code = s_join([result_code, " else if ", ei_cond_code, " {\n", ei_body_code, pad, "}"])
+			cur = ei_body_end
+		else
+			int else_body_start = skip_to_body(tokens, after_else)
+			ParseResult else_r = gen_block(tokens, else_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
+			string else_code = pr_code(else_r)
+			int else_end = pr_pos(else_r)
+			result_code = s_join([result_code, " else {\n", else_code, pad, "}"])
+			cur = else_end
+			break
+	result_code = s_cat(result_code, "\n")
+	return make_result(result_code, cur)

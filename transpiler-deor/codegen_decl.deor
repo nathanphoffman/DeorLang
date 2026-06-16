@@ -42,8 +42,7 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	string rust_elem = render_rust_type(elem_type)
 	string decl = s_join(["type ", rust_name, " = Vec<", rust_elem, ">;\n\n"])
 	int after = elem_pos + 1
-	ParseResult nl_r = skip_newline(tokens, after)
-	return make_result(decl, pr_pos(nl_r))
+	return make_result(decl, adv_nl(after, tokens))
 
 fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 	int token_count = len(tokens)
@@ -129,8 +128,7 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, strList variant_reg, strLi
 			param_strs at end = s_join([param_name, ": ", rust_param_type])
 			cur = pname_pos + 1
 	# skip NEWLINE
-	ParseResult nl_r = skip_newline(tokens, cur)
-	cur = pr_pos(nl_r)
+	cur = adv_nl(cur, tokens)
 	int indent_pos = cur
 	# skip INDENT
 	if cur < token_count

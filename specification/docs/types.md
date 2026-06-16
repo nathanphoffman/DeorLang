@@ -10,20 +10,8 @@ Deor's built-in primitive types and their Rust equivalents:
 | `float` | `f64` | General-purpose decimal |
 | `bool` | `bool` | |
 | `string` | `String` | Owned; available as `&str` via `.as_str()` in `rust` blocks |
-| `bytes` | `Vec<u8>` | Raw binary data — HTTP bodies, files, crypto, pixel buffers |
 
-`bytes` is the bridge for raw binary data crossing the Deor/Rust boundary. Any byte-level processing (bit manipulation, `u8`/`u16` arithmetic, SIMD) happens inside `rust` blocks; `bytes` carries the data in and out.
-
-```
-fn bytes read_raw(string path)
-    rust
-        std::fs::read(path.as_str())
-            .unwrap_or_default()
-
-fn int byte_count(bytes data)
-    rust
-        data.len() as i32
-```
+For raw binary data (HTTP bodies, files, crypto, pixel buffers) use a `raw` variable and handle it entirely inside `rust` blocks. See [`raw` Variables](#raw-variables) below.
 
 ---
 
@@ -44,7 +32,7 @@ See [Rust Interop — The `raw` Type](interop.md#the-raw-type) for full document
 
 ## Validator Types (`type`)
 
-A `type` definition wraps a base primitive with a predicate. The predicate body is required — a `type` with no constraint adds no meaning over the base type, so use the base type directly instead. The transpiler errors on a `type` definition with an empty body.
+A `type` definition wraps a base primitive with a predicate. **The predicate body is mandatory** — the transpiler errors on a `type` with an empty body. A validator type without a constraint adds no meaning over its base primitive; use the base type directly instead.
 
 The body evaluates to a `bool`. Simple predicates are a single boolean expression; predicates that need intermediate values may declare bindings before the final bool expression, following the same rules as a function body.
 
@@ -79,7 +67,7 @@ impl Squarefeet {
 
 ```
 Squarefeet area = 9     # Some(Squarefeet(9))
-Squarefeet bad = -1     # None — predicate fails silently
+Squarefeet bad = -1     # transpiler error — literal value fails predicate at compile time
 ```
 
 ```rust
@@ -91,7 +79,7 @@ let bad: Option<Squarefeet> = Squarefeet::new(-1);
 
 ### Truthy / Falsy
 
-A validator type variable is truthy when `Some`, falsy when `None`. Use `if` / `if not` to check presence before using the value.
+A validator type variable is truthy when `Some`, falsy when `None`. Use `if` to check presence and `if X is not` to check absence before using the value.
 
 **Only validator types and `bool` have truthiness.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — they have no presence/absence concept. Use explicit comparisons instead:
 
@@ -110,7 +98,7 @@ if my_string           # transpiler error
 Squarefeet area = 9
 if area
     int val = (avow area)
-if not area
+if area is not
     print("no value")
 ```
 
@@ -127,16 +115,18 @@ if area.is_none() {
 
 ### Initializing to Empty
 
-A validator type variable can be explicitly initialized to `empty` to start absent. `empty` is only valid at the point of first declaration — assigning `empty` after a variable has been declared is a transpiler error.
+A validator type variable can be explicitly initialized to `empty` to start absent. List shapes also use `empty` to start with no elements — `[]` is a transpiler error. `empty` is only valid at the point of first declaration — assigning `empty` after a variable has been declared is a transpiler error.
 
 ```
 Roll best = empty
 Squarefeet area = empty
+roomList rooms = empty
 ```
 
 ```rust
 let mut best: Option<Roll> = None;
 let mut area: Option<Squarefeet> = None;
+let mut rooms: Vec<Room> = Vec::new();
 ```
 
 ---
@@ -264,7 +254,7 @@ int bonus = crit else 0
 - `(avow val)` → `.unwrap().0`; `value else default` → `.map(|v| v.0).unwrap_or(default)`.
 - Equality (`is` / `is not`) transpiles to `==` / `!=` in Rust and falls through to `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
 - `and` / `or` / `not` map to `&&` / `||` / `!`.
-- Literal predicate failures (`Squarefeet bad = -1`) will eventually be caught at transpile time — currently runtime `None`.
+- Literal predicate failures (`Squarefeet bad = -1`) are caught at transpile time.
 
 ---
 
@@ -304,9 +294,9 @@ struct+ House               # explicit override: always a value, full clone on c
     roomList rooms
 ```
 
-Struct fields may use list shapes (`roomList`) but not func shapes — structs are pure data. A func shape as a struct field is a transpiler error.
+Struct fields may be primitives, validator types, list shapes, or other structs. Func shapes as struct fields are a transpiler error — structs are pure data.
 
-**All struct fields are always public.** There are no visibility modifiers on fields. Structs carry data only — no methods, no encapsulation. When a struct is importable, all its fields are accessible via destructuring. If you want to restrict access to a struct's internals, mark the struct itself `private` rather than its fields.
+**Visibility applies to top-level declarations, not to fields.** Structs, shapes, functions, and types are all public by default; marking one `private` prevents it from being imported by other files. There are no per-field visibility modifiers — all fields are always accessible via destructuring whenever the struct itself is in scope.
 
 **Conversion notes:**
 - The **struct definition itself is identical** regardless of `+`/`*`/auto — only how *usages* are represented changes (`House` vs `Rc<House>`).

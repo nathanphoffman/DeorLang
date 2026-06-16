@@ -30,7 +30,7 @@ fn int total_area(roomList rooms)
     return sum
 
 fn roomList occupied_rooms(roomList rooms)
-    roomList result = []
+    roomList result = empty
     for room in rooms
         occupied in room
         if occupied
