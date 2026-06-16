@@ -1,5 +1,35 @@
 # === Registry builders ===
 
+fn ParseResult skip_to_block_start(tokenList tokens, int start)
+	int token_count = len(tokens)
+	int cur = start
+	for skip_index in (start, token_count)
+		Token skip_token = tokens at skip_index
+		string skip_kind = tok_kind(skip_token)
+		cur = skip_index + 1
+		if skip_kind is "INDENT"
+			break
+	return make_result("", cur)
+
+fn ParseResult collect_struct_fields(tokenList tokens, int start)
+	int token_count = len(tokens)
+	strList fields = []
+	int cur = start
+	for field_index in (start, token_count)
+		Token field_token = tokens at field_index
+		string field_kind = tok_kind(field_token)
+		if field_kind is "DEDENT"
+			cur = field_index + 1
+			break
+		else if field_kind is "IDENT"
+			int fname_pos = field_index + 1
+			if fname_pos < token_count
+				Token fname_token = tokens at fname_pos
+				if tok_kind(fname_token) is "IDENT"
+					fields at end = tok_value(fname_token)
+					cur = fname_pos + 1
+	return make_result(s_join_with(fields, ","), cur)
+
 fn strList build_struct_reg(tokenList tokens)
 	strList result = []
 	int token_count = len(tokens)
@@ -13,38 +43,12 @@ fn strList build_struct_reg(tokenList tokens)
 			int name_pos = raw_i + 1
 			if name_pos < token_count
 				Token name_token = tokens at name_pos
-				string name_kind = tok_kind(name_token)
-				string name_value = tok_value(name_token)
-				if name_kind is "IDENT"
-					string struct_name = name_value
-					current_index = name_pos + 1
-					# skip NEWLINE and INDENT
-					for skip_index in (current_index, token_count)
-						Token skip_token = tokens at skip_index
-						string skip_kind = tok_kind(skip_token)
-						current_index = skip_index + 1
-						if skip_kind is "INDENT"
-							break
-					# collect field names until DEDENT
-					strList fields = []
-					for field_index in (current_index, token_count)
-						Token field_token = tokens at field_index
-						string field_kind = tok_kind(field_token)
-						string field_value = tok_value(field_token)
-						if field_kind is "DEDENT"
-							current_index = field_index + 1
-							break
-						else if field_kind is "IDENT"
-							int fname_pos = field_index + 1
-							if fname_pos < token_count
-								Token fname_token = tokens at fname_pos
-								string field_name_kind = tok_kind(fname_token)
-								string field_name_value = tok_value(fname_token)
-								if field_name_kind is "IDENT"
-									fields at end = field_name_value
-									current_index = fname_pos + 1
-					result at end = struct_name
-					result at end = s_join_with(fields, ",")
+				if tok_kind(name_token) is "IDENT"
+					ParseResult block_r = skip_to_block_start(tokens, name_pos + 1)
+					ParseResult fields_r = collect_struct_fields(tokens, pr_pos(block_r))
+					result at end = tok_value(name_token)
+					result at end = pr_code(fields_r)
+					current_index = pr_pos(fields_r)
 	return result
 
 fn strList build_shape_reg(tokenList tokens)

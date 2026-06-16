@@ -55,7 +55,7 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 				if is_in
 					Token path_token = source_tokens at path_pos
 					string imp_path = tok_value(path_token)
-					tokenList imp_tokens = collect_all_tokens(imp_path)
+					tokenList imp_tokens = collect_all_tokens_with_all_imports(imp_path)
 					int import_len = len(imp_tokens)
 					for import_index in range(import_len)
 						Token import_token = imp_tokens at import_index
