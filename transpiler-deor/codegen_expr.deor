@@ -89,6 +89,27 @@ fn ParseResult gen_list_items(tokenList tokens, int pos, strList variant_reg, st
 		cur = item_pos
 	return make_result(s_join_with(item_codes, ", "), cur)
 
+fn ParseResult gen_unary_method(tokenList tokens, int args_pos, string suffix, strList variant_reg, strList shape_reg)
+	ParseResult inner_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+	string inner_code = pr_code(inner_r)
+	int close = pr_pos(inner_r) + 1
+	return make_result(s_join([inner_code, suffix]), close)
+
+fn ParseResult gen_binary_str_method(tokenList tokens, int args_pos, string method_name, strList variant_reg, strList shape_reg)
+	ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+	string a0c = pr_code(a0_r)
+	int sep_pos = pr_pos(a0_r) + 1
+	ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
+	string a1c = pr_code(a1_r)
+	int close_pos = pr_pos(a1_r) + 1
+	Token a1_token = tokens at sep_pos
+	string a1_kind = tok_kind(a1_token)
+	string a1_arg = a1c
+	bool a1_is_str = a1_kind is "STRING"
+	if not a1_is_str
+		a1_arg = s_join([a1c, ".as_str()"])
+	return make_result(s_join([a0c, ".", method_name, "(", a1_arg, ")"]), close_pos)
+
 fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
 	int token_count = len(tokens)
 	Token token = tokens at pos
@@ -154,77 +175,19 @@ fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strLi
 				int args_pos = next_pos + 1
 				# built-in string methods
 				if func_name is "len"
-					ParseResult inner_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
-					string inner_code = pr_code(inner_r)
-					int inner_position = pr_pos(inner_r)
-					int close = inner_position + 1
-					return make_result(s_join([inner_code, ".len() as i32"]), close)
+					return gen_unary_method(tokens, args_pos, ".len() as i32", variant_reg, shape_reg)
 				if func_name is "trim"
-					ParseResult inner_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
-					string inner_code = pr_code(inner_r)
-					int inner_position = pr_pos(inner_r)
-					int close = inner_position + 1
-					return make_result(s_join([inner_code, ".trim().to_string()"]), close)
+					return gen_unary_method(tokens, args_pos, ".trim().to_string()", variant_reg, shape_reg)
 				if func_name is "to_upper"
-					ParseResult inner_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
-					string inner_code = pr_code(inner_r)
-					int inner_position = pr_pos(inner_r)
-					int close = inner_position + 1
-					return make_result(s_join([inner_code, ".to_uppercase()"]), close)
+					return gen_unary_method(tokens, args_pos, ".to_uppercase()", variant_reg, shape_reg)
 				if func_name is "to_lower"
-					ParseResult inner_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
-					string inner_code = pr_code(inner_r)
-					int inner_position = pr_pos(inner_r)
-					int close = inner_position + 1
-					return make_result(s_join([inner_code, ".to_lowercase()"]), close)
+					return gen_unary_method(tokens, args_pos, ".to_lowercase()", variant_reg, shape_reg)
 				if func_name is "contains"
-					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
-					string a0c = pr_code(a0_r)
-					int a0p = pr_pos(a0_r)
-					int sep_pos = a0p + 1
-					ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
-					string a1c = pr_code(a1_r)
-					int a1p = pr_pos(a1_r)
-					Token a1_token = tokens at sep_pos
-					string a1_kind = tok_kind(a1_token)
-					string a1_arg = a1c
-					bool a1_is_str = a1_kind is "STRING"
-					if not a1_is_str
-						a1_arg = s_join([a1c, ".as_str()"])
-					int close_pos = a1p + 1
-					return make_result(s_join([a0c, ".contains(", a1_arg, ")"]), close_pos)
+					return gen_binary_str_method(tokens, args_pos, "contains", variant_reg, shape_reg)
 				if func_name is "starts_with"
-					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
-					string a0c = pr_code(a0_r)
-					int a0p = pr_pos(a0_r)
-					int sep_pos = a0p + 1
-					ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
-					string a1c = pr_code(a1_r)
-					int a1p = pr_pos(a1_r)
-					Token a1_token = tokens at sep_pos
-					string a1_kind = tok_kind(a1_token)
-					string a1_arg = a1c
-					bool a1_is_str = a1_kind is "STRING"
-					if not a1_is_str
-						a1_arg = s_join([a1c, ".as_str()"])
-					int close_pos = a1p + 1
-					return make_result(s_join([a0c, ".starts_with(", a1_arg, ")"]), close_pos)
+					return gen_binary_str_method(tokens, args_pos, "starts_with", variant_reg, shape_reg)
 				if func_name is "ends_with"
-					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
-					string a0c = pr_code(a0_r)
-					int a0p = pr_pos(a0_r)
-					int sep_pos = a0p + 1
-					ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
-					string a1c = pr_code(a1_r)
-					int a1p = pr_pos(a1_r)
-					Token a1_token = tokens at sep_pos
-					string a1_kind = tok_kind(a1_token)
-					string a1_arg = a1c
-					bool a1_is_str = a1_kind is "STRING"
-					if not a1_is_str
-						a1_arg = s_join([a1c, ".as_str()"])
-					int close_pos = a1p + 1
-					return make_result(s_join([a0c, ".ends_with(", a1_arg, ")"]), close_pos)
+					return gen_binary_str_method(tokens, args_pos, "ends_with", variant_reg, shape_reg)
 				if func_name is "split"
 					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
 					string a0c = pr_code(a0_r)

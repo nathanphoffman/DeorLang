@@ -948,6 +948,30 @@ fn gen_list_items(tokens: Vec<Token>, pos: i32, variant_reg: Vec<String>, shape_
     return make_result(s_join_with(item_codes.clone(), ", ".to_string()), cur.clone());
 }
 
+fn gen_unary_method(tokens: Vec<Token>, args_pos: i32, suffix: String, variant_reg: Vec<String>, shape_reg: Vec<String>) -> ParseResult {
+    let mut inner_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
+    let mut inner_code: String = pr_code(inner_r.clone());
+    let mut close: i32 = pr_pos(inner_r.clone()) + 1;
+    return make_result(s_join(vec![inner_code.clone(), suffix.clone()]), close.clone());
+}
+
+fn gen_binary_str_method(tokens: Vec<Token>, args_pos: i32, method_name: String, variant_reg: Vec<String>, shape_reg: Vec<String>) -> ParseResult {
+    let mut a0_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
+    let mut a0c: String = pr_code(a0_r.clone());
+    let mut sep_pos: i32 = pr_pos(a0_r.clone()) + 1;
+    let mut a1_r: ParseResult = gen_expr(tokens.clone(), sep_pos.clone(), variant_reg.clone(), shape_reg.clone());
+    let mut a1c: String = pr_code(a1_r.clone());
+    let mut close_pos: i32 = pr_pos(a1_r.clone()) + 1;
+    let mut a1_token: Token = tokens[sep_pos as usize].clone();
+    let mut a1_kind: String = tok_kind(a1_token.clone());
+    let mut a1_arg: String = a1c.clone();
+    let mut a1_is_str: bool = a1_kind == "STRING".clone();
+    if !a1_is_str {
+        a1_arg = s_join(vec![a1c.clone(), ".as_str()".to_string()]);
+    }
+    return make_result(s_join(vec![a0c.clone(), ".".to_string(), method_name.clone(), "(".to_string(), a1_arg.clone(), ")".to_string()]), close_pos.clone());
+}
+
 fn gen_primary(tokens: Vec<Token>, pos: i32, variant_reg: Vec<String>, shape_reg: Vec<String>) -> ParseResult {
     let mut token_count: i32 = tokens.len() as i32;
     let mut token: Token = tokens[pos as usize].clone();
@@ -1015,86 +1039,25 @@ fn gen_primary(tokens: Vec<Token>, pos: i32, variant_reg: Vec<String>, shape_reg
                 let mut func_name: String = value.clone();
                 let mut args_pos: i32 = next_pos + 1.clone();
                 if func_name == "len" {
-                    let mut inner_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut inner_code: String = pr_code(inner_r.clone());
-                    let mut inner_position: i32 = pr_pos(inner_r.clone());
-                    let mut close: i32 = inner_position + 1.clone();
-                    return make_result(s_join(vec![inner_code.clone(), ".len() as i32".to_string()]), close.clone());
+                    return gen_unary_method(tokens.clone(), args_pos.clone(), ".len() as i32".to_string(), variant_reg.clone(), shape_reg.clone());
                 }
                 if func_name == "trim" {
-                    let mut inner_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut inner_code: String = pr_code(inner_r.clone());
-                    let mut inner_position: i32 = pr_pos(inner_r.clone());
-                    let mut close: i32 = inner_position + 1.clone();
-                    return make_result(s_join(vec![inner_code.clone(), ".trim().to_string()".to_string()]), close.clone());
+                    return gen_unary_method(tokens.clone(), args_pos.clone(), ".trim().to_string()".to_string(), variant_reg.clone(), shape_reg.clone());
                 }
                 if func_name == "to_upper" {
-                    let mut inner_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut inner_code: String = pr_code(inner_r.clone());
-                    let mut inner_position: i32 = pr_pos(inner_r.clone());
-                    let mut close: i32 = inner_position + 1.clone();
-                    return make_result(s_join(vec![inner_code.clone(), ".to_uppercase()".to_string()]), close.clone());
+                    return gen_unary_method(tokens.clone(), args_pos.clone(), ".to_uppercase()".to_string(), variant_reg.clone(), shape_reg.clone());
                 }
                 if func_name == "to_lower" {
-                    let mut inner_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut inner_code: String = pr_code(inner_r.clone());
-                    let mut inner_position: i32 = pr_pos(inner_r.clone());
-                    let mut close: i32 = inner_position + 1.clone();
-                    return make_result(s_join(vec![inner_code.clone(), ".to_lowercase()".to_string()]), close.clone());
+                    return gen_unary_method(tokens.clone(), args_pos.clone(), ".to_lowercase()".to_string(), variant_reg.clone(), shape_reg.clone());
                 }
                 if func_name == "contains" {
-                    let mut a0_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut a0c: String = pr_code(a0_r.clone());
-                    let mut a0p: i32 = pr_pos(a0_r.clone());
-                    let mut sep_pos: i32 = a0p + 1.clone();
-                    let mut a1_r: ParseResult = gen_expr(tokens.clone(), sep_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut a1c: String = pr_code(a1_r.clone());
-                    let mut a1p: i32 = pr_pos(a1_r.clone());
-                    let mut a1_token: Token = tokens[sep_pos as usize].clone();
-                    let mut a1_kind: String = tok_kind(a1_token.clone());
-                    let mut a1_arg: String = a1c.clone();
-                    let mut a1_is_str: bool = a1_kind == "STRING".clone();
-                    if !a1_is_str {
-                        a1_arg = s_join(vec![a1c.clone(), ".as_str()".to_string()]);
-                    }
-                    let mut close_pos: i32 = a1p + 1.clone();
-                    return make_result(s_join(vec![a0c.clone(), ".contains(".to_string(), a1_arg.clone(), ")".to_string()]), close_pos.clone());
+                    return gen_binary_str_method(tokens.clone(), args_pos.clone(), "contains".to_string(), variant_reg.clone(), shape_reg.clone());
                 }
                 if func_name == "starts_with" {
-                    let mut a0_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut a0c: String = pr_code(a0_r.clone());
-                    let mut a0p: i32 = pr_pos(a0_r.clone());
-                    let mut sep_pos: i32 = a0p + 1.clone();
-                    let mut a1_r: ParseResult = gen_expr(tokens.clone(), sep_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut a1c: String = pr_code(a1_r.clone());
-                    let mut a1p: i32 = pr_pos(a1_r.clone());
-                    let mut a1_token: Token = tokens[sep_pos as usize].clone();
-                    let mut a1_kind: String = tok_kind(a1_token.clone());
-                    let mut a1_arg: String = a1c.clone();
-                    let mut a1_is_str: bool = a1_kind == "STRING".clone();
-                    if !a1_is_str {
-                        a1_arg = s_join(vec![a1c.clone(), ".as_str()".to_string()]);
-                    }
-                    let mut close_pos: i32 = a1p + 1.clone();
-                    return make_result(s_join(vec![a0c.clone(), ".starts_with(".to_string(), a1_arg.clone(), ")".to_string()]), close_pos.clone());
+                    return gen_binary_str_method(tokens.clone(), args_pos.clone(), "starts_with".to_string(), variant_reg.clone(), shape_reg.clone());
                 }
                 if func_name == "ends_with" {
-                    let mut a0_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut a0c: String = pr_code(a0_r.clone());
-                    let mut a0p: i32 = pr_pos(a0_r.clone());
-                    let mut sep_pos: i32 = a0p + 1.clone();
-                    let mut a1_r: ParseResult = gen_expr(tokens.clone(), sep_pos.clone(), variant_reg.clone(), shape_reg.clone());
-                    let mut a1c: String = pr_code(a1_r.clone());
-                    let mut a1p: i32 = pr_pos(a1_r.clone());
-                    let mut a1_token: Token = tokens[sep_pos as usize].clone();
-                    let mut a1_kind: String = tok_kind(a1_token.clone());
-                    let mut a1_arg: String = a1c.clone();
-                    let mut a1_is_str: bool = a1_kind == "STRING".clone();
-                    if !a1_is_str {
-                        a1_arg = s_join(vec![a1c.clone(), ".as_str()".to_string()]);
-                    }
-                    let mut close_pos: i32 = a1p + 1.clone();
-                    return make_result(s_join(vec![a0c.clone(), ".ends_with(".to_string(), a1_arg.clone(), ")".to_string()]), close_pos.clone());
+                    return gen_binary_str_method(tokens.clone(), args_pos.clone(), "ends_with".to_string(), variant_reg.clone(), shape_reg.clone());
                 }
                 if func_name == "split" {
                     let mut a0_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), variant_reg.clone(), shape_reg.clone());
@@ -1204,15 +1167,33 @@ fn skip_newline(tokens: Vec<Token>, pos: i32) -> ParseResult {
     return make_result("".to_string(), pos.clone());
 }
 
-fn skip_to_body(tokens: Vec<Token>, pos: i32) -> i32 {
+fn adv_nl(pos: i32, tokens: Vec<Token>) -> i32 {
     let mut token_count: i32 = tokens.len() as i32;
-    let mut nl_r: ParseResult = skip_newline(tokens.clone(), pos.clone());
-    let mut cur: i32 = pr_pos(nl_r.clone());
-    if cur < token_count {
-        if tok_kind(tokens[cur as usize].clone()) == "INDENT" {
-            cur = cur + 1;
+    if pos < token_count {
+        let mut current_kind: String = tok_kind(tokens[pos as usize].clone());
+        if current_kind == "NEWLINE" {
+            return pos + 1;
         }
     }
+    return pos;
+}
+
+fn adv_indent(pos: i32, tokens: Vec<Token>) -> i32 {
+    let mut token_count: i32 = tokens.len() as i32;
+    if pos < token_count {
+        let mut current_kind: String = tok_kind(tokens[pos as usize].clone());
+        if current_kind == "INDENT" {
+            return pos + 1;
+        }
+    }
+    return pos;
+}
+
+fn skip_to_body(tokens: Vec<Token>, pos: i32) -> i32 {
+    let mut _state = pos.clone();
+    _state = adv_nl(_state.clone(), tokens.clone());
+    _state = adv_indent(_state.clone(), tokens.clone());
+    let mut cur = _state;
     return cur;
 }
 
@@ -1370,8 +1351,7 @@ fn gen_destructure(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<St
     let mut src_r: ParseResult = gen_expr(tokens.clone(), src_pos.clone(), variant_reg.clone(), shape_reg.clone());
     let mut src_code: String = pr_code(src_r.clone());
     let mut src_end: i32 = pr_pos(src_r.clone());
-    let mut nl_r: ParseResult = skip_newline(tokens.clone(), src_end.clone());
-    let mut after: i32 = pr_pos(nl_r.clone());
+    let mut after: i32 = adv_nl(src_end.clone(), tokens.clone());
     let mut dest_lines: Vec<String> = Vec::new();
     let mut field_count: i32 = fields.len() as i32;
     for field_index in 0..field_count {
@@ -1638,30 +1618,16 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, 
                             }
                             if ut_kind == "IDENT" {
                                 let mut ufn: String = tok_value(ut.clone());
-                                let mut uarg_cur: i32 = ucur + 2.clone();
-                                let mut uargs: Vec<String> = Vec::new();
-                                while uarg_cur < token_count {
-                                    let mut uarg_t: Token = tokens[uarg_cur as usize].clone();
-                                    let mut uarg_kind: String = tok_kind(uarg_t.clone());
-                                    if uarg_kind == "RPAREN" {
-                                        uarg_cur = uarg_cur + 1;
-                                        break;
-                                    } else if uarg_kind == "COMMA" {
-                                        uarg_cur = uarg_cur + 1;
-                                    } else {
-                                        let mut uarg_r: ParseResult = gen_expr(tokens.clone(), uarg_cur.clone(), variant_reg.clone(), shape_reg.clone());
-                                        uargs.push(pr_code(uarg_r.clone()).clone());
-                                        uarg_cur = pr_pos(uarg_r.clone());
-                                    }
+                                let mut extra_start: i32 = ucur + 2.clone();
+                                let mut extra_r: ParseResult = gen_call_args(tokens.clone(), extra_start.clone(), variant_reg.clone(), shape_reg.clone());
+                                let mut extra_code: String = pr_code(extra_r.clone());
+                                let mut after_rparen: i32 = pr_pos(extra_r.clone()) + 1;
+                                let mut full_args: String = "_state.clone()".to_string();
+                                if !is_empty(extra_code.clone()) {
+                                    full_args = s_join(vec!["_state.clone(), ".to_string(), extra_code.clone()]);
                                 }
-                                let mut uargs_str: String = "_state.clone()".to_string();
-                                let mut uargs_count: i32 = uargs.len() as i32;
-                                if uargs_count > 0 {
-                                    uargs_str = s_join(vec![uargs_str.clone(), ", ".to_string(), s_join_with(uargs.clone(), ", ".to_string()).clone()]);
-                                }
-                                lines.push(s_join(vec![pad.clone(), "_state = ".to_string(), ufn.clone(), "(".to_string(), uargs_str.clone(), ");\n".to_string()]).clone());
-                                let mut unl_r: ParseResult = skip_newline(tokens.clone(), uarg_cur.clone());
-                                ucur = pr_pos(unl_r.clone());
+                                lines.push(s_join(vec![pad.clone(), "_state = ".to_string(), ufn.clone(), "(".to_string(), full_args.clone(), ");\n".to_string()]).clone());
+                                ucur = adv_nl(after_rparen.clone(), tokens.clone());
                             } else {
                                 ucur = ucur + 1;
                             }

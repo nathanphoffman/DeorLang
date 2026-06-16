@@ -8,13 +8,26 @@ fn ParseResult skip_newline(tokenList tokens, int pos)
 			return make_result("", pos + 1)
 	return make_result("", pos)
 
-fn int skip_to_body(tokenList tokens, int pos)
+fn int adv_nl(int pos, tokenList tokens)
 	int token_count = len(tokens)
-	ParseResult nl_r = skip_newline(tokens, pos)
-	int cur = pr_pos(nl_r)
-	if cur < token_count
-		if tok_kind(tokens at cur) is "INDENT"
-			cur = cur + 1
+	if pos < token_count
+		string current_kind = tok_kind(tokens at pos)
+		if current_kind is "NEWLINE"
+			return pos + 1
+	return pos
+
+fn int adv_indent(int pos, tokenList tokens)
+	int token_count = len(tokens)
+	if pos < token_count
+		string current_kind = tok_kind(tokens at pos)
+		if current_kind is "INDENT"
+			return pos + 1
+	return pos
+
+fn int skip_to_body(tokenList tokens, int pos)
+	int cur = using pos
+		adv_nl(tokens)
+		adv_indent(tokens)
 	return cur
 
 fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names, strList type_reg)
@@ -174,8 +187,7 @@ fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, strList var
 	ParseResult src_r = gen_expr(tokens, src_pos, variant_reg, shape_reg)
 	string src_code = pr_code(src_r)
 	int src_end = pr_pos(src_r)
-	ParseResult nl_r = skip_newline(tokens, src_end)
-	int after = pr_pos(nl_r)
+	int after = adv_nl(src_end, tokens)
 	strList dest_lines = []
 	int field_count = len(fields)
 	for field_index in range(field_count)
@@ -435,27 +447,15 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, strList variant_re
 								continue
 							if ut_kind is "IDENT"
 								string ufn = tok_value(ut)
-								int uarg_cur = ucur + 2
-								strList uargs = []
-								for if uarg_cur < token_count
-									Token uarg_t = tokens at uarg_cur
-									string uarg_kind = tok_kind(uarg_t)
-									if uarg_kind is "RPAREN"
-										uarg_cur = uarg_cur + 1
-										break
-									else if uarg_kind is "COMMA"
-										uarg_cur = uarg_cur + 1
-									else
-										ParseResult uarg_r = gen_expr(tokens, uarg_cur, variant_reg, shape_reg)
-										uargs at end = pr_code(uarg_r)
-										uarg_cur = pr_pos(uarg_r)
-								string uargs_str = "_state.clone()"
-								int uargs_count = len(uargs)
-								if uargs_count > 0
-									uargs_str = s_join([uargs_str, ", ", s_join_with(uargs, ", ")])
-								lines at end = s_join([pad, "_state = ", ufn, "(", uargs_str, ");\n"])
-								ParseResult unl_r = skip_newline(tokens, uarg_cur)
-								ucur = pr_pos(unl_r)
+								int extra_start = ucur + 2
+								ParseResult extra_r = gen_call_args(tokens, extra_start, variant_reg, shape_reg)
+								string extra_code = pr_code(extra_r)
+								int after_rparen = pr_pos(extra_r) + 1
+								string full_args = "_state.clone()"
+								if not is_empty(extra_code)
+									full_args = s_join(["_state.clone(), ", extra_code])
+								lines at end = s_join([pad, "_state = ", ufn, "(", full_args, ");\n"])
+								ucur = adv_nl(after_rparen, tokens)
 							else
 								ucur = ucur + 1
 						bool umut = list_has(mut_names, var_name)
