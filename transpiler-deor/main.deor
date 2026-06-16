@@ -1,7 +1,8 @@
 shape tokenList = list of Token
 shape strList = list of string
 
-import () in "transpiler-deor/rust.deor"
+import () in "transpiler-deor/rust_helpers.deor"
+import () in "transpiler-deor/deor_helpers.deor"
 
 struct Token
 	string kind
@@ -20,34 +21,6 @@ fn bool is_empty(string s)
 
 fn bool str_eq(string a, string b)
 	return a is b
-
-# === ParseResult helpers ===
-
-fn string pr_code(ParseResult r)
-	(code, new_pos) in r
-	return code
-
-fn int pr_pos(ParseResult r)
-	(code, new_pos) in r
-	return new_pos
-
-fn ParseResult make_result(string code, int new_pos)
-	r as (code, new_pos)
-	return r
-
-# === Token helpers ===
-
-fn Token make_token(string kind, string value, int line)
-	t as (kind, value, line)
-	return t
-
-fn string tok_kind(Token t)
-	(kind, value, line) in t
-	return kind
-
-fn string tok_value(Token t)
-	(kind, value, line) in t
-	return value
 
 # === Registry: flat [key, val, key, val, ...] strList pairs ===
 
