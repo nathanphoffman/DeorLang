@@ -31,9 +31,13 @@ fn void main()
 
 	print(world)
 
-	Squarefeet sqft = 9
-	#int actual_sqft = (avow sqft)
+	Squarefeet sqft = 4
+	int actual_sqft = (avow sqft)
 
-#using 
+
+	
+
+
+
 
 	

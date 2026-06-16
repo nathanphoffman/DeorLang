@@ -122,16 +122,26 @@ let bad: Option<Squarefeet> = Squarefeet::new(-1);
 let roll: Option<Roll> = Roll::new(random(min, max));
 ```
 
-### Initializing to None
+### Initializing to Empty
 
-A validator type variable can be declared as `none` to start explicitly absent. Valid only at first declaration — `= none` after that point is a transpiler error.
+A validator type variable can be declared as `empty` to start explicitly absent. `empty` is only valid at the point of first declaration — assigning `empty` after a variable has been declared is a transpiler error.
 
 ```
-Roll best = none
+Roll best = empty
 ```
 
 ```rust
 let mut best: Option<Roll> = None;
+```
+
+`empty` also works for list shapes, as an alternative to `[]`:
+
+```
+roomList rooms = empty
+```
+
+```rust
+let mut rooms: Vec<Room> = Vec::new();
 ```
 
 ### Reassignment

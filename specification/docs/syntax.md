@@ -2,7 +2,7 @@
 
 ## Block Structure (No Colons)
 
-Indentation alone opens a block after `fn`, `if`, `for`, `type`, or `struct`. No colon is written.
+Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, or `using`. No colon is written.
 
 ```
 fn int abs(int x)
@@ -89,6 +89,7 @@ Open an indented block when followed by a newline.
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
 | `deps` | Cargo dependency block |
+| `using` | State-threading block — threads a value through a sequence of calls |
 
 ### Statement Keywords
 
@@ -124,7 +125,7 @@ Open an indented block when followed by a newline.
 |---|---|
 | `true` | Boolean true |
 | `false` | Boolean false |
-| `none` | Absent validator type value (declaration only) |
+| `empty` | Absent/empty initial value — `None` for validator types, `Vec::new()` for list shapes (declaration only) |
 
 ### Built-in Type Keywords
 

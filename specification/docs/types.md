@@ -125,13 +125,13 @@ if area.is_none() {
 
 ---
 
-### Declaring None
+### Initializing to Empty
 
-A validator type variable can be explicitly initialized to `none` at declaration. This is only valid at the point of first declaration — `= none` after a variable has been declared is a transpiler error.
+A validator type variable can be explicitly initialized to `empty` to start absent. `empty` is only valid at the point of first declaration — assigning `empty` after a variable has been declared is a transpiler error.
 
 ```
-Roll best = none
-Squarefeet area = none
+Roll best = empty
+Squarefeet area = empty
 ```
 
 ```rust
@@ -220,13 +220,13 @@ let safe_cap: i32 = max_capacity.map(|v| v.0).unwrap_or(0);
 
 ### Functions Returning Validator Types
 
-A function whose return type is a validator type may return a `None` value through its return variable. `return none` is a transpiler error — always return a named typed variable. The caller knows the return may be `None` because the return type is a validator type.
+A function whose return type is a validator type may return a `None` value through its return variable. `return empty` and `return none` are both transpiler errors — always return a named typed variable. The caller knows the return may be `None` because the return type is a validator type.
 
 ```
 shape rollResultList = list of RollResult
 
 fn Roll find_crit(rollResultList rolls)
-    Roll found = none
+    Roll found = empty
 
     for roll in rolls
         value in roll

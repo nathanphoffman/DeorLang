@@ -44,3 +44,11 @@
   - First-class functions / function type parameter syntax
   - No built-in filter/map/reduce (the opinionated decision should be noted somewhere)
   - remove shrinks dynamic lists (explicit doc note)
+
+  using block (v2):
+  - Auto-destructure fields after each call so bare field names are usable as args in
+    subsequent calls e.g. advance_by(position, 2). Requires struct_reg to store field
+    names per struct (currently only stores struct name for presence checks). After each
+    call emit: let field = _state.field.clone() for every field of the cursor type.
+  - Collision detection: transpiler error if any struct field name conflicts with a
+    variable already in outer scope at the using block site.

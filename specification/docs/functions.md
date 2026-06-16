@@ -149,13 +149,13 @@ fn abs(val: i32) -> i32 {
 
 ## Validator Type Returns
 
-A function whose return type is a validator type may return `None` through its return variable — the caller knows to check. `return none` is a transpiler error; always return a named typed variable.
+A function whose return type is a validator type may return `None` through its return variable — the caller knows to check. `return empty` is a transpiler error; always return a named typed variable.
 
 ```
 shape rollList = list of Roll
 
 fn Roll find_best(rollList rolls)
-    Roll best = none
+    Roll best = empty
 
     for roll in rolls
         if roll

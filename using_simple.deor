@@ -1,0 +1,17 @@
+struct Cursor
+    int pos
+
+fn Cursor advance(Cursor c)
+    (pos) in c
+    int new_pos = pos + 1
+    Cursor result = (new_pos)
+    return result
+
+fn void test_using()
+    Cursor start = (0)
+    Cursor end_cursor = using start
+        advance()
+        advance()
+    (pos) in end_cursor
+    rust
+        println!("{}", pos);

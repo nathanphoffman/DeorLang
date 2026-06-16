@@ -1,0 +1,31 @@
+struct Cursor
+	int pos
+	int depth
+
+fn Cursor advance(Cursor c)
+	(pos, depth) in c
+	int pos = pos + 1
+	Cursor result = (pos, depth)
+	return result
+
+fn Cursor enter_block(Cursor c)
+	(pos, depth) in c
+	int pos = pos + 1
+	int depth = depth + 1
+	Cursor result = (pos, depth)
+	return result
+
+fn void main()
+	test_using()
+
+fn void test_using()
+	int pos = 0
+	int depth = 0
+	Cursor start = (pos, depth)
+	Cursor end_cursor = using start
+		advance()
+		enter_block()
+		advance()
+	(pos, depth) in end_cursor
+	rust
+		println!("{} {}", pos, depth);

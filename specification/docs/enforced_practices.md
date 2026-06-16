@@ -133,33 +133,34 @@ type Positive(int val)
 
 ---
 
-## `none` at Declaration Only
+## `empty` at Declaration Only
 
-`= none` is only valid at the point of first declaration for a validator type variable. Assigning `none` to a variable after it has been declared is a transpiler error.
+`= empty` is only valid at the point of first declaration for a validator type or list shape variable. Assigning `empty` to a variable after it has been declared is a transpiler error.
 
 **Correct:**
 ```
-Roll best = none
+Roll best = empty
+roomList rooms = empty
 ```
 
 **Incorrect — transpiler errors:**
 ```
 Roll best = roll_die(d20)
-best = none
+best = empty
 ```
 
 ---
 
-## No `return none`
+## No `return empty`
 
-Returning `none` directly from a function is a transpiler error. Always return a named validator type variable — its `None`-ness is determined by the type system, not by an explicit `return none`.
+Returning `empty` (or the old `none`) directly from a function is a transpiler error. Always return a named typed variable — the presence or absence of a value is determined at assignment time, not at return.
 
 **Correct:**
 ```
 shape rollResultList = list of RollResult
 
 fn Roll find_best(rollResultList rolls)
-    Roll best = none
+    Roll best = empty
     for roll in rolls
         value in roll
         if roll
@@ -173,7 +174,7 @@ fn Roll find_best(rollResultList rolls)
 shape rollResultList = list of RollResult
 
 fn Roll find_best(rollResultList rolls)
-    return none
+    return empty
 ```
 
 ---

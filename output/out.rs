@@ -287,6 +287,9 @@ fn word_to_kind(word: String) -> String {
     if word == "void" {
         return "KW_VOID".to_string();
     }
+    if word == "using" {
+        return "KW_USING".to_string();
+    }
     return "IDENT".to_string();
 }
 
@@ -1614,6 +1617,63 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, 
                     let mut rust_type: String = resolve_type(var_type.clone(), shape_reg.clone(), variant_reg.clone());
                     let mut val_token: Token = tokens[val_pos as usize].clone();
                     let mut val_kind: String = tok_kind(val_token.clone());
+                    if val_kind == "KW_USING" {
+                        let mut state_pos: i32 = val_pos + 1.clone();
+                        let mut state_r: ParseResult = gen_expr(tokens.clone(), state_pos.clone(), variant_reg.clone(), shape_reg.clone());
+                        let mut state_code: String = pr_code(state_r.clone());
+                        let mut body_start: i32 = skip_to_body(tokens.clone(), pr_pos(state_r.clone()));
+                        let mut lines: Vec<String> = Vec::new();
+                        lines.push(s_join(vec![pad.clone(), "let mut _state = ".to_string(), state_code.clone(), ".clone();\n".to_string()]).clone());
+                        let mut ucur: i32 = body_start.clone();
+                        while ucur < token_count {
+                            let mut ut: Token = tokens[ucur as usize].clone();
+                            let mut ut_kind: String = tok_kind(ut.clone());
+                            if ut_kind == "DEDENT" {
+                                ucur = ucur + 1;
+                                break;
+                            }
+                            if ut_kind == "NEWLINE" {
+                                ucur = ucur + 1;
+                                continue;
+                            }
+                            if ut_kind == "IDENT" {
+                                let mut ufn: String = tok_value(ut.clone());
+                                let mut uarg_cur: i32 = ucur + 2.clone();
+                                let mut uargs: Vec<String> = Vec::new();
+                                while uarg_cur < token_count {
+                                    let mut uarg_t: Token = tokens[uarg_cur as usize].clone();
+                                    let mut uarg_kind: String = tok_kind(uarg_t.clone());
+                                    if uarg_kind == "RPAREN" {
+                                        uarg_cur = uarg_cur + 1;
+                                        break;
+                                    } else if uarg_kind == "COMMA" {
+                                        uarg_cur = uarg_cur + 1;
+                                    } else {
+                                        let mut uarg_r: ParseResult = gen_expr(tokens.clone(), uarg_cur.clone(), variant_reg.clone(), shape_reg.clone());
+                                        uargs.push(pr_code(uarg_r.clone()).clone());
+                                        uarg_cur = pr_pos(uarg_r.clone());
+                                    }
+                                }
+                                let mut uargs_str: String = "_state.clone()".to_string();
+                                let mut uargs_count: i32 = uargs.len() as i32;
+                                if uargs_count > 0 {
+                                    uargs_str = s_join(vec![uargs_str.clone(), ", ".to_string(), s_join_with(uargs.clone(), ", ".to_string()).clone()]);
+                                }
+                                lines.push(s_join(vec![pad.clone(), "_state = ".to_string(), ufn.clone(), "(".to_string(), uargs_str.clone(), ");\n".to_string()]).clone());
+                                let mut unl_r: ParseResult = skip_newline(tokens.clone(), uarg_cur.clone());
+                                ucur = pr_pos(unl_r.clone());
+                            } else {
+                                ucur = ucur + 1;
+                            }
+                        }
+                        let mut umut: bool = list_has(mut_names.clone(), var_name.clone());
+                        let mut umut_kw: String = "".to_string();
+                        if umut {
+                            umut_kw = "mut ".to_string();
+                        }
+                        lines.push(s_join(vec![pad.clone(), "let ".to_string(), umut_kw.clone(), var_name.clone(), " = _state;\n".to_string()]).clone());
+                        return make_result(s_join(lines.clone()), ucur.clone());
+                    }
                     if val_kind == "KW_EMPTY" {
                         let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
                         let mut is_shape: bool = reg_has(shape_reg.clone(), var_type.clone());
@@ -1627,25 +1687,59 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, 
                         return make_result(s_join(vec![pad.clone(), "/* error: empty only valid for validator types and list shapes */\n".to_string()]), pr_pos(nl_r.clone()));
                     }
                     if val_kind == "LPAREN" {
-                        let mut fields: Vec<String> = Vec::new();
-                        let mut fend: i32 = val_pos + 1.clone();
-                        while fend < token_count {
-                            let mut field_token: Token = tokens[fend as usize].clone();
-                            let mut field_kind: String = tok_kind(field_token.clone());
-                            let mut field_value: String = tok_value(field_token.clone());
-                            if field_kind == "RPAREN" {
-                                fend = fend + 1;
-                                break;
-                            } else if field_kind == "COMMA" {
-                                fend = fend + 1;
-                            } else if field_kind == "IDENT" {
-                                fields.push(field_value.clone());
-                                fend = fend + 1;
+                        let mut peek_pos: i32 = val_pos + 1.clone();
+                        let mut peek_token: Token = tokens[peek_pos as usize].clone();
+                        let mut is_avow_expr: bool = tok_kind(peek_token.clone()) == "KW_AVOW";
+                        if !is_avow_expr {
+                            let mut struct_fields_str: String = reg_get(struct_reg.clone(), var_type.clone());
+                            let mut field_names: Vec<String> = struct_fields_str.split(",").map(|s| s.to_string()).collect();
+                            let mut field_pairs: Vec<String> = Vec::new();
+                            let mut fend: i32 = val_pos + 1.clone();
+                            let mut fni: i32 = 0;
+                            let mut fn_count: i32 = field_names.len() as i32;
+                            while fend < token_count {
+                                let mut ft: Token = tokens[fend as usize].clone();
+                                let mut fk: String = tok_kind(ft.clone());
+                                if fk == "RPAREN" {
+                                    fend = fend + 1;
+                                    break;
+                                }
+                                if fk == "COMMA" {
+                                    fend = fend + 1;
+                                    continue;
+                                }
+                                let mut fv_r: ParseResult = gen_expr(tokens.clone(), fend.clone(), variant_reg.clone(), shape_reg.clone());
+                                let mut fv_code: String = pr_code(fv_r.clone());
+                                if fni < fn_count {
+                                    let mut fname: String = field_names[fni as usize].clone();
+                                    field_pairs.push(s_join(vec![fname.clone(), ": ".to_string(), fv_code.clone()]).clone());
+                                    fni = fni + 1;
+                                }
+                                fend = pr_pos(fv_r.clone());
                             }
+                            let mut fields_code: String = s_join_with(field_pairs.clone(), ", ".to_string());
+                            let mut nl_r: ParseResult = skip_newline(tokens.clone(), fend.clone());
+                            return make_result(s_join(vec![pad.clone(), "let ".to_string(), var_name.clone(), " = ".to_string(), var_type.clone(), " { ".to_string(), fields_code.clone(), " };\n".to_string()]), pr_pos(nl_r.clone()));
                         }
-                        let mut fields_code: String = s_join_with(fields.clone(), ", ".to_string());
-                        let mut nl_r: ParseResult = skip_newline(tokens.clone(), fend.clone());
-                        return make_result(s_join(vec![pad.clone(), "let ".to_string(), var_name.clone(), " = ".to_string(), var_type.clone(), " { ".to_string(), fields_code.clone(), " };\n".to_string()]), pr_pos(nl_r.clone()));
+                        let mut inner_pos: i32 = peek_pos + 1.clone();
+                        let mut inner_r: ParseResult = gen_expr(tokens.clone(), inner_pos.clone(), variant_reg.clone(), shape_reg.clone());
+                        let mut inner_code: String = pr_code(inner_r.clone());
+                        let mut after_rparen: i32 = pr_pos(inner_r.clone()) + 1;
+                        let mut unwrap_expr: String = s_cat(inner_code.clone(), ".unwrap()".to_string());
+                        if var_type == "int" {
+                            unwrap_expr = s_cat(inner_code.clone(), ".unwrap().0".to_string());
+                        }
+                        if var_type == "string" {
+                            unwrap_expr = s_cat(inner_code.clone(), ".unwrap().0".to_string());
+                        }
+                        if var_type == "bool" {
+                            unwrap_expr = s_cat(inner_code.clone(), ".unwrap().0".to_string());
+                        }
+                        if var_type == "float" {
+                            unwrap_expr = s_cat(inner_code.clone(), ".unwrap().0".to_string());
+                        }
+                        let mut avow_nl_r: ParseResult = skip_newline(tokens.clone(), after_rparen.clone());
+                        return make_result(s_join(vec![pad.clone(), "let ".to_string(), var_name.clone(), ": ".to_string(), rust_type.clone(), " = ".to_string(), unwrap_expr.clone(), ";\n".to_string()]), pr_pos(avow_nl_r.clone()));
                     }
                     if val_kind == "LBRACKET" {
                         let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), variant_reg.clone(), shape_reg.clone());

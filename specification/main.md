@@ -5,7 +5,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 ## Core Principles
 
 - **No dots.** Field access is via destructuring (`area in room`), not `.field`.
-- **No colons for blocks.** Indentation alone opens a block after a header keyword (`fn`, `if`, `for`, `type`, `struct`, `enum`).
+- **No colons for blocks.** Indentation alone opens a block after a header keyword (`fn`, `if`, `for`, `type`, `struct`, `enum`, `using`).
 - **One statement per line.** Multi-line expressions only wrap inside `()`.
 - **`as`** = "derive this binding's type from its shape" — for scalar literals, list construction `[items]`, and record update `with`. No explicit type annotation is ever written with `as` (`count as 0`, not `int count as 0`). Use `Type name = expr` for function calls, computations, struct construction, and validator type bindings.
 - **`in`** = "extract something from a source" — struct fields, collection elements, list slices, or module contents, all one grammar.
@@ -35,6 +35,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - [Conditionals](docs/conditionals.md) — `if`, `else if`, `else`, compact ternary form
 - [Loops](docs/loops.md) — `for` collection and numeric iteration, `for range()` without variable
 - [Destructuring](docs/destructuring.md) — field extraction with `in`
+- [Using Blocks](docs/using.md) — state-threading through a sequence of function calls
 - [Imports](docs/imports.md) — local module and `rust:` file imports
 - [Immutability](docs/immutability.md) — immutability rules, equality, record update (`with`)
 - [Examples](docs/examples.md) — full worked example with Rust translation
