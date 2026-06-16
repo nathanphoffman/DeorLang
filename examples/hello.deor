@@ -50,4 +50,8 @@ fn void main()
 
 
 
-	
+	const new_tokens = using old_tokens
+		oldToken as this()
+		next()
+		processStruct(oldToken)
+		processIf(oldToken)

@@ -6,7 +6,7 @@ These are active design decisions not yet resolved.
 
 ## Struct Field Extraction Order — Resolved
 
-Extraction enforces declaration order, symmetric with construction. `(name, area) in room` is a transpiler error when `area` is declared first. See [Destructuring](destructuring.md#field-extraction-order) and [Enforced Practices](enforced_practices.md#field-extraction-order).
+Extraction enforces declaration order, symmetric with construction. `(name, area) in room` is a transpiler error when `area` is declared first. See [Destructuring](destructuring.md#extraction-order) and [Enforced Practices](enforced_practices.md#field-extraction-order).
 
 ---
 

@@ -153,7 +153,7 @@ Declaring a variable with a validator type runs the predicate at assignment. The
 
 ```
 Squarefeet area = 9            # Some(Squarefeet(9)) — predicate passes
-Squarefeet bad = -1            # None — predicate fails
+Squarefeet bad = -1            # transpiler error — literal fails predicate at compile time
 Roll roll = random(min, max)   # Some or None depending on the value
 ```
 
@@ -192,7 +192,8 @@ Reassigning a validator type re-runs the predicate. The variable may transition 
 ```
 Squarefeet area = 9   # Some(Squarefeet(9))
 area = 16             # Some(Squarefeet(16))
-area = -1             # None — predicate fails
+int raw = get_user_input()
+area = raw            # Some or None — predicate runs at runtime
 ```
 
 ---

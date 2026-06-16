@@ -1,49 +1,54 @@
 # Deor Language Specification (Draft)
 
-A small, indentation-based language that transpiles to Rust. Core influences: TypeScript's literal-derived typing (`as const`), Python's indentation and `for x in y`, and Go/C's prefix type declarations (`Type name`).
+Deor is a small, indentation-based language that transpiles to Rust. It enforces explicit types, named variables at every call site, and predictable control flow — then gets out of the way with a `rust` block when you need the full language.
+
+---
 
 ## Core Principles
 
-- **No dots.** Field access is via destructuring (`area in room`), not `.field`.
-- **No colons for blocks.** Indentation alone opens a block after a header keyword (`fn`, `if`, `for`, `type`, `struct`, `enum`, `using`).
+- **No dots.** Field access is via destructuring: `(area) in room`, not `room.area`.
+- **No colons for blocks.** Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `enum`, or `using`.
 - **One statement per line.** Multi-line expressions only wrap inside `()`.
-- **`as`** = "derive this binding's type from its shape" — for scalar literals, list construction `[items]`, and record update `with`. No explicit type annotation is ever written with `as` (`count as 0`, not `int count as 0`). Use `Type name = expr` for function calls, computations, struct construction, and validator type bindings.
-- **`in`** = "extract something from a source" — struct fields, collection elements, list slices, or module contents, all one grammar.
-- **Structs are immutable.** Primitives and lists are mutable.
-- **`is` is always structural equality**, regardless of how a struct is represented internally. `is not` is inequality. `&&`, `||`, `==`, `!=` are transpiler errors — use `and`, `or`, `is`, `is not`.
-- **No lambdas.** Only named top-level `fn`s. No built-in `filter`/`map`/`reduce` — write explicit loops.
-- **Void functions use `void` as the return type.** `fn void run()` returns nothing. `void` is mandatory — omitting the return type is a transpiler error.
-- **`shape` for named type aliases.** `shape roomList = list of Room` names a list type. `shape filterFunc = func of Room to bool` names a function signature. Shapes are camelCase and the only way to use parameterized types in Deor. Functions-as-values are passed by name as typed `func` shape parameters — no lambdas, no decorators. `shape` is always a pure type alias — never a value you hold or compare.
-- **`enum` for named variant types.** `enum colorTag` with an indented list of PascalCase variant names declares a discriminated type. Assign with `colorTag color = Red`, check with `if color is Red`. Enums are camelCase names; variants are PascalCase. They are the only instantiable types declared with a camelCase name.
-- **Struct construction uses `Type name = (fields)`, always.** `Room room = (area, name)` — the type is always explicit, every field is a variable in scope matching the field name. No `{}`, no `field: value` pairs. Mirrors destructuring: `(area, name) in room` extracts, `Room room = (area, name)` constructs.
-- **Validator types are option-types.** A `type` definition produces `Option<T>` under the hood — truthy when `Some`, falsy when `None`. Primitives and structs are never null. Three null-related forms: `Roll roll = none` (declare absent), `(avow roll)` (forced unwrap — panics if None), `roll else 0` (safe default).
-- **Named arguments for user-defined functions only.** Arguments to user-defined functions must be named variables in scope — no inline literals or expressions. Built-in functions (`print`, `len`, `range`, `sqrt`, etc.) accept literals and expressions directly.
-- **`at` for list index access and write.** `rooms at idx` reads; `rooms at idx = val` replaces; `rooms at end = val` appends. `end` is a reserved keyword meaning "end of this list."
-- **`in range()` for slices.** `rooms in range(0, 10)` extracts a sublist. `end` as the upper bound means "length of this list."
-- **All built-ins available without import.** `print`, `len`, `range`, math, strings, random, parsing — no import needed. `rust` blocks and `deps` handle everything else.
-- **Rust interop is a first-class escape hatch.** `rust` blocks drop into raw Rust inside any function. External `.rs` files import via `rust:myfile`. Cargo deps declared with `deps` blocks. `bytes` (`Vec<u8>`) is the boundary type for raw binary data.
+- **`as` infers type from shape.** Use it for scalar literals and list construction. Use `Type name = expr` for everything else — function calls, validator types, and struct construction.
+- **`in` extracts from a source.** Struct fields, loop elements, slices, and imports all share this keyword.
+- **Structs are immutable; primitives and lists are mutable.** Update a struct with `with` to get a modified copy.
+- **`is` is structural equality.** `is not` is inequality. `&&`, `||`, `==`, `!=` are transpiler errors — use `and`, `or`, `is`, `is not`.
+- **No lambdas.** Only named top-level `fn`s. No `filter`/`map`/`reduce` — write explicit loops.
+- **`void` is mandatory for functions that return nothing.** `fn void run()` — omitting the return type is a transpiler error.
+- **`shape` declares named type aliases.** `shape roomList = list of Room`, `shape filterFunc = func of Room to bool`. Shapes are camelCase and the only way to use parameterized types. Functions-as-values are passed by name as `func` shape parameters.
+- **`enum` declares discriminated variant types.** `enum colorTag` with PascalCase variants. Assign with `colorTag color = Red`, check with `if color is Red`.
+- **Struct construction is always `Type name = (fields)`.** Every field is a named variable in scope. No `{}`, no `field: value` pairs. Mirrors destructuring.
+- **Validator types are `Option<T>`.** A `type` definition wraps a primitive with a predicate — truthy when `Some`, falsy when `None`. Use `empty` to initialize absent, `(avow val)` to forced-unwrap, `val else default` for a safe fallback.
+- **Named arguments for user-defined functions only.** Literals and expressions are not valid arguments to user-defined functions. Built-ins (`print`, `len`, `range`) accept them freely.
+- **`at` for list access.** `rooms at idx` reads; `rooms at idx = val` replaces; `rooms at end = val` appends.
+- **`in range()` for slices.** `rooms in range(0, 10)` extracts a sublist; `end` as the upper bound means "length of this list."
+- **Three built-ins: `print`, `len`, `range`.** Plus string shortcuts (`trim`, `contains`, `split`, etc.). Everything else is a shim — a Rust wrapper you copy from [Shims](docs/shims.md).
+- **`rust` blocks are the escape hatch.** Drop into raw Rust inside any function. External `.rs` files import via `rust:myfile`. Cargo deps declared with `deps` blocks.
+
+---
 
 ## Index
 
-- [Syntax](docs/syntax.md) — block structure, one statement per line
-- [Functions](docs/functions.md) — `fn`, return rules, no lambdas
-- [Variables](docs/variables.md) — `as`, explicit typing, reassignment
+- [Syntax](docs/syntax.md) — block structure, keywords, comments
+- [Functions](docs/functions.md) — `fn`, return rules, void, recursion
+- [Variables](docs/variables.md) — `as`, explicit typing, struct construction, reassignment
 - [Types](docs/types.md) — validator types (`type`), structs (`struct` / `struct+` / `struct*`)
-- [Shapes](docs/shapes.md) — `shape`, list shapes, func shapes, bytes shapes, naming, file ordering
-- [Enums](docs/enums.md) — `enum`, variant declaration, assignment, checking with `is`
-- [Collections](docs/collections.md) — `at` index access, `at end` append, `remove at`, `in range()` slices
-- [Conditionals](docs/conditionals.md) — `if`, `else if`, `else`, compact ternary form
-- [Loops](docs/loops.md) — `for` collection and numeric iteration, `for range()` without variable
+- [Shapes](docs/shapes.md) — `shape`, list shapes, func shapes, naming, file ordering
+- [Enums](docs/enums.md) — `enum`, variant declaration, checking with `is`
+- [Collections](docs/collections.md) — index access, append, remove, slices
+- [Conditionals](docs/conditionals.md) — `if`, `else if`, `else`, compact ternary
+- [Loops](docs/loops.md) — `for` collection and numeric iteration
 - [Destructuring](docs/destructuring.md) — field extraction with `in`
-- [Using Blocks](docs/using.md) — state-threading through a sequence of function calls
+- [Using Blocks](docs/using.md) — state-threading through a sequence of calls
 - [Imports](docs/imports.md) — local module and `rust:` file imports
-- [Immutability](docs/immutability.md) — immutability rules, equality, record update (`with`)
-- [Examples](docs/examples.md) — full worked example with Rust translation
+- [Immutability](docs/immutability.md) — immutability rules, record update (`with`)
 - [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded
-- [Strings](docs/strings.md) — concatenation, interpolation, length, string built-ins
-- [Built-ins](docs/builtins.md) — all built-in functions; no import required
-- [Interop](docs/interop.md) — `rust` blocks, `rust:` file imports, `bytes`, `deps`
+- [Strings](docs/strings.md) — concatenation, escape sequences, string built-ins
+- [Built-ins](docs/builtins.md) — `print`, `len`, `range`, and string shortcuts
+- [Shims](docs/shims.md) — copy-paste Rust wrappers for math, random, parsing, and more
+- [Interop](docs/interop.md) — `rust` blocks, `raw` variables, `rust:` imports, `deps`
 - [Enforced Practices](docs/enforced_practices.md) — naming and ordering rules the transpiler enforces
 - [Best Practices](docs/best_practices.md) — style recommendations not enforced by the transpiler
+- [Examples](docs/examples.md) — full worked example with Rust translation
 - [Open Questions](docs/open-questions.md) — future work and undecided areas
 - [V2 Roadmap](docs/v2.md) — deferred features
