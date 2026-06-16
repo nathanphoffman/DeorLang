@@ -79,7 +79,7 @@ Record update (`with`) uses `as` — the type is known from the source struct. S
 
 ## Struct Construction
 
-Struct construction always uses `Type name = (fields)`. The type name is mandatory — there is no anonymous struct construction in Deor. Every field must already be a variable in scope matching the field name exactly. No `{}`, no `field: value` pairs.
+The primary form of struct construction is `Type name = (fields)`. The type name is mandatory in assignment position — there is no `as (fields)` anonymous struct construction. Every field must already be a variable in scope matching the field name exactly. No `{}`, no `field: value` pairs.
 
 ```
 Squarefeet area = 9
@@ -96,6 +96,46 @@ let room = Room { area, name, occupied };
 ```
 
 The transpiler matches fields by name — declaration order is required (same rule as `in` destructuring). Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in.
+
+### Struct Construction as an Expression
+
+`(fields)` can also appear as a bare expression in return position. The transpiler resolves the struct type by matching the field names against all known structs — no type annotation is needed because the function's return type already determines which struct is expected.
+
+```
+struct DivResult
+    int quotient
+    int remainder
+
+fn DivResult divmod(int a, int b)
+    int quotient = a / b
+    int remainder = a % b
+    return (quotient, remainder)
+```
+
+```rust
+fn divmod(a: i32, b: i32) -> DivResult {
+    let quotient = a / b;
+    let remainder = a % b;
+    return DivResult { quotient, remainder };
+}
+```
+
+This is equivalent to assigning to an intermediate variable and returning it — just more concise:
+
+```
+fn DivResult divmod(int a, int b)
+    int quotient = a / b
+    int remainder = a % b
+    DivResult result = (quotient, remainder)   # equivalent
+    return result
+```
+
+`(fields)` as a bare expression is only valid in return position. Assigning with `as` still requires an explicit type:
+
+```
+room as (area, name)      # transpiler error — which struct?
+Room room = (area, name)  # correct
+```
 
 If you need a field name that differs from the variable you have, rename it first:
 

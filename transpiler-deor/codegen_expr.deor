@@ -156,6 +156,24 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 				string expr_code = pr_code(expr_r)
 				int after_rparen = pr_pos(expr_r) + 1
 				return make_result(s_join([expr_code, ".unwrap()"]), after_rparen)
+			# struct construction expression: (f1, f2, ...)
+			strList fields = []
+			int cur = peek_pos
+			for if cur < token_count
+				Token field_token = tokens at cur
+				string field_kind = tok_kind(field_token)
+				string field_value = tok_value(field_token)
+				if field_kind is "RPAREN"
+					cur = cur + 1
+					break
+				else if field_kind is "COMMA"
+					cur = cur + 1
+				else if field_kind is "IDENT"
+					fields at end = field_value
+					cur = cur + 1
+			string struct_name = find_struct_for_fields(struct_reg, fields)
+			string fields_code = s_join_with(fields, ", ")
+			return make_result(s_join([struct_name, " { ", fields_code, " }"]), cur)
 
 	if kind is "KW_NOT"
 		int operand_pos = pos + 1

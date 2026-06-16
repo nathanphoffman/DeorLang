@@ -1037,6 +1037,25 @@ fn gen_primary(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
                 let mut after_rparen: i32 = pr_pos(expr_r.clone()) + 1;
                 return make_result(s_join(vec![expr_code.clone(), ".unwrap()".to_string()]), after_rparen.clone());
             }
+            let mut fields: Vec<String> = Vec::new();
+            let mut cur: i32 = peek_pos.clone();
+            while cur < token_count {
+                let mut field_token: Token = tokens[cur as usize].clone();
+                let mut field_kind: String = tok_kind(field_token.clone());
+                let mut field_value: String = tok_value(field_token.clone());
+                if field_kind == "RPAREN" {
+                    cur = cur + 1;
+                    break;
+                } else if field_kind == "COMMA" {
+                    cur = cur + 1;
+                } else if field_kind == "IDENT" {
+                    fields.push(field_value.clone());
+                    cur = cur + 1;
+                }
+            }
+            let mut struct_name: String = find_struct_for_fields(struct_reg.clone(), fields.clone());
+            let mut fields_code: String = s_join_with(fields.clone(), ", ".to_string());
+            return make_result(s_join(vec![struct_name.clone(), " { ".to_string(), fields_code.clone(), " }".to_string()]), cur.clone());
         }
     }
     if kind == "KW_NOT" {

@@ -10,8 +10,7 @@ fn Test say_hi(Test test)
 	print("hi")
 	print(hello)
 	world as 10
-	obj as (hello,world)
-	return obj
+	return (hello,world)
 
 fn void main()
 	x as 10
