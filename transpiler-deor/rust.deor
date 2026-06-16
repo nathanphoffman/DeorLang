@@ -1,0 +1,80 @@
+
+# === Rust-backed utilities ===
+
+fn strList chars_of(string s)
+	rust
+		s.chars().map(|c| c.to_string()).collect()
+
+fn string str_from(string s, int start)
+	rust
+		s.get(start as usize..).unwrap_or_default().to_string()
+
+fn string rtrim(string s)
+	rust
+		s.trim_end().to_string()
+
+fn string s_cat(string a, string b)
+	rust
+		a + b.as_str()
+
+fn string s_join(strList parts)
+	rust
+		parts.join("")
+
+fn string s_join_nl(strList parts)
+	rust
+		parts.join("\n")
+
+fn string s_join_with(strList parts, string sep)
+	rust
+		parts.join(sep.as_str())
+
+fn string read_file(string path)
+	rust
+		std::fs::read_to_string(path.as_str()).expect("cannot read input file")
+
+fn write_file(string path, string content)
+	rust
+		std::fs::write(path.as_str(), content.as_str()).expect("cannot write output file");
+
+fn strList get_args()
+	rust
+		std::env::args().skip(1).collect()
+
+fn bool is_alpha(string c)
+	rust
+		c.chars().next().map(|ch| ch.is_alphabetic() || ch == '_').unwrap_or(false)
+
+fn bool is_digit(string c)
+	rust
+		c.chars().next().map(|ch| ch.is_ascii_digit()).unwrap_or(false)
+
+fn bool is_alnum(string c)
+	rust
+		c.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)
+
+fn int str_to_int(string s)
+	rust
+		s.parse::<i32>().unwrap_or(0)
+
+fn string int_to_str(int n)
+	rust
+		n.to_string()
+
+fn string str_repeat(string s, int n)
+	rust
+		s.repeat(n as usize)
+
+fn string pascal_case(string s)
+	rust
+		{
+			let mut chars = s.chars();
+			match chars.next() {
+				None => String::new(),
+				Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
+			}
+		}
+
+fn string to_debug_str(string s)
+	rust
+		format!("{:?}", s)
