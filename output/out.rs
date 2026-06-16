@@ -1360,8 +1360,32 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
             let mut has_using: bool = !is_empty(using_var.clone());
             if is_zero_arg && has_using {
                 let mut after_rparen: i32 = args_pos + 1.clone();
-                let mut shim_code: String = s_join(vec![pad.clone(), using_var.clone(), " = ".to_string(), value.clone(), "(".to_string(), using_var.clone(), ".clone());\n".to_string()]);
-                return make_result(shim_code.clone(), adv_nl(after_rparen.clone(), tokens.clone()));
+                let mut has_with_arg: bool = false;
+                let mut extra_arg: String = "".to_string();
+                let mut after_with: i32 = after_rparen.clone();
+                if after_rparen < token_count {
+                    let mut with_token: Token = tokens[after_rparen as usize].clone();
+                    let mut with_kind: String = tok_kind(with_token.clone());
+                    if with_kind == "KW_WITH" {
+                        let mut extra_pos: i32 = after_rparen + 1.clone();
+                        if extra_pos < token_count {
+                            let mut extra_token: Token = tokens[extra_pos as usize].clone();
+                            let mut extra_kind: String = tok_kind(extra_token.clone());
+                            if extra_kind == "IDENT" {
+                                has_with_arg = true;
+                                extra_arg = tok_value(extra_token.clone());
+                                after_with = extra_pos + 1;
+                            }
+                        }
+                    }
+                }
+                let mut shim_code: String = "".to_string();
+                if has_with_arg {
+                    shim_code = s_join(vec![pad.clone(), using_var.clone(), " = ".to_string(), value.clone(), "(".to_string(), using_var.clone(), ".clone(), ".to_string(), extra_arg.clone(), ".clone());\n".to_string()]);
+                } else {
+                    shim_code = s_join(vec![pad.clone(), using_var.clone(), " = ".to_string(), value.clone(), "(".to_string(), using_var.clone(), ".clone());\n".to_string()]);
+                }
+                return make_result(shim_code.clone(), adv_nl(after_with.clone(), tokens.clone()));
             }
             let mut args_r: ParseResult = gen_call_args(tokens.clone(), args_pos.clone(), ctx.clone());
             let mut args_code: String = pr_code(args_r.clone());

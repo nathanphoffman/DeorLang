@@ -221,8 +221,27 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 			bool has_using = not is_empty(using_var)
 			if is_zero_arg and has_using
 				int after_rparen = args_pos + 1
-				string shim_code = s_join([pad, using_var, " = ", value, "(", using_var, ".clone());\n"])
-				return make_result(shim_code, adv_nl(after_rparen, tokens))
+				bool has_with_arg = false
+				string extra_arg = ""
+				int after_with = after_rparen
+				if after_rparen < token_count
+					Token with_token = tokens at after_rparen
+					string with_kind = tok_kind(with_token)
+					if with_kind is "KW_WITH"
+						int extra_pos = after_rparen + 1
+						if extra_pos < token_count
+							Token extra_token = tokens at extra_pos
+							string extra_kind = tok_kind(extra_token)
+							if extra_kind is "IDENT"
+								has_with_arg = true
+								extra_arg = tok_value(extra_token)
+								after_with = extra_pos + 1
+				string shim_code = ""
+				if has_with_arg
+					shim_code = s_join([pad, using_var, " = ", value, "(", using_var, ".clone(), ", extra_arg, ".clone());\n"])
+				else
+					shim_code = s_join([pad, using_var, " = ", value, "(", using_var, ".clone());\n"])
+				return make_result(shim_code, adv_nl(after_with, tokens))
 			ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 			string args_code = pr_code(args_r)
 			int args_end = pr_pos(args_r)
