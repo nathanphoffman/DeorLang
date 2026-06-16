@@ -1,3 +1,5 @@
+(pascal_case) in "transpiler-deor/rust_helpers.deor"
+
 # === String utilities ===
 
 fn bool is_empty(string source)

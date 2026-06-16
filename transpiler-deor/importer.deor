@@ -1,12 +1,19 @@
+(tokenList, strList, Token) in "transpiler-deor/types.deor"
+(tok_kind, tok_value) in "transpiler-deor/deor_helpers.deor"
+(read_file) in "transpiler-deor/rust_helpers.deor"
+(list_has) in "transpiler-deor/utils.deor"
+(tokenize) in "transpiler-deor/lexer.deor"
+
 # === Import resolution ===
 
+# Filter a raw token stream to only named declarations.
+# Skips import statements and any other non-declaration tokens.
+# If names is empty, includes all declarations.
 fn tokenList filter_by_names(tokenList tokens, strList names)
 	int names_count = len(names)
-	if names_count is 0
-		return tokens
 	tokenList result = []
-	int token_count = len(tokens)
 	int cur = 0
+	int token_count = len(tokens)
 	for if cur < token_count
 		Token token = tokens at cur
 		string kind = tok_kind(token)
@@ -29,7 +36,7 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 			if name_pos < token_count
 				Token name_tok = tokens at name_pos
 				decl_name = tok_value(name_tok)
-			bool include = list_has(names, decl_name)
+			bool include = names_count is 0 or list_has(names, decl_name)
 			int depth = 0
 			bool entered = false
 			for if cur < token_count
@@ -51,7 +58,7 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 			if name_pos < token_count
 				Token name_tok = tokens at name_pos
 				decl_name = tok_value(name_tok)
-			bool include = list_has(names, decl_name)
+			bool include = names_count is 0 or list_has(names, decl_name)
 			for if cur < token_count
 				Token t = tokens at cur
 				string tk = tok_kind(t)
@@ -64,6 +71,153 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 			cur = cur + 1
 	return result
 
+# Scan raw tokens for import statements and resolve them via load_named.
+# Returns the combined support tokens from all imports in this file.
+fn tokenList collect_imports_from_raw(tokenList source_tokens)
+	tokenList result = []
+	int token_count = len(source_tokens)
+	int pos = 0
+	int depth = 0
+	for if true
+		if pos >= token_count
+			break
+		Token token = source_tokens at pos
+		string current_kind = tok_kind(token)
+		if current_kind is "EOF"
+			break
+		if current_kind is "NEWLINE"
+			pos = pos + 1
+			continue
+		if current_kind is "INDENT"
+			depth = depth + 1
+			pos = pos + 1
+			continue
+		if current_kind is "DEDENT"
+			depth = depth - 1
+			pos = pos + 1
+			continue
+		bool at_root = depth is 0
+		if current_kind is "LPAREN" and at_root
+			strList sub_names = []
+			int scan = pos + 1
+			for if scan < token_count
+				Token scan_token = source_tokens at scan
+				string scan_kind = tok_kind(scan_token)
+				scan = scan + 1
+				if scan_kind is "RPAREN"
+					break
+				if scan_kind is "IDENT"
+					sub_names at end = tok_value(scan_token)
+			int path_pos = scan + 1
+			if path_pos < token_count
+				Token in_token = source_tokens at scan
+				bool is_in = tok_kind(in_token) is "KW_IN"
+				if is_in
+					Token path_token = source_tokens at path_pos
+					string sub_path = tok_value(path_token)
+					tokenList sub_tokens = load_named(sub_path, sub_names)
+					int sub_len = len(sub_tokens)
+					for sub_i in range(sub_len)
+						Token sub_tok = sub_tokens at sub_i
+						string sub_kind = tok_kind(sub_tok)
+						bool sub_is_eof = sub_kind is "EOF"
+						if not sub_is_eof
+							result at end = sub_tok
+					pos = path_pos + 1
+					continue
+		pos = pos + 1
+	return result
+
+# Load a file for import: resolve its own imports as support, then include
+# ALL of the file's own declarations. The names list is for documentation
+# only — intra-file dependencies require the full own-declaration set.
+fn tokenList load_named(string path, strList names)
+	string source = read_file(path)
+	tokenList raw = tokenize(source)
+	tokenList support = collect_imports_from_raw(raw)
+	tokenList own = filter_by_names(raw, [])
+	tokenList result = []
+	int support_len = len(support)
+	for i in range(support_len)
+		result at end = support at i
+	int own_len = len(own)
+	for i in range(own_len)
+		result at end = own at i
+	return result
+
+# Remove duplicate fn/struct/enum/shape declarations from a flat token list.
+# First occurrence wins; subsequent definitions of the same name are dropped.
+fn tokenList deduplicate_decls(tokenList tokens)
+	tokenList result = []
+	strList seen = []
+	int token_count = len(tokens)
+	int pos = 0
+	for if pos < token_count
+		Token token = tokens at pos
+		string kind = tok_kind(token)
+		if kind is "EOF"
+			result at end = token
+			pos = pos + 1
+			continue
+		if kind is "NEWLINE"
+			result at end = token
+			pos = pos + 1
+			continue
+		bool is_fn = kind is "KW_FN"
+		bool is_struct = kind is "KW_STRUCT"
+		bool is_enum = kind is "KW_ENUM"
+		bool is_shape = kind is "KW_SHAPE"
+		bool is_block_decl = is_fn or is_struct or is_enum
+		if is_block_decl
+			int name_offset = 1
+			if is_fn
+				name_offset = 2
+			int name_pos = pos + name_offset
+			string decl_name = ""
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				decl_name = tok_value(name_tok)
+			bool already_seen = list_has(seen, decl_name)
+			if not already_seen
+				seen at end = decl_name
+			int depth = 0
+			bool entered = false
+			for if pos < token_count
+				Token t = tokens at pos
+				string tk = tok_kind(t)
+				if not already_seen
+					result at end = t
+				pos = pos + 1
+				if tk is "INDENT"
+					depth = depth + 1
+					entered = true
+				else if tk is "DEDENT"
+					depth = depth - 1
+					if depth is 0 and entered
+						break
+		else if is_shape
+			int name_pos = pos + 1
+			string decl_name = ""
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				decl_name = tok_value(name_tok)
+			bool already_seen = list_has(seen, decl_name)
+			if not already_seen
+				seen at end = decl_name
+			for if pos < token_count
+				Token t = tokens at pos
+				string tk = tok_kind(t)
+				if not already_seen
+					result at end = t
+				pos = pos + 1
+				if tk is "NEWLINE"
+					break
+		else
+			result at end = token
+			pos = pos + 1
+	return result
+
+# Entry point: load the root file and all its imports, then deduplicate.
 fn tokenList collect_all_tokens_with_all_imports(string path)
 
 	string source = read_file(path)
@@ -96,14 +250,11 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 			pos = pos + 1
 			continue
 
-		# import: (names) in "path" — only at root level (depth 0)
 		bool at_root = depth is 0
 
 		if current_kind is "LPAREN" and at_root
-
 			strList import_names = []
 			int scan = pos + 1
-
 			for if scan < token_count
 				Token scan_token = source_tokens at scan
 				string scan_kind = tok_kind(scan_token)
@@ -112,20 +263,17 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 					break
 				if scan_kind is "IDENT"
 					import_names at end = tok_value(scan_token)
-
 			int path_pos = scan + 1
 			if path_pos < token_count
 				Token in_token = source_tokens at scan
 				bool is_in = tok_kind(in_token) is "KW_IN"
-
 				if is_in
 					Token path_token = source_tokens at path_pos
 					string imp_path = tok_value(path_token)
-					tokenList imp_tokens = collect_all_tokens_with_all_imports(imp_path)
-					tokenList filtered = filter_by_names(imp_tokens, import_names)
-					int import_len = len(filtered)
+					tokenList imp_tokens = load_named(imp_path, import_names)
+					int import_len = len(imp_tokens)
 					for import_index in range(import_len)
-						Token import_token = filtered at import_index
+						Token import_token = imp_tokens at import_index
 						string import_kind = tok_kind(import_token)
 						bool import_is_eof = import_kind is "EOF"
 						if not import_is_eof
@@ -136,4 +284,4 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 		result at end = token
 		pos = pos + 1
 
-	return result
+	return deduplicate_decls(result)

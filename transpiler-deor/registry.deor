@@ -1,3 +1,8 @@
+(tokenList, strList, Token, ParseResult) in "transpiler-deor/types.deor"
+(make_result, tok_kind, tok_value, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
+(s_join, s_join_with, pascal_case) in "transpiler-deor/rust_helpers.deor"
+(is_empty, reg_get, render_rust_type, list_has) in "transpiler-deor/utils.deor"
+
 # === Registry builders ===
 
 fn ParseResult skip_to_block_start(tokenList tokens, int start)

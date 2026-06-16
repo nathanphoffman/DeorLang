@@ -1,3 +1,11 @@
+(tokenList, Token) in "transpiler-deor/types.deor"
+(
+    chars_of, str_from, rtrim, s_cat, s_join_nl,
+    is_alpha, is_digit, is_alnum, str_to_int, int_to_str,
+) in "transpiler-deor/rust_helpers.deor"
+(make_token) in "transpiler-deor/deor_helpers.deor"
+(is_empty, word_to_kind) in "transpiler-deor/utils.deor"
+
 # === Lexer ===
 
 fn int count_tabs(string line)

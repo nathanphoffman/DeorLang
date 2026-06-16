@@ -201,6 +201,34 @@ fn c_at_end(c: TokenCursor) -> bool {
     return pos >= token_count;
 }
 
+fn adv_nl(pos: i32, tokens: Vec<Token>) -> i32 {
+    let mut token_count: i32 = tokens.len() as i32;
+    if pos < token_count {
+        let mut current_kind: String = tok_kind(tokens[pos as usize].clone());
+        if current_kind == "NEWLINE" {
+            return pos + 1;
+        }
+    }
+    return pos;
+}
+
+fn adv_indent(pos: i32, tokens: Vec<Token>) -> i32 {
+    let mut token_count: i32 = tokens.len() as i32;
+    if pos < token_count {
+        let mut current_kind: String = tok_kind(tokens[pos as usize].clone());
+        if current_kind == "INDENT" {
+            return pos + 1;
+        }
+    }
+    return pos;
+}
+
+fn skip_to_body(tokens: Vec<Token>, pos: i32) -> i32 {
+    let mut cur: i32 = adv_nl(pos.clone(), tokens.clone());
+    cur = adv_indent(cur.clone(), tokens.clone());
+    return cur;
+}
+
 fn cur_skip_to_body(c: TokenCursor) -> TokenCursor {
     let tokens = c.tokens.clone();
     let pos = c.pos.clone();
@@ -449,236 +477,6 @@ fn render_rust_type(type_name: String) -> String {
         return "f64".to_string();
     }
     return pascal_case(type_name.clone());
-}
-
-fn count_tabs(line: String) -> i32 {
-    let mut chars: Vec<String> = chars_of(line.clone());
-    let mut char_count: i32 = chars.len() as i32;
-    let mut count: i32 = 0;
-    for index in 0..char_count {
-        let mut character: String = chars[index as usize].clone();
-        if character == "\t" {
-            count = count + 1;
-        } else {
-            break;
-        }
-    }
-    return count;
-}
-
-fn tokenize(source: String) -> Vec<Token> {
-    let mut tokens: Vec<Token> = Vec::new();
-    let mut lines: Vec<String> = source.split("\n").map(|s| s.to_string()).collect();
-    let mut n_lines: i32 = lines.len() as i32;
-    let mut indent_stack: Vec<String> = Vec::new();
-    indent_stack.push("0".to_string());
-    let mut cur_line: i32 = 0;
-    let mut skip: i32 = 0;
-    for raw_li in 0..n_lines {
-        cur_line = cur_line + 1;
-        if skip > 0 {
-            skip = skip - 1;
-            continue;
-        }
-        let mut raw: String = lines[raw_li as usize].clone();
-        let mut line: String = rtrim(raw.clone());
-        let mut stripped: String = line.trim().to_string();
-        if is_empty(stripped.clone()) {
-            continue;
-        }
-        let mut indent: i32 = count_tabs(line.clone());
-        let mut content: String = str_from(line.clone(), indent.clone());
-        let mut slen: i32 = indent_stack.len() as i32;
-        let mut top_idx: i32 = slen - 1.clone();
-        let mut top: i32 = str_to_int(indent_stack[top_idx as usize].clone());
-        if indent > top {
-            tokens.push(make_token("INDENT".to_string(), "".to_string(), cur_line.clone()).clone());
-            indent_stack.push(int_to_str(indent.clone()).clone());
-        } else {
-            let mut dedenting: bool = indent < top.clone();
-            while dedenting {
-                let mut new_slen: i32 = indent_stack.len() as i32;
-                let mut new_top_idx: i32 = new_slen - 1.clone();
-                let mut cur_top: i32 = str_to_int(indent_stack[new_top_idx as usize].clone());
-                if indent < cur_top {
-                    tokens.push(make_token("DEDENT".to_string(), "".to_string(), cur_line.clone()).clone());
-                    indent_stack.remove(new_top_idx as usize);
-                } else {
-                    dedenting = false;
-                }
-            }
-        }
-        if content == "rust" {
-            tokens.push(make_token("KW_RUST".to_string(), "rust".to_string(), cur_line.clone()).clone());
-            tokens.push(make_token("NEWLINE".to_string(), "".to_string(), cur_line.clone()).clone());
-            let mut rust_base: i32 = indent + 1.clone();
-            let mut rust_lines: Vec<String> = Vec::new();
-            let mut rli_start: i32 = raw_li + 1.clone();
-            for rli in rli_start..n_lines {
-                let mut rust_line: String = lines[rli as usize].clone();
-                let mut rl_indent: i32 = count_tabs(rust_line.clone());
-                let mut rl_stripped: String = rust_line.trim().to_string();
-                if is_empty(rl_stripped.clone()) {
-                    rust_lines.push("".to_string());
-                    skip = skip + 1;
-                } else if rl_indent >= rust_base {
-                    let mut rl_content: String = str_from(rust_line.clone(), rust_base.clone());
-                    rust_lines.push(rtrim(rl_content.clone()).clone());
-                    skip = skip + 1;
-                } else {
-                    break;
-                }
-            }
-            let mut trimming: bool = true;
-            while trimming {
-                let mut rl_len: i32 = rust_lines.len() as i32;
-                if rl_len > 0 {
-                    let mut last_rl: i32 = rl_len - 1.clone();
-                    let mut last_line: String = rust_lines[last_rl as usize].clone();
-                    if last_line == "" {
-                        rust_lines.remove(last_rl as usize);
-                    } else {
-                        trimming = false;
-                    }
-                } else {
-                    trimming = false;
-                }
-            }
-            tokens.push(make_token("RUST_BLOCK".to_string(), s_join_nl(rust_lines.clone()), cur_line.clone()).clone());
-            continue;
-        }
-        let mut chars: Vec<String> = chars_of(content.clone());
-        let mut char_count: i32 = chars.len() as i32;
-        let mut char_index: i32 = 0;
-        while char_index < char_count {
-            let mut character: String = chars[char_index as usize].clone();
-            if character == " " {
-                char_index = char_index + 1;
-                continue;
-            }
-            if character == "#" {
-                break;
-            }
-            if character == "\"" {
-                let mut val: String = "".to_string();
-                let mut escape_next: bool = false;
-                let mut str_start: i32 = char_index + 1.clone();
-                char_index = char_index + 1;
-                for string_index in str_start..char_count {
-                    let mut string_char: String = chars[string_index as usize].clone();
-                    if escape_next {
-                        if string_char == "n" {
-                            val = s_cat(val.clone(), "\n".to_string());
-                        } else if string_char == "t" {
-                            val = s_cat(val.clone(), "\t".to_string());
-                        } else if string_char == "\\" {
-                            val = s_cat(val.clone(), "\\".to_string());
-                        } else if string_char == "\"" {
-                            val = s_cat(val.clone(), "\"".to_string());
-                        } else {
-                            val = s_cat(val.clone(), "\\".to_string());
-                            val = s_cat(val.clone(), string_char.clone());
-                        }
-                        escape_next = false;
-                        char_index = string_index + 1;
-                    } else if string_char == "\\" {
-                        escape_next = true;
-                        char_index = string_index + 1;
-                    } else if string_char == "\"" {
-                        char_index = string_index + 1;
-                        break;
-                    } else {
-                        val = s_cat(val.clone(), string_char.clone());
-                        char_index = string_index + 1;
-                    }
-                }
-                tokens.push(make_token("STRING".to_string(), val.clone(), cur_line.clone()).clone());
-                continue;
-            }
-            if is_digit(character.clone()) {
-                let mut num: String = s_cat("".to_string(), character.clone());
-                let mut num_start: i32 = char_index + 1.clone();
-                char_index = char_index + 1;
-                for number_index in num_start..char_count {
-                    let mut number_char: String = chars[number_index as usize].clone();
-                    if is_digit(number_char.clone()) {
-                        num = s_cat(num.clone(), number_char.clone());
-                        char_index = number_index + 1;
-                    } else {
-                        break;
-                    }
-                }
-                tokens.push(make_token("INT".to_string(), num.clone(), cur_line.clone()).clone());
-                continue;
-            }
-            if is_alpha(character.clone()) {
-                let mut word: String = s_cat("".to_string(), character.clone());
-                let mut word_start: i32 = char_index + 1.clone();
-                char_index = char_index + 1;
-                for word_index in word_start..char_count {
-                    let mut word_char: String = chars[word_index as usize].clone();
-                    if is_alnum(word_char.clone()) {
-                        word = s_cat(word.clone(), word_char.clone());
-                        char_index = word_index + 1;
-                    } else {
-                        break;
-                    }
-                }
-                tokens.push(make_token(word_to_kind(word.clone()), word.clone(), cur_line.clone()).clone());
-                continue;
-            }
-            let mut peek_idx: i32 = char_index + 1.clone();
-            let mut peek: String = "".to_string();
-            if peek_idx < char_count {
-                peek = chars[peek_idx as usize].clone();
-            }
-            if character == ">" && peek == "=" {
-                tokens.push(make_token("GTE".to_string(), ">=".to_string(), cur_line.clone()).clone());
-                char_index = char_index + 2;
-                continue;
-            }
-            if character == "<" && peek == "=" {
-                tokens.push(make_token("LTE".to_string(), "<=".to_string(), cur_line.clone()).clone());
-                char_index = char_index + 2;
-                continue;
-            }
-            if character == "+" {
-                tokens.push(make_token("PLUS".to_string(), "+".to_string(), cur_line.clone()).clone());
-            } else if character == "-" {
-                tokens.push(make_token("MINUS".to_string(), "-".to_string(), cur_line.clone()).clone());
-            } else if character == "*" {
-                tokens.push(make_token("STAR".to_string(), "*".to_string(), cur_line.clone()).clone());
-            } else if character == "/" {
-                tokens.push(make_token("SLASH".to_string(), "/".to_string(), cur_line.clone()).clone());
-            } else if character == "%" {
-                tokens.push(make_token("PERCENT".to_string(), "%".to_string(), cur_line.clone()).clone());
-            } else if character == "=" {
-                tokens.push(make_token("EQUALS".to_string(), "=".to_string(), cur_line.clone()).clone());
-            } else if character == ">" {
-                tokens.push(make_token("GT".to_string(), ">".to_string(), cur_line.clone()).clone());
-            } else if character == "<" {
-                tokens.push(make_token("LT".to_string(), "<".to_string(), cur_line.clone()).clone());
-            } else if character == "(" {
-                tokens.push(make_token("LPAREN".to_string(), "(".to_string(), cur_line.clone()).clone());
-            } else if character == ")" {
-                tokens.push(make_token("RPAREN".to_string(), ")".to_string(), cur_line.clone()).clone());
-            } else if character == "[" {
-                tokens.push(make_token("LBRACKET".to_string(), "[".to_string(), cur_line.clone()).clone());
-            } else if character == "]" {
-                tokens.push(make_token("RBRACKET".to_string(), "]".to_string(), cur_line.clone()).clone());
-            } else if character == "," {
-                tokens.push(make_token("COMMA".to_string(), ",".to_string(), cur_line.clone()).clone());
-            }
-            char_index = char_index + 1;
-        }
-        tokens.push(make_token("NEWLINE".to_string(), "".to_string(), cur_line.clone()).clone());
-    }
-    let mut final_stack_len: i32 = indent_stack.len() as i32;
-    for _ in 1..final_stack_len {
-        tokens.push(make_token("DEDENT".to_string(), "".to_string(), cur_line.clone()).clone());
-    }
-    tokens.push(make_token("EOF".to_string(), "".to_string(), cur_line.clone()).clone());
-    return tokens;
 }
 
 fn skip_to_block_start(tokens: Vec<Token>, start: i32) -> ParseResult {
@@ -1276,168 +1074,6 @@ fn gen_expr(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     return make_result(left_code.clone(), cur_pos.clone());
 }
 
-fn gen_if_branch(tokens: Vec<Token>, cond_pos: i32, depth: i32, ctx: GenCtx) -> ParseResult {
-    let mut cond_r: ParseResult = gen_expr(tokens.clone(), cond_pos.clone(), ctx.clone());
-    let mut body_start: i32 = skip_to_body(tokens.clone(), pr_pos(cond_r.clone()));
-    let mut body_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth + 1.clone(), ctx.clone());
-    let mut combined: String = s_join(vec![pr_code(cond_r.clone()).clone(), " {\n".to_string(), pr_code(body_r.clone()).clone()]);
-    return make_result(combined.clone(), pr_pos(body_r.clone()));
-}
-
-fn gen_if(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResult {
-    let mut token_count: i32 = tokens.len() as i32;
-    let mut pad: String = str_repeat("    ".to_string(), depth.clone());
-    let mut then_r: ParseResult = gen_if_branch(tokens.clone(), pos + 1.clone(), depth.clone(), ctx.clone());
-    let mut result_code: String = s_join(vec![pad.clone(), "if ".to_string(), pr_code(then_r.clone()).clone(), pad.clone(), "}".to_string()]);
-    let mut cur: i32 = pr_pos(then_r.clone());
-    while true {
-        if cur >= token_count {
-            break;
-        }
-        let mut else_token: Token = tokens[cur as usize].clone();
-        let mut else_kind: String = tok_kind(else_token.clone());
-        let mut is_else: bool = else_kind == "KW_ELSE".clone();
-        if !is_else {
-            break;
-        }
-        let mut after_else: i32 = cur + 1.clone();
-        if after_else >= token_count {
-            break;
-        }
-        let mut after_else_token: Token = tokens[after_else as usize].clone();
-        let mut after_else_kind: String = tok_kind(after_else_token.clone());
-        if after_else_kind == "KW_IF" {
-            let mut ei_r: ParseResult = gen_if_branch(tokens.clone(), after_else + 1.clone(), depth.clone(), ctx.clone());
-            result_code = s_join(vec![result_code.clone(), " else if ".to_string(), pr_code(ei_r.clone()).clone(), pad.clone(), "}".to_string()]);
-            cur = pr_pos(ei_r.clone());
-        } else {
-            let mut else_body_start: i32 = skip_to_body(tokens.clone(), after_else.clone());
-            let mut else_r: ParseResult = gen_block(tokens.clone(), else_body_start.clone(), depth + 1.clone(), ctx.clone());
-            result_code = s_join(vec![result_code.clone(), " else {\n".to_string(), pr_code(else_r.clone()).clone(), pad.clone(), "}".to_string()]);
-            cur = pr_pos(else_r.clone());
-            break;
-        }
-    }
-    result_code = s_cat(result_code.clone(), "\n".to_string());
-    return make_result(result_code.clone(), cur.clone());
-}
-
-fn gen_for(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResult {
-    let mut token_count: i32 = tokens.len() as i32;
-    let mut pad: String = str_repeat("    ".to_string(), depth.clone());
-    let mut next_pos: i32 = pos + 1.clone();
-    let mut next_token: Token = tokens[next_pos as usize].clone();
-    let mut next_kind: String = tok_kind(next_token.clone());
-    if next_kind == "KW_IF" {
-        let mut cond_pos: i32 = next_pos + 1.clone();
-        let mut cond_r: ParseResult = gen_expr(tokens.clone(), cond_pos.clone(), ctx.clone());
-        let mut cond_code: String = pr_code(cond_r.clone());
-        let mut cond_end: i32 = pr_pos(cond_r.clone());
-        let mut while_body_start: i32 = skip_to_body(tokens.clone(), cond_end.clone());
-        let mut while_body_r: ParseResult = gen_block(tokens.clone(), while_body_start.clone(), depth + 1.clone(), ctx.clone());
-        let mut while_body_code: String = pr_code(while_body_r.clone());
-        let mut while_body_end: i32 = pr_pos(while_body_r.clone());
-        let mut while_code: String = s_join(vec![pad.clone(), "while ".to_string(), cond_code.clone(), " {\n".to_string(), while_body_code.clone(), pad.clone(), "}\n".to_string()]);
-        return make_result(while_code.clone(), while_body_end.clone());
-    }
-    let mut var_name: String = "_".to_string();
-    let mut iter_pos: i32 = 0;
-    if next_kind == "KW_IN" {
-        iter_pos = next_pos + 1;
-    } else {
-        var_name = tok_value(next_token.clone());
-        let mut in_pos: i32 = next_pos + 1.clone();
-        iter_pos = in_pos + 1;
-    }
-    let mut iter_token: Token = tokens[iter_pos as usize].clone();
-    let mut iter_kind: String = tok_kind(iter_token.clone());
-    let mut iter_value: String = tok_value(iter_token.clone());
-    let mut range_expr: String = "".to_string();
-    let mut body_tok_pos: i32 = 0;
-    if iter_kind == "IDENT" && iter_value == "range" {
-        let mut lparen: i32 = iter_pos + 1.clone();
-        let mut first_pos: i32 = lparen + 1.clone();
-        let mut first_r: ParseResult = gen_expr(tokens.clone(), first_pos.clone(), ctx.clone());
-        let mut first_code: String = pr_code(first_r.clone());
-        let mut first_p: i32 = pr_pos(first_r.clone());
-        let mut comma_token: Token = tokens[first_p as usize].clone();
-        let mut has_start: bool = tok_kind(comma_token.clone()) == "COMMA";
-        if has_start {
-            let mut second_pos: i32 = first_p + 1.clone();
-            let mut second_r: ParseResult = gen_expr(tokens.clone(), second_pos.clone(), ctx.clone());
-            let mut second_code: String = pr_code(second_r.clone());
-            let mut second_p: i32 = pr_pos(second_r.clone());
-            range_expr = s_join(vec![first_code.clone(), "..".to_string(), second_code.clone()]);
-            body_tok_pos = second_p + 1;
-        } else {
-            range_expr = s_join(vec!["0..".to_string(), first_code.clone()]);
-            body_tok_pos = first_p + 1;
-        }
-    } else if iter_kind == "LPAREN" {
-        let mut start_pos: i32 = iter_pos + 1.clone();
-        let mut start_r: ParseResult = gen_expr(tokens.clone(), start_pos.clone(), ctx.clone());
-        let mut start_code: String = pr_code(start_r.clone());
-        let mut start_p: i32 = pr_pos(start_r.clone());
-        let mut end_pos: i32 = start_p + 1.clone();
-        let mut end_r: ParseResult = gen_expr(tokens.clone(), end_pos.clone(), ctx.clone());
-        let mut end_code: String = pr_code(end_r.clone());
-        let mut end_p: i32 = pr_pos(end_r.clone());
-        range_expr = s_join(vec![start_code.clone(), "..".to_string(), end_code.clone()]);
-        body_tok_pos = end_p + 1;
-    } else {
-        let mut src_r: ParseResult = gen_expr(tokens.clone(), iter_pos.clone(), ctx.clone());
-        let mut src_code: String = pr_code(src_r.clone());
-        let mut src_p: i32 = pr_pos(src_r.clone());
-        range_expr = src_code;
-        body_tok_pos = src_p;
-    }
-    body_tok_pos = skip_to_body(tokens.clone(), body_tok_pos.clone());
-    let mut body_r: ParseResult = gen_block(tokens.clone(), body_tok_pos.clone(), depth + 1.clone(), ctx.clone());
-    let mut body_code: String = pr_code(body_r.clone());
-    let mut body_end: i32 = pr_pos(body_r.clone());
-    let mut for_code: String = s_join(vec![pad.clone(), "for ".to_string(), var_name.clone(), " in ".to_string(), range_expr.clone(), " {\n".to_string(), body_code.clone(), pad.clone(), "}\n".to_string()]);
-    return make_result(for_code.clone(), body_end.clone());
-}
-
-fn skip_newline(tokens: Vec<Token>, pos: i32) -> ParseResult {
-    let mut token_count: i32 = tokens.len() as i32;
-    if pos < token_count {
-        let mut current_kind: String = tok_kind(tokens[pos as usize].clone());
-        if current_kind == "NEWLINE" {
-            return make_result("".to_string(), pos + 1.clone());
-        }
-    }
-    return make_result("".to_string(), pos.clone());
-}
-
-fn adv_nl(pos: i32, tokens: Vec<Token>) -> i32 {
-    let mut token_count: i32 = tokens.len() as i32;
-    if pos < token_count {
-        let mut current_kind: String = tok_kind(tokens[pos as usize].clone());
-        if current_kind == "NEWLINE" {
-            return pos + 1;
-        }
-    }
-    return pos;
-}
-
-fn adv_indent(pos: i32, tokens: Vec<Token>) -> i32 {
-    let mut token_count: i32 = tokens.len() as i32;
-    if pos < token_count {
-        let mut current_kind: String = tok_kind(tokens[pos as usize].clone());
-        if current_kind == "INDENT" {
-            return pos + 1;
-        }
-    }
-    return pos;
-}
-
-fn skip_to_body(tokens: Vec<Token>, pos: i32) -> i32 {
-    let mut cur: i32 = adv_nl(pos.clone(), tokens.clone());
-    cur = adv_indent(cur.clone(), tokens.clone());
-    return cur;
-}
-
 fn emit_val(val_code: String, val_kind: String) -> String {
     if val_kind == "STRING" {
         return s_join(vec![val_code.clone(), ".to_string()".to_string()]);
@@ -1835,6 +1471,129 @@ fn gen_block(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResu
     return make_result(s_join(stmts.clone()), cur.clone());
 }
 
+fn gen_if_branch(tokens: Vec<Token>, cond_pos: i32, depth: i32, ctx: GenCtx) -> ParseResult {
+    let mut cond_r: ParseResult = gen_expr(tokens.clone(), cond_pos.clone(), ctx.clone());
+    let mut body_start: i32 = skip_to_body(tokens.clone(), pr_pos(cond_r.clone()));
+    let mut body_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth + 1.clone(), ctx.clone());
+    let mut combined: String = s_join(vec![pr_code(cond_r.clone()).clone(), " {\n".to_string(), pr_code(body_r.clone()).clone()]);
+    return make_result(combined.clone(), pr_pos(body_r.clone()));
+}
+
+fn gen_if(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResult {
+    let mut token_count: i32 = tokens.len() as i32;
+    let mut pad: String = str_repeat("    ".to_string(), depth.clone());
+    let mut then_r: ParseResult = gen_if_branch(tokens.clone(), pos + 1.clone(), depth.clone(), ctx.clone());
+    let mut result_code: String = s_join(vec![pad.clone(), "if ".to_string(), pr_code(then_r.clone()).clone(), pad.clone(), "}".to_string()]);
+    let mut cur: i32 = pr_pos(then_r.clone());
+    while true {
+        if cur >= token_count {
+            break;
+        }
+        let mut else_token: Token = tokens[cur as usize].clone();
+        let mut else_kind: String = tok_kind(else_token.clone());
+        let mut is_else: bool = else_kind == "KW_ELSE".clone();
+        if !is_else {
+            break;
+        }
+        let mut after_else: i32 = cur + 1.clone();
+        if after_else >= token_count {
+            break;
+        }
+        let mut after_else_token: Token = tokens[after_else as usize].clone();
+        let mut after_else_kind: String = tok_kind(after_else_token.clone());
+        if after_else_kind == "KW_IF" {
+            let mut ei_r: ParseResult = gen_if_branch(tokens.clone(), after_else + 1.clone(), depth.clone(), ctx.clone());
+            result_code = s_join(vec![result_code.clone(), " else if ".to_string(), pr_code(ei_r.clone()).clone(), pad.clone(), "}".to_string()]);
+            cur = pr_pos(ei_r.clone());
+        } else {
+            let mut else_body_start: i32 = skip_to_body(tokens.clone(), after_else.clone());
+            let mut else_r: ParseResult = gen_block(tokens.clone(), else_body_start.clone(), depth + 1.clone(), ctx.clone());
+            result_code = s_join(vec![result_code.clone(), " else {\n".to_string(), pr_code(else_r.clone()).clone(), pad.clone(), "}".to_string()]);
+            cur = pr_pos(else_r.clone());
+            break;
+        }
+    }
+    result_code = s_cat(result_code.clone(), "\n".to_string());
+    return make_result(result_code.clone(), cur.clone());
+}
+
+fn gen_for(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResult {
+    let mut token_count: i32 = tokens.len() as i32;
+    let mut pad: String = str_repeat("    ".to_string(), depth.clone());
+    let mut next_pos: i32 = pos + 1.clone();
+    let mut next_token: Token = tokens[next_pos as usize].clone();
+    let mut next_kind: String = tok_kind(next_token.clone());
+    if next_kind == "KW_IF" {
+        let mut cond_pos: i32 = next_pos + 1.clone();
+        let mut cond_r: ParseResult = gen_expr(tokens.clone(), cond_pos.clone(), ctx.clone());
+        let mut cond_code: String = pr_code(cond_r.clone());
+        let mut cond_end: i32 = pr_pos(cond_r.clone());
+        let mut while_body_start: i32 = skip_to_body(tokens.clone(), cond_end.clone());
+        let mut while_body_r: ParseResult = gen_block(tokens.clone(), while_body_start.clone(), depth + 1.clone(), ctx.clone());
+        let mut while_body_code: String = pr_code(while_body_r.clone());
+        let mut while_body_end: i32 = pr_pos(while_body_r.clone());
+        let mut while_code: String = s_join(vec![pad.clone(), "while ".to_string(), cond_code.clone(), " {\n".to_string(), while_body_code.clone(), pad.clone(), "}\n".to_string()]);
+        return make_result(while_code.clone(), while_body_end.clone());
+    }
+    let mut var_name: String = "_".to_string();
+    let mut iter_pos: i32 = 0;
+    if next_kind == "KW_IN" {
+        iter_pos = next_pos + 1;
+    } else {
+        var_name = tok_value(next_token.clone());
+        let mut in_pos: i32 = next_pos + 1.clone();
+        iter_pos = in_pos + 1;
+    }
+    let mut iter_token: Token = tokens[iter_pos as usize].clone();
+    let mut iter_kind: String = tok_kind(iter_token.clone());
+    let mut iter_value: String = tok_value(iter_token.clone());
+    let mut range_expr: String = "".to_string();
+    let mut body_tok_pos: i32 = 0;
+    if iter_kind == "IDENT" && iter_value == "range" {
+        let mut lparen: i32 = iter_pos + 1.clone();
+        let mut first_pos: i32 = lparen + 1.clone();
+        let mut first_r: ParseResult = gen_expr(tokens.clone(), first_pos.clone(), ctx.clone());
+        let mut first_code: String = pr_code(first_r.clone());
+        let mut first_p: i32 = pr_pos(first_r.clone());
+        let mut comma_token: Token = tokens[first_p as usize].clone();
+        let mut has_start: bool = tok_kind(comma_token.clone()) == "COMMA";
+        if has_start {
+            let mut second_pos: i32 = first_p + 1.clone();
+            let mut second_r: ParseResult = gen_expr(tokens.clone(), second_pos.clone(), ctx.clone());
+            let mut second_code: String = pr_code(second_r.clone());
+            let mut second_p: i32 = pr_pos(second_r.clone());
+            range_expr = s_join(vec![first_code.clone(), "..".to_string(), second_code.clone()]);
+            body_tok_pos = second_p + 1;
+        } else {
+            range_expr = s_join(vec!["0..".to_string(), first_code.clone()]);
+            body_tok_pos = first_p + 1;
+        }
+    } else if iter_kind == "LPAREN" {
+        let mut start_pos: i32 = iter_pos + 1.clone();
+        let mut start_r: ParseResult = gen_expr(tokens.clone(), start_pos.clone(), ctx.clone());
+        let mut start_code: String = pr_code(start_r.clone());
+        let mut start_p: i32 = pr_pos(start_r.clone());
+        let mut end_pos: i32 = start_p + 1.clone();
+        let mut end_r: ParseResult = gen_expr(tokens.clone(), end_pos.clone(), ctx.clone());
+        let mut end_code: String = pr_code(end_r.clone());
+        let mut end_p: i32 = pr_pos(end_r.clone());
+        range_expr = s_join(vec![start_code.clone(), "..".to_string(), end_code.clone()]);
+        body_tok_pos = end_p + 1;
+    } else {
+        let mut src_r: ParseResult = gen_expr(tokens.clone(), iter_pos.clone(), ctx.clone());
+        let mut src_code: String = pr_code(src_r.clone());
+        let mut src_p: i32 = pr_pos(src_r.clone());
+        range_expr = src_code;
+        body_tok_pos = src_p;
+    }
+    body_tok_pos = skip_to_body(tokens.clone(), body_tok_pos.clone());
+    let mut body_r: ParseResult = gen_block(tokens.clone(), body_tok_pos.clone(), depth + 1.clone(), ctx.clone());
+    let mut body_code: String = pr_code(body_r.clone());
+    let mut body_end: i32 = pr_pos(body_r.clone());
+    let mut for_code: String = s_join(vec![pad.clone(), "for ".to_string(), var_name.clone(), " in ".to_string(), range_expr.clone(), " {\n".to_string(), body_code.clone(), pad.clone(), "}\n".to_string()]);
+    return make_result(for_code.clone(), body_end.clone());
+}
+
 fn gen_struct_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut token_count: i32 = tokens.len() as i32;
     let mut name_pos: i32 = pos + 1.clone();
@@ -2014,14 +1773,241 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     return make_result(fn_code.clone(), body_end.clone());
 }
 
+fn count_tabs(line: String) -> i32 {
+    let mut chars: Vec<String> = chars_of(line.clone());
+    let mut char_count: i32 = chars.len() as i32;
+    let mut count: i32 = 0;
+    for index in 0..char_count {
+        let mut character: String = chars[index as usize].clone();
+        if character == "\t" {
+            count = count + 1;
+        } else {
+            break;
+        }
+    }
+    return count;
+}
+
+fn tokenize(source: String) -> Vec<Token> {
+    let mut tokens: Vec<Token> = Vec::new();
+    let mut lines: Vec<String> = source.split("\n").map(|s| s.to_string()).collect();
+    let mut n_lines: i32 = lines.len() as i32;
+    let mut indent_stack: Vec<String> = Vec::new();
+    indent_stack.push("0".to_string());
+    let mut cur_line: i32 = 0;
+    let mut skip: i32 = 0;
+    for raw_li in 0..n_lines {
+        cur_line = cur_line + 1;
+        if skip > 0 {
+            skip = skip - 1;
+            continue;
+        }
+        let mut raw: String = lines[raw_li as usize].clone();
+        let mut line: String = rtrim(raw.clone());
+        let mut stripped: String = line.trim().to_string();
+        if is_empty(stripped.clone()) {
+            continue;
+        }
+        let mut indent: i32 = count_tabs(line.clone());
+        let mut content: String = str_from(line.clone(), indent.clone());
+        let mut slen: i32 = indent_stack.len() as i32;
+        let mut top_idx: i32 = slen - 1.clone();
+        let mut top: i32 = str_to_int(indent_stack[top_idx as usize].clone());
+        if indent > top {
+            tokens.push(make_token("INDENT".to_string(), "".to_string(), cur_line.clone()).clone());
+            indent_stack.push(int_to_str(indent.clone()).clone());
+        } else {
+            let mut dedenting: bool = indent < top.clone();
+            while dedenting {
+                let mut new_slen: i32 = indent_stack.len() as i32;
+                let mut new_top_idx: i32 = new_slen - 1.clone();
+                let mut cur_top: i32 = str_to_int(indent_stack[new_top_idx as usize].clone());
+                if indent < cur_top {
+                    tokens.push(make_token("DEDENT".to_string(), "".to_string(), cur_line.clone()).clone());
+                    indent_stack.remove(new_top_idx as usize);
+                } else {
+                    dedenting = false;
+                }
+            }
+        }
+        if content == "rust" {
+            tokens.push(make_token("KW_RUST".to_string(), "rust".to_string(), cur_line.clone()).clone());
+            tokens.push(make_token("NEWLINE".to_string(), "".to_string(), cur_line.clone()).clone());
+            let mut rust_base: i32 = indent + 1.clone();
+            let mut rust_lines: Vec<String> = Vec::new();
+            let mut rli_start: i32 = raw_li + 1.clone();
+            for rli in rli_start..n_lines {
+                let mut rust_line: String = lines[rli as usize].clone();
+                let mut rl_indent: i32 = count_tabs(rust_line.clone());
+                let mut rl_stripped: String = rust_line.trim().to_string();
+                if is_empty(rl_stripped.clone()) {
+                    rust_lines.push("".to_string());
+                    skip = skip + 1;
+                } else if rl_indent >= rust_base {
+                    let mut rl_content: String = str_from(rust_line.clone(), rust_base.clone());
+                    rust_lines.push(rtrim(rl_content.clone()).clone());
+                    skip = skip + 1;
+                } else {
+                    break;
+                }
+            }
+            let mut trimming: bool = true;
+            while trimming {
+                let mut rl_len: i32 = rust_lines.len() as i32;
+                if rl_len > 0 {
+                    let mut last_rl: i32 = rl_len - 1.clone();
+                    let mut last_line: String = rust_lines[last_rl as usize].clone();
+                    if last_line == "" {
+                        rust_lines.remove(last_rl as usize);
+                    } else {
+                        trimming = false;
+                    }
+                } else {
+                    trimming = false;
+                }
+            }
+            tokens.push(make_token("RUST_BLOCK".to_string(), s_join_nl(rust_lines.clone()), cur_line.clone()).clone());
+            continue;
+        }
+        let mut chars: Vec<String> = chars_of(content.clone());
+        let mut char_count: i32 = chars.len() as i32;
+        let mut char_index: i32 = 0;
+        while char_index < char_count {
+            let mut character: String = chars[char_index as usize].clone();
+            if character == " " {
+                char_index = char_index + 1;
+                continue;
+            }
+            if character == "#" {
+                break;
+            }
+            if character == "\"" {
+                let mut val: String = "".to_string();
+                let mut escape_next: bool = false;
+                let mut str_start: i32 = char_index + 1.clone();
+                char_index = char_index + 1;
+                for string_index in str_start..char_count {
+                    let mut string_char: String = chars[string_index as usize].clone();
+                    if escape_next {
+                        if string_char == "n" {
+                            val = s_cat(val.clone(), "\n".to_string());
+                        } else if string_char == "t" {
+                            val = s_cat(val.clone(), "\t".to_string());
+                        } else if string_char == "\\" {
+                            val = s_cat(val.clone(), "\\".to_string());
+                        } else if string_char == "\"" {
+                            val = s_cat(val.clone(), "\"".to_string());
+                        } else {
+                            val = s_cat(val.clone(), "\\".to_string());
+                            val = s_cat(val.clone(), string_char.clone());
+                        }
+                        escape_next = false;
+                        char_index = string_index + 1;
+                    } else if string_char == "\\" {
+                        escape_next = true;
+                        char_index = string_index + 1;
+                    } else if string_char == "\"" {
+                        char_index = string_index + 1;
+                        break;
+                    } else {
+                        val = s_cat(val.clone(), string_char.clone());
+                        char_index = string_index + 1;
+                    }
+                }
+                tokens.push(make_token("STRING".to_string(), val.clone(), cur_line.clone()).clone());
+                continue;
+            }
+            if is_digit(character.clone()) {
+                let mut num: String = s_cat("".to_string(), character.clone());
+                let mut num_start: i32 = char_index + 1.clone();
+                char_index = char_index + 1;
+                for number_index in num_start..char_count {
+                    let mut number_char: String = chars[number_index as usize].clone();
+                    if is_digit(number_char.clone()) {
+                        num = s_cat(num.clone(), number_char.clone());
+                        char_index = number_index + 1;
+                    } else {
+                        break;
+                    }
+                }
+                tokens.push(make_token("INT".to_string(), num.clone(), cur_line.clone()).clone());
+                continue;
+            }
+            if is_alpha(character.clone()) {
+                let mut word: String = s_cat("".to_string(), character.clone());
+                let mut word_start: i32 = char_index + 1.clone();
+                char_index = char_index + 1;
+                for word_index in word_start..char_count {
+                    let mut word_char: String = chars[word_index as usize].clone();
+                    if is_alnum(word_char.clone()) {
+                        word = s_cat(word.clone(), word_char.clone());
+                        char_index = word_index + 1;
+                    } else {
+                        break;
+                    }
+                }
+                tokens.push(make_token(word_to_kind(word.clone()), word.clone(), cur_line.clone()).clone());
+                continue;
+            }
+            let mut peek_idx: i32 = char_index + 1.clone();
+            let mut peek: String = "".to_string();
+            if peek_idx < char_count {
+                peek = chars[peek_idx as usize].clone();
+            }
+            if character == ">" && peek == "=" {
+                tokens.push(make_token("GTE".to_string(), ">=".to_string(), cur_line.clone()).clone());
+                char_index = char_index + 2;
+                continue;
+            }
+            if character == "<" && peek == "=" {
+                tokens.push(make_token("LTE".to_string(), "<=".to_string(), cur_line.clone()).clone());
+                char_index = char_index + 2;
+                continue;
+            }
+            if character == "+" {
+                tokens.push(make_token("PLUS".to_string(), "+".to_string(), cur_line.clone()).clone());
+            } else if character == "-" {
+                tokens.push(make_token("MINUS".to_string(), "-".to_string(), cur_line.clone()).clone());
+            } else if character == "*" {
+                tokens.push(make_token("STAR".to_string(), "*".to_string(), cur_line.clone()).clone());
+            } else if character == "/" {
+                tokens.push(make_token("SLASH".to_string(), "/".to_string(), cur_line.clone()).clone());
+            } else if character == "%" {
+                tokens.push(make_token("PERCENT".to_string(), "%".to_string(), cur_line.clone()).clone());
+            } else if character == "=" {
+                tokens.push(make_token("EQUALS".to_string(), "=".to_string(), cur_line.clone()).clone());
+            } else if character == ">" {
+                tokens.push(make_token("GT".to_string(), ">".to_string(), cur_line.clone()).clone());
+            } else if character == "<" {
+                tokens.push(make_token("LT".to_string(), "<".to_string(), cur_line.clone()).clone());
+            } else if character == "(" {
+                tokens.push(make_token("LPAREN".to_string(), "(".to_string(), cur_line.clone()).clone());
+            } else if character == ")" {
+                tokens.push(make_token("RPAREN".to_string(), ")".to_string(), cur_line.clone()).clone());
+            } else if character == "[" {
+                tokens.push(make_token("LBRACKET".to_string(), "[".to_string(), cur_line.clone()).clone());
+            } else if character == "]" {
+                tokens.push(make_token("RBRACKET".to_string(), "]".to_string(), cur_line.clone()).clone());
+            } else if character == "," {
+                tokens.push(make_token("COMMA".to_string(), ",".to_string(), cur_line.clone()).clone());
+            }
+            char_index = char_index + 1;
+        }
+        tokens.push(make_token("NEWLINE".to_string(), "".to_string(), cur_line.clone()).clone());
+    }
+    let mut final_stack_len: i32 = indent_stack.len() as i32;
+    for _ in 1..final_stack_len {
+        tokens.push(make_token("DEDENT".to_string(), "".to_string(), cur_line.clone()).clone());
+    }
+    tokens.push(make_token("EOF".to_string(), "".to_string(), cur_line.clone()).clone());
+    return tokens;
+}
+
 fn filter_by_names(tokens: Vec<Token>, names: Vec<String>) -> Vec<Token> {
     let mut names_count: i32 = names.len() as i32;
-    if names_count == 0 {
-        return tokens;
-    }
     let mut result: Vec<Token> = Vec::new();
-    let mut token_count: i32 = tokens.len() as i32;
     let mut cur: i32 = 0;
+    let mut token_count: i32 = tokens.len() as i32;
     while cur < token_count {
         let mut token: Token = tokens[cur as usize].clone();
         let mut kind: String = tok_kind(token.clone());
@@ -2048,7 +2034,7 @@ fn filter_by_names(tokens: Vec<Token>, names: Vec<String>) -> Vec<Token> {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
                 decl_name = tok_value(name_tok.clone());
             }
-            let mut include: bool = list_has(names.clone(), decl_name.clone());
+            let mut include: bool = names_count == 0 || list_has(names.clone(), decl_name.clone()).clone();
             let mut depth: i32 = 0;
             let mut entered: bool = false;
             while cur < token_count {
@@ -2075,7 +2061,7 @@ fn filter_by_names(tokens: Vec<Token>, names: Vec<String>) -> Vec<Token> {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
                 decl_name = tok_value(name_tok.clone());
             }
-            let mut include: bool = list_has(names.clone(), decl_name.clone());
+            let mut include: bool = names_count == 0 || list_has(names.clone(), decl_name.clone()).clone();
             while cur < token_count {
                 let mut t: Token = tokens[cur as usize].clone();
                 let mut tk: String = tok_kind(t.clone());
@@ -2089,6 +2075,180 @@ fn filter_by_names(tokens: Vec<Token>, names: Vec<String>) -> Vec<Token> {
             }
         } else {
             cur = cur + 1;
+        }
+    }
+    return result;
+}
+
+fn collect_imports_from_raw(source_tokens: Vec<Token>) -> Vec<Token> {
+    let mut result: Vec<Token> = Vec::new();
+    let mut token_count: i32 = source_tokens.len() as i32;
+    let mut pos: i32 = 0;
+    let mut depth: i32 = 0;
+    while true {
+        if pos >= token_count {
+            break;
+        }
+        let mut token: Token = source_tokens[pos as usize].clone();
+        let mut current_kind: String = tok_kind(token.clone());
+        if current_kind == "EOF" {
+            break;
+        }
+        if current_kind == "NEWLINE" {
+            pos = pos + 1;
+            continue;
+        }
+        if current_kind == "INDENT" {
+            depth = depth + 1;
+            pos = pos + 1;
+            continue;
+        }
+        if current_kind == "DEDENT" {
+            depth = depth - 1;
+            pos = pos + 1;
+            continue;
+        }
+        let mut at_root: bool = depth == 0.clone();
+        if current_kind == "LPAREN" && at_root {
+            let mut sub_names: Vec<String> = Vec::new();
+            let mut scan: i32 = pos + 1.clone();
+            while scan < token_count {
+                let mut scan_token: Token = source_tokens[scan as usize].clone();
+                let mut scan_kind: String = tok_kind(scan_token.clone());
+                scan = scan + 1;
+                if scan_kind == "RPAREN" {
+                    break;
+                }
+                if scan_kind == "IDENT" {
+                    sub_names.push(tok_value(scan_token.clone()).clone());
+                }
+            }
+            let mut path_pos: i32 = scan + 1.clone();
+            if path_pos < token_count {
+                let mut in_token: Token = source_tokens[scan as usize].clone();
+                let mut is_in: bool = tok_kind(in_token.clone()) == "KW_IN";
+                if is_in {
+                    let mut path_token: Token = source_tokens[path_pos as usize].clone();
+                    let mut sub_path: String = tok_value(path_token.clone());
+                    let mut sub_tokens: Vec<Token> = load_named(sub_path.clone(), sub_names.clone());
+                    let mut sub_len: i32 = sub_tokens.len() as i32;
+                    for sub_i in 0..sub_len {
+                        let mut sub_tok: Token = sub_tokens[sub_i as usize].clone();
+                        let mut sub_kind: String = tok_kind(sub_tok.clone());
+                        let mut sub_is_eof: bool = sub_kind == "EOF".clone();
+                        if !sub_is_eof {
+                            result.push(sub_tok.clone());
+                        }
+                    }
+                    pos = path_pos + 1;
+                    continue;
+                }
+            }
+        }
+        pos = pos + 1;
+    }
+    return result;
+}
+
+fn load_named(path: String, names: Vec<String>) -> Vec<Token> {
+    let mut source: String = read_file(path.clone());
+    let mut raw: Vec<Token> = tokenize(source.clone());
+    let mut support: Vec<Token> = collect_imports_from_raw(raw.clone());
+    let mut own: Vec<Token> = filter_by_names(raw.clone(), Vec::new());
+    let mut result: Vec<Token> = Vec::new();
+    let mut support_len: i32 = support.len() as i32;
+    for i in 0..support_len {
+        result.push(support[i as usize].clone().clone());
+    }
+    let mut own_len: i32 = own.len() as i32;
+    for i in 0..own_len {
+        result.push(own[i as usize].clone().clone());
+    }
+    return result;
+}
+
+fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
+    let mut result: Vec<Token> = Vec::new();
+    let mut seen: Vec<String> = Vec::new();
+    let mut token_count: i32 = tokens.len() as i32;
+    let mut pos: i32 = 0;
+    while pos < token_count {
+        let mut token: Token = tokens[pos as usize].clone();
+        let mut kind: String = tok_kind(token.clone());
+        if kind == "EOF" {
+            result.push(token.clone());
+            pos = pos + 1;
+            continue;
+        }
+        if kind == "NEWLINE" {
+            result.push(token.clone());
+            pos = pos + 1;
+            continue;
+        }
+        let mut is_fn: bool = kind == "KW_FN".clone();
+        let mut is_struct: bool = kind == "KW_STRUCT".clone();
+        let mut is_enum: bool = kind == "KW_ENUM".clone();
+        let mut is_shape: bool = kind == "KW_SHAPE".clone();
+        let mut is_block_decl: bool = is_fn || is_struct || is_enum.clone();
+        if is_block_decl {
+            let mut name_offset: i32 = 1;
+            if is_fn {
+                name_offset = 2;
+            }
+            let mut name_pos: i32 = pos + name_offset.clone();
+            let mut decl_name: String = "".to_string();
+            if name_pos < token_count {
+                let mut name_tok: Token = tokens[name_pos as usize].clone();
+                decl_name = tok_value(name_tok.clone());
+            }
+            let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
+            if !already_seen {
+                seen.push(decl_name.clone());
+            }
+            let mut depth: i32 = 0;
+            let mut entered: bool = false;
+            while pos < token_count {
+                let mut t: Token = tokens[pos as usize].clone();
+                let mut tk: String = tok_kind(t.clone());
+                if !already_seen {
+                    result.push(t.clone());
+                }
+                pos = pos + 1;
+                if tk == "INDENT" {
+                    depth = depth + 1;
+                    entered = true;
+                } else if tk == "DEDENT" {
+                    depth = depth - 1;
+                    if depth == 0 && entered {
+                        break;
+                    }
+                }
+            }
+        } else if is_shape {
+            let mut name_pos: i32 = pos + 1.clone();
+            let mut decl_name: String = "".to_string();
+            if name_pos < token_count {
+                let mut name_tok: Token = tokens[name_pos as usize].clone();
+                decl_name = tok_value(name_tok.clone());
+            }
+            let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
+            if !already_seen {
+                seen.push(decl_name.clone());
+            }
+            while pos < token_count {
+                let mut t: Token = tokens[pos as usize].clone();
+                let mut tk: String = tok_kind(t.clone());
+                if !already_seen {
+                    result.push(t.clone());
+                }
+                pos = pos + 1;
+                if tk == "NEWLINE" {
+                    break;
+                }
+            }
+        } else {
+            result.push(token.clone());
+            pos = pos + 1;
         }
     }
     return result;
@@ -2144,11 +2304,10 @@ fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
                 if is_in {
                     let mut path_token: Token = source_tokens[path_pos as usize].clone();
                     let mut imp_path: String = tok_value(path_token.clone());
-                    let mut imp_tokens: Vec<Token> = collect_all_tokens_with_all_imports(imp_path.clone());
-                    let mut filtered: Vec<Token> = filter_by_names(imp_tokens.clone(), import_names.clone());
-                    let mut import_len: i32 = filtered.len() as i32;
+                    let mut imp_tokens: Vec<Token> = load_named(imp_path.clone(), import_names.clone());
+                    let mut import_len: i32 = imp_tokens.len() as i32;
                     for import_index in 0..import_len {
-                        let mut import_token: Token = filtered[import_index as usize].clone();
+                        let mut import_token: Token = imp_tokens[import_index as usize].clone();
                         let mut import_kind: String = tok_kind(import_token.clone());
                         let mut import_is_eof: bool = import_kind == "EOF".clone();
                         if !import_is_eof {
@@ -2163,7 +2322,7 @@ fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
         result.push(token.clone());
         pos = pos + 1;
     }
-    return result;
+    return deduplicate_decls(result.clone());
 }
 
 fn generate(tokens: Vec<Token>) -> String {

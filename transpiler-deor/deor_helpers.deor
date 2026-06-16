@@ -1,3 +1,4 @@
+(tokenList, Token, ParseResult, TokenCursor) in "transpiler-deor/types.deor"
 
 # === ParseResult helpers ===
 
@@ -59,6 +60,27 @@ fn bool c_at_end(TokenCursor c)
 	(tokens, pos, current) in c
 	int token_count = len(tokens)
 	return pos >= token_count
+
+fn int adv_nl(int pos, tokenList tokens)
+	int token_count = len(tokens)
+	if pos < token_count
+		string current_kind = tok_kind(tokens at pos)
+		if current_kind is "NEWLINE"
+			return pos + 1
+	return pos
+
+fn int adv_indent(int pos, tokenList tokens)
+	int token_count = len(tokens)
+	if pos < token_count
+		string current_kind = tok_kind(tokens at pos)
+		if current_kind is "INDENT"
+			return pos + 1
+	return pos
+
+fn int skip_to_body(tokenList tokens, int pos)
+	int cur = adv_nl(pos, tokens)
+	cur = adv_indent(cur, tokens)
+	return cur
 
 fn TokenCursor cur_skip_to_body(TokenCursor c)
 	(tokens, pos, current) in c

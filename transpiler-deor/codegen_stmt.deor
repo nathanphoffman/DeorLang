@@ -1,33 +1,14 @@
+(tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
+(
+    make_result, tok_kind, tok_value, pr_code, pr_pos,
+    adv_nl, adv_indent, skip_to_body,
+) in "transpiler-deor/deor_helpers.deor"
+(s_join, s_join_nl, s_join_with, s_cat, str_repeat) in "transpiler-deor/rust_helpers.deor"
+(is_empty, list_has, reg_get, reg_has, reg3_has) in "transpiler-deor/utils.deor"
+(resolve_type) in "transpiler-deor/registry.deor"
+(find_struct_for_fields, gen_call_args, gen_expr) in "transpiler-deor/codegen_expr.deor"
+
 # === Statement code generation ===
-
-fn ParseResult skip_newline(tokenList tokens, int pos)
-	int token_count = len(tokens)
-	if pos < token_count
-		string current_kind = tok_kind(tokens at pos)
-		if current_kind is "NEWLINE"
-			return make_result("", pos + 1)
-	return make_result("", pos)
-
-fn int adv_nl(int pos, tokenList tokens)
-	int token_count = len(tokens)
-	if pos < token_count
-		string current_kind = tok_kind(tokens at pos)
-		if current_kind is "NEWLINE"
-			return pos + 1
-	return pos
-
-fn int adv_indent(int pos, tokenList tokens)
-	int token_count = len(tokens)
-	if pos < token_count
-		string current_kind = tok_kind(tokens at pos)
-		if current_kind is "INDENT"
-			return pos + 1
-	return pos
-
-fn int skip_to_body(tokenList tokens, int pos)
-	int cur = adv_nl(pos, tokens)
-	cur = adv_indent(cur, tokens)
-	return cur
 
 fn string emit_val(string val_code, string val_kind)
 	if val_kind is "STRING"
@@ -384,3 +365,125 @@ fn ParseResult gen_block(tokenList tokens, int pos, int depth, GenCtx ctx)
 		stmts at end = pr_code(stmt_r)
 		cur = pr_pos(stmt_r)
 	return make_result(s_join(stmts), cur)
+
+# === If/else code generation ===
+
+fn ParseResult gen_if_branch(tokenList tokens, int cond_pos, int depth, GenCtx ctx)
+	ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
+	int body_start = skip_to_body(tokens, pr_pos(cond_r))
+	ParseResult body_r = gen_block(tokens, body_start, depth + 1, ctx)
+	string combined = s_join([pr_code(cond_r), " {\n", pr_code(body_r)])
+	return make_result(combined, pr_pos(body_r))
+
+fn ParseResult gen_if(tokenList tokens, int pos, int depth, GenCtx ctx)
+	int token_count = len(tokens)
+	string pad = str_repeat("    ", depth)
+	ParseResult then_r = gen_if_branch(tokens, pos + 1, depth, ctx)
+	string result_code = s_join([pad, "if ", pr_code(then_r), pad, "}"])
+	int cur = pr_pos(then_r)
+	for if true
+		if cur >= token_count
+			break
+		Token else_token = tokens at cur
+		string else_kind = tok_kind(else_token)
+		bool is_else = else_kind is "KW_ELSE"
+		if not is_else
+			break
+		int after_else = cur + 1
+		if after_else >= token_count
+			break
+		Token after_else_token = tokens at after_else
+		string after_else_kind = tok_kind(after_else_token)
+		if after_else_kind is "KW_IF"
+			ParseResult ei_r = gen_if_branch(tokens, after_else + 1, depth, ctx)
+			result_code = s_join([result_code, " else if ", pr_code(ei_r), pad, "}"])
+			cur = pr_pos(ei_r)
+		else
+			int else_body_start = skip_to_body(tokens, after_else)
+			ParseResult else_r = gen_block(tokens, else_body_start, depth + 1, ctx)
+			result_code = s_join([result_code, " else {\n", pr_code(else_r), pad, "}"])
+			cur = pr_pos(else_r)
+			break
+	result_code = s_cat(result_code, "\n")
+	return make_result(result_code, cur)
+
+# === For/while loop code generation ===
+
+fn ParseResult gen_for(tokenList tokens, int pos, int depth, GenCtx ctx)
+	int token_count = len(tokens)
+	string pad = str_repeat("    ", depth)
+	int next_pos = pos + 1
+	Token next_token = tokens at next_pos
+	string next_kind = tok_kind(next_token)
+
+	if next_kind is "KW_IF"
+		int cond_pos = next_pos + 1
+		ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
+		string cond_code = pr_code(cond_r)
+		int cond_end = pr_pos(cond_r)
+		int while_body_start = skip_to_body(tokens, cond_end)
+		ParseResult while_body_r = gen_block(tokens, while_body_start, depth + 1, ctx)
+		string while_body_code = pr_code(while_body_r)
+		int while_body_end = pr_pos(while_body_r)
+		string while_code = s_join([pad, "while ", cond_code, " {\n", while_body_code, pad, "}\n"])
+		return make_result(while_code, while_body_end)
+
+	string var_name = "_"
+	int iter_pos = 0
+	if next_kind is "KW_IN"
+		iter_pos = next_pos + 1
+	else
+		var_name = tok_value(next_token)
+		int in_pos = next_pos + 1
+		iter_pos = in_pos + 1
+
+	Token iter_token = tokens at iter_pos
+	string iter_kind = tok_kind(iter_token)
+	string iter_value = tok_value(iter_token)
+
+	string range_expr = ""
+	int body_tok_pos = 0
+
+	if iter_kind is "IDENT" and iter_value is "range"
+		int lparen = iter_pos + 1
+		int first_pos = lparen + 1
+		ParseResult first_r = gen_expr(tokens, first_pos, ctx)
+		string first_code = pr_code(first_r)
+		int first_p = pr_pos(first_r)
+		Token comma_token = tokens at first_p
+		bool has_start = tok_kind(comma_token) is "COMMA"
+		if has_start
+			int second_pos = first_p + 1
+			ParseResult second_r = gen_expr(tokens, second_pos, ctx)
+			string second_code = pr_code(second_r)
+			int second_p = pr_pos(second_r)
+			range_expr = s_join([first_code, "..", second_code])
+			body_tok_pos = second_p + 1
+		else
+			range_expr = s_join(["0..", first_code])
+			body_tok_pos = first_p + 1
+	else if iter_kind is "LPAREN"
+		int start_pos = iter_pos + 1
+		ParseResult start_r = gen_expr(tokens, start_pos, ctx)
+		string start_code = pr_code(start_r)
+		int start_p = pr_pos(start_r)
+		int end_pos = start_p + 1
+		ParseResult end_r = gen_expr(tokens, end_pos, ctx)
+		string end_code = pr_code(end_r)
+		int end_p = pr_pos(end_r)
+		range_expr = s_join([start_code, "..", end_code])
+		body_tok_pos = end_p + 1
+	else
+		ParseResult src_r = gen_expr(tokens, iter_pos, ctx)
+		string src_code = pr_code(src_r)
+		int src_p = pr_pos(src_r)
+		range_expr = src_code
+		body_tok_pos = src_p
+
+	body_tok_pos = skip_to_body(tokens, body_tok_pos)
+	ParseResult body_r = gen_block(tokens, body_tok_pos, depth + 1, ctx)
+	string body_code = pr_code(body_r)
+	int body_end = pr_pos(body_r)
+
+	string for_code = s_join([pad, "for ", var_name, " in ", range_expr, " {\n", body_code, pad, "}\n"])
+	return make_result(for_code, body_end)

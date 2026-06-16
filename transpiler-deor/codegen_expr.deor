@@ -1,3 +1,8 @@
+(tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
+(make_result, tok_kind, tok_value, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
+(s_join, s_join_with, to_debug_str) in "transpiler-deor/rust_helpers.deor"
+(is_empty, reg_get, is_binary_op, map_op) in "transpiler-deor/utils.deor"
+
 # === Expression code generation ===
 
 fn string find_struct_for_fields(strList struct_reg, strList fields)
