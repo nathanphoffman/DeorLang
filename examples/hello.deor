@@ -1,6 +1,8 @@
-fn main()
+fn void main()
 	x as 10
 	y as 20
+
+	print("test")
 
 	int sum = x + y
 	if sum > 40
@@ -9,3 +11,6 @@ fn main()
 		print(sum)
 	else
 		print(x)
+
+	for i in range(2,12)
+		print(i)

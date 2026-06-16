@@ -19,10 +19,10 @@ fn add(left: i32, right: i32) -> i32 {
 
 ### Void Functions
 
-Omitting the return type means the function returns nothing. No `void` keyword.
+`void` is the explicit return type for functions that return nothing. It is mandatory — omitting the return type is a transpiler error.
 
 ```
-fn greet(string name)
+fn void greet(string name)
     print(name)
 ```
 
@@ -32,7 +32,12 @@ fn greet(name: String) {
 }
 ```
 
-The entry point `fn main()` follows this same rule — no return type, already correct.
+The entry point follows this same rule:
+
+```
+fn void main()
+    # program starts here
+```
 
 Void functions **cannot contain `return` statements**. Early exit is a transpiler error — all conditional paths must be expressed with `if/else` block structure:
 
@@ -40,7 +45,7 @@ Void functions **cannot contain `return` statements**. Early exit is a transpile
 shape itemList = list of Item
 
 # Correct — use if/else to express all paths
-fn process(itemList items, bool skip_invalid)
+fn void process(itemList items, bool skip_invalid)
     for item in items
         valid in item
         if skip_invalid and not valid
@@ -53,7 +58,7 @@ fn process(itemList items, bool skip_invalid)
 shape itemList = list of Item
 
 # Transpiler error — early return not allowed in void functions
-fn process(itemList items, bool skip_invalid)
+fn void process(itemList items, bool skip_invalid)
     for item in items
         valid in item
         if skip_invalid and not valid
@@ -277,10 +282,10 @@ fn roomList filter(roomList items, filterFunc predicate)
 
 ## Entry Point
 
-The function named `main` is always the program entry point. No annotation is needed or allowed — naming the function `main` is sufficient.
+The function named `main` is always the program entry point. It must be declared `fn void main()`.
 
 ```
-fn main()
+fn void main()
     # program starts here
 ```
 
@@ -290,4 +295,4 @@ fn main() {
 }
 ```
 
-Only one `fn main()` may exist per project. Naming any other function `main` is a transpiler error if a `main` already exists.
+Only one `fn void main()` may exist per project. Naming any other function `main` is a transpiler error if a `main` already exists.

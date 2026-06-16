@@ -1,66 +1,51 @@
 # Imports
 
-Imports use the same `in` grammar as destructuring. The source is a string path for local modules or the `rust:` prefix for raw `.rs` files.
+Imports use the `import` keyword followed by the names in parentheses and `in` with a string path.
 
 ```
-(Room, House, Squarefeet, total_area) in "./models"
-
-(calculate, transform) in rust:math_utils
+import (Room, House, Squarefeet, total_area) in "./models"
 ```
 
-```rust
-use my_crate::models::{Room, House, Squarefeet, total_area};
+Empty parens import everything from the file:
+
+```
+import () in "./models"
 ```
 
-**Private declarations:** a declaration marked `private` in its source file cannot be imported. Attempting to name it in an `in` import is a transpiler error. See [Enforced Practices — Visibility](enforced_practices.md#visibility--private).
+**Private declarations:** a declaration marked `private` in its source file cannot be imported. Attempting to name it in an import is a transpiler error. See [Enforced Practices — Visibility](enforced_practices.md#visibility--private).
 
 ---
 
-## Multi-line Import
+## Named Imports
 
-For many names, wrap in parentheses with trailing commas:
+List the specific declarations to import between the parentheses. The transpiler filters the imported file to only those names — all other declarations are excluded from the resulting token stream.
 
 ```
-(
-    Room,
-    House,
-    Squarefeet,
-    total_area,
-    occupied_rooms,
-) in "./models"
+import (gen_fn_decl, gen_struct_decl) in "./codegen_decl"
 ```
+
+This keeps the compiled output lean and makes dependencies explicit.
 
 ---
 
-## Two-Step Import
+## Wildcard Import
 
-A module can be imported as a namespace first, then destructured:
+Empty parens import all top-level declarations from the file — functions, structs, enums, and shapes:
 
 ```
-geo in "./geometry"
-(distance, midpoint) in geo
+import () in "./utils"
 ```
 
-If the intermediate `geo` binding is never used directly, the transpiler emits only the destructured `use` statements.
+Use this when you need everything the module provides, or during early development before dependencies are known.
 
 ---
 
-## `rust:` File Imports
+## Import Resolution
 
-Raw `.rs` files import via the `rust:` prefix. Functions imported this way can only be called from inside `rust` blocks — they have Rust signatures, not Deor ones.
-
-```
-(compress, decompress) in rust:codec
-
-fn bytes compress_data(bytes data)
-    rust
-        codec::compress(&data)
-```
-
-See [Rust Interop](interop.md#external-rs-file-imports) for full details.
+Imports are resolved recursively at transpile time: if an imported file has its own imports, those are inlined first. The final token stream seen by the code generator is fully flattened — there is no module namespace at runtime.
 
 ---
 
 **Conversion notes:**
-- **String path source** (`"./models"`) → local module path, resolved relative to the current file and translated into Rust's `crate::`/`super::` system.
-- **`rust:` source** → `mod math_utils;` in generated output; functions callable only from `rust` blocks.
+- Imports are processed entirely at transpile time. The resulting Rust file is a single flat source — no `use` or `mod` statements are generated from Deor imports.
+- The `import` keyword is consumed by the importer and does not appear in generated Rust.

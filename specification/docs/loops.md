@@ -44,13 +44,13 @@ for idx in 1..11 {
 
 ## Repeat Without an Index
 
-When the loop index is not needed, omit the variable and `in` entirely:
+When the loop index is not needed, write `for in range(n)` — the variable name is omitted but `in` stays:
 
 ```
-for range(10)
+for in range(10)
     do_something()
 
-for range(1, 11)
+for in range(1, 11)
     do_something()
 ```
 
@@ -63,7 +63,7 @@ for _ in 1..11 {
 }
 ```
 
-The parser recognises `for range(` as the no-variable form. This is the idiomatic way to repeat an action N times without caring about the iteration count.
+This is the idiomatic way to repeat an action N times without caring about the iteration count.
 
 ---
 
@@ -95,34 +95,40 @@ for item in &items {
 
 ---
 
-## No `while` Loop — By Design
+## Condition-Based Loops — `for if`
 
-Deor has no `while` keyword. This is intentional.
-
-Every pattern that tempts you toward `while` falls into one of two categories:
-
-**Bounded iteration with an early exit** — use `for` + `break`. This is strictly better than `while` because the maximum iteration count is explicit and termination is guaranteed:
+`for if condition` is Deor's while loop. It loops as long as the condition is true.
 
 ```
-# retry up to a limit — safer than while, bound is visible
-for attempt in range(max_retries)
-    Result result = try_connect(host)
-    if result
+for if cur < token_count
+    # process token at cur
+    cur = cur + 1
+```
+
+```rust
+while cur < token_count {
+    // process token at cur
+    cur += 1;
+}
+```
+
+`for if true` is the infinite loop form — use with `break` to exit:
+
+```
+for if true
+    if done
         break
+    do_work()
 ```
 
-**Truly unbounded iteration** — game loops, server accept loops, I/O polling. These have no natural collection or bound. Use a `rust` block. This is not a workaround — it is the right tool. Unbounded loops almost always coincide with the need for low-level control: async runtimes, OS threads, syscalls, tight timing. Deor's abstractions do not cover that territory, and a bare `while` keyword would not either. The `rust` block makes the boundary explicit: past this point, you are in systems code.
-
-```
-fn void run_server(int port)
-    rust
-        let listener = std::net::TcpListener::bind(format!("0.0.0.0:{}", port)).unwrap();
-        for stream in listener.incoming() {
-            handle(stream.unwrap());
-        }
+```rust
+while true {
+    if done { break; }
+    do_work();
+}
 ```
 
-The line between "Deor handles this" and "Rust handles this" falls exactly where bounded iteration ends and unbounded iteration begins. That is a clean and defensible boundary.
+`for if` fits the same keyword as collection and range iteration — `for` is Deor's single loop keyword, and the token after it determines the form: `item in collection`, `in range(n)`, or `if condition`.
 
 ---
 

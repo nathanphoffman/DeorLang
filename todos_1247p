@@ -24,6 +24,22 @@
   - String semantics (&str vs String inference)
   - User-defined generics
 
+  Transpiler improvements:
+  - Error on missing return type — if the token after the return type in fn decl isn't an IDENT (e.g. fn main() with no void), print an error and exit instead of generating garbage Rust. Add exit_err(string message) to rust_helpers.deor and validate in gen_fn_decl.
+
+  Spec features not yet implemented in the transpiler:
+  - is not — two-word inequality operator (transpiler may silently misparse x is not y)
+  - Compound assignment — +=, -=, *=, /=, %= all in the spec, none in the transpiler
+  - throw — throw msg should transpile to panic!(); not implemented
+  - with — struct record update (old_room with (new_area)); not implemented
+  - remove at — list element removal by index; not implemented
+  - List slices — rooms in range(start, end) extracting a sublist; not implemented
+  - const — immutable top-level primitive bindings; not implemented
+  - Validator types — type declarations, Option<T> semantics, avow, else coalescing; not implemented
+  - as for list construction — rooms as [a, b, c] (type inferred from items); not implemented
+  - Named-args enforcement — no inline literals in user-defined function calls; not enforced
+  - private visibility modifier — not implemented
+
   Discussed this session, not written yet:
   - First-class functions / function type parameter syntax
   - No built-in filter/map/reduce (the opinionated decision should be noted somewhere)

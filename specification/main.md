@@ -12,7 +12,7 @@ A small, indentation-based language that transpiles to Rust. Core influences: Ty
 - **Structs are immutable.** Primitives and lists are mutable.
 - **`is` is always structural equality**, regardless of how a struct is represented internally. `is not` is inequality. `&&`, `||`, `==`, `!=` are transpiler errors — use `and`, `or`, `is`, `is not`.
 - **No lambdas.** Only named top-level `fn`s. No built-in `filter`/`map`/`reduce` — write explicit loops.
-- **Void functions omit the return type.** `fn run()` returns nothing. No `void` keyword.
+- **Void functions use `void` as the return type.** `fn void run()` returns nothing. `void` is mandatory — omitting the return type is a transpiler error.
 - **`shape` for named type aliases.** `shape roomList = list of Room` names a list type. `shape filterFunc = func of Room to bool` names a function signature. Shapes are camelCase and the only way to use parameterized types in Deor. Functions-as-values are passed by name as typed `func` shape parameters — no lambdas, no decorators. `shape` is always a pure type alias — never a value you hold or compare.
 - **`enum` for named variant types.** `enum colorTag` with an indented list of PascalCase variant names declares a discriminated type. Assign with `colorTag color = Red`, check with `if color is Red`. Enums are camelCase names; variants are PascalCase. They are the only instantiable types declared with a camelCase name.
 - **Struct construction uses `Type name = (fields)`, always.** `Room room = (area, name)` — the type is always explicit, every field is a variable in scope matching the field name. No `{}`, no `field: value` pairs. Mirrors destructuring: `(area, name) in room` extracts, `Room room = (area, name)` constructs.

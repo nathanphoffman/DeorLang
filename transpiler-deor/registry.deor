@@ -33,10 +33,8 @@ fn ParseResult collect_struct_fields(tokenList tokens, int start)
 fn strList build_struct_reg(tokenList tokens)
 	strList result = []
 	int token_count = len(tokens)
-	int current_index = 0
-	for raw_i in range(token_count)
-		if raw_i < current_index
-			continue
+	int raw_i = 0
+	for if raw_i < token_count
 		Token token = tokens at raw_i
 		(kind, value, line) in token
 		if kind is "KW_STRUCT"
@@ -48,7 +46,9 @@ fn strList build_struct_reg(tokenList tokens)
 					ParseResult fields_r = collect_struct_fields(tokens, pr_pos(block_r))
 					result at end = tok_value(name_token)
 					result at end = pr_code(fields_r)
-					current_index = pr_pos(fields_r)
+					raw_i = pr_pos(fields_r)
+					continue
+		raw_i = raw_i + 1
 	return result
 
 fn strList build_shape_reg(tokenList tokens)
@@ -88,10 +88,8 @@ fn strList build_enum_reg(tokenList tokens)
 fn strList build_variant_reg(tokenList tokens, strList enum_reg)
 	strList result = []
 	int token_count = len(tokens)
-	int current_index = 0
-	for raw_i in range(token_count)
-		if raw_i < current_index
-			continue
+	int raw_i = 0
+	for if raw_i < token_count
 		Token token = tokens at raw_i
 		(kind, value, line) in token
 		if kind is "KW_ENUM"
@@ -100,26 +98,27 @@ fn strList build_variant_reg(tokenList tokens, strList enum_reg)
 				Token name_token = tokens at name_pos
 				string enum_name = tok_value(name_token)
 				string rust_name = reg_get(enum_reg, enum_name)
-				current_index = name_pos + 1
+				raw_i = name_pos + 1
 				# skip to INDENT
-				for skip_index in (current_index, token_count)
-					Token skip_token = tokens at skip_index
+				for if raw_i < token_count
+					Token skip_token = tokens at raw_i
 					string skip_kind = tok_kind(skip_token)
-					current_index = skip_index + 1
+					raw_i = raw_i + 1
 					if skip_kind is "INDENT"
 						break
 				# collect variants until DEDENT
-				for variant_index in (current_index, token_count)
-					Token variant_token = tokens at variant_index
+				for if raw_i < token_count
+					Token variant_token = tokens at raw_i
 					string variant_kind = tok_kind(variant_token)
 					string variant_value = tok_value(variant_token)
+					raw_i = raw_i + 1
 					if variant_kind is "DEDENT"
-						current_index = variant_index + 1
 						break
 					else if variant_kind is "IDENT"
 						result at end = variant_value
 						result at end = rust_name
-						current_index = variant_index + 1
+				continue
+		raw_i = raw_i + 1
 	return result
 
 # === Type resolution ===
