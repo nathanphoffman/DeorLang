@@ -132,6 +132,73 @@ fn string read_line()
 
 ---
 
+## Parallel Work (Threading)
+
+Deor exposes OS threading through a domain-specific shim file. The pattern: define your input and output structs, declare the matching shapes, and copy the `run_parallel` shim. The rust block inside is invariant — it never changes regardless of what your structs contain. Only the Deor declarations at the top change per domain.
+
+Create a file per work domain, e.g. `PaperWork.deor`:
+
+```
+struct PaperWorkItem
+    int id
+    string payload
+
+struct PaperWorkResult
+    int id
+    string output
+
+shape paperWorkItems = list of PaperWorkItem
+shape paperWorkResults = list of PaperWorkResult
+shape paperWorkFn = func of PaperWorkItem to PaperWorkResult
+
+fn paperWorkResults run_parallel(paperWorkItems items, paperWorkFn worker)
+    rust
+        use std::sync::mpsc;
+        use std::thread;
+        let (tx, rx) = std::sync::mpsc::channel();
+        for item in items.iter() {
+            let tx = tx.clone();
+            let item = item.clone();
+            thread::spawn(move || tx.send(worker(item)).unwrap());
+        }
+        (0..items.len()).map(|_| rx.recv().unwrap()).collect()
+```
+
+Import and use it:
+
+```
+(PaperWorkItem, PaperWorkResult, paperWorkItems, paperWorkFn, run_parallel) in "./PaperWork"
+
+fn PaperWorkResult process(PaperWorkItem item)
+    (id, payload) in item
+    string output = ...
+    PaperWorkResult result = (id, output)
+    return result
+
+fn void main()
+    paperWorkItems items = [...]
+    paperWorkResults results = run_parallel(items, process)
+```
+
+**Adapting to a different payload type** — only the struct field types change. The rust block is identical:
+
+```
+struct PaperWorkItem       # change payload field type here
+    int id
+    int payload            # e.g. int instead of string
+
+struct PaperWorkResult     # change output field type here
+    int id
+    int output
+```
+
+**Notes:**
+- Threads are real OS threads. You can spawn more than your core count — the OS schedules them. For CPU-bound work, results come back in completion order, not spawn order. Include `id` in your result struct if ordering matters.
+- The rust block uses type inference throughout — no type names to update when you change struct fields.
+- No external crates required. `std::sync::mpsc` and `std::thread` are always available.
+
+---
+
 ## String Extras
 
 Operations not covered by the built-in string functions.

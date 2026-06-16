@@ -63,14 +63,25 @@ fn strList build_shape_reg(tokenList tokens)
 		(kind, value, line) in token
 		if kind is "KW_SHAPE"
 			int name_pos = index + 1
+			int form_pos = index + 3
 			int elem_pos = index + 5
 			if elem_pos < token_count
 				Token name_token = tokens at name_pos
+				Token form_token = tokens at form_pos
 				Token elem_token = tokens at elem_pos
 				string shape_name = tok_value(name_token)
+				string form_kind = tok_kind(form_token)
 				string elem_type = tok_value(elem_token)
-				result at end = shape_name
-				result at end = elem_type
+				if form_kind is "KW_LIST"
+					result at end = shape_name
+					result at end = elem_type
+				else
+					int out_pos = index + 7
+					if out_pos < token_count
+						Token out_token = tokens at out_pos
+						string out_type = tok_value(out_token)
+						result at end = shape_name
+						result at end = s_join(["fn:", elem_type, ":", out_type])
 	return result
 
 fn strList build_enum_reg(tokenList tokens)
@@ -152,6 +163,15 @@ fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
 		return enum_rust
 	string elem_type = reg_get(shape_reg, type_name)
 	if not is_empty(elem_type)
+		if starts_with(elem_type, "fn:")
+			strList parts = split(elem_type, ":")
+			string in_type = parts at 1
+			string out_type = parts at 2
+			string rust_in = render_rust_type(in_type)
+			string rust_out = render_rust_type(out_type)
+			if is_empty(rust_out)
+				return s_join(["fn(", rust_in, ")"])
+			return s_join(["fn(", rust_in, ") -> ", rust_out])
 		string rust_elem = render_rust_type(elem_type)
 		return s_join(["Vec<", rust_elem, ">"])
 	return render_rust_type(type_name)

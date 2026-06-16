@@ -1,3 +1,37 @@
+type TokenList = Vec<Token>;
+
+type StrList = Vec<String>;
+
+#[derive(Clone, PartialEq, Debug)]
+struct Token {
+    kind: String,
+    value: String,
+    line: i32,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+struct ParseResult {
+    code: String,
+    new_pos: i32,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+struct GenCtx {
+    variant_reg: StrList,
+    shape_reg: StrList,
+    struct_reg: StrList,
+    enum_reg: StrList,
+    mut_names: StrList,
+    type_reg: StrList,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+struct TokenCursor {
+    tokens: TokenList,
+    pos: i32,
+    current: Token,
+}
+
 fn chars_of(source: String) -> Vec<String> {
     source.chars().map(|c| c.to_string()).collect()
 }
@@ -174,40 +208,6 @@ fn cur_skip_to_body(c: TokenCursor) -> TokenCursor {
     let mut p: i32 = adv_nl(pos.clone(), tokens.clone());
     p = adv_indent(p.clone(), tokens.clone());
     return cur_at(tokens.clone(), p.clone());
-}
-
-type TokenList = Vec<Token>;
-
-type StrList = Vec<String>;
-
-#[derive(Clone, PartialEq, Debug)]
-struct Token {
-    kind: String,
-    value: String,
-    line: i32,
-}
-
-#[derive(Clone, PartialEq, Debug)]
-struct ParseResult {
-    code: String,
-    new_pos: i32,
-}
-
-#[derive(Clone, PartialEq, Debug)]
-struct GenCtx {
-    variant_reg: StrList,
-    shape_reg: StrList,
-    struct_reg: StrList,
-    enum_reg: StrList,
-    mut_names: StrList,
-    type_reg: StrList,
-}
-
-#[derive(Clone, PartialEq, Debug)]
-struct TokenCursor {
-    tokens: TokenList,
-    pos: i32,
-    current: Token,
 }
 
 fn is_empty(source: String) -> bool {
@@ -757,14 +757,27 @@ fn build_shape_reg(tokens: Vec<Token>) -> Vec<String> {
         let line = token.line.clone();
         if kind == "KW_SHAPE" {
             let mut name_pos: i32 = index + 1.clone();
+            let mut form_pos: i32 = index + 3.clone();
             let mut elem_pos: i32 = index + 5.clone();
             if elem_pos < token_count {
                 let mut name_token: Token = tokens[name_pos as usize].clone();
+                let mut form_token: Token = tokens[form_pos as usize].clone();
                 let mut elem_token: Token = tokens[elem_pos as usize].clone();
                 let mut shape_name: String = tok_value(name_token.clone());
+                let mut form_kind: String = tok_kind(form_token.clone());
                 let mut elem_type: String = tok_value(elem_token.clone());
-                result.push(shape_name.clone());
-                result.push(elem_type.clone());
+                if form_kind == "KW_LIST" {
+                    result.push(shape_name.clone());
+                    result.push(elem_type.clone());
+                } else {
+                    let mut out_pos: i32 = index + 7.clone();
+                    if out_pos < token_count {
+                        let mut out_token: Token = tokens[out_pos as usize].clone();
+                        let mut out_type: String = tok_value(out_token.clone());
+                        result.push(shape_name.clone());
+                        result.push(s_join(vec!["fn:".to_string(), elem_type.clone(), ":".to_string(), out_type.clone()]).clone());
+                    }
+                }
             }
         }
     }
@@ -869,6 +882,17 @@ fn resolve_type(type_name: String, shape_reg: Vec<String>, enum_reg: Vec<String>
     }
     let mut elem_type: String = reg_get(shape_reg.clone(), type_name.clone());
     if !is_empty(elem_type.clone()) {
+        if elem_type.starts_with("fn:") {
+            let mut parts: Vec<String> = elem_type.split(":").map(|s| s.to_string()).collect();
+            let mut in_type: String = parts[1 as usize].clone();
+            let mut out_type: String = parts[2 as usize].clone();
+            let mut rust_in: String = render_rust_type(in_type.clone());
+            let mut rust_out: String = render_rust_type(out_type.clone());
+            if is_empty(rust_out.clone()) {
+                return s_join(vec!["fn(".to_string(), rust_in.clone(), ")".to_string()]);
+            }
+            return s_join(vec!["fn(".to_string(), rust_in.clone(), ") -> ".to_string(), rust_out.clone()]);
+        }
         let mut rust_elem: String = render_rust_type(elem_type.clone());
         return s_join(vec!["Vec<".to_string(), rust_elem.clone(), ">".to_string()]);
     }
@@ -1846,15 +1870,32 @@ fn gen_struct_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
 fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut token_count: i32 = tokens.len() as i32;
     let mut name_pos: i32 = pos + 1.clone();
+    let mut form_pos: i32 = pos + 3.clone();
     let mut elem_pos: i32 = pos + 5.clone();
     let mut name_token: Token = tokens[name_pos as usize].clone();
+    let mut form_token: Token = tokens[form_pos as usize].clone();
     let mut elem_token: Token = tokens[elem_pos as usize].clone();
     let mut shape_name: String = tok_value(name_token.clone());
+    let mut form_kind: String = tok_kind(form_token.clone());
     let mut elem_type: String = tok_value(elem_token.clone());
     let mut rust_name: String = pascal_case(shape_name.clone());
-    let mut rust_elem: String = render_rust_type(elem_type.clone());
-    let mut decl: String = s_join(vec!["type ".to_string(), rust_name.clone(), " = Vec<".to_string(), rust_elem.clone(), ">;\n\n".to_string()]);
-    let mut after: i32 = elem_pos + 1.clone();
+    if form_kind == "KW_LIST" {
+        let mut rust_elem: String = render_rust_type(elem_type.clone());
+        let mut decl: String = s_join(vec!["type ".to_string(), rust_name.clone(), " = Vec<".to_string(), rust_elem.clone(), ">;\n\n".to_string()]);
+        let mut after: i32 = elem_pos + 1.clone();
+        return make_result(decl.clone(), adv_nl(after.clone(), tokens.clone()));
+    }
+    let mut out_pos: i32 = pos + 7.clone();
+    let mut out_token: Token = tokens[out_pos as usize].clone();
+    let mut out_type: String = tok_value(out_token.clone());
+    let mut rust_in: String = render_rust_type(elem_type.clone());
+    let mut rust_out: String = render_rust_type(out_type.clone());
+    let mut out_suffix: String = s_join(vec![" -> ".to_string(), rust_out.clone()]);
+    if is_empty(rust_out.clone()) {
+        out_suffix = "".to_string();
+    }
+    let mut decl: String = s_join(vec!["type ".to_string(), rust_name.clone(), " = fn(".to_string(), rust_in.clone(), ")".to_string(), out_suffix.clone(), ";\n\n".to_string()]);
+    let mut after: i32 = out_pos + 1.clone();
     return make_result(decl.clone(), adv_nl(after.clone(), tokens.clone()));
 }
 

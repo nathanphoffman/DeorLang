@@ -38,7 +38,6 @@ Deor is a small, indentation-based language that transpiles to Rust. It enforces
 - [Collections](docs/collections.md) — index access, append, remove, slices
 - [Conditionals](docs/conditionals.md) — `if`, `else if`, `else`, compact ternary
 - [Loops](docs/loops.md) — `for` collection and numeric iteration
-- [Threads](docs/threads.md) — OS threads, channels, parallel spawning
 - [Destructuring](docs/destructuring.md) — field extraction with `in`
 - [Imports](docs/imports.md) — local module and `rust:` file imports
 - [Immutability](docs/immutability.md) — immutability rules, record update (`with`)

@@ -31,17 +31,31 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 
 fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	int token_count = len(tokens)
-	# KW_SHAPE IDENT EQUALS KW_LIST KW_OF IDENT NEWLINE
 	int name_pos = pos + 1
+	int form_pos = pos + 3
 	int elem_pos = pos + 5
 	Token name_token = tokens at name_pos
+	Token form_token = tokens at form_pos
 	Token elem_token = tokens at elem_pos
 	string shape_name = tok_value(name_token)
+	string form_kind = tok_kind(form_token)
 	string elem_type = tok_value(elem_token)
 	string rust_name = pascal_case(shape_name)
-	string rust_elem = render_rust_type(elem_type)
-	string decl = s_join(["type ", rust_name, " = Vec<", rust_elem, ">;\n\n"])
-	int after = elem_pos + 1
+	if form_kind is "KW_LIST"
+		string rust_elem = render_rust_type(elem_type)
+		string decl = s_join(["type ", rust_name, " = Vec<", rust_elem, ">;\n\n"])
+		int after = elem_pos + 1
+		return make_result(decl, adv_nl(after, tokens))
+	int out_pos = pos + 7
+	Token out_token = tokens at out_pos
+	string out_type = tok_value(out_token)
+	string rust_in = render_rust_type(elem_type)
+	string rust_out = render_rust_type(out_type)
+	string out_suffix = s_join([" -> ", rust_out])
+	if is_empty(rust_out)
+		out_suffix = ""
+	string decl = s_join(["type ", rust_name, " = fn(", rust_in, ")", out_suffix, ";\n\n"])
+	int after = out_pos + 1
 	return make_result(decl, adv_nl(after, tokens))
 
 fn ParseResult gen_enum_decl(tokenList tokens, int pos)

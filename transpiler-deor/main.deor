@@ -1,15 +1,49 @@
-import () in "transpiler-deor/rust_helpers.deor"
-import () in "transpiler-deor/deor_helpers.deor"
-import () in "transpiler-deor/types.deor"
-import () in "transpiler-deor/utils.deor"
-import () in "transpiler-deor/lexer.deor"
-import () in "transpiler-deor/registry.deor"
-import () in "transpiler-deor/codegen_expr.deor"
-import () in "transpiler-deor/codegen_if.deor"
-import () in "transpiler-deor/codegen_for.deor"
-import () in "transpiler-deor/codegen_stmt.deor"
-import () in "transpiler-deor/codegen_decl.deor"
-import () in "transpiler-deor/importer.deor"
+(tokenList, strList, Token, ParseResult, GenCtx, TokenCursor) in "transpiler-deor/types.deor"
+
+(
+    chars_of, str_from, rtrim, s_cat, s_join, s_join_nl, s_join_with,
+    read_file, write_file, get_args, is_alpha, is_digit, is_alnum,
+    str_to_int, int_to_str, str_repeat, pascal_case, to_debug_str, token_slice,
+) in "transpiler-deor/rust_helpers.deor"
+
+(
+    pr_code, pr_pos, make_result, make_token,
+    tok_kind, tok_value, cur_at, cur_next,
+    tok_kind_at, tok_value_at, c_pos, c_at_end, cur_skip_to_body,
+) in "transpiler-deor/deor_helpers.deor"
+
+(
+    is_empty, reg_get_stride, reg_has_stride,
+    reg_get, reg_has, reg3_get, reg3_has, list_has,
+    word_to_kind, is_binary_op, map_op, render_rust_type,
+) in "transpiler-deor/utils.deor"
+
+(count_tabs, tokenize) in "transpiler-deor/lexer.deor"
+
+(
+    skip_to_block_start, collect_struct_fields,
+    build_struct_reg, build_shape_reg, build_enum_reg,
+    build_variant_reg, build_type_reg,
+    resolve_type, find_block_end, collect_mut_names,
+) in "transpiler-deor/registry.deor"
+
+(
+    find_struct_for_fields, gen_call_args, gen_list_items,
+    gen_unary_method, gen_binary_str_method, gen_primary, gen_expr,
+) in "transpiler-deor/codegen_expr.deor"
+
+(gen_if_branch, gen_if) in "transpiler-deor/codegen_if.deor"
+
+(gen_for) in "transpiler-deor/codegen_for.deor"
+
+(
+    adv_nl, adv_indent, skip_to_body,
+    emit_val, gen_destructure, gen_stmt, gen_block,
+) in "transpiler-deor/codegen_stmt.deor"
+
+(gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl) in "transpiler-deor/codegen_decl.deor"
+
+(filter_by_names, collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
 
 fn string generate(tokenList tokens)
 	strList struct_reg = build_struct_reg(tokens)
