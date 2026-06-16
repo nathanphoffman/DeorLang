@@ -91,6 +91,8 @@ fn string word_to_kind(string word)
 		return "KW_REMOVE"
 	if word is "rust"
 		return "KW_RUST"
+	if word is "void"
+		return "KW_VOID"
 	return "IDENT"
 
 # === Operator helpers ===
@@ -142,6 +144,8 @@ fn string map_op(string operator)
 	return operator
 
 fn string render_rust_type(string type_name)
+	if type_name is "void"
+		return ""
 	if type_name is "int"
 		return "i32"
 	if type_name is "string"

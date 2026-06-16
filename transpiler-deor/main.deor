@@ -55,7 +55,7 @@ fn string generate(tokenList tokens)
 
 	return output
 
-fn main()
+fn void main()
 
 	strList args = get_args()
 	int arg_count = len(args)

@@ -33,7 +33,7 @@ fn string read_file(string path)
 	rust
 		std::fs::read_to_string(path.as_str()).expect("cannot read input file")
 
-fn write_file(string path, string content)
+fn void write_file(string path, string content)
 	rust
 		std::fs::write(path.as_str(), content.as_str()).expect("cannot write output file");
 

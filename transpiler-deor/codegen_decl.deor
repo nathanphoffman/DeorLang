@@ -83,19 +83,11 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 
 fn ParseResult gen_fn_decl(tokenList tokens, int pos, strList variant_reg, strList shape_reg, strList struct_reg, strList enum_reg)
 	int token_count = len(tokens)
-	# KW_FN [RetType] name LPAREN params RPAREN NEWLINE INDENT body DEDENT
+	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
 	int cur = pos + 1
-	string ret_type = ""
-	Token first_token = tokens at cur
-	string first_kind = tok_kind(first_token)
-	string first_val = tok_value(first_token)
-	int peek_pos = cur + 1
-	if peek_pos < token_count
-		Token peek_token = tokens at peek_pos
-		string peek_kind = tok_kind(peek_token)
-		if first_kind is "IDENT" and peek_kind is "IDENT"
-			ret_type = resolve_type(first_val, shape_reg, enum_reg)
-			cur = cur + 1
+	Token ret_token = tokens at cur
+	string ret_type = resolve_type(tok_value(ret_token), shape_reg, enum_reg)
+	cur = cur + 1
 	Token name_token = tokens at cur
 	string fn_name = tok_value(name_token)
 	cur = cur + 1
