@@ -20,14 +20,6 @@ fn Token make_token(string kind, string value, int line)
 	token as (kind, value, line)
 	return token
 
-fn string tok_kind(Token token)
-	(kind, value, line) in token
-	return kind
-
-fn string tok_value(Token token)
-	(kind, value, line) in token
-	return value
-
 # === TokenCursor helpers ===
 
 fn TokenCursor cur_at(tokenList tokens, int pos)
@@ -44,18 +36,6 @@ fn TokenCursor cur_next(TokenCursor c)
 		return (tokens, pos, current)
 	return (tokens, pos, current)
 
-fn string tok_kind_at(TokenCursor c)
-	(tokens, pos, current) in c
-	return tok_kind(current)
-
-fn string tok_value_at(TokenCursor c)
-	(tokens, pos, current) in c
-	return tok_value(current)
-
-fn int c_pos(TokenCursor c)
-	(tokens, pos, current) in c
-	return pos
-
 fn bool c_at_end(TokenCursor c)
 	(tokens, pos, current) in c
 	int token_count = len(tokens)
@@ -64,16 +44,18 @@ fn bool c_at_end(TokenCursor c)
 fn int adv_nl(int pos, tokenList tokens)
 	int token_count = len(tokens)
 	if pos < token_count
-		string current_kind = tok_kind(tokens at pos)
-		if current_kind is "NEWLINE"
+		Token cur_token = tokens at pos
+		(kind) in cur_token
+		if kind is "NEWLINE"
 			return pos + 1
 	return pos
 
 fn int adv_indent(int pos, tokenList tokens)
 	int token_count = len(tokens)
 	if pos < token_count
-		string current_kind = tok_kind(tokens at pos)
-		if current_kind is "INDENT"
+		Token cur_token = tokens at pos
+		(kind) in cur_token
+		if kind is "INDENT"
 			return pos + 1
 	return pos
 

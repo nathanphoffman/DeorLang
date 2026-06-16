@@ -1,5 +1,4 @@
 (tokenList, strList, Token) in "transpiler-deor/types.deor"
-(tok_kind, tok_value) in "transpiler-deor/deor_helpers.deor"
 (read_file) in "transpiler-deor/rust_helpers.deor"
 (list_has) in "transpiler-deor/utils.deor"
 (tokenize) in "transpiler-deor/lexer.deor"
@@ -16,7 +15,7 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 	int token_count = len(tokens)
 	for if cur < token_count
 		Token token = tokens at cur
-		string kind = tok_kind(token)
+		(kind) in token
 		if kind is "EOF"
 			break
 		if kind is "NEWLINE"
@@ -35,20 +34,21 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 			string decl_name = ""
 			if name_pos < token_count
 				Token name_tok = tokens at name_pos
-				decl_name = tok_value(name_tok)
+				(value) in name_tok
+				decl_name = value
 			bool include = names_count is 0 or list_has(names, decl_name)
 			int depth = 0
 			bool entered = false
 			for if cur < token_count
 				Token t = tokens at cur
-				string tk = tok_kind(t)
+				(kind) in t
 				if include
 					result at end = t
 				cur = cur + 1
-				if tk is "INDENT"
+				if kind is "INDENT"
 					depth = depth + 1
 					entered = true
-				else if tk is "DEDENT"
+				else if kind is "DEDENT"
 					depth = depth - 1
 					if depth is 0 and entered
 						break
@@ -57,15 +57,16 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 			string decl_name = ""
 			if name_pos < token_count
 				Token name_tok = tokens at name_pos
-				decl_name = tok_value(name_tok)
+				(value) in name_tok
+				decl_name = value
 			bool include = names_count is 0 or list_has(names, decl_name)
 			for if cur < token_count
 				Token t = tokens at cur
-				string tk = tok_kind(t)
+				(kind) in t
 				if include
 					result at end = t
 				cur = cur + 1
-				if tk is "NEWLINE"
+				if kind is "NEWLINE"
 					break
 		else
 			cur = cur + 1
@@ -82,47 +83,50 @@ fn tokenList collect_imports_from_raw(tokenList source_tokens)
 		if pos >= token_count
 			break
 		Token token = source_tokens at pos
-		string current_kind = tok_kind(token)
-		if current_kind is "EOF"
+		(kind) in token
+		if kind is "EOF"
 			break
-		if current_kind is "NEWLINE"
+		if kind is "NEWLINE"
 			pos = pos + 1
 			continue
-		if current_kind is "INDENT"
+		if kind is "INDENT"
 			depth = depth + 1
 			pos = pos + 1
 			continue
-		if current_kind is "DEDENT"
+		if kind is "DEDENT"
 			depth = depth - 1
 			pos = pos + 1
 			continue
 		bool at_root = depth is 0
-		if current_kind is "LPAREN" and at_root
+		if kind is "LPAREN" and at_root
 			strList sub_names = []
 			int scan = pos + 1
 			for if scan < token_count
 				Token scan_token = source_tokens at scan
-				string scan_kind = tok_kind(scan_token)
+				(kind) in scan_token
 				scan = scan + 1
-				if scan_kind is "RPAREN"
+				if kind is "RPAREN"
 					break
-				if scan_kind is "IDENT"
-					sub_names at end = tok_value(scan_token)
+				if kind is "IDENT"
+					(value) in scan_token
+					sub_names at end = value
 			int path_pos = scan + 1
 			if path_pos < token_count
 				Token in_token = source_tokens at scan
-				bool is_in = tok_kind(in_token) is "KW_IN"
+				(kind) in in_token
+				bool is_in = kind is "KW_IN"
 				if is_in
 					Token path_token = source_tokens at path_pos
-					string sub_path = tok_value(path_token)
+					(value) in path_token
+					string sub_path = value
 					int name_count = len(sub_names)
 					if name_count > 0
 						tokenList sub_tokens = load_named(sub_path, sub_names)
 						int sub_len = len(sub_tokens)
 						for sub_i in range(sub_len)
 							Token sub_tok = sub_tokens at sub_i
-							string sub_kind = tok_kind(sub_tok)
-							bool sub_is_eof = sub_kind is "EOF"
+							(kind) in sub_tok
+							bool sub_is_eof = kind is "EOF"
 							if not sub_is_eof
 								result at end = sub_tok
 					pos = path_pos + 1
@@ -156,7 +160,7 @@ fn tokenList deduplicate_decls(tokenList tokens)
 	int pos = 0
 	for if pos < token_count
 		Token token = tokens at pos
-		string kind = tok_kind(token)
+		(kind) in token
 		if kind is "EOF"
 			result at end = token
 			pos = pos + 1
@@ -178,7 +182,8 @@ fn tokenList deduplicate_decls(tokenList tokens)
 			string decl_name = ""
 			if name_pos < token_count
 				Token name_tok = tokens at name_pos
-				decl_name = tok_value(name_tok)
+				(value) in name_tok
+				decl_name = value
 			bool already_seen = list_has(seen, decl_name)
 			if not already_seen
 				seen at end = decl_name
@@ -186,14 +191,14 @@ fn tokenList deduplicate_decls(tokenList tokens)
 			bool entered = false
 			for if pos < token_count
 				Token t = tokens at pos
-				string tk = tok_kind(t)
+				(kind) in t
 				if not already_seen
 					result at end = t
 				pos = pos + 1
-				if tk is "INDENT"
+				if kind is "INDENT"
 					depth = depth + 1
 					entered = true
-				else if tk is "DEDENT"
+				else if kind is "DEDENT"
 					depth = depth - 1
 					if depth is 0 and entered
 						break
@@ -202,17 +207,18 @@ fn tokenList deduplicate_decls(tokenList tokens)
 			string decl_name = ""
 			if name_pos < token_count
 				Token name_tok = tokens at name_pos
-				decl_name = tok_value(name_tok)
+				(value) in name_tok
+				decl_name = value
 			bool already_seen = list_has(seen, decl_name)
 			if not already_seen
 				seen at end = decl_name
 			for if pos < token_count
 				Token t = tokens at pos
-				string tk = tok_kind(t)
+				(kind) in t
 				if not already_seen
 					result at end = t
 				pos = pos + 1
-				if tk is "NEWLINE"
+				if kind is "NEWLINE"
 					break
 		else
 			result at end = token
@@ -235,18 +241,18 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 			break
 
 		Token token = source_tokens at pos
-		string current_kind = tok_kind(token)
+		(kind) in token
 
-		if current_kind is "EOF"
+		if kind is "EOF"
 			break
 
-		if current_kind is "INDENT"
+		if kind is "INDENT"
 			depth = depth + 1
 			result at end = token
 			pos = pos + 1
 			continue
 
-		if current_kind is "DEDENT"
+		if kind is "DEDENT"
 			depth = depth - 1
 			result at end = token
 			pos = pos + 1
@@ -254,32 +260,35 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 
 		bool at_root = depth is 0
 
-		if current_kind is "LPAREN" and at_root
+		if kind is "LPAREN" and at_root
 			strList import_names = []
 			int scan = pos + 1
 			for if scan < token_count
 				Token scan_token = source_tokens at scan
-				string scan_kind = tok_kind(scan_token)
+				(kind) in scan_token
 				scan = scan + 1
-				if scan_kind is "RPAREN"
+				if kind is "RPAREN"
 					break
-				if scan_kind is "IDENT"
-					import_names at end = tok_value(scan_token)
+				if kind is "IDENT"
+					(value) in scan_token
+					import_names at end = value
 			int path_pos = scan + 1
 			if path_pos < token_count
 				Token in_token = source_tokens at scan
-				bool is_in = tok_kind(in_token) is "KW_IN"
+				(kind) in in_token
+				bool is_in = kind is "KW_IN"
 				if is_in
 					Token path_token = source_tokens at path_pos
-					string imp_path = tok_value(path_token)
+					(value) in path_token
+					string imp_path = value
 					int name_count = len(import_names)
 					if name_count > 0
 						tokenList imp_tokens = load_named(imp_path, import_names)
 						int import_len = len(imp_tokens)
 						for import_index in range(import_len)
 							Token import_token = imp_tokens at import_index
-							string import_kind = tok_kind(import_token)
-							bool import_is_eof = import_kind is "EOF"
+							(kind) in import_token
+							bool import_is_eof = kind is "EOF"
 							if not import_is_eof
 								result at end = import_token
 					pos = path_pos + 1

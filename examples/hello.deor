@@ -29,6 +29,9 @@ fn Test say_hi(Test test)
 	world as 10
 	return (hello,world)
 
+# fn int add(int val1, int val2)
+# 	val1 + val2
+
 fn void main()
 	x as 10
 	y as 20

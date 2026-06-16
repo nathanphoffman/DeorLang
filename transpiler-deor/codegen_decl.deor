@@ -1,7 +1,7 @@
 (tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
 (
-    make_result, tok_kind, tok_value, pr_code, pr_pos,
-    cur_at, cur_next, tok_kind_at, tok_value_at, c_pos, c_at_end,
+    make_result, pr_code, pr_pos,
+    cur_at, cur_next, c_at_end,
     cur_skip_to_body, adv_nl, skip_to_body,
 ) in "transpiler-deor/deor_helpers.deor"
 (s_join, s_join_nl, s_join_with, pascal_case, token_slice) in "transpiler-deor/rust_helpers.deor"
@@ -16,24 +16,25 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 	int token_count = len(tokens)
 	int name_pos = pos + 1
 	Token name_token = tokens at name_pos
-	string struct_name = tok_value(name_token)
+	(value) in name_token
+	string struct_name = value
 	int cur = name_pos + 1
 	cur = skip_to_body(tokens, cur)
 	strList field_lines = []
 	for if cur < token_count
 		Token field_token = tokens at cur
-		string field_kind = tok_kind(field_token)
-		string field_value = tok_value(field_token)
-		if field_kind is "DEDENT"
+		(kind, value) in field_token
+		if kind is "DEDENT"
 			cur = cur + 1
 			break
-		else if field_kind is "NEWLINE"
+		else if kind is "NEWLINE"
 			cur = cur + 1
-		else if field_kind is "IDENT"
-			string field_type = field_value
+		else if kind is "IDENT"
+			string field_type = value
 			int fname_pos = cur + 1
 			Token fname_token = tokens at fname_pos
-			string field_name = tok_value(fname_token)
+			(value) in fname_token
+			string field_name = value
 			string rust_type = render_rust_type(field_type)
 			field_lines at end = s_join(["    ", field_name, ": ", rust_type, ","])
 			cur = fname_pos + 1
@@ -49,18 +50,21 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	Token name_token = tokens at name_pos
 	Token form_token = tokens at form_pos
 	Token elem_token = tokens at elem_pos
-	string shape_name = tok_value(name_token)
-	string form_kind = tok_kind(form_token)
-	string elem_type = tok_value(elem_token)
+	(value) in name_token
+	string shape_name = value
+	(kind) in form_token
+	(value) in elem_token
+	string elem_type = value
 	string rust_name = pascal_case(shape_name)
-	if form_kind is "KW_LIST"
+	if kind is "KW_LIST"
 		string rust_elem = render_rust_type(elem_type)
 		string decl = s_join(["type ", rust_name, " = Vec<", rust_elem, ">;\n\n"])
 		int after = elem_pos + 1
 		return make_result(decl, adv_nl(after, tokens))
 	int out_pos = pos + 7
 	Token out_token = tokens at out_pos
-	string out_type = tok_value(out_token)
+	(value) in out_token
+	string out_type = value
 	string rust_in = render_rust_type(elem_type)
 	string rust_out = render_rust_type(out_type)
 	string out_suffix = s_join([" -> ", rust_out])
@@ -72,35 +76,42 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 
 fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 	TokenCursor c = cur_at(tokens, pos + 1)
-	string enum_name = tok_value_at(c)
-	string rust_name = pascal_case(enum_name)
-	c = cur_next(c)
-	c = cur_skip_to_body(c)
-	strList variant_lines = []
-	for if not c_at_end(c)
-		string kind = tok_kind_at(c)
-		string value = tok_value_at(c)
-		c = cur_next(c)
-		if kind is "DEDENT"
-			break
-		if kind is "IDENT"
-			variant_lines at end = s_join(["    ", value, ","])
-	string variants_code = s_join_nl(variant_lines)
-	string decl = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ", rust_name, " {\n", variants_code, "\n}\n\n"])
-	return make_result(decl, c_pos(c))
+	using c
+		(current) in c
+		(value) in current
+		string enum_name = value
+		string rust_name = pascal_case(enum_name)
+		cur_next()
+		cur_skip_to_body()
+		strList variant_lines = []
+		for if not c_at_end(c)
+			(current) in c
+			(kind, value) in current
+			cur_next()
+			if kind is "DEDENT"
+				break
+			if kind is "IDENT"
+				variant_lines at end = s_join(["    ", value, ","])
+		string variants_code = s_join_nl(variant_lines)
+		string decl = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ", rust_name, " {\n", variants_code, "\n}\n\n"])
+		(pos) in c
+		return make_result(decl, pos)
 
 fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 	int token_count = len(tokens)
 	int name_pos = pos + 1
 	Token name_token = tokens at name_pos
-	string type_name = tok_value(name_token)
+	(value) in name_token
+	string type_name = value
 	int param_type_pos = pos + 3
 	Token param_type_token = tokens at param_type_pos
-	string param_type = tok_value(param_type_token)
+	(value) in param_type_token
+	string param_type = value
 	string rust_param_type = render_rust_type(param_type)
 	int param_name_pos = pos + 4
 	Token param_name_token = tokens at param_name_pos
-	string param_name = tok_value(param_name_token)
+	(value) in param_name_token
+	string param_name = value
 	# pos+5=RPAREN, pos+6=NEWLINE, pos+7=INDENT
 	int body_pos = pos + 8
 	ParseResult pred_r = gen_expr(tokens, body_pos, ctx)
@@ -110,7 +121,8 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 	for if cur < token_count
 		Token t = tokens at cur
 		cur = cur + 1
-		if tok_kind(t) is "DEDENT"
+		(kind) in t
+		if kind is "DEDENT"
 			break
 	string struct_code = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ", type_name, "(", rust_param_type, ");\n\n"])
 	string impl_code = s_join(["impl ", type_name, " {\n    fn new(", param_name, ": ", rust_param_type, ") -> Option<Self> {\n        if ", pred_code, " {\n            Some(", type_name, "(", param_name, "))\n        } else {\n            None\n        }\n    }\n}\n\n"])
@@ -122,10 +134,12 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
 	int cur = pos + 1
 	Token ret_token = tokens at cur
-	string ret_type = resolve_type(tok_value(ret_token), shape_reg, enum_reg)
+	(value) in ret_token
+	string ret_type = resolve_type(value, shape_reg, enum_reg)
 	cur = cur + 1
 	Token name_token = tokens at cur
-	string fn_name = tok_value(name_token)
+	(value) in name_token
+	string fn_name = value
 	cur = cur + 1
 	# skip LPAREN
 	cur = cur + 1
@@ -133,18 +147,18 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	strList param_strs = []
 	for if cur < token_count
 		Token param_token = tokens at cur
-		string param_kind = tok_kind(param_token)
-		string param_value = tok_value(param_token)
-		if param_kind is "RPAREN"
+		(kind, value) in param_token
+		if kind is "RPAREN"
 			cur = cur + 1
 			break
-		else if param_kind is "COMMA"
+		else if kind is "COMMA"
 			cur = cur + 1
-		else if param_kind is "IDENT"
-			string param_type = param_value
+		else if kind is "IDENT"
+			string param_type = value
 			int pname_pos = cur + 1
 			Token pname_token = tokens at pname_pos
-			string param_name = tok_value(pname_token)
+			(value) in pname_token
+			string param_name = value
 			string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
 			param_strs at end = s_join([param_name, ": ", rust_param_type])
 			cur = pname_pos + 1
@@ -154,7 +168,8 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	# skip INDENT
 	if cur < token_count
 		Token indent_token = tokens at cur
-		if tok_kind(indent_token) is "INDENT"
+		(kind) in indent_token
+		if kind is "INDENT"
 			cur = cur + 1
 	# pre-scan body for mutable names
 	int body_end_pos = find_block_end(tokens, indent_pos)

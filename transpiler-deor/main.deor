@@ -24,34 +24,34 @@ fn string generate(tokenList tokens)
 			break
 
 		Token token = tokens at pos
-		string current_kind = tok_kind(token)
+		(kind) in token
 
-		if current_kind is "EOF"
+		if kind is "EOF"
 			break
-		if current_kind is "NEWLINE"
+		if kind is "NEWLINE"
 			pos = pos + 1
 			continue
-		if current_kind is "KW_STRUCT"
+		if kind is "KW_STRUCT"
 			ParseResult result = gen_struct_decl(tokens, pos)
 			output = s_cat(output, pr_code(result))
 			pos = pr_pos(result)
 			continue
-		if current_kind is "KW_SHAPE"
+		if kind is "KW_SHAPE"
 			ParseResult result = gen_shape_decl(tokens, pos)
 			output = s_cat(output, pr_code(result))
 			pos = pr_pos(result)
 			continue
-		if current_kind is "KW_ENUM"
+		if kind is "KW_ENUM"
 			ParseResult result = gen_enum_decl(tokens, pos)
 			output = s_cat(output, pr_code(result))
 			pos = pr_pos(result)
 			continue
-		if current_kind is "KW_TYPE"
+		if kind is "KW_TYPE"
 			ParseResult result = gen_type_decl(tokens, pos, ctx)
 			output = s_cat(output, pr_code(result))
 			pos = pr_pos(result)
 			continue
-		if current_kind is "KW_FN"
+		if kind is "KW_FN"
 			ParseResult result = gen_fn_decl(tokens, pos, ctx)
 			output = s_cat(output, pr_code(result))
 			pos = pr_pos(result)

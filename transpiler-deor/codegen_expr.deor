@@ -1,5 +1,5 @@
 (tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
-(make_result, tok_kind, tok_value, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
+(make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
 (s_join, s_join_with, to_debug_str) in "transpiler-deor/rust_helpers.deor"
 (is_empty, reg_get, is_binary_op, map_op) in "transpiler-deor/utils.deor"
 
@@ -52,11 +52,11 @@ fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
 			break
 
 		Token token = tokens at cur
-		string current_kind = tok_kind(token)
+		(kind) in token
 
-		if current_kind is "RPAREN"
+		if kind is "RPAREN"
 			break
-		if current_kind is "COMMA"
+		if kind is "COMMA"
 			cur = cur + 1
 			continue
 
@@ -65,17 +65,19 @@ fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
 		int arg_pos = pr_pos(arg_r)
 		# clone simple identifiers; .to_string() for string literals
 		Token start_token = tokens at cur
-		string start_kind = tok_kind(start_token)
+		(kind) in start_token
 
-		if start_kind is "STRING"
+		if kind is "STRING"
 			arg_code = s_join([arg_code, ".to_string()"])
-		else if start_kind is "IDENT"
+		else if kind is "IDENT"
 			int next_cur = cur + 1
-			string next_kind = ""
+			bool peek_is_call = false
+			bool peek_is_idx = false
 			if next_cur < token_count
-				next_kind = tok_kind(tokens at next_cur)
-			bool peek_is_call = next_kind is "LPAREN"
-			bool peek_is_idx = next_kind is "KW_AT"
+				Token next_tok = tokens at next_cur
+				(kind) in next_tok
+				peek_is_call = kind is "LPAREN"
+				peek_is_idx = kind is "KW_AT"
 			if not peek_is_call
 				if not peek_is_idx
 					arg_code = s_join([arg_code, ".clone()"])
@@ -92,18 +94,18 @@ fn ParseResult gen_list_items(tokenList tokens, int pos, GenCtx ctx)
 		if cur >= token_count
 			break
 		Token token = tokens at cur
-		string current_kind = tok_kind(token)
-		if current_kind is "RBRACKET"
+		(kind) in token
+		if kind is "RBRACKET"
 			break
-		if current_kind is "COMMA"
+		if kind is "COMMA"
 			cur = cur + 1
 			continue
 		ParseResult item_r = gen_expr(tokens, cur, ctx)
 		string item_code = pr_code(item_r)
 		int item_pos = pr_pos(item_r)
 		Token start_token = tokens at cur
-		string start_kind = tok_kind(start_token)
-		if start_kind is "STRING"
+		(kind) in start_token
+		if kind is "STRING"
 			item_code = s_join([item_code, ".to_string()"])
 		else
 			item_code = s_join([item_code, ".clone()"])
@@ -125,9 +127,9 @@ fn ParseResult gen_binary_str_method(tokenList tokens, int args_pos, string meth
 	string a1c = pr_code(a1_r)
 	int close_pos = pr_pos(a1_r) + 1
 	Token a1_token = tokens at sep_pos
-	string a1_kind = tok_kind(a1_token)
+	(kind) in a1_token
 	string a1_arg = a1c
-	bool a1_is_str = a1_kind is "STRING"
+	bool a1_is_str = kind is "STRING"
 	if not a1_is_str
 		a1_arg = s_join([a1c, ".as_str()"])
 	return make_result(s_join([a0c, ".", method_name, "(", a1_arg, ")"]), close_pos)
@@ -157,8 +159,8 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 		int inner_pos = pos + 1
 		if inner_pos < token_count
 			Token next_token = tokens at inner_pos
-			string next_kind = tok_kind(next_token)
-			if next_kind is "RBRACKET"
+			(kind) in next_token
+			if kind is "RBRACKET"
 				int after = inner_pos + 1
 				return make_result("Vec::new()", after)
 		ParseResult items_r = gen_list_items(tokens, inner_pos, ctx)
@@ -172,7 +174,8 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 		int peek_pos = pos + 1
 		if peek_pos < token_count
 			Token peek_token = tokens at peek_pos
-			if tok_kind(peek_token) is "KW_AVOW"
+			(kind) in peek_token
+			if kind is "KW_AVOW"
 				int expr_pos = peek_pos + 1
 				ParseResult expr_r = gen_expr(tokens, expr_pos, ctx)
 				string expr_code = pr_code(expr_r)
@@ -183,15 +186,14 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 			int cur = peek_pos
 			for if cur < token_count
 				Token field_token = tokens at cur
-				string field_kind = tok_kind(field_token)
-				string field_value = tok_value(field_token)
-				if field_kind is "RPAREN"
+				(kind, value) in field_token
+				if kind is "RPAREN"
 					cur = cur + 1
 					break
-				else if field_kind is "COMMA"
+				else if kind is "COMMA"
 					cur = cur + 1
-				else if field_kind is "IDENT"
-					fields at end = field_value
+				else if kind is "IDENT"
+					fields at end = value
 					cur = cur + 1
 			string struct_name = find_struct_for_fields(struct_reg, fields)
 			string fields_code = s_join_with(fields, ", ")
@@ -208,10 +210,10 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 		int next_pos = pos + 1
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
-			string next_kind = tok_kind(next_token)
+			(kind) in next_token
 
 			# function call: name(args)
-			if next_kind is "LPAREN"
+			if kind is "LPAREN"
 				string func_name = value
 				int args_pos = next_pos + 1
 				# built-in string methods
@@ -238,9 +240,9 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 					string a1c = pr_code(a1_r)
 					int a1p = pr_pos(a1_r)
 					Token a1_token = tokens at sep_pos
-					string a1_kind = tok_kind(a1_token)
+					(kind) in a1_token
 					string a1_arg = a1c
-					bool a1_is_str = a1_kind is "STRING"
+					bool a1_is_str = kind is "STRING"
 					if not a1_is_str
 						a1_arg = s_join([a1c, ".as_str()"])
 					int close_pos = a1p + 1
@@ -253,7 +255,7 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 				return make_result(s_join([func_name, "(", args_code, ")"]), after_paren)
 
 			# index read: name at idx
-			if next_kind is "KW_AT"
+			if kind is "KW_AT"
 				int idx_pos = next_pos + 1
 				ParseResult idx_r = gen_primary(tokens, idx_pos, ctx)
 				string idx_code = pr_code(idx_r)
@@ -275,22 +277,22 @@ fn ParseResult gen_expr(tokenList tokens, int pos, GenCtx ctx)
 	int cur_pos = pr_pos(primary_r)
 	int token_count = len(tokens)
 	Token first_token = tokens at pos
-	bool left_has_str = tok_kind(first_token) is "STRING"
+	(kind) in first_token
+	bool left_has_str = kind is "STRING"
 
 	for if cur_pos < token_count
 		Token operator_token = tokens at cur_pos
-		string operator_kind = tok_kind(operator_token)
-		string operator_value = tok_value(operator_token)
-		if not is_binary_op(operator_kind)
+		(kind, value) in operator_token
+		if not is_binary_op(kind)
 			break
 		# handle "is not" as two-token operator
-		string operator_str = operator_value
+		string operator_str = value
 		int after_op = cur_pos + 1
-		if operator_kind is "KW_IS"
+		if kind is "KW_IS"
 			if after_op < token_count
 				Token maybe_not = tokens at after_op
-				string next_kind = tok_kind(maybe_not)
-				if next_kind is "KW_NOT"
+				(kind) in maybe_not
+				if kind is "KW_NOT"
 					operator_str = "is not"
 					after_op = after_op + 1
 		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
@@ -300,21 +302,24 @@ fn ParseResult gen_expr(tokenList tokens, int pos, GenCtx ctx)
 		# string concat handling
 		if operator_str is "+"
 			Token left_token = tokens at pos
-			string left_kind = tok_kind(left_token)
+			(kind) in left_token
+			bool left_is_str = kind is "STRING"
 			Token rhs_token = tokens at after_op
-			string rhs_kind = tok_kind(rhs_token)
+			(kind) in rhs_token
+			bool rhs_is_str = kind is "STRING"
+			bool rhs_is_ident = kind is "IDENT"
 			# left is a STRING literal: emit format!
-			if left_kind is "STRING"
+			if left_is_str
 				left_code = s_join(["format!(\"{}{}\", ", left_code, ", ", rhs_code, ")"])
 				left_has_str = true
 				cur_pos = rhs_pos
 				continue
 			# left is a String expr from prior concat: rhs identifier needs .as_str()
 			if left_has_str
-				if rhs_kind is "IDENT"
+				if rhs_is_ident
 					rhs_code = s_join([rhs_code, ".as_str()"])
 			# rhs is a string literal → left will now be a String expr
-			if rhs_kind is "STRING"
+			if rhs_is_str
 				left_has_str = true
 		left_code = s_join([left_code, " ", rust_op, " ", rhs_code])
 		cur_pos = rhs_pos
