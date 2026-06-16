@@ -214,4 +214,11 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 				if prev_kind is "IDENT"
 					if not list_has(result, prev_value)
 						result at end = prev_value
+		if kind is "KW_USING"
+			int using_var_pos = raw_i + 1
+			if using_var_pos < end_pos
+				Token using_var_token = tokens at using_var_pos
+				string using_var_value = tok_value(using_var_token)
+				if not list_has(result, using_var_value)
+					result at end = using_var_value
 	return result

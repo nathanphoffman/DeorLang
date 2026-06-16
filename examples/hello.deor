@@ -2,6 +2,11 @@ struct Test
 	int hello
 	int world
 
+fn Test increment(Test test)
+	(hello, world) = test
+	print(hello)
+	return (hello, world)
+
 type Squarefeet(int n)
 	n > 0
 
@@ -45,3 +50,12 @@ fn void main()
 
 
 	Test old_test = (hello,world)
+
+	using old_test
+		increment()
+		increment()
+		increment()
+
+
+
+

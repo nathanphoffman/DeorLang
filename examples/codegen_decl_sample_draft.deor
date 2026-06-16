@@ -71,23 +71,27 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	return make_result(decl, adv_nl(after, tokens))
 
 fn ParseResult gen_enum_decl(tokenList tokens, int pos)
-	TokenCursor c = cur_at(tokens, pos + 1)
-	string enum_name = tok_value_at(c)
-	string rust_name = pascal_case(enum_name)
-	c = cur_next(c)
-	c = cur_skip_to_body(c)
-	strList variant_lines = []
-	for if not c_at_end(c)
-		string kind = tok_kind_at(c)
-		string value = tok_value_at(c)
-		c = cur_next(c)
-		if kind is "DEDENT"
-			break
-		if kind is "IDENT"
-			variant_lines at end = s_join(["    ", value, ","])
-	string variants_code = s_join_nl(variant_lines)
-	string decl = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ", rust_name, " {\n", variants_code, "\n}\n\n"])
-	return make_result(decl, c_pos(c))
+	TokenCursor cursor = cur_at(tokens, pos + 1)
+	using cursor
+
+		string rust_name = pascal_case(enum_name)
+		cur_next()
+		cur_skip_to_body()
+		# update_first_name() with "nate"
+
+		strList variant_lines = []
+		for if not c_at_end(cursor)
+			cur_next()
+
+			if kind is "DEDENT"
+				break
+			if kind is "IDENT"
+				variant_lines at end = s_join(["    ", value, ","])
+
+		string variants_code = s_join_nl(variant_lines)
+		string decl = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ", rust_name, " {\n", variants_code, "\n}\n\n"])
+		
+		return make_result(decl, pos)
 
 fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 	int token_count = len(tokens)
@@ -162,9 +166,7 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	tokenList body_tokens = token_slice(tokens, body_start, body_end_pos + 1)
 	int body_len = len(body_tokens)
 	strList mut_names = collect_mut_names(body_tokens, 0, body_len - 1)
-	string using_type = ""
-	string using_var = ""
-	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var)
+	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg)
 	# generate body on the small slice so recursive clones are cheap
 	ParseResult body_r = gen_block(body_tokens, 0, 1, body_ctx)
 	string body_code = pr_code(body_r)

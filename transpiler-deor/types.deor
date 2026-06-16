@@ -17,6 +17,8 @@ struct GenCtx
 	strList enum_reg
 	strList mut_names
 	strList type_reg
+	string using_type
+	string using_var
 
 struct TokenCursor
 	tokenList tokens

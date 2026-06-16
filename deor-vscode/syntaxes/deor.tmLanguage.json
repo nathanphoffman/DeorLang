@@ -75,7 +75,7 @@
     },
     "keywords-control": {
       "name": "keyword.control.deor",
-      "match": "\\b(if|else|for|return|break|continue|throw)\\b"
+      "match": "\\b(if|else|for|return|break|continue|throw|using)\\b"
     },
     "keywords-other": {
       "name": "keyword.other.deor",

@@ -11,7 +11,9 @@ fn string generate(tokenList tokens)
 	strList variant_reg = build_variant_reg(tokens, enum_reg)
 	strList type_reg = build_type_reg(tokens)
 	strList mut_names = []
-	GenCtx ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg)
+	string using_type = ""
+	string using_var = ""
+	GenCtx ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var)
 
 	string output = ""
 	int token_count = len(tokens)
