@@ -147,7 +147,9 @@ fn abs(val: i32) -> i32 {
 A function whose return type is a validator type may return `None` through its return variable — the caller knows to check. `return none` is a transpiler error; always return a named typed variable.
 
 ```
-fn Roll find_best(Roll list rolls)
+shape rollList = list of Roll
+
+fn Roll find_best(rollList rolls)
     Roll best = none
 
     for roll in rolls
@@ -200,7 +202,7 @@ fn intList apply_all(intList nums, doubleFunc transform)
     intList result = []
     for num in nums
         int out = transform(num)
-        result insert out
+        result at end = out
     return result
 
 fn int double(int num)
@@ -269,7 +271,7 @@ fn roomList filter(roomList items, filterFunc predicate)
     roomList result = []
     for item in items
         if predicate(item)
-            result insert item
+            result at end = item
     return result
 ```
 

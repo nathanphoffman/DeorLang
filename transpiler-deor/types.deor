@@ -1,0 +1,11 @@
+shape tokenList = list of Token
+shape strList = list of string
+
+struct Token
+	string kind
+	string value
+	int line
+
+struct ParseResult
+	string code
+	int new_pos

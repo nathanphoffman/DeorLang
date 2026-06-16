@@ -103,7 +103,7 @@ fn roomList filter(roomList items, filterFunc predicate)
     roomList result = []
     for item in items
         if predicate(item)
-            result insert item
+            result at end = item
     return result
 
 fn bool by_name(Room room)
@@ -253,7 +253,7 @@ struct Request
     requestBody body
 ```
 
-`len()` works on bytes shapes. `insert` and `remove` work at the element level (individual `u8` values). For any actual byte-level computation — bit manipulation, encoding, parsing — use a `rust` block; bytes shapes carry the data in and out.
+`len()` works on bytes shapes. `at end =` and `remove at` work at the element level (individual `u8` values). For any actual byte-level computation — bit manipulation, encoding, parsing — use a `rust` block; bytes shapes carry the data in and out.
 
 ---
 

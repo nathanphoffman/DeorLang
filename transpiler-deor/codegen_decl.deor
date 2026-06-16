@@ -1,0 +1,150 @@
+# === Declaration code generation ===
+
+fn ParseResult gen_struct_decl(tokenList tokens, int pos)
+	int n = len(tokens)
+	int name_pos = pos + 1
+	Token name_tok = tokens at name_pos
+	string struct_name = tok_value(name_tok)
+	int cur = name_pos + 1
+	# skip NEWLINE INDENT
+	ParseResult nl_r = skip_newline(tokens, cur)
+	cur = pr_pos(nl_r)
+	if cur < n
+		Token it = tokens at cur
+		if tok_kind(it) is "INDENT"
+			cur = cur + 1
+	strList field_lines = []
+	for fi in range(32)
+		if cur >= n
+			break
+		Token ft = tokens at cur
+		string fk = tok_kind(ft)
+		string fv = tok_value(ft)
+		if fk is "DEDENT"
+			cur = cur + 1
+			break
+		else if fk is "NEWLINE"
+			cur = cur + 1
+		else if fk is "IDENT"
+			string field_type = fv
+			int fname_pos = cur + 1
+			Token fname_tok = tokens at fname_pos
+			string field_name = tok_value(fname_tok)
+			string rust_type = render_rust_type(field_type)
+			field_lines at end = s_join(["    ", field_name, ": ", rust_type, ","])
+			cur = fname_pos + 1
+	string fields_code = s_join_nl(field_lines)
+	string decl = s_join(["#[derive(Clone, PartialEq, Debug)]\nstruct ", struct_name, " {\n", fields_code, "\n}\n\n"])
+	return make_result(decl, cur)
+
+fn ParseResult gen_shape_decl(tokenList tokens, int pos)
+	int n = len(tokens)
+	# KW_SHAPE IDENT EQUALS KW_LIST KW_OF IDENT NEWLINE
+	int name_pos = pos + 1
+	int elem_pos = pos + 5
+	Token name_tok = tokens at name_pos
+	Token elem_tok = tokens at elem_pos
+	string shape_name = tok_value(name_tok)
+	string elem_type = tok_value(elem_tok)
+	string rust_name = pascal_case(shape_name)
+	string rust_elem = render_rust_type(elem_type)
+	string decl = s_join(["type ", rust_name, " = Vec<", rust_elem, ">;\n\n"])
+	int after = elem_pos + 1
+	ParseResult nl_r = skip_newline(tokens, after)
+	return make_result(decl, pr_pos(nl_r))
+
+fn ParseResult gen_enum_decl(tokenList tokens, int pos)
+	int n = len(tokens)
+	int name_pos = pos + 1
+	Token name_tok = tokens at name_pos
+	string enum_name = tok_value(name_tok)
+	string rust_name = pascal_case(enum_name)
+	int cur = name_pos + 1
+	ParseResult nl_r = skip_newline(tokens, cur)
+	cur = pr_pos(nl_r)
+	if cur < n
+		Token it = tokens at cur
+		if tok_kind(it) is "INDENT"
+			cur = cur + 1
+	strList variant_lines = []
+	for vi in range(64)
+		if cur >= n
+			break
+		Token vt = tokens at cur
+		string vk = tok_kind(vt)
+		string vv = tok_value(vt)
+		if vk is "DEDENT"
+			cur = cur + 1
+			break
+		else if vk is "NEWLINE"
+			cur = cur + 1
+		else if vk is "IDENT"
+			variant_lines at end = s_join(["    ", vv, ","])
+			cur = cur + 1
+	string variants_code = s_join_nl(variant_lines)
+	string decl = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ", rust_name, " {\n", variants_code, "\n}\n\n"])
+	return make_result(decl, cur)
+
+fn ParseResult gen_fn_decl(tokenList tokens, int pos, strList variant_reg, strList shape_reg, strList struct_reg, strList enum_reg)
+	int n = len(tokens)
+	# KW_FN [RetType] name LPAREN params RPAREN NEWLINE INDENT body DEDENT
+	int cur = pos + 1
+	string ret_type = ""
+	Token first_tok = tokens at cur
+	string ft_kind = tok_kind(first_tok)
+	string ft_val = tok_value(first_tok)
+	int peek_pos = cur + 1
+	if peek_pos < n
+		Token peek_tok = tokens at peek_pos
+		string pk = tok_kind(peek_tok)
+		if ft_kind is "IDENT" and pk is "IDENT"
+			ret_type = resolve_type(ft_val, shape_reg, enum_reg)
+			cur = cur + 1
+	Token name_tok = tokens at cur
+	string fn_name = tok_value(name_tok)
+	cur = cur + 1
+	# skip LPAREN
+	cur = cur + 1
+	# collect params until RPAREN
+	strList param_strs = []
+	for pi in range(32)
+		if cur >= n
+			break
+		Token pt = tokens at cur
+		string pk = tok_kind(pt)
+		string pv = tok_value(pt)
+		if pk is "RPAREN"
+			cur = cur + 1
+			break
+		else if pk is "COMMA"
+			cur = cur + 1
+		else if pk is "IDENT"
+			string param_type = pv
+			int pname_pos = cur + 1
+			Token pname_tok = tokens at pname_pos
+			string param_name = tok_value(pname_tok)
+			string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
+			param_strs at end = s_join([param_name, ": ", rust_param_type])
+			cur = pname_pos + 1
+	# skip NEWLINE
+	ParseResult nl_r = skip_newline(tokens, cur)
+	cur = pr_pos(nl_r)
+	int indent_pos = cur
+	# skip INDENT
+	if cur < n
+		Token it = tokens at cur
+		if tok_kind(it) is "INDENT"
+			cur = cur + 1
+	# pre-scan body for mutable names
+	int body_end_pos = find_block_end(tokens, indent_pos)
+	strList mut_names = collect_mut_names(tokens, cur, body_end_pos)
+	# generate body
+	ParseResult body_r = gen_block(tokens, cur, 1, variant_reg, shape_reg, struct_reg, mut_names)
+	string body_code = pr_code(body_r)
+	int body_end = pr_pos(body_r)
+	string params_code = s_join_with(param_strs, ", ")
+	string ret_suffix = ""
+	if not is_empty(ret_type)
+		ret_suffix = s_join([" -> ", ret_type])
+	string fn_code = s_join(["fn ", fn_name, "(", params_code, ")", ret_suffix, " {\n", body_code, "}\n\n"])
+	return make_result(fn_code, body_end)

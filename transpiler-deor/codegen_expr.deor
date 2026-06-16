@@ -1,0 +1,299 @@
+# === Expression code generation ===
+
+fn string find_struct_for_fields(strList struct_reg, strList fields)
+	string fields_key = s_join_with(fields, ",")
+	int n = len(struct_reg)
+	bool next_is_val = false
+	string cur_name = ""
+	for i in range(n)
+		string item = struct_reg at i
+		if next_is_val
+			if item is fields_key
+				return cur_name
+			next_is_val = false
+		else
+			cur_name = item
+			next_is_val = true
+	return "Unknown"
+
+fn ParseResult gen_call_args(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
+	strList arg_codes = []
+	int cur = pos
+	int n = len(tokens)
+	for ai in range(64)
+		if cur >= n
+			break
+		Token tok = tokens at cur
+		string k = tok_kind(tok)
+		if k is "RPAREN"
+			break
+		if k is "COMMA"
+			cur = cur + 1
+			continue
+		ParseResult arg_r = gen_expr(tokens, cur, variant_reg, shape_reg)
+		string arg_code = pr_code(arg_r)
+		int arg_pos = pr_pos(arg_r)
+		# clone simple identifiers; .to_string() for string literals
+		Token start_tok = tokens at cur
+		string start_k = tok_kind(start_tok)
+		if start_k is "STRING"
+			arg_code = s_join([arg_code, ".to_string()"])
+		else if start_k is "IDENT"
+			int next_cur = cur + 1
+			string next_k = ""
+			if next_cur < n
+				next_k = tok_kind(tokens at next_cur)
+			bool peek_is_call = next_k is "LPAREN"
+			bool peek_is_idx = next_k is "KW_AT"
+			if not peek_is_call
+				if not peek_is_idx
+					arg_code = s_join([arg_code, ".clone()"])
+		arg_codes at end = arg_code
+		cur = arg_pos
+	return make_result(s_join_with(arg_codes, ", "), cur)
+
+fn ParseResult gen_list_items(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
+	strList item_codes = []
+	int cur = pos
+	int n = len(tokens)
+	for li in range(128)
+		if cur >= n
+			break
+		Token tok = tokens at cur
+		string k = tok_kind(tok)
+		if k is "RBRACKET"
+			break
+		if k is "COMMA"
+			cur = cur + 1
+			continue
+		ParseResult item_r = gen_expr(tokens, cur, variant_reg, shape_reg)
+		string item_code = pr_code(item_r)
+		int item_pos = pr_pos(item_r)
+		Token start_tok = tokens at cur
+		string start_k = tok_kind(start_tok)
+		if start_k is "STRING"
+			item_code = s_join([item_code, ".to_string()"])
+		else
+			item_code = s_join([item_code, ".clone()"])
+		item_codes at end = item_code
+		cur = item_pos
+	return make_result(s_join_with(item_codes, ", "), cur)
+
+fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
+	int n = len(tokens)
+	Token tok = tokens at pos
+	(kind, value, line) in tok
+
+	if kind is "INT"
+		return make_result(value, pos + 1)
+
+	if kind is "STRING"
+		return make_result(to_debug_str(value), pos + 1)
+
+	if kind is "KW_TRUE"
+		return make_result("true", pos + 1)
+
+	if kind is "KW_FALSE"
+		return make_result("false", pos + 1)
+
+	if kind is "KW_NONE"
+		return make_result("None", pos + 1)
+
+	if kind is "LBRACKET"
+		int inner_pos = pos + 1
+		if inner_pos < n
+			Token next = tokens at inner_pos
+			string nk = tok_kind(next)
+			if nk is "RBRACKET"
+				int after = inner_pos + 1
+				return make_result("Vec::new()", after)
+		ParseResult items_r = gen_list_items(tokens, inner_pos, variant_reg, shape_reg)
+		string items_code = pr_code(items_r)
+		int items_pos = pr_pos(items_r)
+		string list_code = s_join(["vec![", items_code, "]"])
+		int after_bracket = items_pos + 1
+		return make_result(list_code, after_bracket)
+
+	if kind is "KW_NOT"
+		int operand_pos = pos + 1
+		ParseResult operand_r = gen_primary(tokens, operand_pos, variant_reg, shape_reg)
+		string op_code = pr_code(operand_r)
+		int op_pos = pr_pos(operand_r)
+		return make_result(s_join(["!", op_code]), op_pos)
+
+	if kind is "IDENT"
+		int next_pos = pos + 1
+		if next_pos < n
+			Token next_tok = tokens at next_pos
+			string nk = tok_kind(next_tok)
+
+			# function call: name(args)
+			if nk is "LPAREN"
+				string func_name = value
+				int args_pos = next_pos + 1
+				# built-in string methods
+				if func_name is "len"
+					ParseResult inner = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					string ic = pr_code(inner)
+					int ip = pr_pos(inner)
+					int close = ip + 1
+					return make_result(s_join([ic, ".len() as i32"]), close)
+				if func_name is "trim"
+					ParseResult inner = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					string ic = pr_code(inner)
+					int ip = pr_pos(inner)
+					int close = ip + 1
+					return make_result(s_join([ic, ".trim().to_string()"]), close)
+				if func_name is "to_upper"
+					ParseResult inner = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					string ic = pr_code(inner)
+					int ip = pr_pos(inner)
+					int close = ip + 1
+					return make_result(s_join([ic, ".to_uppercase()"]), close)
+				if func_name is "to_lower"
+					ParseResult inner = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					string ic = pr_code(inner)
+					int ip = pr_pos(inner)
+					int close = ip + 1
+					return make_result(s_join([ic, ".to_lowercase()"]), close)
+				if func_name is "contains"
+					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					string a0c = pr_code(a0_r)
+					int a0p = pr_pos(a0_r)
+					int sep_pos = a0p + 1
+					ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
+					string a1c = pr_code(a1_r)
+					int a1p = pr_pos(a1_r)
+					Token a1_tok = tokens at sep_pos
+					string a1k = tok_kind(a1_tok)
+					string a1_arg = a1c
+					bool a1_is_str = a1k is "STRING"
+					if not a1_is_str
+						a1_arg = s_join([a1c, ".as_str()"])
+					int close_pos = a1p + 1
+					return make_result(s_join([a0c, ".contains(", a1_arg, ")"]), close_pos)
+				if func_name is "starts_with"
+					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					string a0c = pr_code(a0_r)
+					int a0p = pr_pos(a0_r)
+					int sep_pos = a0p + 1
+					ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
+					string a1c = pr_code(a1_r)
+					int a1p = pr_pos(a1_r)
+					Token a1_tok = tokens at sep_pos
+					string a1k = tok_kind(a1_tok)
+					string a1_arg = a1c
+					bool a1_is_str = a1k is "STRING"
+					if not a1_is_str
+						a1_arg = s_join([a1c, ".as_str()"])
+					int close_pos = a1p + 1
+					return make_result(s_join([a0c, ".starts_with(", a1_arg, ")"]), close_pos)
+				if func_name is "ends_with"
+					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					string a0c = pr_code(a0_r)
+					int a0p = pr_pos(a0_r)
+					int sep_pos = a0p + 1
+					ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
+					string a1c = pr_code(a1_r)
+					int a1p = pr_pos(a1_r)
+					Token a1_tok = tokens at sep_pos
+					string a1k = tok_kind(a1_tok)
+					string a1_arg = a1c
+					bool a1_is_str = a1k is "STRING"
+					if not a1_is_str
+						a1_arg = s_join([a1c, ".as_str()"])
+					int close_pos = a1p + 1
+					return make_result(s_join([a0c, ".ends_with(", a1_arg, ")"]), close_pos)
+				if func_name is "split"
+					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					string a0c = pr_code(a0_r)
+					int a0p = pr_pos(a0_r)
+					int sep_pos = a0p + 1
+					ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
+					string a1c = pr_code(a1_r)
+					int a1p = pr_pos(a1_r)
+					Token a1_tok = tokens at sep_pos
+					string a1k = tok_kind(a1_tok)
+					string a1_arg = a1c
+					bool a1_is_str = a1k is "STRING"
+					if not a1_is_str
+						a1_arg = s_join([a1c, ".as_str()"])
+					int close_pos = a1p + 1
+					return make_result(s_join([a0c, ".split(", a1_arg, ").map(|s| s.to_string()).collect()"]), close_pos)
+				# generic call
+				ParseResult args_r = gen_call_args(tokens, args_pos, variant_reg, shape_reg)
+				string args_code = pr_code(args_r)
+				int args_end = pr_pos(args_r)
+				int after_paren = args_end + 1
+				return make_result(s_join([func_name, "(", args_code, ")"]), after_paren)
+
+			# index read: name at idx
+			if nk is "KW_AT"
+				int idx_pos = next_pos + 1
+				ParseResult idx_r = gen_primary(tokens, idx_pos, variant_reg, shape_reg)
+				string idx_code = pr_code(idx_r)
+				int idx_end = pr_pos(idx_r)
+				return make_result(s_join([value, "[", idx_code, " as usize].clone()"]), idx_end)
+
+		# check enum variant registry
+		string variant_enum = reg_get(variant_reg, value)
+		if not is_empty(variant_enum)
+			return make_result(s_join([variant_enum, "::", value]), next_pos)
+
+		return make_result(value, next_pos)
+
+	return make_result("/* unknown_primary */", pos + 1)
+
+fn ParseResult gen_expr(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
+	ParseResult pr = gen_primary(tokens, pos, variant_reg, shape_reg)
+	string left_code = pr_code(pr)
+	int cur_pos = pr_pos(pr)
+	int n = len(tokens)
+	Token first_tok = tokens at pos
+	bool left_has_str = tok_kind(first_tok) is "STRING"
+
+	for bi in range(128)
+		if cur_pos >= n
+			break
+		Token op_tok = tokens at cur_pos
+		string ok = tok_kind(op_tok)
+		string ov = tok_value(op_tok)
+		if not is_binary_op(ok)
+			break
+		# handle "is not" as two-token operator
+		string op_str = ov
+		int after_op = cur_pos + 1
+		if ok is "KW_IS"
+			if after_op < n
+				Token maybe_not = tokens at after_op
+				string nk = tok_kind(maybe_not)
+				if nk is "KW_NOT"
+					op_str = "is not"
+					after_op = after_op + 1
+		ParseResult rhs_r = gen_primary(tokens, after_op, variant_reg, shape_reg)
+		string rhs_code = pr_code(rhs_r)
+		int rhs_pos = pr_pos(rhs_r)
+		string rust_op = map_op(op_str)
+		# string concat handling
+		if op_str is "+"
+			Token left_tok = tokens at pos
+			string left_k = tok_kind(left_tok)
+			Token rhs_tok = tokens at after_op
+			string rhs_k = tok_kind(rhs_tok)
+			# left is a STRING literal: emit format!
+			if left_k is "STRING"
+				left_code = s_join(["format!(\"{}{}\", ", left_code, ", ", rhs_code, ")"])
+				left_has_str = true
+				cur_pos = rhs_pos
+				continue
+			# left is a String expr from prior concat: rhs identifier needs .as_str()
+			if left_has_str
+				if rhs_k is "IDENT"
+					rhs_code = s_join([rhs_code, ".as_str()"])
+			# rhs is a string literal → left will now be a String expr
+			if rhs_k is "STRING"
+				left_has_str = true
+		left_code = s_join([left_code, " ", rust_op, " ", rhs_code])
+		cur_pos = rhs_pos
+
+	return make_result(left_code, cur_pos)

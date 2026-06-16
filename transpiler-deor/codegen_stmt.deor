@@ -1,0 +1,451 @@
+# === Statement code generation ===
+
+fn ParseResult skip_newline(tokenList tokens, int pos)
+	int n = len(tokens)
+	if pos < n
+		string k = tok_kind(tokens at pos)
+		if k is "NEWLINE"
+			return make_result("", pos + 1)
+	return make_result("", pos)
+
+fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names)
+	int n = len(tokens)
+	string pad = str_repeat("    ", depth)
+	int cond_pos = pos + 1
+	ParseResult cond_r = gen_expr(tokens, cond_pos, variant_reg, shape_reg)
+	string cond_code = pr_code(cond_r)
+	int cond_end = pr_pos(cond_r)
+	# skip NEWLINE then INDENT
+	ParseResult nl_r = skip_newline(tokens, cond_end)
+	int after_nl = pr_pos(nl_r)
+	int body_start = after_nl
+	if body_start < n
+		string k = tok_kind(tokens at body_start)
+		if k is "INDENT"
+			body_start = body_start + 1
+	ParseResult then_r = gen_block(tokens, body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names)
+	string then_code = pr_code(then_r)
+	int then_end = pr_pos(then_r)
+	string result_code = s_join([pad, "if ", cond_code, " {\n", then_code, pad, "}"])
+	int cur = then_end
+	# handle else / else if chains
+	bool checking_else = true
+	for ei in range(32)
+		if not checking_else
+			continue
+		if cur >= n
+			checking_else = false
+			continue
+		Token et = tokens at cur
+		string ek = tok_kind(et)
+		bool is_else_kw = ek is "KW_ELSE"
+		if not is_else_kw
+			checking_else = false
+			continue
+		int after_else = cur + 1
+		if after_else >= n
+			checking_else = false
+			continue
+		Token ae_tok = tokens at after_else
+		string aek = tok_kind(ae_tok)
+		if aek is "KW_IF"
+			int ei_cond_pos = after_else + 1
+			ParseResult ei_cond_r = gen_expr(tokens, ei_cond_pos, variant_reg, shape_reg)
+			string ei_cond_code = pr_code(ei_cond_r)
+			int ei_cond_end = pr_pos(ei_cond_r)
+			ParseResult ei_nl_r = skip_newline(tokens, ei_cond_end)
+			int ei_body_start = pr_pos(ei_nl_r)
+			if ei_body_start < n
+				string ik = tok_kind(tokens at ei_body_start)
+				if ik is "INDENT"
+					ei_body_start = ei_body_start + 1
+			ParseResult ei_body_r = gen_block(tokens, ei_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names)
+			string ei_body_code = pr_code(ei_body_r)
+			int ei_body_end = pr_pos(ei_body_r)
+			result_code = s_join([result_code, " else if ", ei_cond_code, " {\n", ei_body_code, pad, "}"])
+			cur = ei_body_end
+		else
+			# plain else: skip NEWLINE then INDENT
+			int else_body_start = after_else
+			ParseResult else_nl_r = skip_newline(tokens, else_body_start)
+			else_body_start = pr_pos(else_nl_r)
+			if else_body_start < n
+				string ik = tok_kind(tokens at else_body_start)
+				if ik is "INDENT"
+					else_body_start = else_body_start + 1
+			ParseResult else_r = gen_block(tokens, else_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names)
+			string else_code = pr_code(else_r)
+			int else_end = pr_pos(else_r)
+			result_code = s_join([result_code, " else {\n", else_code, pad, "}"])
+			cur = else_end
+			checking_else = false
+	result_code = s_cat(result_code, "\n")
+	return make_result(result_code, cur)
+
+fn ParseResult gen_for(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names)
+	int n = len(tokens)
+	string pad = str_repeat("    ", depth)
+	int var_pos = pos + 1
+	Token var_tok = tokens at var_pos
+	string var_name = tok_value(var_tok)
+	int in_pos = var_pos + 1
+	int iter_pos = in_pos + 1
+
+	Token iter_tok = tokens at iter_pos
+	string iter_k = tok_kind(iter_tok)
+	string iter_v = tok_value(iter_tok)
+
+	string range_expr = ""
+	int body_tok_pos = 0
+
+	if iter_k is "IDENT" and iter_v is "range"
+		int lparen = iter_pos + 1
+		int end_pos = lparen + 1
+		ParseResult end_r = gen_expr(tokens, end_pos, variant_reg, shape_reg)
+		string end_code = pr_code(end_r)
+		int end_p = pr_pos(end_r)
+		range_expr = s_join(["0..", end_code])
+		# end_p is at RPAREN; body starts after RPAREN
+		body_tok_pos = end_p + 1
+	else if iter_k is "LPAREN"
+		int start_pos = iter_pos + 1
+		ParseResult start_r = gen_expr(tokens, start_pos, variant_reg, shape_reg)
+		string start_code = pr_code(start_r)
+		int start_p = pr_pos(start_r)
+		# start_p is at COMMA
+		int end_pos = start_p + 1
+		ParseResult end_r = gen_expr(tokens, end_pos, variant_reg, shape_reg)
+		string end_code = pr_code(end_r)
+		int end_p = pr_pos(end_r)
+		range_expr = s_join([start_code, "..", end_code])
+		# end_p is at RPAREN
+		body_tok_pos = end_p + 1
+	else
+		ParseResult src_r = gen_expr(tokens, iter_pos, variant_reg, shape_reg)
+		string src_code = pr_code(src_r)
+		int src_p = pr_pos(src_r)
+		range_expr = src_code
+		body_tok_pos = src_p
+
+	# skip NEWLINE INDENT
+	ParseResult for_nl_r = skip_newline(tokens, body_tok_pos)
+	body_tok_pos = pr_pos(for_nl_r)
+	if body_tok_pos < n
+		string ik = tok_kind(tokens at body_tok_pos)
+		if ik is "INDENT"
+			body_tok_pos = body_tok_pos + 1
+
+	ParseResult body_r = gen_block(tokens, body_tok_pos, depth + 1, variant_reg, shape_reg, struct_reg, mut_names)
+	string body_code = pr_code(body_r)
+	int body_end = pr_pos(body_r)
+
+	string for_code = s_join([pad, "for ", var_name, " in ", range_expr, " {\n", body_code, pad, "}\n"])
+	return make_result(for_code, body_end)
+
+fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg)
+	int n = len(tokens)
+	string pad = str_repeat("    ", depth)
+	# LPAREN f1 COMMA f2 RPAREN KW_IN source NEWLINE
+	strList fields = []
+	int cur = pos + 1
+	for fi in range(32)
+		if cur >= n
+			break
+		Token ft = tokens at cur
+		string fk = tok_kind(ft)
+		string fv = tok_value(ft)
+		if fk is "RPAREN"
+			cur = cur + 1
+			break
+		else if fk is "COMMA"
+			cur = cur + 1
+		else if fk is "IDENT"
+			fields at end = fv
+			cur = cur + 1
+	# KW_IN then source expr
+	int src_pos = cur + 1
+	ParseResult src_r = gen_expr(tokens, src_pos, variant_reg, shape_reg)
+	string src_code = pr_code(src_r)
+	int src_end = pr_pos(src_r)
+	ParseResult nl_r = skip_newline(tokens, src_end)
+	int after = pr_pos(nl_r)
+	strList dest_lines = []
+	int fn_count = len(fields)
+	for fi in range(fn_count)
+		string field = fields at fi
+		dest_lines at end = s_join([pad, "let ", field, " = ", src_code, ".", field, ".clone();"])
+	string dest_code = s_join_nl(dest_lines)
+	dest_code = s_cat(dest_code, "\n")
+	return make_result(dest_code, after)
+
+fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names)
+	int n = len(tokens)
+	Token tok = tokens at pos
+	(kind, value, line) in tok
+	string pad = str_repeat("    ", depth)
+
+	# rust block: KW_RUST NEWLINE RUST_BLOCK
+	if kind is "KW_RUST"
+		int block_pos = pos + 2
+		Token block_tok = tokens at block_pos
+		string block_content = tok_value(block_tok)
+		strList rust_ls = split(block_content, "\n")
+		strList padded = []
+		int rn = len(rust_ls)
+		for ri in range(rn)
+			string rl = rust_ls at ri
+			if is_empty(rl)
+				padded at end = ""
+			else
+				padded at end = s_join([pad, rl])
+		string block_code = s_join_nl(padded)
+		block_code = s_cat(block_code, "\n")
+		return make_result(block_code, block_pos + 1)
+
+	if kind is "KW_RETURN"
+		int val_pos = pos + 1
+		Token val_tok = tokens at val_pos
+		string val_kind = tok_kind(val_tok)
+		ParseResult val_r = gen_expr(tokens, val_pos, variant_reg, shape_reg)
+		string val_code = pr_code(val_r)
+		int val_end = pr_pos(val_r)
+		string ret_suffix = ""
+		if val_kind is "STRING"
+			ret_suffix = ".to_string()"
+		ParseResult nl_r = skip_newline(tokens, val_end)
+		return make_result(s_join([pad, "return ", val_code, ret_suffix, ";\n"]), pr_pos(nl_r))
+
+	if kind is "KW_BREAK"
+		ParseResult nl_r = skip_newline(tokens, pos + 1)
+		return make_result(s_join([pad, "break;\n"]), pr_pos(nl_r))
+
+	if kind is "KW_CONTINUE"
+		ParseResult nl_r = skip_newline(tokens, pos + 1)
+		return make_result(s_join([pad, "continue;\n"]), pr_pos(nl_r))
+
+	if kind is "KW_IF"
+		return gen_if(tokens, pos, depth, variant_reg, shape_reg, struct_reg, mut_names)
+
+	if kind is "KW_FOR"
+		return gen_for(tokens, pos, depth, variant_reg, shape_reg, struct_reg, mut_names)
+
+	if kind is "LPAREN"
+		return gen_destructure(tokens, pos, depth, variant_reg, shape_reg)
+
+	if kind is "IDENT"
+		int next_pos = pos + 1
+		if next_pos >= n
+			return make_result("/* eof */\n", pos + 1)
+		Token next_tok = tokens at next_pos
+		string nk = tok_kind(next_tok)
+		string nv = tok_value(next_tok)
+
+		# name as expr  OR  name as (f1, f2)
+		if nk is "KW_AS"
+			int after_as = next_pos + 1
+			Token aas_tok = tokens at after_as
+			string aak = tok_kind(aas_tok)
+			# struct construction: name as (f1, f2, ...)
+			if aak is "LPAREN"
+				strList fields = []
+				int fend = after_as + 1
+				for fii in range(32)
+					if fend >= n
+						break
+					Token ft = tokens at fend
+					string fk = tok_kind(ft)
+					string fv = tok_value(ft)
+					if fk is "RPAREN"
+						fend = fend + 1
+						break
+					else if fk is "COMMA"
+						fend = fend + 1
+					else if fk is "IDENT"
+						fields at end = fv
+						fend = fend + 1
+				string struct_name = find_struct_for_fields(struct_reg, fields)
+				bool is_mut = list_has(mut_names, value)
+				string mut_kw = ""
+				if is_mut
+					mut_kw = "mut "
+				string fields_code = s_join_with(fields, ", ")
+				ParseResult nl_r = skip_newline(tokens, fend)
+				string stmt_code = s_join([pad, "let ", mut_kw, value, " = ", struct_name, " { ", fields_code, " };\n"])
+				return make_result(stmt_code, pr_pos(nl_r))
+			# regular as-binding
+			ParseResult val_r = gen_expr(tokens, after_as, variant_reg, shape_reg)
+			string val_code = pr_code(val_r)
+			int val_end = pr_pos(val_r)
+			bool is_str = aak is "STRING"
+			bool is_mut = list_has(mut_names, value)
+			string mut_kw = ""
+			if is_mut
+				mut_kw = "mut "
+			string suffix = ""
+			if is_str
+				suffix = ".to_string()"
+			ParseResult nl_r = skip_newline(tokens, val_end)
+			return make_result(s_join([pad, "let ", mut_kw, value, " = ", val_code, suffix, ";\n"]), pr_pos(nl_r))
+
+		# function call statement: name(args)
+		if nk is "LPAREN"
+			int args_pos = next_pos + 1
+			ParseResult args_r = gen_call_args(tokens, args_pos, variant_reg, shape_reg)
+			string args_code = pr_code(args_r)
+			int args_end = pr_pos(args_r)
+			int after_paren = args_end + 1
+			ParseResult nl_r = skip_newline(tokens, after_paren)
+			string call_code = ""
+			if value is "print"
+				call_code = s_join([pad, "println!(\"{}\", ", args_code, ");\n"])
+			else
+				call_code = s_join([pad, value, "(", args_code, ");\n"])
+			return make_result(call_code, pr_pos(nl_r))
+
+		# name insert val (legacy append)
+		if nk is "KW_INSERT"
+			int val_pos = next_pos + 1
+			ParseResult val_r = gen_expr(tokens, val_pos, variant_reg, shape_reg)
+			string val_code = pr_code(val_r)
+			int val_end = pr_pos(val_r)
+			Token val_tok = tokens at val_pos
+			string vk = tok_kind(val_tok)
+			string val_emit = val_code
+			if vk is "STRING"
+				val_emit = s_join([val_code, ".to_string()"])
+			else if vk is "IDENT"
+				val_emit = s_join([val_code, ".clone()"])
+			ParseResult nl_r = skip_newline(tokens, val_end)
+			return make_result(s_join([pad, value, ".push(", val_emit, ");\n"]), pr_pos(nl_r))
+
+		# name at ...
+		if nk is "KW_AT"
+			int after_at = next_pos + 1
+			if after_at < n
+				Token at_next = tokens at after_at
+				string ank = tok_kind(at_next)
+				string anv = tok_value(at_next)
+				# name at end = val  (append)
+				if ank is "IDENT" and anv is "end"
+					int val_pos = after_at + 2
+					ParseResult val_r = gen_expr(tokens, val_pos, variant_reg, shape_reg)
+					string val_code = pr_code(val_r)
+					int val_end = pr_pos(val_r)
+					Token val_tok = tokens at val_pos
+					string vk = tok_kind(val_tok)
+					string val_emit = val_code
+					if vk is "STRING"
+						val_emit = s_join([val_code, ".to_string()"])
+					else if vk is "IDENT"
+						val_emit = s_join([val_code, ".clone()"])
+					ParseResult nl_r = skip_newline(tokens, val_end)
+					return make_result(s_join([pad, value, ".push(", val_emit, ");\n"]), pr_pos(nl_r))
+				# name at idx = val  (index write)
+				ParseResult idx_r = gen_expr(tokens, after_at, variant_reg, shape_reg)
+				string idx_code = pr_code(idx_r)
+				int idx_end = pr_pos(idx_r)
+				int val_pos = idx_end + 1
+				ParseResult val_r = gen_expr(tokens, val_pos, variant_reg, shape_reg)
+				string val_code = pr_code(val_r)
+				int val_end = pr_pos(val_r)
+				Token val_tok = tokens at val_pos
+				string vk = tok_kind(val_tok)
+				string val_emit = val_code
+				if vk is "STRING"
+					val_emit = s_join([val_code, ".to_string()"])
+				else if vk is "IDENT"
+					val_emit = s_join([val_code, ".clone()"])
+				ParseResult nl_r = skip_newline(tokens, val_end)
+				return make_result(s_join([pad, value, "[", idx_code, " as usize] = ", val_emit, ";\n"]), pr_pos(nl_r))
+
+		# name remove at idx
+		if nk is "KW_REMOVE"
+			int idx_pos = next_pos + 2
+			ParseResult idx_r = gen_expr(tokens, idx_pos, variant_reg, shape_reg)
+			string idx_code = pr_code(idx_r)
+			int idx_end = pr_pos(idx_r)
+			ParseResult nl_r = skip_newline(tokens, idx_end)
+			return make_result(s_join([pad, value, ".remove(", idx_code, " as usize);\n"]), pr_pos(nl_r))
+
+		# name = expr  (assignment)
+		if nk is "EQUALS"
+			int val_pos = next_pos + 1
+			Token eq_val_tok = tokens at val_pos
+			string eq_val_k = tok_kind(eq_val_tok)
+			ParseResult val_r = gen_expr(tokens, val_pos, variant_reg, shape_reg)
+			string val_code = pr_code(val_r)
+			int val_end = pr_pos(val_r)
+			string assign_suffix = ""
+			if eq_val_k is "STRING"
+				assign_suffix = ".to_string()"
+			ParseResult nl_r = skip_newline(tokens, val_end)
+			return make_result(s_join([pad, value, " = ", val_code, assign_suffix, ";\n"]), pr_pos(nl_r))
+
+		# Type name = expr  (typed binding)
+		if nk is "IDENT"
+			int eq_pos = next_pos + 1
+			if eq_pos < n
+				Token eq_tok = tokens at eq_pos
+				if tok_kind(eq_tok) is "EQUALS"
+					string var_type = value
+					string var_name = nv
+					int val_pos = eq_pos + 1
+					string rust_type = resolve_type(var_type, shape_reg, variant_reg)
+					Token val_tok = tokens at val_pos
+					string val_kind = tok_kind(val_tok)
+					# list value → always let mut
+					if val_kind is "LBRACKET"
+						ParseResult val_r = gen_expr(tokens, val_pos, variant_reg, shape_reg)
+						string val_code = pr_code(val_r)
+						int val_end = pr_pos(val_r)
+						ParseResult nl_r = skip_newline(tokens, val_end)
+						return make_result(s_join([pad, "let mut ", var_name, ": ", rust_type, " = ", val_code, ";\n"]), pr_pos(nl_r))
+					# none → Option<T>
+					if val_kind is "KW_NONE"
+						ParseResult nl_r = skip_newline(tokens, val_pos + 1)
+						return make_result(s_join([pad, "let mut ", var_name, ": Option<", rust_type, "> = None;\n"]), pr_pos(nl_r))
+					ParseResult val_r = gen_expr(tokens, val_pos, variant_reg, shape_reg)
+					string val_code = pr_code(val_r)
+					int val_end = pr_pos(val_r)
+					bool is_mut = list_has(mut_names, var_name)
+					string mut_kw = ""
+					if is_mut
+						mut_kw = "mut "
+					string suffix = ""
+					if val_kind is "STRING"
+						suffix = ".to_string()"
+					else if val_kind is "IDENT"
+						int vi = val_pos + 1
+						if vi < n
+							Token next_val_tok = tokens at vi
+							string next_val_k = tok_kind(next_val_tok)
+							bool vc_is_call = next_val_k is "LPAREN"
+							bool vc_is_idx = next_val_k is "KW_AT"
+							if not vc_is_call
+								if not vc_is_idx
+									suffix = ".clone()"
+					ParseResult nl_r = skip_newline(tokens, val_end)
+					return make_result(s_join([pad, "let ", mut_kw, var_name, ": ", rust_type, " = ", val_code, suffix, ";\n"]), pr_pos(nl_r))
+
+	return make_result(s_join(["/* unhandled(", kind, ") */\n"]), pos + 1)
+
+fn ParseResult gen_block(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names)
+	strList stmts = []
+	int cur = pos
+	int n = len(tokens)
+	for si in range(512)
+		if cur >= n
+			break
+		Token tok = tokens at cur
+		string k = tok_kind(tok)
+		if k is "DEDENT" or k is "EOF"
+			if k is "DEDENT"
+				cur = cur + 1
+			break
+		if k is "NEWLINE"
+			cur = cur + 1
+			continue
+		ParseResult stmt_r = gen_stmt(tokens, cur, depth, variant_reg, shape_reg, struct_reg, mut_names)
+		stmts at end = pr_code(stmt_r)
+		cur = pr_pos(stmt_r)
+	return make_result(s_join(stmts), cur)

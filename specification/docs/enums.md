@@ -102,7 +102,7 @@ fn main()
     name as "Ocean"
     colorTag background = Blue
     colorTag foreground = White
-    theme as (name, background, foreground)
+    Theme theme = (name, background, foreground)
     string label = describe(background)
     print(label)
 ```

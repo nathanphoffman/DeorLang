@@ -1,0 +1,153 @@
+# === String utilities ===
+
+fn bool is_empty(string s)
+	int n = len(s)
+	return n is 0
+
+fn bool str_eq(string a, string b)
+	return a is b
+
+# === Registry: flat [key, val, key, val, ...] strList pairs ===
+
+fn string reg_get(strList pairs, string key)
+	int n = len(pairs)
+	int i = 0
+	for ri in range(n)
+		if i >= n
+			break
+		int vi = i + 1
+		if vi >= n
+			break
+		string k = pairs at i
+		if k is key
+			return pairs at vi
+		i = i + 2
+	return ""
+
+fn bool reg_has(strList pairs, string key)
+	string v = reg_get(pairs, key)
+	if v is ""
+		return false
+	return true
+
+fn bool list_has(strList items, string val)
+	int n = len(items)
+	for i in range(n)
+		string item = items at i
+		if item is val
+			return true
+	return false
+
+# === Keyword mapping ===
+
+fn string word_to_kind(string word)
+	if word is "fn"
+		return "KW_FN"
+	if word is "as"
+		return "KW_AS"
+	if word is "return"
+		return "KW_RETURN"
+	if word is "if"
+		return "KW_IF"
+	if word is "else"
+		return "KW_ELSE"
+	if word is "for"
+		return "KW_FOR"
+	if word is "in"
+		return "KW_IN"
+	if word is "break"
+		return "KW_BREAK"
+	if word is "continue"
+		return "KW_CONTINUE"
+	if word is "and"
+		return "KW_AND"
+	if word is "or"
+		return "KW_OR"
+	if word is "not"
+		return "KW_NOT"
+	if word is "is"
+		return "KW_IS"
+	if word is "true"
+		return "KW_TRUE"
+	if word is "false"
+		return "KW_FALSE"
+	if word is "none"
+		return "KW_NONE"
+	if word is "struct"
+		return "KW_STRUCT"
+	if word is "shape"
+		return "KW_SHAPE"
+	if word is "list"
+		return "KW_LIST"
+	if word is "of"
+		return "KW_OF"
+	if word is "insert"
+		return "KW_INSERT"
+	if word is "enum"
+		return "KW_ENUM"
+	if word is "at"
+		return "KW_AT"
+	if word is "remove"
+		return "KW_REMOVE"
+	if word is "rust"
+		return "KW_RUST"
+	return "IDENT"
+
+# === Operator helpers ===
+
+fn bool is_binary_op(string kind)
+	if kind is "PLUS"
+		return true
+	if kind is "MINUS"
+		return true
+	if kind is "STAR"
+		return true
+	if kind is "SLASH"
+		return true
+	if kind is "PERCENT"
+		return true
+	if kind is "GT"
+		return true
+	if kind is "LT"
+		return true
+	if kind is "GTE"
+		return true
+	if kind is "LTE"
+		return true
+	if kind is "KW_IS"
+		return true
+	if kind is "KW_AND"
+		return true
+	if kind is "KW_OR"
+		return true
+	return false
+
+fn string map_op(string op)
+	if op is "is"
+		return "=="
+	if op is "is not"
+		return "!="
+	if op is "and"
+		return "&&"
+	if op is "or"
+		return "||"
+	if op is ">"
+		return ">"
+	if op is "<"
+		return "<"
+	if op is ">="
+		return ">="
+	if op is "<="
+		return "<="
+	return op
+
+fn string render_rust_type(string t)
+	if t is "int"
+		return "i32"
+	if t is "string"
+		return "String"
+	if t is "bool"
+		return "bool"
+	if t is "float"
+		return "f64"
+	return t
