@@ -26,3 +26,43 @@ fn string tok_kind(Token token)
 fn string tok_value(Token token)
 	(kind, value, line) in token
 	return value
+
+# === TokenCursor helpers ===
+
+fn TokenCursor cur_at(tokenList tokens, int pos)
+	Token current = tokens at pos
+	c as (tokens, pos, current)
+	return c
+
+fn TokenCursor cur_next(TokenCursor c)
+	(tokens, pos, current) in c
+	int pos = pos + 1
+	int token_count = len(tokens)
+	if pos < token_count
+		Token current = tokens at pos
+		return (tokens, pos, current)
+	return (tokens, pos, current)
+
+fn string tok_kind_at(TokenCursor c)
+	(tokens, pos, current) in c
+	return tok_kind(current)
+
+fn string tok_value_at(TokenCursor c)
+	(tokens, pos, current) in c
+	return tok_value(current)
+
+fn int c_pos(TokenCursor c)
+	(tokens, pos, current) in c
+	return pos
+
+fn bool c_at_end(TokenCursor c)
+	(tokens, pos, current) in c
+	int token_count = len(tokens)
+	return pos >= token_count
+
+fn TokenCursor cur_skip_to_body(TokenCursor c)
+	(tokens, pos, current) in c
+	int pos = using pos
+		adv_nl(tokens)
+		adv_indent(tokens)
+	return cur_at(tokens, pos)

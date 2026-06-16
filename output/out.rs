@@ -119,6 +119,65 @@ fn tok_value(token: Token) -> String {
     return value;
 }
 
+fn cur_at(tokens: Vec<Token>, pos: i32) -> TokenCursor {
+    let mut current: Token = tokens[pos as usize].clone();
+    let c = TokenCursor { tokens, pos, current };
+    return c;
+}
+
+fn cur_next(c: TokenCursor) -> TokenCursor {
+    let tokens = c.tokens.clone();
+    let pos = c.pos.clone();
+    let current = c.current.clone();
+    let mut pos: i32 = pos + 1.clone();
+    let mut token_count: i32 = tokens.len() as i32;
+    if pos < token_count {
+        let mut current: Token = tokens[pos as usize].clone();
+        return TokenCursor { tokens, pos, current };
+    }
+    return TokenCursor { tokens, pos, current };
+}
+
+fn tok_kind_at(c: TokenCursor) -> String {
+    let tokens = c.tokens.clone();
+    let pos = c.pos.clone();
+    let current = c.current.clone();
+    return tok_kind(current.clone());
+}
+
+fn tok_value_at(c: TokenCursor) -> String {
+    let tokens = c.tokens.clone();
+    let pos = c.pos.clone();
+    let current = c.current.clone();
+    return tok_value(current.clone());
+}
+
+fn c_pos(c: TokenCursor) -> i32 {
+    let tokens = c.tokens.clone();
+    let pos = c.pos.clone();
+    let current = c.current.clone();
+    return pos;
+}
+
+fn c_at_end(c: TokenCursor) -> bool {
+    let tokens = c.tokens.clone();
+    let pos = c.pos.clone();
+    let current = c.current.clone();
+    let mut token_count: i32 = tokens.len() as i32;
+    return pos >= token_count;
+}
+
+fn cur_skip_to_body(c: TokenCursor) -> TokenCursor {
+    let tokens = c.tokens.clone();
+    let pos = c.pos.clone();
+    let current = c.current.clone();
+    let mut _state = pos.clone();
+    _state = adv_nl(_state.clone(), tokens.clone());
+    _state = adv_indent(_state.clone(), tokens.clone());
+    let mut pos = _state;
+    return cur_at(tokens.clone(), pos.clone());
+}
+
 type TokenList = Vec<Token>;
 
 type StrList = Vec<String>;
@@ -144,6 +203,13 @@ struct GenCtx {
     enum_reg: StrList,
     mut_names: StrList,
     type_reg: StrList,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+struct TokenCursor {
+    tokens: TokenList,
+    pos: i32,
+    current: Token,
 }
 
 fn is_empty(source: String) -> bool {
@@ -1843,31 +1909,26 @@ fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
 }
 
 fn gen_enum_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
-    let mut token_count: i32 = tokens.len() as i32;
-    let mut name_pos: i32 = pos + 1.clone();
-    let mut name_token: Token = tokens[name_pos as usize].clone();
-    let mut enum_name: String = tok_value(name_token.clone());
+    let mut c: TokenCursor = cur_at(tokens.clone(), pos + 1.clone());
+    let mut enum_name: String = tok_value_at(c.clone());
     let mut rust_name: String = pascal_case(enum_name.clone());
-    let mut cur: i32 = name_pos + 1.clone();
-    cur = skip_to_body(tokens.clone(), cur.clone());
+    c = cur_next(c.clone());
+    c = cur_skip_to_body(c.clone());
     let mut variant_lines: Vec<String> = Vec::new();
-    while cur < token_count {
-        let mut variant_token: Token = tokens[cur as usize].clone();
-        let mut variant_kind: String = tok_kind(variant_token.clone());
-        let mut variant_value: String = tok_value(variant_token.clone());
-        if variant_kind == "DEDENT" {
-            cur = cur + 1;
+    while !c_at_end(c.clone()) {
+        let mut kind: String = tok_kind_at(c.clone());
+        let mut value: String = tok_value_at(c.clone());
+        c = cur_next(c.clone());
+        if kind == "DEDENT" {
             break;
-        } else if variant_kind == "NEWLINE" {
-            cur = cur + 1;
-        } else if variant_kind == "IDENT" {
-            variant_lines.push(s_join(vec!["    ".to_string(), variant_value.clone(), ",".to_string()]).clone());
-            cur = cur + 1;
+        }
+        if kind == "IDENT" {
+            variant_lines.push(s_join(vec!["    ".to_string(), value.clone(), ",".to_string()]).clone());
         }
     }
     let mut variants_code: String = s_join_nl(variant_lines.clone());
     let mut decl: String = s_join(vec!["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ".to_string(), rust_name.clone(), " {\n".to_string(), variants_code.clone(), "\n}\n\n".to_string()]);
-    return make_result(decl.clone(), cur.clone());
+    return make_result(decl.clone(), c_pos(c.clone()));
 }
 
 fn gen_type_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {

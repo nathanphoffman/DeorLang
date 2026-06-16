@@ -45,29 +45,23 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	return make_result(decl, adv_nl(after, tokens))
 
 fn ParseResult gen_enum_decl(tokenList tokens, int pos)
-	int token_count = len(tokens)
-	int name_pos = pos + 1
-	Token name_token = tokens at name_pos
-	string enum_name = tok_value(name_token)
+	TokenCursor c = cur_at(tokens, pos + 1)
+	string enum_name = tok_value_at(c)
 	string rust_name = pascal_case(enum_name)
-	int cur = name_pos + 1
-	cur = skip_to_body(tokens, cur)
+	c = cur_next(c)
+	c = cur_skip_to_body(c)
 	strList variant_lines = []
-	for if cur < token_count
-		Token variant_token = tokens at cur
-		string variant_kind = tok_kind(variant_token)
-		string variant_value = tok_value(variant_token)
-		if variant_kind is "DEDENT"
-			cur = cur + 1
+	for if not c_at_end(c)
+		string kind = tok_kind_at(c)
+		string value = tok_value_at(c)
+		c = cur_next(c)
+		if kind is "DEDENT"
 			break
-		else if variant_kind is "NEWLINE"
-			cur = cur + 1
-		else if variant_kind is "IDENT"
-			variant_lines at end = s_join(["    ", variant_value, ","])
-			cur = cur + 1
+		if kind is "IDENT"
+			variant_lines at end = s_join(["    ", value, ","])
 	string variants_code = s_join_nl(variant_lines)
 	string decl = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ", rust_name, " {\n", variants_code, "\n}\n\n"])
-	return make_result(decl, cur)
+	return make_result(decl, c_pos(c))
 
 fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 	int token_count = len(tokens)

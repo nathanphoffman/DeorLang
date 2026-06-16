@@ -46,12 +46,3 @@ fn void main()
 	Test new_test = using old_test
 		say_hi()
 
-
-
-
-
-	const new_tokens = using old_tokens
-		oldToken as this()
-		next()
-		processStruct(oldToken)
-		processIf(oldToken)
