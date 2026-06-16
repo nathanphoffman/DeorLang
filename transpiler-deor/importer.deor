@@ -1,5 +1,69 @@
 # === Import resolution ===
 
+fn tokenList filter_by_names(tokenList tokens, strList names)
+	int names_count = len(names)
+	if names_count is 0
+		return tokens
+	tokenList result = []
+	int token_count = len(tokens)
+	int cur = 0
+	for if cur < token_count
+		Token token = tokens at cur
+		string kind = tok_kind(token)
+		if kind is "EOF"
+			break
+		if kind is "NEWLINE"
+			cur = cur + 1
+			continue
+		bool is_fn = kind is "KW_FN"
+		bool is_struct = kind is "KW_STRUCT"
+		bool is_enum = kind is "KW_ENUM"
+		bool is_shape = kind is "KW_SHAPE"
+		bool is_block_decl = is_fn or is_struct or is_enum
+		if is_block_decl
+			int name_offset = 1
+			if is_fn
+				name_offset = 2
+			int name_pos = cur + name_offset
+			string decl_name = ""
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				decl_name = tok_value(name_tok)
+			bool include = list_has(names, decl_name)
+			int depth = 0
+			bool entered = false
+			for if cur < token_count
+				Token t = tokens at cur
+				string tk = tok_kind(t)
+				if include
+					result at end = t
+				cur = cur + 1
+				if tk is "INDENT"
+					depth = depth + 1
+					entered = true
+				else if tk is "DEDENT"
+					depth = depth - 1
+					if depth is 0 and entered
+						break
+		else if is_shape
+			int name_pos = cur + 1
+			string decl_name = ""
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				decl_name = tok_value(name_tok)
+			bool include = list_has(names, decl_name)
+			for if cur < token_count
+				Token t = tokens at cur
+				string tk = tok_kind(t)
+				if include
+					result at end = t
+				cur = cur + 1
+				if tk is "NEWLINE"
+					break
+		else
+			cur = cur + 1
+	return result
+
 fn tokenList collect_all_tokens_with_all_imports(string path)
 
 	string source = read_file(path)
@@ -37,15 +101,17 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 
 		if current_kind is "LPAREN" and at_root
 
+			strList import_names = []
 			int scan = pos + 1
 
 			for if scan < token_count
 				Token scan_token = source_tokens at scan
+				string scan_kind = tok_kind(scan_token)
 				scan = scan + 1
-
-				bool is_right_paren = tok_kind(scan_token) is "RPAREN"
-				if is_right_paren
+				if scan_kind is "RPAREN"
 					break
+				if scan_kind is "IDENT"
+					import_names at end = tok_value(scan_token)
 
 			int path_pos = scan + 1
 			if path_pos < token_count
@@ -56,9 +122,10 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 					Token path_token = source_tokens at path_pos
 					string imp_path = tok_value(path_token)
 					tokenList imp_tokens = collect_all_tokens_with_all_imports(imp_path)
-					int import_len = len(imp_tokens)
+					tokenList filtered = filter_by_names(imp_tokens, import_names)
+					int import_len = len(filtered)
 					for import_index in range(import_len)
-						Token import_token = imp_tokens at import_index
+						Token import_token = filtered at import_index
 						string import_kind = tok_kind(import_token)
 						bool import_is_eof = import_kind is "EOF"
 						if not import_is_eof
