@@ -1,6 +1,12 @@
 # Strings
 
-String operations are built into the language — no import required. All string functions accept literals directly since they are built-ins. See [Built-ins](builtins.md#string-operations) for the full function table.
+String utility functions live in `lib/string.deor`. Import what you need:
+
+```
+(s_trim, s_split, s_contains) in "lib/string"
+```
+
+All functions in `lib/string.deor` follow the `s_` prefix convention. They are regular user-defined functions, so arguments must be named variables — literals are not valid arguments. See [Enforced Practices](enforced_practices.md#named-arguments--user-defined-functions-only).
 
 ---
 
@@ -66,42 +72,42 @@ string msg = "count: " + int_to_str(count)
 ## Examples
 
 ```
-string clean = trim("  Hello, World!  ")
+(s_trim, s_to_lower, s_contains, s_split, s_starts_with, s_ends_with, stringList) in "lib/string"
 
-string lower = to_lower(clean)
-bool found = contains(lower, "world")
+string raw = "  Hello, World!  "
+string clean = s_trim(raw)
 
-shape nameList = list of string
-nameList parts = split("apple,banana,cherry", ",")
+string lower = s_to_lower(clean)
+string query = "world"
+bool found = s_contains(lower, query)
+
+string csv = "apple,banana,cherry"
+string sep = ","
+stringList parts = s_split(csv, sep)
 ```
 
 ```rust
-let raw = "  Hello, World!  ".to_string();
+let raw: String = "  Hello, World!  ".to_string();
 let clean: String = raw.trim().to_string();
-let query = "world".to_string();
 let lower: String = clean.to_lowercase();
+let query: String = "world".to_string();
 let found: bool = lower.contains(query.as_str());
-let csv = "apple,banana,cherry".to_string();
-let sep = ",".to_string();
+let csv: String = "apple,banana,cherry".to_string();
+let sep: String = ",".to_string();
 let parts: Vec<String> = csv.split(sep.as_str()).map(|s| s.to_string()).collect();
 ```
 
 ```
-bool is_abs = starts_with("/api/users", "/")
+string path = "/api/users"
+string slash = "/"
+bool is_abs = s_starts_with(path, slash)
 
-bool is_pdf = ends_with("report.pdf", ".pdf")
+string filename = "report.pdf"
+string ext = ".pdf"
+bool is_pdf = s_ends_with(filename, ext)
 ```
 
-```rust
-let path = "/api/users".to_string();
-let slash = "/".to_string();
-let is_abs: bool = path.starts_with(slash.as_str());
-let filename = "report.pdf".to_string();
-let ext = ".pdf".to_string();
-let is_pdf: bool = filename.ends_with(ext.as_str());
-```
-
-`split` always returns at least one element — an input with no delimiter occurrences returns a single-element list containing the original string.
+`s_split` always returns at least one element — an input with no delimiter occurrences returns a single-element list containing the original string.
 
 ---
 
@@ -110,10 +116,10 @@ let is_pdf: bool = filename.ends_with(ext.as_str());
 | Deor | Rust |
 |---|---|
 | `a + b` | `format!("{}{}", a, b)` |
-| `contains(str, needle)` | `str.contains(needle.as_str())` |
-| `starts_with(str, prefix)` | `str.starts_with(prefix.as_str())` |
-| `ends_with(str, suffix)` | `str.ends_with(suffix.as_str())` |
-| `trim(str)` | `str.trim().to_string()` |
-| `to_upper(str)` | `str.to_uppercase()` |
-| `to_lower(str)` | `str.to_lowercase()` |
-| `split(str, delimiter)` | `str.split(delimiter.as_str()).map(\|s\| s.to_string()).collect()` |
+| `s_contains(str, needle)` | `str.contains(needle.as_str())` |
+| `s_starts_with(str, prefix)` | `str.starts_with(prefix.as_str())` |
+| `s_ends_with(str, suffix)` | `str.ends_with(suffix.as_str())` |
+| `s_trim(str)` | `str.trim().to_string()` |
+| `s_to_upper(str)` | `str.to_uppercase()` |
+| `s_to_lower(str)` | `str.to_lowercase()` |
+| `s_split(str, delimiter)` | `str.split(delimiter.as_str()).map(\|s\| s.to_string()).collect()` |

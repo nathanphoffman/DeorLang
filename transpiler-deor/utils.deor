@@ -1,4 +1,4 @@
-(pascal_case) in "transpiler-deor/rust_helpers.deor"
+(s_pascal) in "transpiler-deor/lib/string.deor"
 
 # === String utilities ===
 
@@ -178,4 +178,4 @@ fn string render_rust_type(string type_name)
 		return "bool"
 	if type_name is "float"
 		return "f64"
-	return pascal_case(type_name)
+	return s_pascal(type_name)

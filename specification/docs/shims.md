@@ -22,39 +22,32 @@ fn int random(int min, int max)
 
 ## Math
 
+Math operations are in `lib/math.deor`. Import what you need:
+
 ```
-fn int abs_val(int num)
-    rust
-        if num < 0 { -num } else { num }
-
-fn int floor_f(float val)
-    rust
-        val.floor() as i32
-
-fn int ceil_f(float val)
-    rust
-        val.ceil() as i32
-
-fn int round_f(float val)
-    rust
-        val.round() as i32
-
-fn float sqrt_f(float val)
-    rust
-        (val as f64).sqrt()
-
-fn int min_i(int left, int right)
-    rust
-        if left < right { left } else { right }
-
-fn int max_i(int left, int right)
-    rust
-        if left > right { left } else { right }
-
-fn int pow_i(int base, int exp)
-    rust
-        (base as i64).pow(exp as u32) as i32
+(m_abs, m_min, m_max, m_pow, m_sqrt) in "lib/math"
 ```
+
+| Function | Signature | Notes |
+|---|---|---|
+| `m_abs` | `int → int` | absolute value |
+| `m_sign` | `int → int` | -1, 0, or 1 |
+| `m_min` | `int, int → int` | smaller of two ints |
+| `m_max` | `int, int → int` | larger of two ints |
+| `m_clamp` | `int, int, int → int` | clamp(val, lo, hi) |
+| `m_pow` | `int, int → int` | integer exponentiation |
+| `m_absf` | `float → float` | absolute value |
+| `m_minf` | `float, float → float` | smaller of two floats |
+| `m_maxf` | `float, float → float` | larger of two floats |
+| `m_clampf` | `float, float, float → float` | clamp(val, lo, hi) |
+| `m_powf` | `float, float → float` | float exponentiation |
+| `m_sqrt` | `float → float` | square root |
+| `m_floor` | `float → int` | round down |
+| `m_ceil` | `float → int` | round up |
+| `m_round` | `float → int` | round to nearest |
+| `m_log` | `float → float` | natural log |
+| `m_log2` | `float → float` | log base 2 |
+| `m_log10` | `float → float` | log base 10 |
 
 ---
 

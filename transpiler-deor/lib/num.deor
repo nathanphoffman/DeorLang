@@ -1,0 +1,9 @@
+(tokenList, Token) in "transpiler-deor/types.deor"
+
+fn int n_parse(string source)
+	rust
+		source.parse::<i32>().unwrap_or(0)
+
+fn string n_to_str(int number)
+	rust
+		number.to_string()

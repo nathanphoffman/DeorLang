@@ -34,89 +34,16 @@ struct TokenCursor {
     current: Token,
 }
 
-fn chars_of(source: String) -> Vec<String> {
-    source.chars().map(|c| c.to_string()).collect()
-}
-
-fn str_from(source: String, start: i32) -> String {
-    source.get(start as usize..).unwrap_or_default().to_string()
-}
-
-fn rtrim(source: String) -> String {
-    source.trim_end().to_string()
-}
-
-fn s_cat(left: String, right: String) -> String {
-    left + right.as_str()
-}
-
-fn s_join(parts: Vec<String>) -> String {
-    parts.join("")
-}
-
-fn s_join_nl(parts: Vec<String>) -> String {
-    parts.join("\n")
-}
-
-fn s_join_with(parts: Vec<String>, sep: String) -> String {
-    parts.join(sep.as_str())
-}
-
-fn read_file(path: String) -> String {
+fn f_read(path: String) -> String {
     std::fs::read_to_string(path.as_str()).expect("cannot read input file")
 }
 
-fn write_file(path: String, content: String) {
+fn f_write(path: String, content: String) {
     std::fs::write(path.as_str(), content.as_str()).expect("cannot write output file");
 }
 
-fn get_args() -> Vec<String> {
+fn f_args() -> Vec<String> {
     std::env::args().skip(1).collect()
-}
-
-fn is_alpha(character: String) -> bool {
-    character.chars().next().map(|ch| ch.is_alphabetic() || ch == '_').unwrap_or(false)
-}
-
-fn is_digit(character: String) -> bool {
-    character.chars().next().map(|ch| ch.is_ascii_digit()).unwrap_or(false)
-}
-
-fn is_alnum(character: String) -> bool {
-    character.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)
-}
-
-fn str_to_int(source: String) -> i32 {
-    source.parse::<i32>().unwrap_or(0)
-}
-
-fn int_to_str(number: i32) -> String {
-    number.to_string()
-}
-
-fn str_repeat(source: String, count: i32) -> String {
-    source.repeat(count as usize)
-}
-
-fn pascal_case(source: String) -> String {
-    {
-    	let mut chars = source.chars();
-    	match chars.next() {
-    		None => String::new(),
-    		Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
-    	}
-    }
-}
-
-fn to_debug_str(source: String) -> String {
-    format!("{:?}", source)
-}
-
-fn token_slice(tokens: Vec<Token>, start: i32, end_val: i32) -> Vec<Token> {
-    {
-    	let end = (end_val as usize).min(tokens.len());
-    	tokens[start as usize..end].to_vec()
-    }
 }
 
 fn pr_code(result: ParseResult) -> String {
@@ -205,6 +132,60 @@ fn cur_skip_to_body(c: TokenCursor) -> TokenCursor {
     let mut p: i32 = adv_nl(pos.clone(), tokens.clone());
     p = adv_indent(p.clone(), tokens.clone());
     return cur_at(tokens.clone(), p.clone());
+}
+
+fn s_cat(left: String, right: String) -> String {
+    left + right.as_str()
+}
+
+fn s_join(parts: Vec<String>) -> String {
+    parts.join("")
+}
+
+fn s_join_nl(parts: Vec<String>) -> String {
+    parts.join("\n")
+}
+
+fn s_join_with(parts: Vec<String>, sep: String) -> String {
+    parts.join(sep.as_str())
+}
+
+fn s_from(source: String, start: i32) -> String {
+    source.get(start as usize..).unwrap_or_default().to_string()
+}
+
+fn s_rtrim(source: String) -> String {
+    source.trim_end().to_string()
+}
+
+fn s_trim(source: String) -> String {
+    source.trim().to_string()
+}
+
+fn s_starts_with(source: String, prefix: String) -> bool {
+    source.starts_with(prefix.as_str())
+}
+
+fn s_split(source: String, delimiter: String) -> Vec<String> {
+    source.split(delimiter.as_str()).map(|s| s.to_string()).collect()
+}
+
+fn s_repeat(source: String, count: i32) -> String {
+    source.repeat(count as usize)
+}
+
+fn s_pascal(source: String) -> String {
+    {
+    	let mut chars = source.chars();
+    	match chars.next() {
+    		None => String::new(),
+    		Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
+    	}
+    }
+}
+
+fn s_debug(source: String) -> String {
+    format!("{:?}", source)
 }
 
 fn is_empty(source: String) -> bool {
@@ -451,7 +432,7 @@ fn render_rust_type(type_name: String) -> String {
     if type_name == "float" {
         return "f64".to_string();
     }
-    return pascal_case(type_name.clone());
+    return s_pascal(type_name.clone());
 }
 
 fn skip_to_block_start(tokens: Vec<Token>, start: i32) -> ParseResult {
@@ -578,7 +559,7 @@ fn build_enum_reg(tokens: Vec<Token>) -> Vec<String> {
                 let mut name_token: Token = tokens[name_pos as usize].clone();
                 let value = name_token.value.clone();
                 let mut enum_name: String = value.clone();
-                let mut rust_name: String = pascal_case(enum_name.clone());
+                let mut rust_name: String = s_pascal(enum_name.clone());
                 result.push(enum_name.clone());
                 result.push(rust_name.clone());
             }
@@ -667,8 +648,8 @@ fn resolve_type(type_name: String, shape_reg: Vec<String>, enum_reg: Vec<String>
     }
     let mut elem_type: String = reg_get(shape_reg.clone(), type_name.clone());
     if !is_empty(elem_type.clone()) {
-        if elem_type.starts_with("fn:") {
-            let mut parts: Vec<String> = elem_type.split(":").map(|s| s.to_string()).collect();
+        if s_starts_with(elem_type.clone(), "fn:".to_string()) {
+            let mut parts: Vec<String> = s_split(elem_type.clone(), ":".to_string());
             let mut in_type: String = parts[1 as usize].clone();
             let mut out_type: String = parts[2 as usize].clone();
             let mut rust_in: String = render_rust_type(in_type.clone());
@@ -741,6 +722,13 @@ fn collect_mut_names(tokens: Vec<Token>, start: i32, end_pos: i32) -> Vec<String
     return result;
 }
 
+fn l_slice(tokens: Vec<Token>, start: i32, end_val: i32) -> Vec<Token> {
+    {
+    	let end = (end_val as usize).min(tokens.len());
+    	tokens[start as usize..end].to_vec()
+    }
+}
+
 fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
     let mut fields_key: String = s_join_with(fields.clone(), ",".to_string());
     let mut reg_count: i32 = struct_reg.len() as i32;
@@ -768,7 +756,7 @@ fn find_struct_for_field(struct_reg: Vec<String>, field: String) -> String {
     for index in 0..reg_count {
         let mut item: String = struct_reg[index as usize].clone();
         if next_is_val {
-            let mut fields: Vec<String> = item.split(",").map(|s| s.to_string()).collect();
+            let mut fields: Vec<String> = s_split(item.clone(), ",".to_string());
             let mut has_field: bool = list_has(fields.clone(), field.clone());
             if has_field {
                 return cur_name;
@@ -868,23 +856,6 @@ fn gen_unary_method(tokens: Vec<Token>, args_pos: i32, suffix: String, ctx: GenC
     return make_result(s_join(vec![inner_code.clone(), suffix.clone()]), close.clone());
 }
 
-fn gen_binary_str_method(tokens: Vec<Token>, args_pos: i32, method_name: String, ctx: GenCtx) -> ParseResult {
-    let mut a0_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), ctx.clone());
-    let mut a0c: String = pr_code(a0_r.clone());
-    let mut sep_pos: i32 = pr_pos(a0_r.clone()) + 1;
-    let mut a1_r: ParseResult = gen_expr(tokens.clone(), sep_pos.clone(), ctx.clone());
-    let mut a1c: String = pr_code(a1_r.clone());
-    let mut close_pos: i32 = pr_pos(a1_r.clone()) + 1;
-    let mut a1_token: Token = tokens[sep_pos as usize].clone();
-    let kind = a1_token.kind.clone();
-    let mut a1_arg: String = a1c.clone();
-    let mut a1_is_str: bool = kind == "STRING".clone();
-    if !a1_is_str {
-        a1_arg = s_join(vec![a1c.clone(), ".as_str()".to_string()]);
-    }
-    return make_result(s_join(vec![a0c.clone(), ".".to_string(), method_name.clone(), "(".to_string(), a1_arg.clone(), ")".to_string()]), close_pos.clone());
-}
-
 fn gen_primary(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     let variant_reg = ctx.variant_reg.clone();
     let shape_reg = ctx.shape_reg.clone();
@@ -901,7 +872,7 @@ fn gen_primary(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
         return make_result(value.clone(), pos + 1.clone());
     }
     if kind == "STRING" {
-        return make_result(to_debug_str(value.clone()), pos + 1.clone());
+        return make_result(s_debug(value.clone()), pos + 1.clone());
     }
     if kind == "KW_TRUE" {
         return make_result("true".to_string(), pos + 1.clone());
@@ -979,42 +950,6 @@ fn gen_primary(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
                 let mut args_pos: i32 = next_pos + 1.clone();
                 if func_name == "len" {
                     return gen_unary_method(tokens.clone(), args_pos.clone(), ".len() as i32".to_string(), ctx.clone());
-                }
-                if func_name == "trim" {
-                    return gen_unary_method(tokens.clone(), args_pos.clone(), ".trim().to_string()".to_string(), ctx.clone());
-                }
-                if func_name == "to_upper" {
-                    return gen_unary_method(tokens.clone(), args_pos.clone(), ".to_uppercase()".to_string(), ctx.clone());
-                }
-                if func_name == "to_lower" {
-                    return gen_unary_method(tokens.clone(), args_pos.clone(), ".to_lowercase()".to_string(), ctx.clone());
-                }
-                if func_name == "contains" {
-                    return gen_binary_str_method(tokens.clone(), args_pos.clone(), "contains".to_string(), ctx.clone());
-                }
-                if func_name == "starts_with" {
-                    return gen_binary_str_method(tokens.clone(), args_pos.clone(), "starts_with".to_string(), ctx.clone());
-                }
-                if func_name == "ends_with" {
-                    return gen_binary_str_method(tokens.clone(), args_pos.clone(), "ends_with".to_string(), ctx.clone());
-                }
-                if func_name == "split" {
-                    let mut a0_r: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), ctx.clone());
-                    let mut a0c: String = pr_code(a0_r.clone());
-                    let mut a0p: i32 = pr_pos(a0_r.clone());
-                    let mut sep_pos: i32 = a0p + 1.clone();
-                    let mut a1_r: ParseResult = gen_expr(tokens.clone(), sep_pos.clone(), ctx.clone());
-                    let mut a1c: String = pr_code(a1_r.clone());
-                    let mut a1p: i32 = pr_pos(a1_r.clone());
-                    let mut a1_token: Token = tokens[sep_pos as usize].clone();
-                    let kind = a1_token.kind.clone();
-                    let mut a1_arg: String = a1c.clone();
-                    let mut a1_is_str: bool = kind == "STRING".clone();
-                    if !a1_is_str {
-                        a1_arg = s_join(vec![a1c.clone(), ".as_str()".to_string()]);
-                    }
-                    let mut close_pos: i32 = a1p + 1.clone();
-                    return make_result(s_join(vec![a0c.clone(), ".split(".to_string(), a1_arg.clone(), ").map(|s| s.to_string()).collect()".to_string()]), close_pos.clone());
                 }
                 let mut args_r: ParseResult = gen_call_args(tokens.clone(), args_pos.clone(), ctx.clone());
                 let mut args_code: String = pr_code(args_r.clone());
@@ -1119,7 +1054,7 @@ fn gen_destructure(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> Par
     let using_type = ctx.using_type.clone();
     let using_var = ctx.using_var.clone();
     let mut token_count: i32 = tokens.len() as i32;
-    let mut pad: String = str_repeat("    ".to_string(), depth.clone());
+    let mut pad: String = s_repeat("    ".to_string(), depth.clone());
     let mut fields: Vec<String> = Vec::new();
     let mut cur: i32 = pos + 1.clone();
     while cur < token_count {
@@ -1171,13 +1106,13 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
     let kind = token.kind.clone();
     let value = token.value.clone();
     let line = token.line.clone();
-    let mut pad: String = str_repeat("    ".to_string(), depth.clone());
+    let mut pad: String = s_repeat("    ".to_string(), depth.clone());
     if kind == "KW_RUST" {
         let mut block_pos: i32 = pos + 2.clone();
         let mut block_token: Token = tokens[block_pos as usize].clone();
         let value = block_token.value.clone();
         let mut block_content: String = value.clone();
-        let mut rust_lines: Vec<String> = block_content.split("\n").map(|s| s.to_string()).collect();
+        let mut rust_lines: Vec<String> = s_split(block_content.clone(), "\n".to_string());
         let mut padded: Vec<String> = Vec::new();
         let mut rust_line_count: i32 = rust_lines.len() as i32;
         for rust_index in 0..rust_line_count {
@@ -1481,7 +1416,7 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
                         let mut is_avow_expr: bool = kind == "KW_AVOW".clone();
                         if !is_avow_expr {
                             let mut struct_fields_str: String = reg_get(struct_reg.clone(), var_type.clone());
-                            let mut field_names: Vec<String> = struct_fields_str.split(",").map(|s| s.to_string()).collect();
+                            let mut field_names: Vec<String> = s_split(struct_fields_str.clone(), ",".to_string());
                             let mut field_pairs: Vec<String> = Vec::new();
                             let mut fend: i32 = val_pos + 1.clone();
                             let mut fni: i32 = 0;
@@ -1624,7 +1559,7 @@ fn gen_if_branch(tokens: Vec<Token>, cond_pos: i32, depth: i32, ctx: GenCtx) -> 
 
 fn gen_if(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResult {
     let mut token_count: i32 = tokens.len() as i32;
-    let mut pad: String = str_repeat("    ".to_string(), depth.clone());
+    let mut pad: String = s_repeat("    ".to_string(), depth.clone());
     let mut then_r: ParseResult = gen_if_branch(tokens.clone(), pos + 1.clone(), depth.clone(), ctx.clone());
     let mut result_code: String = s_join(vec![pad.clone(), "if ".to_string(), pr_code(then_r.clone()).clone(), pad.clone(), "}".to_string()]);
     let mut cur: i32 = pr_pos(then_r.clone());
@@ -1662,7 +1597,7 @@ fn gen_if(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResult 
 
 fn gen_for(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResult {
     let mut token_count: i32 = tokens.len() as i32;
-    let mut pad: String = str_repeat("    ".to_string(), depth.clone());
+    let mut pad: String = s_repeat("    ".to_string(), depth.clone());
     let mut next_pos: i32 = pos + 1.clone();
     let mut next_token: Token = tokens[next_pos as usize].clone();
     let kind = next_token.kind.clone();
@@ -1786,7 +1721,7 @@ fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let kind = form_token.kind.clone();
     let value = elem_token.value.clone();
     let mut elem_type: String = value.clone();
-    let mut rust_name: String = pascal_case(shape_name.clone());
+    let mut rust_name: String = s_pascal(shape_name.clone());
     if kind == "KW_LIST" {
         let mut rust_elem: String = render_rust_type(elem_type.clone());
         let mut decl: String = s_join(vec!["type ".to_string(), rust_name.clone(), " = Vec<".to_string(), rust_elem.clone(), ">;\n\n".to_string()]);
@@ -1813,7 +1748,7 @@ fn gen_enum_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let current = c.current.clone();
     let value = current.value.clone();
     let mut enum_name: String = value.clone();
-    let mut rust_name: String = pascal_case(enum_name.clone());
+    let mut rust_name: String = s_pascal(enum_name.clone());
     c = cur_next(c.clone());
     c = cur_skip_to_body(c.clone());
     let mut variant_lines: Vec<String> = Vec::new();
@@ -1918,7 +1853,7 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     }
     let mut body_end_pos: i32 = find_block_end(tokens.clone(), indent_pos.clone());
     let mut body_start: i32 = cur.clone();
-    let mut body_tokens: Vec<Token> = token_slice(tokens.clone(), body_start.clone(), body_end_pos + 1.clone());
+    let mut body_tokens: Vec<Token> = l_slice(tokens.clone(), body_start.clone(), body_end_pos + 1.clone());
     let mut body_len: i32 = body_tokens.len() as i32;
     let mut mut_names: Vec<String> = collect_mut_names(body_tokens.clone(), 0, body_len - 1.clone());
     let mut using_type: String = "".to_string();
@@ -1937,8 +1872,32 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     return make_result(fn_code.clone(), body_end.clone());
 }
 
+fn c_chars(source: String) -> Vec<String> {
+    source.chars().map(|c| c.to_string()).collect()
+}
+
+fn c_alpha(character: String) -> bool {
+    character.chars().next().map(|ch| ch.is_alphabetic() || ch == '_').unwrap_or(false)
+}
+
+fn c_digit(character: String) -> bool {
+    character.chars().next().map(|ch| ch.is_ascii_digit()).unwrap_or(false)
+}
+
+fn c_alnum(character: String) -> bool {
+    character.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)
+}
+
+fn n_parse(source: String) -> i32 {
+    source.parse::<i32>().unwrap_or(0)
+}
+
+fn n_to_str(number: i32) -> String {
+    number.to_string()
+}
+
 fn count_tabs(line: String) -> i32 {
-    let mut chars: Vec<String> = chars_of(line.clone());
+    let mut chars: Vec<String> = c_chars(line.clone());
     let mut char_count: i32 = chars.len() as i32;
     let mut count: i32 = 0;
     for index in 0..char_count {
@@ -1954,7 +1913,7 @@ fn count_tabs(line: String) -> i32 {
 
 fn tokenize(source: String) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
-    let mut lines: Vec<String> = source.split("\n").map(|s| s.to_string()).collect();
+    let mut lines: Vec<String> = s_split(source.clone(), "\n".to_string());
     let mut n_lines: i32 = lines.len() as i32;
     let mut indent_stack: Vec<String> = Vec::new();
     indent_stack.push("0".to_string());
@@ -1967,25 +1926,25 @@ fn tokenize(source: String) -> Vec<Token> {
             continue;
         }
         let mut raw: String = lines[raw_li as usize].clone();
-        let mut line: String = rtrim(raw.clone());
-        let mut stripped: String = line.trim().to_string();
+        let mut line: String = s_rtrim(raw.clone());
+        let mut stripped: String = s_trim(line.clone());
         if is_empty(stripped.clone()) {
             continue;
         }
         let mut indent: i32 = count_tabs(line.clone());
-        let mut content: String = str_from(line.clone(), indent.clone());
+        let mut content: String = s_from(line.clone(), indent.clone());
         let mut slen: i32 = indent_stack.len() as i32;
         let mut top_idx: i32 = slen - 1.clone();
-        let mut top: i32 = str_to_int(indent_stack[top_idx as usize].clone());
+        let mut top: i32 = n_parse(indent_stack[top_idx as usize].clone());
         if indent > top {
             tokens.push(make_token("INDENT".to_string(), "".to_string(), cur_line.clone()).clone());
-            indent_stack.push(int_to_str(indent.clone()).clone());
+            indent_stack.push(n_to_str(indent.clone()).clone());
         } else {
             let mut dedenting: bool = indent < top.clone();
             while dedenting {
                 let mut new_slen: i32 = indent_stack.len() as i32;
                 let mut new_top_idx: i32 = new_slen - 1.clone();
-                let mut cur_top: i32 = str_to_int(indent_stack[new_top_idx as usize].clone());
+                let mut cur_top: i32 = n_parse(indent_stack[new_top_idx as usize].clone());
                 if indent < cur_top {
                     tokens.push(make_token("DEDENT".to_string(), "".to_string(), cur_line.clone()).clone());
                     indent_stack.remove(new_top_idx as usize);
@@ -2003,13 +1962,13 @@ fn tokenize(source: String) -> Vec<Token> {
             for rli in rli_start..n_lines {
                 let mut rust_line: String = lines[rli as usize].clone();
                 let mut rl_indent: i32 = count_tabs(rust_line.clone());
-                let mut rl_stripped: String = rust_line.trim().to_string();
+                let mut rl_stripped: String = s_trim(rust_line.clone());
                 if is_empty(rl_stripped.clone()) {
                     rust_lines.push("".to_string());
                     skip = skip + 1;
                 } else if rl_indent >= rust_base {
-                    let mut rl_content: String = str_from(rust_line.clone(), rust_base.clone());
-                    rust_lines.push(rtrim(rl_content.clone()).clone());
+                    let mut rl_content: String = s_from(rust_line.clone(), rust_base.clone());
+                    rust_lines.push(s_rtrim(rl_content.clone()).clone());
                     skip = skip + 1;
                 } else {
                     break;
@@ -2033,7 +1992,7 @@ fn tokenize(source: String) -> Vec<Token> {
             tokens.push(make_token("RUST_BLOCK".to_string(), s_join_nl(rust_lines.clone()), cur_line.clone()).clone());
             continue;
         }
-        let mut chars: Vec<String> = chars_of(content.clone());
+        let mut chars: Vec<String> = c_chars(content.clone());
         let mut char_count: i32 = chars.len() as i32;
         let mut char_index: i32 = 0;
         while char_index < char_count {
@@ -2081,13 +2040,13 @@ fn tokenize(source: String) -> Vec<Token> {
                 tokens.push(make_token("STRING".to_string(), val.clone(), cur_line.clone()).clone());
                 continue;
             }
-            if is_digit(character.clone()) {
+            if c_digit(character.clone()) {
                 let mut num: String = s_cat("".to_string(), character.clone());
                 let mut num_start: i32 = char_index + 1.clone();
                 char_index = char_index + 1;
                 for number_index in num_start..char_count {
                     let mut number_char: String = chars[number_index as usize].clone();
-                    if is_digit(number_char.clone()) {
+                    if c_digit(number_char.clone()) {
                         num = s_cat(num.clone(), number_char.clone());
                         char_index = number_index + 1;
                     } else {
@@ -2097,13 +2056,13 @@ fn tokenize(source: String) -> Vec<Token> {
                 tokens.push(make_token("INT".to_string(), num.clone(), cur_line.clone()).clone());
                 continue;
             }
-            if is_alpha(character.clone()) {
+            if c_alpha(character.clone()) {
                 let mut word: String = s_cat("".to_string(), character.clone());
                 let mut word_start: i32 = char_index + 1.clone();
                 char_index = char_index + 1;
                 for word_index in word_start..char_count {
                     let mut word_char: String = chars[word_index as usize].clone();
-                    if is_alnum(word_char.clone()) {
+                    if c_alnum(word_char.clone()) {
                         word = s_cat(word.clone(), word_char.clone());
                         char_index = word_index + 1;
                     } else {
@@ -2323,7 +2282,7 @@ fn collect_imports_from_raw(source_tokens: Vec<Token>) -> Vec<Token> {
 }
 
 fn load_named(path: String, names: Vec<String>) -> Vec<Token> {
-    let mut source: String = read_file(path.clone());
+    let mut source: String = f_read(path.clone());
     let mut raw: Vec<Token> = tokenize(source.clone());
     let mut support: Vec<Token> = collect_imports_from_raw(raw.clone());
     let mut own: Vec<Token> = filter_by_names(raw.clone(), Vec::new());
@@ -2429,7 +2388,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
 }
 
 fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
-    let mut source: String = read_file(path.clone());
+    let mut source: String = f_read(path.clone());
     let mut source_tokens: Vec<Token> = tokenize(source.clone());
     let mut result: Vec<Token> = Vec::new();
     let mut token_count: i32 = source_tokens.len() as i32;
@@ -2568,7 +2527,7 @@ fn generate(tokens: Vec<Token>) -> String {
 }
 
 fn main() {
-    let mut args: Vec<String> = get_args();
+    let mut args: Vec<String> = f_args();
     let mut arg_count: i32 = args.len() as i32;
     if arg_count < 2 {
         println!("{}", "usage: deor input.deor output.rs".to_string());
@@ -2577,7 +2536,7 @@ fn main() {
         let mut output_path: String = args[1 as usize].clone();
         let mut tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
         let mut rust_code: String = generate(tokens.clone());
-        write_file(output_path.clone(), rust_code.clone());
+        f_write(output_path.clone(), rust_code.clone());
     }
 }
 

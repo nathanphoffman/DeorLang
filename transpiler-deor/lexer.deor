@@ -1,15 +1,14 @@
 (tokenList, Token) in "transpiler-deor/types.deor"
-(
-    chars_of, str_from, rtrim, s_cat, s_join_nl,
-    is_alpha, is_digit, is_alnum, str_to_int, int_to_str,
-) in "transpiler-deor/rust_helpers.deor"
+(s_cat, s_join_nl, s_rtrim, s_trim, s_from, s_split) in "transpiler-deor/lib/string.deor"
+(c_chars, c_alpha, c_digit, c_alnum) in "transpiler-deor/lib/char.deor"
+(n_parse, n_to_str) in "transpiler-deor/lib/num.deor"
 (make_token) in "transpiler-deor/deor_helpers.deor"
 (is_empty, word_to_kind) in "transpiler-deor/utils.deor"
 
 # === Lexer ===
 
 fn int count_tabs(string line)
-	strList chars = chars_of(line)
+	strList chars = c_chars(line)
 	int char_count = len(chars)
 	int count = 0
 	for index in range(char_count)
@@ -22,7 +21,7 @@ fn int count_tabs(string line)
 
 fn tokenList tokenize(string source)
 	tokenList tokens = []
-	strList lines = split(source, "\n")
+	strList lines = s_split(source, "\n")
 	int n_lines = len(lines)
 	strList indent_stack = []
 	indent_stack at end = "0"
@@ -36,29 +35,29 @@ fn tokenList tokenize(string source)
 			continue
 
 		string raw = lines at raw_li
-		string line = rtrim(raw)
-		string stripped = trim(line)
+		string line = s_rtrim(raw)
+		string stripped = s_trim(line)
 
 		if is_empty(stripped)
 			continue
 
 		int indent = count_tabs(line)
-		string content = str_from(line, indent)
+		string content = s_from(line, indent)
 
 		# handle indent/dedent relative to stack top
 		int slen = len(indent_stack)
 		int top_idx = slen - 1
-		int top = str_to_int(indent_stack at top_idx)
+		int top = n_parse(indent_stack at top_idx)
 
 		if indent > top
 			tokens at end = make_token("INDENT", "", cur_line)
-			indent_stack at end = int_to_str(indent)
+			indent_stack at end = n_to_str(indent)
 		else
 			bool dedenting = indent < top
 			for if dedenting
 				int new_slen = len(indent_stack)
 				int new_top_idx = new_slen - 1
-				int cur_top = str_to_int(indent_stack at new_top_idx)
+				int cur_top = n_parse(indent_stack at new_top_idx)
 				if indent < cur_top
 					tokens at end = make_token("DEDENT", "", cur_line)
 					indent_stack remove at new_top_idx
@@ -75,13 +74,13 @@ fn tokenList tokenize(string source)
 			for rli in (rli_start, n_lines)
 				string rust_line = lines at rli
 				int rl_indent = count_tabs(rust_line)
-				string rl_stripped = trim(rust_line)
+				string rl_stripped = s_trim(rust_line)
 				if is_empty(rl_stripped)
 					rust_lines at end = ""
 					skip = skip + 1
 				else if rl_indent >= rust_base
-					string rl_content = str_from(rust_line, rust_base)
-					rust_lines at end = rtrim(rl_content)
+					string rl_content = s_from(rust_line, rust_base)
+					rust_lines at end = s_rtrim(rl_content)
 					skip = skip + 1
 				else
 					break
@@ -102,7 +101,7 @@ fn tokenList tokenize(string source)
 			continue
 
 		# scan content characters for tokens
-		strList chars = chars_of(content)
+		strList chars = c_chars(content)
 		int char_count = len(chars)
 		int char_index = 0
 
@@ -152,13 +151,13 @@ fn tokenList tokenize(string source)
 				continue
 
 			# integer literal
-			if is_digit(character)
+			if c_digit(character)
 				string num = s_cat("", character)
 				int num_start = char_index + 1
 				char_index = char_index + 1
 				for number_index in (num_start, char_count)
 					string number_char = chars at number_index
-					if is_digit(number_char)
+					if c_digit(number_char)
 						num = s_cat(num, number_char)
 						char_index = number_index + 1
 					else
@@ -167,13 +166,13 @@ fn tokenList tokenize(string source)
 				continue
 
 			# identifier or keyword
-			if is_alpha(character)
+			if c_alpha(character)
 				string word = s_cat("", character)
 				int word_start = char_index + 1
 				char_index = char_index + 1
 				for word_index in (word_start, char_count)
 					string word_char = chars at word_index
-					if is_alnum(word_char)
+					if c_alnum(word_char)
 						word = s_cat(word, word_char)
 						char_index = word_index + 1
 					else

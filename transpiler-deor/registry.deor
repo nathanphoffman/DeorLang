@@ -1,6 +1,6 @@
 (tokenList, strList, Token, ParseResult) in "transpiler-deor/types.deor"
 (make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
-(s_join, s_join_with, pascal_case) in "transpiler-deor/rust_helpers.deor"
+(s_join, s_join_with, s_pascal, s_starts_with, s_split) in "transpiler-deor/lib/string.deor"
 (is_empty, reg_get, render_rust_type, list_has) in "transpiler-deor/utils.deor"
 
 # === Registry builders ===
@@ -105,7 +105,7 @@ fn strList build_enum_reg(tokenList tokens)
 				Token name_token = tokens at name_pos
 				(value) in name_token
 				string enum_name = value
-				string rust_name = pascal_case(enum_name)
+				string rust_name = s_pascal(enum_name)
 				result at end = enum_name
 				result at end = rust_name
 	return result
@@ -176,8 +176,8 @@ fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
 		return enum_rust
 	string elem_type = reg_get(shape_reg, type_name)
 	if not is_empty(elem_type)
-		if starts_with(elem_type, "fn:")
-			strList parts = split(elem_type, ":")
+		if s_starts_with(elem_type, "fn:")
+			strList parts = s_split(elem_type, ":")
 			string in_type = parts at 1
 			string out_type = parts at 2
 			string rust_in = render_rust_type(in_type)

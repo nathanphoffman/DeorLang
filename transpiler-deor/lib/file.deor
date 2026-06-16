@@ -1,0 +1,13 @@
+(tokenList, Token) in "transpiler-deor/types.deor"
+
+fn string f_read(string path)
+	rust
+		std::fs::read_to_string(path.as_str()).expect("cannot read input file")
+
+fn void f_write(string path, string content)
+	rust
+		std::fs::write(path.as_str(), content.as_str()).expect("cannot write output file");
+
+fn strList f_args()
+	rust
+		std::env::args().skip(1).collect()

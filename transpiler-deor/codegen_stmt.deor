@@ -3,7 +3,7 @@
     make_result, pr_code, pr_pos,
     adv_nl, adv_indent, skip_to_body,
 ) in "transpiler-deor/deor_helpers.deor"
-(s_join, s_join_nl, s_join_with, s_cat, str_repeat) in "transpiler-deor/rust_helpers.deor"
+(s_join, s_join_nl, s_join_with, s_cat, s_repeat, s_split) in "transpiler-deor/lib/string.deor"
 (is_empty, list_has, reg_get, reg_has, reg3_has) in "transpiler-deor/utils.deor"
 (resolve_type) in "transpiler-deor/registry.deor"
 (find_struct_for_fields, find_struct_for_field, gen_call_args, gen_expr) in "transpiler-deor/codegen_expr.deor"
@@ -20,7 +20,7 @@ fn string emit_val(string val_code, string val_kind)
 fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var) in ctx
 	int token_count = len(tokens)
-	string pad = str_repeat("    ", depth)
+	string pad = s_repeat("    ", depth)
 	# LPAREN f1 COMMA f2 RPAREN KW_IN source NEWLINE
 	strList fields = []
 	int cur = pos + 1
@@ -59,14 +59,14 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
-	string pad = str_repeat("    ", depth)
+	string pad = s_repeat("    ", depth)
 
 	if kind is "KW_RUST"
 		int block_pos = pos + 2
 		Token block_token = tokens at block_pos
 		(value) in block_token
 		string block_content = value
-		strList rust_lines = split(block_content, "\n")
+		strList rust_lines = s_split(block_content, "\n")
 		strList padded = []
 		int rust_line_count = len(rust_lines)
 		for rust_index in range(rust_line_count)
@@ -347,7 +347,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 						bool is_avow_expr = kind is "KW_AVOW"
 						if not is_avow_expr
 							string struct_fields_str = reg_get(struct_reg, var_type)
-							strList field_names = split(struct_fields_str, ",")
+							strList field_names = s_split(struct_fields_str, ",")
 							strList field_pairs = []
 							int fend = val_pos + 1
 							int fni = 0
@@ -465,7 +465,7 @@ fn ParseResult gen_if_branch(tokenList tokens, int cond_pos, int depth, GenCtx c
 
 fn ParseResult gen_if(tokenList tokens, int pos, int depth, GenCtx ctx)
 	int token_count = len(tokens)
-	string pad = str_repeat("    ", depth)
+	string pad = s_repeat("    ", depth)
 	ParseResult then_r = gen_if_branch(tokens, pos + 1, depth, ctx)
 	string result_code = s_join([pad, "if ", pr_code(then_r), pad, "}"])
 	int cur = pr_pos(then_r)
@@ -499,7 +499,7 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, GenCtx ctx)
 
 fn ParseResult gen_for(tokenList tokens, int pos, int depth, GenCtx ctx)
 	int token_count = len(tokens)
-	string pad = str_repeat("    ", depth)
+	string pad = s_repeat("    ", depth)
 	int next_pos = pos + 1
 	Token next_token = tokens at next_pos
 	(kind) in next_token

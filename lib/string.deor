@@ -1,0 +1,29 @@
+shape stringList = list of string
+
+fn string s_trim(string str)
+	rust
+		str.trim().to_string()
+
+fn string s_to_upper(string str)
+	rust
+		str.to_uppercase()
+
+fn string s_to_lower(string str)
+	rust
+		str.to_lowercase()
+
+fn bool s_contains(string str, string needle)
+	rust
+		str.contains(needle.as_str())
+
+fn bool s_starts_with(string str, string prefix)
+	rust
+		str.starts_with(prefix.as_str())
+
+fn bool s_ends_with(string str, string suffix)
+	rust
+		str.ends_with(suffix.as_str())
+
+fn stringList s_split(string str, string delimiter)
+	rust
+		str.split(delimiter.as_str()).map(|s| s.to_string()).collect()

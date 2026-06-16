@@ -1,0 +1,55 @@
+(tokenList, Token) in "transpiler-deor/types.deor"
+
+fn string s_cat(string left, string right)
+	rust
+		left + right.as_str()
+
+fn string s_join(strList parts)
+	rust
+		parts.join("")
+
+fn string s_join_nl(strList parts)
+	rust
+		parts.join("\n")
+
+fn string s_join_with(strList parts, string sep)
+	rust
+		parts.join(sep.as_str())
+
+fn string s_from(string source, int start)
+	rust
+		source.get(start as usize..).unwrap_or_default().to_string()
+
+fn string s_rtrim(string source)
+	rust
+		source.trim_end().to_string()
+
+fn string s_trim(string source)
+	rust
+		source.trim().to_string()
+
+fn bool s_starts_with(string source, string prefix)
+	rust
+		source.starts_with(prefix.as_str())
+
+fn strList s_split(string source, string delimiter)
+	rust
+		source.split(delimiter.as_str()).map(|s| s.to_string()).collect()
+
+fn string s_repeat(string source, int count)
+	rust
+		source.repeat(count as usize)
+
+fn string s_pascal(string source)
+	rust
+		{
+			let mut chars = source.chars();
+			match chars.next() {
+				None => String::new(),
+				Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
+			}
+		}
+
+fn string s_debug(string source)
+	rust
+		format!("{:?}", source)

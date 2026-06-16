@@ -1,6 +1,6 @@
 (tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
 (make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
-(s_join, s_join_with, to_debug_str) in "transpiler-deor/rust_helpers.deor"
+(s_join, s_join_with, s_debug, s_split) in "transpiler-deor/lib/string.deor"
 (is_empty, reg_get, is_binary_op, map_op) in "transpiler-deor/utils.deor"
 
 # === Expression code generation ===
@@ -31,7 +31,7 @@ fn string find_struct_for_field(strList struct_reg, string field)
 	for index in range(reg_count)
 		string item = struct_reg at index
 		if next_is_val
-			strList fields = split(item, ",")
+			strList fields = s_split(item, ",")
 			bool has_field = list_has(fields, field)
 			if has_field
 				return cur_name
@@ -119,21 +119,6 @@ fn ParseResult gen_unary_method(tokenList tokens, int args_pos, string suffix, G
 	int close = pr_pos(inner_r) + 1
 	return make_result(s_join([inner_code, suffix]), close)
 
-fn ParseResult gen_binary_str_method(tokenList tokens, int args_pos, string method_name, GenCtx ctx)
-	ParseResult a0_r = gen_expr(tokens, args_pos, ctx)
-	string a0c = pr_code(a0_r)
-	int sep_pos = pr_pos(a0_r) + 1
-	ParseResult a1_r = gen_expr(tokens, sep_pos, ctx)
-	string a1c = pr_code(a1_r)
-	int close_pos = pr_pos(a1_r) + 1
-	Token a1_token = tokens at sep_pos
-	(kind) in a1_token
-	string a1_arg = a1c
-	bool a1_is_str = kind is "STRING"
-	if not a1_is_str
-		a1_arg = s_join([a1c, ".as_str()"])
-	return make_result(s_join([a0c, ".", method_name, "(", a1_arg, ")"]), close_pos)
-
 fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
 	int token_count = len(tokens)
@@ -144,7 +129,7 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 		return make_result(value, pos + 1)
 
 	if kind is "STRING"
-		return make_result(to_debug_str(value), pos + 1)
+		return make_result(s_debug(value), pos + 1)
 
 	if kind is "KW_TRUE"
 		return make_result("true", pos + 1)
@@ -216,37 +201,8 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 			if kind is "LPAREN"
 				string func_name = value
 				int args_pos = next_pos + 1
-				# built-in string methods
 				if func_name is "len"
 					return gen_unary_method(tokens, args_pos, ".len() as i32", ctx)
-				if func_name is "trim"
-					return gen_unary_method(tokens, args_pos, ".trim().to_string()", ctx)
-				if func_name is "to_upper"
-					return gen_unary_method(tokens, args_pos, ".to_uppercase()", ctx)
-				if func_name is "to_lower"
-					return gen_unary_method(tokens, args_pos, ".to_lowercase()", ctx)
-				if func_name is "contains"
-					return gen_binary_str_method(tokens, args_pos, "contains", ctx)
-				if func_name is "starts_with"
-					return gen_binary_str_method(tokens, args_pos, "starts_with", ctx)
-				if func_name is "ends_with"
-					return gen_binary_str_method(tokens, args_pos, "ends_with", ctx)
-				if func_name is "split"
-					ParseResult a0_r = gen_expr(tokens, args_pos, ctx)
-					string a0c = pr_code(a0_r)
-					int a0p = pr_pos(a0_r)
-					int sep_pos = a0p + 1
-					ParseResult a1_r = gen_expr(tokens, sep_pos, ctx)
-					string a1c = pr_code(a1_r)
-					int a1p = pr_pos(a1_r)
-					Token a1_token = tokens at sep_pos
-					(kind) in a1_token
-					string a1_arg = a1c
-					bool a1_is_str = kind is "STRING"
-					if not a1_is_str
-						a1_arg = s_join([a1c, ".as_str()"])
-					int close_pos = a1p + 1
-					return make_result(s_join([a0c, ".split(", a1_arg, ").map(|s| s.to_string()).collect()"]), close_pos)
 				# generic call
 				ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 				string args_code = pr_code(args_r)

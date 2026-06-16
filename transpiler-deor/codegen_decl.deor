@@ -4,7 +4,8 @@
     cur_at, cur_next, c_at_end,
     cur_skip_to_body, adv_nl, skip_to_body,
 ) in "transpiler-deor/deor_helpers.deor"
-(s_join, s_join_nl, s_join_with, pascal_case, token_slice) in "transpiler-deor/rust_helpers.deor"
+(s_join, s_join_nl, s_join_with, s_pascal) in "transpiler-deor/lib/string.deor"
+(l_slice) in "transpiler-deor/lib/list.deor"
 (is_empty, render_rust_type) in "transpiler-deor/utils.deor"
 (resolve_type, find_block_end, collect_mut_names) in "transpiler-deor/registry.deor"
 (gen_expr) in "transpiler-deor/codegen_expr.deor"
@@ -55,7 +56,7 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	(kind) in form_token
 	(value) in elem_token
 	string elem_type = value
-	string rust_name = pascal_case(shape_name)
+	string rust_name = s_pascal(shape_name)
 	if kind is "KW_LIST"
 		string rust_elem = render_rust_type(elem_type)
 		string decl = s_join(["type ", rust_name, " = Vec<", rust_elem, ">;\n\n"])
@@ -80,7 +81,7 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 		(current) in c
 		(value) in current
 		string enum_name = value
-		string rust_name = pascal_case(enum_name)
+		string rust_name = s_pascal(enum_name)
 		cur_next()
 		cur_skip_to_body()
 		strList variant_lines = []
@@ -174,7 +175,7 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	# pre-scan body for mutable names
 	int body_end_pos = find_block_end(tokens, indent_pos)
 	int body_start = cur
-	tokenList body_tokens = token_slice(tokens, body_start, body_end_pos + 1)
+	tokenList body_tokens = l_slice(tokens, body_start, body_end_pos + 1)
 	int body_len = len(body_tokens)
 	strList mut_names = collect_mut_names(body_tokens, 0, body_len - 1)
 	string using_type = ""

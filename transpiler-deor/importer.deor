@@ -1,5 +1,5 @@
 (tokenList, strList, Token) in "transpiler-deor/types.deor"
-(read_file) in "transpiler-deor/rust_helpers.deor"
+(f_read) in "transpiler-deor/lib/file.deor"
 (list_has) in "transpiler-deor/utils.deor"
 (tokenize) in "transpiler-deor/lexer.deor"
 
@@ -138,7 +138,7 @@ fn tokenList collect_imports_from_raw(tokenList source_tokens)
 # ALL of the file's own declarations. The names list is for documentation
 # only — intra-file dependencies require the full own-declaration set.
 fn tokenList load_named(string path, strList names)
-	string source = read_file(path)
+	string source = f_read(path)
 	tokenList raw = tokenize(source)
 	tokenList support = collect_imports_from_raw(raw)
 	tokenList own = filter_by_names(raw, [])
@@ -228,7 +228,7 @@ fn tokenList deduplicate_decls(tokenList tokens)
 # Entry point: load the root file and all its imports, then deduplicate.
 fn tokenList collect_all_tokens_with_all_imports(string path)
 
-	string source = read_file(path)
+	string source = f_read(path)
 	tokenList source_tokens = tokenize(source)
 	tokenList result = []
 

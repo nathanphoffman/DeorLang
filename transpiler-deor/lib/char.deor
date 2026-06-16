@@ -1,0 +1,17 @@
+(tokenList, Token) in "transpiler-deor/types.deor"
+
+fn strList c_chars(string source)
+	rust
+		source.chars().map(|c| c.to_string()).collect()
+
+fn bool c_alpha(string character)
+	rust
+		character.chars().next().map(|ch| ch.is_alphabetic() || ch == '_').unwrap_or(false)
+
+fn bool c_digit(string character)
+	rust
+		character.chars().next().map(|ch| ch.is_ascii_digit()).unwrap_or(false)
+
+fn bool c_alnum(string character)
+	rust
+		character.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)
