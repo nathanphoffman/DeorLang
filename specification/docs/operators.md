@@ -18,11 +18,11 @@ int quo = 5 / 2       # 2 — truncated
 float flt = 5.0 / 2   # 2.5
 ```
 
-Exponentiation uses the `pow` built-in — no `**` operator:
+Deor has no `**` operator. For exponentiation, use the `pow_i` shim from [Shims — Math](shims.md#math):
 ```
 base as 2
 exp as 10
-int val = pow(base, exp)    # 1024
+int val = pow_i(base, exp)    # 1024
 ```
 
 ---

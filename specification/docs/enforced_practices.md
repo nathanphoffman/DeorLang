@@ -266,7 +266,7 @@ Top-level declarations must appear in this order: imports, shapes, structs, func
 
 ```
 # 1. Imports
-(sqrt, floor) in math
+(random) in shims
 
 # 2. Shapes
 shape roomList = list of Room
@@ -359,9 +359,6 @@ int result = add(num + 1, amt)       # expression not allowed in user function c
 
 ```
 print("Hello, world!")
-int roll = random(1, 6)
-int val = pow(2, 10)
-NonNegFloat root = sqrt(4.0)
 int cnt = len(rooms)
 for idx in range(0, 10)
     ...
@@ -369,7 +366,7 @@ for range(5)
     ...
 ```
 
-The rationale: named variables make call sites self-documenting for user-defined functions, where the parameter names may not be universally known. Built-ins like `range`, `print`, `sqrt`, and `pow` are part of the language and universally understood — requiring named variables for them adds ceremony with no clarity benefit. This same logic applies to system constructs: `if` conditions, `for` headers, and compound assignments accept expressions freely.
+The rationale: named variables make call sites self-documenting for user-defined functions, where the parameter names may not be universally known. Built-ins like `print`, `len`, and `range` are part of the language and universally understood — requiring named variables for them adds ceremony with no clarity benefit. This same logic applies to system constructs: `if` conditions, `for` headers, and compound assignments accept expressions freely.
 
 ---
 

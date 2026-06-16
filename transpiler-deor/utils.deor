@@ -174,4 +174,4 @@ fn string render_rust_type(string type_name)
 		return "bool"
 	if type_name is "float"
 		return "f64"
-	return type_name
+	return pascal_case(type_name)

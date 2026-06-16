@@ -184,7 +184,7 @@ Shapes must appear after imports and before structs. Enforced by the transpiler 
 
 ```
 # 1. Imports
-(sqrt, floor) in math
+(random) in shims
 
 # 2. Shapes
 shape roomList = list of Room

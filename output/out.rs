@@ -138,12 +138,12 @@ struct ParseResult {
 
 #[derive(Clone, PartialEq, Debug)]
 struct GenCtx {
-    variant_reg: strList,
-    shape_reg: strList,
-    struct_reg: strList,
-    enum_reg: strList,
-    mut_names: strList,
-    type_reg: strList,
+    variant_reg: StrList,
+    shape_reg: StrList,
+    struct_reg: StrList,
+    enum_reg: StrList,
+    mut_names: StrList,
+    type_reg: StrList,
 }
 
 fn is_empty(source: String) -> bool {
@@ -387,7 +387,7 @@ fn render_rust_type(type_name: String) -> String {
     if type_name == "float" {
         return "f64".to_string();
     }
-    return type_name;
+    return pascal_case(type_name.clone());
 }
 
 fn count_tabs(line: String) -> i32 {
@@ -1928,9 +1928,9 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     let mut body_start: i32 = cur.clone();
     let mut body_tokens: Vec<Token> = token_slice(tokens.clone(), body_start.clone(), body_end_pos + 1.clone());
     let mut body_len: i32 = body_tokens.len() as i32;
-    let mut fn_mut_names: Vec<String> = collect_mut_names(body_tokens.clone(), 0, body_len - 1.clone());
+    let mut mut_names: Vec<String> = collect_mut_names(body_tokens.clone(), 0, body_len - 1.clone());
 /* unhandled(IDENT) */
-    let body_ctx = Unknown { variant_reg, shape_reg, struct_reg, enum_reg, fn_mut_names, type_reg };
+    let body_ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg };
     let mut body_r: ParseResult = gen_block(body_tokens.clone(), 0, 1, body_ctx.clone());
     let mut body_code: String = pr_code(body_r.clone());
     let mut body_end: i32 = body_start + pr_pos(body_r.clone()).clone();

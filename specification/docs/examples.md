@@ -6,11 +6,7 @@
 shape roomList = list of Room
 
 type Squarefeet(int val)
-    float flt = to_float(val)
-    NonNegFloat root_nf = sqrt(flt)
-    float root_f = root_nf else 0.0
-    int root = floor(root_f)
-    root * root is val
+    val > 0
 
 struct Room
     Squarefeet area
@@ -37,12 +33,14 @@ fn roomList occupied_rooms(roomList rooms)
             result insert room
     return result
 
+# random is a shim — copy from shims.md
 fn string random_room_name(roomList rooms)
     int count = len(rooms)
     int last = count - 1
     start as 0
     int idx = random(start, last)
-    name in rooms[idx]
+    Room picked = rooms at idx
+    (name) in picked
     return name
 
 fn main()
@@ -91,11 +89,7 @@ struct Squarefeet(i32);
 
 impl Squarefeet {
     fn new(val: i32) -> Option<Self> {
-        let flt: f64 = val as f64;
-        let root_nf: Option<NonNegFloat> = NonNegFloat::new(flt);
-        let root_f: f64 = root_nf.map(|v| v.0).unwrap_or(0.0);
-        let root: i32 = root_f.floor() as i32;
-        if root * root == val {
+        if val > 0 {
             Some(Squarefeet(val))
         } else {
             None

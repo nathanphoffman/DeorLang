@@ -141,8 +141,8 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	int body_start = cur
 	tokenList body_tokens = token_slice(tokens, body_start, body_end_pos + 1)
 	int body_len = len(body_tokens)
-	strList fn_mut_names = collect_mut_names(body_tokens, 0, body_len - 1)
-	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, fn_mut_names, type_reg)
+	strList mut_names = collect_mut_names(body_tokens, 0, body_len - 1)
+	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg)
 	# generate body on the small slice so recursive clones are cheap
 	ParseResult body_r = gen_block(body_tokens, 0, 1, body_ctx)
 	string body_code = pr_code(body_r)

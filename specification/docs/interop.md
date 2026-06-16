@@ -198,7 +198,7 @@ deps
 - Version conflict across files: transpiler error with a helpful message
 - `std` never needs a `deps` declaration — it's always available
 - Crates used only inside `.rs` files still need a `deps` block somewhere in the project
-- Built-in functions that use crates (e.g. `random` uses `rand`) have their deps bundled by the transpiler automatically
+- Crates used by shim functions (e.g. `random` needs `rand`) require a `deps` block in the file that defines the shim
 
 ---
 
@@ -211,7 +211,7 @@ Two import tiers, both using the same `in` syntax:
 (something) in rust:math_utils    # raw .rs file in your project
 ```
 
-Built-in functions (`print`, `len`, `range`, `sqrt`, `random`, `contains`, etc.) are always available — no import needed. See [Built-ins](builtins.md).
+Built-in functions (`print`, `len`, `range`, and the string operations) are always available — no import needed. See [Built-ins](builtins.md). Everything else (math, random, parsing) must be defined as a shim — see [Shims](shims.md).
 
 ---
 

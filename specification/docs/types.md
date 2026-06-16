@@ -39,15 +39,15 @@ The body evaluates to a `bool`. Simple predicates are a single boolean expressio
 A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.
 
 ```
+# to_float, sqrt_f, floor_f are shims — see shims.md
 type Squarefeet(int val)
     float flt = to_float(val)
-    NonNegFloat root_nf = sqrt(flt)
-    float root_f = root_nf else 0.0
-    int root = floor(root_f)
-    root * root is val
+    float root = sqrt_f(flt)
+    int root_i = floor_f(root)
+    root_i * root_i is val
 ```
 
-`sqrt` returns `NonNegFloat` (a stdlib validator type — `None` for negative input). Each call result is stored before being passed to the next function. Using `else 0.0` recovers safely: a negative `val` makes `sqrt` return `None`, `else` gives `0.0`, `floor` gives `0`, and `0 * 0 is val` fails — no separate `val >= 0` guard needed.
+`to_float`, `sqrt_f`, and `floor_f` are user-defined shims — copy them from [Shims — Math](shims.md#math). Each intermediate result is stored before being passed to the next call. A negative `val` makes `sqrt_f` return NaN; `floor_f(NaN)` gives `0`; `0 * 0 is val` fails — no separate guard needed.
 
 ```rust
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -55,7 +55,8 @@ struct Squarefeet(i32);
 
 impl Squarefeet {
     fn new(val: i32) -> Option<Self> {
-        let root: i32 = NonNegFloat::new(val as f64).map(|v| v.0).unwrap_or(0.0).floor() as i32;
+        let flt: f64 = val as f64;
+        let root: i32 = flt.sqrt().floor() as i32;
         if root * root == val {
             Some(Squarefeet(val))
         } else {
