@@ -7,7 +7,7 @@ Deor is a small, indentation-based language that transpiles to Rust. It enforces
 ## Core Principles
 
 - **No dots.** Field access is via destructuring: `(area) in room`, not `room.area`.
-- **No colons for blocks.** Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `enum`, or `using`.
+- **No colons for blocks.** Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, or `enum`.
 - **One statement per line.** Multi-line expressions only wrap inside `()`.
 - **`as` infers type from shape.** Use it for scalar literals and list construction. Use `Type name = expr` for everything else — function calls, validator types, and struct construction.
 - **`in` extracts from a source.** Struct fields, loop elements, slices, and imports all share this keyword.
@@ -38,8 +38,8 @@ Deor is a small, indentation-based language that transpiles to Rust. It enforces
 - [Collections](docs/collections.md) — index access, append, remove, slices
 - [Conditionals](docs/conditionals.md) — `if`, `else if`, `else`, compact ternary
 - [Loops](docs/loops.md) — `for` collection and numeric iteration
+- [Threads](docs/threads.md) — OS threads, channels, parallel spawning
 - [Destructuring](docs/destructuring.md) — field extraction with `in`
-- [Using Blocks](docs/using.md) — state-threading through a sequence of calls
 - [Imports](docs/imports.md) — local module and `rust:` file imports
 - [Immutability](docs/immutability.md) — immutability rules, record update (`with`)
 - [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded

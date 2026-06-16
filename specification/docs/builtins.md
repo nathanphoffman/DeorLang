@@ -63,6 +63,38 @@ for idx in range(3, 7)
 
 ---
 
+## `channel`
+
+Creates a new channel, returning a matched sender and receiver pair. Always destructured immediately.
+
+```
+(intSender work_channel, intReceiver listen_channel) = channel()
+```
+
+```rust
+let (work_channel, listen_channel) = std::sync::mpsc::channel::<i32>();
+```
+
+The element type is inferred from the shape declarations of the binding targets. See [Threads](threads.md) for full usage.
+
+---
+
+## `receive`
+
+Blocks the current thread until a value arrives on the given channel. The channel must be a `receiver of T`.
+
+```
+int result = receive(listen_channel)
+```
+
+```rust
+let result: i32 = listen_channel.recv().unwrap();
+```
+
+Panics if all senders have been dropped and the channel is empty. See [Threads](threads.md) for full usage.
+
+---
+
 ## String Operations
 
 These string functions are also built into the transpiler. They accept literals directly.

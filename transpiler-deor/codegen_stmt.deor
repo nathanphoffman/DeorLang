@@ -25,9 +25,8 @@ fn int adv_indent(int pos, tokenList tokens)
 	return pos
 
 fn int skip_to_body(tokenList tokens, int pos)
-	int cur = using pos
-		adv_nl(tokens)
-		adv_indent(tokens)
+	int cur = adv_nl(pos, tokens)
+	cur = adv_indent(cur, tokens)
 	return cur
 
 fn string emit_val(string val_code, string val_kind)
@@ -266,46 +265,6 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 					string rust_type = resolve_type(var_type, shape_reg, variant_reg)
 					Token val_token = tokens at val_pos
 					string val_kind = tok_kind(val_token)
-					# using block: thread state through calls (v1: no auto-destructure)
-					# TODO v2: after each call emit let field = _state.field.clone() for all
-					# struct fields so bare names are usable in subsequent args. Requires
-					# struct_reg to carry field lists. Also add outer-scope collision detection.
-					if val_kind is "KW_USING"
-						int state_pos = val_pos + 1
-						ParseResult state_r = gen_expr(tokens, state_pos, ctx)
-						string state_code = pr_code(state_r)
-						int body_start = skip_to_body(tokens, pr_pos(state_r))
-						strList lines = []
-						lines at end = s_join([pad, "let mut _state = ", state_code, ".clone();\n"])
-						int ucur = body_start
-						for if ucur < token_count
-							Token ut = tokens at ucur
-							string ut_kind = tok_kind(ut)
-							if ut_kind is "DEDENT"
-								ucur = ucur + 1
-								break
-							if ut_kind is "NEWLINE"
-								ucur = ucur + 1
-								continue
-							if ut_kind is "IDENT"
-								string ufn = tok_value(ut)
-								int extra_start = ucur + 2
-								ParseResult extra_r = gen_call_args(tokens, extra_start, ctx)
-								string extra_code = pr_code(extra_r)
-								int after_rparen = pr_pos(extra_r) + 1
-								string full_args = "_state.clone()"
-								if not is_empty(extra_code)
-									full_args = s_join(["_state.clone(), ", extra_code])
-								lines at end = s_join([pad, "_state = ", ufn, "(", full_args, ");\n"])
-								ucur = adv_nl(after_rparen, tokens)
-							else
-								ucur = ucur + 1
-						bool umut = list_has(mut_names, var_name)
-						string umut_kw = ""
-						if umut
-							umut_kw = "mut "
-						lines at end = s_join([pad, "let ", umut_kw, var_name, " = _state;\n"])
-						return make_result(s_join(lines), ucur)
 					# empty → None for validator types, Vec::new() for list shapes
 					if val_kind is "KW_EMPTY"
 						bool is_validator = reg3_has(type_reg, var_type)

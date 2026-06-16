@@ -62,7 +62,6 @@ fn bool c_at_end(TokenCursor c)
 
 fn TokenCursor cur_skip_to_body(TokenCursor c)
 	(tokens, pos, current) in c
-	int pos = using pos
-		adv_nl(tokens)
-		adv_indent(tokens)
-	return cur_at(tokens, pos)
+	int p = adv_nl(pos, tokens)
+	p = adv_indent(p, tokens)
+	return cur_at(tokens, p)

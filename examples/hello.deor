@@ -45,18 +45,3 @@ fn void main()
 
 
 	Test old_test = (hello,world)
-
-
-	# Test new_test = apply old_test
-	# 	on next() # on: means automatically take old_test and output a new Test obj
-	# 	on pipe() # on: means automatically take the output of next and put into pipe's first arg input
-
-	# 	not_a_pipe(hello, world) # hello,world are fields of Test so in this block they are auto destructured after each on
-	# 	unrelated as 2
-	# 	do_something_unrelated(unrelated)
-
-	# 	on next() # on: means automatically take the output of pipe (the prev to) and pass as first arg
-	# 	# and so on...
-	# 	# till end of block when the output of the final to is fed to new_test
-
-	# 	# for and if statements should also be supported, anything inside this block or inside child blocks should follow these rules

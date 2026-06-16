@@ -2,7 +2,7 @@
 
 ## Block Structure (No Colons)
 
-Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, or `using`. No colon is written.
+Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `shape`, `enum`, or `rust`. No colon is written.
 
 ```
 fn int abs(int x)
@@ -89,7 +89,6 @@ Open an indented block when followed by a newline.
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
 | `deps` | Inline Cargo dependency declarations — lists crate dependencies directly in a `.deor` file so they are added to `Cargo.toml` at transpile time |
-| `using` | State-threading block — threads a value through a sequence of calls |
 
 ### Statement Keywords
 
@@ -102,6 +101,8 @@ Open an indented block when followed by a newline.
 | `continue` | Skip to the next loop iteration |
 | `const` | Constant declaration |
 | `private` | Restrict a declaration to the current file |
+| `thread` | Spawn a named function on a new OS thread |
+| `send` | Send a value to a channel (`send(value) to channel`) |
 
 ### Operators and Expression Keywords
 
