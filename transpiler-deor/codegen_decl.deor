@@ -6,13 +6,7 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 	Token name_token = tokens at name_pos
 	string struct_name = tok_value(name_token)
 	int cur = name_pos + 1
-	# skip NEWLINE INDENT
-	ParseResult nl_r = skip_newline(tokens, cur)
-	cur = pr_pos(nl_r)
-	if cur < token_count
-		Token indent_token = tokens at cur
-		if tok_kind(indent_token) is "INDENT"
-			cur = cur + 1
+	cur = skip_to_body(tokens, cur)
 	strList field_lines = []
 	for if cur < token_count
 		Token field_token = tokens at cur
@@ -58,12 +52,7 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 	string enum_name = tok_value(name_token)
 	string rust_name = pascal_case(enum_name)
 	int cur = name_pos + 1
-	ParseResult nl_r = skip_newline(tokens, cur)
-	cur = pr_pos(nl_r)
-	if cur < token_count
-		Token indent_token = tokens at cur
-		if tok_kind(indent_token) is "INDENT"
-			cur = cur + 1
+	cur = skip_to_body(tokens, cur)
 	strList variant_lines = []
 	for if cur < token_count
 		Token variant_token = tokens at cur

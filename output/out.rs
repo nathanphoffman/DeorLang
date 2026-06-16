@@ -145,48 +145,7 @@ fn str_eq(left: String, right: String) -> bool {
     return left == right;
 }
 
-fn reg_get(pairs: Vec<String>, key: String) -> String {
-    let mut pairs_count: i32 = pairs.len() as i32;
-    let mut index: i32 = 0;
-    for iter in 0..pairs_count {
-        if index >= pairs_count {
-            break;
-        }
-        let mut value_index: i32 = index + 1.clone();
-        if value_index >= pairs_count {
-            break;
-        }
-        let mut current_key: String = pairs[index as usize].clone();
-        if current_key == key {
-            return pairs[value_index as usize].clone();
-        }
-        index = index + 2;
-    }
-    return "".to_string();
-}
-
-fn reg_has(pairs: Vec<String>, key: String) -> bool {
-    let mut value: String = reg_get(pairs.clone(), key.clone());
-    if value == "" {
-        return false;
-    }
-    return true;
-}
-
-fn reg3_has(pairs: Vec<String>, key: String) -> bool {
-    let mut pairs_count: i32 = pairs.len() as i32;
-    let mut index: i32 = 0;
-    while index < pairs_count {
-        let mut current_key: String = pairs[index as usize].clone();
-        if current_key == key {
-            return true;
-        }
-        index = index + 3;
-    }
-    return false;
-}
-
-fn reg3_get(pairs: Vec<String>, key: String) -> String {
+fn reg_get_stride(pairs: Vec<String>, key: String, stride: i32) -> String {
     let mut pairs_count: i32 = pairs.len() as i32;
     let mut index: i32 = 0;
     while index < pairs_count {
@@ -195,9 +154,38 @@ fn reg3_get(pairs: Vec<String>, key: String) -> String {
             let mut val_index: i32 = index + 1.clone();
             return pairs[val_index as usize].clone();
         }
-        index = index + 3;
+        index = index + stride;
     }
     return "".to_string();
+}
+
+fn reg_has_stride(pairs: Vec<String>, key: String, stride: i32) -> bool {
+    let mut pairs_count: i32 = pairs.len() as i32;
+    let mut index: i32 = 0;
+    while index < pairs_count {
+        let mut current_key: String = pairs[index as usize].clone();
+        if current_key == key {
+            return true;
+        }
+        index = index + stride;
+    }
+    return false;
+}
+
+fn reg_get(pairs: Vec<String>, key: String) -> String {
+    return reg_get_stride(pairs.clone(), key.clone(), 2);
+}
+
+fn reg_has(pairs: Vec<String>, key: String) -> bool {
+    return reg_has_stride(pairs.clone(), key.clone(), 2);
+}
+
+fn reg3_get(pairs: Vec<String>, key: String) -> String {
+    return reg_get_stride(pairs.clone(), key.clone(), 3);
+}
+
+fn reg3_has(pairs: Vec<String>, key: String) -> bool {
+    return reg_has_stride(pairs.clone(), key.clone(), 3);
 }
 
 fn list_has(items: Vec<String>, val: String) -> bool {
@@ -1213,6 +1201,18 @@ fn skip_newline(tokens: Vec<Token>, pos: i32) -> ParseResult {
     return make_result("".to_string(), pos.clone());
 }
 
+fn skip_to_body(tokens: Vec<Token>, pos: i32) -> i32 {
+    let mut token_count: i32 = tokens.len() as i32;
+    let mut nl_r: ParseResult = skip_newline(tokens.clone(), pos.clone());
+    let mut cur: i32 = pr_pos(nl_r.clone());
+    if cur < token_count {
+        if tok_kind(tokens[cur as usize].clone()) == "INDENT" {
+            cur = cur + 1;
+        }
+    }
+    return cur;
+}
+
 fn gen_if(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, shape_reg: Vec<String>, struct_reg: Vec<String>, mut_names: Vec<String>, type_reg: Vec<String>) -> ParseResult {
     let mut token_count: i32 = tokens.len() as i32;
     let mut pad: String = str_repeat("    ".to_string(), depth.clone());
@@ -1220,15 +1220,7 @@ fn gen_if(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, sh
     let mut cond_r: ParseResult = gen_expr(tokens.clone(), cond_pos.clone(), variant_reg.clone(), shape_reg.clone());
     let mut cond_code: String = pr_code(cond_r.clone());
     let mut cond_end: i32 = pr_pos(cond_r.clone());
-    let mut nl_r: ParseResult = skip_newline(tokens.clone(), cond_end.clone());
-    let mut after_nl: i32 = pr_pos(nl_r.clone());
-    let mut body_start: i32 = after_nl.clone();
-    if body_start < token_count {
-        let mut indent_kind: String = tok_kind(tokens[body_start as usize].clone());
-        if indent_kind == "INDENT" {
-            body_start = body_start + 1;
-        }
-    }
+    let mut body_start: i32 = skip_to_body(tokens.clone(), cond_end.clone());
     let mut then_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth + 1.clone(), variant_reg.clone(), shape_reg.clone(), struct_reg.clone(), mut_names.clone(), type_reg.clone());
     let mut then_code: String = pr_code(then_r.clone());
     let mut then_end: i32 = pr_pos(then_r.clone());
@@ -1255,29 +1247,14 @@ fn gen_if(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, sh
             let mut ei_cond_r: ParseResult = gen_expr(tokens.clone(), ei_cond_pos.clone(), variant_reg.clone(), shape_reg.clone());
             let mut ei_cond_code: String = pr_code(ei_cond_r.clone());
             let mut ei_cond_end: i32 = pr_pos(ei_cond_r.clone());
-            let mut ei_nl_r: ParseResult = skip_newline(tokens.clone(), ei_cond_end.clone());
-            let mut ei_body_start: i32 = pr_pos(ei_nl_r.clone());
-            if ei_body_start < token_count {
-                let mut indent_kind: String = tok_kind(tokens[ei_body_start as usize].clone());
-                if indent_kind == "INDENT" {
-                    ei_body_start = ei_body_start + 1;
-                }
-            }
+            let mut ei_body_start: i32 = skip_to_body(tokens.clone(), ei_cond_end.clone());
             let mut ei_body_r: ParseResult = gen_block(tokens.clone(), ei_body_start.clone(), depth + 1.clone(), variant_reg.clone(), shape_reg.clone(), struct_reg.clone(), mut_names.clone(), type_reg.clone());
             let mut ei_body_code: String = pr_code(ei_body_r.clone());
             let mut ei_body_end: i32 = pr_pos(ei_body_r.clone());
             result_code = s_join(vec![result_code.clone(), " else if ".to_string(), ei_cond_code.clone(), " {\n".to_string(), ei_body_code.clone(), pad.clone(), "}".to_string()]);
             cur = ei_body_end;
         } else {
-            let mut else_body_start: i32 = after_else.clone();
-            let mut else_nl_r: ParseResult = skip_newline(tokens.clone(), else_body_start.clone());
-            else_body_start = pr_pos(else_nl_r.clone());
-            if else_body_start < token_count {
-                let mut indent_kind: String = tok_kind(tokens[else_body_start as usize].clone());
-                if indent_kind == "INDENT" {
-                    else_body_start = else_body_start + 1;
-                }
-            }
+            let mut else_body_start: i32 = skip_to_body(tokens.clone(), after_else.clone());
             let mut else_r: ParseResult = gen_block(tokens.clone(), else_body_start.clone(), depth + 1.clone(), variant_reg.clone(), shape_reg.clone(), struct_reg.clone(), mut_names.clone(), type_reg.clone());
             let mut else_code: String = pr_code(else_r.clone());
             let mut else_end: i32 = pr_pos(else_r.clone());
@@ -1301,14 +1278,7 @@ fn gen_for(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, s
         let mut cond_r: ParseResult = gen_expr(tokens.clone(), cond_pos.clone(), variant_reg.clone(), shape_reg.clone());
         let mut cond_code: String = pr_code(cond_r.clone());
         let mut cond_end: i32 = pr_pos(cond_r.clone());
-        let mut cond_nl_r: ParseResult = skip_newline(tokens.clone(), cond_end.clone());
-        let mut while_body_start: i32 = pr_pos(cond_nl_r.clone());
-        if while_body_start < token_count {
-            let mut indent_kind: String = tok_kind(tokens[while_body_start as usize].clone());
-            if indent_kind == "INDENT" {
-                while_body_start = while_body_start + 1;
-            }
-        }
+        let mut while_body_start: i32 = skip_to_body(tokens.clone(), cond_end.clone());
         let mut while_body_r: ParseResult = gen_block(tokens.clone(), while_body_start.clone(), depth + 1.clone(), variant_reg.clone(), shape_reg.clone(), struct_reg.clone(), mut_names.clone(), type_reg.clone());
         let mut while_body_code: String = pr_code(while_body_r.clone());
         let mut while_body_end: i32 = pr_pos(while_body_r.clone());
@@ -1366,14 +1336,7 @@ fn gen_for(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, s
         range_expr = src_code;
         body_tok_pos = src_p;
     }
-    let mut for_nl_r: ParseResult = skip_newline(tokens.clone(), body_tok_pos.clone());
-    body_tok_pos = pr_pos(for_nl_r.clone());
-    if body_tok_pos < token_count {
-        let mut indent_kind: String = tok_kind(tokens[body_tok_pos as usize].clone());
-        if indent_kind == "INDENT" {
-            body_tok_pos = body_tok_pos + 1;
-        }
-    }
+    body_tok_pos = skip_to_body(tokens.clone(), body_tok_pos.clone());
     let mut body_r: ParseResult = gen_block(tokens.clone(), body_tok_pos.clone(), depth + 1.clone(), variant_reg.clone(), shape_reg.clone(), struct_reg.clone(), mut_names.clone(), type_reg.clone());
     let mut body_code: String = pr_code(body_r.clone());
     let mut body_end: i32 = pr_pos(body_r.clone());
@@ -1775,14 +1738,7 @@ fn gen_struct_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut name_token: Token = tokens[name_pos as usize].clone();
     let mut struct_name: String = tok_value(name_token.clone());
     let mut cur: i32 = name_pos + 1.clone();
-    let mut nl_r: ParseResult = skip_newline(tokens.clone(), cur.clone());
-    cur = pr_pos(nl_r.clone());
-    if cur < token_count {
-        let mut indent_token: Token = tokens[cur as usize].clone();
-        if tok_kind(indent_token.clone()) == "INDENT" {
-            cur = cur + 1;
-        }
-    }
+    cur = skip_to_body(tokens.clone(), cur.clone());
     let mut field_lines: Vec<String> = Vec::new();
     while cur < token_count {
         let mut field_token: Token = tokens[cur as usize].clone();
@@ -1831,14 +1787,7 @@ fn gen_enum_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut enum_name: String = tok_value(name_token.clone());
     let mut rust_name: String = pascal_case(enum_name.clone());
     let mut cur: i32 = name_pos + 1.clone();
-    let mut nl_r: ParseResult = skip_newline(tokens.clone(), cur.clone());
-    cur = pr_pos(nl_r.clone());
-    if cur < token_count {
-        let mut indent_token: Token = tokens[cur as usize].clone();
-        if tok_kind(indent_token.clone()) == "INDENT" {
-            cur = cur + 1;
-        }
-    }
+    cur = skip_to_body(tokens.clone(), cur.clone());
     let mut variant_lines: Vec<String> = Vec::new();
     while cur < token_count {
         let mut variant_token: Token = tokens[cur as usize].clone();

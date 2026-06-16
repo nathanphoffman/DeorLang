@@ -7,42 +7,9 @@ fn bool is_empty(string source)
 fn bool str_eq(string left, string right)
 	return left is right
 
-# === Registry: flat [key, val, key, val, ...] strList pairs ===
+# === Registry: flat pairs (stride=2) or triplets (stride=3) ===
 
-fn string reg_get(strList pairs, string key)
-	int pairs_count = len(pairs)
-	int index = 0
-	for iter in range(pairs_count)
-		if index >= pairs_count
-			break
-		int value_index = index + 1
-		if value_index >= pairs_count
-			break
-		string current_key = pairs at index
-		if current_key is key
-			return pairs at value_index
-		index = index + 2
-	return ""
-
-fn bool reg_has(strList pairs, string key)
-	string value = reg_get(pairs, key)
-	if value is ""
-		return false
-	return true
-
-# === Registry: flat [key, val1, val2, key, val1, val2, ...] triplets ===
-
-fn bool reg3_has(strList pairs, string key)
-	int pairs_count = len(pairs)
-	int index = 0
-	for if index < pairs_count
-		string current_key = pairs at index
-		if current_key is key
-			return true
-		index = index + 3
-	return false
-
-fn string reg3_get(strList pairs, string key)
+fn string reg_get_stride(strList pairs, string key, int stride)
 	int pairs_count = len(pairs)
 	int index = 0
 	for if index < pairs_count
@@ -50,8 +17,30 @@ fn string reg3_get(strList pairs, string key)
 		if current_key is key
 			int val_index = index + 1
 			return pairs at val_index
-		index = index + 3
+		index = index + stride
 	return ""
+
+fn bool reg_has_stride(strList pairs, string key, int stride)
+	int pairs_count = len(pairs)
+	int index = 0
+	for if index < pairs_count
+		string current_key = pairs at index
+		if current_key is key
+			return true
+		index = index + stride
+	return false
+
+fn string reg_get(strList pairs, string key)
+	return reg_get_stride(pairs, key, 2)
+
+fn bool reg_has(strList pairs, string key)
+	return reg_has_stride(pairs, key, 2)
+
+fn string reg3_get(strList pairs, string key)
+	return reg_get_stride(pairs, key, 3)
+
+fn bool reg3_has(strList pairs, string key)
+	return reg_has_stride(pairs, key, 3)
 
 fn bool list_has(strList items, string val)
 	int item_count = len(items)

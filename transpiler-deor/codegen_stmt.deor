@@ -8,6 +8,15 @@ fn ParseResult skip_newline(tokenList tokens, int pos)
 			return make_result("", pos + 1)
 	return make_result("", pos)
 
+fn int skip_to_body(tokenList tokens, int pos)
+	int token_count = len(tokens)
+	ParseResult nl_r = skip_newline(tokens, pos)
+	int cur = pr_pos(nl_r)
+	if cur < token_count
+		if tok_kind(tokens at cur) is "INDENT"
+			cur = cur + 1
+	return cur
+
 fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names, strList type_reg)
 	int token_count = len(tokens)
 	string pad = str_repeat("    ", depth)
@@ -15,14 +24,7 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg,
 	ParseResult cond_r = gen_expr(tokens, cond_pos, variant_reg, shape_reg)
 	string cond_code = pr_code(cond_r)
 	int cond_end = pr_pos(cond_r)
-	# skip NEWLINE then INDENT
-	ParseResult nl_r = skip_newline(tokens, cond_end)
-	int after_nl = pr_pos(nl_r)
-	int body_start = after_nl
-	if body_start < token_count
-		string indent_kind = tok_kind(tokens at body_start)
-		if indent_kind is "INDENT"
-			body_start = body_start + 1
+	int body_start = skip_to_body(tokens, cond_end)
 	ParseResult then_r = gen_block(tokens, body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
 	string then_code = pr_code(then_r)
 	int then_end = pr_pos(then_r)
@@ -47,26 +49,14 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg,
 			ParseResult ei_cond_r = gen_expr(tokens, ei_cond_pos, variant_reg, shape_reg)
 			string ei_cond_code = pr_code(ei_cond_r)
 			int ei_cond_end = pr_pos(ei_cond_r)
-			ParseResult ei_nl_r = skip_newline(tokens, ei_cond_end)
-			int ei_body_start = pr_pos(ei_nl_r)
-			if ei_body_start < token_count
-				string indent_kind = tok_kind(tokens at ei_body_start)
-				if indent_kind is "INDENT"
-					ei_body_start = ei_body_start + 1
+			int ei_body_start = skip_to_body(tokens, ei_cond_end)
 			ParseResult ei_body_r = gen_block(tokens, ei_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
 			string ei_body_code = pr_code(ei_body_r)
 			int ei_body_end = pr_pos(ei_body_r)
 			result_code = s_join([result_code, " else if ", ei_cond_code, " {\n", ei_body_code, pad, "}"])
 			cur = ei_body_end
 		else
-			# plain else: skip NEWLINE then INDENT
-			int else_body_start = after_else
-			ParseResult else_nl_r = skip_newline(tokens, else_body_start)
-			else_body_start = pr_pos(else_nl_r)
-			if else_body_start < token_count
-				string indent_kind = tok_kind(tokens at else_body_start)
-				if indent_kind is "INDENT"
-					else_body_start = else_body_start + 1
+			int else_body_start = skip_to_body(tokens, after_else)
 			ParseResult else_r = gen_block(tokens, else_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
 			string else_code = pr_code(else_r)
 			int else_end = pr_pos(else_r)
@@ -89,12 +79,7 @@ fn ParseResult gen_for(tokenList tokens, int pos, int depth, strList variant_reg
 		ParseResult cond_r = gen_expr(tokens, cond_pos, variant_reg, shape_reg)
 		string cond_code = pr_code(cond_r)
 		int cond_end = pr_pos(cond_r)
-		ParseResult cond_nl_r = skip_newline(tokens, cond_end)
-		int while_body_start = pr_pos(cond_nl_r)
-		if while_body_start < token_count
-			string indent_kind = tok_kind(tokens at while_body_start)
-			if indent_kind is "INDENT"
-				while_body_start = while_body_start + 1
+		int while_body_start = skip_to_body(tokens, cond_end)
 		ParseResult while_body_r = gen_block(tokens, while_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
 		string while_body_code = pr_code(while_body_r)
 		int while_body_end = pr_pos(while_body_r)
@@ -158,14 +143,7 @@ fn ParseResult gen_for(tokenList tokens, int pos, int depth, strList variant_reg
 		range_expr = src_code
 		body_tok_pos = src_p
 
-	# skip NEWLINE INDENT
-	ParseResult for_nl_r = skip_newline(tokens, body_tok_pos)
-	body_tok_pos = pr_pos(for_nl_r)
-	if body_tok_pos < token_count
-		string indent_kind = tok_kind(tokens at body_tok_pos)
-		if indent_kind is "INDENT"
-			body_tok_pos = body_tok_pos + 1
-
+	body_tok_pos = skip_to_body(tokens, body_tok_pos)
 	ParseResult body_r = gen_block(tokens, body_tok_pos, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
 	string body_code = pr_code(body_r)
 	int body_end = pr_pos(body_r)
