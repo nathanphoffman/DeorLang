@@ -63,24 +63,6 @@ string msg = "count: " + int_to_str(count)
 
 ---
 
-## Functions
-
-| Function | Signature | Notes |
-|---|---|---|
-| `contains(str, needle)` | `string, string → bool` | true if `needle` appears anywhere in `str` |
-| `starts_with(str, prefix)` | `string, string → bool` | true if `str` begins with `prefix` |
-| `ends_with(str, suffix)` | `string, string → bool` | true if `str` ends with `suffix` |
-| `trim(str)` | `string → string` | strips leading and trailing whitespace |
-| `to_upper(str)` | `string → string` | all characters uppercased |
-| `to_lower(str)` | `string → string` | all characters lowercased |
-| `split(str, delimiter)` | `string, string → nameList` | split on every occurrence of `delimiter`; result type requires `shape nameList = list of string` |
-
-All functions return a new string and never mutate the original. An empty `delimiter` in `split` is a transpiler error.
-
-For operations not covered here (`replace`, `index_of`, one-sided trim, character access), use a `rust` block.
-
----
-
 ## Examples
 
 ```

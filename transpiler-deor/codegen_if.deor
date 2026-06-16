@@ -1,18 +1,18 @@
 # === If/else code generation ===
 
-fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names, strList type_reg)
+fn ParseResult gen_if_branch(tokenList tokens, int cond_pos, int depth, GenCtx ctx)
+	ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
+	int body_start = skip_to_body(tokens, pr_pos(cond_r))
+	ParseResult body_r = gen_block(tokens, body_start, depth + 1, ctx)
+	string combined = s_join([pr_code(cond_r), " {\n", pr_code(body_r)])
+	return make_result(combined, pr_pos(body_r))
+
+fn ParseResult gen_if(tokenList tokens, int pos, int depth, GenCtx ctx)
 	int token_count = len(tokens)
 	string pad = str_repeat("    ", depth)
-	int cond_pos = pos + 1
-	ParseResult cond_r = gen_expr(tokens, cond_pos, variant_reg, shape_reg)
-	string cond_code = pr_code(cond_r)
-	int cond_end = pr_pos(cond_r)
-	int body_start = skip_to_body(tokens, cond_end)
-	ParseResult then_r = gen_block(tokens, body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
-	string then_code = pr_code(then_r)
-	int then_end = pr_pos(then_r)
-	string result_code = s_join([pad, "if ", cond_code, " {\n", then_code, pad, "}"])
-	int cur = then_end
+	ParseResult then_r = gen_if_branch(tokens, pos + 1, depth, ctx)
+	string result_code = s_join([pad, "if ", pr_code(then_r), pad, "}"])
+	int cur = pr_pos(then_r)
 	# handle else / else if chains
 	for if true
 		if cur >= token_count
@@ -28,23 +28,14 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg,
 		Token after_else_token = tokens at after_else
 		string after_else_kind = tok_kind(after_else_token)
 		if after_else_kind is "KW_IF"
-			int ei_cond_pos = after_else + 1
-			ParseResult ei_cond_r = gen_expr(tokens, ei_cond_pos, variant_reg, shape_reg)
-			string ei_cond_code = pr_code(ei_cond_r)
-			int ei_cond_end = pr_pos(ei_cond_r)
-			int ei_body_start = skip_to_body(tokens, ei_cond_end)
-			ParseResult ei_body_r = gen_block(tokens, ei_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
-			string ei_body_code = pr_code(ei_body_r)
-			int ei_body_end = pr_pos(ei_body_r)
-			result_code = s_join([result_code, " else if ", ei_cond_code, " {\n", ei_body_code, pad, "}"])
-			cur = ei_body_end
+			ParseResult ei_r = gen_if_branch(tokens, after_else + 1, depth, ctx)
+			result_code = s_join([result_code, " else if ", pr_code(ei_r), pad, "}"])
+			cur = pr_pos(ei_r)
 		else
 			int else_body_start = skip_to_body(tokens, after_else)
-			ParseResult else_r = gen_block(tokens, else_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
-			string else_code = pr_code(else_r)
-			int else_end = pr_pos(else_r)
-			result_code = s_join([result_code, " else {\n", else_code, pad, "}"])
-			cur = else_end
+			ParseResult else_r = gen_block(tokens, else_body_start, depth + 1, ctx)
+			result_code = s_join([result_code, " else {\n", pr_code(else_r), pad, "}"])
+			cur = pr_pos(else_r)
 			break
 	result_code = s_cat(result_code, "\n")
 	return make_result(result_code, cur)

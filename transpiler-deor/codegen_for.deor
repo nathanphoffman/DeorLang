@@ -1,6 +1,6 @@
 # === For/while loop code generation ===
 
-fn ParseResult gen_for(tokenList tokens, int pos, int depth, strList variant_reg, strList shape_reg, strList struct_reg, strList mut_names, strList type_reg)
+fn ParseResult gen_for(tokenList tokens, int pos, int depth, GenCtx ctx)
 	int token_count = len(tokens)
 	string pad = str_repeat("    ", depth)
 	int next_pos = pos + 1
@@ -10,11 +10,11 @@ fn ParseResult gen_for(tokenList tokens, int pos, int depth, strList variant_reg
 	# for if condition → while loop
 	if next_kind is "KW_IF"
 		int cond_pos = next_pos + 1
-		ParseResult cond_r = gen_expr(tokens, cond_pos, variant_reg, shape_reg)
+		ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
 		string cond_code = pr_code(cond_r)
 		int cond_end = pr_pos(cond_r)
 		int while_body_start = skip_to_body(tokens, cond_end)
-		ParseResult while_body_r = gen_block(tokens, while_body_start, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
+		ParseResult while_body_r = gen_block(tokens, while_body_start, depth + 1, ctx)
 		string while_body_code = pr_code(while_body_r)
 		int while_body_end = pr_pos(while_body_r)
 		string while_code = s_join([pad, "while ", cond_code, " {\n", while_body_code, pad, "}\n"])
@@ -40,14 +40,14 @@ fn ParseResult gen_for(tokenList tokens, int pos, int depth, strList variant_reg
 	if iter_kind is "IDENT" and iter_value is "range"
 		int lparen = iter_pos + 1
 		int first_pos = lparen + 1
-		ParseResult first_r = gen_expr(tokens, first_pos, variant_reg, shape_reg)
+		ParseResult first_r = gen_expr(tokens, first_pos, ctx)
 		string first_code = pr_code(first_r)
 		int first_p = pr_pos(first_r)
 		Token comma_token = tokens at first_p
 		bool has_start = tok_kind(comma_token) is "COMMA"
 		if has_start
 			int second_pos = first_p + 1
-			ParseResult second_r = gen_expr(tokens, second_pos, variant_reg, shape_reg)
+			ParseResult second_r = gen_expr(tokens, second_pos, ctx)
 			string second_code = pr_code(second_r)
 			int second_p = pr_pos(second_r)
 			range_expr = s_join([first_code, "..", second_code])
@@ -57,24 +57,24 @@ fn ParseResult gen_for(tokenList tokens, int pos, int depth, strList variant_reg
 			body_tok_pos = first_p + 1
 	else if iter_kind is "LPAREN"
 		int start_pos = iter_pos + 1
-		ParseResult start_r = gen_expr(tokens, start_pos, variant_reg, shape_reg)
+		ParseResult start_r = gen_expr(tokens, start_pos, ctx)
 		string start_code = pr_code(start_r)
 		int start_p = pr_pos(start_r)
 		int end_pos = start_p + 1
-		ParseResult end_r = gen_expr(tokens, end_pos, variant_reg, shape_reg)
+		ParseResult end_r = gen_expr(tokens, end_pos, ctx)
 		string end_code = pr_code(end_r)
 		int end_p = pr_pos(end_r)
 		range_expr = s_join([start_code, "..", end_code])
 		body_tok_pos = end_p + 1
 	else
-		ParseResult src_r = gen_expr(tokens, iter_pos, variant_reg, shape_reg)
+		ParseResult src_r = gen_expr(tokens, iter_pos, ctx)
 		string src_code = pr_code(src_r)
 		int src_p = pr_pos(src_r)
 		range_expr = src_code
 		body_tok_pos = src_p
 
 	body_tok_pos = skip_to_body(tokens, body_tok_pos)
-	ParseResult body_r = gen_block(tokens, body_tok_pos, depth + 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
+	ParseResult body_r = gen_block(tokens, body_tok_pos, depth + 1, ctx)
 	string body_code = pr_code(body_r)
 	int body_end = pr_pos(body_r)
 

@@ -199,36 +199,7 @@ fn divide(left: i32, right: i32) -> i32 {
 
 All callable values are named top-level `fn`s. There is no anonymous-function syntax, and functions may not be defined inside other function bodies. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
 
-To pass behavior as a value, declare a `func` shape and accept it as a typed parameter. The caller passes a named top-level function by name — this is Deor's equivalent of a lambda.
-
-```
-shape intList = list of int
-shape doubleFunc = func of int to int
-
-fn intList apply_all(intList nums, doubleFunc transform)
-    intList result = empty
-    for num in nums
-        int out = transform(num)
-        result at end = out
-    return result
-
-fn int double(int num)
-    return num * 2
-
-apply_all(nums, double)    # double satisfies doubleFunc — no special syntax
-```
-
-```rust
-fn apply_all(nums: &Vec<i32>, transform: fn(i32) -> i32) -> Vec<i32> {
-    let mut result: Vec<i32> = Vec::new();
-    for num in nums {
-        result.push(transform(*num));
-    }
-    result
-}
-```
-
-**Conversion notes:** func shapes compile to Rust `fn` pointers — not `Fn`/`FnMut`/`FnOnce` traits. This means no closure capture, no lifetime complications, and no `Box<dyn Fn>` overhead. All functions are top-level items.
+To pass behavior as a value, declare a `func` shape and accept it as a typed parameter. The caller passes a named top-level function by name — this is Deor's equivalent of a lambda. See [Shapes — Func Shapes](shapes.md#func-shapes) for declaration syntax, single-param constraint, and conversion notes.
 
 ---
 

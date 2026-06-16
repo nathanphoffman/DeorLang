@@ -1,25 +1,6 @@
 # Collections
 
-## Declaring a List
-
-Lists are declared using a list shape. Declare the shape at the top of the file, then use the shape name as the type everywhere — in variables, function signatures, and struct fields.
-
-```
-shape intList = list of int
-shape roomList = list of Room
-```
-
-```
-intList result = empty
-roomList rooms = [kitchen, office, bedroom]
-```
-
-```rust
-let mut result: Vec<i32> = Vec::new();
-let rooms: Vec<Room> = vec![kitchen.clone(), office.clone(), bedroom.clone()];
-```
-
-The shape name is the type everywhere — no suffix, no continuation line, no prefix notation. See [Shapes](shapes.md) for full shape declaration syntax.
+List operations assume a list shape has already been declared — see [Shapes — List Shapes](shapes.md#list-shapes) for how to declare one and use it in function signatures and struct fields.
 
 ---
 
@@ -28,8 +9,6 @@ The shape name is the type everywhere — no suffix, no continuation line, no pr
 Elements are read by index using `at`. Zero-indexed, matching Rust's behavior.
 
 ```
-shape intList = list of int
-
 intList scores = [10, 20, 30, 40]
 int first = scores at 0    # 10
 int last = scores at 3     # 40
@@ -146,50 +125,6 @@ roomList tail = rooms in range(mid, end)       # from mid to end of list
 ```
 
 The `range()` arguments follow the same rules as everywhere else — built-in function, so literals are valid directly.
-
----
-
-## In Function Signatures and Struct Fields
-
-The shape name stands in for the full list type wherever a type is expected:
-
-```
-shape roomList = list of Room
-
-fn int total_area(roomList rooms)
-    ...
-
-fn roomList occupied_rooms(roomList rooms)
-    ...
-
-struct House
-    string address
-    roomList rooms
-```
-
-```rust
-fn total_area(rooms: &Vec<Room>) -> i32 { ... }
-fn occupied_rooms(rooms: &Vec<Room>) -> Vec<Room> { ... }
-
-struct House {
-    address: String,
-    rooms: Vec<Room>,
-}
-```
-
----
-
-## `bytes` vs `list`
-
-Raw binary data uses `bytes` (`Vec<u8>`), not an `intList`. A list of int is `Vec<i32>` — wrong width for byte manipulation and incompatible with APIs expecting `&[u8]`.
-
-```
-bytes data = read_raw("file.bin")    # correct — raw binary
-
-intList scores = [10, 20, 30]        # correct — integer list (requires shape intList = list of int)
-```
-
-To give a byte buffer a semantic name, declare a bytes shape — see [Shapes — Bytes Shapes](shapes.md#bytes-shapes).
 
 ---
 

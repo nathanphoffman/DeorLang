@@ -17,6 +17,8 @@ fn string generate(tokenList tokens)
 	strList enum_reg = build_enum_reg(tokens)
 	strList variant_reg = build_variant_reg(tokens, enum_reg)
 	strList type_reg = build_type_reg(tokens)
+	strList mut_names = []
+	GenCtx ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg)
 
 	string output = ""
 	int token_count = len(tokens)
@@ -50,12 +52,12 @@ fn string generate(tokenList tokens)
 			pos = pr_pos(result)
 			continue
 		if current_kind is "KW_TYPE"
-			ParseResult result = gen_type_decl(tokens, pos, variant_reg, shape_reg)
+			ParseResult result = gen_type_decl(tokens, pos, ctx)
 			output = s_cat(output, pr_code(result))
 			pos = pr_pos(result)
 			continue
 		if current_kind is "KW_FN"
-			ParseResult result = gen_fn_decl(tokens, pos, variant_reg, shape_reg, struct_reg, enum_reg, type_reg)
+			ParseResult result = gen_fn_decl(tokens, pos, ctx)
 			output = s_cat(output, pr_code(result))
 			pos = pr_pos(result)
 			continue

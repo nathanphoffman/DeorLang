@@ -7,10 +7,9 @@ A `shape` is a named type alias for a parameterized or named type. Shapes are th
 ```
 shape roomList = list of Room
 shape filterFunc = func of Room to bool
-shape requestBody = bytes
 ```
 
-Shapes are declared at the top level of a file, after imports and before structs. Three kinds exist: list shapes, func shapes, and bytes shapes. For discriminated variant types, see [Enums](enums.md).
+Shapes are declared at the top level of a file, after imports and before structs. Two kinds exist: list shapes and func shapes. For discriminated variant types, see [Enums](enums.md).
 
 ---
 
@@ -168,7 +167,6 @@ Shape names are camelCase — enforced by the transpiler. By convention (not enf
 |---|---|---|
 | List shapes | `List` | `roomList`, `intList`, `rollList` |
 | Func shapes | `Func` | `filterFunc`, `predicateFunc`, `handlerFunc` |
-| Bytes shapes | — | `requestBody`, `frameData`, `imageBuffer` |
 
 camelCase distinguishes shapes from every other identifier category:
 - Primitives and keywords: lowercase (`int`, `list`, `func`, `of`)
@@ -221,39 +219,6 @@ fn roomList filter(roomList items, filterFunc predicate)
 # main.deor
 (roomList, filterFunc, filter) in rooms
 ```
-
----
-
-## Bytes Shapes
-
-A bytes shape gives a semantic name to a raw byte buffer. `bytes` is not parameterized — it is always `Vec<u8>` — so the declaration has no `of` clause.
-
-```
-shape requestBody = bytes
-shape frameData = bytes
-shape imageBuffer = bytes
-```
-
-```rust
-type RequestBody = Vec<u8>;
-type FrameData = Vec<u8>;
-type ImageBuffer = Vec<u8>;
-```
-
-Bytes shape variables are used exactly like list shapes — as parameter types, return types, struct fields, and variable declarations:
-
-```
-shape requestBody = bytes
-
-fn void send(requestBody data)
-    ...
-
-struct Request
-    string url
-    requestBody body
-```
-
-`len()` works on bytes shapes. `at end =` and `remove at` work at the element level (individual `u8` values). For any actual byte-level computation — bit manipulation, encoding, parsing — use a `rust` block; bytes shapes carry the data in and out.
 
 ---
 

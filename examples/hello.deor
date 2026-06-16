@@ -2,6 +2,12 @@ struct Test
 	int hello
 	int world
 
+# fn Test say_hi(Test test)
+# 	(hello) in test
+# 	print(hello)
+# 	world as 10
+# 	return (hello, world)
+
 type Squarefeet(int n)
 	n > 0
 
@@ -35,7 +41,10 @@ fn void main()
 	int actual_sqft = (avow sqft)
 
 
-	
+	# Test old_test = (hello,world)
+	# Test new_test = using old_test
+		# say_hi()
+
 
 
 

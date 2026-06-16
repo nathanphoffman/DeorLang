@@ -19,7 +19,7 @@ fn string find_struct_for_fields(strList struct_reg, strList fields)
 
 	return "Unknown"
 
-fn ParseResult gen_call_args(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
+fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
 
 	strList arg_codes = []
 	int cur = pos
@@ -38,7 +38,7 @@ fn ParseResult gen_call_args(tokenList tokens, int pos, strList variant_reg, str
 			cur = cur + 1
 			continue
 
-		ParseResult arg_r = gen_expr(tokens, cur, variant_reg, shape_reg)
+		ParseResult arg_r = gen_expr(tokens, cur, ctx)
 		string arg_code = pr_code(arg_r)
 		int arg_pos = pr_pos(arg_r)
 		# clone simple identifiers; .to_string() for string literals
@@ -59,10 +59,10 @@ fn ParseResult gen_call_args(tokenList tokens, int pos, strList variant_reg, str
 					arg_code = s_join([arg_code, ".clone()"])
 		arg_codes at end = arg_code
 		cur = arg_pos
-		
+
 	return make_result(s_join_with(arg_codes, ", "), cur)
 
-fn ParseResult gen_list_items(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
+fn ParseResult gen_list_items(tokenList tokens, int pos, GenCtx ctx)
 	strList item_codes = []
 	int cur = pos
 	int token_count = len(tokens)
@@ -76,7 +76,7 @@ fn ParseResult gen_list_items(tokenList tokens, int pos, strList variant_reg, st
 		if current_kind is "COMMA"
 			cur = cur + 1
 			continue
-		ParseResult item_r = gen_expr(tokens, cur, variant_reg, shape_reg)
+		ParseResult item_r = gen_expr(tokens, cur, ctx)
 		string item_code = pr_code(item_r)
 		int item_pos = pr_pos(item_r)
 		Token start_token = tokens at cur
@@ -89,17 +89,17 @@ fn ParseResult gen_list_items(tokenList tokens, int pos, strList variant_reg, st
 		cur = item_pos
 	return make_result(s_join_with(item_codes, ", "), cur)
 
-fn ParseResult gen_unary_method(tokenList tokens, int args_pos, string suffix, strList variant_reg, strList shape_reg)
-	ParseResult inner_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+fn ParseResult gen_unary_method(tokenList tokens, int args_pos, string suffix, GenCtx ctx)
+	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
 	string inner_code = pr_code(inner_r)
 	int close = pr_pos(inner_r) + 1
 	return make_result(s_join([inner_code, suffix]), close)
 
-fn ParseResult gen_binary_str_method(tokenList tokens, int args_pos, string method_name, strList variant_reg, strList shape_reg)
-	ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+fn ParseResult gen_binary_str_method(tokenList tokens, int args_pos, string method_name, GenCtx ctx)
+	ParseResult a0_r = gen_expr(tokens, args_pos, ctx)
 	string a0c = pr_code(a0_r)
 	int sep_pos = pr_pos(a0_r) + 1
-	ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
+	ParseResult a1_r = gen_expr(tokens, sep_pos, ctx)
 	string a1c = pr_code(a1_r)
 	int close_pos = pr_pos(a1_r) + 1
 	Token a1_token = tokens at sep_pos
@@ -110,7 +110,8 @@ fn ParseResult gen_binary_str_method(tokenList tokens, int args_pos, string meth
 		a1_arg = s_join([a1c, ".as_str()"])
 	return make_result(s_join([a0c, ".", method_name, "(", a1_arg, ")"]), close_pos)
 
-fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
+fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
@@ -138,7 +139,7 @@ fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strLi
 			if next_kind is "RBRACKET"
 				int after = inner_pos + 1
 				return make_result("Vec::new()", after)
-		ParseResult items_r = gen_list_items(tokens, inner_pos, variant_reg, shape_reg)
+		ParseResult items_r = gen_list_items(tokens, inner_pos, ctx)
 		string items_code = pr_code(items_r)
 		int items_pos = pr_pos(items_r)
 		string list_code = s_join(["vec![", items_code, "]"])
@@ -151,14 +152,14 @@ fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strLi
 			Token peek_token = tokens at peek_pos
 			if tok_kind(peek_token) is "KW_AVOW"
 				int expr_pos = peek_pos + 1
-				ParseResult expr_r = gen_expr(tokens, expr_pos, variant_reg, shape_reg)
+				ParseResult expr_r = gen_expr(tokens, expr_pos, ctx)
 				string expr_code = pr_code(expr_r)
 				int after_rparen = pr_pos(expr_r) + 1
 				return make_result(s_join([expr_code, ".unwrap()"]), after_rparen)
 
 	if kind is "KW_NOT"
 		int operand_pos = pos + 1
-		ParseResult operand_r = gen_primary(tokens, operand_pos, variant_reg, shape_reg)
+		ParseResult operand_r = gen_primary(tokens, operand_pos, ctx)
 		string operand_code = pr_code(operand_r)
 		int operand_pos_end = pr_pos(operand_r)
 		return make_result(s_join(["!", operand_code]), operand_pos_end)
@@ -175,25 +176,25 @@ fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strLi
 				int args_pos = next_pos + 1
 				# built-in string methods
 				if func_name is "len"
-					return gen_unary_method(tokens, args_pos, ".len() as i32", variant_reg, shape_reg)
+					return gen_unary_method(tokens, args_pos, ".len() as i32", ctx)
 				if func_name is "trim"
-					return gen_unary_method(tokens, args_pos, ".trim().to_string()", variant_reg, shape_reg)
+					return gen_unary_method(tokens, args_pos, ".trim().to_string()", ctx)
 				if func_name is "to_upper"
-					return gen_unary_method(tokens, args_pos, ".to_uppercase()", variant_reg, shape_reg)
+					return gen_unary_method(tokens, args_pos, ".to_uppercase()", ctx)
 				if func_name is "to_lower"
-					return gen_unary_method(tokens, args_pos, ".to_lowercase()", variant_reg, shape_reg)
+					return gen_unary_method(tokens, args_pos, ".to_lowercase()", ctx)
 				if func_name is "contains"
-					return gen_binary_str_method(tokens, args_pos, "contains", variant_reg, shape_reg)
+					return gen_binary_str_method(tokens, args_pos, "contains", ctx)
 				if func_name is "starts_with"
-					return gen_binary_str_method(tokens, args_pos, "starts_with", variant_reg, shape_reg)
+					return gen_binary_str_method(tokens, args_pos, "starts_with", ctx)
 				if func_name is "ends_with"
-					return gen_binary_str_method(tokens, args_pos, "ends_with", variant_reg, shape_reg)
+					return gen_binary_str_method(tokens, args_pos, "ends_with", ctx)
 				if func_name is "split"
-					ParseResult a0_r = gen_expr(tokens, args_pos, variant_reg, shape_reg)
+					ParseResult a0_r = gen_expr(tokens, args_pos, ctx)
 					string a0c = pr_code(a0_r)
 					int a0p = pr_pos(a0_r)
 					int sep_pos = a0p + 1
-					ParseResult a1_r = gen_expr(tokens, sep_pos, variant_reg, shape_reg)
+					ParseResult a1_r = gen_expr(tokens, sep_pos, ctx)
 					string a1c = pr_code(a1_r)
 					int a1p = pr_pos(a1_r)
 					Token a1_token = tokens at sep_pos
@@ -205,7 +206,7 @@ fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strLi
 					int close_pos = a1p + 1
 					return make_result(s_join([a0c, ".split(", a1_arg, ").map(|s| s.to_string()).collect()"]), close_pos)
 				# generic call
-				ParseResult args_r = gen_call_args(tokens, args_pos, variant_reg, shape_reg)
+				ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 				string args_code = pr_code(args_r)
 				int args_end = pr_pos(args_r)
 				int after_paren = args_end + 1
@@ -214,7 +215,7 @@ fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strLi
 			# index read: name at idx
 			if next_kind is "KW_AT"
 				int idx_pos = next_pos + 1
-				ParseResult idx_r = gen_primary(tokens, idx_pos, variant_reg, shape_reg)
+				ParseResult idx_r = gen_primary(tokens, idx_pos, ctx)
 				string idx_code = pr_code(idx_r)
 				int idx_end = pr_pos(idx_r)
 				return make_result(s_join([value, "[", idx_code, " as usize].clone()"]), idx_end)
@@ -228,8 +229,8 @@ fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strLi
 
 	return make_result("/* unknown_primary */", pos + 1)
 
-fn ParseResult gen_expr(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
-	ParseResult primary_r = gen_primary(tokens, pos, variant_reg, shape_reg)
+fn ParseResult gen_expr(tokenList tokens, int pos, GenCtx ctx)
+	ParseResult primary_r = gen_primary(tokens, pos, ctx)
 	string left_code = pr_code(primary_r)
 	int cur_pos = pr_pos(primary_r)
 	int token_count = len(tokens)
@@ -252,7 +253,7 @@ fn ParseResult gen_expr(tokenList tokens, int pos, strList variant_reg, strList 
 				if next_kind is "KW_NOT"
 					operator_str = "is not"
 					after_op = after_op + 1
-		ParseResult rhs_r = gen_primary(tokens, after_op, variant_reg, shape_reg)
+		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
 		string rhs_code = pr_code(rhs_r)
 		int rhs_pos = pr_pos(rhs_r)
 		string rust_op = map_op(operator_str)

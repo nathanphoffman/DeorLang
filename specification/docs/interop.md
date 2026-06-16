@@ -129,7 +129,6 @@ Only these types cross the Deor/Rust boundary — as function parameters into `r
 | `float` | `f64` |
 | `bool` | `bool` |
 | `string` | `String` (available as `&str` via `.as_str()`) |
-| `bytes` | `Vec<u8>` |
 | list shape (e.g. `roomList`) | `Vec<T>` where T is the shape's element type |
 | validator types | `Option<T>` |
 | structs | Rust struct |
@@ -163,9 +162,9 @@ Functions imported via `rust:` can only be called from inside `rust` blocks — 
 ```
 (compress, decompress) in rust:codec
 
-fn bytes compress_data(bytes data)
+fn void compress_data(string path)
     rust
-        codec::compress(&data)
+        codec::compress(path.as_str())
 ```
 
 The `.rs` file is full Rust — any `use` statements, any types, any Rust features. It can use standard library imports freely and use crates declared in the project's `deps` blocks. It cannot call back into Deor-defined functions (it's a lower layer).

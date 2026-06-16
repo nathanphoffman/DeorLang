@@ -95,7 +95,7 @@ let occupied = true;
 let room = Room { area, name, occupied };
 ```
 
-The transpiler matches fields by name, not position — declaration order is not enforced. Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in. Both work with any subset and any order.
+The transpiler matches fields by name — declaration order is required (same rule as `in` destructuring). Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in.
 
 If you need a field name that differs from the variable you have, rename it first:
 
@@ -125,7 +125,7 @@ let roll: Option<Roll> = Roll::new(random(min, max));
 
 ### Initializing to Empty
 
-A validator type variable can be declared as `empty` to start explicitly absent. `empty` is only valid at the point of first declaration — assigning `empty` after a variable has been declared is a transpiler error.
+A validator type variable can be declared as `empty` to start explicitly absent. `empty` is also the only valid way to initialize an empty list shape — `[]` is a transpiler error. See [Enforced Practices — empty at Declaration Only](enforced_practices.md#empty-at-declaration-only) for the assignment restriction.
 
 ```
 Roll best = empty
@@ -135,7 +135,7 @@ Roll best = empty
 let mut best: Option<Roll> = None;
 ```
 
-`empty` is also the only valid way to initialize an empty list shape — `[]` is a transpiler error:
+List shapes:
 
 ```
 roomList rooms = empty

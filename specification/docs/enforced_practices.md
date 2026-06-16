@@ -8,7 +8,7 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 
 | Category | Convention | Examples |
 |---|---|---|
-| Built-in primitives and keywords | lowercase | `int`, `float`, `bool`, `string`, `bytes`, `list`, `func` |
+| Built-in primitives and keywords | lowercase | `int`, `float`, `bool`, `string`, `list`, `func` |
 | Shapes | camelCase, 3+ chars | `roomList`, `intList`, `filterFunc`, `handlerFunc` |
 | Enums | camelCase, 3+ chars | `colorTag`, `statusTag`, `directionTag` |
 | Enum variants | PascalCase, 3+ chars | `Red`, `Green`, `Active`, `Pending` |

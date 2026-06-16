@@ -115,7 +115,7 @@ if area.is_none() {
 
 ### Initializing to Empty
 
-A validator type variable can be explicitly initialized to `empty` to start absent. List shapes also use `empty` to start with no elements — `[]` is a transpiler error. `empty` is only valid at the point of first declaration — assigning `empty` after a variable has been declared is a transpiler error.
+A validator type variable can be explicitly initialized to `empty` to start absent. List shapes also use `empty` to start with no elements — `[]` is a transpiler error. See [Enforced Practices — empty at Declaration Only](enforced_practices.md#empty-at-declaration-only) for the assignment restriction.
 
 ```
 Roll best = empty
