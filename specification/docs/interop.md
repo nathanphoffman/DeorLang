@@ -1,6 +1,6 @@
 # Rust Interop
 
-Deor transpiles to Rust, so escape hatches into raw Rust are a first-class feature — not an afterthought. Three mechanisms cover the full range of interop needs: inline `rust` blocks, external `.rs` file imports, and the `deor:` standard library wrappers.
+Deor transpiles to Rust, so escape hatches into raw Rust are a first-class feature — not an afterthought. Three mechanisms cover the full range of interop needs: inline `rust` blocks, external `.rs` file imports (`rust:` prefix), and `deps` blocks for Cargo dependencies.
 
 ---
 

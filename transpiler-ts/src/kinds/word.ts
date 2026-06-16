@@ -36,6 +36,8 @@ function toKeywordToken(word: string, line: number): Token {
     case 'of':       return { type: TokenType.KW_OF,       literal: word, line };
     case 'insert':   return { type: TokenType.KW_INSERT,   literal: word, line };
     case 'enum':     return { type: TokenType.KW_ENUM,     literal: word, line };
+    case 'at':       return { type: TokenType.KW_AT,       literal: word, line };
+    case 'remove':   return { type: TokenType.KW_REMOVE,   literal: word, line };
     default:       return { type: TokenType.IDENT,     literal: word, line };
   }
 }

@@ -260,12 +260,38 @@ export class Parser {
       return { kind: 'DestructureStmt', fields: [ident.literal], source };
     }
 
-    // list mutation: name insert expr
+    // list mutation: name insert expr  (legacy form — kept for compatibility)
     if (currentType === TokenType.KW_INSERT) {
       this.advance(); // consume 'insert'
       const value = this.parseExpr();
       this.skipNewline();
       return { kind: 'InsertStmt', list: ident.literal, value };
+    }
+
+    // index write: name at end = val  OR  name at idx = val
+    if (currentType === TokenType.KW_AT) {
+      this.advance(); // consume 'at'
+      if (this.current.type === TokenType.IDENT && this.current.literal === 'end') {
+        this.advance(); // consume 'end'
+        this.expect(TokenType.EQUALS);
+        const value = this.parseExpr();
+        this.skipNewline();
+        return { kind: 'IndexAppendStmt', list: ident.literal, value };
+      }
+      const index = this.parseExpr();
+      this.expect(TokenType.EQUALS);
+      const value = this.parseExpr();
+      this.skipNewline();
+      return { kind: 'IndexWriteStmt', list: ident.literal, index, value };
+    }
+
+    // remove: name remove at idx
+    if (currentType === TokenType.KW_REMOVE) {
+      this.advance(); // consume 'remove'
+      this.expect(TokenType.KW_AT);
+      const index = this.parseExpr();
+      this.skipNewline();
+      return { kind: 'RemoveStmt', list: ident.literal, index };
     }
 
     // assignment: name = expr  (must come before typed binding check)
@@ -404,22 +430,26 @@ export class Parser {
     return left;
   }
 
-  // parses arithmetic and comparison operations: left op right
+  // parses arithmetic and comparison operations, left-associative chaining
   private parseBinaryOp(): AST.Node {
-    const left = this.parsePrimary();
+    let left = this.parsePrimary();
 
-    // is not — two-word operator, must be checked before plain 'is'
-    if (this.current.type === TokenType.KW_IS && this.peekToken.type === TokenType.KW_NOT) {
-      this.advance(); // consume 'is'
-      this.advance(); // consume 'not'
-      const right = this.parsePrimary();
-      return { kind: 'BinaryExpr', left, op: 'is not', right };
-    }
-
-    if (isOperator(this.current.type)) {
-      const op = this.advance().literal;
-      const right = this.parsePrimary();
-      return { kind: 'BinaryExpr', left, op, right };
+    while (true) {
+      // is not — two-word operator, must be checked before plain 'is'
+      if (this.current.type === TokenType.KW_IS && this.peekToken.type === TokenType.KW_NOT) {
+        this.advance(); // consume 'is'
+        this.advance(); // consume 'not'
+        const right = this.parsePrimary();
+        left = { kind: 'BinaryExpr', left, op: 'is not', right };
+        continue;
+      }
+      if (isOperator(this.current.type)) {
+        const op = this.advance().literal;
+        const right = this.parsePrimary();
+        left = { kind: 'BinaryExpr', left, op, right };
+        continue;
+      }
+      break;
     }
 
     return left;
@@ -461,6 +491,12 @@ export class Parser {
           const args = this.parseArgList();
           this.expect(TokenType.RPAREN);
           return { kind: 'CallExpr', func: name, args };
+        }
+        // name at idx — index read in expression position
+        if (this.current.type === TokenType.KW_AT) {
+          this.advance(); // consume 'at'
+          const index = this.parsePrimary();
+          return { kind: 'IndexExpr', list: { kind: 'Identifier', name }, index };
         }
         return { kind: 'Identifier', name };
       }

@@ -1,0 +1,54 @@
+shape intList = list of int
+shape strList = list of string
+
+fn int sum_list(intList nums)
+	total as 0
+	int n = len(nums)
+	for i in range(n)
+		int val = nums at i
+		total = total + val
+	return total
+
+fn string join_two(string a, string b)
+	return a + " " + b
+
+fn main()
+	intList scores = [10, 20, 30]
+	int n = len(scores)
+	print(n)
+
+	int first = scores at 0
+	print(first)
+
+	scores at 0 = 99
+	int updated = scores at 0
+	print(updated)
+
+	int total = sum_list(scores)
+	print(total)
+
+	scores at end = 40
+	int new_len = len(scores)
+	print(new_len)
+
+	scores remove at 0
+	int after_remove = len(scores)
+	print(after_remove)
+
+	string hello = "hello"
+	string world = "world"
+	string msg = join_two(hello, world)
+	print(msg)
+
+	string line = "fn " + "main" + "()"
+	print(line)
+
+	strList words = ["foo", "bar", "baz"]
+	string w = words at 1
+	print(w)
+
+	bool found = contains(w, "a")
+	print(found)
+
+	string up = to_upper(w)
+	print(up)

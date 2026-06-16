@@ -109,12 +109,14 @@ export class Generator {
       }
       let val = this.genExpr(node.value);
       if (node.value.kind === 'StringLiteral') val += '.to_string()';
+      if (node.value.kind === 'Identifier') val += '.clone()';
       const isMut = this.mutableNames.has(node.name) || node.value.kind === 'ListLiteral';
       return `${pad}${renderTypedBinding(node.name, rustType, val, isMut)}\n`;
     }
 
     if (node.kind === 'AssignStmt') {
-      const val = this.genExpr(node.value);
+      let val = this.genExpr(node.value);
+      if (node.value.kind === 'StringLiteral') val += '.to_string()';
       return `${pad}${node.name} = ${val};\n`;
     }
 
@@ -124,7 +126,8 @@ export class Generator {
     }
 
     if (node.kind === 'ReturnStmt') {
-      const val = this.genExpr(node.value);
+      let val = this.genExpr(node.value);
+      if (node.value.kind === 'StringLiteral') val += '.to_string()';
       return `${pad}return ${val};\n`;
     }
 
@@ -160,6 +163,22 @@ export class Generator {
       return renderDestructure(node.fields, source, pad);
     }
 
+    if (node.kind === 'IndexWriteStmt') {
+      const idx = this.genExpr(node.index);
+      const val = this.genCallArg(node.value);
+      return `${pad}${node.list}[${idx} as usize] = ${val};\n`;
+    }
+
+    if (node.kind === 'IndexAppendStmt') {
+      const val = this.genCallArg(node.value);
+      return `${pad}${node.list}.push(${val});\n`;
+    }
+
+    if (node.kind === 'RemoveStmt') {
+      const idx = this.genExpr(node.index);
+      return `${pad}${node.list}.remove(${idx} as usize);\n`;
+    }
+
     if (node.kind === 'BreakStmt')    return `${pad}break;\n`;
     if (node.kind === 'ContinueStmt') return `${pad}continue;\n`;
 
@@ -179,25 +198,64 @@ export class Generator {
       case 'BoolLiteral':   return node.value ? 'true' : 'false';
       case 'NoneLiteral':   return 'None';
       case 'EmptyList':     return 'Vec::new()';
-      case 'ListLiteral':   return `vec![${node.items.map(i => this.genExpr(i)).join(', ')}]`;
+      case 'ListLiteral':   return `vec![${node.items.map(i => this.genListItem(i)).join(', ')}]`;
       case 'Identifier': {
         const enumName = this.variantRegistry.get(node.name);
         if (enumName) return `${enumName}::${node.name}`;
         return node.name;
       }
-      case 'UnaryExpr':     return `!${this.genExpr(node.operand)}`;
-      case 'BinaryExpr':    return `${this.genExpr(node.left)} ${mapOperator(node.op)} ${this.genExpr(node.right)}`;
-      case 'CallExpr':      return `${node.func}(${node.args.map(a => this.genCallArg(a)).join(', ')})`;
+      case 'UnaryExpr': return `!${this.genExpr(node.operand)}`;
+      case 'BinaryExpr': {
+        // string concat: if either side of + involves a string literal, emit format!
+        if (node.op === '+' && hasStringLiteral(node)) {
+          return `format!("{}{}", ${this.genExpr(node.left)}, ${this.genExpr(node.right)})`;
+        }
+        return `${this.genExpr(node.left)} ${mapOperator(node.op)} ${this.genExpr(node.right)}`;
+      }
+      case 'IndexExpr': {
+        const list = this.genExpr(node.list);
+        const idx  = this.genExpr(node.index);
+        return `${list}[${idx} as usize].clone()`;
+      }
+      case 'CallExpr': {
+        const a = node.args;
+        switch (node.func) {
+          case 'len':         return `${this.genExpr(a[0])}.len() as i32`;
+          case 'contains':    return `${this.genExpr(a[0])}.contains(${this.strArg(a[1])})`;
+          case 'starts_with': return `${this.genExpr(a[0])}.starts_with(${this.strArg(a[1])})`;
+          case 'ends_with':   return `${this.genExpr(a[0])}.ends_with(${this.strArg(a[1])})`;
+          case 'trim':        return `${this.genExpr(a[0])}.trim().to_string()`;
+          case 'to_upper':    return `${this.genExpr(a[0])}.to_uppercase()`;
+          case 'to_lower':    return `${this.genExpr(a[0])}.to_lowercase()`;
+          case 'split':       return `${this.genExpr(a[0])}.split(${this.strArg(a[1])}).map(|s| s.to_string()).collect()`;
+        }
+        return `${node.func}(${node.args.map(a => this.genCallArg(a)).join(', ')})`;
+      }
       default:
         throw new Error(`unknown expression node: ${(node as AST.Node).kind}`);
     }
   }
 
+  // list literal items: string literals need .to_string(); identifiers need .clone()
+  private genListItem(node: AST.Node): string {
+    if (node.kind === 'StringLiteral') return `${JSON.stringify(node.value)}.to_string()`;
+    return this.genCallArg(node);
+  }
+
+  // converts a string arg to &str for use in string method calls
+  private strArg(node: AST.Node): string {
+    const val = this.genExpr(node);
+    return node.kind === 'Identifier' ? `${val}.as_str()` : val;
+  }
+
   // identifier args at call sites are auto-cloned to prevent use-after-move errors;
-  // primitives (i32, bool, etc.) are Copy so the clone is a no-op at runtime
+  // primitives (i32, bool, etc.) are Copy so the clone is a no-op at runtime;
+  // string literals need .to_string() since function params expect String, not &str
   private genCallArg(node: AST.Node): string {
     const val = this.genExpr(node);
-    return node.kind === 'Identifier' ? `${val}.clone()` : val;
+    if (node.kind === 'Identifier') return `${val}.clone()`;
+    if (node.kind === 'StringLiteral') return `${val}.to_string()`;
+    return val;
   }
 
   // resolve a Deor type name to its Rust equivalent
@@ -245,4 +303,13 @@ function collectMutableNames(stmts: AST.Node[]): Set<string> {
 // camelCase → PascalCase for Rust type aliases (rollList → RollList)
 function pascalCase(name: string): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+// true if a + expression chain contains at least one string literal — triggers format! emit
+function hasStringLiteral(node: AST.Node): boolean {
+  if (node.kind === 'StringLiteral') return true;
+  if (node.kind === 'BinaryExpr' && node.op === '+') {
+    return hasStringLiteral(node.left) || hasStringLiteral(node.right);
+  }
+  return false;
 }

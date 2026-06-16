@@ -3,9 +3,6 @@
 ## Source
 
 ```
-(sqrt, floor) in math
-(random) in deor:math
-
 shape roomList = list of Room
 
 type Squarefeet(int val)

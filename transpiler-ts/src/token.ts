@@ -32,6 +32,8 @@ export enum TokenType {
   KW_INSERT,
   KW_RUST,
   KW_ENUM,
+  KW_AT,
+  KW_REMOVE,
 
   RUST_BLOCK,
 

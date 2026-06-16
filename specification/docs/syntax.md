@@ -111,7 +111,7 @@ Open an indented block when followed by a newline.
 | `not` | Logical NOT (`!`) |
 | `is` | Structural equality (`is`) and inequality (`is not`) |
 | `in` | Destructuring / import / loop iteration source |
-| `as` | Shape-derived binding / import alias |
+| `as` | Shape-derived binding |
 | `with` | Record update (inside `as` binding) |
 | `at` | Index access and write (`list at idx`, `list at idx = val`, `list at end = val`) |
 | `end` | Reserved sentinel — "end of list" in `at end` and `in range(start, end)` |
@@ -138,7 +138,6 @@ These are not standalone words but reserved prefix forms in import paths.
 
 | Prefix | Use |
 |---|---|
-| `deor:` | Official stdlib module |
 | `rust:` | Raw `.rs` file import |
 
 **Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a built-in function and should not be shadowed. `end` is a reserved sentinel — only valid as `list at end = val` and as the second argument to `range()` in a slice (`list in range(start, end)`).

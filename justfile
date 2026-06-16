@@ -4,6 +4,13 @@ run file="examples/hello.deor":
     rustc output/out.rs -o output/out
     ./output/out
 
+run-deor file="examples/hello.deor":
+    ./output/out transpiler-deor/main.deor output/out.rs
+    rustc output/out.rs -o output/out
+    ./output/out {{file}} output/run.rs
+    rustc output/run.rs -o output/run
+    ./output/run
+
 run-ts file="examples/hello.deor":
     cd transpiler-ts && npm install --silent
     cd transpiler-ts && npx tsx src/main.ts ../{{file}} ../output/out.rs

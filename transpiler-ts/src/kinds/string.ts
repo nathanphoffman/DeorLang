@@ -5,12 +5,25 @@ type ScanResult = { token: Token; newPos: number };
 export function scanString(line: string, pos: number, lineNum: number): ScanResult | null {
   if (!isStringStart(line[pos])) return null;
   pos++;
-  const start = pos;
+  let literal = '';
   while (pos < line.length && !isStringEnd(line[pos])) {
-    if (isEscapeChar(line[pos])) pos++;
-    pos++;
+    if (isEscapeChar(line[pos])) {
+      pos++;
+      if (pos < line.length) {
+        switch (line[pos]) {
+          case 'n':  literal += '\n'; break;
+          case 't':  literal += '\t'; break;
+          case '\\': literal += '\\'; break;
+          case '"':  literal += '"';  break;
+          default:   literal += '\\' + line[pos];
+        }
+        pos++;
+      }
+    } else {
+      literal += line[pos];
+      pos++;
+    }
   }
-  const literal = line.slice(start, pos);
   if (pos < line.length) pos++;
   return { token: { type: TokenType.STRING, literal, line: lineNum }, newPos: pos };
 }

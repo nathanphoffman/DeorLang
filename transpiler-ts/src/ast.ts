@@ -18,6 +18,9 @@ export type Node =
   | BreakStmt
   | ContinueStmt
   | RustBlock
+  | IndexWriteStmt
+  | IndexAppendStmt
+  | RemoveStmt
   | BinaryExpr
   | UnaryExpr
   | StringLiteral
@@ -26,6 +29,7 @@ export type Node =
   | NoneLiteral
   | EmptyList
   | ListLiteral
+  | IndexExpr
   | Identifier;
 
 export interface Program {
@@ -167,6 +171,28 @@ export interface ContinueStmt {
   kind: 'ContinueStmt';
 }
 
+// list at idx = val — index write
+export interface IndexWriteStmt {
+  kind: 'IndexWriteStmt';
+  list: string;
+  index: Node;
+  value: Node;
+}
+
+// list at end = val — append (same as push)
+export interface IndexAppendStmt {
+  kind: 'IndexAppendStmt';
+  list: string;
+  value: Node;
+}
+
+// list remove at idx — remove element at index
+export interface RemoveStmt {
+  kind: 'RemoveStmt';
+  list: string;
+  index: Node;
+}
+
 // verbatim Rust code block — content has Deor base indent stripped, relative indentation preserved
 export interface RustBlock {
   kind: 'RustBlock';
@@ -214,6 +240,13 @@ export interface EmptyList {
 export interface ListLiteral {
   kind: 'ListLiteral';
   items: Node[];
+}
+
+// list at idx — index read expression
+export interface IndexExpr {
+  kind: 'IndexExpr';
+  list: Node;
+  index: Node;
 }
 
 export interface Identifier {
