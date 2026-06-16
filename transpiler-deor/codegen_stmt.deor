@@ -29,23 +29,17 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg,
 	string result_code = s_join([pad, "if ", cond_code, " {\n", then_code, pad, "}"])
 	int cur = then_end
 	# handle else / else if chains
-	bool checking_else = true
-	for else_iter in range(32)
-		if not checking_else
-			continue
+	for if true
 		if cur >= token_count
-			checking_else = false
-			continue
+			break
 		Token else_token = tokens at cur
 		string else_kind = tok_kind(else_token)
-		bool is_else_kw = else_kind is "KW_ELSE"
-		if not is_else_kw
-			checking_else = false
-			continue
+		bool is_else = else_kind is "KW_ELSE"
+		if not is_else
+			break
 		int after_else = cur + 1
 		if after_else >= token_count
-			checking_else = false
-			continue
+			break
 		Token after_else_token = tokens at after_else
 		string after_else_kind = tok_kind(after_else_token)
 		if after_else_kind is "KW_IF"
@@ -78,7 +72,7 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, strList variant_reg,
 			int else_end = pr_pos(else_r)
 			result_code = s_join([result_code, " else {\n", else_code, pad, "}"])
 			cur = else_end
-			checking_else = false
+			break
 	result_code = s_cat(result_code, "\n")
 	return make_result(result_code, cur)
 
@@ -176,9 +170,7 @@ fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, strList var
 	# LPAREN f1 COMMA f2 RPAREN KW_IN source NEWLINE
 	strList fields = []
 	int cur = pos + 1
-	for field_iter in range(32)
-		if cur >= token_count
-			break
+	for if cur < token_count
 		Token field_token = tokens at cur
 		string field_kind = tok_kind(field_token)
 		string field_value = tok_value(field_token)
@@ -461,7 +453,7 @@ fn ParseResult gen_block(tokenList tokens, int pos, int depth, strList variant_r
 	strList stmts = []
 	int cur = pos
 	int token_count = len(tokens)
-	for stmt_iter in range(512)
+	for if true
 		if cur >= token_count
 			break
 		Token token = tokens at cur

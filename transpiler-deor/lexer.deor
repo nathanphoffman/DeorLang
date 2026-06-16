@@ -4,14 +4,12 @@ fn int count_tabs(string line)
 	strList chars = chars_of(line)
 	int char_count = len(chars)
 	int count = 0
-	bool counting = true
 	for index in range(char_count)
-		if counting
-			string character = chars at index
-			if character is "\t"
-				count = count + 1
-			else
-				counting = false
+		string character = chars at index
+		if character is "\t"
+			count = count + 1
+		else
+			break
 	return count
 
 fn tokenList tokenize(string source)
@@ -49,16 +47,15 @@ fn tokenList tokenize(string source)
 			indent_stack at end = int_to_str(indent)
 		else
 			bool dedenting = indent < top
-			for dedent_index in range(64)
-				if dedenting
-					int new_slen = len(indent_stack)
-					int new_top_idx = new_slen - 1
-					int cur_top = str_to_int(indent_stack at new_top_idx)
-					if indent < cur_top
-						tokens at end = make_token("DEDENT", "", cur_line)
-						indent_stack remove at new_top_idx
-					else
-						dedenting = false
+			for if dedenting
+				int new_slen = len(indent_stack)
+				int new_top_idx = new_slen - 1
+				int cur_top = str_to_int(indent_stack at new_top_idx)
+				if indent < cur_top
+					tokens at end = make_token("DEDENT", "", cur_line)
+					indent_stack remove at new_top_idx
+				else
+					dedenting = false
 
 		# rust block: entire content (trimmed) is exactly "rust"
 		if content is "rust"
@@ -82,18 +79,17 @@ fn tokenList tokenize(string source)
 					break
 			# trim trailing empty lines
 			bool trimming = true
-			for trim_index in range(128)
-				if trimming
-					int rl_len = len(rust_lines)
-					if rl_len > 0
-						int last_rl = rl_len - 1
-						string last_line = rust_lines at last_rl
-						if last_line is ""
-							rust_lines remove at last_rl
-						else
-							trimming = false
+			for if trimming
+				int rl_len = len(rust_lines)
+				if rl_len > 0
+					int last_rl = rl_len - 1
+					string last_line = rust_lines at last_rl
+					if last_line is ""
+						rust_lines remove at last_rl
 					else
 						trimming = false
+				else
+					trimming = false
 			tokens at end = make_token("RUST_BLOCK", s_join_nl(rust_lines), cur_line)
 			continue
 
@@ -229,7 +225,7 @@ fn tokenList tokenize(string source)
 
 	# emit remaining DEDENTs
 	int final_stack_len = len(indent_stack)
-	for final_index in (1, final_stack_len)
+	for in (1, final_stack_len)
 		tokens at end = make_token("DEDENT", "", cur_line)
 
 	tokens at end = make_token("EOF", "", cur_line)

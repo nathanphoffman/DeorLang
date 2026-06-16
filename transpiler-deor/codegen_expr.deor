@@ -25,7 +25,7 @@ fn ParseResult gen_call_args(tokenList tokens, int pos, strList variant_reg, str
 	int cur = pos
 	int token_count = len(tokens)
 
-	for arg_iter in range(64)
+	for if true
 		if cur >= token_count
 			break
 
@@ -66,7 +66,7 @@ fn ParseResult gen_list_items(tokenList tokens, int pos, strList variant_reg, st
 	strList item_codes = []
 	int cur = pos
 	int token_count = len(tokens)
-	for list_iter in range(128)
+	for if true
 		if cur >= token_count
 			break
 		Token token = tokens at cur
@@ -262,9 +262,7 @@ fn ParseResult gen_expr(tokenList tokens, int pos, strList variant_reg, strList 
 	Token first_token = tokens at pos
 	bool left_has_str = tok_kind(first_token) is "STRING"
 
-	for binop_iter in range(128)
-		if cur_pos >= token_count
-			break
+	for if cur_pos < token_count
 		Token operator_token = tokens at cur_pos
 		string operator_kind = tok_kind(operator_token)
 		string operator_value = tok_value(operator_token)

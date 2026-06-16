@@ -18,7 +18,7 @@ fn tokenList collect_all_tokens(string path)
 	int pos = 0
 	int depth = 0
 
-	for iter in range(65536)
+	for if true
 		if pos >= token_count
 			break
 
@@ -40,22 +40,26 @@ fn tokenList collect_all_tokens(string path)
 			pos = pos + 1
 			continue
 
-		# import: (names) in "path" — only at top level (depth 0)
-		bool at_top = depth is 0
-		if current_kind is "LPAREN" and at_top
+		# import: (names) in "path" — only at root level (depth 0)
+		bool at_root = depth is 0
+
+		if current_kind is "LPAREN" and at_root
+
 			int scan = pos + 1
-			for scan_index in range(64)
-				if scan >= token_count
-					break
+
+			for if scan < token_count
 				Token scan_token = raw at scan
 				scan = scan + 1
-				bool is_rp = tok_kind(scan_token) is "RPAREN"
-				if is_rp
+
+				bool is_right_paren = tok_kind(scan_token) is "RPAREN"
+				if is_right_paren
 					break
+
 			int path_pos = scan + 1
 			if path_pos < token_count
 				Token in_token = raw at scan
 				bool is_in = tok_kind(in_token) is "KW_IN"
+
 				if is_in
 					Token path_token = raw at path_pos
 					string imp_path = tok_value(path_token)
@@ -69,8 +73,10 @@ fn tokenList collect_all_tokens(string path)
 							result at end = import_token
 					pos = path_pos + 1
 					continue
+
 		result at end = token
 		pos = pos + 1
+
 	return result
 
 fn string generate(tokenList tokens)
@@ -83,7 +89,7 @@ fn string generate(tokenList tokens)
 	int token_count = len(tokens)
 	int pos = 0
 
-	for iter in range(2048)
+	for if true
 		if pos >= token_count
 			break
 		Token token = tokens at pos

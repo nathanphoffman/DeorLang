@@ -27,16 +27,13 @@ fn strList build_struct_reg(tokenList tokens)
 							break
 					# collect field names until DEDENT
 					strList fields = []
-					bool fdone = false
 					for field_index in (current_index, token_count)
-						if fdone
-							continue
 						Token field_token = tokens at field_index
 						string field_kind = tok_kind(field_token)
 						string field_value = tok_value(field_token)
 						if field_kind is "DEDENT"
 							current_index = field_index + 1
-							fdone = true
+							break
 						else if field_kind is "IDENT"
 							int fname_pos = field_index + 1
 							if fname_pos < token_count
@@ -108,16 +105,13 @@ fn strList build_variant_reg(tokenList tokens, strList enum_reg)
 					if skip_kind is "INDENT"
 						break
 				# collect variants until DEDENT
-				bool vdone = false
 				for variant_index in (current_index, token_count)
-					if vdone
-						continue
 					Token variant_token = tokens at variant_index
 					string variant_kind = tok_kind(variant_token)
 					string variant_value = tok_value(variant_token)
 					if variant_kind is "DEDENT"
 						current_index = variant_index + 1
-						vdone = true
+						break
 					else if variant_kind is "IDENT"
 						result at end = variant_value
 						result at end = rust_name
@@ -142,19 +136,17 @@ fn int find_block_end(tokenList tokens, int indent_pos)
 	int token_count = len(tokens)
 	int depth = 1
 	int result = indent_pos
-	bool done = false
 	int start = indent_pos + 1
 	for raw_i in (start, token_count)
-		if not done
-			Token token = tokens at raw_i
-			(kind, value, line) in token
-			if kind is "INDENT"
-				depth = depth + 1
-			else if kind is "DEDENT"
-				depth = depth - 1
-				if depth is 0
-					result = raw_i
-					done = true
+		Token token = tokens at raw_i
+		(kind, value, line) in token
+		if kind is "INDENT"
+			depth = depth + 1
+		else if kind is "DEDENT"
+			depth = depth - 1
+			if depth is 0
+				result = raw_i
+				break
 	return result
 
 fn strList collect_mut_names(tokenList tokens, int start, int end_pos)

@@ -14,9 +14,7 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 		if tok_kind(indent_token) is "INDENT"
 			cur = cur + 1
 	strList field_lines = []
-	for field_index in range(32)
-		if cur >= token_count
-			break
+	for if cur < token_count
 		Token field_token = tokens at cur
 		string field_kind = tok_kind(field_token)
 		string field_value = tok_value(field_token)
@@ -67,9 +65,7 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 		if tok_kind(indent_token) is "INDENT"
 			cur = cur + 1
 	strList variant_lines = []
-	for variant_index in range(64)
-		if cur >= token_count
-			break
+	for if cur < token_count
 		Token variant_token = tokens at cur
 		string variant_kind = tok_kind(variant_token)
 		string variant_value = tok_value(variant_token)
@@ -107,9 +103,7 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, strList variant_reg, strLi
 	cur = cur + 1
 	# collect params until RPAREN
 	strList param_strs = []
-	for param_index in range(32)
-		if cur >= token_count
-			break
+	for if cur < token_count
 		Token param_token = tokens at cur
 		string param_kind = tok_kind(param_token)
 		string param_value = tok_value(param_token)
