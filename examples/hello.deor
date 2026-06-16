@@ -4,7 +4,7 @@ struct Test
 
 fn Test increment(Test test)
 	(hello, world) = test
-	print(hello)
+	world = world + 1
 	return (hello, world)
 
 type Squarefeet(int n)

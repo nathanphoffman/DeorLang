@@ -18,6 +18,7 @@ fn string emit_val(string val_code, string val_kind)
 	return val_code
 
 fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var) in ctx
 	int token_count = len(tokens)
 	string pad = str_repeat("    ", depth)
 	# LPAREN f1 COMMA f2 RPAREN KW_IN source NEWLINE
@@ -45,7 +46,11 @@ fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
 	int field_count = len(fields)
 	for field_index in range(field_count)
 		string field = fields at field_index
-		dest_lines at end = s_join([pad, "let ", field, " = ", src_code, ".", field, ".clone();"])
+		bool is_mut = list_has(mut_names, field)
+		string mut_kw = ""
+		if is_mut
+			mut_kw = "mut "
+		dest_lines at end = s_join([pad, "let ", mut_kw, field, " = ", src_code, ".", field, ".clone();"])
 	string dest_code = s_join_nl(dest_lines)
 	dest_code = s_cat(dest_code, "\n")
 	return make_result(dest_code, after)
