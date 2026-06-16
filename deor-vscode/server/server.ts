@@ -8,8 +8,8 @@ import {
   TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { Lexer } from '../../transpiler-ts/src/lexer';
-import { Parser } from '../../transpiler-ts/src/parser';
+import { Lexer } from '../../transpiler-ts_old_dont_use/src/lexer';
+import { Parser } from '../../transpiler-ts_old_dont_use/src/parser';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents  = new TextDocuments(TextDocument);

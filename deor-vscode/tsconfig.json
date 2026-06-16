@@ -10,6 +10,6 @@
   "include": [
     "client/**/*.ts",
     "server/**/*.ts",
-    "../transpiler-ts/src/**/*.ts"
+    "../transpiler-ts_old_dont_use/src/**/*.ts"
   ]
 }

@@ -52,7 +52,27 @@ export class Parser {
     if (this.current.type === TokenType.KW_STRUCT)  return this.parseStructDecl();
     if (this.current.type === TokenType.KW_SHAPE)   return this.parseShapeDecl();
     if (this.current.type === TokenType.KW_ENUM)    return this.parseEnumDecl();
-    throw new Error(`line ${this.current.line}: unexpected token ${JSON.stringify(this.current.literal)} at top level`);
+    // Skip unrecognized top-level forms (imports, type declarations, const, etc.)
+    this.skipTopLevelStatement();
+    return { kind: 'Identifier', name: '_skipped' };
+  }
+
+  // skips a top-level line and any following indented block
+  private skipTopLevelStatement(): void {
+    while (this.current.type !== TokenType.NEWLINE && this.current.type !== TokenType.EOF) {
+      this.advance();
+    }
+    this.skipNewline();
+    if (this.current.type === TokenType.INDENT) {
+      let depth = 1;
+      this.advance();
+      while (depth > 0 && this.current.type !== TokenType.EOF) {
+        if (this.current.type === TokenType.INDENT) depth++;
+        else if (this.current.type === TokenType.DEDENT) depth--;
+        if (depth > 0) this.advance();
+      }
+      if (this.current.type === TokenType.DEDENT) this.advance();
+    }
   }
 
   // enum name\n INDENT variants DEDENT
@@ -93,16 +113,26 @@ export class Parser {
     return { kind: 'StructDecl', name, fields };
   }
 
-  // shape name = list of ElemType
+  // shape name = list of ElemType  |  shape name = func of T to U  |  shape name = bytes
   private parseShapeDecl(): AST.ShapeDecl {
     this.advance(); // consume 'shape'
     const name = this.expect(TokenType.IDENT).literal;
     this.expect(TokenType.EQUALS);
-    this.expect(TokenType.KW_LIST);
-    this.expect(TokenType.KW_OF);
-    const elemType = this.expect(TokenType.IDENT).literal;
+
+    if (this.current.type === TokenType.KW_LIST) {
+      this.advance(); // consume 'list'
+      this.expect(TokenType.KW_OF);
+      const elemType = this.expect(TokenType.IDENT).literal;
+      this.skipNewline();
+      return { kind: 'ShapeDecl', name, elemType };
+    }
+
+    // func shape or bytes shape — skip the rest of the line
+    while (this.current.type !== TokenType.NEWLINE && this.current.type !== TokenType.EOF) {
+      this.advance();
+    }
     this.skipNewline();
-    return { kind: 'ShapeDecl', name, elemType };
+    return { kind: 'ShapeDecl', name, elemType: '' };
   }
 
   // fn [ReturnType] name(params) + indented body block
@@ -239,6 +269,11 @@ export class Parser {
       }
       // regular as-binding from a literal or expression
       const value = this.parseExpr();
+      // optional 'with field...' record-update modifier
+      if (this.current.type === TokenType.IDENT && this.current.literal === 'with') {
+        this.advance(); // consume 'with'
+        while (this.current.type === TokenType.IDENT) this.advance();
+      }
       this.skipNewline();
       return { kind: 'AsBinding', name: ident.literal, value };
     }

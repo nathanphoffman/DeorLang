@@ -8,6 +8,7 @@
     { "include": "#string" },
     { "include": "#struct-definition" },
     { "include": "#type-definition" },
+    { "include": "#enum-definition" },
     { "include": "#shape-definition" },
     { "include": "#keyword-fn" },
     { "include": "#keywords-storage" },
@@ -51,6 +52,13 @@
         "2": { "name": "entity.name.type.deor" }
       }
     },
+    "enum-definition": {
+      "match": "\\b(enum)\\s+([a-z][a-z0-9]*[A-Z][a-zA-Z0-9]*)",
+      "captures": {
+        "1": { "name": "storage.type.deor" },
+        "2": { "name": "entity.name.type.deor" }
+      }
+    },
     "shape-definition": {
       "match": "\\b(shape)\\s+([a-z][a-z0-9]*[A-Z][a-zA-Z0-9]*)",
       "captures": {
@@ -64,7 +72,7 @@
     },
     "keywords-storage": {
       "name": "storage.modifier.deor",
-      "match": "\\b(const|private)\\b"
+      "match": "\\b(const|private|raw)\\b"
     },
     "keywords-control": {
       "name": "keyword.control.deor",
@@ -72,7 +80,7 @@
     },
     "keywords-other": {
       "name": "keyword.other.deor",
-      "match": "\\b(as|in|with|is|and|or|not|avow|of|to|rust|deps)\\b"
+      "match": "\\b(as|in|with|is|and|or|not|avow|of|to|rust|deps|end|import)\\b"
     },
     "mutation-verbs": {
       "name": "keyword.operator.mutation.deor",
@@ -80,7 +88,7 @@
     },
     "builtin-types": {
       "name": "support.type.deor",
-      "match": "\\b(int|float|bool|string|bytes|list|func)\\b"
+      "match": "\\b(int|float|bool|string|bytes|list|func|void)\\b"
     },
     "constants": {
       "name": "constant.language.deor",
