@@ -2,7 +2,7 @@
 
 ## Block Structure (No Colons)
 
-Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `shape`, `enum`, or `rust`. No colon is written.
+Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `shape`, `enum`, `rust`, or `using`. No colon is written.
 
 ```
 fn int abs(int x)
@@ -89,6 +89,7 @@ Open an indented block when followed by a newline.
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
 | `deps` | Inline Cargo dependency declarations — lists crate dependencies directly in a `.deor` file so they are added to `Cargo.toml` at transpile time |
+| `using` | Subject-scoped block — names a variable as the implicit subject for zero-arg calls in the block |
 
 ### Statement Keywords
 
@@ -114,7 +115,7 @@ Open an indented block when followed by a newline.
 | `is` | Structural equality (`is`) and inequality (`is not`) |
 | `in` | Destructuring / import / loop iteration source |
 | `as` | Shape-derived binding |
-| `with` | Record update (inside `as` binding) |
+| `with` | Record update (inside `as` binding); extra-argument pass in `using` blocks (`fn_name() with arg`) |
 | `at` | Index access and write (`list at idx`, `list at idx = val`, `list at end = val`) |
 | `end` | Reserved sentinel — "end of list" in `at end` and `in range(start, end)` |
 | `of` | Element type connector in shape declarations (`list of Room`) |

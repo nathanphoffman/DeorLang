@@ -269,3 +269,49 @@ fn main() {
 ```
 
 Only one `fn void main()` may exist per project. Naming any other function `main` is a transpiler error if a `main` already exists.
+
+---
+
+## `using` Blocks — Subject-Scoped Calls
+
+A `using varname` block names a variable as the implicit subject of every zero-argument call inside the block. Any call of the form `fn_name()` inside the block is shimmed to `varname = fn_name(varname.clone())`.
+
+This is designed for types that follow the "pass and return the same value" convention — for example, a cursor or builder that is threaded through a chain of single-argument transformations.
+
+```
+TokenCursor c = cur_at(tokens, pos)
+using c
+    cur_next()
+    cur_skip_to_body()
+    cur_next()
+```
+
+```rust
+let mut c = cur_at(tokens, pos);
+c = cur_next(c.clone());
+c = cur_skip_to_body(c.clone());
+c = cur_next(c.clone());
+```
+
+### Passing an Extra Argument — `with`
+
+A call inside a `using` block can pass one extra named argument using `with`:
+
+```
+using c
+    advance() with step
+```
+
+```rust
+c = advance(c.clone(), step.clone());
+```
+
+The extra argument is always cloned. The function signature must accept the subject type as its first parameter and the extra argument as its second.
+
+### Rules
+
+- The variable named after `using` must already be in scope.
+- Only zero-argument call-statement forms (`fn_name()`) are shimmed. Any call with explicit arguments is passed through unchanged.
+- `using` only affects call statements, not call expressions used as sub-expressions.
+- The shimmed variable must be in `mut_names` — the transpiler's pre-scan detects `using` and automatically marks the variable as mutable.
+- Nesting `using` blocks is not supported; the inner `using` replaces the outer subject for its scope.

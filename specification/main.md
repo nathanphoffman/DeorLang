@@ -11,6 +11,7 @@ Deor is a small, indentation-based language that transpiles to Rust. It enforces
 - **One statement per line.** Multi-line expressions only wrap inside `()`.
 - **`as` infers type from shape.** Use it for scalar literals and list construction. Use `Type name = expr` for everything else — function calls, validator types, and struct construction.
 - **`in` extracts from a source.** Struct fields, loop elements, slices, and imports all share this keyword.
+- **`using var` scopes a subject.** Inside a `using` block, zero-arg calls like `step()` are shimmed to `var = step(var.clone())`. Pass an extra argument with `step() with extra`.
 - **Structs are immutable; primitives and lists are mutable.** Update a struct with `with` to get a modified copy.
 - **`is` is structural equality.** `is not` is inequality. `&&`, `||`, `==`, `!=` are transpiler errors — use `and`, `or`, `is`, `is not`.
 - **No lambdas.** Only named top-level `fn`s. No `filter`/`map`/`reduce` — write explicit loops.
@@ -30,7 +31,7 @@ Deor is a small, indentation-based language that transpiles to Rust. It enforces
 ## Index
 
 - [Syntax](docs/syntax.md) — block structure, keywords, comments
-- [Functions](docs/functions.md) — `fn`, return rules, void, recursion
+- [Functions](docs/functions.md) — `fn`, return rules, void, recursion, `using` blocks
 - [Variables](docs/variables.md) — `as`, explicit typing, struct construction, reassignment
 - [Types](docs/types.md) — validator types (`type`), structs (`struct` / `struct+` / `struct*`)
 - [Shapes](docs/shapes.md) — `shape`, list shapes, func shapes, naming, file ordering
