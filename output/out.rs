@@ -394,6 +394,9 @@ fn word_to_kind(word: String) -> String {
     if word == "using" {
         return "KW_USING".to_string();
     }
+    if word == "with" {
+        return "KW_WITH".to_string();
+    }
     return "IDENT".to_string();
 }
 
@@ -768,6 +771,27 @@ fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> Strin
         let mut item: String = struct_reg[index as usize].clone();
         if next_is_val {
             if item == fields_key {
+                return cur_name;
+            }
+            next_is_val = false;
+        } else {
+            cur_name = item;
+            next_is_val = true;
+        }
+    }
+    return "Unknown".to_string();
+}
+
+fn find_struct_for_field(struct_reg: Vec<String>, field: String) -> String {
+    let mut reg_count: i32 = struct_reg.len() as i32;
+    let mut next_is_val: bool = false;
+    let mut cur_name: String = "".to_string();
+    for index in 0..reg_count {
+        let mut item: String = struct_reg[index as usize].clone();
+        if next_is_val {
+            let mut fields: Vec<String> = item.split(",").map(|s| s.to_string()).collect();
+            let mut has_field: bool = list_has(fields.clone(), field.clone());
+            if has_field {
                 return cur_name;
             }
             next_is_val = false;
@@ -1272,6 +1296,46 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
             }
             if after_as_kind == "KW_EMPTY" {
                 return make_result(s_join(vec![pad.clone(), "let mut ".to_string(), value.clone(), " = Vec::new();\n".to_string()]), adv_nl(after_as + 1.clone(), tokens.clone()));
+            }
+            if after_as_kind == "IDENT" {
+                let mut maybe_with_pos: i32 = after_as + 1.clone();
+                if maybe_with_pos < token_count {
+                    let mut maybe_with_token: Token = tokens[maybe_with_pos as usize].clone();
+                    let mut maybe_with_kind: String = tok_kind(maybe_with_token.clone());
+                    if maybe_with_kind == "KW_WITH" {
+                        let mut source_name: String = tok_value(after_as_token.clone());
+                        let mut lparen_pos: i32 = maybe_with_pos + 1.clone();
+                        let mut override_fields: Vec<String> = Vec::new();
+                        let mut fend: i32 = lparen_pos + 1.clone();
+                        while fend < token_count {
+                            let mut ft: Token = tokens[fend as usize].clone();
+                            let mut fk: String = tok_kind(ft.clone());
+                            let mut fv: String = tok_value(ft.clone());
+                            if fk == "RPAREN" {
+                                fend = fend + 1;
+                                break;
+                            }
+                            if fk == "COMMA" {
+                                fend = fend + 1;
+                                continue;
+                            }
+                            if fk == "IDENT" {
+                                override_fields.push(fv.clone());
+                                fend = fend + 1;
+                            }
+                        }
+                        let mut first_field: String = override_fields[0 as usize].clone();
+                        let mut struct_name: String = find_struct_for_field(struct_reg.clone(), first_field.clone());
+                        let mut fields_code: String = s_join_with(override_fields.clone(), ", ".to_string());
+                        let mut is_mut: bool = list_has(mut_names.clone(), value.clone());
+                        let mut mut_kw: String = "".to_string();
+                        if is_mut {
+                            mut_kw = "mut ".to_string();
+                        }
+                        let mut with_code: String = s_join(vec![pad.clone(), "let ".to_string(), mut_kw.clone(), value.clone(), " = ".to_string(), struct_name.clone(), " { ".to_string(), fields_code.clone(), ", ..".to_string(), source_name.clone(), " };\n".to_string()]);
+                        return make_result(with_code.clone(), adv_nl(fend.clone(), tokens.clone()));
+                    }
+                }
             }
             let mut val_r: ParseResult = gen_expr(tokens.clone(), after_as.clone(), ctx.clone());
             let mut val_code: String = pr_code(val_r.clone());

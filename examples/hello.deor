@@ -5,7 +5,10 @@ struct Test
 fn Test increment(Test test)
 	(hello, world) = test
 	world = world + 1
-	return (hello, world)
+	new_world as (hello,world) 
+	world = world + 1
+	set_world as new_world with (world)
+	return set_world
 
 type Squarefeet(int n)
 	n > 0

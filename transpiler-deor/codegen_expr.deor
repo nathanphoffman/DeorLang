@@ -24,6 +24,23 @@ fn string find_struct_for_fields(strList struct_reg, strList fields)
 
 	return "Unknown"
 
+fn string find_struct_for_field(strList struct_reg, string field)
+	int reg_count = len(struct_reg)
+	bool next_is_val = false
+	string cur_name = ""
+	for index in range(reg_count)
+		string item = struct_reg at index
+		if next_is_val
+			strList fields = split(item, ",")
+			bool has_field = list_has(fields, field)
+			if has_field
+				return cur_name
+			next_is_val = false
+		else
+			cur_name = item
+			next_is_val = true
+	return "Unknown"
+
 fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
 
 	strList arg_codes = []

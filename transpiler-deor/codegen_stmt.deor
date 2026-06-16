@@ -6,7 +6,7 @@
 (s_join, s_join_nl, s_join_with, s_cat, str_repeat) in "transpiler-deor/rust_helpers.deor"
 (is_empty, list_has, reg_get, reg_has, reg3_has) in "transpiler-deor/utils.deor"
 (resolve_type) in "transpiler-deor/registry.deor"
-(find_struct_for_fields, gen_call_args, gen_expr) in "transpiler-deor/codegen_expr.deor"
+(find_struct_for_fields, find_struct_for_field, gen_call_args, gen_expr) in "transpiler-deor/codegen_expr.deor"
 
 # === Statement code generation ===
 
@@ -165,6 +165,39 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 			# empty → empty list
 			if after_as_kind is "KW_EMPTY"
 				return make_result(s_join([pad, "let mut ", value, " = Vec::new();\n"]), adv_nl(after_as + 1, tokens))
+			# record update: name as source with (f1, f2, ...)
+			if after_as_kind is "IDENT"
+				int maybe_with_pos = after_as + 1
+				if maybe_with_pos < token_count
+					Token maybe_with_token = tokens at maybe_with_pos
+					string maybe_with_kind = tok_kind(maybe_with_token)
+					if maybe_with_kind is "KW_WITH"
+						string source_name = tok_value(after_as_token)
+						int lparen_pos = maybe_with_pos + 1
+						strList override_fields = []
+						int fend = lparen_pos + 1
+						for if fend < token_count
+							Token ft = tokens at fend
+							string fk = tok_kind(ft)
+							string fv = tok_value(ft)
+							if fk is "RPAREN"
+								fend = fend + 1
+								break
+							if fk is "COMMA"
+								fend = fend + 1
+								continue
+							if fk is "IDENT"
+								override_fields at end = fv
+								fend = fend + 1
+						string first_field = override_fields at 0
+						string struct_name = find_struct_for_field(struct_reg, first_field)
+						string fields_code = s_join_with(override_fields, ", ")
+						bool is_mut = list_has(mut_names, value)
+						string mut_kw = ""
+						if is_mut
+							mut_kw = "mut "
+						string with_code = s_join([pad, "let ", mut_kw, value, " = ", struct_name, " { ", fields_code, ", ..", source_name, " };\n"])
+						return make_result(with_code, adv_nl(fend, tokens))
 			# regular as-binding
 			ParseResult val_r = gen_expr(tokens, after_as, ctx)
 			string val_code = pr_code(val_r)
