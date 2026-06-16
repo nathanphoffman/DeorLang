@@ -2,83 +2,83 @@
 
 fn strList build_struct_reg(tokenList tokens)
 	strList result = []
-	int n = len(tokens)
-	int i = 0
-	for raw_i in range(n)
-		if raw_i < i
+	int token_count = len(tokens)
+	int current_index = 0
+	for raw_i in range(token_count)
+		if raw_i < current_index
 			continue
-		Token tok = tokens at raw_i
-		(kind, value, line) in tok
+		Token token = tokens at raw_i
+		(kind, value, line) in token
 		if kind is "KW_STRUCT"
 			int name_pos = raw_i + 1
-			if name_pos < n
-				Token name_tok = tokens at name_pos
-				string nk = tok_kind(name_tok)
-				string nv = tok_value(name_tok)
-				if nk is "IDENT"
-					string struct_name = nv
-					i = name_pos + 1
+			if name_pos < token_count
+				Token name_token = tokens at name_pos
+				string name_kind = tok_kind(name_token)
+				string name_value = tok_value(name_token)
+				if name_kind is "IDENT"
+					string struct_name = name_value
+					current_index = name_pos + 1
 					# skip NEWLINE and INDENT
-					for si in (i, n)
-						Token st = tokens at si
-						string sk = tok_kind(st)
-						i = si + 1
-						if sk is "INDENT"
+					for skip_index in (current_index, token_count)
+						Token skip_token = tokens at skip_index
+						string skip_kind = tok_kind(skip_token)
+						current_index = skip_index + 1
+						if skip_kind is "INDENT"
 							break
 					# collect field names until DEDENT
 					strList fields = []
 					bool fdone = false
-					for fi in (i, n)
+					for field_index in (current_index, token_count)
 						if fdone
 							continue
-						Token ft = tokens at fi
-						string fk = tok_kind(ft)
-						string fv = tok_value(ft)
-						if fk is "DEDENT"
-							i = fi + 1
+						Token field_token = tokens at field_index
+						string field_kind = tok_kind(field_token)
+						string field_value = tok_value(field_token)
+						if field_kind is "DEDENT"
+							current_index = field_index + 1
 							fdone = true
-						else if fk is "IDENT"
-							int fn_pos = fi + 1
-							if fn_pos < n
-								Token fn_tok = tokens at fn_pos
-								string fnk = tok_kind(fn_tok)
-								string fnv = tok_value(fn_tok)
-								if fnk is "IDENT"
-									fields at end = fnv
-									i = fn_pos + 1
+						else if field_kind is "IDENT"
+							int fname_pos = field_index + 1
+							if fname_pos < token_count
+								Token fname_token = tokens at fname_pos
+								string field_name_kind = tok_kind(fname_token)
+								string field_name_value = tok_value(fname_token)
+								if field_name_kind is "IDENT"
+									fields at end = field_name_value
+									current_index = fname_pos + 1
 					result at end = struct_name
 					result at end = s_join_with(fields, ",")
 	return result
 
 fn strList build_shape_reg(tokenList tokens)
 	strList result = []
-	int n = len(tokens)
-	for i in range(n)
-		Token tok = tokens at i
-		(kind, value, line) in tok
+	int token_count = len(tokens)
+	for index in range(token_count)
+		Token token = tokens at index
+		(kind, value, line) in token
 		if kind is "KW_SHAPE"
-			int npos = i + 1
-			int tpos = i + 5
-			if tpos < n
-				Token name_tok = tokens at npos
-				Token elem_tok = tokens at tpos
-				string shape_name = tok_value(name_tok)
-				string elem_type = tok_value(elem_tok)
+			int name_pos = index + 1
+			int elem_pos = index + 5
+			if elem_pos < token_count
+				Token name_token = tokens at name_pos
+				Token elem_token = tokens at elem_pos
+				string shape_name = tok_value(name_token)
+				string elem_type = tok_value(elem_token)
 				result at end = shape_name
 				result at end = elem_type
 	return result
 
 fn strList build_enum_reg(tokenList tokens)
 	strList result = []
-	int n = len(tokens)
-	for i in range(n)
-		Token tok = tokens at i
-		(kind, value, line) in tok
+	int token_count = len(tokens)
+	for index in range(token_count)
+		Token token = tokens at index
+		(kind, value, line) in token
 		if kind is "KW_ENUM"
-			int npos = i + 1
-			if npos < n
-				Token name_tok = tokens at npos
-				string enum_name = tok_value(name_tok)
+			int name_pos = index + 1
+			if name_pos < token_count
+				Token name_token = tokens at name_pos
+				string enum_name = tok_value(name_token)
 				string rust_name = pascal_case(enum_name)
 				result at end = enum_name
 				result at end = rust_name
@@ -86,68 +86,68 @@ fn strList build_enum_reg(tokenList tokens)
 
 fn strList build_variant_reg(tokenList tokens, strList enum_reg)
 	strList result = []
-	int n = len(tokens)
-	int i = 0
-	for raw_i in range(n)
-		if raw_i < i
+	int token_count = len(tokens)
+	int current_index = 0
+	for raw_i in range(token_count)
+		if raw_i < current_index
 			continue
-		Token tok = tokens at raw_i
-		(kind, value, line) in tok
+		Token token = tokens at raw_i
+		(kind, value, line) in token
 		if kind is "KW_ENUM"
-			int npos = raw_i + 1
-			if npos < n
-				Token name_tok = tokens at npos
-				string enum_name = tok_value(name_tok)
+			int name_pos = raw_i + 1
+			if name_pos < token_count
+				Token name_token = tokens at name_pos
+				string enum_name = tok_value(name_token)
 				string rust_name = reg_get(enum_reg, enum_name)
-				i = npos + 1
+				current_index = name_pos + 1
 				# skip to INDENT
-				for si in (i, n)
-					Token st = tokens at si
-					string sk = tok_kind(st)
-					i = si + 1
-					if sk is "INDENT"
+				for skip_index in (current_index, token_count)
+					Token skip_token = tokens at skip_index
+					string skip_kind = tok_kind(skip_token)
+					current_index = skip_index + 1
+					if skip_kind is "INDENT"
 						break
 				# collect variants until DEDENT
 				bool vdone = false
-				for vi in (i, n)
+				for variant_index in (current_index, token_count)
 					if vdone
 						continue
-					Token vt = tokens at vi
-					string vk = tok_kind(vt)
-					string vv = tok_value(vt)
-					if vk is "DEDENT"
-						i = vi + 1
+					Token variant_token = tokens at variant_index
+					string variant_kind = tok_kind(variant_token)
+					string variant_value = tok_value(variant_token)
+					if variant_kind is "DEDENT"
+						current_index = variant_index + 1
 						vdone = true
-					else if vk is "IDENT"
-						result at end = vv
+					else if variant_kind is "IDENT"
+						result at end = variant_value
 						result at end = rust_name
-						i = vi + 1
+						current_index = variant_index + 1
 	return result
 
 # === Type resolution ===
 
-fn string resolve_type(string t, strList shape_reg, strList enum_reg)
-	string enum_rust = reg_get(enum_reg, t)
+fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
+	string enum_rust = reg_get(enum_reg, type_name)
 	if not is_empty(enum_rust)
 		return enum_rust
-	string elem_type = reg_get(shape_reg, t)
+	string elem_type = reg_get(shape_reg, type_name)
 	if not is_empty(elem_type)
 		string rust_elem = render_rust_type(elem_type)
 		return s_join(["Vec<", rust_elem, ">"])
-	return render_rust_type(t)
+	return render_rust_type(type_name)
 
 # === Mutability pre-scan ===
 
 fn int find_block_end(tokenList tokens, int indent_pos)
-	int n = len(tokens)
+	int token_count = len(tokens)
 	int depth = 1
 	int result = indent_pos
 	bool done = false
 	int start = indent_pos + 1
-	for raw_i in (start, n)
+	for raw_i in (start, token_count)
 		if not done
-			Token tok = tokens at raw_i
-			(kind, value, line) in tok
+			Token token = tokens at raw_i
+			(kind, value, line) in token
 			if kind is "INDENT"
 				depth = depth + 1
 			else if kind is "DEDENT"
@@ -160,15 +160,15 @@ fn int find_block_end(tokenList tokens, int indent_pos)
 fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 	strList result = []
 	for raw_i in (start, end_pos)
-		Token tok = tokens at raw_i
-		(kind, value, line) in tok
+		Token token = tokens at raw_i
+		(kind, value, line) in token
 		if kind is "EQUALS"
 			int prev_pos = raw_i - 1
 			if prev_pos >= start
-				Token prev_tok = tokens at prev_pos
-				string pk = tok_kind(prev_tok)
-				string pv = tok_value(prev_tok)
-				if pk is "IDENT"
-					if not list_has(result, pv)
-						result at end = pv
+				Token prev_token = tokens at prev_pos
+				string prev_kind = tok_kind(prev_token)
+				string prev_value = tok_value(prev_token)
+				if prev_kind is "IDENT"
+					if not list_has(result, prev_value)
+						result at end = prev_value
 	return result

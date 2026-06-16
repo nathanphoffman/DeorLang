@@ -2,13 +2,13 @@
 
 fn int count_tabs(string line)
 	strList chars = chars_of(line)
-	int n = len(chars)
+	int char_count = len(chars)
 	int count = 0
 	bool counting = true
-	for i in range(n)
+	for index in range(char_count)
 		if counting
-			string c = chars at i
-			if c is "\t"
+			string character = chars at index
+			if character is "\t"
 				count = count + 1
 			else
 				counting = false
@@ -49,7 +49,7 @@ fn tokenList tokenize(string source)
 			indent_stack at end = int_to_str(indent)
 		else
 			bool dedenting = indent < top
-			for di in range(64)
+			for dedent_index in range(64)
 				if dedenting
 					int new_slen = len(indent_stack)
 					int new_top_idx = new_slen - 1
@@ -68,21 +68,21 @@ fn tokenList tokenize(string source)
 			strList rust_lines = []
 			int rli_start = raw_li + 1
 			for rli in (rli_start, n_lines)
-				string rl = lines at rli
-				int rl_indent = count_tabs(rl)
-				string rl_stripped = trim(rl)
+				string rust_line = lines at rli
+				int rl_indent = count_tabs(rust_line)
+				string rl_stripped = trim(rust_line)
 				if is_empty(rl_stripped)
 					rust_lines at end = ""
 					skip = skip + 1
 				else if rl_indent >= rust_base
-					string rl_content = str_from(rl, rust_base)
+					string rl_content = str_from(rust_line, rust_base)
 					rust_lines at end = rtrim(rl_content)
 					skip = skip + 1
 				else
 					break
 			# trim trailing empty lines
 			bool trimming = true
-			for ti in range(128)
+			for trim_index in range(128)
 				if trimming
 					int rl_len = len(rust_lines)
 					if rl_len > 0
@@ -99,83 +99,83 @@ fn tokenList tokenize(string source)
 
 		# scan content characters for tokens
 		strList chars = chars_of(content)
-		int cn = len(chars)
-		int ci = 0
+		int char_count = len(chars)
+		int char_index = 0
 
-		for raw_ci in range(cn)
-			if raw_ci < ci
+		for raw_ci in range(char_count)
+			if raw_ci < char_index
 				continue
 
-			string c = chars at raw_ci
+			string character = chars at raw_ci
 
-			if c is " "
-				ci = raw_ci + 1
+			if character is " "
+				char_index = raw_ci + 1
 				continue
 
 			# comment: skip rest of line
-			if c is "#"
-				ci = cn
+			if character is "#"
+				char_index = char_count
 				continue
 
 			# string literal
-			if c is "\""
+			if character is "\""
 				string val = ""
 				bool escape_next = false
 				int str_start = raw_ci + 1
-				ci = raw_ci + 1
-				for sj in (str_start, cn)
-					string sc = chars at sj
+				char_index = raw_ci + 1
+				for string_index in (str_start, char_count)
+					string string_char = chars at string_index
 					if escape_next
-						if sc is "n"
+						if string_char is "n"
 							val = s_cat(val, "\n")
-						else if sc is "t"
+						else if string_char is "t"
 							val = s_cat(val, "\t")
-						else if sc is "\\"
+						else if string_char is "\\"
 							val = s_cat(val, "\\")
-						else if sc is "\""
+						else if string_char is "\""
 							val = s_cat(val, "\"")
 						else
 							val = s_cat(val, "\\")
-							val = s_cat(val, sc)
+							val = s_cat(val, string_char)
 						escape_next = false
-						ci = sj + 1
-					else if sc is "\\"
+						char_index = string_index + 1
+					else if string_char is "\\"
 						escape_next = true
-						ci = sj + 1
-					else if sc is "\""
-						ci = sj + 1
+						char_index = string_index + 1
+					else if string_char is "\""
+						char_index = string_index + 1
 						break
 					else
-						val = s_cat(val, sc)
-						ci = sj + 1
+						val = s_cat(val, string_char)
+						char_index = string_index + 1
 				tokens at end = make_token("STRING", val, cur_line)
 				continue
 
 			# integer literal
-			if is_digit(c)
-				string num = s_cat("", c)
+			if is_digit(character)
+				string num = s_cat("", character)
 				int num_start = raw_ci + 1
-				ci = raw_ci + 1
-				for nj in (num_start, cn)
-					string nc = chars at nj
-					if is_digit(nc)
-						num = s_cat(num, nc)
-						ci = nj + 1
+				char_index = raw_ci + 1
+				for number_index in (num_start, char_count)
+					string number_char = chars at number_index
+					if is_digit(number_char)
+						num = s_cat(num, number_char)
+						char_index = number_index + 1
 					else
 						break
 				tokens at end = make_token("INT", num, cur_line)
 				continue
 
 			# identifier or keyword
-			if is_alpha(c)
-				string word = s_cat("", c)
+			if is_alpha(character)
+				string word = s_cat("", character)
 				int word_start = raw_ci + 1
-				ci = raw_ci + 1
-				for wj in (word_start, cn)
-					string wc = chars at wj
-					if is_alnum(wc)
-						word = s_cat(word, wc)
-						ci = wj + 1
+				char_index = raw_ci + 1
+				for word_index in (word_start, char_count)
+					string word_char = chars at word_index
+					if is_alnum(word_char)
+						word = s_cat(word, word_char)
+						char_index = word_index + 1
 					else
 						break
 				tokens at end = make_token(word_to_kind(word), word, cur_line)
@@ -184,52 +184,52 @@ fn tokenList tokenize(string source)
 			# two-char operators
 			int peek_idx = raw_ci + 1
 			string peek = ""
-			if peek_idx < cn
+			if peek_idx < char_count
 				peek = chars at peek_idx
 
-			if c is ">" and peek is "="
+			if character is ">" and peek is "="
 				tokens at end = make_token("GTE", ">=", cur_line)
-				ci = raw_ci + 2
+				char_index = raw_ci + 2
 				continue
-			if c is "<" and peek is "="
+			if character is "<" and peek is "="
 				tokens at end = make_token("LTE", "<=", cur_line)
-				ci = raw_ci + 2
+				char_index = raw_ci + 2
 				continue
 
 			# single-char tokens
-			if c is "+"
+			if character is "+"
 				tokens at end = make_token("PLUS", "+", cur_line)
-			else if c is "-"
+			else if character is "-"
 				tokens at end = make_token("MINUS", "-", cur_line)
-			else if c is "*"
+			else if character is "*"
 				tokens at end = make_token("STAR", "*", cur_line)
-			else if c is "/"
+			else if character is "/"
 				tokens at end = make_token("SLASH", "/", cur_line)
-			else if c is "%"
+			else if character is "%"
 				tokens at end = make_token("PERCENT", "%", cur_line)
-			else if c is "="
+			else if character is "="
 				tokens at end = make_token("EQUALS", "=", cur_line)
-			else if c is ">"
+			else if character is ">"
 				tokens at end = make_token("GT", ">", cur_line)
-			else if c is "<"
+			else if character is "<"
 				tokens at end = make_token("LT", "<", cur_line)
-			else if c is "("
+			else if character is "("
 				tokens at end = make_token("LPAREN", "(", cur_line)
-			else if c is ")"
+			else if character is ")"
 				tokens at end = make_token("RPAREN", ")", cur_line)
-			else if c is "["
+			else if character is "["
 				tokens at end = make_token("LBRACKET", "[", cur_line)
-			else if c is "]"
+			else if character is "]"
 				tokens at end = make_token("RBRACKET", "]", cur_line)
-			else if c is ","
+			else if character is ","
 				tokens at end = make_token("COMMA", ",", cur_line)
-			ci = raw_ci + 1
+			char_index = raw_ci + 1
 
 		tokens at end = make_token("NEWLINE", "", cur_line)
 
 	# emit remaining DEDENTs
 	int final_stack_len = len(indent_stack)
-	for fi in (1, final_stack_len)
+	for final_index in (1, final_stack_len)
 		tokens at end = make_token("DEDENT", "", cur_line)
 
 	tokens at end = make_token("EOF", "", cur_line)

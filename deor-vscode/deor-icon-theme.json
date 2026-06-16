@@ -1,0 +1,13 @@
+{
+  "iconDefinitions": {
+    "_deor_file": {
+      "iconPath": "./icons/reddeer.png"
+    }
+  },
+  "fileExtensions": {
+    "deor": "_deor_file"
+  },
+  "languageIds": {
+    "deor": "_deor_file"
+  }
+}

@@ -14,62 +14,62 @@ fn tokenList collect_all_tokens(string path)
 	tokenList raw = tokenize(source)
 	tokenList result = []
 
-	int n = len(raw)
+	int token_count = len(raw)
 	int pos = 0
 	int depth = 0
 
-	for ci in range(65536)
-		if pos >= n
+	for iter in range(65536)
+		if pos >= token_count
 			break
 
-		Token tok = raw at pos
-		string k = tok_kind(tok)
+		Token token = raw at pos
+		string current_kind = tok_kind(token)
 
-		if k is "EOF"
+		if current_kind is "EOF"
 			break
-			
-		if k is "INDENT"
+
+		if current_kind is "INDENT"
 			depth = depth + 1
-			result at end = tok
+			result at end = token
 			pos = pos + 1
 			continue
 
-		if k is "DEDENT"
+		if current_kind is "DEDENT"
 			depth = depth - 1
-			result at end = tok
+			result at end = token
 			pos = pos + 1
 			continue
 
 		# import: (names) in "path" — only at top level (depth 0)
 		bool at_top = depth is 0
-		if k is "LPAREN" and at_top
+		if current_kind is "LPAREN" and at_top
 			int scan = pos + 1
-			for si in range(64)
-				if scan >= n
+			for scan_index in range(64)
+				if scan >= token_count
 					break
-				Token st = raw at scan
+				Token scan_token = raw at scan
 				scan = scan + 1
-				bool is_rp = tok_kind(st) is "RPAREN"
+				bool is_rp = tok_kind(scan_token) is "RPAREN"
 				if is_rp
 					break
 			int path_pos = scan + 1
-			if path_pos < n
-				Token in_tok = raw at scan
-				bool is_in = tok_kind(in_tok) is "KW_IN"
+			if path_pos < token_count
+				Token in_token = raw at scan
+				bool is_in = tok_kind(in_token) is "KW_IN"
 				if is_in
-					Token path_tok = raw at path_pos
-					string imp_path = tok_value(path_tok)
+					Token path_token = raw at path_pos
+					string imp_path = tok_value(path_token)
 					tokenList imp_tokens = collect_all_tokens(imp_path)
-					int ilen = len(imp_tokens)
-					for ii in range(ilen)
-						Token it = imp_tokens at ii
-						string ik = tok_kind(it)
-						bool ik_is_eof = ik is "EOF"
-						if not ik_is_eof
-							result at end = it
+					int import_len = len(imp_tokens)
+					for import_index in range(import_len)
+						Token import_token = imp_tokens at import_index
+						string import_kind = tok_kind(import_token)
+						bool import_is_eof = import_kind is "EOF"
+						if not import_is_eof
+							result at end = import_token
 					pos = path_pos + 1
 					continue
-		result at end = tok
+		result at end = token
 		pos = pos + 1
 	return result
 
@@ -80,39 +80,39 @@ fn string generate(tokenList tokens)
 	strList variant_reg = build_variant_reg(tokens, enum_reg)
 
 	string output = ""
-	int n = len(tokens)
+	int token_count = len(tokens)
 	int pos = 0
 
-	for gi in range(2048)
-		if pos >= n
+	for iter in range(2048)
+		if pos >= token_count
 			break
-		Token tok = tokens at pos
-		string k = tok_kind(tok)
+		Token token = tokens at pos
+		string current_kind = tok_kind(token)
 
-		if k is "EOF"
+		if current_kind is "EOF"
 			break
-		if k is "NEWLINE"
+		if current_kind is "NEWLINE"
 			pos = pos + 1
 			continue
-		if k is "KW_STRUCT"
-			ParseResult r = gen_struct_decl(tokens, pos)
-			output = s_cat(output, pr_code(r))
-			pos = pr_pos(r)
+		if current_kind is "KW_STRUCT"
+			ParseResult result = gen_struct_decl(tokens, pos)
+			output = s_cat(output, pr_code(result))
+			pos = pr_pos(result)
 			continue
-		if k is "KW_SHAPE"
-			ParseResult r = gen_shape_decl(tokens, pos)
-			output = s_cat(output, pr_code(r))
-			pos = pr_pos(r)
+		if current_kind is "KW_SHAPE"
+			ParseResult result = gen_shape_decl(tokens, pos)
+			output = s_cat(output, pr_code(result))
+			pos = pr_pos(result)
 			continue
-		if k is "KW_ENUM"
-			ParseResult r = gen_enum_decl(tokens, pos)
-			output = s_cat(output, pr_code(r))
-			pos = pr_pos(r)
+		if current_kind is "KW_ENUM"
+			ParseResult result = gen_enum_decl(tokens, pos)
+			output = s_cat(output, pr_code(result))
+			pos = pr_pos(result)
 			continue
-		if k is "KW_FN"
-			ParseResult r = gen_fn_decl(tokens, pos, variant_reg, shape_reg, struct_reg, enum_reg)
-			output = s_cat(output, pr_code(r))
-			pos = pr_pos(r)
+		if current_kind is "KW_FN"
+			ParseResult result = gen_fn_decl(tokens, pos, variant_reg, shape_reg, struct_reg, enum_reg)
+			output = s_cat(output, pr_code(result))
+			pos = pr_pos(result)
 			continue
 		pos = pos + 1
 

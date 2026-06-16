@@ -1,39 +1,39 @@
 # === String utilities ===
 
-fn bool is_empty(string s)
-	int n = len(s)
-	return n is 0
+fn bool is_empty(string source)
+	int length = len(source)
+	return length is 0
 
-fn bool str_eq(string a, string b)
-	return a is b
+fn bool str_eq(string left, string right)
+	return left is right
 
 # === Registry: flat [key, val, key, val, ...] strList pairs ===
 
 fn string reg_get(strList pairs, string key)
-	int n = len(pairs)
-	int i = 0
-	for ri in range(n)
-		if i >= n
+	int pairs_count = len(pairs)
+	int index = 0
+	for iter in range(pairs_count)
+		if index >= pairs_count
 			break
-		int vi = i + 1
-		if vi >= n
+		int value_index = index + 1
+		if value_index >= pairs_count
 			break
-		string k = pairs at i
-		if k is key
-			return pairs at vi
-		i = i + 2
+		string current_key = pairs at index
+		if current_key is key
+			return pairs at value_index
+		index = index + 2
 	return ""
 
 fn bool reg_has(strList pairs, string key)
-	string v = reg_get(pairs, key)
-	if v is ""
+	string value = reg_get(pairs, key)
+	if value is ""
 		return false
 	return true
 
 fn bool list_has(strList items, string val)
-	int n = len(items)
-	for i in range(n)
-		string item = items at i
+	int item_count = len(items)
+	for index in range(item_count)
+		string item = items at index
 		if item is val
 			return true
 	return false
@@ -122,32 +122,32 @@ fn bool is_binary_op(string kind)
 		return true
 	return false
 
-fn string map_op(string op)
-	if op is "is"
+fn string map_op(string operator)
+	if operator is "is"
 		return "=="
-	if op is "is not"
+	if operator is "is not"
 		return "!="
-	if op is "and"
+	if operator is "and"
 		return "&&"
-	if op is "or"
+	if operator is "or"
 		return "||"
-	if op is ">"
+	if operator is ">"
 		return ">"
-	if op is "<"
+	if operator is "<"
 		return "<"
-	if op is ">="
+	if operator is ">="
 		return ">="
-	if op is "<="
+	if operator is "<="
 		return "<="
-	return op
+	return operator
 
-fn string render_rust_type(string t)
-	if t is "int"
+fn string render_rust_type(string type_name)
+	if type_name is "int"
 		return "i32"
-	if t is "string"
+	if type_name is "string"
 		return "String"
-	if t is "bool"
+	if type_name is "bool"
 		return "bool"
-	if t is "float"
+	if type_name is "float"
 		return "f64"
-	return t
+	return type_name

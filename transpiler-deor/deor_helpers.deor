@@ -1,28 +1,28 @@
 
 # === ParseResult helpers ===
 
-fn string pr_code(ParseResult r)
-	(code, new_pos) in r
+fn string pr_code(ParseResult result)
+	(code, new_pos) in result
 	return code
 
-fn int pr_pos(ParseResult r)
-	(code, new_pos) in r
+fn int pr_pos(ParseResult result)
+	(code, new_pos) in result
 	return new_pos
 
 fn ParseResult make_result(string code, int new_pos)
-	r as (code, new_pos)
-	return r
+	result as (code, new_pos)
+	return result
 
 # === Token helpers ===
 
 fn Token make_token(string kind, string value, int line)
-	t as (kind, value, line)
-	return t
+	token as (kind, value, line)
+	return token
 
-fn string tok_kind(Token t)
-	(kind, value, line) in t
+fn string tok_kind(Token token)
+	(kind, value, line) in token
 	return kind
 
-fn string tok_value(Token t)
-	(kind, value, line) in t
+fn string tok_value(Token token)
+	(kind, value, line) in token
 	return value

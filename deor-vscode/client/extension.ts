@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { ExtensionContext } from 'vscode';
+import { ExtensionContext, workspace } from 'vscode';
 import {
   LanguageClient,
   LanguageClientOptions,
@@ -23,6 +23,11 @@ export function activate(context: ExtensionContext): void {
 
   client = new LanguageClient('deor', 'Deor Language Server', serverOptions, clientOptions);
   client.start();
+
+  if (!context.globalState.get('iconThemeSet')) {
+    workspace.getConfiguration().update('workbench.iconTheme', 'deor-icons', true);
+    context.globalState.update('iconThemeSet', true);
+  }
 }
 
 export function deactivate(): Thenable<void> | undefined {
