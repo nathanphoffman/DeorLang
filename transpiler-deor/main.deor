@@ -7,77 +7,7 @@ import () in "transpiler-deor/registry.deor"
 import () in "transpiler-deor/codegen_expr.deor"
 import () in "transpiler-deor/codegen_stmt.deor"
 import () in "transpiler-deor/codegen_decl.deor"
-
-fn tokenList collect_all_tokens(string path)
-
-	string source = read_file(path)
-	tokenList raw = tokenize(source)
-	tokenList result = []
-
-	int token_count = len(raw)
-	int pos = 0
-	int depth = 0
-
-	for if true
-		if pos >= token_count
-			break
-
-		Token token = raw at pos
-		string current_kind = tok_kind(token)
-
-		if current_kind is "EOF"
-			break
-
-		if current_kind is "INDENT"
-			depth = depth + 1
-			result at end = token
-			pos = pos + 1
-			continue
-
-		if current_kind is "DEDENT"
-			depth = depth - 1
-			result at end = token
-			pos = pos + 1
-			continue
-
-		# import: (names) in "path" — only at root level (depth 0)
-		bool at_root = depth is 0
-
-		if current_kind is "LPAREN" and at_root
-
-			int scan = pos + 1
-
-			for if scan < token_count
-				Token scan_token = raw at scan
-				scan = scan + 1
-
-				bool is_right_paren = tok_kind(scan_token) is "RPAREN"
-				if is_right_paren
-					break
-
-			int path_pos = scan + 1
-			if path_pos < token_count
-				Token in_token = raw at scan
-				bool is_in = tok_kind(in_token) is "KW_IN"
-
-				if is_in
-					Token path_token = raw at path_pos
-					string imp_path = tok_value(path_token)
-					tokenList imp_tokens = collect_all_tokens(imp_path)
-					int import_len = len(imp_tokens)
-					for import_index in range(import_len)
-						Token import_token = imp_tokens at import_index
-						string import_kind = tok_kind(import_token)
-						bool import_is_eof = import_kind is "EOF"
-						if not import_is_eof
-							result at end = import_token
-					pos = path_pos + 1
-					continue
-
-		result at end = token
-		pos = pos + 1
-
-	return result
+import () in "transpiler-deor/importer.deor"
 
 fn string generate(tokenList tokens)
 	strList struct_reg = build_struct_reg(tokens)
@@ -92,6 +22,7 @@ fn string generate(tokenList tokens)
 	for if true
 		if pos >= token_count
 			break
+
 		Token token = tokens at pos
 		string current_kind = tok_kind(token)
 
@@ -135,7 +66,7 @@ fn main()
 		string input_path = args at 0
 		string output_path = args at 1
 
-		tokenList tokens = collect_all_tokens(input_path)
+		tokenList tokens = collect_all_tokens_with_all_imports(input_path)
 
 		string rust_code = generate(tokens)
 		write_file(output_path, rust_code)

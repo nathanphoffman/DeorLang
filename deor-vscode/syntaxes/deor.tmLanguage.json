@@ -14,7 +14,6 @@
     { "include": "#keywords-storage" },
     { "include": "#keywords-control" },
     { "include": "#keywords-other" },
-    { "include": "#mutation-verbs" },
     { "include": "#builtin-types" },
     { "include": "#constants" },
     { "include": "#number" },
@@ -80,11 +79,7 @@
     },
     "keywords-other": {
       "name": "keyword.other.deor",
-      "match": "\\b(as|in|with|is|and|or|not|avow|of|to|rust|deps|end|import)\\b"
-    },
-    "mutation-verbs": {
-      "name": "keyword.operator.mutation.deor",
-      "match": "\\b(insert|remove|at)\\b"
+      "match": "\\b(as|in|with|is|and|or|not|avow|of|to|rust|deps|end|import|insert|remove|at)\\b"
     },
     "builtin-types": {
       "name": "support.type.deor",

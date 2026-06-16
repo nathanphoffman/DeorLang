@@ -1,0 +1,72 @@
+# === Import resolution ===
+
+fn tokenList collect_all_tokens_with_all_imports(string path)
+
+	string source = read_file(path)
+	tokenList source_tokens = tokenize(source)
+	tokenList result = []
+
+	int token_count = len(source_tokens)
+	int pos = 0
+	int depth = 0
+
+	for if true
+		if pos >= token_count
+			break
+
+		Token token = source_tokens at pos
+		string current_kind = tok_kind(token)
+
+		if current_kind is "EOF"
+			break
+
+		if current_kind is "INDENT"
+			depth = depth + 1
+			result at end = token
+			pos = pos + 1
+			continue
+
+		if current_kind is "DEDENT"
+			depth = depth - 1
+			result at end = token
+			pos = pos + 1
+			continue
+
+		# import: (names) in "path" — only at root level (depth 0)
+		bool at_root = depth is 0
+
+		if current_kind is "LPAREN" and at_root
+
+			int scan = pos + 1
+
+			for if scan < token_count
+				Token scan_token = source_tokens at scan
+				scan = scan + 1
+
+				bool is_right_paren = tok_kind(scan_token) is "RPAREN"
+				if is_right_paren
+					break
+
+			int path_pos = scan + 1
+			if path_pos < token_count
+				Token in_token = source_tokens at scan
+				bool is_in = tok_kind(in_token) is "KW_IN"
+
+				if is_in
+					Token path_token = source_tokens at path_pos
+					string imp_path = tok_value(path_token)
+					tokenList imp_tokens = collect_all_tokens(imp_path)
+					int import_len = len(imp_tokens)
+					for import_index in range(import_len)
+						Token import_token = imp_tokens at import_index
+						string import_kind = tok_kind(import_token)
+						bool import_is_eof = import_kind is "EOF"
+						if not import_is_eof
+							result at end = import_token
+					pos = path_pos + 1
+					continue
+
+		result at end = token
+		pos = pos + 1
+
+	return result

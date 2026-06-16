@@ -3,7 +3,7 @@
   "publisher": "local",
   "displayName": "Deor Language",
   "description": "Syntax highlighting and diagnostics for the Deor language (.deor)",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": { "vscode": "^1.82.0" },
   "categories": ["Programming Languages"],
   "activationEvents": ["onLanguage:deor"],
