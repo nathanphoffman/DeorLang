@@ -78,7 +78,7 @@ Record update (`with`) uses `as` — the type is known from the source struct. S
 
 ## Struct Construction
 
-Struct construction always uses `Type name = (fields)`. The type name is mandatory — there is no anonymous struct construction in Deor. Every field must already be a variable in scope matching the field name exactly, in declaration order. No `{}`, no `field: value` pairs.
+Struct construction always uses `Type name = (fields)`. The type name is mandatory — there is no anonymous struct construction in Deor. Every field must already be a variable in scope matching the field name exactly. No `{}`, no `field: value` pairs.
 
 ```
 Squarefeet area = 9
@@ -88,13 +88,13 @@ Room room = (area, name, occupied)
 ```
 
 ```rust
-let area: Option<Squarefeet> = Squarefeet::new(9);
+let area = Squarefeet::new(9);
 let name = "Office".to_string();
 let occupied = true;
 let room = Room { area, name, occupied };
 ```
 
-Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in. Both always follow the struct's declared field order.
+The transpiler matches fields by name, not position — declaration order is not enforced. Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in. Both work with any subset and any order.
 
 If you need a field name that differs from the variable you have, rename it first:
 

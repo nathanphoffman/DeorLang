@@ -1644,6 +1644,27 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, variant_reg: Vec<String>, 
                     let mut rust_type: String = resolve_type(var_type.clone(), shape_reg.clone(), variant_reg.clone());
                     let mut val_token: Token = tokens[val_pos as usize].clone();
                     let mut val_kind: String = tok_kind(val_token.clone());
+                    if val_kind == "LPAREN" {
+                        let mut fields: Vec<String> = Vec::new();
+                        let mut fend: i32 = val_pos + 1.clone();
+                        while fend < token_count {
+                            let mut field_token: Token = tokens[fend as usize].clone();
+                            let mut field_kind: String = tok_kind(field_token.clone());
+                            let mut field_value: String = tok_value(field_token.clone());
+                            if field_kind == "RPAREN" {
+                                fend = fend + 1;
+                                break;
+                            } else if field_kind == "COMMA" {
+                                fend = fend + 1;
+                            } else if field_kind == "IDENT" {
+                                fields.push(field_value.clone());
+                                fend = fend + 1;
+                            }
+                        }
+                        let mut fields_code: String = s_join_with(fields.clone(), ", ".to_string());
+                        let mut nl_r: ParseResult = skip_newline(tokens.clone(), fend.clone());
+                        return make_result(s_join(vec![pad.clone(), "let ".to_string(), var_name.clone(), " = ".to_string(), var_type.clone(), " { ".to_string(), fields_code.clone(), " };\n".to_string()]), pr_pos(nl_r.clone()));
+                    }
                     if val_kind == "LBRACKET" {
                         let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), variant_reg.clone(), shape_reg.clone());
                         let mut val_code: String = pr_code(val_r.clone());

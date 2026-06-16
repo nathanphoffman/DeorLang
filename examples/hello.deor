@@ -12,6 +12,7 @@ fn void main()
 	print("test")
 
 	int sum = x + y
+
 	if sum > 40
 		print(y)
 	else if sum > 25
@@ -22,8 +23,13 @@ fn void main()
 	for i in range(2,12)
 		print(i)
 
-	int hello = 1
-	int world = 2
+	hello as 1
+	world as 2
 	t as (hello,world)
 
-	Squarefeet sqft = 9
+	(world) in t
+
+	print(world)
+
+	Squarefeet sqft
+	

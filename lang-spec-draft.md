@@ -184,17 +184,30 @@ total += 1;
 
 ### Field extraction
 
+Parentheses are always required, even for a single field.
+
 ```
-area in room
+(area) in room
 (area, name) in room
 ```
 
 ```rust
-let area = room.area;
-let Room { area, name, .. } = room;
+let area = room.area.clone();
+let area = room.area.clone();
+let name = room.name.clone();
 ```
 
-**Conversion notes:** parentheses are used for multi-name extraction even though single-name extraction doesn't strictly need them — kept for visual consistency. The generated `.area` access is fine in Rust output even though the *source* language has no dot syntax — "no dots" is a source-grammar rule, not a constraint on generated code.
+**Partial extraction is allowed** — you can extract a subset of a struct's fields in any order. The order in the parens determines the order the bindings are emitted, not the struct's field declaration order.
+
+**Shadowing is allowed and intentional** — if a name being extracted already exists in scope, the new binding silently shadows it. This is standard Rust `let` rebinding behavior and is considered correct in Deor.
+
+```
+world as 2
+(world) in t
+# world now refers to t.world, not 2
+```
+
+**Conversion notes:** each extracted field becomes its own `let field = src.field.clone();` binding. The generated `.field` access is fine in Rust output even though the source language has no dot syntax — "no dots" is a source-grammar rule, not a constraint on generated code.
 
 ### Collection iteration
 
