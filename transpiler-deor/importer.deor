@@ -115,14 +115,16 @@ fn tokenList collect_imports_from_raw(tokenList source_tokens)
 				if is_in
 					Token path_token = source_tokens at path_pos
 					string sub_path = tok_value(path_token)
-					tokenList sub_tokens = load_named(sub_path, sub_names)
-					int sub_len = len(sub_tokens)
-					for sub_i in range(sub_len)
-						Token sub_tok = sub_tokens at sub_i
-						string sub_kind = tok_kind(sub_tok)
-						bool sub_is_eof = sub_kind is "EOF"
-						if not sub_is_eof
-							result at end = sub_tok
+					int name_count = len(sub_names)
+					if name_count > 0
+						tokenList sub_tokens = load_named(sub_path, sub_names)
+						int sub_len = len(sub_tokens)
+						for sub_i in range(sub_len)
+							Token sub_tok = sub_tokens at sub_i
+							string sub_kind = tok_kind(sub_tok)
+							bool sub_is_eof = sub_kind is "EOF"
+							if not sub_is_eof
+								result at end = sub_tok
 					pos = path_pos + 1
 					continue
 		pos = pos + 1
@@ -270,14 +272,16 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 				if is_in
 					Token path_token = source_tokens at path_pos
 					string imp_path = tok_value(path_token)
-					tokenList imp_tokens = load_named(imp_path, import_names)
-					int import_len = len(imp_tokens)
-					for import_index in range(import_len)
-						Token import_token = imp_tokens at import_index
-						string import_kind = tok_kind(import_token)
-						bool import_is_eof = import_kind is "EOF"
-						if not import_is_eof
-							result at end = import_token
+					int name_count = len(import_names)
+					if name_count > 0
+						tokenList imp_tokens = load_named(imp_path, import_names)
+						int import_len = len(imp_tokens)
+						for import_index in range(import_len)
+							Token import_token = imp_tokens at import_index
+							string import_kind = tok_kind(import_token)
+							bool import_is_eof = import_kind is "EOF"
+							if not import_is_eof
+								result at end = import_token
 					pos = path_pos + 1
 					continue
 

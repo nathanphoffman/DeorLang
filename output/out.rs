@@ -2130,14 +2130,17 @@ fn collect_imports_from_raw(source_tokens: Vec<Token>) -> Vec<Token> {
                 if is_in {
                     let mut path_token: Token = source_tokens[path_pos as usize].clone();
                     let mut sub_path: String = tok_value(path_token.clone());
-                    let mut sub_tokens: Vec<Token> = load_named(sub_path.clone(), sub_names.clone());
-                    let mut sub_len: i32 = sub_tokens.len() as i32;
-                    for sub_i in 0..sub_len {
-                        let mut sub_tok: Token = sub_tokens[sub_i as usize].clone();
-                        let mut sub_kind: String = tok_kind(sub_tok.clone());
-                        let mut sub_is_eof: bool = sub_kind == "EOF".clone();
-                        if !sub_is_eof {
-                            result.push(sub_tok.clone());
+                    let mut name_count: i32 = sub_names.len() as i32;
+                    if name_count > 0 {
+                        let mut sub_tokens: Vec<Token> = load_named(sub_path.clone(), sub_names.clone());
+                        let mut sub_len: i32 = sub_tokens.len() as i32;
+                        for sub_i in 0..sub_len {
+                            let mut sub_tok: Token = sub_tokens[sub_i as usize].clone();
+                            let mut sub_kind: String = tok_kind(sub_tok.clone());
+                            let mut sub_is_eof: bool = sub_kind == "EOF".clone();
+                            if !sub_is_eof {
+                                result.push(sub_tok.clone());
+                            }
                         }
                     }
                     pos = path_pos + 1;
@@ -2304,14 +2307,17 @@ fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
                 if is_in {
                     let mut path_token: Token = source_tokens[path_pos as usize].clone();
                     let mut imp_path: String = tok_value(path_token.clone());
-                    let mut imp_tokens: Vec<Token> = load_named(imp_path.clone(), import_names.clone());
-                    let mut import_len: i32 = imp_tokens.len() as i32;
-                    for import_index in 0..import_len {
-                        let mut import_token: Token = imp_tokens[import_index as usize].clone();
-                        let mut import_kind: String = tok_kind(import_token.clone());
-                        let mut import_is_eof: bool = import_kind == "EOF".clone();
-                        if !import_is_eof {
-                            result.push(import_token.clone());
+                    let mut name_count: i32 = import_names.len() as i32;
+                    if name_count > 0 {
+                        let mut imp_tokens: Vec<Token> = load_named(imp_path.clone(), import_names.clone());
+                        let mut import_len: i32 = imp_tokens.len() as i32;
+                        for import_index in 0..import_len {
+                            let mut import_token: Token = imp_tokens[import_index as usize].clone();
+                            let mut import_kind: String = tok_kind(import_token.clone());
+                            let mut import_is_eof: bool = import_kind == "EOF".clone();
+                            if !import_is_eof {
+                                result.push(import_token.clone());
+                            }
                         }
                     }
                     pos = path_pos + 1;
