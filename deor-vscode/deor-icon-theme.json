@@ -2,8 +2,12 @@
   "iconDefinitions": {
     "_deor_file": {
       "iconPath": "./icons/reddeer.png"
+    },
+    "_file": {
+      "iconPath": "./icons/file.svg"
     }
   },
+  "file": "_file",
   "fileExtensions": {
     "deor": "_deor_file"
   },
