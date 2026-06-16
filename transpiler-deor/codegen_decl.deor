@@ -81,7 +81,34 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 	string decl = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ", rust_name, " {\n", variants_code, "\n}\n\n"])
 	return make_result(decl, cur)
 
-fn ParseResult gen_fn_decl(tokenList tokens, int pos, strList variant_reg, strList shape_reg, strList struct_reg, strList enum_reg)
+fn ParseResult gen_type_decl(tokenList tokens, int pos, strList variant_reg, strList shape_reg)
+	int token_count = len(tokens)
+	int name_pos = pos + 1
+	Token name_token = tokens at name_pos
+	string type_name = tok_value(name_token)
+	int param_type_pos = pos + 3
+	Token param_type_token = tokens at param_type_pos
+	string param_type = tok_value(param_type_token)
+	string rust_param_type = render_rust_type(param_type)
+	int param_name_pos = pos + 4
+	Token param_name_token = tokens at param_name_pos
+	string param_name = tok_value(param_name_token)
+	# pos+5=RPAREN, pos+6=NEWLINE, pos+7=INDENT
+	int body_pos = pos + 8
+	ParseResult pred_r = gen_expr(tokens, body_pos, variant_reg, shape_reg)
+	string pred_code = pr_code(pred_r)
+	int pred_end = pr_pos(pred_r)
+	int cur = pred_end
+	for if cur < token_count
+		Token t = tokens at cur
+		cur = cur + 1
+		if tok_kind(t) is "DEDENT"
+			break
+	string struct_code = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ", type_name, "(", rust_param_type, ");\n\n"])
+	string impl_code = s_join(["impl ", type_name, " {\n    fn new(", param_name, ": ", rust_param_type, ") -> Self {\n        assert!(", pred_code, ", \"invalid ", type_name, ": {}\", ", param_name, ");\n        ", type_name, "(", param_name, ")\n    }\n}\n\n"])
+	return make_result(s_cat(struct_code, impl_code), cur)
+
+fn ParseResult gen_fn_decl(tokenList tokens, int pos, strList variant_reg, strList shape_reg, strList struct_reg, strList enum_reg, strList type_reg)
 	int token_count = len(tokens)
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
 	int cur = pos + 1
@@ -128,7 +155,7 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, strList variant_reg, strLi
 	int body_len = len(body_tokens)
 	strList mut_names = collect_mut_names(body_tokens, 0, body_len - 1)
 	# generate body on the small slice so recursive clones are cheap
-	ParseResult body_r = gen_block(body_tokens, 0, 1, variant_reg, shape_reg, struct_reg, mut_names)
+	ParseResult body_r = gen_block(body_tokens, 0, 1, variant_reg, shape_reg, struct_reg, mut_names, type_reg)
 	string body_code = pr_code(body_r)
 	int body_end = body_start + pr_pos(body_r)
 	string params_code = s_join_with(param_strs, ", ")

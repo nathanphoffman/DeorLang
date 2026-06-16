@@ -30,6 +30,29 @@ fn bool reg_has(strList pairs, string key)
 		return false
 	return true
 
+# === Registry: flat [key, val1, val2, key, val1, val2, ...] triplets ===
+
+fn bool reg3_has(strList pairs, string key)
+	int pairs_count = len(pairs)
+	int index = 0
+	for if index < pairs_count
+		string current_key = pairs at index
+		if current_key is key
+			return true
+		index = index + 3
+	return false
+
+fn string reg3_get(strList pairs, string key)
+	int pairs_count = len(pairs)
+	int index = 0
+	for if index < pairs_count
+		string current_key = pairs at index
+		if current_key is key
+			int val_index = index + 1
+			return pairs at val_index
+		index = index + 3
+	return ""
+
 fn bool list_has(strList items, string val)
 	int item_count = len(items)
 	for index in range(item_count)
@@ -75,6 +98,8 @@ fn string word_to_kind(string word)
 		return "KW_NONE"
 	if word is "avow"
 		return "KW_AVOW"
+	if word is "type"
+		return "KW_TYPE"
 	if word is "struct"
 		return "KW_STRUCT"
 	if word is "shape"

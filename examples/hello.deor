@@ -1,3 +1,10 @@
+struct Test
+	int hello
+	int world
+
+type Squarefeet(int n)
+	n > 0
+
 fn void main()
 	x as 10
 	y as 20
@@ -14,3 +21,9 @@ fn void main()
 
 	for i in range(2,12)
 		print(i)
+
+	int hello = 1
+	int world = 2
+	t as (hello,world)
+
+	Squarefeet sqft = 9

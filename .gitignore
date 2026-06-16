@@ -6,3 +6,4 @@ transpiler-ts/node_modules/
 
 # generated rust files and compiled binaries
 output/
+!output/out.rs
