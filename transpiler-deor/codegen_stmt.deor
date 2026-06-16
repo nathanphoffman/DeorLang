@@ -259,6 +259,16 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, strList variant_re
 		return gen_for(tokens, pos, depth, variant_reg, shape_reg, struct_reg, mut_names)
 
 	if kind is "LPAREN"
+		int peek_pos = pos + 1
+		if peek_pos < token_count
+			Token peek_token = tokens at peek_pos
+			if tok_kind(peek_token) is "KW_AVOW"
+				int expr_pos = peek_pos + 1
+				ParseResult expr_r = gen_expr(tokens, expr_pos, variant_reg, shape_reg)
+				string expr_code = pr_code(expr_r)
+				int after_rparen = pr_pos(expr_r) + 1
+				ParseResult nl_r = skip_newline(tokens, after_rparen)
+				return make_result(s_join([pad, expr_code, ".unwrap();\n"]), pr_pos(nl_r))
 		return gen_destructure(tokens, pos, depth, variant_reg, shape_reg)
 
 	if kind is "IDENT"

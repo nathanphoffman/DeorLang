@@ -23,11 +23,15 @@ fn ParseResult collect_struct_fields(tokenList tokens, int start)
 			break
 		else if field_kind is "IDENT"
 			int fname_pos = field_index + 1
+
+			# Should consider throwing on an else, this should always pass
 			if fname_pos < token_count
 				Token fname_token = tokens at fname_pos
+
 				if tok_kind(fname_token) is "IDENT"
 					fields at end = tok_value(fname_token)
 					cur = fname_pos + 1
+
 	return make_result(s_join_with(fields, ","), cur)
 
 fn strList build_struct_reg(tokenList tokens)

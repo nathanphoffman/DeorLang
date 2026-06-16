@@ -73,6 +73,8 @@ fn string word_to_kind(string word)
 		return "KW_FALSE"
 	if word is "none"
 		return "KW_NONE"
+	if word is "avow"
+		return "KW_AVOW"
 	if word is "struct"
 		return "KW_STRUCT"
 	if word is "shape"

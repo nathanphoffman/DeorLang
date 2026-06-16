@@ -124,6 +124,17 @@ fn ParseResult gen_primary(tokenList tokens, int pos, strList variant_reg, strLi
 		int after_bracket = items_pos + 1
 		return make_result(list_code, after_bracket)
 
+	if kind is "LPAREN"
+		int peek_pos = pos + 1
+		if peek_pos < token_count
+			Token peek_token = tokens at peek_pos
+			if tok_kind(peek_token) is "KW_AVOW"
+				int expr_pos = peek_pos + 1
+				ParseResult expr_r = gen_expr(tokens, expr_pos, variant_reg, shape_reg)
+				string expr_code = pr_code(expr_r)
+				int after_rparen = pr_pos(expr_r) + 1
+				return make_result(s_join([expr_code, ".unwrap()"]), after_rparen)
+
 	if kind is "KW_NOT"
 		int operand_pos = pos + 1
 		ParseResult operand_r = gen_primary(tokens, operand_pos, variant_reg, shape_reg)
