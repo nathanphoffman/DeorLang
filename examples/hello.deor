@@ -7,7 +7,9 @@ type Squarefeet(int n)
 
 fn Test say_hi(Test test)
 	(hello) in test
-	print("hi")
+	string message = "hi"
+	message = message + " there"
+	print(message + " here")
 	print(hello)
 	world as 10
 	return (hello,world)
