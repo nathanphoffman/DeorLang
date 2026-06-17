@@ -28,15 +28,9 @@ This keeps the compiled output lean and makes dependencies explicit.
 
 ---
 
-## Wildcard Import
+## No Wildcard Imports
 
-Empty parens import all top-level declarations from the file — functions, structs, enums, and shapes:
-
-```
-import () in "./utils"
-```
-
-Use this when you need everything the module provides, or during early development before dependencies are known.
+No wildcard imports are supported, it is anti-Deorian
 
 ---
 

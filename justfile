@@ -6,9 +6,9 @@ run file="examples/hello.deor":
 
 run-deor file="examples/hello.deor":
     ./output/out transpiler-deor/main.deor output/out.rs
-    rustc output/out.rs -o output/out
+    rustc -A warnings output/out.rs -o output/out
     ./output/out {{file}} output/run.rs
-    rustc output/run.rs -o output/run
+    rustc -A warnings output/run.rs -o output/run
     ./output/run
 
 run-ts file="examples/hello.deor":
