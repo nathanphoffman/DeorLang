@@ -5,9 +5,11 @@
 
 # === Import resolution ===
 
-# Filter a raw token stream to only named declarations.
-# Skips import statements and any other non-declaration tokens.
-# If names is empty, includes all declarations.
+# Given a raw token stream, returns only the declaration tokens (fn, struct, enum, shape)
+# that match the requested name list. If `names` is empty, all declarations are included.
+# Correctly handles both block declarations (fn/struct/enum with INDENT/DEDENT bodies)
+# and line declarations (shape, which end at NEWLINE). Implements named imports:
+# `(fn1, Struct2) in "file.deor"` expands to only those two declarations from the file.
 fn tokenList filter_by_names(tokenList tokens, strList names)
 	int names_count = len(names)
 	tokenList result = []
@@ -72,8 +74,10 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 			cur = cur + 1
 	return result
 
-# Scan raw tokens for import statements and resolve them via load_named.
-# Returns the combined support tokens from all imports in this file.
+# Scans a raw token stream for import statements (`(names) in "path"`) at root depth
+# and recursively loads each one via load_named. Returns the combined token stream of
+# all transitively imported declarations, stripping import lines and terminal EOFs.
+# Used to gather support tokens before loading a file's own declarations.
 fn tokenList collect_imports_from_raw(tokenList source_tokens)
 	tokenList result = []
 	int token_count = len(source_tokens)
@@ -134,9 +138,12 @@ fn tokenList collect_imports_from_raw(tokenList source_tokens)
 		pos = pos + 1
 	return result
 
-# Load a file for import: resolve its own imports as support, then include
-# ALL of the file's own declarations. The names list is for documentation
-# only — intra-file dependencies require the full own-declaration set.
+# Loads a single Deor source file and resolves its imports. First calls
+# collect_imports_from_raw to gather all support tokens from the file's transitive
+# imports, then calls filter_by_names with an empty list to include all of the file's
+# own declarations. Concatenates support + own and returns them. The `names` parameter
+# documents which symbols the caller wanted but does not filter here — intra-file
+# dependencies require the full own-declaration set to be present.
 fn tokenList load_named(string path, strList names)
 	string source = f_read(path)
 	tokenList raw = tokenize(source)
@@ -151,8 +158,10 @@ fn tokenList load_named(string path, strList names)
 		result at end = own at i
 	return result
 
-# Remove duplicate fn/struct/enum/shape declarations from a flat token list.
-# First occurrence wins; subsequent definitions of the same name are dropped.
+# Removes duplicate declarations from a flat merged token list. First occurrence of each
+# fn/struct/enum/shape name wins; subsequent definitions of the same name are silently
+# dropped. Necessary because the multi-file import system may inline the same utility
+# file multiple times when it is a transitive dependency of more than one import.
 fn tokenList deduplicate_decls(tokenList tokens)
 	tokenList result = []
 	strList seen = []
@@ -225,7 +234,10 @@ fn tokenList deduplicate_decls(tokenList tokens)
 			pos = pos + 1
 	return result
 
-# Entry point: load the root file and all its imports, then deduplicate.
+# Entry point for the import system. Reads and tokenizes the root source file, then walks
+# the token stream replacing each import statement with the tokens from load_named, and
+# finally calls deduplicate_decls on the complete merged stream. Returns a single flat
+# token list with every declaration needed to generate the output Rust file.
 fn tokenList collect_all_tokens_with_all_imports(string path)
 	string source = f_read(path)
 	tokenList source_tokens = tokenize(source)

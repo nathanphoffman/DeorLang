@@ -5,6 +5,10 @@
 
 # === Expression code generation ===
 
+# Given an ordered list of field names, searches the struct registry for a struct whose
+# field list exactly matches. Used when the code generator sees an anonymous tuple
+# (f1, f2) and must determine which struct type to instantiate, since Deor has no
+# explicit type annotation at anonymous construction sites.
 fn string find_struct_for_fields(strList struct_reg, strList fields)
 
 	string fields_key = s_join_with(fields, ",")
@@ -24,6 +28,10 @@ fn string find_struct_for_fields(strList struct_reg, strList fields)
 
 	return "Unknown"
 
+# Given a single field name, returns the first struct in the registry that contains it.
+# Used by the `with` (record-update) code path where only one override field name is
+# visible and the struct type must be inferred from it to emit the Rust struct-update
+# syntax: `StructName { field, ..source }`.
 fn string find_struct_for_field(strList struct_reg, string field)
 	int reg_count = len(struct_reg)
 	bool next_is_val = false
@@ -41,6 +49,10 @@ fn string find_struct_for_field(strList struct_reg, string field)
 			next_is_val = true
 	return "Unknown"
 
+# Parses and generates the argument list for a function call. Applies the correct
+# Rust ownership coercions: string literals get `.to_string()`, plain identifier
+# arguments get `.clone()` (Rust would move them otherwise). Index-read and call
+# results are left as-is because they already return owned values.
 fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
 
 	strList arg_codes = []
@@ -86,6 +98,9 @@ fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
 
 	return make_result(s_join_with(arg_codes, ", "), cur)
 
+# Parses the element list inside a [...] literal and generates the vec![...] initializer
+# items. All elements get `.clone()` or `.to_string()` applied because the vec![] macro
+# expects owned values; expressions are treated the same as identifiers here.
 fn ParseResult gen_list_items(tokenList tokens, int pos, GenCtx ctx)
 	strList item_codes = []
 	int cur = pos
@@ -113,12 +128,20 @@ fn ParseResult gen_list_items(tokenList tokens, int pos, GenCtx ctx)
 		cur = item_pos
 	return make_result(s_join_with(item_codes, ", "), cur)
 
+# Helper that generates a single-argument built-in call by appending a Rust method
+# suffix to the argument's generated expression. Currently used for `len(x)` which
+# becomes `x.len() as i32` to bridge Deor's `int` type against Rust's usize len return.
 fn ParseResult gen_unary_method(tokenList tokens, int args_pos, string suffix, GenCtx ctx)
 	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
 	string inner_code = pr_code(inner_r)
 	int close = pr_pos(inner_r) + 1
 	return make_result(s_join([inner_code, suffix]), close)
 
+# Parses a primary expression — the atomic units the expression grammar is built from:
+# integer or string literal, boolean/none keyword, empty list [], list literal [items],
+# struct construction (f1, f2), `(avow expr)` forced unwrap, `not expr`, function call
+# `name(args)`, index read `name at idx`, and plain identifier (potentially an enum
+# variant which must be emitted as `EnumName::Variant` in Rust).
 fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
 	int token_count = len(tokens)
@@ -227,6 +250,12 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 
 	return make_result("/* unknown_primary */", pos + 1)
 
+# Parses a full expression using a left-associative loop over binary operators. Calls
+# gen_primary for the left operand, then repeatedly checks whether the next token is a
+# binary operator and folds in the right operand. Handles the two-token `is not`
+# operator and string-concatenation type promotion: emits `format!("{}{}", ...)` when
+# either side is a string literal, and appends `.as_str()` when chaining an identifier
+# onto an already-format!-promoted String expression.
 fn ParseResult gen_expr(tokenList tokens, int pos, GenCtx ctx)
 	ParseResult primary_r = gen_primary(tokens, pos, ctx)
 	string left_code = pr_code(primary_r)

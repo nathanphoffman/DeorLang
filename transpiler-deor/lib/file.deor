@@ -1,13 +1,20 @@
 (tokenList, Token) in "transpiler-deor/types.deor"
 
+# Reads an entire file to a string. Used by the importer to load .deor source files
+# for tokenization. Panics with a clear message on failure so the user knows which path
+# could not be opened rather than getting a cryptic Rust unwrap backtrace.
 fn string f_read(string path)
 	rust
 		std::fs::read_to_string(path.as_str()).expect("cannot read input file")
 
+# Writes `content` to the file at `path`, creating or overwriting it. Used by main to
+# emit the generated Rust source to the output path supplied on the command line.
 fn void f_write(string path, string content)
 	rust
 		std::fs::write(path.as_str(), content.as_str()).expect("cannot write output file");
 
+# Returns the command-line arguments as a list, skipping the binary name (arg 0).
+# Used by main to retrieve the input and output file paths.
 fn strList f_args()
 	rust
 		std::env::args().skip(1).collect()

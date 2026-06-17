@@ -1,45 +1,67 @@
 (tokenList, Token) in "transpiler-deor/types.deor"
 
+# Concatenates two strings. Rust's `+` operator moves left, so right must be .as_str().
 fn string s_cat(string left, string right)
 	rust
 		left + right.as_str()
 
+# Joins a list of strings with no separator. Used to assemble multi-part Rust code
+# fragments without allocating intermediate strings for every piece.
 fn string s_join(strList parts)
 	rust
 		parts.join("")
 
+# Joins a list of strings with newline separators. Used to combine generated code lines
+# into a block (e.g. struct field declarations, Rust block lines).
 fn string s_join_nl(strList parts)
 	rust
 		parts.join("\n")
 
+# Joins a list of strings with a caller-supplied separator. Used for comma-separated
+# parameter lists, argument lists, and field lists in generated Rust code.
 fn string s_join_with(strList parts, string sep)
 	rust
 		parts.join(sep.as_str())
 
+# Returns the substring of `source` starting at byte index `start`. Used by the lexer
+# to strip the leading tabs from a line after the indentation count is known.
 fn string s_from(string source, int start)
 	rust
 		source.get(start as usize..).unwrap_or_default().to_string()
 
+# Trims trailing whitespace from a string. Used by the lexer to normalize line endings
+# before tokenizing, preventing phantom whitespace tokens.
 fn string s_rtrim(string source)
 	rust
 		source.trim_end().to_string()
 
+# Trims leading and trailing whitespace. Used by the lexer on raw lines before checking
+# whether they are empty (blank lines are skipped entirely).
 fn string s_trim(string source)
 	rust
 		source.trim().to_string()
 
+# Returns true if `source` begins with `prefix`. Used in registry.deor to detect
+# function-shape entries stored as "fn:inType:outType" strings.
 fn bool s_starts_with(string source, string prefix)
 	rust
 		source.starts_with(prefix.as_str())
 
+# Splits `source` on `delimiter` and returns the parts as a list. Used for splitting
+# comma-joined field registries back into individual names and for splitting shape-encoded
+# "fn:in:out" triples.
 fn strList s_split(string source, string delimiter)
 	rust
 		source.split(delimiter.as_str()).map(|s| s.to_string()).collect()
 
+# Returns `source` repeated `count` times. Used to generate indentation padding strings
+# (four spaces per depth level) in gen_stmt and gen_block.
 fn string s_repeat(string source, int count)
 	rust
 		source.repeat(count as usize)
 
+# Capitalizes the first character of `source`. Used to convert Deor's lowercase type
+# names to Rust's PascalCase convention for structs and enums.
 fn string s_pascal(string source)
 	rust
 		{
@@ -50,6 +72,8 @@ fn string s_pascal(string source)
 			}
 		}
 
+# Formats `source` as a Rust string literal including surrounding quotes and escape
+# sequences. Used by gen_primary to emit string tokens as valid Rust &str expressions.
 fn string s_debug(string source)
 	rust
 		format!("{:?}", source)

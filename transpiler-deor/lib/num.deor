@@ -1,9 +1,14 @@
 (tokenList, Token) in "transpiler-deor/types.deor"
 
+# Parses a string as a base-10 i32, returning 0 on failure. Used by the lexer to
+# convert the top of the indent stack (stored as a string) back to an integer for
+# comparison against the current line's tab count.
 fn int n_parse(string source)
 	rust
 		source.parse::<i32>().unwrap_or(0)
 
+# Converts an integer to its decimal string representation. Used by the lexer to push
+# new indentation levels onto the indent stack, which stores levels as strings.
 fn string n_to_str(int number)
 	rust
 		number.to_string()

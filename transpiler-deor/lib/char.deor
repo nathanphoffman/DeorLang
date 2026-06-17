@@ -1,17 +1,25 @@
 (tokenList, Token) in "transpiler-deor/types.deor"
 
+# Splits a string into a list of single-character strings. The lexer works one character
+# at a time; this bridges Deor's string type (which has no indexing) to per-char access.
 fn strList c_chars(string source)
 	rust
 		source.chars().map(|c| c.to_string()).collect()
 
+# Returns true if the character is alphabetic or an underscore. Used by the lexer to
+# detect the start of an identifier or keyword token.
 fn bool c_alpha(string character)
 	rust
 		character.chars().next().map(|ch| ch.is_alphabetic() || ch == '_').unwrap_or(false)
 
+# Returns true if the character is an ASCII decimal digit. Used to detect the start of
+# an integer literal and to continue scanning subsequent digit characters.
 fn bool c_digit(string character)
 	rust
 		character.chars().next().map(|ch| ch.is_ascii_digit()).unwrap_or(false)
 
+# Returns true if the character is alphanumeric or an underscore. Used to continue
+# scanning identifier and keyword tokens after the first character has been confirmed.
 fn bool c_alnum(string character)
 	rust
 		character.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)

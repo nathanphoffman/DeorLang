@@ -4,6 +4,10 @@
 (gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl) in "transpiler-deor/codegen_decl.deor"
 (collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
 
+# Top-level code generator. Takes the fully merged and deduplicated token list, builds
+# all six registries (struct, shape, enum, variant, type, var_type), then walks the
+# token stream dispatching each top-level declaration to its gen_* function and
+# concatenating the results into a single Rust source string.
 fn string generate(tokenList tokens)
 	strList struct_reg = build_struct_reg(tokens)
 	strList shape_reg = build_shape_reg(tokens)
@@ -61,6 +65,9 @@ fn string generate(tokenList tokens)
 
 	return output
 
+# Entry point. Reads input and output paths from command-line arguments, calls
+# collect_all_tokens_with_all_imports to load and resolve all imports, calls generate
+# to produce Rust source, and writes it to the output file.
 fn void main()
 
 	strList args = f_args()

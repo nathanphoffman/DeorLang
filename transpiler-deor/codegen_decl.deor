@@ -10,6 +10,10 @@
 
 # === Declaration code generation ===
 
+# Generates a Rust struct definition from a Deor `struct Name` declaration. Emits
+# `#[derive(Clone, PartialEq, Debug)]` automatically — all Deor structs need Clone
+# for the pervasive .clone() calls the transpiler emits, and PartialEq for `is`
+# comparisons. Maps each field's Deor type to its Rust equivalent via render_rust_type.
 fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 	TokenCursor c = cur_at(tokens, pos + 1)
 	using c
@@ -39,6 +43,10 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 		(pos) in c
 		return make_result(decl, pos)
 
+# Generates a Rust type alias from a Deor `shape` declaration. Two forms:
+# `shape Foo = list of T` → `type Foo = Vec<T>;` and
+# `shape Foo = func of T to U` → `type Foo = fn(T) -> U;`.
+# Deor uses shapes to name parameterized types that Rust requires explicit aliases for.
 fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	int token_count = len(tokens)
 	int name_pos = pos + 1
@@ -71,6 +79,10 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	int after = out_pos + 1
 	return make_result(decl, adv_nl(after, tokens))
 
+# Generates a Rust enum definition from a Deor `enum Name` declaration. Emits
+# `#[derive(Clone, Copy, PartialEq, Debug)]` — Copy is viable because Deor enum
+# variants carry no payload data. Converts the Deor lowercase name to PascalCase
+# for the Rust type name.
 fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 	TokenCursor c = cur_at(tokens, pos + 1)
 	using c
@@ -93,6 +105,10 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 		(pos) in c
 		return make_result(decl, pos)
 
+# Generates a Rust newtype struct plus a `new()` constructor from a Deor
+# `type Name(baseType paramName)` declaration. The constructor returns Option<Self>,
+# evaluating the user's predicate: if it passes, wraps the value in Some(TypeName(val));
+# otherwise returns None. This is Deor's mechanism for validated/constrained scalar types.
 fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 	TokenCursor c = cur_at(tokens, pos + 1)
 	using c
@@ -126,6 +142,13 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 	string impl_code = s_join(["impl ", type_name, " {\n    fn new(", param_name, ": ", rust_param_type, ") -> Option<Self> {\n        if ", pred_code, " {\n            Some(", type_name, "(", param_name, "))\n        } else {\n            None\n        }\n    }\n}\n\n"])
 	return make_result(s_cat(struct_code, impl_code), pos)
 
+# Generates a complete Rust function from a Deor `fn RetType name(params)` declaration.
+# Key responsibilities: resolves parameter and return types through the registries;
+# pre-scans the body token slice to build a per-function mut_names list (variables that
+# get re-assigned need `let mut` in Rust); builds a per-function var_type_reg for
+# `using` statement support; delegates body generation to gen_block. Uses l_slice to
+# work on just the body tokens so recursive registry scans stay cheap — this token-slice
+# optimization cut self-compile time from 11s to 1.3s.
 fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT

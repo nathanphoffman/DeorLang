@@ -1,15 +1,24 @@
 shape tokenList = list of Token
 shape strList = list of string
 
+# A single lexer token. `kind` is the token category (e.g. "KW_FN", "IDENT", "PLUS"),
+# `value` is the literal source text, and `line` is the source line number for diagnostics.
 struct Token
 	string kind
 	string value
 	int line
 
+# Returned by every code-generation function: the Rust source text produced so far
+# (`code`) and the token-stream index to resume from after consuming this construct
+# (`new_pos`). Pairs code with its parse position so callers never lose their place.
 struct ParseResult
 	string code
 	int new_pos
 
+# Code-generation context threaded through all gen_* functions. Holds every pre-built
+# registry so generators can look up struct fields, enum variants, shape aliases,
+# validator types, mutable variable names, and the active `using` binding without
+# re-scanning the token stream on each call.
 struct GenCtx
 	strList variant_reg
 	strList shape_reg
@@ -21,6 +30,9 @@ struct GenCtx
 	string using_var
 	strList var_type_reg
 
+# Cursor-style view into a token list. Used inside `using c` blocks during declaration
+# parsing to step through tokens one at a time without carrying raw indices everywhere.
+# `token_count` and `pos` guard bounds; `current` is the token at `pos`.
 struct TokenCursor
 	int token_count
 	int pos

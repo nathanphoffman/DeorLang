@@ -10,6 +10,9 @@
 
 # === Statement code generation ===
 
+# Applies the correct Rust ownership coercion to a generated value before it is
+# placed in a .push() call: string literals get `.to_string()`, identifiers get
+# `.clone()`. Calls and arithmetic are already owned and pass through unchanged.
 fn string emit_val(string val_code, string val_kind)
 	if val_kind is "STRING"
 		return s_join([val_code, ".to_string()"])
@@ -17,6 +20,10 @@ fn string emit_val(string val_code, string val_kind)
 		return s_join([val_code, ".clone()"])
 	return val_code
 
+# Generates a sequence of `let [mut] field = var_name.field.clone();` lines for every
+# field of a struct. Used by the `using` statement to initially unpack a struct's fields
+# into local variables, and re-called after `using`-style method calls to re-bind
+# updated field values after the struct has been mutated by the called function.
 fn string make_destruct_code(string var_name, string struct_type, strList struct_reg, strList mut_names, string pad)
 	string fields_str = reg_get(struct_reg, struct_type)
 	if is_empty(fields_str)
@@ -34,6 +41,10 @@ fn string make_destruct_code(string var_name, string struct_type, strList struct
 	string code = s_join_nl(lines)
 	return s_cat(code, "\n")
 
+# Generates code for a Deor destructuring statement `(f1, f2) in source`. Each named
+# field becomes a separate `let [mut] field = source.field.clone();` line. The `mut`
+# annotation is applied when the field name appears in mut_names because it is
+# re-assigned later in the same function body.
 fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	int token_count = len(tokens)
@@ -71,6 +82,12 @@ fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
 	dest_code = s_cat(dest_code, "\n")
 	return make_result(dest_code, after)
 
+# Main statement dispatcher. Recognizes every statement form in Deor and routes to the
+# appropriate code path. Handled forms: `rust` inline blocks, `return`, `break`,
+# `continue`, `if`, `for`, `(avow ...)` statement-level forced unwrap,
+# `(fields) in source` destructuring, `using varName` block, and all identifier-led
+# statements: `as`-binding, function calls, `insert`, `at end =` append,
+# `at idx =` index write, `remove at idx`, plain `=` assignment, and typed bindings.
 fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	int token_count = len(tokens)
@@ -455,6 +472,9 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 
 	return make_result(s_join(["/* unhandled(", kind, ") */\n"]), pos + 1)
 
+# Generates a block of statements by calling gen_stmt repeatedly until a DEDENT or EOF
+# is reached. Returns the concatenated Rust code and the position just after the closing
+# DEDENT. Used for function bodies, if/else branches, for/while bodies, and using blocks.
 fn ParseResult gen_block(tokenList tokens, int pos, int depth, GenCtx ctx)
 	strList stmts = []
 	int cur = pos
@@ -478,6 +498,9 @@ fn ParseResult gen_block(tokenList tokens, int pos, int depth, GenCtx ctx)
 
 # === If/else code generation ===
 
+# Generates the condition expression and body for one arm of an if/else-if chain.
+# Returns code up to (but not including) the closing `}` so that gen_if can chain
+# additional `else if` and `else` arms onto the same Rust if statement.
 fn ParseResult gen_if_branch(tokenList tokens, int cond_pos, int depth, GenCtx ctx)
 	ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
 	int body_start = skip_to_body(tokens, pr_pos(cond_r))
@@ -485,6 +508,9 @@ fn ParseResult gen_if_branch(tokenList tokens, int cond_pos, int depth, GenCtx c
 	string combined = s_join([pr_code(cond_r), " {\n", pr_code(body_r)])
 	return make_result(combined, pr_pos(body_r))
 
+# Generates a complete Rust `if / else if / else` from a Deor `if / else if / else`
+# chain. Calls gen_if_branch for the initial `if`, then loops consuming `else` tokens
+# to append `else if` branches or a final `else` block.
 fn ParseResult gen_if(tokenList tokens, int pos, int depth, GenCtx ctx)
 	int token_count = len(tokens)
 	string pad = s_repeat("    ", depth)
@@ -519,6 +545,11 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, GenCtx ctx)
 
 # === For/while loop code generation ===
 
+# Generates Rust loop code from a Deor `for` statement. Three dispatch paths:
+#   `for if cond`          → `while cond { ... }` (including `for if true` for infinite loops)
+#   `for item in range(n)` → `for item in 0..n { ... }` (or start..end with two args)
+#   `for in (start, end)`  → `for _ in start..end { ... }` (bare range, no index variable)
+#   `for item in collection` → `for item in collection { ... }`
 fn ParseResult gen_for(tokenList tokens, int pos, int depth, GenCtx ctx)
 	int token_count = len(tokens)
 	string pad = s_repeat("    ", depth)

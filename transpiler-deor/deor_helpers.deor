@@ -2,24 +2,34 @@
 
 # === ParseResult helpers ===
 
+# Extracts the generated Rust code string from a ParseResult. Needed because Deor
+# has no dot-access syntax — struct fields must be reached via destructuring or
+# named accessors like this one.
 fn string pr_code(ParseResult result)
 	(code, new_pos) in result
 	return code
 
+# Extracts the resume token index from a ParseResult. Every gen_* call returns the
+# next position alongside the code so callers always know where to continue parsing.
 fn int pr_pos(ParseResult result)
 	(code, new_pos) in result
 	return new_pos
 
+# Constructs a ParseResult. The canonical way to return from any code-generation or
+# registry-scanning function since Deor uses struct literals for multi-value returns.
 fn ParseResult make_result(string code, int new_pos)
 	result as (code, new_pos)
 	return result
 
 # === Token helpers ===
 
+# Constructs a Token value. Used by the lexer for every token it emits into the output list.
 fn Token make_token(string kind, string value, int line)
 	token as (kind, value, line)
 	return token
 
+# If the token at `pos` is a NEWLINE, returns pos+1; otherwise returns pos unchanged.
+# Called after parsing a statement's value to step past the trailing newline.
 fn int adv_nl(int pos, tokenList tokens)
 	int token_count = len(tokens)
 	if pos < token_count
@@ -29,6 +39,8 @@ fn int adv_nl(int pos, tokenList tokens)
 			return pos + 1
 	return pos
 
+# If the token at `pos` is an INDENT, returns pos+1; otherwise returns pos unchanged.
+# Used alongside adv_nl to skip the indent token at the opening of a block body.
 fn int adv_indent(int pos, tokenList tokens)
 	int token_count = len(tokens)
 	if pos < token_count
@@ -38,6 +50,8 @@ fn int adv_indent(int pos, tokenList tokens)
 			return pos + 1
 	return pos
 
+# Skips over both the NEWLINE and INDENT that separate a declaration header from its
+# body, landing at the first statement token. Called before entering any block body.
 fn int skip_to_body(tokenList tokens, int pos)
 	int cur = adv_nl(pos, tokens)
 	cur = adv_indent(cur, tokens)

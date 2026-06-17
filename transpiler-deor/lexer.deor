@@ -7,6 +7,9 @@
 
 # === Lexer ===
 
+# Counts leading tab characters in a single source line to determine indentation level.
+# Deor uses tabs for block nesting; this count is compared against the indent stack
+# to decide whether to emit INDENT or DEDENT tokens for the current line.
 fn int count_tabs(string line)
 	strList chars = c_chars(line)
 	int char_count = len(chars)
@@ -19,6 +22,11 @@ fn int count_tabs(string line)
 			break
 	return count
 
+# Full Deor lexer. Converts raw source text into a flat token list. Handles:
+# indentation-based INDENT/DEDENT pairs; `rust` blocks captured verbatim as a single
+# RUST_BLOCK token; string literals with escape sequences; integer literals; identifiers
+# and keywords (dispatched via word_to_kind); two-character operators (>=, <=); and
+# single-character operators/punctuation. Emits trailing DEDENTs and a terminal EOF.
 fn tokenList tokenize(string source)
 	tokenList tokens = []
 	strList lines = s_split(source, "\n")

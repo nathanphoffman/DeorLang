@@ -1,12 +1,17 @@
 (tokenList, Token, TokenCursor) in "transpiler-deor/types.deor"
 (adv_nl, adv_indent) in "transpiler-deor/deor_helpers.deor"
 
+# Constructs a fresh TokenCursor anchored at `pos`. Used to start cursor-based
+# traversal at the beginning of a declaration body during code generation.
 fn TokenCursor cur_at(tokenList tokens, int pos)
 	int token_count = len(tokens)
 	Token current = tokens at pos
 	c as (token_count, pos, current)
 	return c
 
+# Advances the cursor by one position and updates `current` to the new token.
+# Returns the same cursor value unchanged if already at the end of the stream.
+# Called inside `using c` blocks to step through tokens one at a time.
 fn TokenCursor cur_next(TokenCursor c, tokenList tokens)
 	(token_count, pos, current) in c
 	int pos = pos + 1
@@ -15,16 +20,22 @@ fn TokenCursor cur_next(TokenCursor c, tokenList tokens)
 		return (token_count, pos, current)
 	return (token_count, pos, current)
 
+# Returns true when the cursor has consumed all tokens. Guards loop conditions
+# in `using c` blocks to prevent out-of-bounds reads.
 fn bool c_at_end(TokenCursor c)
 	(token_count, pos) in c
 	return pos >= token_count
 
+# Advances the cursor past the NEWLINE and INDENT that follow a declaration header,
+# positioning it at the first statement token inside the block body.
 fn TokenCursor cur_skip_to_body(TokenCursor c, tokenList tokens)
 	(pos) in c
 	int p = adv_nl(pos, tokens)
 	p = adv_indent(p, tokens)
 	return cur_at(tokens, p)
 
+# Returns the token at current_pos + `offset` without advancing the cursor.
+# Allows one-token (or multi-token) look-ahead during parsing without mutating state.
 fn Token cur_peek(TokenCursor c, tokenList tokens, int offset)
 	(pos) in c
 	int peek_pos = pos + offset

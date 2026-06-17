@@ -5,6 +5,9 @@
 
 # === Registry builders ===
 
+# Scans forward from `start` until it hits an INDENT token, returning the position
+# just past it. Used during registry building to position at the first field or variant
+# inside a struct or enum body without consuming the body content itself.
 fn ParseResult skip_to_block_start(tokenList tokens, int start)
 	int token_count = len(tokens)
 	int cur = start
@@ -16,6 +19,10 @@ fn ParseResult skip_to_block_start(tokenList tokens, int start)
 			break
 	return make_result("", cur)
 
+# Walks a struct body collecting each field name (the second token of each `type name`
+# pair). Returns the field names joined by commas and the position past the closing DEDENT.
+# The comma-joined string is stored in the struct registry so gen_stmt can split it back
+# out when it needs to match field names to positional arguments in struct construction.
 fn ParseResult collect_struct_fields(tokenList tokens, int start)
 	int token_count = len(tokens)
 	strList fields = []
@@ -39,6 +46,9 @@ fn ParseResult collect_struct_fields(tokenList tokens, int start)
 
 	return make_result(s_join_with(fields, ","), cur)
 
+# Builds the struct registry: a flat strList of [structName, "field1,field2,..."] pairs.
+# Scanned once before code generation so that struct-construction expressions and
+# destructuring statements can identify which struct type to use by its field signature.
 fn strList build_struct_reg(tokenList tokens)
 	strList result = []
 	int token_count = len(tokens)
@@ -61,6 +71,9 @@ fn strList build_struct_reg(tokenList tokens)
 		raw_i = raw_i + 1
 	return result
 
+# Builds the shape registry. For list shapes stores [shapeName, elemType]; for function
+# shapes stores [shapeName, "fn:inType:outType"]. Used by resolve_type to expand shape
+# aliases into their Rust Vec<T> or fn(T)->U forms when generating type annotations.
 fn strList build_shape_reg(tokenList tokens)
 	strList result = []
 	int token_count = len(tokens)
@@ -93,6 +106,9 @@ fn strList build_shape_reg(tokenList tokens)
 						result at end = s_join(["fn:", elem_type, ":", out_type])
 	return result
 
+# Builds the enum registry: [deorName, RustName] pairs (deorName lowercase, RustName
+# PascalCase). Used during code generation to emit the correct Rust enum name and to
+# identify when an identifier in the token stream is an enum type rather than a variable.
 fn strList build_enum_reg(tokenList tokens)
 	strList result = []
 	int token_count = len(tokens)
@@ -110,6 +126,10 @@ fn strList build_enum_reg(tokenList tokens)
 				result at end = rust_name
 	return result
 
+# Builds the variant registry: [variantName, rustEnumName] pairs for every variant
+# inside every enum. Used in gen_primary to detect enum variant identifiers and emit
+# `EnumName::VariantName` instead of a bare identifier, which would be a compile error
+# in Rust.
 fn strList build_variant_reg(tokenList tokens, strList enum_reg)
 	strList result = []
 	int token_count = len(tokens)
@@ -146,6 +166,10 @@ fn strList build_variant_reg(tokenList tokens, strList enum_reg)
 		raw_i = raw_i + 1
 	return result
 
+# Builds the validator-type registry: for each `type Name(baseType paramName)` declaration,
+# stores [Name, baseType, paramName] triplets. Enables the code generator to emit
+# `Name::new(val)` for construction sites and `Option<Name>` for empty declarations,
+# since Deor validator types compile to Rust newtype structs with a fallible constructor.
 fn strList build_type_reg(tokenList tokens)
 	strList result = []
 	int token_count = len(tokens)
@@ -168,6 +192,10 @@ fn strList build_type_reg(tokenList tokens)
 				result at end = value
 	return result
 
+# Builds a per-scope variable type registry by scanning for `TypeName varName = ...`
+# patterns and recording [varName, TypeName] pairs for non-primitive types. Used by
+# the `using` statement handler to determine what struct type a variable holds so it
+# can auto-destructure its fields into the local scope.
 fn strList build_var_type_reg(tokenList tokens)
 	strList result = []
 	int token_count = len(tokens)
@@ -205,6 +233,9 @@ fn strList build_var_type_reg(tokenList tokens)
 
 # === Type resolution ===
 
+# Resolves a Deor type name to its full Rust type string. Checks the enum registry first
+# (returning the PascalCase Rust name), then the shape registry (expanding to Vec<T> or
+# fn(T)->U), then falls back to render_rust_type for primitives and user-defined structs.
 fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
 	string enum_rust = reg_get(enum_reg, type_name)
 	if not is_empty(enum_rust)
@@ -226,6 +257,10 @@ fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
 
 # === Mutability pre-scan ===
 
+# Finds the DEDENT token that closes the block opened by the INDENT at `indent_pos`.
+# Tracks nesting depth so nested blocks don't terminate the search prematurely. Used
+# to extract a function body as a sub-slice for the token_slice optimization in
+# gen_fn_decl, which cut self-compile time from 11s to 1.3s.
 fn int find_block_end(tokenList tokens, int indent_pos)
 	int token_count = len(tokens)
 	int depth = 1
@@ -243,6 +278,10 @@ fn int find_block_end(tokenList tokens, int indent_pos)
 				break
 	return result
 
+# Scans a block's token range for re-assignment patterns (IDENT EQUALS ...) and `using`
+# statements, collecting every variable name that is written after its initial binding.
+# The result goes into GenCtx.mut_names so gen_stmt can emit `let mut` instead of `let`
+# for those variables — Rust requires this for anything that is ever re-assigned.
 fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 	strList result = []
 	for raw_i in (start, end_pos)
