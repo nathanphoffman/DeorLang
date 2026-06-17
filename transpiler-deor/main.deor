@@ -1,6 +1,6 @@
 (tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
 (f_write, f_args) in "transpiler-deor/lib/file.deor"
-(build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg) in "transpiler-deor/registry.deor"
+(build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg) in "transpiler-deor/registry.deor"
 (gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl) in "transpiler-deor/codegen_decl.deor"
 (collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
 
@@ -11,9 +11,10 @@ fn string generate(tokenList tokens)
 	strList variant_reg = build_variant_reg(tokens, enum_reg)
 	strList type_reg = build_type_reg(tokens)
 	strList mut_names = []
+	strList var_type_reg = build_var_type_reg(tokens)
 	string using_type = ""
 	string using_var = ""
-	GenCtx ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var)
+	GenCtx ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
 
 	string output = ""
 	int token_count = len(tokens)

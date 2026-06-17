@@ -6,11 +6,11 @@ fn Test increment(Test test)
 	(hello, world) = test
 	world = world + 1
 
-	new_world as (hello,world) 
-	world = world + 1
-	set_world as new_world with (world)
+	# new_world as (hello,world) 
+	# world = world + 1
+	# set_world as new_world with (world)
 
-	return set_world
+	return (hello, world)
 
 fn Test set(Test test, int world)
 	(hello, world) in test
@@ -66,8 +66,14 @@ fn void main()
 
 	using old_test
 		increment()
+		print("hello1")
+		print(world)
 		increment()
+		print("hello2")
+		print(world)
 		increment()
+		print("hello3")
+		print(world)
 
 		new_hello as 1
 		set() with new_hello

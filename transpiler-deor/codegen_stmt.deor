@@ -5,7 +5,7 @@
 ) in "transpiler-deor/deor_helpers.deor"
 (s_join, s_join_nl, s_join_with, s_cat, s_repeat, s_split) in "transpiler-deor/lib/string.deor"
 (is_empty, list_has, reg_get, reg_has, reg3_has) in "transpiler-deor/utils.deor"
-(resolve_type) in "transpiler-deor/registry.deor"
+(resolve_type, build_var_type_reg) in "transpiler-deor/registry.deor"
 (find_struct_for_fields, find_struct_for_field, gen_call_args, gen_expr) in "transpiler-deor/codegen_expr.deor"
 
 # === Statement code generation ===
@@ -17,8 +17,25 @@ fn string emit_val(string val_code, string val_kind)
 		return s_join([val_code, ".clone()"])
 	return val_code
 
+fn string make_destruct_code(string var_name, string struct_type, strList struct_reg, strList mut_names, string pad)
+	string fields_str = reg_get(struct_reg, struct_type)
+	if is_empty(fields_str)
+		return ""
+	strList fields = s_split(fields_str, ",")
+	int field_count = len(fields)
+	strList lines = []
+	for i in range(field_count)
+		string field = fields at i
+		bool is_mut = list_has(mut_names, field)
+		string mut_kw = ""
+		if is_mut
+			mut_kw = "mut "
+		lines at end = s_join([pad, "let ", mut_kw, field, " = ", var_name, ".", field, ".clone();"])
+	string code = s_join_nl(lines)
+	return s_cat(code, "\n")
+
 fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	int token_count = len(tokens)
 	string pad = s_repeat("    ", depth)
 	# LPAREN f1 COMMA f2 RPAREN KW_IN source NEWLINE
@@ -55,7 +72,7 @@ fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
 	return make_result(dest_code, after)
 
 fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
@@ -121,11 +138,14 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 		Token var_token = tokens at var_pos
 		(value) in var_token
 		string using_var = value
-		string using_type = using_var
+		string struct_type = reg_get(var_type_reg, using_var)
+		string using_type = struct_type
+		string init_destruct = make_destruct_code(using_var, struct_type, struct_reg, mut_names, pad)
 		int body_start = skip_to_body(tokens, var_pos + 1)
-		GenCtx using_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var)
+		GenCtx using_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
 		ParseResult block_r = gen_block(tokens, body_start, depth, using_ctx)
-		return make_result(pr_code(block_r), pr_pos(block_r))
+		string full_code = s_cat(init_destruct, pr_code(block_r))
+		return make_result(full_code, pr_pos(block_r))
 
 	if kind is "IDENT"
 		string ident_name = value
@@ -244,6 +264,8 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 					shim_code = s_join([pad, using_var, " = ", ident_name, "(", using_var, ".clone(), ", extra_arg, ".clone());\n"])
 				else
 					shim_code = s_join([pad, using_var, " = ", ident_name, "(", using_var, ".clone());\n"])
+				string re_destruct = make_destruct_code(using_var, using_type, struct_reg, mut_names, pad)
+				shim_code = s_cat(shim_code, re_destruct)
 				return make_result(shim_code, adv_nl(after_with, tokens))
 			ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 			string args_code = pr_code(args_r)

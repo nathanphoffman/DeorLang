@@ -19,6 +19,7 @@ struct GenCtx
 	strList type_reg
 	string using_type
 	string using_var
+	strList var_type_reg
 
 struct TokenCursor
 	tokenList tokens

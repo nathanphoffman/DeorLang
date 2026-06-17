@@ -7,7 +7,7 @@
 (s_join, s_join_nl, s_join_with, s_pascal) in "transpiler-deor/lib/string.deor"
 (l_slice) in "transpiler-deor/lib/list.deor"
 (is_empty, render_rust_type) in "transpiler-deor/utils.deor"
-(resolve_type, find_block_end, collect_mut_names) in "transpiler-deor/registry.deor"
+(resolve_type, find_block_end, collect_mut_names, build_var_type_reg) in "transpiler-deor/registry.deor"
 (gen_expr) in "transpiler-deor/codegen_expr.deor"
 (gen_block) in "transpiler-deor/codegen_stmt.deor"
 
@@ -130,7 +130,7 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 	return make_result(s_cat(struct_code, impl_code), cur)
 
 fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	int token_count = len(tokens)
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
 	int cur = pos + 1
@@ -178,9 +178,10 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	tokenList body_tokens = l_slice(tokens, body_start, body_end_pos + 1)
 	int body_len = len(body_tokens)
 	strList mut_names = collect_mut_names(body_tokens, 0, body_len - 1)
+	strList var_type_reg = build_var_type_reg(body_tokens)
 	string using_type = ""
 	string using_var = ""
-	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var)
+	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
 	# generate body on the small slice so recursive clones are cheap
 	ParseResult body_r = gen_block(body_tokens, 0, 1, body_ctx)
 	string body_code = pr_code(body_r)
