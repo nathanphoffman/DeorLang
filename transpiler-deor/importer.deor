@@ -227,39 +227,30 @@ fn tokenList deduplicate_decls(tokenList tokens)
 
 # Entry point: load the root file and all its imports, then deduplicate.
 fn tokenList collect_all_tokens_with_all_imports(string path)
-
 	string source = f_read(path)
 	tokenList source_tokens = tokenize(source)
 	tokenList result = []
-
 	int token_count = len(source_tokens)
 	int pos = 0
 	int depth = 0
-
 	for if true
 		if pos >= token_count
 			break
-
 		Token token = source_tokens at pos
 		(kind) in token
-
 		if kind is "EOF"
 			break
-
 		if kind is "INDENT"
 			depth = depth + 1
 			result at end = token
 			pos = pos + 1
 			continue
-
 		if kind is "DEDENT"
 			depth = depth - 1
 			result at end = token
 			pos = pos + 1
 			continue
-
 		bool at_root = depth is 0
-
 		if kind is "LPAREN" and at_root
 			strList import_names = []
 			int scan = pos + 1
@@ -293,8 +284,6 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 								result at end = import_token
 					pos = path_pos + 1
 					continue
-
 		result at end = token
 		pos = pos + 1
-
 	return deduplicate_decls(result)

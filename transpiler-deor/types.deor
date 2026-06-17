@@ -22,6 +22,6 @@ struct GenCtx
 	strList var_type_reg
 
 struct TokenCursor
-	tokenList tokens
+	int token_count
 	int pos
 	Token current
