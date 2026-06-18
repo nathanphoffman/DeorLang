@@ -20,13 +20,6 @@ fn Test set(Test test, int world)
 type squareFeet(int n)
 	n > 0
 
-unsafe struct Fruit
-	string name
-	string taste
-
-unsafe fn void update_fruit_name(Fruit fruit)
-	fruit force name to "Banana"
-
 fn Test say_hi(Test test)
 	(hello) in test
 	string message = "hi"
@@ -84,13 +77,6 @@ fn void main()
 
 		new_hello as 1
 		set() with new_hello
-
-	name as "Apple"
-	taste as "Good"
-	Fruit fruit = (name,taste)
-	
-	unsafe using fruit
-		update_fruit_name()
 
 
 

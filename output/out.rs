@@ -26,7 +26,6 @@ struct GenCtx {
     using_type: String,
     using_var: String,
     var_type_reg: StrList,
-    unsafe_reg: StrList,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -126,69 +125,6 @@ fn n_to_str(number: i32) -> String {
     number.to_string()
 }
 
-fn is_empty(source: String) -> bool {
-    let mut length: i32 = (source.len() as i32);
-    return length == 0;
-}
-
-fn str_eq(left: String, right: String) -> bool {
-    return left == right;
-}
-
-fn reg_get_stride(pairs: Vec<String>, key: String, stride: i32) -> String {
-    let mut pairs_count: i32 = (pairs.len() as i32);
-    let mut index: i32 = 0;
-    while index < pairs_count {
-        let mut current_key: String = pairs[index as usize].clone();
-        if current_key == key {
-            let mut val_index: i32 = index + 1.clone();
-            return pairs[val_index as usize].clone();
-        }
-        index = index + stride;
-    }
-    return "".to_string();
-}
-
-fn reg_has_stride(pairs: Vec<String>, key: String, stride: i32) -> bool {
-    let mut pairs_count: i32 = (pairs.len() as i32);
-    let mut index: i32 = 0;
-    while index < pairs_count {
-        let mut current_key: String = pairs[index as usize].clone();
-        if current_key == key {
-            return true;
-        }
-        index = index + stride;
-    }
-    return false;
-}
-
-fn reg_get(pairs: Vec<String>, key: String) -> String {
-    return reg_get_stride(pairs.clone(), key.clone(), 2);
-}
-
-fn reg_has(pairs: Vec<String>, key: String) -> bool {
-    return reg_has_stride(pairs.clone(), key.clone(), 2);
-}
-
-fn reg3_get(pairs: Vec<String>, key: String) -> String {
-    return reg_get_stride(pairs.clone(), key.clone(), 3);
-}
-
-fn reg3_has(pairs: Vec<String>, key: String) -> bool {
-    return reg_has_stride(pairs.clone(), key.clone(), 3);
-}
-
-fn list_has(items: Vec<String>, val: String) -> bool {
-    let mut item_count: i32 = (items.len() as i32);
-    for index in 0..item_count {
-        let mut item: String = items[index as usize].clone();
-        if item == val {
-            return true;
-        }
-    }
-    return false;
-}
-
 fn is_upper_char(ch: String) -> bool {
     ch.chars().next().map(|c| c.is_uppercase()).unwrap_or(false)
 }
@@ -249,30 +185,6 @@ fn val_err(line_num: i32, label: String, name: String, rule: String) -> String {
 fn validate_tokens(tokens: Vec<Token>) {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut errors: Vec<String> = Vec::new();
-    let mut unsafe_names: Vec<String> = Vec::new();
-    let mut pre_idx: i32 = 0;
-    while pre_idx < token_count {
-        let mut pre_tok: Token = tokens[pre_idx as usize].clone();
-        let kind = pre_tok.kind.clone();
-        if kind == "KW_UNSAFE" {
-            let mut next_idx: i32 = pre_idx + 1.clone();
-            if next_idx < token_count {
-                let mut next_tok: Token = tokens[next_idx as usize].clone();
-                let kind = next_tok.kind.clone();
-                let mut next_is_struct: bool = kind == "KW_STRUCT".clone();
-                let mut next_is_shape: bool = kind == "KW_SHAPE".clone();
-                if next_is_struct || next_is_shape {
-                    let mut name_idx: i32 = next_idx + 1.clone();
-                    if name_idx < token_count {
-                        let mut name_tok: Token = tokens[name_idx as usize].clone();
-                        let value = name_tok.value.clone();
-                        unsafe_names.push(value.clone());
-                    }
-                }
-            }
-        }
-        pre_idx = pre_idx + 1;
-    }
     let mut pos: i32 = 0;
     while pos < token_count {
         let mut tok: Token = tokens[pos as usize].clone();
@@ -375,37 +287,6 @@ fn validate_tokens(tokens: Vec<Token>) {
                     if !is_snake(name_val.clone()) {
                         errors.push(val_err(cur_line.clone(), "fn".to_string(), name_val.clone(), "name must be lower_snake_case (no uppercase letters)".to_string()).clone());
                     }
-                    let mut has_unsafe_param: bool = false;
-                    let mut param_scan: i32 = pos + 4.clone();
-                    while param_scan < token_count {
-                        let mut param_tok: Token = tokens[param_scan as usize].clone();
-                        let kind = param_tok.kind.clone();
-                        let value = param_tok.value.clone();
-                        if kind == "RPAREN" {
-                            break;
-                        }
-                        if kind == "IDENT" {
-                            let mut is_unsafe_ptype: bool = list_has(unsafe_names.clone(), value.clone());
-                            if is_unsafe_ptype {
-                                has_unsafe_param = true;
-                                break;
-                            }
-                        }
-                        param_scan = param_scan + 1;
-                    }
-                    if has_unsafe_param {
-                        let mut has_unsafe_kw: bool = false;
-                        if pos > 0 {
-                            let mut prev_fn_pos: i32 = pos - 1.clone();
-                            let mut prev_fn_tok: Token = tokens[prev_fn_pos as usize].clone();
-                            let kind = prev_fn_tok.kind.clone();
-                            let mut prev_is_unsafe: bool = kind == "KW_UNSAFE".clone();
-                            has_unsafe_kw = prev_is_unsafe;
-                        }
-                        if !has_unsafe_kw {
-                            errors.push(val_err(cur_line.clone(), "fn".to_string(), name_val.clone(), "takes an unsafe type — must be declared as 'unsafe fn'".to_string()).clone());
-                        }
-                    }
                 }
             }
             pos = pos + 1;
@@ -499,6 +380,69 @@ fn skip_to_body(tokens: Vec<Token>, pos: i32) -> i32 {
     let mut cur: i32 = adv_nl(pos.clone(), tokens.clone());
     cur = adv_indent(cur.clone(), tokens.clone());
     return cur;
+}
+
+fn is_empty(source: String) -> bool {
+    let mut length: i32 = (source.len() as i32);
+    return length == 0;
+}
+
+fn str_eq(left: String, right: String) -> bool {
+    return left == right;
+}
+
+fn reg_get_stride(pairs: Vec<String>, key: String, stride: i32) -> String {
+    let mut pairs_count: i32 = (pairs.len() as i32);
+    let mut index: i32 = 0;
+    while index < pairs_count {
+        let mut current_key: String = pairs[index as usize].clone();
+        if current_key == key {
+            let mut val_index: i32 = index + 1.clone();
+            return pairs[val_index as usize].clone();
+        }
+        index = index + stride;
+    }
+    return "".to_string();
+}
+
+fn reg_has_stride(pairs: Vec<String>, key: String, stride: i32) -> bool {
+    let mut pairs_count: i32 = (pairs.len() as i32);
+    let mut index: i32 = 0;
+    while index < pairs_count {
+        let mut current_key: String = pairs[index as usize].clone();
+        if current_key == key {
+            return true;
+        }
+        index = index + stride;
+    }
+    return false;
+}
+
+fn reg_get(pairs: Vec<String>, key: String) -> String {
+    return reg_get_stride(pairs.clone(), key.clone(), 2);
+}
+
+fn reg_has(pairs: Vec<String>, key: String) -> bool {
+    return reg_has_stride(pairs.clone(), key.clone(), 2);
+}
+
+fn reg3_get(pairs: Vec<String>, key: String) -> String {
+    return reg_get_stride(pairs.clone(), key.clone(), 3);
+}
+
+fn reg3_has(pairs: Vec<String>, key: String) -> bool {
+    return reg_has_stride(pairs.clone(), key.clone(), 3);
+}
+
+fn list_has(items: Vec<String>, val: String) -> bool {
+    let mut item_count: i32 = (items.len() as i32);
+    for index in 0..item_count {
+        let mut item: String = items[index as usize].clone();
+        if item == val {
+            return true;
+        }
+    }
+    return false;
 }
 
 fn skip_to_block_start(tokens: Vec<Token>, start: i32) -> ParseResult {
@@ -749,35 +693,6 @@ fn build_var_type_reg(tokens: Vec<Token>) -> Vec<String> {
     return result;
 }
 
-fn build_unsafe_reg(tokens: Vec<Token>) -> Vec<String> {
-    let mut result: Vec<String> = Vec::new();
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut pos: i32 = 0;
-    while pos < token_count {
-        let mut tok: Token = tokens[pos as usize].clone();
-        let kind = tok.kind.clone();
-        if kind == "KW_UNSAFE" {
-            let mut next_pos: i32 = pos + 1.clone();
-            if next_pos < token_count {
-                let mut next_tok: Token = tokens[next_pos as usize].clone();
-                let kind = next_tok.kind.clone();
-                let mut next_is_struct: bool = kind == "KW_STRUCT".clone();
-                let mut next_is_shape: bool = kind == "KW_SHAPE".clone();
-                if next_is_struct || next_is_shape {
-                    let mut name_pos: i32 = next_pos + 1.clone();
-                    if name_pos < token_count {
-                        let mut name_tok: Token = tokens[name_pos as usize].clone();
-                        let value = name_tok.value.clone();
-                        result.push(value.clone());
-                    }
-                }
-            }
-        }
-        pos = pos + 1;
-    }
-    return result;
-}
-
 fn resolve_type(type_name: String, shape_reg: Vec<String>, enum_reg: Vec<String>) -> String {
     let mut enum_rust: String = reg_get(enum_reg.clone(), type_name.clone());
     if !is_empty(enum_rust.clone()) {
@@ -852,24 +767,6 @@ fn collect_mut_names(tokens: Vec<Token>, start: i32, end_pos: i32) -> Vec<String
                 let value = using_var_token.value.clone();
                 if !list_has(result.clone(), value.clone()) {
                     result.push(value.clone());
-                }
-            }
-        }
-        if kind == "KW_UNSAFE" {
-            let mut unsafe_next: i32 = raw_i + 1.clone();
-            if unsafe_next < end_pos {
-                let mut unsafe_next_tok: Token = tokens[unsafe_next as usize].clone();
-                let kind = unsafe_next_tok.kind.clone();
-                let mut is_unsafe_using: bool = kind == "KW_USING".clone();
-                if is_unsafe_using {
-                    let mut uvar_pos: i32 = unsafe_next + 1.clone();
-                    if uvar_pos < end_pos {
-                        let mut uvar_tok: Token = tokens[uvar_pos as usize].clone();
-                        let value = uvar_tok.value.clone();
-                        if !list_has(result.clone(), value.clone()) {
-                            result.push(value.clone());
-                        }
-                    }
                 }
             }
         }
@@ -1016,15 +913,6 @@ fn word_to_kind(word: String) -> String {
     if word == "with" {
         return "KW_WITH".to_string();
     }
-    if word == "unsafe" {
-        return "KW_UNSAFE".to_string();
-    }
-    if word == "force" {
-        return "KW_FORCE".to_string();
-    }
-    if word == "to" {
-        return "KW_TO".to_string();
-    }
     return "IDENT".to_string();
 }
 
@@ -1157,16 +1045,6 @@ fn find_struct_for_field(struct_reg: Vec<String>, field: String) -> String {
 }
 
 fn gen_call_args(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
-    let variant_reg = ctx.variant_reg.clone();
-    let shape_reg = ctx.shape_reg.clone();
-    let struct_reg = ctx.struct_reg.clone();
-    let enum_reg = ctx.enum_reg.clone();
-    let mut_names = ctx.mut_names.clone();
-    let type_reg = ctx.type_reg.clone();
-    let using_type = ctx.using_type.clone();
-    let using_var = ctx.using_var.clone();
-    let var_type_reg = ctx.var_type_reg.clone();
-    let unsafe_reg = ctx.unsafe_reg.clone();
     let mut arg_codes: Vec<String> = Vec::new();
     let mut cur: i32 = pos.clone();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -1202,13 +1080,7 @@ fn gen_call_args(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
             }
             if !peek_is_call {
                 if !peek_is_idx {
-                    let mut arg_var_type: String = reg_get(var_type_reg.clone(), arg_code.clone());
-                    let mut is_unsafe_arg: bool = list_has(unsafe_reg.clone(), arg_var_type.clone());
-                    if is_unsafe_arg {
-                        arg_code = s_join(vec!["&mut ".to_string(), arg_code.clone()]);
-                    } else {
-                        arg_code = s_join(vec![arg_code.clone(), ".clone()".to_string()]);
-                    }
+                    arg_code = s_join(vec![arg_code.clone(), ".clone()".to_string()]);
                 }
             }
         }
@@ -1265,10 +1137,6 @@ fn gen_primary(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     let enum_reg = ctx.enum_reg.clone();
     let mut_names = ctx.mut_names.clone();
     let type_reg = ctx.type_reg.clone();
-    let using_type = ctx.using_type.clone();
-    let using_var = ctx.using_var.clone();
-    let var_type_reg = ctx.var_type_reg.clone();
-    let unsafe_reg = ctx.unsafe_reg.clone();
     let mut token_count: i32 = (tokens.len() as i32);
     let mut token: Token = tokens[pos as usize].clone();
     let kind = token.kind.clone();
@@ -1484,7 +1352,6 @@ fn gen_destructure(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> Par
     let using_type = ctx.using_type.clone();
     let using_var = ctx.using_var.clone();
     let var_type_reg = ctx.var_type_reg.clone();
-    let unsafe_reg = ctx.unsafe_reg.clone();
     let mut token_count: i32 = (tokens.len() as i32);
     let mut pad: String = s_repeat("    ".to_string(), depth.clone());
     let mut fields: Vec<String> = Vec::new();
@@ -1534,7 +1401,6 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
     let mut using_type = ctx.using_type.clone();
     let mut using_var = ctx.using_var.clone();
     let var_type_reg = ctx.var_type_reg.clone();
-    let unsafe_reg = ctx.unsafe_reg.clone();
     let mut token_count: i32 = (tokens.len() as i32);
     let mut token: Token = tokens[pos as usize].clone();
     let kind = token.kind.clone();
@@ -1608,31 +1474,13 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
         let mut using_var: String = value.clone();
         let mut struct_type: String = reg_get(var_type_reg.clone(), using_var.clone());
         let mut using_type: String = struct_type.clone();
+        let mut init_destruct: String = make_destruct_code(using_var.clone(), struct_type.clone(), struct_reg.clone(), mut_names.clone(), pad.clone());
         let mut body_start: i32 = skip_to_body(tokens.clone(), var_pos + 1.clone());
 /* unhandled(IDENT) */
-        let using_ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg };
+        let using_ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg };
         let mut block_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth.clone(), using_ctx.clone());
-        return make_result(pr_code(block_r.clone()), pr_pos(block_r.clone()));
-    }
-    if kind == "KW_UNSAFE" {
-        let mut unsafe_next_pos: i32 = pos + 1.clone();
-        if unsafe_next_pos < token_count {
-            let mut unsafe_next_tok: Token = tokens[unsafe_next_pos as usize].clone();
-            let kind = unsafe_next_tok.kind.clone();
-            if kind == "KW_USING" {
-                let mut var_pos: i32 = pos + 2.clone();
-                let mut var_tok: Token = tokens[var_pos as usize].clone();
-                let value = var_tok.value.clone();
-                let mut using_var: String = value.clone();
-                let mut struct_type: String = reg_get(var_type_reg.clone(), using_var.clone());
-                let mut using_type: String = struct_type.clone();
-                let mut body_start: i32 = skip_to_body(tokens.clone(), var_pos + 1.clone());
-/* unhandled(IDENT) */
-                let using_ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg };
-                let mut block_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth.clone(), using_ctx.clone());
-                return make_result(pr_code(block_r.clone()), pr_pos(block_r.clone()));
-            }
-        }
+        let mut full_code: String = s_cat(init_destruct.clone(), pr_code(block_r.clone()));
+        return make_result(full_code.clone(), pr_pos(block_r.clone()));
     }
     if kind == "IDENT" {
         let mut ident_name: String = value.clone();
@@ -1741,7 +1589,6 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
             let mut is_zero_arg: bool = kind == "RPAREN".clone();
             let mut has_using: bool = !is_empty(using_var.clone());
             if is_zero_arg && has_using {
-                let mut calling_unsafe: bool = list_has(unsafe_reg.clone(), using_type.clone());
                 let mut after_rparen: i32 = args_pos + 1.clone();
                 let mut has_with_arg: bool = false;
                 let mut extra_arg: String = "".to_string();
@@ -1764,19 +1611,13 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
                     }
                 }
                 let mut shim_code: String = "".to_string();
-                if calling_unsafe {
-                    if has_with_arg {
-                        shim_code = s_join(vec![pad.clone(), ident_name.clone(), "(&mut ".to_string(), using_var.clone(), ", &mut ".to_string(), extra_arg.clone(), ");\n".to_string()]);
-                    } else {
-                        shim_code = s_join(vec![pad.clone(), ident_name.clone(), "(&mut ".to_string(), using_var.clone(), ");\n".to_string()]);
-                    }
+                if has_with_arg {
+                    shim_code = s_join(vec![pad.clone(), using_var.clone(), " = ".to_string(), ident_name.clone(), "(".to_string(), using_var.clone(), ".clone(), ".to_string(), extra_arg.clone(), ".clone());\n".to_string()]);
                 } else {
-                    if has_with_arg {
-                        shim_code = s_join(vec![pad.clone(), using_var.clone(), " = ".to_string(), ident_name.clone(), "(".to_string(), using_var.clone(), ".clone(), ".to_string(), extra_arg.clone(), ".clone());\n".to_string()]);
-                    } else {
-                        shim_code = s_join(vec![pad.clone(), using_var.clone(), " = ".to_string(), ident_name.clone(), "(".to_string(), using_var.clone(), ".clone());\n".to_string()]);
-                    }
+                    shim_code = s_join(vec![pad.clone(), using_var.clone(), " = ".to_string(), ident_name.clone(), "(".to_string(), using_var.clone(), ".clone());\n".to_string()]);
                 }
+                let mut re_destruct: String = make_destruct_code(using_var.clone(), using_type.clone(), struct_reg.clone(), mut_names.clone(), pad.clone());
+                shim_code = s_cat(shim_code.clone(), re_destruct.clone());
                 return make_result(shim_code.clone(), adv_nl(after_with.clone(), tokens.clone()));
             }
             let mut args_r: ParseResult = gen_call_args(tokens.clone(), args_pos.clone(), ctx.clone());
@@ -1833,23 +1674,6 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
             let mut idx_code: String = pr_code(idx_r.clone());
             let mut idx_end: i32 = pr_pos(idx_r.clone());
             return make_result(s_join(vec![pad.clone(), ident_name.clone(), ".remove(".to_string(), idx_code.clone(), " as usize);\n".to_string()]), adv_nl(idx_end.clone(), tokens.clone()));
-        }
-        if kind == "KW_FORCE" {
-            let mut field_pos: i32 = pos + 2.clone();
-            let mut expr_pos: i32 = pos + 4.clone();
-            let mut field_tok: Token = tokens[field_pos as usize].clone();
-            let value = field_tok.value.clone();
-            let mut field_name: String = value.clone();
-            let mut expr_r: ParseResult = gen_expr(tokens.clone(), expr_pos.clone(), ctx.clone());
-            let mut expr_code: String = pr_code(expr_r.clone());
-            let mut expr_end: i32 = pr_pos(expr_r.clone());
-            let mut expr_tok: Token = tokens[expr_pos as usize].clone();
-            let kind = expr_tok.kind.clone();
-            let mut force_suffix: String = "".to_string();
-            if kind == "STRING" {
-                force_suffix = ".to_string()".to_string();
-            }
-            return make_result(s_join(vec![pad.clone(), ident_name.clone(), ".".to_string(), field_name.clone(), " = ".to_string(), expr_code.clone(), force_suffix.clone(), ";\n".to_string()]), adv_nl(expr_end.clone(), tokens.clone()));
         }
         if kind == "EQUALS" {
             let mut val_pos: i32 = next_pos + 1.clone();
@@ -2352,7 +2176,6 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     let mut using_type = ctx.using_type.clone();
     let mut using_var = ctx.using_var.clone();
     let mut var_type_reg = ctx.var_type_reg.clone();
-    let unsafe_reg = ctx.unsafe_reg.clone();
     let mut cur: TokenCursor = cur_at(tokens.clone(), pos + 1.clone());
     let token_count = cur.token_count.clone();
     let pos = cur.pos.clone();
@@ -2374,7 +2197,6 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     let pos = cur.pos.clone();
     let current = cur.current.clone();
     let mut param_strs: Vec<String> = Vec::new();
-    let mut param_type_pairs: Vec<String> = Vec::new();
     while !c_at_end(cur.clone()) {
         let current = cur.current.clone();
         let kind = current.kind.clone();
@@ -2399,27 +2221,7 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
             let value = current.value.clone();
             let mut param_name: String = value.clone();
             let mut rust_param_type: String = resolve_type(param_type.clone(), shape_reg.clone(), enum_reg.clone());
-            let mut is_unsafe_param: bool = list_has(unsafe_reg.clone(), param_type.clone());
-            if is_unsafe_param {
-                param_strs.push(s_join(vec![param_name.clone(), ": &mut ".to_string(), rust_param_type.clone()]).clone());
-            } else {
-                param_strs.push(s_join(vec![param_name.clone(), ": ".to_string(), rust_param_type.clone()]).clone());
-            }
-            let mut prim_int: bool = param_type == "int".clone();
-            let mut prim_str: bool = param_type == "string".clone();
-            let mut prim_bool: bool = param_type == "bool".clone();
-            let mut prim_float: bool = param_type == "float".clone();
-            let mut prim_void: bool = param_type == "void".clone();
-            let mut is_prim: bool = prim_int || prim_str || prim_bool || prim_float || prim_void.clone();
-            if !is_prim {
-                param_type_pairs.push(param_name.clone());
-                param_type_pairs.push(param_type.clone());
-            }
-            cur = cur_next(cur.clone(), tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
-            let current = cur.current.clone();
-        } else {
+            param_strs.push(s_join(vec![param_name.clone(), ": ".to_string(), rust_param_type.clone()]).clone());
             cur = cur_next(cur.clone(), tokens.clone());
             let token_count = cur.token_count.clone();
             let pos = cur.pos.clone();
@@ -2437,50 +2239,11 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
     let mut body_tokens: Vec<Token> = l_slice(tokens.clone(), body_start.clone(), body_end_pos + 1.clone());
     let mut body_len: i32 = (body_tokens.len() as i32);
     let mut mut_names: Vec<String> = collect_mut_names(body_tokens.clone(), 0, body_len - 1.clone());
-    let mut body_tok_count: i32 = (body_tokens.len() as i32);
-    let mut scan_pos: i32 = 0;
-    while scan_pos < body_tok_count {
-        let mut scan_tok: Token = body_tokens[scan_pos as usize].clone();
-        let kind = scan_tok.kind.clone();
-        let value = scan_tok.value.clone();
-        if kind == "IDENT" {
-            let mut next_p: i32 = scan_pos + 1.clone();
-            let mut eq_p: i32 = scan_pos + 2.clone();
-            if eq_p < body_tok_count {
-                let mut next_tok: Token = body_tokens[next_p as usize].clone();
-                let mut eq_tok: Token = body_tokens[eq_p as usize].clone();
-                let kind = next_tok.kind.clone();
-                let mut next_is_ident: bool = kind == "IDENT".clone();
-                let value = next_tok.value.clone();
-                let mut next_val: String = value.clone();
-                let kind = eq_tok.kind.clone();
-                let mut eq_is_equals: bool = kind == "EQUALS".clone();
-                if next_is_ident && eq_is_equals {
-                    let mut type_tok: Token = body_tokens[scan_pos as usize].clone();
-                    let value = type_tok.value.clone();
-                    let mut type_name: String = value.clone();
-                    let mut is_unsafe_type: bool = list_has(unsafe_reg.clone(), type_name.clone());
-                    if is_unsafe_type {
-                        let mut already_mut: bool = list_has(mut_names.clone(), next_val.clone());
-                        if !already_mut {
-                            mut_names.push(next_val.clone());
-                        }
-                    }
-                }
-            }
-        }
-        scan_pos = scan_pos + 1;
-    }
     let mut var_type_reg: Vec<String> = build_var_type_reg(body_tokens.clone());
-    let mut pair_count: i32 = (param_type_pairs.len() as i32);
-    for pair_i in 0..pair_count {
-        let mut pair_item: String = param_type_pairs[pair_i as usize].clone();
-        var_type_reg.push(pair_item.clone());
-    }
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
 /* unhandled(IDENT) */
-    let body_ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg };
+    let body_ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg };
     let mut body_r: ParseResult = gen_block(body_tokens.clone(), 0, 1, body_ctx.clone());
     let mut body_code: String = pr_code(body_r.clone());
     let mut body_end: i32 = body_start + pr_pos(body_r.clone()).clone();
@@ -2876,74 +2639,8 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
         let mut is_struct: bool = kind == "KW_STRUCT".clone();
         let mut is_enum: bool = kind == "KW_ENUM".clone();
         let mut is_shape: bool = kind == "KW_SHAPE".clone();
-        let mut is_unsafe: bool = kind == "KW_UNSAFE".clone();
         let mut is_block_decl: bool = is_fn || is_struct || is_enum.clone();
-        if is_unsafe {
-            let mut next_pos: i32 = pos + 1.clone();
-            if next_pos < token_count {
-                let mut next_tok: Token = tokens[next_pos as usize].clone();
-                let kind = next_tok.kind.clone();
-                let mut unsafe_struct: bool = kind == "KW_STRUCT".clone();
-                let mut unsafe_enum: bool = kind == "KW_ENUM".clone();
-                let mut unsafe_shape: bool = kind == "KW_SHAPE".clone();
-                let mut unsafe_fn_decl: bool = kind == "KW_FN".clone();
-                if unsafe_struct || unsafe_enum {
-                    let mut decl_name: String = name_of_decl(tokens.clone(), next_pos.clone(), false);
-                    let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
-                    if !already_seen {
-                        seen.push(decl_name.clone());
-                    }
-                    let mut block_end: i32 = end_of_block(tokens.clone(), pos.clone());
-                    if !already_seen {
-                        let mut copy_len: i32 = block_end - pos.clone();
-                        for copy_idx in 0..copy_len {
-                            let mut tok_pos: i32 = pos + copy_idx.clone();
-                            let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                            result.push(copy_tok.clone());
-                        }
-                    }
-                    pos = block_end;
-                } else if unsafe_fn_decl {
-                    let mut decl_name: String = name_of_decl(tokens.clone(), next_pos.clone(), true);
-                    let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
-                    if !already_seen {
-                        seen.push(decl_name.clone());
-                    }
-                    let mut block_end: i32 = end_of_block(tokens.clone(), pos.clone());
-                    if !already_seen {
-                        let mut copy_len: i32 = block_end - pos.clone();
-                        for copy_idx in 0..copy_len {
-                            let mut tok_pos: i32 = pos + copy_idx.clone();
-                            let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                            result.push(copy_tok.clone());
-                        }
-                    }
-                    pos = block_end;
-                } else if unsafe_shape {
-                    let mut decl_name: String = name_of_decl(tokens.clone(), next_pos.clone(), false);
-                    let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
-                    if !already_seen {
-                        seen.push(decl_name.clone());
-                    }
-                    let mut shape_end: i32 = end_of_shape(tokens.clone(), pos.clone());
-                    if !already_seen {
-                        let mut copy_len: i32 = shape_end - pos.clone();
-                        for copy_idx in 0..copy_len {
-                            let mut tok_pos: i32 = pos + copy_idx.clone();
-                            let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                            result.push(copy_tok.clone());
-                        }
-                    }
-                    pos = shape_end;
-                } else {
-                    result.push(token.clone());
-                    pos = pos + 1;
-                }
-            } else {
-                result.push(token.clone());
-                pos = pos + 1;
-            }
-        } else if is_block_decl {
+        if is_block_decl {
             let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), is_fn.clone());
             let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
             if !already_seen {
@@ -2996,11 +2693,10 @@ fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {
     let mut type_reg: Vec<String> = build_type_reg(tokens.clone());
     let mut mut_names: Vec<String> = Vec::new();
     let mut var_type_reg: Vec<String> = build_var_type_reg(tokens.clone());
-    let mut unsafe_reg: Vec<String> = build_unsafe_reg(tokens.clone());
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
 /* unhandled(IDENT) */
-    let ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg };
+    let ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg };
     let mut output: String = "".to_string();
     let mut token_count: i32 = (tokens.len() as i32);
     let mut pos: i32 = 0;
@@ -3014,33 +2710,6 @@ fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {
             break;
         }
         if kind == "NEWLINE" {
-            pos = pos + 1;
-            continue;
-        }
-        if kind == "KW_UNSAFE" {
-            let mut decl_pos: i32 = pos + 1.clone();
-            if decl_pos < token_count {
-                let mut decl_tok: Token = tokens[decl_pos as usize].clone();
-                let kind = decl_tok.kind.clone();
-                if kind == "KW_STRUCT" {
-                    let mut result: ParseResult = gen_struct_decl(tokens.clone(), decl_pos.clone());
-                    output = s_cat(output.clone(), pr_code(result.clone()));
-                    pos = pr_pos(result.clone());
-                    continue;
-                }
-                if kind == "KW_SHAPE" {
-                    let mut result: ParseResult = gen_shape_decl(tokens.clone(), decl_pos.clone());
-                    output = s_cat(output.clone(), pr_code(result.clone()));
-                    pos = pr_pos(result.clone());
-                    continue;
-                }
-                if kind == "KW_FN" {
-                    let mut result: ParseResult = gen_fn_decl(tokens.clone(), decl_pos.clone(), ctx.clone());
-                    output = s_cat(output.clone(), pr_code(result.clone()));
-                    pos = pr_pos(result.clone());
-                    continue;
-                }
-            }
             pos = pos + 1;
             continue;
         }

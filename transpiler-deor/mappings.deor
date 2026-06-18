@@ -67,12 +67,6 @@ fn string word_to_kind(string word)
 		return "KW_USING"
 	if word is "with"
 		return "KW_WITH"
-	if word is "unsafe"
-		return "KW_UNSAFE"
-	if word is "force"
-		return "KW_FORCE"
-	if word is "to"
-		return "KW_TO"
 	return "IDENT"
 
 # === Operator helpers ===

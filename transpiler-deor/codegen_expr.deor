@@ -55,7 +55,7 @@ fn string find_struct_for_field(strList struct_reg, string field)
 # arguments get `.clone()` (Rust would move them otherwise). Index-read and call
 # results are left as-is because they already return owned values.
 fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg) in ctx
+
 	strList arg_codes = []
 	int cur = pos
 	int token_count = len(tokens)
@@ -93,12 +93,7 @@ fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
 				peek_is_idx = kind is "KW_AT"
 			if not peek_is_call
 				if not peek_is_idx
-					string arg_var_type = reg_get(var_type_reg, arg_code)
-					bool is_unsafe_arg = list_has(unsafe_reg, arg_var_type)
-					if is_unsafe_arg
-						arg_code = s_join(["&mut ", arg_code])
-					else
-						arg_code = s_join([arg_code, ".clone()"])
+					arg_code = s_join([arg_code, ".clone()"])
 		arg_codes at end = arg_code
 		cur = arg_pos
 
@@ -149,7 +144,7 @@ fn ParseResult gen_unary_method(tokenList tokens, int args_pos, string suffix, G
 # `name(args)`, index read `name at idx`, and plain identifier (potentially an enum
 # variant which must be emitted as `EnumName::Variant` in Rust).
 fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
