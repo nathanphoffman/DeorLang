@@ -106,7 +106,7 @@ fn tokenList load_file(string path)
 			result at end = tok
 			pos = pos + 1
 			continue
-			
+
 		bool at_root_depth = depth is 0
 		if kind is "LPAREN" and at_root_depth
 			ParseResult imp_r = scan_import(raw, pos)
