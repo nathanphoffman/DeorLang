@@ -20,7 +20,11 @@ fn string generate_rust_from_tokens(tokenList tokens)
 	strList mut_names = []
 	strList var_type_reg = build_var_type_reg(tokens)
 	int t_reg = elapsed_ms(t_reg_start)
-	print(s_join(["[timer]   registries: ", n_to_str(t_reg), "ms"]))
+	string trg_str = n_to_str(t_reg)
+	string trg_pfx = "[timer]   registries: "
+	string trg_sfx = "ms"
+	strList trg_parts = [trg_pfx, trg_str, trg_sfx]
+	print(s_join(trg_parts))
 	string using_type = ""
 	string using_var = ""
 	GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
@@ -91,7 +95,11 @@ fn string generate_rust_from_tokens(tokenList tokens)
 		pos = pos + 1
 
 	int t_loop = elapsed_ms(t_loop_start)
-	print(s_join(["[timer]   codegen-loop: ", n_to_str(t_loop), "ms"]))
+	string tlp_str = n_to_str(t_loop)
+	string tlp_pfx = "[timer]   codegen-loop: "
+	string tlp_sfx = "ms"
+	strList tlp_parts = [tlp_pfx, tlp_str, tlp_sfx]
+	print(s_join(tlp_parts))
 	return output
 
 # Entry point. Reads input and output paths from command-line arguments, calls
@@ -111,13 +119,21 @@ fn void main()
 		int t_start = now_ms()
 		tokenList tokens = collect_all_tokens_with_all_imports(input_path)
 		int t_load = elapsed_ms(t_start)
-		print(s_join(["[timer] load+dedup: ", n_to_str(t_load), "ms"]))
+		string tld_str = n_to_str(t_load)
+		string tld_pfx = "[timer] load+dedup: "
+		string tld_sfx = "ms"
+		strList tld_parts = [tld_pfx, tld_str, tld_sfx]
+		print(s_join(tld_parts))
 
 		validate_tokens(tokens)
 
 		int t_gen_start = now_ms()
 		string rust_code = generate_rust_from_tokens(tokens)
 		int t_gen = elapsed_ms(t_gen_start)
-		print(s_join(["[timer] total-codegen: ", n_to_str(t_gen), "ms"]))
+		string tgn_str = n_to_str(t_gen)
+		string tgn_pfx = "[timer] total-codegen: "
+		string tgn_sfx = "ms"
+		strList tgn_parts = [tgn_pfx, tgn_str, tgn_sfx]
+		print(s_join(tgn_parts))
 
 		f_write(output_path, rust_code)

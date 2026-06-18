@@ -1,25 +1,24 @@
 # Destructuring
-
 `in` extracts one or more fields from a struct into the current scope. This is the only way to access struct fields — there is no dot syntax in source.
 
 Parentheses are always required, even for a single field.
 
 ## Single Field
-
+Deor:
 ```
 (area) in room
 ```
-
+Rust:
 ```rust
 let area = room.area.clone();
 ```
 
 ## Multiple Fields
-
+Deor:
 ```
 (area, name) in room
 ```
-
+Rust:
 ```rust
 let area = room.area.clone();
 let name = room.name.clone();
@@ -30,7 +29,6 @@ Each extracted field becomes its own `let field = src.field.clone();` binding �
 ---
 
 ## Partial Extraction
-
 You can extract a subset of a struct's fields. Any combination is valid — the struct may have more fields than you extract.
 
 ```
@@ -46,20 +44,15 @@ struct Room
 ---
 
 ## Extraction Order
-
 Fields must be extracted in declaration order — the same rule as struct construction. The transpiler enforces this; wrong order is a transpiler error. Single-field extraction has no ordering constraint.
 
 ```
 (area, name) in room    # correct — matches declaration order
 (name, area) in room    # transpiler error — area is declared before name
 ```
-
-See [Enforced Practices — Field Extraction Order](enforced_practices.md#field-extraction-order).
-
 ---
 
 ## Shadowing
-
 If a name being extracted already exists in scope, the new binding silently shadows it. This is standard Rust `let` rebinding and is intentional in Deor.
 
 ```
@@ -69,6 +62,3 @@ world as 2
 
 Use this deliberately to "update" a name after processing, or avoid it by choosing distinct names.
 
----
-
-**Conversion notes:** the generated `.field` access is valid in Rust output even though the source language has no dot syntax — "no dots" is a source-grammar rule, not a constraint on generated code.

@@ -1,11 +1,15 @@
+
+# Go Back To
+- Conditionals
+- Enforced Practices
+
+
 # For Nate
-- Look at how ranges work in transpiler vs doc vs my expectation
-- See if this is true in transpiler today: Because they are built-ins, they accept literals directly. User-defined functions require named variables
 - Do we have any form of union types in the transpiler?
 - Check on empty vs [] for lists
 
 # Transpiler Add
-- We should extend avow / validator types
+- We should extend avow / validator types -- Ask about avow I am not sure we should actually do this.
   - Positive num = -5 no longer panics, it assigns none under the hood (lie in deor syntax)
   - However users can also assign a lie to a Validator Type (Option) value: Positive num = lie  (lie is a none)
   - if num is lie  -- this works and is the same as if num is not Positive
@@ -28,19 +32,4 @@
 - if lists are assigned data they can be assigned literally like listStuff = [employee, item2, item3]
   - however, importantly, these items must be named.  not ["Nate", "stuff", "thing"] they follow
   - the same rull as function variable passing (except of course they can have more than three)
-
-## Naming
-- enums, structs, and custom types (type validators) MUST be PascalCase
-  - think structure = PascalCase
-  - the logic behind this is it stands out boldly, but blends together as boldness > readability
-- shapes must be camelCase
-  - think aliasing = camelCase
-  - the logic behind this is it stands out fairly well, but blends together as boldness = readability
-- variable and function names must be snake_case
-  - think runtime items = snake_case
-  - the logic behind this is that these are very important to be readable as readability > boldness
-- constants must be SCREAMING_SNAKE
-  - think runtime item but it SCREAMS louder than the rest
-  - the logic behind this is that these are THE MOST IMPORTANT to be read attention > readability > boldness
-
 

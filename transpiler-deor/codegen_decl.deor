@@ -38,10 +38,18 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 				(value) in current
 				string field_name = value
 				string rust_type = render_rust_type(field_type)
-				field_lines at end = s_join(["    ", field_name, ": ", rust_type, ","])
+				string fln_ind = "    "
+				string fln_sep = ": "
+				string fln_com = ","
+				strList fln_parts = [fln_ind, field_name, fln_sep, rust_type, fln_com]
+				field_lines at end = s_join(fln_parts)
 				cur_next() with tokens
 		string fields_code = s_join_nl(field_lines)
-		string decl = s_join(["#[derive(Clone, PartialEq, Debug)]\nstruct ", struct_name, " {\n", fields_code, "\n}\n\n"])
+		string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
+		string sdcl_ob = " {\n"
+		string sdcl_cb = "\n}\n\n"
+		strList sdcl_parts = [sdcl_pfx, struct_name, sdcl_ob, fields_code, sdcl_cb]
+		string decl = s_join(sdcl_parts)
 		(pos) in cur
 		return make_result(giveup decl, pos)
 
@@ -65,7 +73,11 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	string rust_name = s_pascal(shape_name)
 	if kind is "KW_LIST"
 		string rust_elem = render_rust_type(elem_type)
-		string decl = s_join(["type ", rust_name, " = Vec<", rust_elem, ">;\n\n"])
+		string shp_pfx = "type "
+		string shp_mid = " = Vec<"
+		string shp_sfx = ">;\n\n"
+		strList shp_parts = [shp_pfx, rust_name, shp_mid, rust_elem, shp_sfx]
+		string decl = s_join(shp_parts)
 		int after = elem_pos + 1
 		int shape_next = adv_nl(after, tokens)
 		return make_result(giveup decl, shape_next)
@@ -75,10 +87,17 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	string out_type = value
 	string rust_in = render_rust_type(elem_type)
 	string rust_out = render_rust_type(out_type)
-	string out_suffix = s_join([" -> ", rust_out])
+	string ost_pfx = " -> "
+	strList ost_parts = [ost_pfx, rust_out]
+	string out_suffix = s_join(ost_parts)
 	if is_empty(rust_out)
 		out_suffix = ""
-	string decl = s_join(["type ", rust_name, " = fn(", rust_in, ")", out_suffix, ";\n\n"])
+	string fns_pfx = "type "
+	string fns_mid = " = fn("
+	string fns_rp = ")"
+	string fns_sfx = ";\n\n"
+	strList fns_parts = [fns_pfx, rust_name, fns_mid, rust_in, fns_rp, out_suffix, fns_sfx]
+	string decl = s_join(fns_parts)
 	int after = out_pos + 1
 	int fn_shape_next = adv_nl(after, tokens)
 	return make_result(giveup decl, fn_shape_next)
@@ -104,9 +123,16 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 			if kind is "DEDENT"
 				break
 			if kind is "IDENT"
-				variant_lines at end = s_join(["    ", value, ","])
+				string vln_ind = "    "
+				string vln_com = ","
+				strList vln_parts = [vln_ind, value, vln_com]
+				variant_lines at end = s_join(vln_parts)
 		string variants_code = s_join_nl(variant_lines)
-		string decl = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nenum ", rust_name, " {\n", variants_code, "\n}\n\n"])
+		string enm_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum "
+		string enm_ob = " {\n"
+		string enm_cb = "\n}\n\n"
+		strList enm_parts = [enm_pfx, rust_name, enm_ob, variants_code, enm_cb]
+		string decl = s_join(enm_parts)
 		(pos) in cur
 		return make_result(giveup decl, pos)
 
@@ -145,8 +171,20 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 			if kind is "DEDENT"
 				break
 		(pos) in cur2
-	string struct_code = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ", type_name, "(", rust_param_type, ");\n\n"])
-	string impl_code = s_join(["impl ", type_name, " {\n    fn new(", param_name, ": ", rust_param_type, ") -> Option<Self> {\n        if ", pred_code, " {\n            Some(", type_name, "(", param_name, "))\n        } else {\n            None\n        }\n    }\n}\n\n"])
+	string tsc_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
+	string tsc_op = "("
+	string tsc_sfx = ");\n\n"
+	strList tsc_parts = [tsc_pfx, type_name, tsc_op, rust_param_type, tsc_sfx]
+	string struct_code = s_join(tsc_parts)
+	string imp_pfx = "impl "
+	string imp_fn = " {\n    fn new("
+	string imp_col = ": "
+	string imp_ret = ") -> Option<Self> {\n        if "
+	string imp_som = " {\n            Some("
+	string imp_inn = "("
+	string imp_sfx = "))\n        } else {\n            None\n        }\n    }\n}\n\n"
+	strList imp_parts = [imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx]
+	string impl_code = s_join(imp_parts)
 	string type_code = s_cat(giveup struct_code, giveup impl_code)
 	return make_result(type_code, pos)
 
@@ -185,7 +223,9 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
 				(value) in current
 				string param_name = value
 				string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
-				param_strs at end = s_join([param_name, ": ", rust_param_type])
+				string prm_sep = ": "
+				strList prm_parts = [param_name, prm_sep, rust_param_type]
+				param_strs at end = s_join(prm_parts)
 				cur_next() with tokens
 			else
 				cur_next() with tokens
@@ -209,15 +249,25 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
 	RcCtx body_ctx = make_rctx(giveup body_ctx_raw)
 	TokensRef body_tokens = tokens_wrap(giveup body_tokens_raw)
 	# Rc wrappers make recursive clones inside gen_block cheap (Rc::clone vs full copy)
-	ParseResult body_r = gen_block(giveup body_tokens, 0, 1, giveup body_ctx)
+	int body_pos = 0
+	int body_depth = 1
+	ParseResult body_r = gen_block(giveup body_tokens, body_pos, body_depth, giveup body_ctx)
 	string body_code = pr_code(body_r)
 	int body_end = body_start + pr_pos(body_r)
 	string sep = ", "
 	string params_code = s_join_with(param_strs, sep)
 	string ret_suffix = ""
 	if not is_empty(ret_type)
-		ret_suffix = s_join([" -> ", ret_type])
-	string fn_code = s_join(["fn ", fn_name, "(", params_code, ")", ret_suffix, " {\n", body_code, "}\n\n"])
+		string rts_pfx = " -> "
+		strList rts_parts = [rts_pfx, ret_type]
+		ret_suffix = s_join(rts_parts)
+	string fnc_kw = "fn "
+	string fnc_op = "("
+	string fnc_rp = ")"
+	string fnc_ob = " {\n"
+	string fnc_cb = "}\n\n"
+	strList fnc_parts = [fnc_kw, fn_name, fnc_op, params_code, fnc_rp, ret_suffix, fnc_ob, body_code, fnc_cb]
+	string fn_code = s_join(fnc_parts)
 	return make_result(giveup fn_code, body_end)
 
 # Consumes a `raw TypeName` declaration and emits nothing into the Rust output.

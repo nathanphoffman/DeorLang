@@ -65,8 +65,10 @@ fn strList build_struct_reg(tokenList tokens)
 				Token name_token = tokens at name_pos
 				(kind, value) in name_token
 				if kind is "IDENT"
-					ParseResult block_r = skip_to_block_start(tokens, name_pos + 1)
-					ParseResult fields_r = collect_struct_fields(tokens, pr_pos(block_r))
+					int blk_start = name_pos + 1
+					ParseResult block_r = skip_to_block_start(tokens, blk_start)
+					int fld_start = pr_pos(block_r)
+					ParseResult fields_r = collect_struct_fields(tokens, fld_start)
 					result at end = value
 					result at end = pr_code(fields_r)
 					raw_i = pr_pos(fields_r)
@@ -106,7 +108,8 @@ fn strList build_shape_reg(tokenList tokens)
 						(value) in out_token
 						string out_type = value
 						result at end = shape_name
-						result at end = s_join(["fn:", elem_type, ":", out_type])
+						strList fn_parts = ["fn:", elem_type, ":", out_type]
+						result at end = s_join(fn_parts)
 		if kind is "KW_RAW"
 			int name_pos = index + 1
 			if name_pos < token_count
@@ -264,10 +267,13 @@ fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
 			string rust_in = render_rust_type(in_type)
 			string rust_out = render_rust_type(out_type)
 			if is_empty(rust_out)
-				return s_join(["fn(", rust_in, ")"])
-			return s_join(["fn(", rust_in, ") -> ", rust_out])
+				strList fn_no_ret = ["fn(", rust_in, ")"]
+				return s_join(fn_no_ret)
+			strList fn_with_ret = ["fn(", rust_in, ") -> ", rust_out]
+			return s_join(fn_with_ret)
 		string rust_elem = render_rust_type(elem_type)
-		return s_join(["Vec<", rust_elem, ">"])
+		strList vec_parts = ["Vec<", rust_elem, ">"]
+		return s_join(vec_parts)
 	return render_rust_type(type_name)
 
 # === Mutability pre-scan ===

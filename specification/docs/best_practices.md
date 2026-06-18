@@ -1,11 +1,9 @@
 # Best Practices
-
 Style recommendations for idiomatic recommendations, they are not enforced by the transpiler.
 
 ---
 
 ## Spacing
-
 Add a blank line before `return` in any function body that contains more than one statement. One-liner functions (single expression, no bindings) are exempt. Try to keep blocks spaced out keeping like concepts with one another.
 
 **Recommended:**
@@ -34,7 +32,7 @@ fn int square(int val)
 ```
 ---
 
-## Destructuring at Top of Block
+## Destructuring
 
 All `in` extractions should appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
 

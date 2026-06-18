@@ -1,7 +1,7 @@
 # Built-in Functions
 These functions are wired directly into the transpiler — no import, no wrapper needed.
 
-Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Lib and Shims](shims.md) for copy-paste wrappers and more information about the included lib.
+Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Lib and Shims](docs/shims.md) for copy-paste wrappers and more information about the included lib.
 
 ---
 
@@ -12,14 +12,12 @@ Deor:
 ```
 print("Hello, world!")
 print(count)
-print(score)
 ```
 
 Rust:
 ```rust
 println!("{}", "Hello, world!");
 println!("{}", count);
-println!("{}", score);
 ```
 
 ---
@@ -57,19 +55,18 @@ for idx in range(3, 7)
     print(idx)
 ```
 
-`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned. See [Loops](loops.md) for full usage.
+`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned. See [Loops](docs/loops.md) for full usage.
 
 ---
 
 ## `crash`
-Causes a hard exit / crash from the program, takes a string and an optional object
+Causes a hard exit / crash from the program, takes a string
 
 Deor
 ```
 message as "An unknown server problem occurred"
-error_code as 500
-Error err = (message, error_code)
-catch(message, err)
+Error err = (message)
+catch(message)
 ```
 
-Rust: identical to ```panic!()```
+Rust: nearly identical to ```panic!()```

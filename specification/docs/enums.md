@@ -1,11 +1,11 @@
 # Enums
 
-An `enum` declares a named set of variants. Each variant is a distinct value of that type. Enums are camelCase names; variants are PascalCase.
+An `enum` declares a named set of variants. Each variant is a distinct value of that type. Enums are enforced as PascalCase names.
 
 ## Declaration
 
 ```
-enum colorTag
+enum ColorTag
     Red
     Green
     Blue
@@ -37,8 +37,8 @@ Any number of variants. Each is a plain name — no associated data.
 ## Assignment
 
 ```
-colorTag background = Blue
-colorTag foreground = White
+ColorTag background = Blue
+ColorTag foreground = White
 ```
 
 ```rust
@@ -52,7 +52,7 @@ let foreground: ColorTag = ColorTag::White;
 
 Use `if` / `else if` with `is`. No pattern matching — the same `is` operator used for all equality in Deor.
 
-```
+```deor
 if background is Blue
     msg as "blue background"
     print(msg)
@@ -74,7 +74,7 @@ if background == ColorTag::Blue {
 }
 ```
 
-Exhaustiveness is not enforced in v1 — write an `else` branch as a catch-all when needed.
+Exhaustiveness is not enforced — write an `else` branch as a catch-all when needed.
 
 ---
 
@@ -82,26 +82,28 @@ Exhaustiveness is not enforced in v1 — write an `else` branch as a catch-all w
 
 Enums work as struct fields, function parameters, and return types — the same as any other type.
 
-```
+```deor
 struct Theme
     string name
-    colorTag background
-    colorTag foreground
+    ColorTag background
+    ColorTag foreground
 
-fn string describe(colorTag color)
-    if color is Red
-        result as "red"
-        return result
+fn string describe(ColorTag color)
+    other as "other"
+    red as "red"
+    green as "green"
+
+    if color is Red    
+        return red
     else if color is Green
-        result as "green"
-        return result
-    result as "other"
-    return result
+        return green
+    else 
+        return other
 
 fn main()
     name as "Ocean"
-    colorTag background = Blue
-    colorTag foreground = White
+    ColorTag background = Blue
+    ColorTag foreground = White
     Theme theme = (name, background, foreground)
     string label = describe(background)
     print(label)
@@ -123,17 +125,3 @@ fn describe(color: ColorTag) -> String {
     return "other".to_string();
 }
 ```
-
----
-
-## Conversion Notes
-
-| Deor | Rust |
-|---|---|
-| `enum colorTag` + indented variants | `#[derive(Clone, Copy, PartialEq, Debug)] enum ColorTag { ... }` |
-| `colorTag color = Red` | `let color: ColorTag = ColorTag::Red;` |
-| `if color is Red` | `if color == ColorTag::Red` |
-| enum as struct field | field type becomes `ColorTag` |
-| enum as function param | param type becomes `ColorTag` |
-
-Enum types derive `Clone`, `Copy`, `PartialEq`, and `Debug`. `Copy` is safe because enum variants carry no heap data — assigning or passing an enum never moves it.

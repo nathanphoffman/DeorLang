@@ -45,21 +45,25 @@ fn bool reg_has_stride(strList pairs, string key, int stride)
 # Looks up a key in a stride-2 registry (name → value pairs). Used for struct fields,
 # enum names, and shape elem types.
 fn string reg_get(strList pairs, string key)
-	return reg_get_stride(pairs, key, 2)
+	int two = 2
+	return reg_get_stride(pairs, key, two)
 
 # Checks existence in a stride-2 registry. Used to guard shape-based type resolution.
 fn bool reg_has(strList pairs, string key)
-	return reg_has_stride(pairs, key, 2)
+	int two = 2
+	return reg_has_stride(pairs, key, two)
 
 # Looks up a key in a stride-3 registry (name → type → paramName triplets).
 # Used for validator types where both the parameter type and name must be retrieved.
 fn string reg3_get(strList pairs, string key)
-	return reg_get_stride(pairs, key, 3)
+	int thr = 3
+	return reg_get_stride(pairs, key, thr)
 
 # Checks existence in a stride-3 registry. Used to detect user-defined validator types
 # so the code generator can emit `TypeName::new(val)` instead of a plain let binding.
 fn bool reg3_has(strList pairs, string key)
-	return reg_has_stride(pairs, key, 3)
+	int thr = 3
+	return reg_has_stride(pairs, key, thr)
 
 # Linear scan checking whether a strList contains a specific string. Used to check
 # mutable variable names, import name filters, and seen-declaration sets during

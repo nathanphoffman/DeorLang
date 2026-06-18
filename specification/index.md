@@ -17,19 +17,23 @@
 
 [Examples](docs/examples.md) — full worked example with Rust translation
 
+[Experimental](docs/examples.md) — features that are currently in testing
+
 [Functions](docs/functions.md) — `fn`, return rules, void, recursion, `using` blocks
 
 [Immutability](docs/immutability.md) — immutability rules, record update (`with`)
 
 [Imports](docs/imports.md) — local module and `rust:` file imports
 
-[Interop](docs/interop.md) — `rust` blocks, `raw` variables, `rust:` imports, `deps`
-
 [Loops](docs/loops.md) — `for` collection and numeric iteration
 
 [Open Questions](docs/open-questions.md) — future work and undecided areas
 
 [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded
+
+[Roadmap](docs/roadmap.md) — deferred features
+
+[Rust Interop](docs/interop.md) — `rust` blocks, `raw` variables, `rust:` imports, `deps`
 
 [Shapes](docs/shapes.md) — `shape`, list shapes, func shapes, naming, file ordering
 
@@ -40,7 +44,5 @@
 [Syntax](docs/syntax.md) — block structure, keywords, comments
 
 [Types](docs/types.md) — validator types (`type`), structs (`struct` / `struct+` / `struct*`)
-
-[V2 Roadmap](docs/v2.md) — deferred features
 
 [Variables](docs/variables.md) — `as`, explicit typing, struct construction, reassignment

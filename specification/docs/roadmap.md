@@ -1,6 +1,13 @@
-# Important Items
+# Roadmap
 ---
+
+## Private
+Filters the item in from being imported, done on a file level sould be easy to implement with the transpiler
+
+
 ## Transpiler Performance Improvement
+[^1]: Larger-Lift
+
 The codegen loop in generate_rust_from_tokens builds output like this:
 
   output = s_cat(output, pr_code(result))
@@ -16,9 +23,6 @@ The codegen loop in generate_rust_from_tokens builds output like this:
   a loop (O(n²)) and collect::<Vec<_>>().join("") (O(n)).
 
   Current cost: ~3.1s out of ~3.6s total runtime. It's the last major bottleneck.
-
-## Private
-Filters the item in from being imported, done on a file level sould be easy to implement with the transpiler
 
 ---
 # Smaller items being considered

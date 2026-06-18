@@ -58,7 +58,9 @@ fn void main()
 	else
 		print(x)
 
-	for i in range(2,12)
+	two as 2
+	twelve as 12
+	for i in range(two,twelve)
 		print(i)
 
 	hello as 1

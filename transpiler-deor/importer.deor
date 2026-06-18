@@ -186,7 +186,8 @@ fn tokenList deduplicate_decls(tokenList tokens)
 					result at end = copy_tok
 			pos = block_end
 		else if is_shape
-			string decl_name = name_of_decl(tokens, pos, false)
+			bool not_fn = false
+			string decl_name = name_of_decl(tokens, pos, not_fn)
 			bool already_seen = list_has(seen, decl_name)
 			if not already_seen
 				seen at end = decl_name
@@ -199,8 +200,11 @@ fn tokenList deduplicate_decls(tokenList tokens)
 					result at end = copy_tok
 			pos = shape_end
 		else if is_raw
-			string raw_name = name_of_decl(tokens, pos, false)
-			string raw_key = s_join(["_raw_", raw_name])
+			bool not_fn2 = false
+			string raw_name = name_of_decl(tokens, pos, not_fn2)
+			string raw_pfx = "_raw_"
+			strList raw_key_parts = [raw_pfx, raw_name]
+			string raw_key = s_join(raw_key_parts)
 			bool already_seen = list_has(seen, raw_key)
 			if not already_seen
 				seen at end = raw_key
@@ -221,7 +225,9 @@ fn tokenList deduplicate_decls(tokenList tokens)
 				string newline = "\n"
 				strList rust_lines = s_split(value, newline)
 				string rust_first = rust_lines at 0
-				string rust_key = s_join(["_rust_", rust_first])
+				string rk_pfx = "_rust_"
+				strList rk_parts = [rk_pfx, rust_first]
+				string rust_key = s_join(rk_parts)
 				bool already_seen = list_has(seen, rust_key)
 				if not already_seen
 					seen at end = rust_key

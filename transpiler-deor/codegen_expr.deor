@@ -83,7 +83,9 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		(kind) in start_token
 
 		if kind is "STRING"
-			arg_code = s_join([arg_code, ".to_string()"])
+			string str_suf = ".to_string()"
+			strList str_parts = [arg_code, str_suf]
+			arg_code = s_join(str_parts)
 		else if kind is "IDENT"
 			int next_cur = cur + 1
 			bool peek_is_call = false
@@ -95,7 +97,9 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 				peek_is_idx = kind is "KW_AT"
 			if not peek_is_call
 				if not peek_is_idx
-					arg_code = s_join([arg_code, ".clone()"])
+					string cln_suf = ".clone()"
+					strList cln_parts = [arg_code, cln_suf]
+					arg_code = s_join(cln_parts)
 		arg_codes at end = arg_code
 		cur = arg_pos
 
@@ -126,9 +130,13 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 		Token start_token = tokens at cur
 		(kind) in start_token
 		if kind is "STRING"
-			item_code = s_join([item_code, ".to_string()"])
+			string its_suf = ".to_string()"
+			strList its_parts = [item_code, its_suf]
+			item_code = s_join(its_parts)
 		else
-			item_code = s_join([item_code, ".clone()"])
+			string itc_suf = ".clone()"
+			strList itc_parts = [item_code, itc_suf]
+			item_code = s_join(itc_parts)
 		item_codes at end = item_code
 		cur = item_pos
 	string sep = ", "
@@ -142,7 +150,8 @@ fn ParseResult gen_unary_method(TokensRef tokens, int args_pos, string suffix, R
 	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
 	string inner_code = pr_code(inner_r)
 	int close = pr_pos(inner_r) + 1
-	string result_code = s_join([inner_code, suffix])
+	strList res_parts = [inner_code, suffix]
+	string result_code = s_join(res_parts)
 	return make_result(result_code, close)
 
 # Parses a primary expression — the atomic units the expression grammar is built from:
@@ -192,7 +201,10 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 		ParseResult items_r = gen_list_items(tokens, inner_pos, ctx)
 		string items_code = pr_code(items_r)
 		int items_pos = pr_pos(items_r)
-		string list_code = s_join(["vec![", items_code, "]"])
+		string vec_open = "vec!["
+		string vec_close = "]"
+		strList list_parts = [vec_open, items_code, vec_close]
+		string list_code = s_join(list_parts)
 		int after_bracket = items_pos + 1
 		return make_result(list_code, after_bracket)
 
@@ -206,7 +218,9 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				ParseResult expr_r = gen_expr(tokens, expr_pos, ctx)
 				string expr_code = pr_code(expr_r)
 				int after_rparen = pr_pos(expr_r) + 1
-				string unwrap_code = s_join([expr_code, ".unwrap()"])
+				string unw_suf = ".unwrap()"
+				strList unw_parts = [expr_code, unw_suf]
+				string unwrap_code = s_join(unw_parts)
 				return make_result(unwrap_code, after_rparen)
 			# struct construction expression: (f1, f2, ...)
 			strList fields = []
@@ -225,7 +239,10 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 			string struct_name = find_struct_for_fields(struct_reg, fields)
 			string sep = ", "
 			string fields_code = s_join_with(fields, sep)
-			string struct_code = s_join([struct_name, " { ", fields_code, " }"])
+			string sco = " { "
+			string scc = " }"
+			strList sct_parts = [struct_name, sco, fields_code, scc]
+			string struct_code = s_join(sct_parts)
 			return make_result(struct_code, cur)
 
 	if kind is "KW_GIVEUP"
@@ -238,7 +255,9 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 		ParseResult operand_r = gen_primary(tokens, operand_pos, ctx)
 		string operand_code = pr_code(operand_r)
 		int operand_pos_end = pr_pos(operand_r)
-		string not_code = s_join(["!", operand_code])
+		string not_pfx = "!"
+		strList not_parts = [not_pfx, operand_code]
+		string not_code = s_join(not_parts)
 		return make_result(not_code, operand_pos_end)
 
 	if kind is "IDENT"
@@ -252,16 +271,23 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				string func_name = value
 				int args_pos = next_pos + 1
 				if func_name is "len"
-					ParseResult len_r = gen_unary_method(tokens, args_pos, ".len() as i32", ctx)
+					string len_sfx = ".len() as i32"
+					ParseResult len_r = gen_unary_method(tokens, args_pos, len_sfx, ctx)
 					string len_code = pr_code(len_r)
 					int len_end = pr_pos(len_r)
-					string wrapped = s_join(["(", len_code, ")"])
+					string lpn = "("
+					string rpn = ")"
+					strList wpd_parts = [lpn, len_code, rpn]
+					string wrapped = s_join(wpd_parts)
 					return make_result(wrapped, len_end)
 				else if func_name is "crash"
 					ParseResult crash_r = gen_call_args(tokens, args_pos, ctx)
 					string crash_code = pr_code(crash_r)
 					int crash_end = pr_pos(crash_r)
-					string panic_code = s_join(["panic!(\"{}\", ", crash_code, ")"])
+					string pan_pfx = "panic!(\"{}\", "
+					string pan_sfx = ")"
+					strList pan_parts = [pan_pfx, crash_code, pan_sfx]
+					string panic_code = s_join(pan_parts)
 					int after_crash = crash_end + 1
 					return make_result(panic_code, after_crash)
 				# generic call
@@ -269,7 +295,10 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				string args_code = pr_code(args_r)
 				int args_end = pr_pos(args_r)
 				int after_paren = args_end + 1
-				string call_code = s_join([func_name, "(", args_code, ")"])
+				string clp = "("
+				string crp = ")"
+				strList call_parts = [func_name, clp, args_code, crp]
+				string call_code = s_join(call_parts)
 				return make_result(call_code, after_paren)
 
 			# index read: name at idx
@@ -278,13 +307,18 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				ParseResult idx_r = gen_primary(tokens, idx_pos, ctx)
 				string idx_code = pr_code(idx_r)
 				int idx_end = pr_pos(idx_r)
-				string idx_expr = s_join([value, "[", idx_code, " as usize].clone()"])
+				string idx_mid = "["
+				string idx_sfx = " as usize].clone()"
+				strList idx_parts = [value, idx_mid, idx_code, idx_sfx]
+				string idx_expr = s_join(idx_parts)
 				return make_result(idx_expr, idx_end)
 
 		# check enum variant registry
 		string variant_enum = reg_get(variant_reg, value)
 		if not is_empty(variant_enum)
-			string variant_code = s_join([variant_enum, "::", value])
+			string dbl_colon = "::"
+			strList var_parts = [variant_enum, dbl_colon, value]
+			string variant_code = s_join(var_parts)
 			return make_result(variant_code, next_pos)
 
 		return make_result(value, next_pos)
@@ -338,18 +372,26 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 			bool rhs_is_ident = kind is "IDENT"
 			# left is a STRING literal: emit format!
 			if left_is_str
-				left_code = s_join(["format!(\"{}{}\", ", left_code, ", ", rhs_code, ")"])
+				string fmt_pfx = "format!(\"{}{}\", "
+				string fmt_mid = ", "
+				string fmt_sfx = ")"
+				strList fmt_parts = [fmt_pfx, left_code, fmt_mid, rhs_code, fmt_sfx]
+				left_code = s_join(fmt_parts)
 				left_has_str = true
 				cur_pos = rhs_pos
 				continue
 			# left is a String expr from prior concat: rhs identifier needs .as_str()
 			if left_has_str
 				if rhs_is_ident
-					rhs_code = s_join([rhs_code, ".as_str()"])
+					string astr_sfx = ".as_str()"
+					strList astr_parts = [rhs_code, astr_sfx]
+					rhs_code = s_join(astr_parts)
 			# rhs is a string literal → left will now be a String expr
 			if rhs_is_str
 				left_has_str = true
-		left_code = s_join([left_code, " ", rust_op, " ", rhs_code])
+		string op_sp = " "
+		strList bin_parts = [left_code, op_sp, rust_op, op_sp, rhs_code]
+		left_code = s_join(bin_parts)
 		cur_pos = rhs_pos
 
 	return make_result(left_code, cur_pos)

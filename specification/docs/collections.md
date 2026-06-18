@@ -1,11 +1,8 @@
 # Collections
-
 List operations assume a list shape has already been declared — see [Shapes](docs/shapes.md) for how to declare one and use it in function signatures and struct fields.
 
 ---
-
 ## Index Read
-
 Elements are read by index using `at`. Zero-indexed, matching Rust's behavior.
 
 ```
@@ -30,9 +27,7 @@ int mid = scores at idx    # 30
 Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts on all index operations automatically.
 
 ---
-
 ## Index Write
-
 Elements are replaced by index using `at` on the left side of an assignment. The right-hand side must be a named variable of the list's element type.
 
 ```
@@ -48,9 +43,7 @@ scores[idx as usize] = updated_score;
 Out-of-bounds assignment is a runtime panic.
 
 ---
-
 ## Append
-
 `at end` appends a new element to the end of the list. `end` is a reserved keyword meaning "the position after the last element" — it is only valid in this position.
 
 ```
@@ -64,9 +57,7 @@ rooms.push(new_room.clone());
 ```
 
 ---
-
 ## Remove
-
 `remove at` removes the element at a given index, shifting subsequent elements left.
 
 ```
@@ -92,10 +83,8 @@ result.remove(1);
 ```
 
 ---
-
 ## Slice
-
-`in range(start, end)` extracts a contiguous sublist. Returns a new list of the same shape type. `end` is exclusive — the element at `end` is not included.
+`in range(start, end)` extracts a contiguous sublist. Returns a new list of the same shape type. `end` is exclusive — the element at `end` is not included, this follows rust behavior.
 
 ```
 roomList first_ten = rooms in range(0, 10)
@@ -127,9 +116,7 @@ roomList tail = rooms in range(mid, end)       # from mid to end of list
 The `range()` arguments follow the same rules as everywhere else — built-in function, so literals are valid directly.
 
 ---
-
 ## No Membership Test
-
 Deor has no built-in membership operator. `item in list` would conflict with the `in` destructuring and import grammar. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
 
 ```
@@ -139,14 +126,12 @@ fn bool any_match(roomList items, matchFunc predicate)
     for item in items
         if predicate(item)
             return true
-    found as false
-    return found
+        else
+            return false
 ```
 
 ---
-
 ## Updating a Struct Inside a List
-
 Deor does not allow in-place field mutation — `rooms at 0` followed by field assignment is a transpiler error. Struct values inside a list are replaced, not mutated. Extract the struct, build an updated copy with `with`, write it back.
 
 ```
@@ -154,49 +139,17 @@ Deor does not allow in-place field mutation — `rooms at 0` followed by field a
 Room old_room = rooms at idx
 
 # 2. Build the updated version
-Squarefeet new_area = 25
-Room new_room = old_room with (new_area)
+Squarefeet area = 25
+Room new_room = old_room with (area)
 
 # 3. Write back
 rooms at idx = new_room
 ```
 
+Note how in rust the new_area variable does not need to match by name, but it does in Deor (it is how it is bound)
 ```rust
 let old_room: Room = rooms[idx as usize].clone();
 let new_area: Option<Squarefeet> = Squarefeet::new(25);
 let new_room: Room = Room { area: new_area, ..old_room };
 rooms[idx as usize] = new_room;
 ```
-
-**When the index is not known ahead of time**, find it with a loop first:
-
-```
-int count = len(rooms)
-int target = -1
-for idx in range(0, count)
-    Room room = rooms at idx
-    name in room
-    if name is search_name
-        target = idx
-        break
-
-neg as -1
-if target is not neg
-    Room old_room = rooms at target
-    Squarefeet new_area = 25
-    Room new_room = old_room with (new_area)
-    rooms at target = new_room
-```
-
----
-
-## Conversion Notes
-
-| Deor | Rust |
-|---|---|
-| `rooms at idx` | `rooms[idx as usize]` (+ `.clone()` for non-Copy types) |
-| `rooms at idx = val` | `rooms[idx as usize] = val` |
-| `rooms at end = item` | `rooms.push(item)` |
-| `rooms remove at idx` | `rooms.remove(idx as usize)` |
-| `rooms in range(start, end_val)` | `rooms[start..end_val].to_vec()` |
-| `rooms in range(start, end)` | `rooms[start..].to_vec()` |
