@@ -5,6 +5,7 @@
 (make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
 (s_join, s_split) in "transpiler-deor/lib/string.deor"
 
+# this rust performance shim gave us 14x improvement on imports
 rust
 	thread_local! {
 		static INCLUDED_FILES: std::cell::RefCell<std::collections::HashSet<String>> = std::cell::RefCell::new(std::collections::HashSet::new());
