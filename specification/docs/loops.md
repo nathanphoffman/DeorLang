@@ -1,23 +1,26 @@
 # Loops
 
 ## Collection Iteration
-
 ```
 for room in rooms
-    ...
+    (window) in room
+    (size) in window
+    print(r_join["Window size is ", size])
 ```
 
 ---
-
 ## Numeric Iteration
+`range(count)` produces values from `0` to `count - 1`. `range(a_start_num, an_end_num)` produces values from `a_start_num` up to but not including `an_end_num`. `range` is a built-in, so literals are valid directly.
 
-`range(count)` produces values from `0` to `count - 1`. `range(start, end)` produces values from `start` up to but not including `end`. `range` is a built-in, so literals are valid directly.
+**Note:** you cannot pass more than one magic-data argument into a function due to deors-readable-first transpiler enforcement, you must capture the variable first and then pass it through range, additionally end is reserved for collection which may make this process seem frustrating, but that was by design: nothing should be called ``start`` and ``end``.  If it is a hardcoded number do ``one`` and ``ten``. If it is going from the first member in IT to the last member in IT call it first_tech_member, last_tech_member.
 
 ```
 for idx in range(count)
     ...
 
-for idx in range(1, 11)
+one as 1
+eleven as 11
+for idx in range(one, eleven)
     print(idx)    # prints 1 through 10
 ```
 
@@ -30,19 +33,19 @@ for idx in 1..11 {
 }
 ```
 
-`range(count)` is shorthand for `range(0, count)`. `end` as the second argument is exclusive.
+`range(count)` is shorthand for `range(0, count)`.
 
 ---
-
 ## Repeat Without an Index
-
 When the loop index is not needed, write `for in range(n)` — the variable name is omitted but `in` stays:
 
 ```
 for in range(10)
     do_something()
 
-for in range(1, 11)
+one as 1
+eleven as 11
+for in range(one, eleven)
     do_something()
 ```
 
@@ -55,12 +58,8 @@ for _ in 1..11 {
 }
 ```
 
-This is the idiomatic way to repeat an action N times without caring about the iteration count.
-
 ---
-
 ## `break` — Exit a Loop Early
-
 `break` exits the innermost loop immediately. Execution continues after the loop body.
 
 ```
@@ -82,13 +81,10 @@ for item in &items {
     }
 }
 ```
-
-`break` applies to the **innermost** loop only. Labeled breaks (breaking out of an outer loop from an inner one) are not supported in v1 — restructure or use a flag variable.
+`break` applies to the **innermost** loop only. Labeled breaks (breaking out of an outer loop from an inner one) are not supported.
 
 ---
-
 ## Condition-Based Loops — `for if`
-
 `for if condition` is Deor's while loop. It loops as long as the condition is true.
 
 ```
@@ -123,7 +119,6 @@ while true {
 `for if` fits the same keyword as collection and range iteration — `for` is Deor's single loop keyword, and the token after it determines the form: `item in collection`, `in range(n)`, or `if condition`.
 
 ---
-
 ## `continue` — Skip to Next Iteration
 
 `continue` skips the rest of the current loop body and moves to the next iteration.

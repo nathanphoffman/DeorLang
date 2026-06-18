@@ -242,7 +242,9 @@ fn validate_tokens(tokens: Vec<Token>) {
     let mut lbl_fn: String = "fn".to_string();
     let mut lbl_var: String = "variable".to_string();
     let mut lbl_call: String = "call to".to_string();
+    let mut lbl_rust: String = "identifier".to_string();
     let mut rule_min3: String = "name must be at least 3 characters".to_string();
+    let mut rule_no_option: String = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types".to_string();
     let mut rule_pascal: String = "name must be PascalCase (start with uppercase letter)".to_string();
     let mut rule_camel: String = "name must be camelCase (start lowercase, no underscores)".to_string();
     let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters)".to_string();
@@ -255,6 +257,19 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut cur_kind: String = kind.clone();
         let mut cur_val: String = value.clone();
         let mut cur_line: i32 = line.clone();
+        if cur_kind == "KW_RUST" {
+            let mut skip_pos: i32 = pos + 1.clone();
+            while skip_pos < token_count {
+                let mut skip_tok: Token = tokens[skip_pos as usize].clone();
+                let kind = skip_tok.kind.clone();
+                skip_pos = skip_pos + 1;
+                if kind == "RUST_BLOCK" {
+                    break;
+                }
+            }
+            pos = skip_pos;
+            continue;
+        }
         if cur_kind == "KW_STRUCT" {
             let mut name_pos: i32 = pos + 1.clone();
             if name_pos < token_count {
@@ -422,6 +437,16 @@ fn validate_tokens(tokens: Vec<Token>) {
                         }
                     }
                 }
+            }
+            let mut is_option: bool = cur_val == "Option".clone();
+            let mut is_vec: bool = cur_val == "Vec".clone();
+            let mut is_box: bool = cur_val == "Box".clone();
+            let mut is_rc: bool = cur_val == "Rc".clone();
+            let mut is_arc: bool = cur_val == "Arc".clone();
+            let mut is_result: bool = cur_val == "Result".clone();
+            let mut is_rust_generic: bool = is_option || is_vec || is_box || is_rc || is_arc || is_result.clone();
+            if is_rust_generic {
+                errors.push(val_err(cur_line.clone(), lbl_rust.clone(), cur_val.clone(), rule_no_option.clone()).clone());
             }
             let mut next1: i32 = pos + 1.clone();
             let mut next2: i32 = pos + 2.clone();
@@ -1053,8 +1078,8 @@ fn word_to_kind(word: String) -> String {
     if word == "false" {
         return "KW_FALSE".to_string();
     }
-    if word == "none" {
-        return "KW_NONE".to_string();
+    if word == "bad" {
+        return "KW_BAD".to_string();
     }
     if word == "avow" {
         return "KW_AVOW".to_string();
@@ -1371,7 +1396,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let mut next: i32 = pos + 1.clone();
         return make_result(false_str.clone(), next.clone());
     }
-    if kind == "KW_NONE" {
+    if kind == "KW_BAD" {
         let mut none_str: String = "None".to_string();
         let mut next: i32 = pos + 1.clone();
         return make_result(none_str.clone(), next.clone());
@@ -2251,15 +2276,22 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
                         let mut vld_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
                         return make_result(vld_code.clone(), vld_next.clone());
                     }
-                    if kind == "KW_NONE" {
-                        let mut non_pfx: String = "let mut ".to_string();
-                        let mut non_mid: String = ": Option<".to_string();
-                        let mut non_sfx: String = "> = None;\n".to_string();
-                        let mut non_parts: Vec<String> = vec![pad.clone(), non_pfx.clone(), var_name.clone(), non_mid.clone(), rust_type.clone(), non_sfx.clone()];
-                        let mut none_code: String = s_join(non_parts.clone());
-                        let mut none_pos_next: i32 = val_pos + 1.clone();
-                        let mut none_next: i32 = adv_nl_ref(none_pos_next.clone(), tokens.clone());
-                        return make_result(none_code.clone(), none_next.clone());
+                    if kind == "KW_BAD" {
+                        let mut bad_is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
+                        let mut bad_pos_next: i32 = val_pos + 1.clone();
+                        let mut bad_next: i32 = adv_nl_ref(bad_pos_next.clone(), tokens.clone());
+                        if bad_is_validator {
+                            let mut non_pfx: String = "let mut ".to_string();
+                            let mut non_mid: String = ": Option<".to_string();
+                            let mut non_sfx: String = "> = None;\n".to_string();
+                            let mut non_parts: Vec<String> = vec![pad.clone(), non_pfx.clone(), var_name.clone(), non_mid.clone(), rust_type.clone(), non_sfx.clone()];
+                            let mut none_code: String = s_join(non_parts.clone());
+                            return make_result(none_code.clone(), bad_next.clone());
+                        }
+                        let mut bad_err: String = "/* error: bad is only valid for validator types */\n".to_string();
+                        let mut bad_err_parts: Vec<String> = vec![pad.clone(), bad_err.clone()];
+                        let mut bad_err_code: String = s_join(bad_err_parts.clone());
+                        return make_result(bad_err_code.clone(), bad_next.clone());
                     }
                     let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
                     let mut val_code: String = pr_code(val_r.clone());

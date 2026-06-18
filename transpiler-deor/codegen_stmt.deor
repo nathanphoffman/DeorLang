@@ -630,16 +630,22 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 						string vld_code = s_join(vld_parts)
 						int vld_next = adv_nl_ref(val_end, tokens)
 						return make_result(vld_code, vld_next)
-					# none → Option<T>
-					if kind is "KW_NONE"
-						string non_pfx = "let mut "
-						string non_mid = ": Option<"
-						string non_sfx = "> = None;\n"
-						strList non_parts = [pad, non_pfx, var_name, non_mid, rust_type, non_sfx]
-						string none_code = s_join(non_parts)
-						int none_pos_next = val_pos + 1
-						int none_next = adv_nl_ref(none_pos_next, tokens)
-						return make_result(none_code, none_next)
+					# bad → Option<T>, validator types only
+					if kind is "KW_BAD"
+						bool bad_is_validator = reg3_has(type_reg, var_type)
+						int bad_pos_next = val_pos + 1
+						int bad_next = adv_nl_ref(bad_pos_next, tokens)
+						if bad_is_validator
+							string non_pfx = "let mut "
+							string non_mid = ": Option<"
+							string non_sfx = "> = None;\n"
+							strList non_parts = [pad, non_pfx, var_name, non_mid, rust_type, non_sfx]
+							string none_code = s_join(non_parts)
+							return make_result(none_code, bad_next)
+						string bad_err = "/* error: bad is only valid for validator types */\n"
+						strList bad_err_parts = [pad, bad_err]
+						string bad_err_code = s_join(bad_err_parts)
+						return make_result(bad_err_code, bad_next)
 					ParseResult val_r = gen_expr(tokens, val_pos, ctx)
 					string val_code = pr_code(val_r)
 					int val_end = pr_pos(val_r)

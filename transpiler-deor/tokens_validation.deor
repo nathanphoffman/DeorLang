@@ -103,7 +103,9 @@ fn void validate_tokens(tokenList tokens)
 	string lbl_fn = "fn"
 	string lbl_var = "variable"
 	string lbl_call = "call to"
+	string lbl_rust = "identifier"
 	string rule_min3 = "name must be at least 3 characters"
+	string rule_no_option = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types"
 	string rule_pascal = "name must be PascalCase (start with uppercase letter)"
 	string rule_camel = "name must be camelCase (start lowercase, no underscores)"
 	string rule_snake = "name must be lower_snake_case (no uppercase letters)"
@@ -115,6 +117,18 @@ fn void validate_tokens(tokenList tokens)
 		string cur_kind = kind
 		string cur_val = value
 		int cur_line = line
+
+		# skip rust blocks entirely — their content is raw Rust and not subject to Deor rules
+		if cur_kind is "KW_RUST"
+			int skip_pos = pos + 1
+			for if skip_pos < token_count
+				Token skip_tok = tokens at skip_pos
+				(kind) in skip_tok
+				skip_pos = skip_pos + 1
+				if kind is "RUST_BLOCK"
+					break
+			pos = skip_pos
+			continue
 
 		# struct → PascalCase, min 3
 		if cur_kind is "KW_STRUCT"
@@ -257,6 +271,17 @@ fn void validate_tokens(tokenList tokens)
 											errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
 								at_arg_start = false
 							scan_pos = scan_pos + 1
+			# Rust generic types are forbidden in Deor source — use shapes or validator types
+			bool is_option = cur_val is "Option"
+			bool is_vec = cur_val is "Vec"
+			bool is_box = cur_val is "Box"
+			bool is_rc = cur_val is "Rc"
+			bool is_arc = cur_val is "Arc"
+			bool is_result = cur_val is "Result"
+			bool is_rust_generic = is_option or is_vec or is_box or is_rc or is_arc or is_result
+			if is_rust_generic
+				errors at end = val_err(cur_line, lbl_rust, cur_val, rule_no_option)
+
 			# variable declaration check
 			int next1 = pos + 1
 			int next2 = pos + 2

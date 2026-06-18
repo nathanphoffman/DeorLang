@@ -7,10 +7,10 @@
 
 - **Human not Symbols** - think mostly words, occasional ``()``, and rare ```[]```, but not: ``{}`` or ``;`` or ``<>``  etc.
 - **Book Readability** - tabbed blocks, all vars are 3+ chars, no magic data in fn params
-- **Simple Safety** - structs are immutable, variables and lists are mutable, everything is safely cloned
+- **Simple** - structs are immutable, variables and lists are mutable, everything is safely cloned
 - **Uniform Composition** - destructuring order must match, functions limited to 3 parameters
 - **Flat Structure** - no namespacing, nested fns, or closures
-- **Easy Exception Handling** - avow, lie, and validator types replace Rust's Some/Option/None pattern
+- **Easy Exception Handling** - avow and validator types replace Rust's Some/Option/None pattern
 
 ---
 

@@ -27,8 +27,6 @@
 
 [Loops](docs/loops.md) — `for` collection and numeric iteration
 
-[Open Questions](docs/open-questions.md) — future work and undecided areas
-
 [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded
 
 [Roadmap](docs/roadmap.md) — deferred features

@@ -1,11 +1,9 @@
 # Variables
 
 ## `as` — Type-Inferred Bindings
-
 `as` creates a binding whose type is derived from the right-hand side at compile time. It has two valid forms:
 
 ### Scalar literals
-
 The type is inferred from the literal value.
 
 ```

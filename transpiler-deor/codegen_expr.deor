@@ -184,7 +184,7 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 		int next = pos + 1
 		return make_result(false_str, next)
 
-	if kind is "KW_NONE"
+	if kind is "KW_BAD"
 		string none_str = "None"
 		int next = pos + 1
 		return make_result(none_str, next)
