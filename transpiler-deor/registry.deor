@@ -199,13 +199,13 @@ fn strList build_type_reg(tokenList tokens)
 fn strList build_var_type_reg(tokenList tokens)
 	strList result = []
 	int token_count = len(tokens)
-	int i = 0
-	for if i < token_count
-		Token tok = tokens at i
+	int tok_idx = 0
+	for if tok_idx < token_count
+		Token tok = tokens at tok_idx
 		(kind, value) in tok
 		if kind is "IDENT"
-			int next_i = i + 1
-			int eq_i = i + 2
+			int next_i = tok_idx + 1
+			int eq_i = tok_idx + 2
 			if eq_i < token_count
 				Token next_tok = tokens at next_i
 				Token eq_tok = tokens at eq_i
@@ -216,7 +216,7 @@ fn strList build_var_type_reg(tokenList tokens)
 				(kind) in eq_tok
 				bool eq_is_equals = kind is "EQUALS"
 				if next_is_ident and eq_is_equals
-					Token type_tok = tokens at i
+					Token type_tok = tokens at tok_idx
 					(value) in type_tok
 					string type_name = value
 					bool is_int = type_name is "int"
@@ -228,7 +228,7 @@ fn strList build_var_type_reg(tokenList tokens)
 					if not is_primitive
 						result at end = var_name
 						result at end = type_name
-		i = i + 1
+		tok_idx = tok_idx + 1
 	return result
 
 # === Type resolution ===

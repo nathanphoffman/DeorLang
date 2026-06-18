@@ -30,9 +30,9 @@ fn bool c_at_end(TokenCursor c)
 # positioning it at the first statement token inside the block body.
 fn TokenCursor cur_skip_to_body(TokenCursor c, tokenList tokens)
 	(pos) in c
-	int p = adv_nl(pos, tokens)
-	p = adv_indent(p, tokens)
-	return cur_at(tokens, p)
+	int body_pos = adv_nl(pos, tokens)
+	body_pos = adv_indent(body_pos, tokens)
+	return cur_at(tokens, body_pos)
 
 # Returns the token at current_pos + `offset` without advancing the cursor.
 # Allows one-token (or multi-token) look-ahead during parsing without mutating state.

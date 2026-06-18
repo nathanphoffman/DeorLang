@@ -17,7 +17,7 @@ fn Test set(Test test, int world)
 	world = 2
 	return (hello, world)
 
-type Squarefeet(int n)
+type squareFeet(int n)
 	n > 0
 
 fn Test say_hi(Test test)
@@ -58,7 +58,7 @@ fn void main()
 
 	print(world)
 
-	Squarefeet sqft = 4
+	squareFeet sqft = 4
 	int actual_sqft = (avow sqft)
 
 

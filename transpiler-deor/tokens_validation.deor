@@ -14,8 +14,8 @@ fn bool is_lower_char(string ch)
 # First char uppercase → PascalCase
 fn bool is_pascal(string name)
 	strList chars = c_chars(name)
-	int n = len(chars)
-	if n is 0
+	int name_len = len(chars)
+	if name_len is 0
 		return false
 	string first = chars at 0
 	return is_upper_char(first)
@@ -23,30 +23,30 @@ fn bool is_pascal(string name)
 # First char lowercase, no underscores → camelCase
 fn bool is_camel(string name)
 	strList chars = c_chars(name)
-	int n = len(chars)
-	if n is 0
+	int name_len = len(chars)
+	if name_len is 0
 		return false
 	string first = chars at 0
 	if not is_lower_char(first)
 		return false
-	int i = 0
-	for if i < n
-		string ch = chars at i
-		if ch is "_"
+	int idx = 0
+	for if idx < name_len
+		string chr = chars at idx
+		if chr is "_"
 			return false
-		i = i + 1
+		idx = idx + 1
 	return true
 
 # No uppercase letters → lower_snake_case
 fn bool is_snake(string name)
 	strList chars = c_chars(name)
-	int n = len(chars)
-	int i = 0
-	for if i < n
-		string ch = chars at i
-		if is_upper_char(ch)
+	int name_len = len(chars)
+	int idx = 0
+	for if idx < name_len
+		string chr = chars at idx
+		if is_upper_char(chr)
 			return false
-		i = i + 1
+		idx = idx + 1
 	return true
 
 fn string val_err(int line_num, string label, string name, string rule)
@@ -68,65 +68,65 @@ fn void validate_tokens(tokenList tokens)
 
 		# struct → PascalCase, min 3
 		if cur_kind is "KW_STRUCT"
-			int np = pos + 1
-			if np < token_count
-				Token nt = tokens at np
-				(kind, value) in nt
-				string nt_kind = kind
-				string nt_val = value
-				if nt_kind is "IDENT"
-					if len(nt_val) < 3
-						errors at end = val_err(cur_line, "struct", nt_val, "name must be at least 3 characters")
-					if not is_pascal(nt_val)
-						errors at end = val_err(cur_line, "struct", nt_val, "name must be PascalCase (start with uppercase letter)")
+			int name_pos = pos + 1
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				(kind, value) in name_tok
+				string name_kind = kind
+				string name_val = value
+				if name_kind is "IDENT"
+					if len(name_val) < 3
+						errors at end = val_err(cur_line, "struct", name_val, "name must be at least 3 characters")
+					if not is_pascal(name_val)
+						errors at end = val_err(cur_line, "struct", name_val, "name must be PascalCase (start with uppercase letter)")
 			pos = pos + 1
 			continue
 
 		# enum → PascalCase, min 3
 		if cur_kind is "KW_ENUM"
-			int np = pos + 1
-			if np < token_count
-				Token nt = tokens at np
-				(kind, value) in nt
-				string nt_kind = kind
-				string nt_val = value
-				if nt_kind is "IDENT"
-					if len(nt_val) < 3
-						errors at end = val_err(cur_line, "enum", nt_val, "name must be at least 3 characters")
-					if not is_pascal(nt_val)
-						errors at end = val_err(cur_line, "enum", nt_val, "name must be PascalCase (start with uppercase letter)")
+			int name_pos = pos + 1
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				(kind, value) in name_tok
+				string name_kind = kind
+				string name_val = value
+				if name_kind is "IDENT"
+					if len(name_val) < 3
+						errors at end = val_err(cur_line, "enum", name_val, "name must be at least 3 characters")
+					if not is_pascal(name_val)
+						errors at end = val_err(cur_line, "enum", name_val, "name must be PascalCase (start with uppercase letter)")
 			pos = pos + 1
 			continue
 
 		# shape → camelCase, min 3
 		if cur_kind is "KW_SHAPE"
-			int np = pos + 1
-			if np < token_count
-				Token nt = tokens at np
-				(kind, value) in nt
-				string nt_kind = kind
-				string nt_val = value
-				if nt_kind is "IDENT"
-					if len(nt_val) < 3
-						errors at end = val_err(cur_line, "shape", nt_val, "name must be at least 3 characters")
-					if not is_camel(nt_val)
-						errors at end = val_err(cur_line, "shape", nt_val, "name must be camelCase (start lowercase, no underscores)")
+			int name_pos = pos + 1
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				(kind, value) in name_tok
+				string name_kind = kind
+				string name_val = value
+				if name_kind is "IDENT"
+					if len(name_val) < 3
+						errors at end = val_err(cur_line, "shape", name_val, "name must be at least 3 characters")
+					if not is_camel(name_val)
+						errors at end = val_err(cur_line, "shape", name_val, "name must be camelCase (start lowercase, no underscores)")
 			pos = pos + 1
 			continue
 
 		# type → camelCase, min 3
 		if cur_kind is "KW_TYPE"
-			int np = pos + 1
-			if np < token_count
-				Token nt = tokens at np
-				(kind, value) in nt
-				string nt_kind = kind
-				string nt_val = value
-				if nt_kind is "IDENT"
-					if len(nt_val) < 3
-						errors at end = val_err(cur_line, "type", nt_val, "name must be at least 3 characters")
-					if not is_camel(nt_val)
-						errors at end = val_err(cur_line, "type", nt_val, "name must be camelCase (start lowercase, no underscores)")
+			int name_pos = pos + 1
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				(kind, value) in name_tok
+				string name_kind = kind
+				string name_val = value
+				if name_kind is "IDENT"
+					if len(name_val) < 3
+						errors at end = val_err(cur_line, "type", name_val, "name must be at least 3 characters")
+					if not is_camel(name_val)
+						errors at end = val_err(cur_line, "type", name_val, "name must be camelCase (start lowercase, no underscores)")
 			pos = pos + 1
 			continue
 
@@ -134,17 +134,17 @@ fn void validate_tokens(tokenList tokens)
 		# pattern: KW_FN <return_type> <fn_name> LPAREN
 		# return type is always one token (IDENT or KW_VOID), so fn name is at pos+2
 		if cur_kind is "KW_FN"
-			int np = pos + 2
-			if np < token_count
-				Token nt = tokens at np
-				(kind, value) in nt
-				string nt_kind = kind
-				string nt_val = value
-				if nt_kind is "IDENT"
-					if len(nt_val) < 3
-						errors at end = val_err(cur_line, "fn", nt_val, "name must be at least 3 characters")
-					if not is_snake(nt_val)
-						errors at end = val_err(cur_line, "fn", nt_val, "name must be lower_snake_case (no uppercase letters)")
+			int name_pos = pos + 2
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				(kind, value) in name_tok
+				string name_kind = kind
+				string name_val = value
+				if name_kind is "IDENT"
+					if len(name_val) < 3
+						errors at end = val_err(cur_line, "fn", name_val, "name must be at least 3 characters")
+					if not is_snake(name_val)
+						errors at end = val_err(cur_line, "fn", name_val, "name must be lower_snake_case (no uppercase letters)")
 			pos = pos + 1
 			continue
 
@@ -154,14 +154,14 @@ fn void validate_tokens(tokenList tokens)
 			int next1 = pos + 1
 			int next2 = pos + 2
 			if next2 < token_count
-				Token t1 = tokens at next1
-				Token t2 = tokens at next2
-				(kind) in t1
-				string t1k = kind
-				(kind) in t2
-				string t2k = kind
-				if t1k is "IDENT" and t2k is "EQUALS"
-					(value, line) in t1
+				Token tok_one = tokens at next1
+				Token tok_two = tokens at next2
+				(kind) in tok_one
+				string one_kind = kind
+				(kind) in tok_two
+				string two_kind = kind
+				if one_kind is "IDENT" and two_kind is "EQUALS"
+					(value, line) in tok_one
 					string var_name = value
 					int var_line = line
 					if len(var_name) < 3
@@ -173,10 +173,10 @@ fn void validate_tokens(tokenList tokens)
 
 	int error_count = len(errors)
 	if error_count > 0
-		int ei = 0
-		for if ei < error_count
-			string err_msg = errors at ei
+		int err_idx = 0
+		for if err_idx < error_count
+			string err_msg = errors at err_idx
 			print(err_msg)
-			ei = ei + 1
+			err_idx = err_idx + 1
 		rust
 			std::process::exit(1);

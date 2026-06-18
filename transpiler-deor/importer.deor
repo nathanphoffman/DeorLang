@@ -42,10 +42,10 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 			int depth = 0
 			bool entered = false
 			for if cur < token_count
-				Token t = tokens at cur
-				(kind) in t
+				Token cur_tok = tokens at cur
+				(kind) in cur_tok
 				if include
-					result at end = t
+					result at end = cur_tok
 				cur = cur + 1
 				if kind is "INDENT"
 					depth = depth + 1
@@ -63,10 +63,10 @@ fn tokenList filter_by_names(tokenList tokens, strList names)
 				decl_name = value
 			bool include = names_count is 0 or list_has(names, decl_name)
 			for if cur < token_count
-				Token t = tokens at cur
-				(kind) in t
+				Token cur_tok = tokens at cur
+				(kind) in cur_tok
 				if include
-					result at end = t
+					result at end = cur_tok
 				cur = cur + 1
 				if kind is "NEWLINE"
 					break
@@ -199,10 +199,10 @@ fn tokenList deduplicate_decls(tokenList tokens)
 			int depth = 0
 			bool entered = false
 			for if pos < token_count
-				Token t = tokens at pos
-				(kind) in t
+				Token cur_tok = tokens at pos
+				(kind) in cur_tok
 				if not already_seen
-					result at end = t
+					result at end = cur_tok
 				pos = pos + 1
 				if kind is "INDENT"
 					depth = depth + 1
@@ -222,10 +222,10 @@ fn tokenList deduplicate_decls(tokenList tokens)
 			if not already_seen
 				seen at end = decl_name
 			for if pos < token_count
-				Token t = tokens at pos
-				(kind) in t
+				Token cur_tok = tokens at pos
+				(kind) in cur_tok
 				if not already_seen
-					result at end = t
+					result at end = cur_tok
 				pos = pos + 1
 				if kind is "NEWLINE"
 					break

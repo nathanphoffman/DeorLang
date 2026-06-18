@@ -117,7 +117,7 @@
         type ZeroToFour(int num)
             Positive(num) and FourOrLess(num)
 
-        shape sayHiToPlanet = func of Planet to string 
+        shape funcSayHiPlanet = func of Planet to string 
         shape listOfPlanet = list of Planet
 
         # strict ordering required consts > enums > (shapes and types) > struct > func 
@@ -131,9 +131,17 @@
             what_to_say = s_join([message, " ", planet])
             print(what_to_say)
 
-        fn void run_for_all_planets(sayHiPlanet: say_hi, listPlanet: planets)
-            
+        fn void run_for_all_planets(funcSayHiPlanet: say_hi, listPlanet: planets)
+            FourOrLess countOfPlanets = len(planets)
+            index as 0
 
+            # syntax is readable left to right, no ++ for index, no non-human symbols
+            # no i for index, all var, struct, etc names must be 3+ characters
+            for index if index < countOfPlanets
+                planet = listPlanet at index
+                funcSayHiPlanet(planet)
+                index = index + 1
+            
         # all functions are pure and must take inputs and give outputs, except main
         fn void main()
             # as is used to infer the type from literal context
@@ -151,11 +159,6 @@
             # you can also define variables explicitly
             Positive say_times = 5
 
-            # syntax is readable left to right, no ++ for index, no non-human symbols
-            # no i for index, all var, struct, etc names must be 3+ characters
-            for index if index < say_times
-                index = index + 1
-                print(what_to_say)
         </code>
         </pre>
         </div>

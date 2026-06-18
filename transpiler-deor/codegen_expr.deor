@@ -225,7 +225,10 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 				string func_name = value
 				int args_pos = next_pos + 1
 				if func_name is "len"
-					return gen_unary_method(tokens, args_pos, ".len() as i32", ctx)
+					ParseResult len_r = gen_unary_method(tokens, args_pos, ".len() as i32", ctx)
+					string len_code = pr_code(len_r)
+					int len_end = pr_pos(len_r)
+					return make_result(s_join(["(", len_code, ")"]), len_end)
 				# generic call
 				ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 				string args_code = pr_code(args_r)

@@ -217,8 +217,8 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 						strList override_fields = []
 						int fend = lparen_pos + 1
 						for if fend < token_count
-							Token ft = tokens at fend
-							(kind, value) in ft
+							Token field_tok = tokens at fend
+							(kind, value) in field_tok
 							if kind is "RPAREN"
 								fend = fend + 1
 								break
@@ -392,8 +392,8 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 							int fni = 0
 							int fn_count = len(field_names)
 							for if fend < token_count
-								Token ft = tokens at fend
-								(kind) in ft
+								Token field_tok = tokens at fend
+								(kind) in field_tok
 								if kind is "RPAREN"
 									fend = fend + 1
 									break
