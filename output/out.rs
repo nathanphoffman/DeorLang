@@ -1608,13 +1608,11 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
         let mut using_var: String = value.clone();
         let mut struct_type: String = reg_get(var_type_reg.clone(), using_var.clone());
         let mut using_type: String = struct_type.clone();
-        let mut init_destruct: String = make_destruct_code(using_var.clone(), struct_type.clone(), struct_reg.clone(), mut_names.clone(), pad.clone());
         let mut body_start: i32 = skip_to_body(tokens.clone(), var_pos + 1.clone());
 /* unhandled(IDENT) */
         let using_ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg };
         let mut block_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth.clone(), using_ctx.clone());
-        let mut full_code: String = s_cat(init_destruct.clone(), pr_code(block_r.clone()));
-        return make_result(full_code.clone(), pr_pos(block_r.clone()));
+        return make_result(pr_code(block_r.clone()), pr_pos(block_r.clone()));
     }
     if kind == "KW_UNSAFE" {
         let mut unsafe_next_pos: i32 = pos + 1.clone();
@@ -1628,13 +1626,11 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
                 let mut using_var: String = value.clone();
                 let mut struct_type: String = reg_get(var_type_reg.clone(), using_var.clone());
                 let mut using_type: String = struct_type.clone();
-                let mut init_destruct: String = make_destruct_code(using_var.clone(), struct_type.clone(), struct_reg.clone(), mut_names.clone(), pad.clone());
                 let mut body_start: i32 = skip_to_body(tokens.clone(), var_pos + 1.clone());
 /* unhandled(IDENT) */
                 let using_ctx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg };
                 let mut block_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth.clone(), using_ctx.clone());
-                let mut full_code: String = s_cat(init_destruct.clone(), pr_code(block_r.clone()));
-                return make_result(full_code.clone(), pr_pos(block_r.clone()));
+                return make_result(pr_code(block_r.clone()), pr_pos(block_r.clone()));
             }
         }
     }
@@ -1781,8 +1777,6 @@ fn gen_stmt(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResul
                         shim_code = s_join(vec![pad.clone(), using_var.clone(), " = ".to_string(), ident_name.clone(), "(".to_string(), using_var.clone(), ".clone());\n".to_string()]);
                     }
                 }
-                let mut re_destruct: String = make_destruct_code(using_var.clone(), using_type.clone(), struct_reg.clone(), mut_names.clone(), pad.clone());
-                shim_code = s_cat(shim_code.clone(), re_destruct.clone());
                 return make_result(shim_code.clone(), adv_nl(after_with.clone(), tokens.clone()));
             }
             let mut args_r: ParseResult = gen_call_args(tokens.clone(), args_pos.clone(), ctx.clone());
