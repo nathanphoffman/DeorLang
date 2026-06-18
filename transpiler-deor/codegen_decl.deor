@@ -193,6 +193,8 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 					param_type_pairs at end = param_name
 					param_type_pairs at end = param_type
 				cur_next() with tokens
+			else
+				cur_next() with tokens
 		# pos now at NEWLINE after RPAREN
 		(pos) in cur
 		int indent_pos = pos + 1

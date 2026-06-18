@@ -2425,6 +2425,11 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
             let token_count = cur.token_count.clone();
             let pos = cur.pos.clone();
             let current = cur.current.clone();
+        } else {
+            cur = cur_next(cur.clone(), tokens.clone());
+            let token_count = cur.token_count.clone();
+            let pos = cur.pos.clone();
+            let current = cur.current.clone();
         }
     }
     let pos = cur.pos.clone();

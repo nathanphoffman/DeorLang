@@ -1,11 +1,7 @@
  ---
-  name as empty — yes, explicitly handled at line 206. Emits let mut name = Vec::new();. This is typeless — Rust type inference has to figure out the element
-  type from later usage. If it can't, it's a Rust compile error. Per spec this should be a transpiler error (you must write roomList rooms = empty, not rooms 
-  as empty).
+
   
-  name as [] — NOT explicitly handled. It falls through all the if kind is ... checks in the KW_AS block and hits the generic expression path at line ~224.
-  gen_expr → gen_primary sees LBRACKET and emits Vec::new(). So rooms as [] produces let [mut] rooms = Vec::new(); — same untyped result, same Rust inference
-  problem.
+
 
   TypeName name = empty — correctly handled in the typed binding section. It checks reg3_has(type_reg, var_type) for validator types (emits Option<TypeName> =
   None) and reg_has(shape_reg, var_type) for list shapes (emits Vec<T> = Vec::new()), both with the proper type annotation.
@@ -55,13 +51,15 @@
 
 
 
+# For Nate
+- Look at how ranges work in transpiler vs doc vs my expectation
+- Remove auto-destructuring from using
+- Change type alias to PascalCase
+
 
 # Doc Fixes
-- Specify names as empty is fine in the docs and so is for arrays listString names = empty
-- Rethink 
+- Specify names as empty is fine in the docs and so is for arrays listString names = empty, we should not allow []
+- Check import we don't want to enforce import I like () better
 
-# Transpiler fixes
-- We need to enforce the import syntax rather than (...) in "..." it is import (...) in "..."
-- We need to enforce range(...) for for in range(...)  no for in (min,max) or for in (num) but for in collections is supported
 
 
