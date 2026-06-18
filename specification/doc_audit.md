@@ -1,8 +1,9 @@
 # For Nate
 - Look at how ranges work in transpiler vs doc vs my expectation
+- See if this is true in transpiler today: Because they are built-ins, they accept literals directly. User-defined functions require named variables
+- Do we have any form of union types in the transpiler?
 
 # Transpiler Add
-- Have AI remove deconstruction from the using blocks, it should just pass in the cloned obj, not destructure it at all
 - We need to add crash (make sure there is no throw in the transpiler)
     message as "A problem has been encountered the error is: "
     error as s_join([message, error])

@@ -44,9 +44,20 @@ There are no exceptions. All runtime identifiers — variables, parameters, fiel
 
 ---
 
+## Order of Declarations
+
+Declarations must be done in the following order in any file:
+
+1. Enums - They rely on nothing
+2. Consts - They could rely on enums and are important to see (at top)
+3. Types - Type validators being types must be defined early
+4. Shapes - Complex shapes are lower than type validators because they are more complex
+5. Structs - Reliant on most everything above but still structural (so above functions)
+6. Functions - Reliant on literally everything
+
 ## Field Extraction Order
 
-Struct field extraction with `in` must follow declaration order — the same rule as struct construction with `as`. The field you write first must match the first declared field of the struct.
+Struct field extraction with `in` must follow declaration order within the struct — the same rule as struct construction with `as`. The field you write first must match the first declared field of the struct.
 
 **Correct:**
 ```
@@ -65,24 +76,6 @@ struct Room
 Single-field extraction has no ordering constraint.
 
 ---
-
-## Destructuring at Top of Block
-
-All `in` extractions must appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
-
-**Correct:**
-```
-fn RollResult roll_die(Die die)
-    (sides, label) in die
-
-    min as 1
-    int raw = random(min, sides)
-    Roll value = raw
-    string source = label
-    RollResult result = (value, source)
-
-    return result
-```
 
 **Incorrect — transpiler warns:**
 ```

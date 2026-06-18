@@ -37,3 +37,15 @@ struct TokenCursor
 	int token_count
 	int pos
 	Token current
+
+rust
+	use std::rc::Rc;
+	type TokensRef = Rc<Vec<Token>>;
+	type RcCtx = Rc<GenCtx>;
+	fn tokens_wrap(t: Vec<Token>) -> TokensRef { Rc::new(t) }
+	fn make_rctx(ctx: GenCtx) -> RcCtx { Rc::new(ctx) }
+	fn now_ms() -> i32 { std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as i32 }
+	fn elapsed_ms(start: i32) -> i32 { now_ms() - start }
+
+raw TokensRef
+raw RcCtx

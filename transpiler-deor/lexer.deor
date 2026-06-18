@@ -43,8 +43,8 @@ fn tokenList tokenize(string source)
 			skip = skip - 1
 			continue
 
-		string raw = lines at raw_li
-		string line = s_rtrim(raw)
+		string raw_line = lines at raw_li
+		string line = s_rtrim(raw_line)
 		string stripped = s_trim(line)
 
 		if is_empty(stripped)

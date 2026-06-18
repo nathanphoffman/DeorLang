@@ -1,8 +1,9 @@
-(tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
+(tokenList, strList, Token, ParseResult, GenCtx, RcCtx, make_rctx) in "transpiler-deor/types.deor"
 (f_write, f_args) in "transpiler-deor/lib/file.deor"
+(n_to_str) in "transpiler-deor/lib/num.deor"
 (validate_tokens) in "transpiler-deor/tokens_validation.deor"
 (build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg) in "transpiler-deor/registry.deor"
-(gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl) in "transpiler-deor/codegen_decl.deor"
+(gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl, gen_raw_decl) in "transpiler-deor/codegen_decl.deor"
 (collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
 
 # Top-level code generator. Takes the fully merged and deduplicated token list, builds
@@ -10,6 +11,7 @@
 # token stream dispatching each top-level declaration to its gen_* function and
 # concatenating the results into a single Rust source string.
 fn string generate_rust_from_tokens(tokenList tokens)
+	int t_reg_start = now_ms()
 	strList struct_reg = build_struct_reg(tokens)
 	strList shape_reg = build_shape_reg(tokens)
 	strList enum_reg = build_enum_reg(tokens)
@@ -17,13 +19,17 @@ fn string generate_rust_from_tokens(tokenList tokens)
 	strList type_reg = build_type_reg(tokens)
 	strList mut_names = []
 	strList var_type_reg = build_var_type_reg(tokens)
+	int t_reg = elapsed_ms(t_reg_start)
+	print(s_join(["[timer]   registries: ", n_to_str(t_reg), "ms"]))
 	string using_type = ""
 	string using_var = ""
-	GenCtx ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+	GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+	RcCtx ctx = make_rctx(giveup ctx_raw)
 
 	string output = ""
 	int token_count = len(tokens)
 	int pos = 0
+	int t_loop_start = now_ms()
 
 	for if true
 		if pos >= token_count
@@ -62,8 +68,23 @@ fn string generate_rust_from_tokens(tokenList tokens)
 			output = s_cat(output, pr_code(result))
 			pos = pr_pos(result)
 			continue
+		if kind is "KW_RAW"
+			ParseResult result = gen_raw_decl(tokens, pos)
+			output = s_cat(output, pr_code(result))
+			pos = pr_pos(result)
+			continue
+		if kind is "KW_RUST"
+			int block_pos = pos + 2
+			Token block_token = tokens at block_pos
+			(value) in block_token
+			output = s_cat(output, value)
+			output = s_cat(output, "\n")
+			pos = block_pos + 1
+			continue
 		pos = pos + 1
 
+	int t_loop = elapsed_ms(t_loop_start)
+	print(s_join(["[timer]   codegen-loop: ", n_to_str(t_loop), "ms"]))
 	return output
 
 # Entry point. Reads input and output paths from command-line arguments, calls
@@ -80,7 +101,16 @@ fn void main()
 		string input_path = args at 0
 		string output_path = args at 1
 
+		int t_start = now_ms()
 		tokenList tokens = collect_all_tokens_with_all_imports(input_path)
+		int t_load = elapsed_ms(t_start)
+		print(s_join(["[timer] load+dedup: ", n_to_str(t_load), "ms"]))
+
 		validate_tokens(tokens)
+
+		int t_gen_start = now_ms()
 		string rust_code = generate_rust_from_tokens(tokens)
+		int t_gen = elapsed_ms(t_gen_start)
+		print(s_join(["[timer] total-codegen: ", n_to_str(t_gen), "ms"]))
+
 		f_write(output_path, rust_code)

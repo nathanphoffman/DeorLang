@@ -69,6 +69,8 @@ fn string word_to_kind(string word)
 		return "KW_WITH"
 	if word is "giveup"
 		return "KW_GIVEUP"
+	if word is "raw"
+		return "KW_RAW"
 	return "IDENT"
 
 # === Operator helpers ===

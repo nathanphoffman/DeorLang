@@ -1,4 +1,4 @@
-(tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
+(tokenList, strList, Token, ParseResult, GenCtx, TokensRef, RcCtx) in "transpiler-deor/types.deor"
 (make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
 (s_join, s_join_with, s_debug, s_split) in "transpiler-deor/lib/string.deor"
 (is_empty, reg_get) in "transpiler-deor/utils.deor"
@@ -54,7 +54,7 @@ fn string find_struct_for_field(strList struct_reg, string field)
 # Rust ownership coercions: string literals get `.to_string()`, plain identifier
 # arguments get `.clone()` (Rust would move them otherwise). Index-read and call
 # results are left as-is because they already return owned values.
-fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
+fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 
 	strList arg_codes = []
 	int cur = pos
@@ -102,7 +102,7 @@ fn ParseResult gen_call_args(tokenList tokens, int pos, GenCtx ctx)
 # Parses the element list inside a [...] literal and generates the vec![...] initializer
 # items. All elements get `.clone()` or `.to_string()` applied because the vec![] macro
 # expects owned values; expressions are treated the same as identifiers here.
-fn ParseResult gen_list_items(tokenList tokens, int pos, GenCtx ctx)
+fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 	strList item_codes = []
 	int cur = pos
 	int token_count = len(tokens)
@@ -132,7 +132,7 @@ fn ParseResult gen_list_items(tokenList tokens, int pos, GenCtx ctx)
 # Helper that generates a single-argument built-in call by appending a Rust method
 # suffix to the argument's generated expression. Currently used for `len(x)` which
 # becomes `x.len() as i32` to bridge Deor's `int` type against Rust's usize len return.
-fn ParseResult gen_unary_method(tokenList tokens, int args_pos, string suffix, GenCtx ctx)
+fn ParseResult gen_unary_method(TokensRef tokens, int args_pos, string suffix, RcCtx ctx)
 	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
 	string inner_code = pr_code(inner_r)
 	int close = pr_pos(inner_r) + 1
@@ -143,7 +143,7 @@ fn ParseResult gen_unary_method(tokenList tokens, int args_pos, string suffix, G
 # struct construction (f1, f2), `(avow expr)` forced unwrap, `not expr`, function call
 # `name(args)`, index read `name at idx`, and plain identifier (potentially an enum
 # variant which must be emitted as `EnumName::Variant` in Rust).
-fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
+fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
@@ -265,7 +265,7 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 # operator and string-concatenation type promotion: emits `format!("{}{}", ...)` when
 # either side is a string literal, and appends `.as_str()` when chaining an identifier
 # onto an already-format!-promoted String expression.
-fn ParseResult gen_expr(tokenList tokens, int pos, GenCtx ctx)
+fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	ParseResult primary_r = gen_primary(tokens, pos, ctx)
 	string left_code = pr_code(primary_r)
 	int cur_pos = pr_pos(primary_r)

@@ -1,4 +1,4 @@
-(tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
+(tokenList, strList, Token, ParseResult, GenCtx, TokensRef, RcCtx, make_rctx, tokens_wrap) in "transpiler-deor/types.deor"
 (make_result, pr_code, pr_pos, adv_nl, skip_to_body) in "transpiler-deor/deor_helpers.deor"
 (cur_at, cur_next, c_at_end, cur_skip_to_body, cur_peek) in "transpiler-deor/cursor.deor"
 (s_join, s_join_nl, s_join_with, s_pascal) in "transpiler-deor/lib/string.deor"
@@ -110,7 +110,7 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 # `type Name(baseType paramName)` declaration. The constructor returns Option<Self>,
 # evaluating the user's predicate: if it passes, wraps the value in Some(TypeName(val));
 # otherwise returns None. This is Deor's mechanism for validated/constrained scalar types.
-fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
+fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 	TokenCursor cur = cur_at(tokens, pos + 1)
 	using cur
 		(value) in current
@@ -127,7 +127,8 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 		cur_next() with tokens   # NEWLINE
 		cur_skip_to_body() with tokens
 		(pos) in cur
-	ParseResult pred_r = gen_expr(tokens, pos, ctx)
+	TokensRef tokens_ref = tokens_wrap(tokens)
+	ParseResult pred_r = gen_expr(tokens_ref, pos, ctx)
 	string pred_code = pr_code(pred_r)
 	int pred_end = pr_pos(pred_r)
 	TokenCursor cur2 = cur_at(tokens, pred_end)
@@ -150,7 +151,7 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 # `using` statement support; delegates body generation to gen_block. Uses l_slice to
 # work on just the body tokens so recursive registry scans stay cheap — this token-slice
 # optimization cut self-compile time from 11s to 1.3s.
-fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
+fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
 	TokenCursor cur = cur_at(tokens, pos + 1)
@@ -188,15 +189,17 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 		# pos now at first body token
 	int body_end_pos = find_block_end(tokens, indent_pos)
 	int body_start = pos
-	tokenList body_tokens = l_slice(tokens, body_start, body_end_pos + 1)
-	int body_len = len(body_tokens)
-	strList mut_names = collect_mut_names(body_tokens, 0, body_len - 1)
-	strList var_type_reg = build_var_type_reg(body_tokens)
+	tokenList body_tokens_raw = l_slice(tokens, body_start, body_end_pos + 1)
+	int body_len = len(body_tokens_raw)
+	strList mut_names = collect_mut_names(body_tokens_raw, 0, body_len - 1)
+	strList var_type_reg = build_var_type_reg(body_tokens_raw)
 	string using_type = ""
 	string using_var = ""
-	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
-	# generate body on the small slice so recursive clones are cheap
-	ParseResult body_r = gen_block(body_tokens, 0, 1, body_ctx)
+	GenCtx body_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+	RcCtx body_ctx = make_rctx(giveup body_ctx_raw)
+	TokensRef body_tokens = tokens_wrap(giveup body_tokens_raw)
+	# Rc wrappers make recursive clones inside gen_block cheap (Rc::clone vs full copy)
+	ParseResult body_r = gen_block(giveup body_tokens, 0, 1, giveup body_ctx)
 	string body_code = pr_code(body_r)
 	int body_end = body_start + pr_pos(body_r)
 	string params_code = s_join_with(param_strs, ", ")
@@ -205,3 +208,12 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 		ret_suffix = s_join([" -> ", ret_type])
 	string fn_code = s_join(["fn ", fn_name, "(", params_code, ")", ret_suffix, " {\n", body_code, "}\n\n"])
 	return make_result(giveup fn_code, body_end)
+
+# Consumes a `raw TypeName` declaration and emits nothing into the Rust output.
+# The type is registered in shape_reg (with "raw:" marker) by build_shape_reg so
+# resolve_type can return its name as-is. At code-gen time there is nothing to emit —
+# the actual Rust type must be defined in an adjacent `rust` block.
+fn ParseResult gen_raw_decl(tokenList tokens, int pos)
+	int name_pos = pos + 1
+	int after = name_pos + 1
+	return make_result("", adv_nl(after, tokens))

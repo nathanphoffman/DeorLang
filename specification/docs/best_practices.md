@@ -1,19 +1,23 @@
 # Best Practices
 
-Style recommendations for idiomatic Deor. Not enforced by the transpiler.
+Style recommendations for idiomatic recommendations, they are not enforced by the transpiler.
 
 ---
 
-## Blank Line Before `return`
+## Spacing
 
-Add a blank line before `return` in any function body that contains more than one statement. One-liner functions (single expression, no bindings) are exempt. Try to keep blocks spaced out 
+Add a blank line before `return` in any function body that contains more than one statement. One-liner functions (single expression, no bindings) are exempt. Try to keep blocks spaced out keeping like concepts with one another.
 
 **Recommended:**
 ```
 shape rollResultList = list of RollResult
 
 fn int sum_rolls(rollResultList rolls)
+    # is its own thing, just printing new line after these 2 lines
+    roll_notice as "Going to roll"
+    print(roll_notice);
 
+    # belongs together as it is all part of the loop
     sum as 0
     for roll in rolls
         value in roll
@@ -27,4 +31,25 @@ fn int sum_rolls(rollResultList rolls)
 ```
 fn int square(int val)
     val * val
+```
+---
+
+## Destructuring at Top of Block
+
+All `in` extractions should appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
+
+**Correct:**
+```
+fn RollResult roll_die(Die die)
+
+    (sides, label) in die
+
+    min as 1
+    int raw = random(min, sides)
+
+    Roll value = raw
+    string source = label
+    RollResult result = (value, source)
+
+    return result
 ```

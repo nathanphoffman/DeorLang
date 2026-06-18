@@ -3,6 +3,7 @@
 (list_has, is_empty) in "transpiler-deor/utils.deor"
 (tokenize) in "transpiler-deor/lexer.deor"
 (make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
+(s_join, s_split) in "transpiler-deor/lib/string.deor"
 
 # Checks whether a LPAREN at pos starts an import line `(names) in "path"`. Returns the
 # import path and the position after the line on success, or ("", pos) if not an import.
@@ -77,9 +78,9 @@ fn int end_of_shape(tokenList tokens, int pos)
 # file and every imported file go through exactly the same logic — no special cases.
 fn tokenList load_file(string path)
 	string source = f_read(path)
-	tokenList raw = tokenize(source)
+	tokenList tok_raw = tokenize(source)
 	tokenList result = []
-	int token_count = len(raw)
+	int token_count = len(tok_raw)
 	int pos = 0
 	int depth = 0
 
@@ -89,7 +90,7 @@ fn tokenList load_file(string path)
 		if is_at_end_of_file
 			break
 
-		Token tok = raw at pos
+		Token tok = tok_raw at pos
 		(kind) in tok
 
 		if kind is "EOF"
@@ -109,7 +110,7 @@ fn tokenList load_file(string path)
 
 		bool at_root_depth = depth is 0
 		if kind is "LPAREN" and at_root_depth
-			ParseResult imp_r = scan_import(raw, pos)
+			ParseResult imp_r = scan_import(tok_raw, pos)
 			string imp_path = pr_code(imp_r)
 			int imp_end = pr_pos(imp_r)
 			if not is_empty(imp_path)
@@ -152,6 +153,8 @@ fn tokenList deduplicate_decls(tokenList tokens)
 		bool is_struct = kind is "KW_STRUCT"
 		bool is_enum = kind is "KW_ENUM"
 		bool is_shape = kind is "KW_SHAPE"
+		bool is_raw = kind is "KW_RAW"
+		bool is_rust_blk = kind is "KW_RUST"
 		bool is_block_decl = is_fn or is_struct or is_enum
 		if is_block_decl
 			string decl_name = name_of_decl(tokens, pos, is_fn)
@@ -179,6 +182,37 @@ fn tokenList deduplicate_decls(tokenList tokens)
 					Token copy_tok = tokens at tok_pos
 					result at end = copy_tok
 			pos = shape_end
+		else if is_raw
+			string raw_name = name_of_decl(tokens, pos, false)
+			string raw_key = s_join(["_raw_", raw_name])
+			bool already_seen = list_has(seen, raw_key)
+			if not already_seen
+				seen at end = raw_key
+			int raw_end = end_of_shape(tokens, pos)
+			if not already_seen
+				int copy_len = raw_end - pos
+				for copy_idx in range(copy_len)
+					int tok_pos = pos + copy_idx
+					Token copy_tok = tokens at tok_pos
+					result at end = copy_tok
+			pos = raw_end
+		else if is_rust_blk
+			int rust_content_pos = pos + 2
+			bool rust_in_range = rust_content_pos < token_count
+			if rust_in_range
+				Token rust_tok = tokens at rust_content_pos
+				(value) in rust_tok
+				strList rust_lines = s_split(value, "\n")
+				string rust_first = rust_lines at 0
+				string rust_key = s_join(["_rust_", rust_first])
+				bool already_seen = list_has(seen, rust_key)
+				if not already_seen
+					seen at end = rust_key
+					for copy_idx in range(3)
+						int tok_pos = pos + copy_idx
+						Token copy_tok = tokens at tok_pos
+						result at end = copy_tok
+			pos = pos + 3
 		else
 			result at end = token
 			pos = pos + 1

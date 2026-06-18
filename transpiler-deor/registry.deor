@@ -104,6 +104,13 @@ fn strList build_shape_reg(tokenList tokens)
 						string out_type = value
 						result at end = shape_name
 						result at end = s_join(["fn:", elem_type, ":", out_type])
+		if kind is "KW_RAW"
+			int name_pos = index + 1
+			if name_pos < token_count
+				Token name_token = tokens at name_pos
+				(value) in name_token
+				result at end = value
+				result at end = "raw:"
 	return result
 
 # Builds the enum registry: [deorName, RustName] pairs (deorName lowercase, RustName
@@ -242,6 +249,8 @@ fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
 		return enum_rust
 	string elem_type = reg_get(shape_reg, type_name)
 	if not is_empty(elem_type)
+		if s_starts_with(elem_type, "raw:")
+			return type_name
 		if s_starts_with(elem_type, "fn:")
 			strList parts = s_split(elem_type, ":")
 			string in_type = parts at 1

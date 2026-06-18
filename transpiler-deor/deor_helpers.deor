@@ -1,4 +1,4 @@
-(tokenList, Token, ParseResult) in "transpiler-deor/types.deor"
+(tokenList, TokensRef, Token, ParseResult) in "transpiler-deor/types.deor"
 
 # === ParseResult helpers ===
 
@@ -55,5 +55,30 @@ fn int adv_indent(int pos, tokenList tokens)
 fn int skip_to_body(tokenList tokens, int pos)
 	int cur = adv_nl(pos, tokens)
 	cur = adv_indent(cur, tokens)
+	return cur
+
+# TokensRef variants of the above helpers — same logic but accept Rc<Vec<Token>>
+# so the hot-path gen_* functions (which use TokensRef) don't need to deref.
+fn int adv_nl_ref(int pos, TokensRef tokens)
+	int token_count = len(tokens)
+	if pos < token_count
+		Token cur_token = tokens at pos
+		(kind) in cur_token
+		if kind is "NEWLINE"
+			return pos + 1
+	return pos
+
+fn int adv_indent_ref(int pos, TokensRef tokens)
+	int token_count = len(tokens)
+	if pos < token_count
+		Token cur_token = tokens at pos
+		(kind) in cur_token
+		if kind is "INDENT"
+			return pos + 1
+	return pos
+
+fn int skip_to_body_ref(TokensRef tokens, int pos)
+	int cur = adv_nl_ref(pos, tokens)
+	cur = adv_indent_ref(cur, tokens)
 	return cur
 

@@ -1,6 +1,6 @@
 # Collections
 
-List operations assume a list shape has already been declared — see [Shapes — List Shapes](shapes.md#list-shapes) for how to declare one and use it in function signatures and struct fields.
+List operations assume a list shape has already been declared — see [Shapes](docs/shapes.md) for how to declare one and use it in function signatures and struct fields.
 
 ---
 
