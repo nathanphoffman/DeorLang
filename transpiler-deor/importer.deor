@@ -163,8 +163,22 @@ fn tokenList deduplicate_decls(tokenList tokens)
 				bool unsafe_struct = kind is "KW_STRUCT"
 				bool unsafe_enum = kind is "KW_ENUM"
 				bool unsafe_shape = kind is "KW_SHAPE"
+				bool unsafe_fn_decl = kind is "KW_FN"
 				if unsafe_struct or unsafe_enum
 					string decl_name = name_of_decl(tokens, next_pos, false)
+					bool already_seen = list_has(seen, decl_name)
+					if not already_seen
+						seen at end = decl_name
+					int block_end = end_of_block(tokens, pos)
+					if not already_seen
+						int copy_len = block_end - pos
+						for copy_idx in range(copy_len)
+							int tok_pos = pos + copy_idx
+							Token copy_tok = tokens at tok_pos
+							result at end = copy_tok
+					pos = block_end
+				else if unsafe_fn_decl
+					string decl_name = name_of_decl(tokens, next_pos, true)
 					bool already_seen = list_has(seen, decl_name)
 					if not already_seen
 						seen at end = decl_name

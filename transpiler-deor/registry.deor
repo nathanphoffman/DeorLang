@@ -328,4 +328,17 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 				(value) in using_var_token
 				if not list_has(result, value)
 					result at end = value
+		if kind is "KW_UNSAFE"
+			int unsafe_next = raw_i + 1
+			if unsafe_next < end_pos
+				Token unsafe_next_tok = tokens at unsafe_next
+				(kind) in unsafe_next_tok
+				bool is_unsafe_using = kind is "KW_USING"
+				if is_unsafe_using
+					int uvar_pos = unsafe_next + 1
+					if uvar_pos < end_pos
+						Token uvar_tok = tokens at uvar_pos
+						(value) in uvar_tok
+						if not list_has(result, value)
+							result at end = value
 	return result

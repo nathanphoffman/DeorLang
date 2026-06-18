@@ -53,6 +53,11 @@ fn string generate_rust_from_tokens(tokenList tokens)
 					output = s_cat(output, pr_code(result))
 					pos = pr_pos(result)
 					continue
+				if kind is "KW_FN"
+					ParseResult result = gen_fn_decl(tokens, decl_pos, ctx)
+					output = s_cat(output, pr_code(result))
+					pos = pr_pos(result)
+					continue
 			pos = pos + 1
 			continue
 		if kind is "KW_STRUCT"

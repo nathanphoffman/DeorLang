@@ -164,6 +164,25 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 		string full_code = s_cat(init_destruct, pr_code(block_r))
 		return make_result(full_code, pr_pos(block_r))
 
+	if kind is "KW_UNSAFE"
+		int unsafe_next_pos = pos + 1
+		if unsafe_next_pos < token_count
+			Token unsafe_next_tok = tokens at unsafe_next_pos
+			(kind) in unsafe_next_tok
+			if kind is "KW_USING"
+				int var_pos = pos + 2
+				Token var_tok = tokens at var_pos
+				(value) in var_tok
+				string using_var = value
+				string struct_type = reg_get(var_type_reg, using_var)
+				string using_type = struct_type
+				string init_destruct = make_destruct_code(using_var, struct_type, struct_reg, mut_names, pad)
+				int body_start = skip_to_body(tokens, var_pos + 1)
+				GenCtx using_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg)
+				ParseResult block_r = gen_block(tokens, body_start, depth, using_ctx)
+				string full_code = s_cat(init_destruct, pr_code(block_r))
+				return make_result(full_code, pr_pos(block_r))
+
 	if kind is "IDENT"
 		string ident_name = value
 		int next_pos = pos + 1
@@ -260,6 +279,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 			bool is_zero_arg = kind is "RPAREN"
 			bool has_using = not is_empty(using_var)
 			if is_zero_arg and has_using
+				bool calling_unsafe = list_has(unsafe_reg, using_type)
 				int after_rparen = args_pos + 1
 				bool has_with_arg = false
 				string extra_arg = ""
@@ -277,10 +297,16 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 								extra_arg = value
 								after_with = extra_pos + 1
 				string shim_code = ""
-				if has_with_arg
-					shim_code = s_join([pad, using_var, " = ", ident_name, "(", using_var, ".clone(), ", extra_arg, ".clone());\n"])
+				if calling_unsafe
+					if has_with_arg
+						shim_code = s_join([pad, ident_name, "(&mut ", using_var, ", &mut ", extra_arg, ");\n"])
+					else
+						shim_code = s_join([pad, ident_name, "(&mut ", using_var, ");\n"])
 				else
-					shim_code = s_join([pad, using_var, " = ", ident_name, "(", using_var, ".clone());\n"])
+					if has_with_arg
+						shim_code = s_join([pad, using_var, " = ", ident_name, "(", using_var, ".clone(), ", extra_arg, ".clone());\n"])
+					else
+						shim_code = s_join([pad, using_var, " = ", ident_name, "(", using_var, ".clone());\n"])
 				string re_destruct = make_destruct_code(using_var, using_type, struct_reg, mut_names, pad)
 				shim_code = s_cat(shim_code, re_destruct)
 				return make_result(shim_code, adv_nl(after_with, tokens))

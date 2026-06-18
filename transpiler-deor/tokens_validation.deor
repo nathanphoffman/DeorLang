@@ -2,6 +2,7 @@
 (s_cat) in "transpiler-deor/lib/string.deor"
 (c_chars) in "transpiler-deor/lib/char.deor"
 (n_to_str) in "transpiler-deor/lib/num.deor"
+(list_has) in "transpiler-deor/utils.deor"
 
 fn bool is_upper_char(string ch)
 	rust
@@ -57,8 +58,28 @@ fn string val_err(int line_num, string label, string name, string rule)
 fn void validate_tokens(tokenList tokens)
 	int token_count = len(tokens)
 	strList errors = []
-	int pos = 0
 
+	strList unsafe_names = []
+	int pre_idx = 0
+	for if pre_idx < token_count
+		Token pre_tok = tokens at pre_idx
+		(kind) in pre_tok
+		if kind is "KW_UNSAFE"
+			int next_idx = pre_idx + 1
+			if next_idx < token_count
+				Token next_tok = tokens at next_idx
+				(kind) in next_tok
+				bool next_is_struct = kind is "KW_STRUCT"
+				bool next_is_shape = kind is "KW_SHAPE"
+				if next_is_struct or next_is_shape
+					int name_idx = next_idx + 1
+					if name_idx < token_count
+						Token name_tok = tokens at name_idx
+						(value) in name_tok
+						unsafe_names at end = value
+		pre_idx = pre_idx + 1
+
+	int pos = 0
 	for if pos < token_count
 		Token tok = tokens at pos
 		(kind) in tok
@@ -145,6 +166,29 @@ fn void validate_tokens(tokenList tokens)
 						errors at end = val_err(cur_line, "fn", name_val, "name must be at least 3 characters")
 					if not is_snake(name_val)
 						errors at end = val_err(cur_line, "fn", name_val, "name must be lower_snake_case (no uppercase letters)")
+					bool has_unsafe_param = false
+					int param_scan = pos + 4
+					for if param_scan < token_count
+						Token param_tok = tokens at param_scan
+						(kind, value) in param_tok
+						if kind is "RPAREN"
+							break
+						if kind is "IDENT"
+							bool is_unsafe_ptype = list_has(unsafe_names, value)
+							if is_unsafe_ptype
+								has_unsafe_param = true
+								break
+						param_scan = param_scan + 1
+					if has_unsafe_param
+						bool has_unsafe_kw = false
+						if pos > 0
+							int prev_fn_pos = pos - 1
+							Token prev_fn_tok = tokens at prev_fn_pos
+							(kind) in prev_fn_tok
+							bool prev_is_unsafe = kind is "KW_UNSAFE"
+							has_unsafe_kw = prev_is_unsafe
+						if not has_unsafe_kw
+							errors at end = val_err(cur_line, "fn", name_val, "takes an unsafe type — must be declared as 'unsafe fn'")
 			pos = pos + 1
 			continue
 
