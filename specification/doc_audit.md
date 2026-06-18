@@ -1,66 +1,53 @@
- ---
-
-  
-
-
-  TypeName name = empty — correctly handled in the typed binding section. It checks reg3_has(type_reg, var_type) for validator types (emits Option<TypeName> =
-  None) and reg_has(shape_reg, var_type) for list shapes (emits Vec<T> = Vec::new()), both with the proper type annotation.
-
-  So the situation is:
-  - The correct form (roomList rooms = empty) works properly and emits typed Rust
-  - rooms as empty silently emits untyped Vec::new() instead of erroring
-  - rooms as [] also silently emits untyped Vec::new() instead of erroring
-  
-  Both bad forms produce code that may or may not compile in Rust depending on whether type inference can fill in the element type from context. If you append
-  to the list right after, Rust infers it fine. If the list is returned or passed to a function without anything being pushed into it first, Rust gives you a
-  type annotations needed error.
-
-✻ Baked for 41s
-
-❯ can regular primitives be empty?                                                                                                                            
-
-● No. Let me show you exactly what happens — the typed binding path in gen_stmt already handles this:
-
-  Read 1 file (ctrl+o to expand)
-
-● So for int val = empty:
-  - reg3_has(type_reg, "int") → false (int is not a user-defined validator type)
-  - reg_has(shape_reg, "int") → false (int is not a shape)
-  - Falls to line 380: emits /* error: empty only valid for validator types and list shapes */
-
-  The rejection is there and the error message is correct. The downside is the transpiler doesn't halt — it emits that comment as a statement and keeps going,
-  so the Rust output would have a dangling comment where the binding should be and any subsequent use of val would be a Rust compile error.
-
-  One other wrinkle: the none keyword on a primitive is handled separately and isn't guarded:
-
-  # none → Option<T>
-  if kind is "KW_NONE"
-      return make_result(s_join([pad, "let mut ", var_name, ": Option<", rust_type, "> = None;\n"]), ...)
-
-  So int val = none would emit let mut val: Option<i32> = None; — no error, just silently produces an Option around a primitive, which contradicts the spec's
-  rule that primitives can never be null. That's a gap the empty path correctly handles but none doesn't.
-
-
-❯ do we have throw in the transpiler today?                                                                                                                                      
-
-  Searched for 1 pattern (ctrl+o to expand)
-
-● No. That one hit is just a code comment in registry.deor. throw doesn't exist anywhere in the transpiler — not in word_to_kind, not in gen_stmt, nowhere. Writing throw msg in
-  a .deor file today would tokenize throw as a plain IDENT and then confuse the statement dispatcher, likely emitting /* unhandled(IDENT) */ or mangling whatever comes after it.
-
-
-
-
 # For Nate
 - Look at how ranges work in transpiler vs doc vs my expectation
-- Remove auto-destructuring from using
-- Change type alias to PascalCase
-- We should not allow any &, |, ^, <,>,{,}, or mut keywords use in any code anywhere unless it is in string data
 
+# Transpiler Add
+- Have AI remove deconstruction from the using blocks, it should just pass in the cloned obj, not destructure it at all
+- We need to add crash (make sure there is no throw in the transpiler)
+    message as "A problem has been encountered the error is: "
+    error as s_join([message, error])
+    crash(error)
+- We should extend avow / validator types
+  - Positive num = -5 no longer panics, it assigns none under the hood (lie in deor syntax)
+  - However users can also assign a lie to a Validator Type (Option) value: Positive num = lie  (lie is a none)
+  - if num is lie  -- this works and is the same as if num is not Positive
+  - if num is Positive -- this works and is the same as if num is not lie I like it because you can avoid negation
+  - avow now works naturally with this language, you don't avow a lie
+  - this also allows error handling rust style (when paired with crash)
+- We need to make sure lists [...], and functions only take named variables when passed
+- Validator: Change type alias to PascalCase
+- Validator: We should not allow any & | ^ < > { } unless it is in string data
+- Validator: Do we check for rust keywords like mut? we should have an exception to catch rust-named keywords that are not in rust blocks
+- While lists can be given data myList as [one,two,three], they cannot be assigned [] only empty so myList as empty not myList as []
+- Add validation to prevent primitives/structs from being assigned to none, only Custom Types can be assigned none
 
 # Doc Fixes
 - Specify names as empty is fine in the docs and so is for arrays listString names = empty, we should not allow []
 - Check import we don't want to enforce import I like () better
 
+# Deor Pickyness
+- All functions limited to no more than 3 parameters
+- All function calls must be passed an explicit argument (no magic data)
+  - this is even true for system functions for in range(start,end) not for in range(1,10) 
+  - this is even true for errors throw http_exception not throw "HTTP OUT OMG!"
+  - and in ALL cases
+- new lists must be composed with empty if not assigned data
+- if lists are assigned data they can be assigned literally like listStuff = [employee, item2, item3]
+  - however, importantly, these items must be named.  not ["Nate", "stuff", "thing"] they follow
+  - the same rull as function variable passing (except of course they can have more than three)
+
+## Naming
+- enums, structs, and custom types (type validators) MUST be PascalCase
+  - think structure = PascalCase
+  - the logic behind this is it stands out boldly, but blends together as boldness > readability
+- shapes must be camelCase
+  - think aliasing = camelCase
+  - the logic behind this is it stands out fairly well, but blends together as boldness = readability
+- variable and function names must be snake_case
+  - think runtime items = snake_case
+  - the logic behind this is that these are very important to be readable as readability > boldness
+- constants must be SCREAMING_SNAKE
+  - think runtime item but it SCREAMS louder than the rest
+  - the logic behind this is that these are THE MOST IMPORTANT to be read attention > readability > boldness
 
 
