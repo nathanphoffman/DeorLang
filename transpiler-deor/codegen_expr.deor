@@ -208,6 +208,11 @@ fn ParseResult gen_primary(tokenList tokens, int pos, GenCtx ctx)
 			string fields_code = s_join_with(fields, ", ")
 			return make_result(s_join([struct_name, " { ", fields_code, " }"]), cur)
 
+	if kind is "KW_GIVEUP"
+		int inner_pos = pos + 1
+		ParseResult inner_r = gen_primary(tokens, inner_pos, ctx)
+		return inner_r
+
 	if kind is "KW_NOT"
 		int operand_pos = pos + 1
 		ParseResult operand_r = gen_primary(tokens, operand_pos, ctx)

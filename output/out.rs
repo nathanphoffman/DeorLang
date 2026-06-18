@@ -913,6 +913,9 @@ fn word_to_kind(word: String) -> String {
     if word == "with" {
         return "KW_WITH".to_string();
     }
+    if word == "giveup" {
+        return "KW_GIVEUP".to_string();
+    }
     return "IDENT".to_string();
 }
 
@@ -1206,6 +1209,11 @@ fn gen_primary(tokens: Vec<Token>, pos: i32, ctx: GenCtx) -> ParseResult {
             let mut fields_code: String = s_join_with(fields.clone(), ", ".to_string());
             return make_result(s_join(vec![struct_name.clone(), " { ".to_string(), fields_code.clone(), " }".to_string()]), cur.clone());
         }
+    }
+    if kind == "KW_GIVEUP" {
+        let mut inner_pos: i32 = pos + 1.clone();
+        let mut inner_r: ParseResult = gen_primary(tokens.clone(), inner_pos.clone(), ctx.clone());
+        return inner_r;
     }
     if kind == "KW_NOT" {
         let mut operand_pos: i32 = pos + 1.clone();
@@ -1917,6 +1925,24 @@ fn gen_for(tokens: Vec<Token>, pos: i32, depth: i32, ctx: GenCtx) -> ParseResult
         let mut while_body_end: i32 = pr_pos(while_body_r.clone());
         let mut while_code: String = s_join(vec![pad.clone(), "while ".to_string(), cond_code.clone(), " {\n".to_string(), while_body_code.clone(), pad.clone(), "}\n".to_string()]);
         return make_result(while_code.clone(), while_body_end.clone());
+    }
+    if kind == "KW_GIVEUP" {
+        let mut lparen_pos: i32 = next_pos + 1.clone();
+        let mut var_pos: i32 = lparen_pos + 1.clone();
+        let mut var_tok: Token = tokens[var_pos as usize].clone();
+        let value = var_tok.value.clone();
+        let mut giveup_var: String = value.clone();
+        let mut in_pos: i32 = var_pos + 1.clone();
+        let mut iter_pos: i32 = in_pos + 1.clone();
+        let mut iter_r: ParseResult = gen_expr(tokens.clone(), iter_pos.clone(), ctx.clone());
+        let mut iter_code: String = pr_code(iter_r.clone());
+        let mut iter_end: i32 = pr_pos(iter_r.clone());
+        let mut body_start: i32 = skip_to_body(tokens.clone(), iter_end + 1.clone());
+        let mut body_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth + 1.clone(), ctx.clone());
+        let mut body_code: String = pr_code(body_r.clone());
+        let mut body_end: i32 = pr_pos(body_r.clone());
+        let mut for_code: String = s_join(vec![pad.clone(), "for ".to_string(), giveup_var.clone(), " in ".to_string(), iter_code.clone(), " {\n".to_string(), body_code.clone(), pad.clone(), "}\n".to_string()]);
+        return make_result(for_code.clone(), body_end.clone());
     }
     let mut var_name: String = "_".to_string();
     let mut iter_pos: i32 = 0;

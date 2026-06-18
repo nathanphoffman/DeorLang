@@ -569,6 +569,24 @@ fn ParseResult gen_for(tokenList tokens, int pos, int depth, GenCtx ctx)
 		string while_code = s_join([pad, "while ", cond_code, " {\n", while_body_code, pad, "}\n"])
 		return make_result(while_code, while_body_end)
 
+	if kind is "KW_GIVEUP"
+		int lparen_pos = next_pos + 1
+		int var_pos = lparen_pos + 1
+		Token var_tok = tokens at var_pos
+		(value) in var_tok
+		string giveup_var = value
+		int in_pos = var_pos + 1
+		int iter_pos = in_pos + 1
+		ParseResult iter_r = gen_expr(tokens, iter_pos, ctx)
+		string iter_code = pr_code(iter_r)
+		int iter_end = pr_pos(iter_r)
+		int body_start = skip_to_body(tokens, iter_end + 1)
+		ParseResult body_r = gen_block(tokens, body_start, depth + 1, ctx)
+		string body_code = pr_code(body_r)
+		int body_end = pr_pos(body_r)
+		string for_code = s_join([pad, "for ", giveup_var, " in ", iter_code, " {\n", body_code, pad, "}\n"])
+		return make_result(for_code, body_end)
+
 	string var_name = "_"
 	int iter_pos = 0
 	if kind is "KW_IN"
