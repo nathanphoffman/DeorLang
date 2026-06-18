@@ -96,7 +96,6 @@
         <pre class="bg-gray-800 rounded-lg text-left max-h-0 overflow-hidden transition-all duration-3000">
         <code class="language-deor">
         
-        
         const string HELLO = "Hello"
 
         enum PlanetEnum
@@ -110,26 +109,29 @@
         type Positive(int: num)
             num > 0
           
+        # validator types will crash when failed at assignment ForOrLess my_num = 5 will error
         type FourOrLess(int num)
             5 > num
 
-        # validator types can be ran as booleans to avoid hard-crashes on invalid assignments
-        # or like here, it can be used to chain composite validators together
+        # validator types can also be ran as boolean fns to avoid hard-crashes on invalid assignments
+        ## like here, it can be used to chain composite validators together
         type ZeroToFour(int num)
             Positive(num) and FourOrLess(num)
 
+        # shapes are a way to alias generic types and 1st class fns, required by Deor to avoid nasty <>
         shape funcSayHiPlanet = func of Planet to string 
         shape listOfPlanet = list of Planet
 
-        # strict ordering required consts > enums > (shapes and types) > struct > func 
+        # structs are immutable value types (like this one), primitives mutable value types
+        ## unsafe structs and lists do exist to create a mutable reference from a type like a struct
         struct HelloWorld
             string message
             string name
 
-        # x_ represents deor-wrapped rust functions provided standard with deor
-        # returns from functions must be a captured variable, however (readability first!):
         fn string say_hi_planet(string: planetName)
+            # x_ represents deor-wrapped rust functions provided standard with deor
             what_to_say = s_join([message, " ", planet])
+            # print is one of only four built-ins: print, len, range, throw
             print(what_to_say)
 
         fn void run_for_all_planets(funcSayHiPlanet: say_hi, listPlanet: planets)
@@ -141,7 +143,8 @@
             for index if index < countOfPlanets
                 planet = listPlanet at index
                 funcSayHiPlanet(planet)
-                index = index + 1
+                # short hand for index = index + 1, no non-human symbols (++)
+                index add 1
             
         # all functions are pure and must take inputs and give outputs, except main
         fn void main()

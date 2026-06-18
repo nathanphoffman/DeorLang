@@ -152,8 +152,50 @@ fn tokenList deduplicate_decls(tokenList tokens)
 		bool is_struct = kind is "KW_STRUCT"
 		bool is_enum = kind is "KW_ENUM"
 		bool is_shape = kind is "KW_SHAPE"
+		bool is_unsafe = kind is "KW_UNSAFE"
 		bool is_block_decl = is_fn or is_struct or is_enum
-		if is_block_decl
+		if is_unsafe
+			# treat KW_UNSAFE KW_STRUCT/ENUM/SHAPE ... as a single declaration unit
+			int next_pos = pos + 1
+			if next_pos < token_count
+				Token next_tok = tokens at next_pos
+				(kind) in next_tok
+				bool unsafe_struct = kind is "KW_STRUCT"
+				bool unsafe_enum = kind is "KW_ENUM"
+				bool unsafe_shape = kind is "KW_SHAPE"
+				if unsafe_struct or unsafe_enum
+					string decl_name = name_of_decl(tokens, next_pos, false)
+					bool already_seen = list_has(seen, decl_name)
+					if not already_seen
+						seen at end = decl_name
+					int block_end = end_of_block(tokens, pos)
+					if not already_seen
+						int copy_len = block_end - pos
+						for copy_idx in range(copy_len)
+							int tok_pos = pos + copy_idx
+							Token copy_tok = tokens at tok_pos
+							result at end = copy_tok
+					pos = block_end
+				else if unsafe_shape
+					string decl_name = name_of_decl(tokens, next_pos, false)
+					bool already_seen = list_has(seen, decl_name)
+					if not already_seen
+						seen at end = decl_name
+					int shape_end = end_of_shape(tokens, pos)
+					if not already_seen
+						int copy_len = shape_end - pos
+						for copy_idx in range(copy_len)
+							int tok_pos = pos + copy_idx
+							Token copy_tok = tokens at tok_pos
+							result at end = copy_tok
+					pos = shape_end
+				else
+					result at end = token
+					pos = pos + 1
+			else
+				result at end = token
+				pos = pos + 1
+		else if is_block_decl
 			string decl_name = name_of_decl(tokens, pos, is_fn)
 			bool already_seen = list_has(seen, decl_name)
 			if not already_seen

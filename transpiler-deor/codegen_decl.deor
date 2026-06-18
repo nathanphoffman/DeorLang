@@ -151,7 +151,7 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, GenCtx ctx)
 # work on just the body tokens so recursive registry scans stay cheap — this token-slice
 # optimization cut self-compile time from 11s to 1.3s.
 fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg) in ctx
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
 	TokenCursor cur = cur_at(tokens, pos + 1)
 	using cur
@@ -163,6 +163,7 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 		cur_next() with tokens
 		cur_next() with tokens   # skip LPAREN
 		strList param_strs = []
+		strList param_type_pairs = []
 		for if not c_at_end(cur)
 			(current) in cur
 			(kind, value) in current
@@ -177,7 +178,20 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 				(value) in current
 				string param_name = value
 				string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
-				param_strs at end = s_join([param_name, ": ", rust_param_type])
+				bool is_unsafe_param = list_has(unsafe_reg, param_type)
+				if is_unsafe_param
+					param_strs at end = s_join([param_name, ": &mut ", rust_param_type])
+				else
+					param_strs at end = s_join([param_name, ": ", rust_param_type])
+				bool prim_int = param_type is "int"
+				bool prim_str = param_type is "string"
+				bool prim_bool = param_type is "bool"
+				bool prim_float = param_type is "float"
+				bool prim_void = param_type is "void"
+				bool is_prim = prim_int or prim_str or prim_bool or prim_float or prim_void
+				if not is_prim
+					param_type_pairs at end = param_name
+					param_type_pairs at end = param_type
 				cur_next() with tokens
 		# pos now at NEWLINE after RPAREN
 		(pos) in cur
@@ -189,10 +203,41 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	tokenList body_tokens = l_slice(tokens, body_start, body_end_pos + 1)
 	int body_len = len(body_tokens)
 	strList mut_names = collect_mut_names(body_tokens, 0, body_len - 1)
+	int body_tok_count = len(body_tokens)
+	int scan_pos = 0
+	for if scan_pos < body_tok_count
+		Token scan_tok = body_tokens at scan_pos
+		(kind, value) in scan_tok
+		if kind is "IDENT"
+			int next_p = scan_pos + 1
+			int eq_p = scan_pos + 2
+			if eq_p < body_tok_count
+				Token next_tok = body_tokens at next_p
+				Token eq_tok = body_tokens at eq_p
+				(kind) in next_tok
+				bool next_is_ident = kind is "IDENT"
+				(value) in next_tok
+				string next_val = value
+				(kind) in eq_tok
+				bool eq_is_equals = kind is "EQUALS"
+				if next_is_ident and eq_is_equals
+					Token type_tok = body_tokens at scan_pos
+					(value) in type_tok
+					string type_name = value
+					bool is_unsafe_type = list_has(unsafe_reg, type_name)
+					if is_unsafe_type
+						bool already_mut = list_has(mut_names, next_val)
+						if not already_mut
+							mut_names at end = next_val
+		scan_pos = scan_pos + 1
 	strList var_type_reg = build_var_type_reg(body_tokens)
+	int pair_count = len(param_type_pairs)
+	for pair_i in range(pair_count)
+		string pair_item = param_type_pairs at pair_i
+		var_type_reg at end = pair_item
 	string using_type = ""
 	string using_var = ""
-	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+	GenCtx body_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg)
 	# generate body on the small slice so recursive clones are cheap
 	ParseResult body_r = gen_block(body_tokens, 0, 1, body_ctx)
 	string body_code = pr_code(body_r)

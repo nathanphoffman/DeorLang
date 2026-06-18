@@ -46,7 +46,7 @@ fn string make_destruct_code(string var_name, string struct_type, strList struct
 # annotation is applied when the field name appears in mut_names because it is
 # re-assigned later in the same function body.
 fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg) in ctx
 	int token_count = len(tokens)
 	string pad = s_repeat("    ", depth)
 	# LPAREN f1 COMMA f2 RPAREN KW_IN source NEWLINE
@@ -89,7 +89,7 @@ fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
 # statements: `as`-binding, function calls, `insert`, `at end =` append,
 # `at idx =` index write, `remove at idx`, plain `=` assignment, and typed bindings.
 fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
@@ -159,7 +159,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 		string using_type = struct_type
 		string init_destruct = make_destruct_code(using_var, struct_type, struct_reg, mut_names, pad)
 		int body_start = skip_to_body(tokens, var_pos + 1)
-		GenCtx using_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+		GenCtx using_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg)
 		ParseResult block_r = gen_block(tokens, body_start, depth, using_ctx)
 		string full_code = s_cat(init_destruct, pr_code(block_r))
 		return make_result(full_code, pr_pos(block_r))
@@ -339,6 +339,23 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 			string idx_code = pr_code(idx_r)
 			int idx_end = pr_pos(idx_r)
 			return make_result(s_join([pad, ident_name, ".remove(", idx_code, " as usize);\n"]), adv_nl(idx_end, tokens))
+
+		# obj force field to expr  (unsafe field mutation)
+		if kind is "KW_FORCE"
+			int field_pos = pos + 2
+			int expr_pos = pos + 4
+			Token field_tok = tokens at field_pos
+			(value) in field_tok
+			string field_name = value
+			ParseResult expr_r = gen_expr(tokens, expr_pos, ctx)
+			string expr_code = pr_code(expr_r)
+			int expr_end = pr_pos(expr_r)
+			Token expr_tok = tokens at expr_pos
+			(kind) in expr_tok
+			string force_suffix = ""
+			if kind is "STRING"
+				force_suffix = ".to_string()"
+			return make_result(s_join([pad, ident_name, ".", field_name, " = ", expr_code, force_suffix, ";\n"]), adv_nl(expr_end, tokens))
 
 		# name = expr  (assignment)
 		if kind is "EQUALS"

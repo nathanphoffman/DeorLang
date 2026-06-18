@@ -1,7 +1,7 @@
 (tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
 (f_write, f_args) in "transpiler-deor/lib/file.deor"
 (validate_tokens) in "transpiler-deor/tokens_validation.deor"
-(build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg) in "transpiler-deor/registry.deor"
+(build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg, build_unsafe_reg) in "transpiler-deor/registry.deor"
 (gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl) in "transpiler-deor/codegen_decl.deor"
 (collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
 
@@ -17,9 +17,10 @@ fn string generate_rust_from_tokens(tokenList tokens)
 	strList type_reg = build_type_reg(tokens)
 	strList mut_names = []
 	strList var_type_reg = build_var_type_reg(tokens)
+	strList unsafe_reg = build_unsafe_reg(tokens)
 	string using_type = ""
 	string using_var = ""
-	GenCtx ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+	GenCtx ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, unsafe_reg)
 
 	string output = ""
 	int token_count = len(tokens)
@@ -35,6 +36,23 @@ fn string generate_rust_from_tokens(tokenList tokens)
 		if kind is "EOF"
 			break
 		if kind is "NEWLINE"
+			pos = pos + 1
+			continue
+		if kind is "KW_UNSAFE"
+			int decl_pos = pos + 1
+			if decl_pos < token_count
+				Token decl_tok = tokens at decl_pos
+				(kind) in decl_tok
+				if kind is "KW_STRUCT"
+					ParseResult result = gen_struct_decl(tokens, decl_pos)
+					output = s_cat(output, pr_code(result))
+					pos = pr_pos(result)
+					continue
+				if kind is "KW_SHAPE"
+					ParseResult result = gen_shape_decl(tokens, decl_pos)
+					output = s_cat(output, pr_code(result))
+					pos = pr_pos(result)
+					continue
 			pos = pos + 1
 			continue
 		if kind is "KW_STRUCT"
