@@ -2,6 +2,47 @@
 <html lang="en">
 
 <head>
+    <style>
+        .token.keyword {
+            color: #ff79c6;
+        }
+
+        /* fn, for, if, as, in, void */
+        .token.type {
+            color: #8be9fd;
+        }
+
+        /* int, string, struct */
+        .token.comment {
+            color: #6272a4;
+        }
+
+        .token.string {
+            color: #f1fa8c;
+        }
+
+        .token.number {
+            color: #bd93f9;
+        }
+
+        .token.function {
+            color: #50fa7b;
+        }
+
+        .token.operator {
+            color: #ff5555;
+        }
+
+        pre[class*="language-"],
+        code[class*="language-"] {
+            background: transparent !important;
+        }
+
+        html {
+            overflow-y: scroll;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/styles.css">
     <meta charset="UTF-8">
     <title>Deor</title>
@@ -11,13 +52,127 @@
             width: 100px;
         }
     </style>
+
 </head>
 
-<body>
-    <img src="reddeer.png"/>
-    <p class="text-sm">
-        Hello World How are you
-    </p>
+<body class="bg-gray-900">
+    <main class="max-w-5xl px-6 text-gray-100 mx-auto text-center">
+        <div class="flex gap-4 m-10 text-left">
+            <img src="reddeer.png" />
+            <div>
+                <h1 class="text-[60pt] font-serif">Deor</h1>
+                <p class="text-lg">A language for all, transpiled to Rust, as simple as Python, as readable as a Book
+                </p>
+            </div>
+        </div>
+
+        <p class="mx-auto">
+            Learn more by reading the <a href="" class="p-2 bg-gray-100 rounded-sm text-black ml-1">documentation</a>
+        </p>
+
+        <p class="mt-8 mx-auto">
+            <a href="" class="p-2 bg-gray-100 rounded-sm text-black mr-1">Getting Started</a> is the place to go to get
+            up and running.
+        </p>
+
+        <details class="bg-gray-800 mt-10">
+            <summary class="mt-6 cursor-pointer p-2 bg-gray-800 text-gray-300 rounded">See it in action</summary>
+            <div class="text-left">
+                <button onclick="toggleComments()"
+                    class="text-left p-2 bg-gray-900 text-gray-100 rounded-sm text-black mr-1 ml-6">
+                    Hide Comments
+                </button> for readability
+            </div>
+
+            <pre class="bg-gray-800 text-green-400 p-2 rounded-lg m-10 text-left">
+        <code class="language-deor">
+        # strict ordering required consts > enums > validator_types > shapes > struct > func 
+        struct HelloWorld
+            string message
+            string name
+
+        # x_ represents deor-wrapped rust functions provided standard with deor
+        # returns from functions must be a captured variable, however:
+        # for very simple one line functions, you could omit the return here and just have func s_join...
+        fn string get_message(string: name)
+            what_to_say = s_join([message, " I am ", name])
+            return what_to_say
+
+        # all functions are pure and must take inputs and give outputs, except main
+        fn void main()
+            # as is used to infer the type from literal context
+            message as "Hello World"
+            name as "Nate"
+
+            # all structs are immutable value types and must be (de)constructed to use
+            # our decon then construct is unusual but is allowed through "shadowing"
+            HelloWorld hello_text = (message, name)
+            (message, name) in hello_text 
+
+            # if a function has more than one param, no magic data is allowed
+            what_to_say as get_message(message, name)
+
+            # you can also define variables explicitly
+            int say_times = 5
+
+            # syntax is readable left to right, no ++ for index, no non-human symbols
+            # no i for index, all var, struct, etc names must be 3+ characters
+            for index if index < say_times
+                index = index + 1
+                print(what_to_say)
+        </code>
+        </pre>
+        </details>
+    </main>
+    <footer class="text-gray-500 max-w-5xl px-6 mt-10 text-center mx-auto mb-5">
+        <p class="text-gray-500 text-center">
+            Deor was created by <a href="nathanhoffman.me" class="text-gray-200 underline">Nathan Hoffman</a>
+        </p>
+        <p class="mt-2">
+            Thanks to Calciumtrice for the awesome <a href="https://opengameart.org/content/deer"
+                class="text-gray-200 underline">deer</a> art
+        </p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script>
+        Prism.languages.deor = {
+            'comment': /\#.*/,
+            'string': {
+                pattern: /".*?"/,
+                greedy: true
+            },
+            'keyword': /\b(fn|for|if|as|in|struct)\b/,
+            'type': /\b(int|string|void)\b/,
+            'function': /\b\w+(?=\s*\()/,
+            'number': /\b\d+\b/,
+            'operator': /[=<>+\-]/,
+        };
+        Prism.highlightAll();
+
+        let original;
+        let showing = true;
+
+        window.addEventListener('load', () => {
+            original = document.querySelector('code').innerHTML;
+        });
+
+        function toggleComments() {
+            showing = !showing;
+            const code = document.querySelector('code');
+            if (!showing) {
+                code.innerHTML = code.innerHTML
+                    .split('\n')
+                    .filter(line => !line.includes('token comment'))
+                    .join('\n');
+            } else {
+                code.innerHTML = original;
+            }
+            document.querySelector('button').textContent = showing ? 'Hide Comments' : 'Show Comments';
+        }
+
+    </script>
+
 </body>
 
 </html>

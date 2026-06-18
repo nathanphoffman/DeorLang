@@ -25,3 +25,7 @@ install-ext:
 
 run-spec:
     cd specification && npm run start
+
+run-splash:
+    cd ./site && bun run dev
+

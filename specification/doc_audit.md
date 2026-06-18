@@ -45,6 +45,15 @@
   rule that primitives can never be null. That's a gap the empty path correctly handles but none doesn't.
 
 
+❯ do we have throw in the transpiler today?                                                                                                                                      
+
+  Searched for 1 pattern (ctrl+o to expand)
+
+● No. That one hit is just a code comment in registry.deor. throw doesn't exist anywhere in the transpiler — not in word_to_kind, not in gen_stmt, nowhere. Writing throw msg in
+  a .deor file today would tokenize throw as a plain IDENT and then confuse the statement dispatcher, likely emitting /* unhandled(IDENT) */ or mangling whatever comes after it.
+
+
+
 
 
 # Doc Fixes
