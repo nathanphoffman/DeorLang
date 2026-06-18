@@ -80,7 +80,7 @@ fn ParseResult gen_destructure(tokenList tokens, int pos, int depth, GenCtx ctx)
 		dest_lines at end = s_join([pad, "let ", mut_kw, field, " = ", src_code, ".", field, ".clone();"])
 	string dest_code = s_join_nl(dest_lines)
 	dest_code = s_cat(dest_code, "\n")
-	return make_result(dest_code, after)
+	return make_result(giveup dest_code, after)
 
 # Main statement dispatcher. Recognizes every statement form in Deor and routes to the
 # appropriate code path. Handled forms: `rust` inline blocks, `return`, `break`,
@@ -111,7 +111,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 				padded at end = s_join([pad, rust_line])
 		string block_code = s_join_nl(padded)
 		block_code = s_cat(block_code, "\n")
-		return make_result(block_code, block_pos + 1)
+		return make_result(giveup block_code, block_pos + 1)
 
 	if kind is "KW_RETURN"
 		int val_pos = pos + 1
@@ -162,7 +162,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 		GenCtx using_ctx as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
 		ParseResult block_r = gen_block(tokens, body_start, depth, using_ctx)
 		string full_code = s_cat(init_destruct, pr_code(block_r))
-		return make_result(full_code, pr_pos(block_r))
+		return make_result(giveup full_code, pr_pos(block_r))
 
 	if kind is "IDENT"
 		string ident_name = value
@@ -201,7 +201,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 					mut_kw = "mut "
 				string fields_code = s_join_with(fields, ", ")
 				string stmt_code = s_join([pad, "let ", mut_kw, ident_name, " = ", struct_name, " { ", fields_code, " };\n"])
-				return make_result(stmt_code, adv_nl(fend, tokens))
+				return make_result(giveup stmt_code, adv_nl(fend, tokens))
 			# empty → empty list
 			if kind is "KW_EMPTY"
 				return make_result(s_join([pad, "let mut ", ident_name, " = Vec::new();\n"]), adv_nl(after_as + 1, tokens))
@@ -236,7 +236,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 						if is_mut
 							mut_kw = "mut "
 						string with_code = s_join([pad, "let ", mut_kw, ident_name, " = ", struct_name, " { ", fields_code, ", ..", source_name, " };\n"])
-						return make_result(with_code, adv_nl(fend, tokens))
+						return make_result(giveup with_code, adv_nl(fend, tokens))
 			# regular as-binding
 			(kind) in after_as_token
 			ParseResult val_r = gen_expr(tokens, after_as, ctx)
@@ -283,7 +283,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 					shim_code = s_join([pad, using_var, " = ", ident_name, "(", using_var, ".clone());\n"])
 				string re_destruct = make_destruct_code(using_var, using_type, struct_reg, mut_names, pad)
 				shim_code = s_cat(shim_code, re_destruct)
-				return make_result(shim_code, adv_nl(after_with, tokens))
+				return make_result(giveup shim_code, adv_nl(after_with, tokens))
 			ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 			string args_code = pr_code(args_r)
 			int args_end = pr_pos(args_r)
@@ -293,7 +293,7 @@ fn ParseResult gen_stmt(tokenList tokens, int pos, int depth, GenCtx ctx)
 				call_code = s_join([pad, "println!(\"{}\", ", args_code, ");\n"])
 			else
 				call_code = s_join([pad, ident_name, "(", args_code, ");\n"])
-			return make_result(call_code, adv_nl(after_paren, tokens))
+			return make_result(giveup call_code, adv_nl(after_paren, tokens))
 
 		# name insert val (legacy append)
 		if kind is "KW_INSERT"
@@ -506,7 +506,7 @@ fn ParseResult gen_if_branch(tokenList tokens, int cond_pos, int depth, GenCtx c
 	int body_start = skip_to_body(tokens, pr_pos(cond_r))
 	ParseResult body_r = gen_block(tokens, body_start, depth + 1, ctx)
 	string combined = s_join([pr_code(cond_r), " {\n", pr_code(body_r)])
-	return make_result(combined, pr_pos(body_r))
+	return make_result(giveup combined, pr_pos(body_r))
 
 # Generates a complete Rust `if / else if / else` from a Deor `if / else if / else`
 # chain. Calls gen_if_branch for the initial `if`, then loops consuming `else` tokens
@@ -541,7 +541,7 @@ fn ParseResult gen_if(tokenList tokens, int pos, int depth, GenCtx ctx)
 			cur = pr_pos(else_r)
 			break
 	result_code = s_cat(result_code, "\n")
-	return make_result(result_code, cur)
+	return make_result(giveup result_code, cur)
 
 # === For/while loop code generation ===
 
@@ -567,7 +567,7 @@ fn ParseResult gen_for(tokenList tokens, int pos, int depth, GenCtx ctx)
 		string while_body_code = pr_code(while_body_r)
 		int while_body_end = pr_pos(while_body_r)
 		string while_code = s_join([pad, "while ", cond_code, " {\n", while_body_code, pad, "}\n"])
-		return make_result(while_code, while_body_end)
+		return make_result(giveup while_code, while_body_end)
 
 	if kind is "KW_GIVEUP"
 		int lparen_pos = next_pos + 1
@@ -585,7 +585,7 @@ fn ParseResult gen_for(tokenList tokens, int pos, int depth, GenCtx ctx)
 		string body_code = pr_code(body_r)
 		int body_end = pr_pos(body_r)
 		string for_code = s_join([pad, "for ", giveup_var, " in ", iter_code, " {\n", body_code, pad, "}\n"])
-		return make_result(for_code, body_end)
+		return make_result(giveup for_code, body_end)
 
 	string var_name = "_"
 	int iter_pos = 0
