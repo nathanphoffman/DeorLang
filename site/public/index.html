@@ -105,11 +105,20 @@
             Earth
             Mars
 
-        type Nate(str: string)
-            is_hello_world = HELLO is 
+        # validator type returns are the only place where returning is not strict
+        # they do not require the keyword return, and one lines always return
+        type Positive(int: num)
+            num > 0
+          
+        type FourOrLess(int num)
+            5 > num
 
-        shape sayHiPlanet = func of Planet to string 
-        shape listPlanet = list of Planet
+        # they can also be used in a composite form, although 5 > num > 0 would be easier
+        type ZeroToFour(int num)
+            Positive(num) and FourOrLess(num)
+
+        shape sayHiToPlanet = func of Planet to string 
+        shape listOfPlanet = list of Planet
 
         # strict ordering required consts > enums > (shapes and types) > struct > func 
         struct HelloWorld
@@ -140,7 +149,7 @@
             what_to_say as get_message(message, name)
 
             # you can also define variables explicitly
-            int say_times = 5
+            Positive say_times = 5
 
             # syntax is readable left to right, no ++ for index, no non-human symbols
             # no i for index, all var, struct, etc names must be 3+ characters

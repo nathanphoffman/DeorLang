@@ -1,5 +1,6 @@
 (tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
 (f_write, f_args) in "transpiler-deor/lib/file.deor"
+(validate_tokens) in "transpiler-deor/tokens_validation.deor"
 (build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg) in "transpiler-deor/registry.deor"
 (gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl) in "transpiler-deor/codegen_decl.deor"
 (collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
@@ -80,6 +81,6 @@ fn void main()
 		string output_path = args at 1
 
 		tokenList tokens = collect_all_tokens_with_all_imports(input_path)
-
+		validate_tokens(tokens)
 		string rust_code = generate(tokens)
 		f_write(output_path, rust_code)
