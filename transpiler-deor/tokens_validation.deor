@@ -118,6 +118,18 @@ fn void validate_tokens(tokenList tokens)
 		string cur_val = value
 		int cur_line = line
 
+		# skip macro_define headers — name(place p1, place p2) is a declaration, not a call
+		if cur_kind is "KW_MACRO_DEFINE"
+			int skip_pos = pos + 1
+			for if skip_pos < token_count
+				Token skip_tok = tokens at skip_pos
+				(kind) in skip_tok
+				skip_pos = skip_pos + 1
+				if kind is "RPAREN"
+					break
+			pos = skip_pos
+			continue
+
 		# skip rust blocks entirely — their content is raw Rust and not subject to Deor rules
 		if cur_kind is "KW_RUST"
 			int skip_pos = pos + 1

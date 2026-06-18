@@ -35,18 +35,23 @@ fn Test say_hi(Test test)
 	world as 10
 	return (hello,world)
 
-
-
-
 # fn int add(int val1, int val2)
-# 	val1 + val2
-
-
+# val1 + val2
 
 fn void handle_message(string message)
 	print(message)
 
+macro_define log_check(place label, place value)
+	print(label)
+	print(value)
+
 fn void main()
+
+
+	print("just before")
+	string lbl = "score:"
+	string score = "42"
+	macro_run log_check(lbl, score)
 
 	x as 10
 	y as 20
@@ -82,10 +87,10 @@ fn void main()
 	Test old_test = (hello,world)
 
 
-	message as "An unknown server problem occurred"
-	code as 500
-	Error err = (message, code)
-	handle_message(message)
+	# message as "An unknown server problem occurred"
+	# code as 500
+	# Error err = (message, code)
+	# handle_message(message)
 
 	using old_test
 		increment()
@@ -101,4 +106,7 @@ fn void main()
 		new_hello as 1
 		set() with new_hello
 
+macro validate_ident(_symbol, _case)
+	if _symbol is KW_ENUM
+		print("got an enum yall!")
 

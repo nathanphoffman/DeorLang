@@ -96,14 +96,12 @@ Open an indented block when followed by a newline.
 | Word | Use |
 |---|---|
 | `return` | Return a value from a function |
-| `throw` | Unrecoverable hard stop (`panic!`) |
+| `crash` | Unrecoverable hard stop (`panic!`) |
 | `avow` | Forced unwrap of a validator type — panics if None |
 | `break` | Exit the innermost loop |
 | `continue` | Skip to the next loop iteration |
 | `const` | Constant declaration |
 | `private` | Restrict a declaration to the current file |
-| `thread` | Spawn a named function on a new OS thread |
-| `send` | Send a value to a channel (`send(value) to channel`) |
 
 ### Operators and Expression Keywords
 

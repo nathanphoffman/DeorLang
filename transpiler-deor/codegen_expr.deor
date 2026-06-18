@@ -1,7 +1,7 @@
 (tokenList, strList, Token, ParseResult, GenCtx, TokensRef, RcCtx) in "transpiler-deor/types.deor"
 (make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
 (s_join, s_join_with, s_debug, s_split) in "transpiler-deor/lib/string.deor"
-(is_empty, reg_get) in "transpiler-deor/utils.deor"
+(is_empty, reg_get, list_has) in "transpiler-deor/utils.deor"
 (is_binary_op, map_op) in "transpiler-deor/mappings.deor"
 
 # === Expression code generation ===
@@ -160,7 +160,7 @@ fn ParseResult gen_unary_method(TokensRef tokens, int args_pos, string suffix, R
 # `name(args)`, index read `name at idx`, and plain identifier (potentially an enum
 # variant which must be emitted as `EnumName::Variant` in Rust).
 fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, macro_params) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
@@ -265,6 +265,24 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
+
+			# macro place param → emit $name, handling optional call args
+			bool is_place = list_has(macro_params, value)
+			if is_place
+				string dollar = "$"
+				string place_code = s_cat(dollar, value)
+				if kind is "LPAREN"
+					int place_args_pos = next_pos + 1
+					ParseResult place_args_r = gen_call_args(tokens, place_args_pos, ctx)
+					string place_args_code = pr_code(place_args_r)
+					int place_args_end = pr_pos(place_args_r)
+					int place_after = place_args_end + 1
+					string plc_op = "("
+					string plc_cp = ")"
+					strList plc_parts = [place_code, plc_op, place_args_code, plc_cp]
+					string plc_code = s_join(plc_parts)
+					return make_result(plc_code, place_after)
+				return make_result(place_code, next_pos)
 
 			# function call: name(args)
 			if kind is "LPAREN"

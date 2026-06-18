@@ -2,8 +2,13 @@
 Note the roadmap is more to list out my raw notes and get feedback, however it is subject to frequent change and is not written in a singular viewpoint, I frequently will switch from personal to general throughout this.
 ---
 
+## Compiler Constants
+
+We should add in compiler constants
+*Small Lift* | *High Priority*
+
 ## Audit Documentation
-*Large Lift* | *Critical*
+*Large Lift* | *Critical Priority*
 
 A lot of the documentation needs refreshed it is based on an old AI structure I build in pair-theorizing with AI about the Deor programming language, as I have been implementing it with Claude we have started going off the beaten track and a lot of the docs are either out of date or in great need of adjusting.
 
@@ -43,6 +48,8 @@ The codegen loop in generate_rust_from_tokens builds output like this:
 
   Current cost: ~3.1s out of ~3.6s total runtime. It's the last major bottleneck.
 
+## Individual File Mapping Output
+Another important logical step is to have the files outputted 
 
 ## Add Better Onboarding Document
 *Large Lift* | *Low Priority*

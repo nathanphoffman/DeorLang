@@ -2,8 +2,8 @@
 (f_write, f_args) in "transpiler-deor/lib/file.deor"
 (n_to_str) in "transpiler-deor/lib/num.deor"
 (validate_tokens) in "transpiler-deor/tokens_validation.deor"
-(build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg) in "transpiler-deor/registry.deor"
-(gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl, gen_raw_decl) in "transpiler-deor/codegen_decl.deor"
+(build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg, build_macro_reg) in "transpiler-deor/registry.deor"
+(gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl, gen_raw_decl, gen_macro_define) in "transpiler-deor/codegen_decl.deor"
 (collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
 
 # Top-level code generator. Takes the fully merged and deduplicated token list, builds
@@ -19,6 +19,7 @@ fn string generate_rust_from_tokens(tokenList tokens)
 	strList type_reg = build_type_reg(tokens)
 	strList mut_names = []
 	strList var_type_reg = build_var_type_reg(tokens)
+	strList macro_reg = build_macro_reg(tokens)
 	int t_reg = elapsed_ms(t_reg_start)
 	string trg_str = n_to_str(t_reg)
 	string trg_pfx = "[timer]   registries: "
@@ -27,7 +28,8 @@ fn string generate_rust_from_tokens(tokenList tokens)
 	print(s_join(trg_parts))
 	string using_type = ""
 	string using_var = ""
-	GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+	strList macro_params = []
+	GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, macro_reg, macro_params)
 	RcCtx ctx = make_rctx(giveup ctx_raw)
 
 	string output = ""
@@ -79,6 +81,12 @@ fn string generate_rust_from_tokens(tokenList tokens)
 			continue
 		if kind is "KW_RAW"
 			ParseResult result = gen_raw_decl(tokens, pos)
+			string decl_code = pr_code(result)
+			output = s_cat(output, decl_code)
+			pos = pr_pos(result)
+			continue
+		if kind is "KW_MACRO_DEFINE"
+			ParseResult result = gen_macro_define(tokens, pos, ctx)
 			string decl_code = pr_code(result)
 			output = s_cat(output, decl_code)
 			pos = pr_pos(result)

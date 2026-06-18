@@ -3,7 +3,7 @@
 (cur_at, cur_next, c_at_end, cur_skip_to_body, cur_peek) in "transpiler-deor/cursor.deor"
 (s_join, s_join_nl, s_join_with, s_pascal) in "transpiler-deor/lib/string.deor"
 (l_slice) in "transpiler-deor/lib/list.deor"
-(is_empty) in "transpiler-deor/utils.deor"
+(is_empty, list_has) in "transpiler-deor/utils.deor"
 (render_rust_type) in "transpiler-deor/mappings.deor"
 (resolve_type, find_block_end, collect_mut_names, build_var_type_reg) in "transpiler-deor/registry.deor"
 (gen_expr) in "transpiler-deor/codegen_expr.deor"
@@ -196,7 +196,7 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 # work on just the body tokens so recursive registry scans stay cheap — this token-slice
 # optimization cut self-compile time from 11s to 1.3s.
 fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, macro_reg) in ctx
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
 	int start_pos = pos + 1
 	TokenCursor cur = cur_at(tokens, start_pos)
@@ -245,7 +245,8 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
 	strList var_type_reg = build_var_type_reg(body_tokens_raw)
 	string using_type = ""
 	string using_var = ""
-	GenCtx body_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+	strList macro_params = []
+	GenCtx body_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, macro_reg, macro_params)
 	RcCtx body_ctx = make_rctx(giveup body_ctx_raw)
 	TokensRef body_tokens = tokens_wrap(giveup body_tokens_raw)
 	# Rc wrappers make recursive clones inside gen_block cheap (Rc::clone vs full copy)
@@ -280,3 +281,64 @@ fn ParseResult gen_raw_decl(tokenList tokens, int pos)
 	string emp = ""
 	int raw_next = adv_nl(after, tokens)
 	return make_result(emp, raw_next)
+
+# Generates a Rust macro_rules! block from a Deor `macro_define name(place p1, place p2)`
+# declaration. The body goes through normal Deor codegen with place params emitted as
+# $paramname so Rust macro substitution fills them in at each macro_run call site.
+fn ParseResult gen_macro_define(tokenList tokens, int pos, RcCtx ctx)
+	(variant_reg, shape_reg, struct_reg, enum_reg, type_reg, macro_reg) in ctx
+	int name_pos = pos + 1
+	Token name_tok = tokens at name_pos
+	(value) in name_tok
+	string macro_name = value
+	strList place_params = []
+	int scan = name_pos + 2
+	int token_count = len(tokens)
+	for if scan < token_count
+		Token scan_tok = tokens at scan
+		(kind, value) in scan_tok
+		if kind is "RPAREN"
+			scan = scan + 1
+			break
+		if kind is "IDENT"
+			place_params at end = value
+		scan = scan + 1
+	int first_body_pos = skip_to_body(tokens, scan)
+	int indent_tok_pos = first_body_pos - 1
+	int body_end_pos = find_block_end(tokens, indent_tok_pos)
+	int body_start = first_body_pos
+	int body_slice_end = body_end_pos + 1
+	tokenList body_tokens_raw = l_slice(tokens, body_start, body_slice_end)
+	int body_len = len(body_tokens_raw)
+	int zero = 0
+	int body_last = body_len - 1
+	strList mut_names = collect_mut_names(body_tokens_raw, zero, body_last)
+	strList var_type_reg = build_var_type_reg(body_tokens_raw)
+	string using_type = ""
+	string using_var = ""
+	strList macro_params = place_params
+	GenCtx macro_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, macro_reg, macro_params)
+	RcCtx macro_ctx = make_rctx(giveup macro_ctx_raw)
+	TokensRef body_tokens = tokens_wrap(giveup body_tokens_raw)
+	int body_pos = 0
+	int body_depth = 2
+	ParseResult body_r = gen_block(giveup body_tokens, body_pos, body_depth, giveup macro_ctx)
+	string body_code = pr_code(body_r)
+	int param_count = len(place_params)
+	strList param_strs = []
+	for pi in range(param_count)
+		string pname = place_params at pi
+		string dollar = "$"
+		string tt_sfx = ":expr"
+		strList pp_parts = [dollar, pname, tt_sfx]
+		param_strs at end = s_join(pp_parts)
+	string comma_sep = ", "
+	string params_str = s_join_with(param_strs, comma_sep)
+	string mr_open = "macro_rules! "
+	string mr_match = " {\n    ("
+	string mr_arrow = ") => {\n"
+	string mr_close = "    };\n}\n\n"
+	strList mr_parts = [mr_open, macro_name, mr_match, params_str, mr_arrow, body_code, mr_close]
+	string macro_code = s_join(mr_parts)
+	int after_pos = body_end_pos + 1
+	return make_result(giveup macro_code, after_pos)

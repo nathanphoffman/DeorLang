@@ -276,6 +276,37 @@ fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
 		return s_join(vec_parts)
 	return render_rust_type(type_name)
 
+# Builds the macro registry: [macroName, "param1,param2,..."] pairs for each
+# `macro_define` declaration. Used at call sites to emit `name!(args)` and during
+# body codegen to know which identifiers are place params needing `$` substitution.
+fn strList build_macro_reg(tokenList tokens)
+	strList result = []
+	int token_count = len(tokens)
+	for index in range(token_count)
+		Token token = tokens at index
+		(kind, value, line) in token
+		if kind is "KW_MACRO_DEFINE"
+			int name_pos = index + 1
+			if name_pos < token_count
+				Token name_tok = tokens at name_pos
+				(value) in name_tok
+				string macro_name = value
+				strList params = []
+				int scan = name_pos + 2
+				for if scan < token_count
+					Token scan_tok = tokens at scan
+					(kind, value) in scan_tok
+					if kind is "RPAREN"
+						break
+					if kind is "IDENT"
+						params at end = value
+					scan = scan + 1
+				string comma = ","
+				string params_joined = s_join_with(params, comma)
+				result at end = macro_name
+				result at end = params_joined
+	return result
+
 # === Mutability pre-scan ===
 
 # Finds the DEDENT token that closes the block opened by the INDENT at `indent_pos`.

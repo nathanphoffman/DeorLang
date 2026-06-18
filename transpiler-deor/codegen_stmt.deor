@@ -108,13 +108,30 @@ fn ParseResult gen_destructure(TokensRef tokens, int pos, int depth, RcCtx ctx)
 # statements: `as`-binding, function calls, `insert`, `at end =` append,
 # `at idx =` index write, `remove at idx`, plain `=` assignment, and typed bindings.
 fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, macro_reg, macro_params) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
 	string indent = "    "
 	string pad = s_repeat(indent, depth)
 	string newline = "\n"
+
+	if kind is "KW_MACRO_RUN"
+		int mr_name_pos = pos + 1
+		Token mr_name_tok = tokens at mr_name_pos
+		(value) in mr_name_tok
+		string mr_macro_name = value
+		int mr_args_pos = pos + 3
+		ParseResult mr_args_r = gen_call_args(tokens, mr_args_pos, ctx)
+		string mr_args_code = pr_code(mr_args_r)
+		int mr_args_end = pr_pos(mr_args_r)
+		int mr_after = mr_args_end + 1
+		string mr_bang = "!("
+		string mr_sfx = ");\n"
+		strList mr_parts = [pad, mr_macro_name, mr_bang, mr_args_code, mr_sfx]
+		string mr_code = s_join(mr_parts)
+		int mr_next = adv_nl_ref(mr_after, tokens)
+		return make_result(mr_code, mr_next)
 
 	if kind is "KW_RUST"
 		int block_pos = pos + 2
@@ -203,7 +220,7 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 		string init_destruct = make_destruct_code(using_var, struct_type, struct_reg, mut_names, pad)
 		int var_next = var_pos + 1
 		int body_start = skip_to_body_ref(tokens, var_next)
-		GenCtx using_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+		GenCtx using_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, macro_reg, macro_params)
 		RcCtx using_ctx = make_rctx(giveup using_ctx_raw)
 		ParseResult block_r = gen_block(tokens, body_start, depth, giveup using_ctx)
 		string blk_code = pr_code(block_r)

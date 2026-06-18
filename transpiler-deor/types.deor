@@ -29,6 +29,8 @@ struct GenCtx
 	string using_type
 	string using_var
 	strList var_type_reg
+	strList macro_reg
+	strList macro_params
 
 # Cursor-style view into a token list. Used inside `using c` blocks during declaration
 # parsing to step through tokens one at a time without carrying raw indices everywhere.
