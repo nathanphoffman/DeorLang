@@ -17,9 +17,10 @@ fn Test set(Test test, int world)
 	world = 2
 	return (hello, world)
 
-type squareFeet(int n)
+type SquareFeet(int n)
 	n > 0
 
+shape camelTest = list of string
 
 struct Error
 	string message
@@ -33,6 +34,9 @@ fn Test say_hi(Test test)
 	print(hello)
 	world as 10
 	return (hello,world)
+
+
+
 
 # fn int add(int val1, int val2)
 # 	val1 + val2
@@ -71,7 +75,7 @@ fn void main()
 
 	print(world)
 
-	squareFeet sqft = 4
+	SquareFeet sqft = 4
 	int actual_sqft = (avow sqft)
 
 

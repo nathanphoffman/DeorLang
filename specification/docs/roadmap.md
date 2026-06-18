@@ -53,7 +53,7 @@ It would be good to start a doc that takes users from 0 to completion of at leas
 ---
 
 ## Add additional validation
-- Validator: Change type alias to PascalCase
+- Validator: Change type alias to PascalCase, shape alias to camelCase
 - Validator: We should not allow any & | ^ < > { } unless it is in string data
 - Validator: Do we check for rust keywords like mut? we should have an exception to catch rust-named keywords that are not in rust blocks
 - Add validation to prevent primitives/structs from being assigned to none, only Custom Types can be assigned none

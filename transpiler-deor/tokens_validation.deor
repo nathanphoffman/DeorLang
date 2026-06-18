@@ -189,7 +189,7 @@ fn void validate_tokens(tokenList tokens)
 				if name_kind is "IDENT"
 					if len(name_val) < 3
 						errors at end = val_err(cur_line, lbl_type, name_val, rule_min3)
-					if not is_camel(name_val)
+					if not is_pascal(name_val)
 						errors at end = val_err(cur_line, lbl_type, name_val, rule_camel)
 			pos = pos + 1
 			continue

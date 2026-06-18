@@ -342,7 +342,7 @@ fn validate_tokens(tokens: Vec<Token>) {
                     if (name_val.len() as i32) < 3 {
                         errors.push(val_err(cur_line.clone(), lbl_type.clone(), name_val.clone(), rule_min3.clone()).clone());
                     }
-                    if !is_camel(name_val.clone()) {
+                    if !is_pascal(name_val.clone()) {
                         errors.push(val_err(cur_line.clone(), lbl_type.clone(), name_val.clone(), rule_camel.clone()).clone());
                     }
                 }
