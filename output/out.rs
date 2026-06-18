@@ -350,12 +350,12 @@ fn pr_pos(result: ParseResult) -> i32 {
 }
 
 fn make_result(code: String, new_pos: i32) -> ParseResult {
-    let result = ParseResult { code, new_pos };
+    let result = ParseResult { code: code.clone(), new_pos: new_pos.clone() };
     return result;
 }
 
 fn make_token(kind: String, value: String, line: i32) -> Token {
-    let token = Token { kind, value, line };
+    let token = Token { kind: kind.clone(), value: value.clone(), line: line.clone() };
     return token;
 }
 
@@ -826,7 +826,7 @@ fn collect_mut_names(tokens: Vec<Token>, start: i32, end_pos: i32) -> Vec<String
 fn cur_at(tokens: Vec<Token>, pos: i32) -> TokenCursor {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut current: Token = tokens[pos as usize].clone();
-    let c = TokenCursor { token_count, pos, current };
+    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
     return c;
 }
 
@@ -1542,7 +1542,7 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
         let mut init_destruct: String = make_destruct_code(using_var.clone(), struct_type.clone(), struct_reg.clone(), mut_names.clone(), pad.clone());
         let mut body_start: i32 = skip_to_body_ref(tokens.clone(), var_pos + 1.clone());
 /* unhandled(IDENT) */
-        let using_ctx_raw = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg };
+        let using_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone() };
         let mut using_ctx: RcCtx = make_rctx(using_ctx_raw);
         let mut block_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth.clone(), using_ctx);
         let mut full_code: String = s_cat(init_destruct.clone(), pr_code(block_r.clone()));
@@ -1585,7 +1585,13 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
                 if is_mut {
                     mut_kw = "mut ".to_string();
                 }
-                let mut fields_code: String = s_join_with(fields.clone(), ", ".to_string());
+                let mut field_count: i32 = (fields.len() as i32);
+                let mut field_pairs: Vec<String> = Vec::new();
+                for field_idx in 0..field_count {
+                    let mut field_name: String = fields[field_idx as usize].clone();
+                    field_pairs.push(s_join(vec![field_name.clone(), ": ".to_string(), field_name.clone(), ".clone()".to_string()]).clone());
+                }
+                let mut fields_code: String = s_join_with(field_pairs.clone(), ", ".to_string());
                 let mut stmt_code: String = s_join(vec![pad.clone(), "let ".to_string(), mut_kw.clone(), ident_name.clone(), " = ".to_string(), struct_name.clone(), " { ".to_string(), fields_code.clone(), " };\n".to_string()]);
                 return make_result(stmt_code, adv_nl_ref(fend.clone(), tokens.clone()));
             }
@@ -1809,7 +1815,7 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
                                 let mut fv_code: String = pr_code(fv_r.clone());
                                 if fni < fn_count {
                                     let mut fname: String = field_names[fni as usize].clone();
-                                    field_pairs.push(s_join(vec![fname.clone(), ": ".to_string(), fv_code.clone()]).clone());
+                                    field_pairs.push(s_join(vec![fname.clone(), ": ".to_string(), fv_code.clone(), ".clone()".to_string()]).clone());
                                     fni = fni + 1;
                                 }
                                 fend = pr_pos(fv_r.clone());
@@ -2335,7 +2341,7 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
 /* unhandled(IDENT) */
-    let body_ctx_raw = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg };
+    let body_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone() };
     let mut body_ctx: RcCtx = make_rctx(body_ctx_raw);
     let mut body_tokens: TokensRef = tokens_wrap(body_tokens_raw);
     let mut body_r: ParseResult = gen_block(body_tokens, 0, 1, body_ctx);
@@ -2850,7 +2856,7 @@ fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
 /* unhandled(IDENT) */
-    let ctx_raw = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg };
+    let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone() };
     let mut ctx: RcCtx = make_rctx(ctx_raw);
     let mut output: String = "".to_string();
     let mut token_count: i32 = (tokens.len() as i32);

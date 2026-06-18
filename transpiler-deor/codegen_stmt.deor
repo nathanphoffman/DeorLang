@@ -201,7 +201,12 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 				string mut_kw = ""
 				if is_mut
 					mut_kw = "mut "
-				string fields_code = s_join_with(fields, ", ")
+				int field_count = len(fields)
+				strList field_pairs = []
+				for field_idx in range(field_count)
+					string field_name = fields at field_idx
+					field_pairs at end = s_join([field_name, ": ", field_name, ".clone()"])
+				string fields_code = s_join_with(field_pairs, ", ")
 				string stmt_code = s_join([pad, "let ", mut_kw, ident_name, " = ", struct_name, " { ", fields_code, " };\n"])
 				return make_result(giveup stmt_code, adv_nl_ref(fend, tokens))
 			# empty → empty list
@@ -408,7 +413,7 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 								string fv_code = pr_code(fv_r)
 								if fni < fn_count
 									string fname = field_names at fni
-									field_pairs at end = s_join([fname, ": ", fv_code])
+									field_pairs at end = s_join([fname, ": ", fv_code, ".clone()"])
 									fni = fni + 1
 								fend = pr_pos(fv_r)
 							string fields_code = s_join_with(field_pairs, ", ")

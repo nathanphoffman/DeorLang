@@ -4,10 +4,6 @@
 - Do we have any form of union types in the transpiler?
 
 # Transpiler Add
-- We need to add crash (make sure there is no throw in the transpiler)
-    message as "A problem has been encountered the error is: "
-    error as s_join([message, error])
-    crash(error)
 - We should extend avow / validator types
   - Positive num = -5 no longer panics, it assigns none under the hood (lie in deor syntax)
   - However users can also assign a lie to a Validator Type (Option) value: Positive num = lie  (lie is a none)
