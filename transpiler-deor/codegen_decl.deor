@@ -179,6 +179,8 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 				string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
 				param_strs at end = s_join([param_name, ": ", rust_param_type])
 				cur_next() with tokens
+			else
+				cur_next() with tokens
 		# pos now at NEWLINE after RPAREN
 		(pos) in cur
 		int indent_pos = pos + 1

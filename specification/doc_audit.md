@@ -55,6 +55,7 @@
 - Look at how ranges work in transpiler vs doc vs my expectation
 - Remove auto-destructuring from using
 - Change type alias to PascalCase
+- We should not allow any &, |, ^, <,>,{,}, or mut keywords use in any code anywhere unless it is in string data
 
 
 # Doc Fixes

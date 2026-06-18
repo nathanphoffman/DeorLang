@@ -7,14 +7,6 @@ for room in rooms
     ...
 ```
 
-```rust
-for room in &rooms {
-    ...
-}
-```
-
-**Conversion notes:** the transpiler chooses `&rooms` (borrow) vs `rooms` (move/copy) based on whether `Room` is `Copy` and whether `rooms` is used again afterward.
-
 ---
 
 ## Numeric Iteration
