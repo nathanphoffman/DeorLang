@@ -125,7 +125,7 @@ fn tokenList collect_imports_from_raw(tokenList source_tokens)
 					string sub_path = value
 					int name_count = len(sub_names)
 					if name_count > 0
-						tokenList sub_tokens = load_named(sub_path, sub_names)
+						tokenList sub_tokens = create_tokens_from_file(sub_path, sub_names)
 						int sub_len = len(sub_tokens)
 						for sub_i in range(sub_len)
 							Token sub_tok = sub_tokens at sub_i
@@ -144,7 +144,7 @@ fn tokenList collect_imports_from_raw(tokenList source_tokens)
 # own declarations. Concatenates support + own and returns them. The `names` parameter
 # documents which symbols the caller wanted but does not filter here — intra-file
 # dependencies require the full own-declaration set to be present.
-fn tokenList load_named(string path, strList names)
+fn tokenList create_tokens_from_file(string path, strList names)
 	string source = f_read(path)
 	tokenList raw = tokenize(source)
 	tokenList support = collect_imports_from_raw(raw)
@@ -286,7 +286,7 @@ fn tokenList collect_all_tokens_with_all_imports(string path)
 					string imp_path = value
 					int name_count = len(import_names)
 					if name_count > 0
-						tokenList imp_tokens = load_named(imp_path, import_names)
+						tokenList imp_tokens = create_tokens_from_file(imp_path, import_names)
 						int import_len = len(imp_tokens)
 						for import_index in range(import_len)
 							Token import_token = imp_tokens at import_index

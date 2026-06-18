@@ -2620,7 +2620,7 @@ fn collect_imports_from_raw(source_tokens: Vec<Token>) -> Vec<Token> {
                     let mut sub_path: String = value.clone();
                     let mut name_count: i32 = (sub_names.len() as i32);
                     if name_count > 0 {
-                        let mut sub_tokens: Vec<Token> = load_named(sub_path.clone(), sub_names.clone());
+                        let mut sub_tokens: Vec<Token> = create_tokens_from_file(sub_path.clone(), sub_names.clone());
                         let mut sub_len: i32 = (sub_tokens.len() as i32);
                         for sub_i in 0..sub_len {
                             let mut sub_tok: Token = sub_tokens[sub_i as usize].clone();
@@ -2641,7 +2641,7 @@ fn collect_imports_from_raw(source_tokens: Vec<Token>) -> Vec<Token> {
     return result;
 }
 
-fn load_named(path: String, names: Vec<String>) -> Vec<Token> {
+fn create_tokens_from_file(path: String, names: Vec<String>) -> Vec<Token> {
     let mut source: String = f_read(path.clone());
     let mut raw: Vec<Token> = tokenize(source.clone());
     let mut support: Vec<Token> = collect_imports_from_raw(raw.clone());
@@ -2802,7 +2802,7 @@ fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
                     let mut imp_path: String = value.clone();
                     let mut name_count: i32 = (import_names.len() as i32);
                     if name_count > 0 {
-                        let mut imp_tokens: Vec<Token> = load_named(imp_path.clone(), import_names.clone());
+                        let mut imp_tokens: Vec<Token> = create_tokens_from_file(imp_path.clone(), import_names.clone());
                         let mut import_len: i32 = (imp_tokens.len() as i32);
                         for import_index in 0..import_len {
                             let mut import_token: Token = imp_tokens[import_index as usize].clone();
