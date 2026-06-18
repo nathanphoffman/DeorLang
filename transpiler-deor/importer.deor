@@ -1,7 +1,75 @@
-(tokenList, strList, Token) in "transpiler-deor/types.deor"
+(tokenList, strList, Token, ParseResult) in "transpiler-deor/types.deor"
 (f_read) in "transpiler-deor/lib/file.deor"
-(list_has) in "transpiler-deor/utils.deor"
+(list_has, is_empty) in "transpiler-deor/utils.deor"
 (tokenize) in "transpiler-deor/lexer.deor"
+(make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
+
+# Checks whether a LPAREN at pos starts an import line `(names) in "path"`. Returns the
+# import path and the position after the line on success, or ("", pos) if not an import.
+fn ParseResult scan_import(tokenList tokens, int pos)
+	int token_count = len(tokens)
+	int scan = pos + 1
+	for if scan < token_count
+		Token scan_tok = tokens at scan
+		(kind) in scan_tok
+		scan = scan + 1
+		if kind is "RPAREN"
+			break
+	int path_pos = scan + 1
+	if path_pos < token_count
+		Token in_tok = tokens at scan
+		(kind) in in_tok
+		bool is_in = kind is "KW_IN"
+		if is_in
+			Token path_tok = tokens at path_pos
+			(value) in path_tok
+			return make_result(value, path_pos + 1)
+	return make_result("", pos)
+
+# Returns the name of the declaration at pos. For fn, skips the return type token to
+# reach pos+2; for struct/enum/shape, the name is at pos+1.
+fn string name_of_decl(tokenList tokens, int pos, bool is_fn)
+	int token_count = len(tokens)
+	int name_offset = 1
+	if is_fn
+		name_offset = 2
+	int name_pos = pos + name_offset
+	if name_pos < token_count
+		Token name_tok = tokens at name_pos
+		(value) in name_tok
+		return value
+	return ""
+
+# Returns the position after the closing DEDENT of a block declaration (fn/struct/enum).
+fn int end_of_block(tokenList tokens, int pos)
+	int token_count = len(tokens)
+	int cur = pos
+	int depth = 0
+	bool entered = false
+	for if cur < token_count
+		Token tok = tokens at cur
+		(kind) in tok
+		cur = cur + 1
+		if kind is "INDENT"
+			depth = depth + 1
+			entered = true
+		else if kind is "DEDENT"
+			depth = depth - 1
+			if depth is 0 and entered
+				break
+	return cur
+
+# Returns the position after the NEWLINE that terminates a shape declaration.
+fn int end_of_shape(tokenList tokens, int pos)
+	int token_count = len(tokens)
+	int cur = pos
+	for if cur < token_count
+		Token tok = tokens at cur
+		(kind) in tok
+		cur = cur + 1
+		if kind is "NEWLINE"
+			break
+	return cur
 
 # Recursively loads a Deor source file and all its transitive imports into a single flat
 # token list. Import lines are replaced in-place with the tokens from the referenced file,
@@ -16,52 +84,45 @@ fn tokenList load_file(string path)
 	int depth = 0
 
 	for if true
-		if pos >= token_count
+
+		is_at_end_of_file as pos >= token_count;
+		if is_at_end_of_file
 			break
+
 		Token tok = raw at pos
 		(kind) in tok
+
 		if kind is "EOF"
 			break
+
 		if kind is "INDENT"
 			depth = depth + 1
 			result at end = tok
 			pos = pos + 1
 			continue
+
 		if kind is "DEDENT"
 			depth = depth - 1
 			result at end = tok
 			pos = pos + 1
 			continue
+			
 		bool at_root_depth = depth is 0
 		if kind is "LPAREN" and at_root_depth
-			# scan past the name list to find the closing RPAREN
-			int scan = pos + 1
-			for if scan < token_count
-				Token scan_tok = raw at scan
-				(kind) in scan_tok
-				scan = scan + 1
-				if kind is "RPAREN"
-					break
-			# scan now points one past RPAREN; expect KW_IN then a STRING path
-			int path_pos = scan + 1
-			if path_pos < token_count
-				Token in_tok = raw at scan
-				(kind) in in_tok
-				bool is_in = kind is "KW_IN"
-				if is_in
-					Token path_tok = raw at path_pos
-					(value) in path_tok
-					string imp_path = value
-					tokenList imp_tokens = load_file(imp_path)
-					int imp_len = len(imp_tokens)
-					for imp_index in range(imp_len)
-						Token imp_tok = imp_tokens at imp_index
-						(kind) in imp_tok
-						bool imp_is_eof = kind is "EOF"
-						if not imp_is_eof
-							result at end = imp_tok
-					pos = path_pos + 1
-					continue
+			ParseResult imp_r = scan_import(raw, pos)
+			string imp_path = pr_code(imp_r)
+			int imp_end = pr_pos(imp_r)
+			if not is_empty(imp_path)
+				tokenList imp_tokens = load_file(imp_path)
+				int imp_len = len(imp_tokens)
+				for imp_index in range(imp_len)
+					Token imp_tok = imp_tokens at imp_index
+					(kind) in imp_tok
+					bool imp_is_eof = kind is "EOF"
+					if not imp_is_eof
+						result at end = imp_tok
+				pos = imp_end
+				continue
 		result at end = tok
 		pos = pos + 1
 
@@ -93,51 +154,31 @@ fn tokenList deduplicate_decls(tokenList tokens)
 		bool is_shape = kind is "KW_SHAPE"
 		bool is_block_decl = is_fn or is_struct or is_enum
 		if is_block_decl
-			int name_offset = 1
-			if is_fn
-				name_offset = 2
-			int name_pos = pos + name_offset
-			string decl_name = ""
-			if name_pos < token_count
-				Token name_tok = tokens at name_pos
-				(value) in name_tok
-				decl_name = value
+			string decl_name = name_of_decl(tokens, pos, is_fn)
 			bool already_seen = list_has(seen, decl_name)
 			if not already_seen
 				seen at end = decl_name
-			int depth = 0
-			bool entered = false
-			for if pos < token_count
-				Token cur_tok = tokens at pos
-				(kind) in cur_tok
-				if not already_seen
-					result at end = cur_tok
-				pos = pos + 1
-				if kind is "INDENT"
-					depth = depth + 1
-					entered = true
-				else if kind is "DEDENT"
-					depth = depth - 1
-					if depth is 0 and entered
-						break
+			int block_end = end_of_block(tokens, pos)
+			if not already_seen
+				int copy_len = block_end - pos
+				for copy_idx in range(copy_len)
+					int tok_pos = pos + copy_idx
+					Token copy_tok = tokens at tok_pos
+					result at end = copy_tok
+			pos = block_end
 		else if is_shape
-			int name_pos = pos + 1
-			string decl_name = ""
-			if name_pos < token_count
-				Token name_tok = tokens at name_pos
-				(value) in name_tok
-				decl_name = value
+			string decl_name = name_of_decl(tokens, pos, false)
 			bool already_seen = list_has(seen, decl_name)
 			if not already_seen
 				seen at end = decl_name
-			for if pos < token_count
-				Token cur_tok = tokens at pos
-				(kind) in cur_tok
-				if not already_seen
-					result at end = cur_tok
-				pos = pos + 1
-				if kind is "NEWLINE"
-					break
+			int shape_end = end_of_shape(tokens, pos)
+			if not already_seen
+				int copy_len = shape_end - pos
+				for copy_idx in range(copy_len)
+					int tok_pos = pos + copy_idx
+					Token copy_tok = tokens at tok_pos
+					result at end = copy_tok
+			pos = shape_end
 		else
 			result at end = token
 			pos = pos + 1

@@ -105,15 +105,16 @@
             Earth
             Mars
 
-        # validator type returns are the only place where returning is not strict
-        # they do not require the keyword return, and one lines always return
+        # all type aliases are validator types, they must return a boolean
+        # validator type returns are the only place where returning is not strict, even 1 line no-return
         type Positive(int: num)
             num > 0
           
         type FourOrLess(int num)
             5 > num
 
-        # they can also be used in a composite form, although 5 > num > 0 would be easier
+        # validator types can be ran as booleans to avoid hard-crashes on invalid assignments
+        # or like here, it can be used to chain composite validators together
         type ZeroToFour(int num)
             Positive(num) and FourOrLess(num)
 

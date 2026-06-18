@@ -2486,6 +2486,82 @@ fn tokenize(source: String) -> Vec<Token> {
     return tokens;
 }
 
+fn scan_import(tokens: Vec<Token>, pos: i32) -> ParseResult {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut scan: i32 = pos + 1.clone();
+    while scan < token_count {
+        let mut scan_tok: Token = tokens[scan as usize].clone();
+        let kind = scan_tok.kind.clone();
+        scan = scan + 1;
+        if kind == "RPAREN" {
+            break;
+        }
+    }
+    let mut path_pos: i32 = scan + 1.clone();
+    if path_pos < token_count {
+        let mut in_tok: Token = tokens[scan as usize].clone();
+        let kind = in_tok.kind.clone();
+        let mut is_in: bool = kind == "KW_IN".clone();
+        if is_in {
+            let mut path_tok: Token = tokens[path_pos as usize].clone();
+            let value = path_tok.value.clone();
+            return make_result(value.clone(), path_pos + 1.clone());
+        }
+    }
+    return make_result("".to_string(), pos.clone());
+}
+
+fn name_of_decl(tokens: Vec<Token>, pos: i32, is_fn: bool) -> String {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut name_offset: i32 = 1;
+    if is_fn {
+        name_offset = 2;
+    }
+    let mut name_pos: i32 = pos + name_offset.clone();
+    if name_pos < token_count {
+        let mut name_tok: Token = tokens[name_pos as usize].clone();
+        let value = name_tok.value.clone();
+        return value;
+    }
+    return "".to_string();
+}
+
+fn end_of_block(tokens: Vec<Token>, pos: i32) -> i32 {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut cur: i32 = pos.clone();
+    let mut depth: i32 = 0;
+    let mut entered: bool = false;
+    while cur < token_count {
+        let mut tok: Token = tokens[cur as usize].clone();
+        let kind = tok.kind.clone();
+        cur = cur + 1;
+        if kind == "INDENT" {
+            depth = depth + 1;
+            entered = true;
+        } else if kind == "DEDENT" {
+            depth = depth - 1;
+            if depth == 0 && entered {
+                break;
+            }
+        }
+    }
+    return cur;
+}
+
+fn end_of_shape(tokens: Vec<Token>, pos: i32) -> i32 {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut cur: i32 = pos.clone();
+    while cur < token_count {
+        let mut tok: Token = tokens[cur as usize].clone();
+        let kind = tok.kind.clone();
+        cur = cur + 1;
+        if kind == "NEWLINE" {
+            break;
+        }
+    }
+    return cur;
+}
+
 fn load_file(path: String) -> Vec<Token> {
     let mut source: String = f_read(path.clone());
     let mut raw: Vec<Token> = tokenize(source.clone());
@@ -2494,7 +2570,8 @@ fn load_file(path: String) -> Vec<Token> {
     let mut pos: i32 = 0;
     let mut depth: i32 = 0;
     while true {
-        if pos >= token_count {
+        let is_at_end_of_file = pos >= token_count;
+        if is_at_end_of_file {
             break;
         }
         let mut tok: Token = raw[pos as usize].clone();
@@ -2516,37 +2593,22 @@ fn load_file(path: String) -> Vec<Token> {
         }
         let mut at_root_depth: bool = depth == 0.clone();
         if kind == "LPAREN" && at_root_depth {
-            let mut scan: i32 = pos + 1.clone();
-            while scan < token_count {
-                let mut scan_tok: Token = raw[scan as usize].clone();
-                let kind = scan_tok.kind.clone();
-                scan = scan + 1;
-                if kind == "RPAREN" {
-                    break;
-                }
-            }
-            let mut path_pos: i32 = scan + 1.clone();
-            if path_pos < token_count {
-                let mut in_tok: Token = raw[scan as usize].clone();
-                let kind = in_tok.kind.clone();
-                let mut is_in: bool = kind == "KW_IN".clone();
-                if is_in {
-                    let mut path_tok: Token = raw[path_pos as usize].clone();
-                    let value = path_tok.value.clone();
-                    let mut imp_path: String = value.clone();
-                    let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
-                    let mut imp_len: i32 = (imp_tokens.len() as i32);
-                    for imp_index in 0..imp_len {
-                        let mut imp_tok: Token = imp_tokens[imp_index as usize].clone();
-                        let kind = imp_tok.kind.clone();
-                        let mut imp_is_eof: bool = kind == "EOF".clone();
-                        if !imp_is_eof {
-                            result.push(imp_tok.clone());
-                        }
+            let mut imp_r: ParseResult = scan_import(raw.clone(), pos.clone());
+            let mut imp_path: String = pr_code(imp_r.clone());
+            let mut imp_end: i32 = pr_pos(imp_r.clone());
+            if !is_empty(imp_path.clone()) {
+                let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
+                let mut imp_len: i32 = (imp_tokens.len() as i32);
+                for imp_index in 0..imp_len {
+                    let mut imp_tok: Token = imp_tokens[imp_index as usize].clone();
+                    let kind = imp_tok.kind.clone();
+                    let mut imp_is_eof: bool = kind == "EOF".clone();
+                    if !imp_is_eof {
+                        result.push(imp_tok.clone());
                     }
-                    pos = path_pos + 1;
-                    continue;
                 }
+                pos = imp_end;
+                continue;
             }
         }
         result.push(tok.clone());
@@ -2579,63 +2641,37 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
         let mut is_shape: bool = kind == "KW_SHAPE".clone();
         let mut is_block_decl: bool = is_fn || is_struct || is_enum.clone();
         if is_block_decl {
-            let mut name_offset: i32 = 1;
-            if is_fn {
-                name_offset = 2;
-            }
-            let mut name_pos: i32 = pos + name_offset.clone();
-            let mut decl_name: String = "".to_string();
-            if name_pos < token_count {
-                let mut name_tok: Token = tokens[name_pos as usize].clone();
-                let value = name_tok.value.clone();
-                decl_name = value;
-            }
+            let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), is_fn.clone());
             let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
             if !already_seen {
                 seen.push(decl_name.clone());
             }
-            let mut depth: i32 = 0;
-            let mut entered: bool = false;
-            while pos < token_count {
-                let mut cur_tok: Token = tokens[pos as usize].clone();
-                let kind = cur_tok.kind.clone();
-                if !already_seen {
-                    result.push(cur_tok.clone());
-                }
-                pos = pos + 1;
-                if kind == "INDENT" {
-                    depth = depth + 1;
-                    entered = true;
-                } else if kind == "DEDENT" {
-                    depth = depth - 1;
-                    if depth == 0 && entered {
-                        break;
-                    }
+            let mut block_end: i32 = end_of_block(tokens.clone(), pos.clone());
+            if !already_seen {
+                let mut copy_len: i32 = block_end - pos.clone();
+                for copy_idx in 0..copy_len {
+                    let mut tok_pos: i32 = pos + copy_idx.clone();
+                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
+                    result.push(copy_tok.clone());
                 }
             }
+            pos = block_end;
         } else if is_shape {
-            let mut name_pos: i32 = pos + 1.clone();
-            let mut decl_name: String = "".to_string();
-            if name_pos < token_count {
-                let mut name_tok: Token = tokens[name_pos as usize].clone();
-                let value = name_tok.value.clone();
-                decl_name = value;
-            }
+            let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), false);
             let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
             if !already_seen {
                 seen.push(decl_name.clone());
             }
-            while pos < token_count {
-                let mut cur_tok: Token = tokens[pos as usize].clone();
-                let kind = cur_tok.kind.clone();
-                if !already_seen {
-                    result.push(cur_tok.clone());
-                }
-                pos = pos + 1;
-                if kind == "NEWLINE" {
-                    break;
+            let mut shape_end: i32 = end_of_shape(tokens.clone(), pos.clone());
+            if !already_seen {
+                let mut copy_len: i32 = shape_end - pos.clone();
+                for copy_idx in 0..copy_len {
+                    let mut tok_pos: i32 = pos + copy_idx.clone();
+                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
+                    result.push(copy_tok.clone());
                 }
             }
+            pos = shape_end;
         } else {
             result.push(token.clone());
             pos = pos + 1;
