@@ -2579,6 +2579,15 @@ fn tokenize(source: String) -> Vec<Token> {
     return tokens;
 }
 
+thread_local! {
+	static INCLUDED_FILES: std::cell::RefCell<std::collections::HashSet<String>> = std::cell::RefCell::new(std::collections::HashSet::new());
+}
+fn file_is_new(path: String) -> bool {
+	INCLUDED_FILES.with(|set| {
+		let mut s = set.borrow_mut();
+		if s.contains(&path) { false } else { s.insert(path); true }
+	})
+}
 fn scan_import(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut scan: i32 = pos + 1.clone();
@@ -2690,14 +2699,17 @@ fn load_file(path: String) -> Vec<Token> {
             let mut imp_path: String = pr_code(imp_r.clone());
             let mut imp_end: i32 = pr_pos(imp_r.clone());
             if !is_empty(imp_path.clone()) {
-                let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
-                let mut imp_len: i32 = (imp_tokens.len() as i32);
-                for imp_index in 0..imp_len {
-                    let mut imp_tok: Token = imp_tokens[imp_index as usize].clone();
-                    let kind = imp_tok.kind.clone();
-                    let mut imp_is_eof: bool = kind == "EOF".clone();
-                    if !imp_is_eof {
-                        result.push(imp_tok.clone());
+                let mut is_new: bool = file_is_new(imp_path.clone());
+                if is_new {
+                    let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
+                    let mut imp_len: i32 = (imp_tokens.len() as i32);
+                    for imp_index in 0..imp_len {
+                        let mut imp_tok: Token = imp_tokens[imp_index as usize].clone();
+                        let kind = imp_tok.kind.clone();
+                        let mut imp_is_eof: bool = kind == "EOF".clone();
+                        if !imp_is_eof {
+                            result.push(imp_tok.clone());
+                        }
                     }
                 }
                 pos = imp_end;
