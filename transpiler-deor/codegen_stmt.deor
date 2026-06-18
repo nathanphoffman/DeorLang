@@ -293,6 +293,8 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 			string call_code = ""
 			if ident_name is "print"
 				call_code = s_join([pad, "println!(\"{}\", ", args_code, ");\n"])
+			else if ident_name is "crash"
+				call_code = s_join([pad, "panic!(\"{}\", ", args_code, ");\n"])
 			else
 				call_code = s_join([pad, ident_name, "(", args_code, ");\n"])
 			return make_result(giveup call_code, adv_nl_ref(after_paren, tokens))

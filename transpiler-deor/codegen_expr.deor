@@ -235,6 +235,11 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 					string len_code = pr_code(len_r)
 					int len_end = pr_pos(len_r)
 					return make_result(s_join(["(", len_code, ")"]), len_end)
+				else if func_name is "crash"
+					ParseResult crash_r = gen_call_args(tokens, args_pos, ctx)
+					string crash_code = pr_code(crash_r)
+					int crash_end = pr_pos(crash_r)
+					return make_result(s_join(["panic!(\"{}\", ", crash_code, ")"]), crash_end + 1)
 				# generic call
 				ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 				string args_code = pr_code(args_r)

@@ -20,6 +20,11 @@ fn Test set(Test test, int world)
 type squareFeet(int n)
 	n > 0
 
+
+struct Error
+	string message
+	int code
+
 fn Test say_hi(Test test)
 	(hello) in test
 	string message = "hi"
@@ -32,7 +37,13 @@ fn Test say_hi(Test test)
 # fn int add(int val1, int val2)
 # 	val1 + val2
 
+
+
+fn void handle_message(string message)
+	print(message)
+
 fn void main()
+
 	x as 10
 	y as 20
 
@@ -64,6 +75,12 @@ fn void main()
 
 	Test old_test = (hello,world)
 
+
+	message as "An unknown server problem occurred"
+	code as 500
+	Error err = (message, code)
+	handle_message(message)
+
 	using old_test
 		increment()
 		print("hello1")
@@ -77,7 +94,5 @@ fn void main()
 
 		new_hello as 1
 		set() with new_hello
-
-
 
 

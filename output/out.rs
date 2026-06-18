@@ -1287,6 +1287,11 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     let mut len_code: String = pr_code(len_r.clone());
                     let mut len_end: i32 = pr_pos(len_r.clone());
                     return make_result(s_join(vec!["(".to_string(), len_code.clone(), ")".to_string()]), len_end.clone());
+                } else if func_name == "crash" {
+                    let mut crash_r: ParseResult = gen_call_args(tokens.clone(), args_pos.clone(), ctx.clone());
+                    let mut crash_code: String = pr_code(crash_r.clone());
+                    let mut crash_end: i32 = pr_pos(crash_r.clone());
+                    return make_result(s_join(vec!["panic!(\"{}\", ".to_string(), crash_code.clone(), ")".to_string()]), crash_end + 1.clone());
                 }
                 let mut args_r: ParseResult = gen_call_args(tokens.clone(), args_pos.clone(), ctx.clone());
                 let mut args_code: String = pr_code(args_r.clone());
@@ -1688,6 +1693,8 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
             let mut call_code: String = "".to_string();
             if ident_name == "print" {
                 call_code = s_join(vec![pad.clone(), "println!(\"{}\", ".to_string(), args_code.clone(), ");\n".to_string()]);
+            } else if ident_name == "crash" {
+                call_code = s_join(vec![pad.clone(), "panic!(\"{}\", ".to_string(), args_code.clone(), ");\n".to_string()]);
             } else {
                 call_code = s_join(vec![pad.clone(), ident_name.clone(), "(".to_string(), args_code.clone(), ");\n".to_string()]);
             }

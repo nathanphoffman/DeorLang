@@ -1,0 +1,5 @@
+fn void main()
+	int val = 0
+	if val is 0
+		crash("val was zero, cannot continue")
+	print("unreachable")
