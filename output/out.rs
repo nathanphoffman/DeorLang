@@ -2486,149 +2486,62 @@ fn tokenize(source: String) -> Vec<Token> {
     return tokens;
 }
 
-fn filter_by_names(tokens: Vec<Token>, names: Vec<String>) -> Vec<Token> {
-    let mut names_count: i32 = (names.len() as i32);
+fn load_file(path: String) -> Vec<Token> {
+    let mut source: String = f_read(path.clone());
+    let mut raw: Vec<Token> = tokenize(source.clone());
     let mut result: Vec<Token> = Vec::new();
-    let mut cur: i32 = 0;
-    let mut token_count: i32 = (tokens.len() as i32);
-    while cur < token_count {
-        let mut token: Token = tokens[cur as usize].clone();
-        let kind = token.kind.clone();
-        if kind == "EOF" {
-            break;
-        }
-        if kind == "NEWLINE" {
-            cur = cur + 1;
-            continue;
-        }
-        let mut is_fn: bool = kind == "KW_FN".clone();
-        let mut is_struct: bool = kind == "KW_STRUCT".clone();
-        let mut is_enum: bool = kind == "KW_ENUM".clone();
-        let mut is_shape: bool = kind == "KW_SHAPE".clone();
-        let mut is_block_decl: bool = is_fn || is_struct || is_enum.clone();
-        if is_block_decl {
-            let mut name_offset: i32 = 1;
-            if is_fn {
-                name_offset = 2;
-            }
-            let mut name_pos: i32 = cur + name_offset.clone();
-            let mut decl_name: String = "".to_string();
-            if name_pos < token_count {
-                let mut name_tok: Token = tokens[name_pos as usize].clone();
-                let value = name_tok.value.clone();
-                decl_name = value;
-            }
-            let mut include: bool = names_count == 0 || list_has(names.clone(), decl_name.clone()).clone();
-            let mut depth: i32 = 0;
-            let mut entered: bool = false;
-            while cur < token_count {
-                let mut cur_tok: Token = tokens[cur as usize].clone();
-                let kind = cur_tok.kind.clone();
-                if include {
-                    result.push(cur_tok.clone());
-                }
-                cur = cur + 1;
-                if kind == "INDENT" {
-                    depth = depth + 1;
-                    entered = true;
-                } else if kind == "DEDENT" {
-                    depth = depth - 1;
-                    if depth == 0 && entered {
-                        break;
-                    }
-                }
-            }
-        } else if is_shape {
-            let mut name_pos: i32 = cur + 1.clone();
-            let mut decl_name: String = "".to_string();
-            if name_pos < token_count {
-                let mut name_tok: Token = tokens[name_pos as usize].clone();
-                let value = name_tok.value.clone();
-                decl_name = value;
-            }
-            let mut include: bool = names_count == 0 || list_has(names.clone(), decl_name.clone()).clone();
-            while cur < token_count {
-                let mut cur_tok: Token = tokens[cur as usize].clone();
-                let kind = cur_tok.kind.clone();
-                if include {
-                    result.push(cur_tok.clone());
-                }
-                cur = cur + 1;
-                if kind == "NEWLINE" {
-                    break;
-                }
-            }
-        } else {
-            cur = cur + 1;
-        }
-    }
-    return result;
-}
-
-fn collect_imports_from_raw(source_tokens: Vec<Token>) -> Vec<Token> {
-    let mut result: Vec<Token> = Vec::new();
-    let mut token_count: i32 = (source_tokens.len() as i32);
+    let mut token_count: i32 = (raw.len() as i32);
     let mut pos: i32 = 0;
     let mut depth: i32 = 0;
     while true {
         if pos >= token_count {
             break;
         }
-        let mut token: Token = source_tokens[pos as usize].clone();
-        let kind = token.kind.clone();
+        let mut tok: Token = raw[pos as usize].clone();
+        let kind = tok.kind.clone();
         if kind == "EOF" {
             break;
         }
-        if kind == "NEWLINE" {
-            pos = pos + 1;
-            continue;
-        }
         if kind == "INDENT" {
             depth = depth + 1;
+            result.push(tok.clone());
             pos = pos + 1;
             continue;
         }
         if kind == "DEDENT" {
             depth = depth - 1;
+            result.push(tok.clone());
             pos = pos + 1;
             continue;
         }
-        let mut at_root: bool = depth == 0.clone();
-        if kind == "LPAREN" && at_root {
-            let mut sub_names: Vec<String> = Vec::new();
+        let mut at_root_depth: bool = depth == 0.clone();
+        if kind == "LPAREN" && at_root_depth {
             let mut scan: i32 = pos + 1.clone();
             while scan < token_count {
-                let mut scan_token: Token = source_tokens[scan as usize].clone();
-                let kind = scan_token.kind.clone();
+                let mut scan_tok: Token = raw[scan as usize].clone();
+                let kind = scan_tok.kind.clone();
                 scan = scan + 1;
                 if kind == "RPAREN" {
                     break;
                 }
-                if kind == "IDENT" {
-                    let value = scan_token.value.clone();
-                    sub_names.push(value.clone());
-                }
             }
             let mut path_pos: i32 = scan + 1.clone();
             if path_pos < token_count {
-                let mut in_token: Token = source_tokens[scan as usize].clone();
-                let kind = in_token.kind.clone();
+                let mut in_tok: Token = raw[scan as usize].clone();
+                let kind = in_tok.kind.clone();
                 let mut is_in: bool = kind == "KW_IN".clone();
                 if is_in {
-                    let mut path_token: Token = source_tokens[path_pos as usize].clone();
-                    let value = path_token.value.clone();
-                    let mut sub_path: String = value.clone();
-                    let mut name_count: i32 = (sub_names.len() as i32);
-                    if name_count > 0 {
-                        let mut sub_tokens: Vec<Token> = create_tokens_from_file(sub_path.clone(), sub_names.clone());
-                        let mut sub_len: i32 = (sub_tokens.len() as i32);
-                        for sub_i in 0..sub_len {
-                            let mut sub_tok: Token = sub_tokens[sub_i as usize].clone();
-                            let kind = sub_tok.kind.clone();
-                            let mut sub_is_eof: bool = kind == "EOF".clone();
-                            if !sub_is_eof {
-                                result.push(sub_tok.clone());
-                            }
+                    let mut path_tok: Token = raw[path_pos as usize].clone();
+                    let value = path_tok.value.clone();
+                    let mut imp_path: String = value.clone();
+                    let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
+                    let mut imp_len: i32 = (imp_tokens.len() as i32);
+                    for imp_index in 0..imp_len {
+                        let mut imp_tok: Token = imp_tokens[imp_index as usize].clone();
+                        let kind = imp_tok.kind.clone();
+                        let mut imp_is_eof: bool = kind == "EOF".clone();
+                        if !imp_is_eof {
+                            result.push(imp_tok.clone());
                         }
                     }
                     pos = path_pos + 1;
@@ -2636,24 +2549,8 @@ fn collect_imports_from_raw(source_tokens: Vec<Token>) -> Vec<Token> {
                 }
             }
         }
+        result.push(tok.clone());
         pos = pos + 1;
-    }
-    return result;
-}
-
-fn create_tokens_from_file(path: String, names: Vec<String>) -> Vec<Token> {
-    let mut source: String = f_read(path.clone());
-    let mut raw: Vec<Token> = tokenize(source.clone());
-    let mut support: Vec<Token> = collect_imports_from_raw(raw.clone());
-    let mut own: Vec<Token> = filter_by_names(raw.clone(), Vec::new());
-    let mut result: Vec<Token> = Vec::new();
-    let mut support_len: i32 = (support.len() as i32);
-    for i in 0..support_len {
-        result.push(support[i as usize].clone().clone());
-    }
-    let mut own_len: i32 = (own.len() as i32);
-    for i in 0..own_len {
-        result.push(own[i as usize].clone().clone());
     }
     return result;
 }
@@ -2748,80 +2645,8 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
 }
 
 fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
-    let mut source: String = f_read(path.clone());
-    let mut source_tokens: Vec<Token> = tokenize(source.clone());
-    let mut result: Vec<Token> = Vec::new();
-    let mut token_count: i32 = (source_tokens.len() as i32);
-    let mut pos: i32 = 0;
-    let mut depth: i32 = 0;
-    while true {
-        if pos >= token_count {
-            break;
-        }
-        let mut token: Token = source_tokens[pos as usize].clone();
-        let kind = token.kind.clone();
-        if kind == "EOF" {
-            break;
-        }
-        if kind == "INDENT" {
-            depth = depth + 1;
-            result.push(token.clone());
-            pos = pos + 1;
-            continue;
-        }
-        if kind == "DEDENT" {
-            depth = depth - 1;
-            result.push(token.clone());
-            pos = pos + 1;
-            continue;
-        }
-        let mut at_root: bool = depth == 0.clone();
-        if kind == "LPAREN" && at_root {
-            let mut import_names: Vec<String> = Vec::new();
-            let mut scan: i32 = pos + 1.clone();
-            while scan < token_count {
-                let mut scan_token: Token = source_tokens[scan as usize].clone();
-                let kind = scan_token.kind.clone();
-                scan = scan + 1;
-                if kind == "RPAREN" {
-                    break;
-                }
-                if kind == "IDENT" {
-                    let value = scan_token.value.clone();
-                    import_names.push(value.clone());
-                }
-            }
-            let mut path_pos: i32 = scan + 1.clone();
-            if path_pos < token_count {
-                let mut in_token: Token = source_tokens[scan as usize].clone();
-                let kind = in_token.kind.clone();
-                let mut is_in: bool = kind == "KW_IN".clone();
-                if is_in {
-                    let mut path_token: Token = source_tokens[path_pos as usize].clone();
-                    let value = path_token.value.clone();
-                    let mut imp_path: String = value.clone();
-                    let mut name_count: i32 = (import_names.len() as i32);
-                    if name_count > 0 {
-                        let mut imp_tokens: Vec<Token> = create_tokens_from_file(imp_path.clone(), import_names.clone());
-                        let mut import_len: i32 = (imp_tokens.len() as i32);
-                        for import_index in 0..import_len {
-                            let mut import_token: Token = imp_tokens[import_index as usize].clone();
-                            let kind = import_token.kind.clone();
-                            let mut import_is_eof: bool = kind == "EOF".clone();
-                            if !import_is_eof {
-                                result.push(import_token.clone());
-                            }
-                        }
-                    }
-                    pos = path_pos + 1;
-                    continue;
-                }
-            }
-        }
-        result.push(token.clone());
-        pos = pos + 1;
-    }
-    return deduplicate_decls(result.clone());
+    let mut merged: Vec<Token> = load_file(path.clone());
+    return deduplicate_decls(merged.clone());
 }
 
 fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {

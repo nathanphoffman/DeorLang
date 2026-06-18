@@ -3,159 +3,68 @@
 (list_has) in "transpiler-deor/utils.deor"
 (tokenize) in "transpiler-deor/lexer.deor"
 
-# === Import resolution ===
-
-# Given a raw token stream, returns only the declaration tokens (fn, struct, enum, shape)
-# that match the requested name list. If `names` is empty, all declarations are included.
-# Correctly handles both block declarations (fn/struct/enum with INDENT/DEDENT bodies)
-# and line declarations (shape, which end at NEWLINE). Implements named imports:
-# `(fn1, Struct2) in "file.deor"` expands to only those two declarations from the file.
-fn tokenList filter_by_names(tokenList tokens, strList names)
-	int names_count = len(names)
+# Recursively loads a Deor source file and all its transitive imports into a single flat
+# token list. Import lines are replaced in-place with the tokens from the referenced file,
+# which is itself loaded recursively. All other tokens pass through unchanged. The root
+# file and every imported file go through exactly the same logic — no special cases.
+fn tokenList load_file(string path)
+	string source = f_read(path)
+	tokenList raw = tokenize(source)
 	tokenList result = []
-	int cur = 0
-	int token_count = len(tokens)
-	for if cur < token_count
-		Token token = tokens at cur
-		(kind) in token
-		if kind is "EOF"
-			break
-		if kind is "NEWLINE"
-			cur = cur + 1
-			continue
-		bool is_fn = kind is "KW_FN"
-		bool is_struct = kind is "KW_STRUCT"
-		bool is_enum = kind is "KW_ENUM"
-		bool is_shape = kind is "KW_SHAPE"
-		bool is_block_decl = is_fn or is_struct or is_enum
-		if is_block_decl
-			int name_offset = 1
-			if is_fn
-				name_offset = 2
-			int name_pos = cur + name_offset
-			string decl_name = ""
-			if name_pos < token_count
-				Token name_tok = tokens at name_pos
-				(value) in name_tok
-				decl_name = value
-			bool include = names_count is 0 or list_has(names, decl_name)
-			int depth = 0
-			bool entered = false
-			for if cur < token_count
-				Token cur_tok = tokens at cur
-				(kind) in cur_tok
-				if include
-					result at end = cur_tok
-				cur = cur + 1
-				if kind is "INDENT"
-					depth = depth + 1
-					entered = true
-				else if kind is "DEDENT"
-					depth = depth - 1
-					if depth is 0 and entered
-						break
-		else if is_shape
-			int name_pos = cur + 1
-			string decl_name = ""
-			if name_pos < token_count
-				Token name_tok = tokens at name_pos
-				(value) in name_tok
-				decl_name = value
-			bool include = names_count is 0 or list_has(names, decl_name)
-			for if cur < token_count
-				Token cur_tok = tokens at cur
-				(kind) in cur_tok
-				if include
-					result at end = cur_tok
-				cur = cur + 1
-				if kind is "NEWLINE"
-					break
-		else
-			cur = cur + 1
-	return result
-
-# Scans a raw token stream for import statements (`(names) in "path"`) at root depth
-# and recursively loads each one via load_named. Returns the combined token stream of
-# all transitively imported declarations, stripping import lines and terminal EOFs.
-# Used to gather support tokens before loading a file's own declarations.
-fn tokenList collect_imports_from_raw(tokenList source_tokens)
-	tokenList result = []
-	int token_count = len(source_tokens)
+	int token_count = len(raw)
 	int pos = 0
 	int depth = 0
+
 	for if true
 		if pos >= token_count
 			break
-		Token token = source_tokens at pos
-		(kind) in token
+		Token tok = raw at pos
+		(kind) in tok
 		if kind is "EOF"
 			break
-		if kind is "NEWLINE"
-			pos = pos + 1
-			continue
 		if kind is "INDENT"
 			depth = depth + 1
+			result at end = tok
 			pos = pos + 1
 			continue
 		if kind is "DEDENT"
 			depth = depth - 1
+			result at end = tok
 			pos = pos + 1
 			continue
-		bool at_root = depth is 0
-		if kind is "LPAREN" and at_root
-			strList sub_names = []
+		bool at_root_depth = depth is 0
+		if kind is "LPAREN" and at_root_depth
+			# scan past the name list to find the closing RPAREN
 			int scan = pos + 1
 			for if scan < token_count
-				Token scan_token = source_tokens at scan
-				(kind) in scan_token
+				Token scan_tok = raw at scan
+				(kind) in scan_tok
 				scan = scan + 1
 				if kind is "RPAREN"
 					break
-				if kind is "IDENT"
-					(value) in scan_token
-					sub_names at end = value
+			# scan now points one past RPAREN; expect KW_IN then a STRING path
 			int path_pos = scan + 1
 			if path_pos < token_count
-				Token in_token = source_tokens at scan
-				(kind) in in_token
+				Token in_tok = raw at scan
+				(kind) in in_tok
 				bool is_in = kind is "KW_IN"
 				if is_in
-					Token path_token = source_tokens at path_pos
-					(value) in path_token
-					string sub_path = value
-					int name_count = len(sub_names)
-					if name_count > 0
-						tokenList sub_tokens = create_tokens_from_file(sub_path, sub_names)
-						int sub_len = len(sub_tokens)
-						for sub_i in range(sub_len)
-							Token sub_tok = sub_tokens at sub_i
-							(kind) in sub_tok
-							bool sub_is_eof = kind is "EOF"
-							if not sub_is_eof
-								result at end = sub_tok
+					Token path_tok = raw at path_pos
+					(value) in path_tok
+					string imp_path = value
+					tokenList imp_tokens = load_file(imp_path)
+					int imp_len = len(imp_tokens)
+					for imp_index in range(imp_len)
+						Token imp_tok = imp_tokens at imp_index
+						(kind) in imp_tok
+						bool imp_is_eof = kind is "EOF"
+						if not imp_is_eof
+							result at end = imp_tok
 					pos = path_pos + 1
 					continue
+		result at end = tok
 		pos = pos + 1
-	return result
 
-# Loads a single Deor source file and resolves its imports. First calls
-# collect_imports_from_raw to gather all support tokens from the file's transitive
-# imports, then calls filter_by_names with an empty list to include all of the file's
-# own declarations. Concatenates support + own and returns them. The `names` parameter
-# documents which symbols the caller wanted but does not filter here — intra-file
-# dependencies require the full own-declaration set to be present.
-fn tokenList create_tokens_from_file(string path, strList names)
-	string source = f_read(path)
-	tokenList raw = tokenize(source)
-	tokenList support = collect_imports_from_raw(raw)
-	tokenList own = filter_by_names(raw, [])
-	tokenList result = []
-	int support_len = len(support)
-	for i in range(support_len)
-		result at end = support at i
-	int own_len = len(own)
-	for i in range(own_len)
-		result at end = own at i
 	return result
 
 # Removes duplicate declarations from a flat merged token list. First occurrence of each
@@ -234,68 +143,9 @@ fn tokenList deduplicate_decls(tokenList tokens)
 			pos = pos + 1
 	return result
 
-# Entry point for the import system. Reads and tokenizes the root source file, then walks
-# the token stream replacing each import statement with the tokens from load_named, and
-# finally calls deduplicate_decls on the complete merged stream. Returns a single flat
-# token list with every declaration needed to generate the output Rust file.
+# Entry point for the import system. Loads the root file and all transitive dependencies
+# via load_file, then deduplicates the merged stream. Returns a single flat token list
+# with every declaration needed to generate the output Rust file.
 fn tokenList collect_all_tokens_with_all_imports(string path)
-	string source = f_read(path)
-	tokenList source_tokens = tokenize(source)
-	tokenList result = []
-	int token_count = len(source_tokens)
-	int pos = 0
-	int depth = 0
-	for if true
-		if pos >= token_count
-			break
-		Token token = source_tokens at pos
-		(kind) in token
-		if kind is "EOF"
-			break
-		if kind is "INDENT"
-			depth = depth + 1
-			result at end = token
-			pos = pos + 1
-			continue
-		if kind is "DEDENT"
-			depth = depth - 1
-			result at end = token
-			pos = pos + 1
-			continue
-		bool at_root = depth is 0
-		if kind is "LPAREN" and at_root
-			strList import_names = []
-			int scan = pos + 1
-			for if scan < token_count
-				Token scan_token = source_tokens at scan
-				(kind) in scan_token
-				scan = scan + 1
-				if kind is "RPAREN"
-					break
-				if kind is "IDENT"
-					(value) in scan_token
-					import_names at end = value
-			int path_pos = scan + 1
-			if path_pos < token_count
-				Token in_token = source_tokens at scan
-				(kind) in in_token
-				bool is_in = kind is "KW_IN"
-				if is_in
-					Token path_token = source_tokens at path_pos
-					(value) in path_token
-					string imp_path = value
-					int name_count = len(import_names)
-					if name_count > 0
-						tokenList imp_tokens = create_tokens_from_file(imp_path, import_names)
-						int import_len = len(imp_tokens)
-						for import_index in range(import_len)
-							Token import_token = imp_tokens at import_index
-							(kind) in import_token
-							bool import_is_eof = kind is "EOF"
-							if not import_is_eof
-								result at end = import_token
-					pos = path_pos + 1
-					continue
-		result at end = token
-		pos = pos + 1
-	return deduplicate_decls(result)
+	tokenList merged = load_file(path)
+	return deduplicate_decls(merged)
