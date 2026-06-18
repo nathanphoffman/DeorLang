@@ -5,7 +5,8 @@
     cur_skip_to_body, adv_nl, skip_to_body,
 ) in "transpiler-deor/deor_helpers.deor"
 (s_join, s_join_nl, s_join_with, pascal_case, token_slice) in "transpiler-deor/rust_helpers.deor"
-(is_empty, render_rust_type) in "transpiler-deor/utils.deor"
+(is_empty) in "transpiler-deor/utils.deor"
+(render_rust_type) in "transpiler-deor/mappings.deor"
 (resolve_type, find_block_end, collect_mut_names) in "transpiler-deor/registry.deor"
 (gen_expr) in "transpiler-deor/codegen_expr.deor"
 (gen_block) in "transpiler-deor/codegen_stmt.deor"

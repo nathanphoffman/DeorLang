@@ -9,7 +9,7 @@
 # all six registries (struct, shape, enum, variant, type, var_type), then walks the
 # token stream dispatching each top-level declaration to its gen_* function and
 # concatenating the results into a single Rust source string.
-fn string generate(tokenList tokens)
+fn string generate_rust_from_tokens(tokenList tokens)
 	strList struct_reg = build_struct_reg(tokens)
 	strList shape_reg = build_shape_reg(tokens)
 	strList enum_reg = build_enum_reg(tokens)
@@ -82,5 +82,5 @@ fn void main()
 
 		tokenList tokens = collect_all_tokens_with_all_imports(input_path)
 		validate_tokens(tokens)
-		string rust_code = generate(tokens)
+		string rust_code = generate_rust_from_tokens(tokens)
 		f_write(output_path, rust_code)

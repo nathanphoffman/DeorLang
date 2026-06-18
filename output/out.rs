@@ -445,190 +445,6 @@ fn list_has(items: Vec<String>, val: String) -> bool {
     return false;
 }
 
-fn word_to_kind(word: String) -> String {
-    if word == "fn" {
-        return "KW_FN".to_string();
-    }
-    if word == "as" {
-        return "KW_AS".to_string();
-    }
-    if word == "return" {
-        return "KW_RETURN".to_string();
-    }
-    if word == "if" {
-        return "KW_IF".to_string();
-    }
-    if word == "else" {
-        return "KW_ELSE".to_string();
-    }
-    if word == "for" {
-        return "KW_FOR".to_string();
-    }
-    if word == "in" {
-        return "KW_IN".to_string();
-    }
-    if word == "break" {
-        return "KW_BREAK".to_string();
-    }
-    if word == "continue" {
-        return "KW_CONTINUE".to_string();
-    }
-    if word == "and" {
-        return "KW_AND".to_string();
-    }
-    if word == "or" {
-        return "KW_OR".to_string();
-    }
-    if word == "not" {
-        return "KW_NOT".to_string();
-    }
-    if word == "is" {
-        return "KW_IS".to_string();
-    }
-    if word == "true" {
-        return "KW_TRUE".to_string();
-    }
-    if word == "false" {
-        return "KW_FALSE".to_string();
-    }
-    if word == "none" {
-        return "KW_NONE".to_string();
-    }
-    if word == "avow" {
-        return "KW_AVOW".to_string();
-    }
-    if word == "empty" {
-        return "KW_EMPTY".to_string();
-    }
-    if word == "type" {
-        return "KW_TYPE".to_string();
-    }
-    if word == "struct" {
-        return "KW_STRUCT".to_string();
-    }
-    if word == "shape" {
-        return "KW_SHAPE".to_string();
-    }
-    if word == "list" {
-        return "KW_LIST".to_string();
-    }
-    if word == "of" {
-        return "KW_OF".to_string();
-    }
-    if word == "insert" {
-        return "KW_INSERT".to_string();
-    }
-    if word == "enum" {
-        return "KW_ENUM".to_string();
-    }
-    if word == "at" {
-        return "KW_AT".to_string();
-    }
-    if word == "remove" {
-        return "KW_REMOVE".to_string();
-    }
-    if word == "rust" {
-        return "KW_RUST".to_string();
-    }
-    if word == "void" {
-        return "KW_VOID".to_string();
-    }
-    if word == "using" {
-        return "KW_USING".to_string();
-    }
-    if word == "with" {
-        return "KW_WITH".to_string();
-    }
-    return "IDENT".to_string();
-}
-
-fn is_binary_op(kind: String) -> bool {
-    if kind == "PLUS" {
-        return true;
-    }
-    if kind == "MINUS" {
-        return true;
-    }
-    if kind == "STAR" {
-        return true;
-    }
-    if kind == "SLASH" {
-        return true;
-    }
-    if kind == "PERCENT" {
-        return true;
-    }
-    if kind == "GT" {
-        return true;
-    }
-    if kind == "LT" {
-        return true;
-    }
-    if kind == "GTE" {
-        return true;
-    }
-    if kind == "LTE" {
-        return true;
-    }
-    if kind == "KW_IS" {
-        return true;
-    }
-    if kind == "KW_AND" {
-        return true;
-    }
-    if kind == "KW_OR" {
-        return true;
-    }
-    return false;
-}
-
-fn map_op(operator: String) -> String {
-    if operator == "is" {
-        return "==".to_string();
-    }
-    if operator == "is not" {
-        return "!=".to_string();
-    }
-    if operator == "and" {
-        return "&&".to_string();
-    }
-    if operator == "or" {
-        return "||".to_string();
-    }
-    if operator == ">" {
-        return ">".to_string();
-    }
-    if operator == "<" {
-        return "<".to_string();
-    }
-    if operator == ">=" {
-        return ">=".to_string();
-    }
-    if operator == "<=" {
-        return "<=".to_string();
-    }
-    return operator;
-}
-
-fn render_rust_type(type_name: String) -> String {
-    if type_name == "void" {
-        return "".to_string();
-    }
-    if type_name == "int" {
-        return "i32".to_string();
-    }
-    if type_name == "string" {
-        return "String".to_string();
-    }
-    if type_name == "bool" {
-        return "bool".to_string();
-    }
-    if type_name == "float" {
-        return "f64".to_string();
-    }
-    return s_pascal(type_name.clone());
-}
-
 fn skip_to_block_start(tokens: Vec<Token>, start: i32) -> ParseResult {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut cur: i32 = start.clone();
@@ -1001,6 +817,190 @@ fn l_slice(tokens: Vec<Token>, start: i32, end_val: i32) -> Vec<Token> {
     	let end = (end_val as usize).min(tokens.len());
     	tokens[start as usize..end].to_vec()
     }
+}
+
+fn word_to_kind(word: String) -> String {
+    if word == "fn" {
+        return "KW_FN".to_string();
+    }
+    if word == "as" {
+        return "KW_AS".to_string();
+    }
+    if word == "return" {
+        return "KW_RETURN".to_string();
+    }
+    if word == "if" {
+        return "KW_IF".to_string();
+    }
+    if word == "else" {
+        return "KW_ELSE".to_string();
+    }
+    if word == "for" {
+        return "KW_FOR".to_string();
+    }
+    if word == "in" {
+        return "KW_IN".to_string();
+    }
+    if word == "break" {
+        return "KW_BREAK".to_string();
+    }
+    if word == "continue" {
+        return "KW_CONTINUE".to_string();
+    }
+    if word == "and" {
+        return "KW_AND".to_string();
+    }
+    if word == "or" {
+        return "KW_OR".to_string();
+    }
+    if word == "not" {
+        return "KW_NOT".to_string();
+    }
+    if word == "is" {
+        return "KW_IS".to_string();
+    }
+    if word == "true" {
+        return "KW_TRUE".to_string();
+    }
+    if word == "false" {
+        return "KW_FALSE".to_string();
+    }
+    if word == "none" {
+        return "KW_NONE".to_string();
+    }
+    if word == "avow" {
+        return "KW_AVOW".to_string();
+    }
+    if word == "empty" {
+        return "KW_EMPTY".to_string();
+    }
+    if word == "type" {
+        return "KW_TYPE".to_string();
+    }
+    if word == "struct" {
+        return "KW_STRUCT".to_string();
+    }
+    if word == "shape" {
+        return "KW_SHAPE".to_string();
+    }
+    if word == "list" {
+        return "KW_LIST".to_string();
+    }
+    if word == "of" {
+        return "KW_OF".to_string();
+    }
+    if word == "insert" {
+        return "KW_INSERT".to_string();
+    }
+    if word == "enum" {
+        return "KW_ENUM".to_string();
+    }
+    if word == "at" {
+        return "KW_AT".to_string();
+    }
+    if word == "remove" {
+        return "KW_REMOVE".to_string();
+    }
+    if word == "rust" {
+        return "KW_RUST".to_string();
+    }
+    if word == "void" {
+        return "KW_VOID".to_string();
+    }
+    if word == "using" {
+        return "KW_USING".to_string();
+    }
+    if word == "with" {
+        return "KW_WITH".to_string();
+    }
+    return "IDENT".to_string();
+}
+
+fn is_binary_op(kind: String) -> bool {
+    if kind == "PLUS" {
+        return true;
+    }
+    if kind == "MINUS" {
+        return true;
+    }
+    if kind == "STAR" {
+        return true;
+    }
+    if kind == "SLASH" {
+        return true;
+    }
+    if kind == "PERCENT" {
+        return true;
+    }
+    if kind == "GT" {
+        return true;
+    }
+    if kind == "LT" {
+        return true;
+    }
+    if kind == "GTE" {
+        return true;
+    }
+    if kind == "LTE" {
+        return true;
+    }
+    if kind == "KW_IS" {
+        return true;
+    }
+    if kind == "KW_AND" {
+        return true;
+    }
+    if kind == "KW_OR" {
+        return true;
+    }
+    return false;
+}
+
+fn map_op(operator: String) -> String {
+    if operator == "is" {
+        return "==".to_string();
+    }
+    if operator == "is not" {
+        return "!=".to_string();
+    }
+    if operator == "and" {
+        return "&&".to_string();
+    }
+    if operator == "or" {
+        return "||".to_string();
+    }
+    if operator == ">" {
+        return ">".to_string();
+    }
+    if operator == "<" {
+        return "<".to_string();
+    }
+    if operator == ">=" {
+        return ">=".to_string();
+    }
+    if operator == "<=" {
+        return "<=".to_string();
+    }
+    return operator;
+}
+
+fn render_rust_type(type_name: String) -> String {
+    if type_name == "void" {
+        return "".to_string();
+    }
+    if type_name == "int" {
+        return "i32".to_string();
+    }
+    if type_name == "string" {
+        return "String".to_string();
+    }
+    if type_name == "bool" {
+        return "bool".to_string();
+    }
+    if type_name == "float" {
+        return "f64".to_string();
+    }
+    return s_pascal(type_name.clone());
 }
 
 fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
@@ -2824,7 +2824,7 @@ fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
     return deduplicate_decls(result.clone());
 }
 
-fn generate(tokens: Vec<Token>) -> String {
+fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {
     let mut struct_reg: Vec<String> = build_struct_reg(tokens.clone());
     let mut shape_reg: Vec<String> = build_shape_reg(tokens.clone());
     let mut enum_reg: Vec<String> = build_enum_reg(tokens.clone());
@@ -2897,7 +2897,7 @@ fn main() {
         let mut output_path: String = args[1 as usize].clone();
         let mut tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
         validate_tokens(tokens.clone());
-        let mut rust_code: String = generate(tokens.clone());
+        let mut rust_code: String = generate_rust_from_tokens(tokens.clone());
         f_write(output_path.clone(), rust_code.clone());
     }
 }

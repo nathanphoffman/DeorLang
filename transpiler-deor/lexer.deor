@@ -3,7 +3,8 @@
 (c_chars, c_alpha, c_digit, c_alnum) in "transpiler-deor/lib/char.deor"
 (n_parse, n_to_str) in "transpiler-deor/lib/num.deor"
 (make_token) in "transpiler-deor/deor_helpers.deor"
-(is_empty, word_to_kind) in "transpiler-deor/utils.deor"
+(word_to_kind) in "transpiler-deor/mappings.deor"
+(is_empty) in "transpiler-deor/utils.deor"
 
 # === Lexer ===
 
