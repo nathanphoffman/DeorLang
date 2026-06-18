@@ -36,8 +36,10 @@ fn ParseResult scan_import(tokenList tokens, int pos)
 		if is_in
 			Token path_tok = tokens at path_pos
 			(value) in path_tok
-			return make_result(value, path_pos + 1)
-	return make_result("", pos)
+			int after_path = path_pos + 1
+			return make_result(value, after_path)
+	string emp = ""
+	return make_result(emp, pos)
 
 # Returns the name of the declaration at pos. For fn, skips the return type token to
 # reach pos+2; for struct/enum/shape, the name is at pos+1.
@@ -216,7 +218,8 @@ fn tokenList deduplicate_decls(tokenList tokens)
 			if rust_in_range
 				Token rust_tok = tokens at rust_content_pos
 				(value) in rust_tok
-				strList rust_lines = s_split(value, "\n")
+				string newline = "\n"
+				strList rust_lines = s_split(value, newline)
 				string rust_first = rust_lines at 0
 				string rust_key = s_join(["_rust_", rust_first])
 				bool already_seen = list_has(seen, rust_key)

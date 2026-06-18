@@ -45,32 +45,38 @@ fn string generate_rust_from_tokens(tokenList tokens)
 			continue
 		if kind is "KW_STRUCT"
 			ParseResult result = gen_struct_decl(tokens, pos)
-			output = s_cat(output, pr_code(result))
+			string decl_code = pr_code(result)
+			output = s_cat(output, decl_code)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_SHAPE"
 			ParseResult result = gen_shape_decl(tokens, pos)
-			output = s_cat(output, pr_code(result))
+			string decl_code = pr_code(result)
+			output = s_cat(output, decl_code)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_ENUM"
 			ParseResult result = gen_enum_decl(tokens, pos)
-			output = s_cat(output, pr_code(result))
+			string decl_code = pr_code(result)
+			output = s_cat(output, decl_code)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_TYPE"
 			ParseResult result = gen_type_decl(tokens, pos, ctx)
-			output = s_cat(output, pr_code(result))
+			string decl_code = pr_code(result)
+			output = s_cat(output, decl_code)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_FN"
 			ParseResult result = gen_fn_decl(tokens, pos, ctx)
-			output = s_cat(output, pr_code(result))
+			string decl_code = pr_code(result)
+			output = s_cat(output, decl_code)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_RAW"
 			ParseResult result = gen_raw_decl(tokens, pos)
-			output = s_cat(output, pr_code(result))
+			string decl_code = pr_code(result)
+			output = s_cat(output, decl_code)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_RUST"
@@ -78,7 +84,8 @@ fn string generate_rust_from_tokens(tokenList tokens)
 			Token block_token = tokens at block_pos
 			(value) in block_token
 			output = s_cat(output, value)
-			output = s_cat(output, "\n")
+			string newline = "\n"
+			output = s_cat(output, newline)
 			pos = block_pos + 1
 			continue
 		pos = pos + 1

@@ -16,7 +16,8 @@
 # for the pervasive .clone() calls the transpiler emits, and PartialEq for `is`
 # comparisons. Maps each field's Deor type to its Rust equivalent via render_rust_type.
 fn ParseResult gen_struct_decl(tokenList tokens, int pos)
-	TokenCursor cur = cur_at(tokens, pos + 1)
+	int start_pos = pos + 1
+	TokenCursor cur = cur_at(tokens, start_pos)
 	using cur
 		(value) in current
 		string struct_name = value
@@ -66,7 +67,8 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 		string rust_elem = render_rust_type(elem_type)
 		string decl = s_join(["type ", rust_name, " = Vec<", rust_elem, ">;\n\n"])
 		int after = elem_pos + 1
-		return make_result(giveup decl, adv_nl(after, tokens))
+		int shape_next = adv_nl(after, tokens)
+		return make_result(giveup decl, shape_next)
 	int out_pos = pos + 7
 	Token out_token = tokens at out_pos
 	(value) in out_token
@@ -78,14 +80,16 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 		out_suffix = ""
 	string decl = s_join(["type ", rust_name, " = fn(", rust_in, ")", out_suffix, ";\n\n"])
 	int after = out_pos + 1
-	return make_result(giveup decl, adv_nl(after, tokens))
+	int fn_shape_next = adv_nl(after, tokens)
+	return make_result(giveup decl, fn_shape_next)
 
 # Generates a Rust enum definition from a Deor `enum Name` declaration. Emits
 # `#[derive(Clone, Copy, PartialEq, Debug)]` — Copy is viable because Deor enum
 # variants carry no payload data. Converts the Deor lowercase name to PascalCase
 # for the Rust type name.
 fn ParseResult gen_enum_decl(tokenList tokens, int pos)
-	TokenCursor cur = cur_at(tokens, pos + 1)
+	int start_pos = pos + 1
+	TokenCursor cur = cur_at(tokens, start_pos)
 	using cur
 		(value) in current
 		string enum_name = value
@@ -111,7 +115,8 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 # evaluating the user's predicate: if it passes, wraps the value in Some(TypeName(val));
 # otherwise returns None. This is Deor's mechanism for validated/constrained scalar types.
 fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
-	TokenCursor cur = cur_at(tokens, pos + 1)
+	int start_pos = pos + 1
+	TokenCursor cur = cur_at(tokens, start_pos)
 	using cur
 		(value) in current
 		string type_name = value
@@ -142,7 +147,8 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 		(pos) in cur2
 	string struct_code = s_join(["#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ", type_name, "(", rust_param_type, ");\n\n"])
 	string impl_code = s_join(["impl ", type_name, " {\n    fn new(", param_name, ": ", rust_param_type, ") -> Option<Self> {\n        if ", pred_code, " {\n            Some(", type_name, "(", param_name, "))\n        } else {\n            None\n        }\n    }\n}\n\n"])
-	return make_result(s_cat(giveup struct_code, giveup impl_code), pos)
+	string type_code = s_cat(giveup struct_code, giveup impl_code)
+	return make_result(type_code, pos)
 
 # Generates a complete Rust function from a Deor `fn RetType name(params)` declaration.
 # Key responsibilities: resolves parameter and return types through the registries;
@@ -154,7 +160,8 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
-	TokenCursor cur = cur_at(tokens, pos + 1)
+	int start_pos = pos + 1
+	TokenCursor cur = cur_at(tokens, start_pos)
 	using cur
 		(value) in current
 		string ret_type = resolve_type(value, shape_reg, enum_reg)
@@ -189,9 +196,12 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
 		# pos now at first body token
 	int body_end_pos = find_block_end(tokens, indent_pos)
 	int body_start = pos
-	tokenList body_tokens_raw = l_slice(tokens, body_start, body_end_pos + 1)
+	int body_slice_end = body_end_pos + 1
+	tokenList body_tokens_raw = l_slice(tokens, body_start, body_slice_end)
 	int body_len = len(body_tokens_raw)
-	strList mut_names = collect_mut_names(body_tokens_raw, 0, body_len - 1)
+	int zero = 0
+	int body_last = body_len - 1
+	strList mut_names = collect_mut_names(body_tokens_raw, zero, body_last)
 	strList var_type_reg = build_var_type_reg(body_tokens_raw)
 	string using_type = ""
 	string using_var = ""
@@ -202,7 +212,8 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
 	ParseResult body_r = gen_block(giveup body_tokens, 0, 1, giveup body_ctx)
 	string body_code = pr_code(body_r)
 	int body_end = body_start + pr_pos(body_r)
-	string params_code = s_join_with(param_strs, ", ")
+	string sep = ", "
+	string params_code = s_join_with(param_strs, sep)
 	string ret_suffix = ""
 	if not is_empty(ret_type)
 		ret_suffix = s_join([" -> ", ret_type])
@@ -216,4 +227,6 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, RcCtx ctx)
 fn ParseResult gen_raw_decl(tokenList tokens, int pos)
 	int name_pos = pos + 1
 	int after = name_pos + 1
-	return make_result("", adv_nl(after, tokens))
+	string emp = ""
+	int raw_next = adv_nl(after, tokens)
+	return make_result(emp, raw_next)

@@ -17,7 +17,8 @@ fn ParseResult skip_to_block_start(tokenList tokens, int start)
 		cur = skip_index + 1
 		if kind is "INDENT"
 			break
-	return make_result("", cur)
+	string emp = ""
+	return make_result(emp, cur)
 
 # Walks a struct body collecting each field name (the second token of each `type name`
 # pair). Returns the field names joined by commas and the position past the closing DEDENT.
@@ -44,7 +45,9 @@ fn ParseResult collect_struct_fields(tokenList tokens, int start)
 					fields at end = value
 					cur = fname_pos + 1
 
-	return make_result(s_join_with(fields, ","), cur)
+	string comma = ","
+	string fields_joined = s_join_with(fields, comma)
+	return make_result(fields_joined, cur)
 
 # Builds the struct registry: a flat strList of [structName, "field1,field2,..."] pairs.
 # Scanned once before code generation so that struct-construction expressions and
@@ -249,10 +252,13 @@ fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
 		return enum_rust
 	string elem_type = reg_get(shape_reg, type_name)
 	if not is_empty(elem_type)
-		if s_starts_with(elem_type, "raw:")
+		string raw_prefix = "raw:"
+		string fn_prefix = "fn:"
+		string colon = ":"
+		if s_starts_with(elem_type, raw_prefix)
 			return type_name
-		if s_starts_with(elem_type, "fn:")
-			strList parts = s_split(elem_type, ":")
+		if s_starts_with(elem_type, fn_prefix)
+			strList parts = s_split(elem_type, colon)
 			string in_type = parts at 1
 			string out_type = parts at 2
 			string rust_in = render_rust_type(in_type)

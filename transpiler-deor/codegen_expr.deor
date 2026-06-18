@@ -12,7 +12,8 @@
 # explicit type annotation at anonymous construction sites.
 fn string find_struct_for_fields(strList struct_reg, strList fields)
 
-	string fields_key = s_join_with(fields, ",")
+	string comma = ","
+	string fields_key = s_join_with(fields, comma)
 	int reg_count = len(struct_reg)
 	bool next_is_val = false
 	string cur_name = ""
@@ -40,7 +41,8 @@ fn string find_struct_for_field(strList struct_reg, string field)
 	for index in range(reg_count)
 		string item = struct_reg at index
 		if next_is_val
-			strList fields = s_split(item, ",")
+			string comma = ","
+			strList fields = s_split(item, comma)
 			bool has_field = list_has(fields, field)
 			if has_field
 				return cur_name
@@ -97,7 +99,9 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		arg_codes at end = arg_code
 		cur = arg_pos
 
-	return make_result(s_join_with(arg_codes, ", "), cur)
+	string sep = ", "
+	string args_str = s_join_with(arg_codes, sep)
+	return make_result(args_str, cur)
 
 # Parses the element list inside a [...] literal and generates the vec![...] initializer
 # items. All elements get `.clone()` or `.to_string()` applied because the vec![] macro
@@ -127,7 +131,9 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 			item_code = s_join([item_code, ".clone()"])
 		item_codes at end = item_code
 		cur = item_pos
-	return make_result(s_join_with(item_codes, ", "), cur)
+	string sep = ", "
+	string items_str = s_join_with(item_codes, sep)
+	return make_result(items_str, cur)
 
 # Helper that generates a single-argument built-in call by appending a Rust method
 # suffix to the argument's generated expression. Currently used for `len(x)` which
@@ -136,7 +142,8 @@ fn ParseResult gen_unary_method(TokensRef tokens, int args_pos, string suffix, R
 	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
 	string inner_code = pr_code(inner_r)
 	int close = pr_pos(inner_r) + 1
-	return make_result(s_join([inner_code, suffix]), close)
+	string result_code = s_join([inner_code, suffix])
+	return make_result(result_code, close)
 
 # Parses a primary expression — the atomic units the expression grammar is built from:
 # integer or string literal, boolean/none keyword, empty list [], list literal [items],
@@ -150,19 +157,28 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 	(kind, value, line) in token
 
 	if kind is "INT"
-		return make_result(value, pos + 1)
+		int next = pos + 1
+		return make_result(value, next)
 
 	if kind is "STRING"
-		return make_result(s_debug(value), pos + 1)
+		string debug_val = s_debug(value)
+		int next = pos + 1
+		return make_result(debug_val, next)
 
 	if kind is "KW_TRUE"
-		return make_result("true", pos + 1)
+		string true_str = "true"
+		int next = pos + 1
+		return make_result(true_str, next)
 
 	if kind is "KW_FALSE"
-		return make_result("false", pos + 1)
+		string false_str = "false"
+		int next = pos + 1
+		return make_result(false_str, next)
 
 	if kind is "KW_NONE"
-		return make_result("None", pos + 1)
+		string none_str = "None"
+		int next = pos + 1
+		return make_result(none_str, next)
 
 	if kind is "LBRACKET"
 		int inner_pos = pos + 1
@@ -171,7 +187,8 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 			(kind) in next_token
 			if kind is "RBRACKET"
 				int after = inner_pos + 1
-				return make_result("Vec::new()", after)
+				string empty_vec = "Vec::new()"
+				return make_result(empty_vec, after)
 		ParseResult items_r = gen_list_items(tokens, inner_pos, ctx)
 		string items_code = pr_code(items_r)
 		int items_pos = pr_pos(items_r)
@@ -189,7 +206,8 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				ParseResult expr_r = gen_expr(tokens, expr_pos, ctx)
 				string expr_code = pr_code(expr_r)
 				int after_rparen = pr_pos(expr_r) + 1
-				return make_result(s_join([expr_code, ".unwrap()"]), after_rparen)
+				string unwrap_code = s_join([expr_code, ".unwrap()"])
+				return make_result(unwrap_code, after_rparen)
 			# struct construction expression: (f1, f2, ...)
 			strList fields = []
 			int cur = peek_pos
@@ -205,8 +223,10 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 					fields at end = value
 					cur = cur + 1
 			string struct_name = find_struct_for_fields(struct_reg, fields)
-			string fields_code = s_join_with(fields, ", ")
-			return make_result(s_join([struct_name, " { ", fields_code, " }"]), cur)
+			string sep = ", "
+			string fields_code = s_join_with(fields, sep)
+			string struct_code = s_join([struct_name, " { ", fields_code, " }"])
+			return make_result(struct_code, cur)
 
 	if kind is "KW_GIVEUP"
 		int inner_pos = pos + 1
@@ -218,7 +238,8 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 		ParseResult operand_r = gen_primary(tokens, operand_pos, ctx)
 		string operand_code = pr_code(operand_r)
 		int operand_pos_end = pr_pos(operand_r)
-		return make_result(s_join(["!", operand_code]), operand_pos_end)
+		string not_code = s_join(["!", operand_code])
+		return make_result(not_code, operand_pos_end)
 
 	if kind is "IDENT"
 		int next_pos = pos + 1
@@ -234,18 +255,22 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 					ParseResult len_r = gen_unary_method(tokens, args_pos, ".len() as i32", ctx)
 					string len_code = pr_code(len_r)
 					int len_end = pr_pos(len_r)
-					return make_result(s_join(["(", len_code, ")"]), len_end)
+					string wrapped = s_join(["(", len_code, ")"])
+					return make_result(wrapped, len_end)
 				else if func_name is "crash"
 					ParseResult crash_r = gen_call_args(tokens, args_pos, ctx)
 					string crash_code = pr_code(crash_r)
 					int crash_end = pr_pos(crash_r)
-					return make_result(s_join(["panic!(\"{}\", ", crash_code, ")"]), crash_end + 1)
+					string panic_code = s_join(["panic!(\"{}\", ", crash_code, ")"])
+					int after_crash = crash_end + 1
+					return make_result(panic_code, after_crash)
 				# generic call
 				ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 				string args_code = pr_code(args_r)
 				int args_end = pr_pos(args_r)
 				int after_paren = args_end + 1
-				return make_result(s_join([func_name, "(", args_code, ")"]), after_paren)
+				string call_code = s_join([func_name, "(", args_code, ")"])
+				return make_result(call_code, after_paren)
 
 			# index read: name at idx
 			if kind is "KW_AT"
@@ -253,16 +278,20 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				ParseResult idx_r = gen_primary(tokens, idx_pos, ctx)
 				string idx_code = pr_code(idx_r)
 				int idx_end = pr_pos(idx_r)
-				return make_result(s_join([value, "[", idx_code, " as usize].clone()"]), idx_end)
+				string idx_expr = s_join([value, "[", idx_code, " as usize].clone()"])
+				return make_result(idx_expr, idx_end)
 
 		# check enum variant registry
 		string variant_enum = reg_get(variant_reg, value)
 		if not is_empty(variant_enum)
-			return make_result(s_join([variant_enum, "::", value]), next_pos)
+			string variant_code = s_join([variant_enum, "::", value])
+			return make_result(variant_code, next_pos)
 
 		return make_result(value, next_pos)
 
-	return make_result("/* unknown_primary */", pos + 1)
+	string unknown = "/* unknown_primary */"
+	int next = pos + 1
+	return make_result(unknown, next)
 
 # Parses a full expression using a left-associative loop over binary operators. Calls
 # gen_primary for the left operand, then repeatedly checks whether the next token is a

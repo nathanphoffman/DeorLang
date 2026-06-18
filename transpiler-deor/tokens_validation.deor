@@ -1,5 +1,5 @@
 (tokenList, Token) in "transpiler-deor/types.deor"
-(s_cat) in "transpiler-deor/lib/string.deor"
+(s_cat, s_join) in "transpiler-deor/lib/string.deor"
 (c_chars) in "transpiler-deor/lib/char.deor"
 (n_to_str) in "transpiler-deor/lib/num.deor"
 
@@ -50,7 +50,8 @@ fn bool is_snake(string name)
 	return true
 
 fn string val_err(int line_num, string label, string name, string rule)
-	return s_cat("[validation] line ", s_cat(n_to_str(line_num), s_cat(": ", s_cat(label, s_cat(" '", s_cat(name, s_cat("' - ", rule)))))))
+	string line_str = n_to_str(line_num)
+	return s_join(["[validation] line ", line_str, ": ", label, " '", name, "' - ", rule])
 
 # Walks the merged token list and enforces naming conventions before codegen runs.
 # Prints all violations and exits with code 1 if any are found.

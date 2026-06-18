@@ -48,12 +48,13 @@ There are no exceptions. All runtime identifiers — variables, parameters, fiel
 
 Declarations must be done in the following order in any file:
 
-1. Enums - They rely on nothing
-2. Consts - They could rely on enums and are important to see (at top)
-3. Types - Type validators being types must be defined early
-4. Shapes - Complex shapes are lower than type validators because they are more complex
-5. Structs - Reliant on most everything above but still structural (so above functions)
-6. Functions - Reliant on literally everything
+1. Imports - Everything else might use it
+2. Enums - They rely on nothing
+3. Consts - They could rely on enums and are important to see (at top)
+4. Types - Type validators being types must be defined early
+5. Shapes - Complex shapes are lower than type validators because they are more complex
+6. Structs - Reliant on most everything above but still structural (so above functions)
+7. Functions - Reliant on literally everything
 
 ## Field Extraction Order
 
@@ -144,34 +145,6 @@ best = empty
 
 ---
 
-## No `return empty`
-
-Returning `empty` (or the old `none`) directly from a function is a transpiler error. Always return a named typed variable — the presence or absence of a value is determined at assignment time, not at return.
-
-**Correct:**
-```
-shape rollResultList = list of RollResult
-
-fn Roll find_best(rollResultList rolls)
-    Roll best = empty
-    for roll in rolls
-        value in roll
-        if roll
-            best = value
-
-    return best
-```
-
-**Incorrect — transpiler errors:**
-```
-shape rollResultList = list of RollResult
-
-fn Roll find_best(rollResultList rolls)
-    return empty
-```
-
----
-
 ## `as` — No Type Annotation, No Variable Rebinding
 
 `as` is the type-inferring binding form. Two things are always transpiler errors with `as`:
@@ -250,35 +223,6 @@ struct Config
     roomList items
     filterFunc predicate    # func shape as struct field — not allowed
 ```
-
----
-
-## File Declaration Order
-
-Top-level declarations must appear in this order: imports, shapes, structs, functions. The transpiler enforces this ordering. Declaring a struct before shapes, or a function before structs, is a transpiler error.
-
-```
-# 1. Imports
-(random) in shims
-
-# 2. Shapes
-shape roomList = list of Room
-shape filterFunc = func of Room to bool
-
-# 3. Structs
-struct House
-    string address
-    roomList rooms
-
-# 4. Functions
-fn roomList filter(roomList items, filterFunc predicate)
-    ...
-
-fn main()
-    ...
-```
-
-This mirrors the block-level rule that destructuring (`in`) must appear before logic — declarations flow from abstract to concrete, top to bottom.
 
 ---
 

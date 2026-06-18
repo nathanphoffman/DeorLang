@@ -3,16 +3,16 @@
 Imports use the `import` keyword followed by the names in parentheses and `in` with a string path.
 
 ```
-import (Room, House, Squarefeet, total_area) in "./models"
+(Room, House, Squarefeet, total_area) in "./models"
 ```
 
 Empty parens import everything from the file:
 
 ```
-import () in "./models"
+() in "./models"
 ```
 
-**Private declarations:** a declaration marked `private` in its source file cannot be imported. Attempting to name it in an import is a transpiler error. See [Enforced Practices — Visibility](enforced_practices.md#visibility--private).
+**Private declarations:** a declaration marked `private` in its source file cannot be imported. Attempting to name it in an import is a transpiler error..
 
 ---
 
@@ -21,7 +21,7 @@ import () in "./models"
 List the specific declarations to import between the parentheses. The transpiler filters the imported file to only those names — all other declarations are excluded from the resulting token stream.
 
 ```
-import (gen_fn_decl, gen_struct_decl) in "./codegen_decl"
+(gen_fn_decl, gen_struct_decl) in "./codegen_decl"
 ```
 
 This keeps the compiled output lean and makes dependencies explicit.
