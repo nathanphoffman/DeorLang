@@ -47,7 +47,6 @@ fn void handle_message(string message)
 
 fn void main()
 
-
 	label as "test"
 	value as "test2"
 
