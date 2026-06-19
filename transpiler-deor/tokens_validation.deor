@@ -113,6 +113,93 @@ fn void validate_tokens(tokenList tokens)
 	string rule_snake = "name must be lower_snake_case (no uppercase letters)"
 	string rule_named_arg = "each arg must be a named variable when passing 2 or more args"
 
+	macro check_call_args
+		int call_lp = pos + 1
+		if call_lp < token_count
+			Token call_lp_tok = tokens at call_lp
+			(kind) in call_lp_tok
+			if kind is "LPAREN"
+				int arg_count = count_call_args(tokens, call_lp)
+				if arg_count >= 2
+					int scan_pos = call_lp + 1
+					int scan_depth = 0
+					bool at_arg_start = true
+					for if scan_pos < token_count
+						Token scan_tok = tokens at scan_pos
+						(kind) in scan_tok
+						if kind is "RPAREN"
+							bool scan_root = scan_depth is 0
+							if scan_root
+								break
+							scan_depth = scan_depth - 1
+							at_arg_start = false
+						else if kind is "LPAREN"
+							scan_depth = scan_depth + 1
+							at_arg_start = false
+						else if kind is "COMMA"
+							bool scan_root = scan_depth is 0
+							if scan_root
+								at_arg_start = true
+						else if at_arg_start
+							int check_pos = scan_pos
+							string chk_kind = kind
+							if kind is "KW_GIVEUP"
+								check_pos = scan_pos + 1
+								if check_pos < token_count
+									Token giveup_tok = tokens at check_pos
+									(kind) in giveup_tok
+									chk_kind = kind
+							bool arg_is_ident = chk_kind is "IDENT"
+							if not arg_is_ident
+								errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
+							else
+								int peek_pos = check_pos + 1
+								if peek_pos < token_count
+									Token peek_tok = tokens at peek_pos
+									(kind) in peek_tok
+									bool arg_is_call = kind is "LPAREN"
+									bool arg_is_idx = kind is "KW_AT"
+									bool arg_is_plus = kind is "PLUS"
+									bool arg_is_minus = kind is "MINUS"
+									bool arg_is_star = kind is "STAR"
+									bool arg_is_slash = kind is "SLASH"
+									bool arg_is_pct = kind is "PERCENT"
+									bool arg_is_op = arg_is_plus or arg_is_minus or arg_is_star or arg_is_slash or arg_is_pct
+									if arg_is_call or arg_is_idx or arg_is_op
+										errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
+							at_arg_start = false
+						scan_pos = scan_pos + 1
+
+	macro check_rust_generic
+		bool is_option = cur_val is "Option"
+		bool is_vec = cur_val is "Vec"
+		bool is_box = cur_val is "Box"
+		bool is_rc = cur_val is "Rc"
+		bool is_arc = cur_val is "Arc"
+		bool is_result = cur_val is "Result"
+		bool is_rust_generic = is_option or is_vec or is_box or is_rc or is_arc or is_result
+		if is_rust_generic
+			errors at end = val_err(cur_line, lbl_rust, cur_val, rule_no_option)
+
+	macro check_var_decl
+		int next1 = pos + 1
+		int next2 = pos + 2
+		if next2 < token_count
+			Token tok_one = tokens at next1
+			Token tok_two = tokens at next2
+			(kind) in tok_one
+			string one_kind = kind
+			(kind) in tok_two
+			string two_kind = kind
+			if one_kind is "IDENT" and two_kind is "EQUALS"
+				(value, line) in tok_one
+				string var_name = value
+				int var_line = line
+				if len(var_name) < 3
+					errors at end = val_err(var_line, lbl_var, var_name, rule_min3)
+				if not is_snake(var_name)
+					errors at end = val_err(var_line, lbl_var, var_name, rule_snake)
+
 	for if pos < token_count
 		Token tok = tokens at pos
 		(kind, value, line) in tok
@@ -221,91 +308,9 @@ fn void validate_tokens(tokenList tokens)
 		# variable declaration: TYPE_IDENT VAR_NAME EQUALS
 		# struct fields are TYPE_IDENT FIELD_NAME NEWLINE (no EQUALS), so this is safe
 		if cur_kind is "IDENT"
-			# call site check: IDENT LPAREN → function call with 2+ args must use named vars
-			int call_lp = pos + 1
-			if call_lp < token_count
-				Token call_lp_tok = tokens at call_lp
-				(kind) in call_lp_tok
-				if kind is "LPAREN"
-					int arg_count = count_call_args(tokens, call_lp)
-					if arg_count >= 2
-						int scan_pos = call_lp + 1
-						int scan_depth = 0
-						bool at_arg_start = true
-						for if scan_pos < token_count
-							Token scan_tok = tokens at scan_pos
-							(kind) in scan_tok
-							if kind is "RPAREN"
-								bool scan_root = scan_depth is 0
-								if scan_root
-									break
-								scan_depth = scan_depth - 1
-								at_arg_start = false
-							else if kind is "LPAREN"
-								scan_depth = scan_depth + 1
-								at_arg_start = false
-							else if kind is "COMMA"
-								bool scan_root = scan_depth is 0
-								if scan_root
-									at_arg_start = true
-							else if at_arg_start
-								int check_pos = scan_pos
-								string chk_kind = kind
-								if kind is "KW_GIVEUP"
-									check_pos = scan_pos + 1
-									if check_pos < token_count
-										Token giveup_tok = tokens at check_pos
-										(kind) in giveup_tok
-										chk_kind = kind
-								bool arg_is_ident = chk_kind is "IDENT"
-								if not arg_is_ident
-									errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
-								else
-									int peek_pos = check_pos + 1
-									if peek_pos < token_count
-										Token peek_tok = tokens at peek_pos
-										(kind) in peek_tok
-										bool arg_is_call = kind is "LPAREN"
-										bool arg_is_idx = kind is "KW_AT"
-										bool arg_is_plus = kind is "PLUS"
-										bool arg_is_minus = kind is "MINUS"
-										bool arg_is_star = kind is "STAR"
-										bool arg_is_slash = kind is "SLASH"
-										bool arg_is_pct = kind is "PERCENT"
-										bool arg_is_op = arg_is_plus or arg_is_minus or arg_is_star or arg_is_slash or arg_is_pct
-										if arg_is_call or arg_is_idx or arg_is_op
-											errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
-								at_arg_start = false
-							scan_pos = scan_pos + 1
-			# Rust generic types are forbidden in Deor source — use shapes or validator types
-			bool is_option = cur_val is "Option"
-			bool is_vec = cur_val is "Vec"
-			bool is_box = cur_val is "Box"
-			bool is_rc = cur_val is "Rc"
-			bool is_arc = cur_val is "Arc"
-			bool is_result = cur_val is "Result"
-			bool is_rust_generic = is_option or is_vec or is_box or is_rc or is_arc or is_result
-			if is_rust_generic
-				errors at end = val_err(cur_line, lbl_rust, cur_val, rule_no_option)
-
-			# variable declaration check
-			int next1 = pos + 1
-			int next2 = pos + 2
-			if next2 < token_count
-				Token tok_one = tokens at next1
-				Token tok_two = tokens at next2
-				(kind) in tok_one
-				string one_kind = kind
-				(kind) in tok_two
-				string two_kind = kind
-				if one_kind is "IDENT" and two_kind is "EQUALS"
-					(value, line) in tok_one
-					string var_name = value
-					int var_line = line
-					if len(var_name) < 3
-						errors at end = val_err(var_line, lbl_var, var_name, rule_min3)
-					if not is_snake(var_name)
-						errors at end = val_err(var_line, lbl_var, var_name, rule_snake)
+			macro_run check_call_args with (tokens, pos, token_count, cur_line, cur_val, lbl_call, rule_named_arg, errors)
+			macro_run check_rust_generic with (cur_val, cur_line, lbl_rust, rule_no_option, errors)
+			macro_run check_var_decl with (tokens, pos, token_count, lbl_var, rule_min3, rule_snake, errors)
 
 		pos = pos + 1
 
