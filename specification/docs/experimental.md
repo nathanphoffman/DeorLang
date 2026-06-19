@@ -38,6 +38,20 @@ shape listEmployee = list of Employee
 
 using
 
+```
 
+---
+### Macros
+Macros are extra useful in deor because it eliminates an enormous amount of cloning that can happen by defining seperate functions and organizing code (since deor for ease clones nearly everything).  It also is much more human readable than rust macros -- this is still in experimentation phase and is one of the newest added features
+
+```
+macro_define log_check(place label, place value)
+      print(label)
+      print(value)
+
+  fn void main()
+      string lbl = "score:"
+      int score = 42
+      macro_run log_check(lbl, score)
 
 ```
