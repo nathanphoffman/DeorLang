@@ -1173,11 +1173,20 @@ fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
 }
 
 fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
-    let mut macros: std::collections::HashMap<String, Vec<Token>> = std::collections::HashMap::new();
+    let mut macros: std::collections::HashMap<String, (Vec<Token>, i32)> = std::collections::HashMap::new();
     let mut result: Vec<Token> = vec![];
     let mut i: usize = 0;
+    let mut scope_depth: i32 = 0;
     while i < tokens.len() {
     	let kind = tokens[i].kind.as_str();
+
+    	// track scope depth for macro privacy
+    	if kind == "INDENT" { scope_depth += 1; }
+    	if kind == "DEDENT" {
+    		scope_depth -= 1;
+    		// remove any macros defined at the depth we are leaving
+    		macros.retain(|_, (_, def_depth)| *def_depth <= scope_depth);
+    	}
 
     	// collect macro definition
     	if kind == "KW_MACRO" {
@@ -1203,7 +1212,7 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     			}
     			j += 1;
     		}
-    		if !name.is_empty() { macros.insert(name, body); }
+    		if !name.is_empty() { macros.insert(name, (body, scope_depth)); }
     		// skip trailing NEWLINE after the definition block
     		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
     		i = j;
@@ -1218,7 +1227,7 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     		// skip trailing NEWLINE after the call
     		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
     		// splice body tokens inline, wrapped in a bare block for scoping
-    		if let Some(body) = macros.get(&name) {
+    		if let Some((body, _)) = macros.get(&name) {
     			result.push(Token { kind: "BLOCK_START".to_string(), value: "{".to_string(), line: 0, file: String::new() });
     			for tok in body { result.push(tok.clone()); }
     			result.push(Token { kind: "BLOCK_END".to_string(), value: "}".to_string(), line: 0, file: String::new() });
