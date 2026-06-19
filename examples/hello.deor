@@ -55,6 +55,8 @@ fn void main()
 	else if test is 100000
 		print("its 100000")
 
+	
+
 	label as "test"
 	value as "test2"
 

@@ -27,6 +27,7 @@ fn void validate_tokens(tokenList tokens)
 	string rule_snake = "name must be lower_snake_case (no uppercase letters)"
 	string rule_named_arg = "each arg must be a named variable when passing 2 or more args"
 	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
+	string rule_max_params = "functions may have at most 3 parameters"
 
 	for if pos < token_count
 		Token tok = tokens at pos
@@ -98,6 +99,20 @@ fn void validate_tokens(tokenList tokens)
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
 		macro_run validate_ident
+
+		# Fn param count: max 3 parameters
+		# pattern: KW_FN <return_type> <fn_name> LPAREN params RPAREN
+		if cur_kind is "KW_FN"
+			int lp_pos = pos + 3
+			if lp_pos < token_count
+				Token lp_tok = tokens at lp_pos
+				(kind) in lp_tok
+				if kind is "LPAREN"
+					int param_count = count_call_args(tokens, lp_pos)
+					if param_count > 3
+						int fn_name_pos = pos + 2
+						Token fn_name_tok = tokens at fn_name_pos
+						errors at end = val_err(fn_name_tok, lbl_fn, rule_max_params)
 
 		# Fn Validator → lower_snake_case, min 3
 		# pattern: KW_FN <return_type> <fn_name> LPAREN

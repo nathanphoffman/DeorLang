@@ -1405,6 +1405,7 @@ fn validate_tokens(tokens: Vec<Token>) {
     let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters)".to_string();
     let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args".to_string();
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
+    let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     while pos < token_count {
         let mut tok: Token = tokens[pos as usize].clone();
         let kind = tok.kind.clone();
@@ -1571,6 +1572,21 @@ fn validate_tokens(tokens: Vec<Token>) {
             pos = pos + 1;
             continue;
         }
+        }
+        if cur_kind == "KW_FN" {
+            let mut lp_pos: i32 = pos + 3.clone();
+            if lp_pos < token_count {
+                let mut lp_tok: Token = tokens[lp_pos as usize].clone();
+                let kind = lp_tok.kind.clone();
+                if kind == "LPAREN" {
+                    let mut param_count: i32 = count_call_args(tokens.clone(), lp_pos.clone());
+                    if param_count > 3 {
+                        let mut fn_name_pos: i32 = pos + 2.clone();
+                        let mut fn_name_tok: Token = tokens[fn_name_pos as usize].clone();
+                        errors.push(val_err(fn_name_tok.clone(), lbl_fn.clone(), rule_max_params.clone()).clone());
+                    }
+                }
+            }
         }
         let mut keyword: String = "KW_FN".to_string();
         let mut lbl: String = lbl_fn.clone();
