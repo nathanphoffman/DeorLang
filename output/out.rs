@@ -545,13 +545,21 @@ fn cur_peek(c: TokenCursor, tokens: Vec<Token>, offset: i32) -> Token {
 }
 
 fn count_tabs(line: String) -> i32 {
+    let mut space: String = " ".to_string();
     let mut chars: Vec<String> = c_chars(line.clone());
     let mut char_count: i32 = (chars.len() as i32);
     let mut count: i32 = 0;
+    let mut space_run = 0;
     for index in 0..char_count {
         let mut character: String = chars[index as usize].clone();
         if character == "\t" {
             count = count + 1;
+        } else if character == space {
+            space_run = space_run + 1;
+            if space_run == 4 {
+                count = count + 1;
+                space_run = 0;
+            }
         } else {
             break;
         }
@@ -623,12 +631,11 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
         }
         let mut raw_line: String = lines[raw_li as usize].clone();
         let mut line: String = s_rtrim(raw_line.clone());
-        let mut stripped: String = s_trim(line.clone());
-        if is_empty(stripped.clone()) {
+        let mut content: String = s_trim(line.clone());
+        if is_empty(content.clone()) {
             continue;
         }
         let mut indent: i32 = count_tabs(line.clone());
-        let mut content: String = s_from(line.clone(), indent.clone());
         let mut slen: i32 = (indent_stack.len() as i32);
         let mut top_idx: i32 = slen - 1.clone();
         let mut top: i32 = n_parse(indent_stack[top_idx as usize].clone());
@@ -2467,6 +2474,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut call_code: String = s_join(call_parts.clone());
                 return make_result(call_code.clone(), after_paren.clone());
             }
+            {
             if kind == "KW_AT" {
                 let mut idx_pos: i32 = next_pos + 1.clone();
                 let mut idx_r: ParseResult = gen_primary(tokens.clone(), idx_pos.clone(), ctx.clone());
@@ -2477,6 +2485,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut idx_parts: Vec<String> = vec![value.clone(), idx_mid.clone(), idx_code.clone(), idx_sfx.clone()];
                 let mut idx_expr: String = s_join(idx_parts.clone());
                 return make_result(idx_expr.clone(), idx_end.clone());
+            }
             }
         }
         let mut variant_enum: String = reg_get(variant_reg.clone(), value.clone());
