@@ -43,24 +43,20 @@ fn tokens_wrap(t: Vec<Token>) -> TokensRef { Rc::new(t) }
 fn make_rctx(ctx: GenCtx) -> RcCtx { Rc::new(ctx) }
 fn now_ms() -> i32 { std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as i32 }
 fn elapsed_ms(start: i32) -> i32 { now_ms() - start }
-fn f_read(path: String) -> String {
-    std::fs::read_to_string(path.as_str()).expect("cannot read input file")
+fn c_chars(source: String) -> Vec<String> {
+    source.chars().map(|c| c.to_string()).collect()
 }
 
-fn f_write(path: String, content: String) {
-    std::fs::write(path.as_str(), content.as_str()).expect("cannot write output file");
+fn c_alpha(character: String) -> bool {
+    character.chars().next().map(|ch| ch.is_alphabetic() || ch == '_').unwrap_or(false)
 }
 
-fn f_args() -> Vec<String> {
-    std::env::args().skip(1).collect()
+fn c_digit(character: String) -> bool {
+    character.chars().next().map(|ch| ch.is_ascii_digit()).unwrap_or(false)
 }
 
-fn n_parse(source: String) -> i32 {
-    source.parse::<i32>().unwrap_or(0)
-}
-
-fn n_to_str(number: i32) -> String {
-    number.to_string()
+fn c_alnum(character: String) -> bool {
+    character.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)
 }
 
 fn s_upper_char(ch: String) -> bool {
@@ -125,20 +121,1068 @@ fn s_debug(source: String) -> String {
     format!("{:?}", source)
 }
 
-fn c_chars(source: String) -> Vec<String> {
-    source.chars().map(|c| c.to_string()).collect()
+fn n_parse(source: String) -> i32 {
+    source.parse::<i32>().unwrap_or(0)
 }
 
-fn c_alpha(character: String) -> bool {
-    character.chars().next().map(|ch| ch.is_alphabetic() || ch == '_').unwrap_or(false)
+fn n_to_str(number: i32) -> String {
+    number.to_string()
 }
 
-fn c_digit(character: String) -> bool {
-    character.chars().next().map(|ch| ch.is_ascii_digit()).unwrap_or(false)
+fn f_read(path: String) -> String {
+    std::fs::read_to_string(path.as_str()).expect("cannot read input file")
 }
 
-fn c_alnum(character: String) -> bool {
-    character.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)
+fn f_write(path: String, content: String) {
+    std::fs::write(path.as_str(), content.as_str()).expect("cannot write output file");
+}
+
+fn f_args() -> Vec<String> {
+    std::env::args().skip(1).collect()
+}
+
+fn l_slice(tokens: Vec<Token>, start: i32, end_val: i32) -> Vec<Token> {
+    {
+    	let end = (end_val as usize).min(tokens.len());
+    	tokens[start as usize..end].to_vec()
+    }
+}
+
+fn is_empty(source: String) -> bool {
+    let mut length: i32 = (source.len() as i32);
+    return length == 0;
+}
+
+fn str_eq(left: String, right: String) -> bool {
+    return left == right;
+}
+
+fn reg_get_stride(pairs: Vec<String>, key: String, stride: i32) -> String {
+    let mut pairs_count: i32 = (pairs.len() as i32);
+    let mut index: i32 = 0;
+    while index < pairs_count {
+        let mut current_key: String = pairs[index as usize].clone();
+        if current_key == key {
+            let mut val_index: i32 = index + 1.clone();
+            return pairs[val_index as usize].clone();
+        }
+        index = index + stride;
+    }
+    return "".to_string();
+}
+
+fn reg_has_stride(pairs: Vec<String>, key: String, stride: i32) -> bool {
+    let mut pairs_count: i32 = (pairs.len() as i32);
+    let mut index: i32 = 0;
+    while index < pairs_count {
+        let mut current_key: String = pairs[index as usize].clone();
+        if current_key == key {
+            return true;
+        }
+        index = index + stride;
+    }
+    return false;
+}
+
+fn reg_get(pairs: Vec<String>, key: String) -> String {
+    let mut two: i32 = 2;
+    return reg_get_stride(pairs.clone(), key.clone(), two.clone());
+}
+
+fn reg_has(pairs: Vec<String>, key: String) -> bool {
+    let mut two: i32 = 2;
+    return reg_has_stride(pairs.clone(), key.clone(), two.clone());
+}
+
+fn reg3_get(pairs: Vec<String>, key: String) -> String {
+    let mut thr: i32 = 3;
+    return reg_get_stride(pairs.clone(), key.clone(), thr.clone());
+}
+
+fn reg3_has(pairs: Vec<String>, key: String) -> bool {
+    let mut thr: i32 = 3;
+    return reg_has_stride(pairs.clone(), key.clone(), thr.clone());
+}
+
+fn list_has(items: Vec<String>, val: String) -> bool {
+    let mut item_count: i32 = (items.len() as i32);
+    for index in 0..item_count {
+        let mut item: String = items[index as usize].clone();
+        if item == val {
+            return true;
+        }
+    }
+    return false;
+}
+
+fn pr_code(result: ParseResult) -> String {
+    let code = result.code.clone();
+    let new_pos = result.new_pos.clone();
+    return code;
+}
+
+fn pr_pos(result: ParseResult) -> i32 {
+    let code = result.code.clone();
+    let new_pos = result.new_pos.clone();
+    return new_pos;
+}
+
+fn make_result(code: String, new_pos: i32) -> ParseResult {
+    let result = ParseResult { code: code.clone(), new_pos: new_pos.clone() };
+    return result;
+}
+
+fn make_token(kind: String, value: String, line: i32, file: String) -> Token {
+    let token = Token { kind: kind.clone(), value: value.clone(), line: line.clone(), file: file.clone() };
+    return token;
+}
+
+fn adv_nl(pos: i32, tokens: Vec<Token>) -> i32 {
+    let mut token_count: i32 = (tokens.len() as i32);
+    if pos < token_count {
+        let mut cur_token: Token = tokens[pos as usize].clone();
+        let kind = cur_token.kind.clone();
+        if kind == "NEWLINE" {
+            return pos + 1;
+        }
+    }
+    return pos;
+}
+
+fn adv_indent(pos: i32, tokens: Vec<Token>) -> i32 {
+    let mut token_count: i32 = (tokens.len() as i32);
+    if pos < token_count {
+        let mut cur_token: Token = tokens[pos as usize].clone();
+        let kind = cur_token.kind.clone();
+        if kind == "INDENT" {
+            return pos + 1;
+        }
+    }
+    return pos;
+}
+
+fn skip_to_body(tokens: Vec<Token>, pos: i32) -> i32 {
+    let mut cur: i32 = adv_nl(pos.clone(), tokens.clone());
+    cur = adv_indent(cur.clone(), tokens.clone());
+    return cur;
+}
+
+fn adv_nl_ref(pos: i32, tokens: TokensRef) -> i32 {
+    let mut token_count: i32 = (tokens.len() as i32);
+    if pos < token_count {
+        let mut cur_token: Token = tokens[pos as usize].clone();
+        let kind = cur_token.kind.clone();
+        if kind == "NEWLINE" {
+            return pos + 1;
+        }
+    }
+    return pos;
+}
+
+fn adv_indent_ref(pos: i32, tokens: TokensRef) -> i32 {
+    let mut token_count: i32 = (tokens.len() as i32);
+    if pos < token_count {
+        let mut cur_token: Token = tokens[pos as usize].clone();
+        let kind = cur_token.kind.clone();
+        if kind == "INDENT" {
+            return pos + 1;
+        }
+    }
+    return pos;
+}
+
+fn skip_to_body_ref(tokens: TokensRef, pos: i32) -> i32 {
+    let mut cur: i32 = adv_nl_ref(pos.clone(), tokens.clone());
+    cur = adv_indent_ref(cur.clone(), tokens.clone());
+    return cur;
+}
+
+fn word_to_kind(word: String) -> String {
+    if word == "fn" {
+        return "KW_FN".to_string();
+    }
+    if word == "as" {
+        return "KW_AS".to_string();
+    }
+    if word == "return" {
+        return "KW_RETURN".to_string();
+    }
+    if word == "if" {
+        return "KW_IF".to_string();
+    }
+    if word == "else" {
+        return "KW_ELSE".to_string();
+    }
+    if word == "for" {
+        return "KW_FOR".to_string();
+    }
+    if word == "in" {
+        return "KW_IN".to_string();
+    }
+    if word == "break" {
+        return "KW_BREAK".to_string();
+    }
+    if word == "continue" {
+        return "KW_CONTINUE".to_string();
+    }
+    if word == "and" {
+        return "KW_AND".to_string();
+    }
+    if word == "or" {
+        return "KW_OR".to_string();
+    }
+    if word == "not" {
+        return "KW_NOT".to_string();
+    }
+    if word == "is" {
+        return "KW_IS".to_string();
+    }
+    if word == "true" {
+        return "KW_TRUE".to_string();
+    }
+    if word == "false" {
+        return "KW_FALSE".to_string();
+    }
+    if word == "bad" {
+        return "KW_BAD".to_string();
+    }
+    if word == "avow" {
+        return "KW_AVOW".to_string();
+    }
+    if word == "empty" {
+        return "KW_EMPTY".to_string();
+    }
+    if word == "type" {
+        return "KW_TYPE".to_string();
+    }
+    if word == "struct" {
+        return "KW_STRUCT".to_string();
+    }
+    if word == "shape" {
+        return "KW_SHAPE".to_string();
+    }
+    if word == "list" {
+        return "KW_LIST".to_string();
+    }
+    if word == "of" {
+        return "KW_OF".to_string();
+    }
+    if word == "insert" {
+        return "KW_INSERT".to_string();
+    }
+    if word == "enum" {
+        return "KW_ENUM".to_string();
+    }
+    if word == "at" {
+        return "KW_AT".to_string();
+    }
+    if word == "remove" {
+        return "KW_REMOVE".to_string();
+    }
+    if word == "rust" {
+        return "KW_RUST".to_string();
+    }
+    if word == "void" {
+        return "KW_VOID".to_string();
+    }
+    if word == "using" {
+        return "KW_USING".to_string();
+    }
+    if word == "with" {
+        return "KW_WITH".to_string();
+    }
+    if word == "giveup" {
+        return "KW_GIVEUP".to_string();
+    }
+    if word == "raw" {
+        return "KW_RAW".to_string();
+    }
+    if word == "macro" {
+        return "KW_MACRO".to_string();
+    }
+    if word == "macro_define" {
+        return "KW_MACRO_DEFINE".to_string();
+    }
+    if word == "macro_run" {
+        return "KW_MACRO_RUN".to_string();
+    }
+    if word == "place" {
+        return "KW_PLACE".to_string();
+    }
+    if word == "import" {
+        return "KW_IMPORT".to_string();
+    }
+    return "IDENT".to_string();
+}
+
+fn is_binary_op(kind: String) -> bool {
+    if kind == "PLUS" {
+        return true;
+    }
+    if kind == "MINUS" {
+        return true;
+    }
+    if kind == "STAR" {
+        return true;
+    }
+    if kind == "SLASH" {
+        return true;
+    }
+    if kind == "PERCENT" {
+        return true;
+    }
+    if kind == "GT" {
+        return true;
+    }
+    if kind == "LT" {
+        return true;
+    }
+    if kind == "GTE" {
+        return true;
+    }
+    if kind == "LTE" {
+        return true;
+    }
+    if kind == "KW_IS" {
+        return true;
+    }
+    if kind == "KW_AND" {
+        return true;
+    }
+    if kind == "KW_OR" {
+        return true;
+    }
+    return false;
+}
+
+fn map_op(operator: String) -> String {
+    if operator == "is" {
+        return "==".to_string();
+    }
+    if operator == "is not" {
+        return "!=".to_string();
+    }
+    if operator == "and" {
+        return "&&".to_string();
+    }
+    if operator == "or" {
+        return "||".to_string();
+    }
+    if operator == ">" {
+        return ">".to_string();
+    }
+    if operator == "<" {
+        return "<".to_string();
+    }
+    if operator == ">=" {
+        return ">=".to_string();
+    }
+    if operator == "<=" {
+        return "<=".to_string();
+    }
+    return operator;
+}
+
+fn render_rust_type(type_name: String) -> String {
+    if type_name == "void" {
+        return "".to_string();
+    }
+    if type_name == "int" {
+        return "i32".to_string();
+    }
+    if type_name == "string" {
+        return "String".to_string();
+    }
+    if type_name == "bool" {
+        return "bool".to_string();
+    }
+    if type_name == "float" {
+        return "f64".to_string();
+    }
+    return s_pascal(type_name.clone());
+}
+
+fn cur_at(tokens: Vec<Token>, pos: i32) -> TokenCursor {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut current: Token = tokens[pos as usize].clone();
+    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
+    return c;
+}
+
+fn cur_next(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
+    let token_count = c.token_count.clone();
+    let mut pos = c.pos.clone();
+    let mut current = c.current.clone();
+    let mut pos: i32 = pos + 1.clone();
+    if pos < token_count {
+        let mut current: Token = tokens[pos as usize].clone();
+        return TokenCursor { token_count, pos, current };
+    }
+    return TokenCursor { token_count, pos, current };
+}
+
+fn c_at_end(c: TokenCursor) -> bool {
+    let token_count = c.token_count.clone();
+    let pos = c.pos.clone();
+    return pos >= token_count;
+}
+
+fn cur_skip_to_body(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
+    let pos = c.pos.clone();
+    let mut body_pos: i32 = adv_nl(pos.clone(), tokens.clone());
+    body_pos = adv_indent(body_pos.clone(), tokens.clone());
+    return cur_at(tokens.clone(), body_pos.clone());
+}
+
+fn cur_peek(c: TokenCursor, tokens: Vec<Token>, offset: i32) -> Token {
+    let pos = c.pos.clone();
+    let mut peek_pos: i32 = pos + offset.clone();
+    return tokens[peek_pos as usize].clone();
+}
+
+fn count_tabs(line: String) -> i32 {
+    let mut chars: Vec<String> = c_chars(line.clone());
+    let mut char_count: i32 = (chars.len() as i32);
+    let mut count: i32 = 0;
+    for index in 0..char_count {
+        let mut character: String = chars[index as usize].clone();
+        if character == "\t" {
+            count = count + 1;
+        } else {
+            break;
+        }
+    }
+    return count;
+}
+
+fn tokenize(source: String, path: String) -> Vec<Token> {
+    let mut tokens: Vec<Token> = Vec::new();
+    let mut newline: String = "\n".to_string();
+    let mut lines: Vec<String> = s_split(source.clone(), newline.clone());
+    let mut n_lines: i32 = (lines.len() as i32);
+    let mut indent_stack: Vec<String> = Vec::new();
+    let mut zero_str: String = "0".to_string();
+    indent_stack.push(zero_str.clone());
+    let mut cur_line: i32 = 0;
+    let mut skip: i32 = 0;
+    let mut empty_val: String = "".to_string();
+    let mut kind_indent: String = "INDENT".to_string();
+    let mut kind_dedent: String = "DEDENT".to_string();
+    let mut kind_newline: String = "NEWLINE".to_string();
+    let mut kind_kw_rust: String = "KW_RUST".to_string();
+    let mut kw_rust_val: String = "rust".to_string();
+    let mut kind_rust_block: String = "RUST_BLOCK".to_string();
+    let mut kind_string: String = "STRING".to_string();
+    let mut kind_int: String = "INT".to_string();
+    let mut kind_eof: String = "EOF".to_string();
+    let mut kind_gte: String = "GTE".to_string();
+    let mut kind_lte: String = "LTE".to_string();
+    let mut kind_plus: String = "PLUS".to_string();
+    let mut kind_minus: String = "MINUS".to_string();
+    let mut kind_star: String = "STAR".to_string();
+    let mut kind_slash: String = "SLASH".to_string();
+    let mut kind_pct: String = "PERCENT".to_string();
+    let mut kind_eq: String = "EQUALS".to_string();
+    let mut kind_gt: String = "GT".to_string();
+    let mut kind_lt: String = "LT".to_string();
+    let mut kind_lp: String = "LPAREN".to_string();
+    let mut kind_rp: String = "RPAREN".to_string();
+    let mut kind_lb: String = "LBRACKET".to_string();
+    let mut kind_rb: String = "RBRACKET".to_string();
+    let mut kind_cm: String = "COMMA".to_string();
+    let mut val_gte: String = ">=".to_string();
+    let mut val_lte: String = "<=".to_string();
+    let mut val_plus: String = "+".to_string();
+    let mut val_minus: String = "-".to_string();
+    let mut val_star: String = "*".to_string();
+    let mut val_slash: String = "/".to_string();
+    let mut val_pct: String = "%".to_string();
+    let mut val_eq: String = "=".to_string();
+    let mut val_gt: String = ">".to_string();
+    let mut val_lt: String = "<".to_string();
+    let mut val_lp: String = "(".to_string();
+    let mut val_rp: String = ")".to_string();
+    let mut val_lb: String = "[".to_string();
+    let mut val_rb: String = "]".to_string();
+    let mut val_cm: String = ",".to_string();
+    let mut ch_nl: String = "\n".to_string();
+    let mut ch_tab: String = "\t".to_string();
+    let mut ch_bs: String = "\\".to_string();
+    let mut ch_qt: String = "\"".to_string();
+    for raw_li in 0..n_lines {
+        cur_line = cur_line + 1;
+        if skip > 0 {
+            skip = skip - 1;
+            continue;
+        }
+        let mut raw_line: String = lines[raw_li as usize].clone();
+        let mut line: String = s_rtrim(raw_line.clone());
+        let mut stripped: String = s_trim(line.clone());
+        if is_empty(stripped.clone()) {
+            continue;
+        }
+        let mut indent: i32 = count_tabs(line.clone());
+        let mut content: String = s_from(line.clone(), indent.clone());
+        let mut slen: i32 = (indent_stack.len() as i32);
+        let mut top_idx: i32 = slen - 1.clone();
+        let mut top: i32 = n_parse(indent_stack[top_idx as usize].clone());
+        if indent > top {
+            tokens.push(make_token(kind_indent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+            let mut indent_str: String = n_to_str(indent.clone());
+            indent_stack.push(indent_str.clone());
+        } else {
+            let mut dedenting: bool = indent < top.clone();
+            while dedenting {
+                let mut new_slen: i32 = (indent_stack.len() as i32);
+                let mut new_top_idx: i32 = new_slen - 1.clone();
+                let mut cur_top: i32 = n_parse(indent_stack[new_top_idx as usize].clone());
+                if indent < cur_top {
+                    tokens.push(make_token(kind_dedent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+                    indent_stack.remove(new_top_idx as usize);
+                } else {
+                    dedenting = false;
+                }
+            }
+        }
+        if content == "rust" {
+            tokens.push(make_token(kind_kw_rust.clone(), kw_rust_val.clone(), cur_line.clone(), path.clone()).clone());
+            tokens.push(make_token(kind_newline.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+            let mut rust_base: i32 = indent + 1.clone();
+            let mut rust_lines: Vec<String> = Vec::new();
+            let mut rli_start: i32 = raw_li + 1.clone();
+            for rli in rli_start..n_lines {
+                let mut rust_line: String = lines[rli as usize].clone();
+                let mut rl_indent: i32 = count_tabs(rust_line.clone());
+                let mut rl_stripped: String = s_trim(rust_line.clone());
+                if is_empty(rl_stripped.clone()) {
+                    rust_lines.push("".to_string());
+                    skip = skip + 1;
+                } else if rl_indent >= rust_base {
+                    let mut rl_content: String = s_from(rust_line.clone(), rust_base.clone());
+                    rust_lines.push(s_rtrim(rl_content.clone()).clone());
+                    skip = skip + 1;
+                } else {
+                    break;
+                }
+            }
+            let mut trimming: bool = true;
+            while trimming {
+                let mut rl_len: i32 = (rust_lines.len() as i32);
+                if rl_len > 0 {
+                    let mut last_rl: i32 = rl_len - 1.clone();
+                    let mut last_line: String = rust_lines[last_rl as usize].clone();
+                    if last_line == "" {
+                        rust_lines.remove(last_rl as usize);
+                    } else {
+                        trimming = false;
+                    }
+                } else {
+                    trimming = false;
+                }
+            }
+            let mut block_content: String = s_join_nl(rust_lines.clone());
+            tokens.push(make_token(kind_rust_block.clone(), block_content.clone(), cur_line.clone(), path.clone()).clone());
+            continue;
+        }
+        let mut chars: Vec<String> = c_chars(content.clone());
+        let mut char_count: i32 = (chars.len() as i32);
+        let mut char_index: i32 = 0;
+        while char_index < char_count {
+            let mut character: String = chars[char_index as usize].clone();
+            if character == " " {
+                char_index = char_index + 1;
+                continue;
+            }
+            if character == "#" {
+                break;
+            }
+            if character == "\"" {
+                let mut val: String = "".to_string();
+                let mut escape_next: bool = false;
+                let mut str_start: i32 = char_index + 1.clone();
+                char_index = char_index + 1;
+                for string_index in str_start..char_count {
+                    let mut string_char: String = chars[string_index as usize].clone();
+                    if escape_next {
+                        if string_char == "n" {
+                            val = s_cat(val.clone(), ch_nl.clone());
+                        } else if string_char == "t" {
+                            val = s_cat(val.clone(), ch_tab.clone());
+                        } else if string_char == "\\" {
+                            val = s_cat(val.clone(), ch_bs.clone());
+                        } else if string_char == "\"" {
+                            val = s_cat(val.clone(), ch_qt.clone());
+                        } else {
+                            val = s_cat(val.clone(), ch_bs.clone());
+                            val = s_cat(val.clone(), string_char.clone());
+                        }
+                        escape_next = false;
+                        char_index = string_index + 1;
+                    } else if string_char == ch_bs {
+                        escape_next = true;
+                        char_index = string_index + 1;
+                    } else if string_char == ch_qt {
+                        char_index = string_index + 1;
+                        break;
+                    } else {
+                        val = s_cat(val.clone(), string_char.clone());
+                        char_index = string_index + 1;
+                    }
+                }
+                tokens.push(make_token(kind_string.clone(), val.clone(), cur_line.clone(), path.clone()).clone());
+                continue;
+            }
+            if c_digit(character.clone()) {
+                let mut num: String = s_cat(empty_val.clone(), character.clone());
+                let mut num_start: i32 = char_index + 1.clone();
+                char_index = char_index + 1;
+                for number_index in num_start..char_count {
+                    let mut number_char: String = chars[number_index as usize].clone();
+                    if c_digit(number_char.clone()) {
+                        num = s_cat(num.clone(), number_char.clone());
+                        char_index = number_index + 1;
+                    } else {
+                        break;
+                    }
+                }
+                tokens.push(make_token(kind_int.clone(), num.clone(), cur_line.clone(), path.clone()).clone());
+                continue;
+            }
+            if c_alpha(character.clone()) {
+                let mut word: String = s_cat(empty_val.clone(), character.clone());
+                let mut word_start: i32 = char_index + 1.clone();
+                char_index = char_index + 1;
+                for word_index in word_start..char_count {
+                    let mut word_char: String = chars[word_index as usize].clone();
+                    if c_alnum(word_char.clone()) {
+                        word = s_cat(word.clone(), word_char.clone());
+                        char_index = word_index + 1;
+                    } else {
+                        break;
+                    }
+                }
+                let mut word_kind: String = word_to_kind(word.clone());
+                tokens.push(make_token(word_kind.clone(), word.clone(), cur_line.clone(), path.clone()).clone());
+                continue;
+            }
+            let mut peek_idx: i32 = char_index + 1.clone();
+            let mut peek: String = "".to_string();
+            if peek_idx < char_count {
+                peek = chars[peek_idx as usize].clone();
+            }
+            if character == ">" && peek == "=" {
+                tokens.push(make_token(kind_gte.clone(), val_gte.clone(), cur_line.clone(), path.clone()).clone());
+                char_index = char_index + 2;
+                continue;
+            }
+            if character == "<" && peek == "=" {
+                tokens.push(make_token(kind_lte.clone(), val_lte.clone(), cur_line.clone(), path.clone()).clone());
+                char_index = char_index + 2;
+                continue;
+            }
+            if character == "+" {
+                tokens.push(make_token(kind_plus.clone(), val_plus.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "-" {
+                tokens.push(make_token(kind_minus.clone(), val_minus.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "*" {
+                tokens.push(make_token(kind_star.clone(), val_star.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "/" {
+                tokens.push(make_token(kind_slash.clone(), val_slash.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "%" {
+                tokens.push(make_token(kind_pct.clone(), val_pct.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "=" {
+                tokens.push(make_token(kind_eq.clone(), val_eq.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == ">" {
+                tokens.push(make_token(kind_gt.clone(), val_gt.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "<" {
+                tokens.push(make_token(kind_lt.clone(), val_lt.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "(" {
+                tokens.push(make_token(kind_lp.clone(), val_lp.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == ")" {
+                tokens.push(make_token(kind_rp.clone(), val_rp.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "[" {
+                tokens.push(make_token(kind_lb.clone(), val_lb.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "]" {
+                tokens.push(make_token(kind_rb.clone(), val_rb.clone(), cur_line.clone(), path.clone()).clone());
+            } else if character == "," {
+                tokens.push(make_token(kind_cm.clone(), val_cm.clone(), cur_line.clone(), path.clone()).clone());
+            }
+            char_index = char_index + 1;
+        }
+        tokens.push(make_token(kind_newline.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+    }
+    let mut final_stack_len: i32 = (indent_stack.len() as i32);
+    for _ in 1..final_stack_len {
+        tokens.push(make_token(kind_dedent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+    }
+    tokens.push(make_token(kind_eof.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+    return tokens;
+}
+
+thread_local! {
+	static INCLUDED_FILES: std::cell::RefCell<std::collections::HashSet<String>> = std::cell::RefCell::new(std::collections::HashSet::new());
+}
+fn file_is_new(path: String) -> bool {
+	INCLUDED_FILES.with(|set| {
+		let mut s = set.borrow_mut();
+		if s.contains(&path) { false } else { s.insert(path); true }
+	})
+}
+fn scan_import_new(tokens: Vec<Token>, pos: i32) -> ParseResult {
+    let mut path_pos: i32 = pos + 1.clone();
+    let mut token_count: i32 = (tokens.len() as i32);
+    if path_pos < token_count {
+        let mut path_tok: Token = tokens[path_pos as usize].clone();
+        let kind = path_tok.kind.clone();
+        let value = path_tok.value.clone();
+        if kind == "STRING" {
+            let mut after_path: i32 = path_pos + 1.clone();
+            return make_result(value.clone(), after_path.clone());
+        }
+    }
+    let mut emp: String = "".to_string();
+    return make_result(emp.clone(), pos.clone());
+}
+
+fn scan_import(tokens: Vec<Token>, pos: i32) -> ParseResult {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut scan: i32 = pos + 1.clone();
+    while scan < token_count {
+        let mut scan_tok: Token = tokens[scan as usize].clone();
+        let kind = scan_tok.kind.clone();
+        scan = scan + 1;
+        if kind == "RPAREN" {
+            break;
+        }
+    }
+    let mut path_pos: i32 = scan + 1.clone();
+    if path_pos < token_count {
+        let mut in_tok: Token = tokens[scan as usize].clone();
+        let kind = in_tok.kind.clone();
+        let mut is_in: bool = kind == "KW_IN".clone();
+        if is_in {
+            let mut path_tok: Token = tokens[path_pos as usize].clone();
+            let value = path_tok.value.clone();
+            let mut after_path: i32 = path_pos + 1.clone();
+            return make_result(value.clone(), after_path.clone());
+        }
+    }
+    let mut emp: String = "".to_string();
+    return make_result(emp.clone(), pos.clone());
+}
+
+fn name_of_decl(tokens: Vec<Token>, pos: i32, is_fn: bool) -> String {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut name_offset: i32 = 1;
+    if is_fn {
+        name_offset = 2;
+    }
+    let mut name_pos: i32 = pos + name_offset.clone();
+    if name_pos < token_count {
+        let mut name_tok: Token = tokens[name_pos as usize].clone();
+        let value = name_tok.value.clone();
+        return value;
+    }
+    return "".to_string();
+}
+
+fn end_of_block(tokens: Vec<Token>, pos: i32) -> i32 {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut cur: i32 = pos.clone();
+    let mut depth: i32 = 0;
+    let mut entered: bool = false;
+    while cur < token_count {
+        let mut tok: Token = tokens[cur as usize].clone();
+        let kind = tok.kind.clone();
+        cur = cur + 1;
+        if kind == "INDENT" {
+            depth = depth + 1;
+            entered = true;
+        } else if kind == "DEDENT" {
+            depth = depth - 1;
+            if depth == 0 && entered {
+                break;
+            }
+        }
+    }
+    return cur;
+}
+
+fn end_of_shape(tokens: Vec<Token>, pos: i32) -> i32 {
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut cur: i32 = pos.clone();
+    while cur < token_count {
+        let mut tok: Token = tokens[cur as usize].clone();
+        let kind = tok.kind.clone();
+        cur = cur + 1;
+        if kind == "NEWLINE" {
+            break;
+        }
+    }
+    return cur;
+}
+
+fn load_file(path: String) -> Vec<Token> {
+    let mut source: String = f_read(path.clone());
+    let mut tok_raw: Vec<Token> = tokenize(source.clone(), path.clone());
+    let mut result: Vec<Token> = Vec::new();
+    let mut token_count: i32 = (tok_raw.len() as i32);
+    let mut pos: i32 = 0;
+    let mut depth: i32 = 0;
+    let mut seen_decl: bool = false;
+    while true {
+        let is_at_end_of_file = pos >= token_count;
+        if is_at_end_of_file {
+            break;
+        }
+        let mut tok: Token = tok_raw[pos as usize].clone();
+        let kind = tok.kind.clone();
+        if kind == "EOF" {
+            break;
+        }
+        if kind == "INDENT" {
+            depth = depth + 1;
+            result.push(tok.clone());
+            pos = pos + 1;
+            continue;
+        }
+        if kind == "DEDENT" {
+            depth = depth - 1;
+            result.push(tok.clone());
+            pos = pos + 1;
+            continue;
+        }
+        let mut at_root_depth: bool = depth == 0.clone();
+        let mut is_new_import: bool = kind == "KW_IMPORT" && at_root_depth.clone();
+        let mut is_old_import: bool = kind == "LPAREN" && at_root_depth.clone();
+        let mut is_any_import: bool = is_new_import || is_old_import.clone();
+        if is_any_import {
+            let mut imp_r_new: ParseResult = scan_import_new(tok_raw.clone(), pos.clone());
+            let mut imp_r_old: ParseResult = scan_import(tok_raw.clone(), pos.clone());
+            let mut imp_path: String = "".to_string();
+            let mut imp_end: i32 = pos.clone();
+            if is_new_import {
+                imp_path = pr_code(imp_r_new.clone());
+                imp_end = pr_pos(imp_r_new.clone());
+            } else {
+                imp_path = pr_code(imp_r_old.clone());
+                imp_end = pr_pos(imp_r_old.clone());
+            }
+            if !is_empty(imp_path.clone()) {
+                if seen_decl {
+                    let mut err_pre: String = "[error] ".to_string();
+                    let mut err_mid: String = ": imports must appear at the top of the file before any declarations".to_string();
+                    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_mid.clone()];
+                    let mut err_msg: String = s_join(err_parts.clone());
+                    println!("{}", err_msg.clone());
+                    std::process::exit(1);
+                }
+                let mut is_new: bool = file_is_new(imp_path.clone());
+                if is_new {
+                    let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
+                    let mut imp_len: i32 = (imp_tokens.len() as i32);
+                    for imp_index in 0..imp_len {
+                        let mut imp_tok: Token = imp_tokens[imp_index as usize].clone();
+                        let kind = imp_tok.kind.clone();
+                        let mut imp_is_eof: bool = kind == "EOF".clone();
+                        if !imp_is_eof {
+                            result.push(imp_tok.clone());
+                        }
+                    }
+                }
+                pos = imp_end;
+                continue;
+            }
+        }
+        if at_root_depth && kind != "NEWLINE" {
+            seen_decl = true;
+        }
+        result.push(tok.clone());
+        pos = pos + 1;
+    }
+    return result;
+}
+
+fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
+    let mut result: Vec<Token> = Vec::new();
+    let mut seen: Vec<String> = Vec::new();
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut pos: i32 = 0;
+    while pos < token_count {
+        let mut token: Token = tokens[pos as usize].clone();
+        let kind = token.kind.clone();
+        if kind == "EOF" {
+            result.push(token.clone());
+            pos = pos + 1;
+            continue;
+        }
+        if kind == "NEWLINE" {
+            result.push(token.clone());
+            pos = pos + 1;
+            continue;
+        }
+        let mut is_fn: bool = kind == "KW_FN".clone();
+        let mut is_struct: bool = kind == "KW_STRUCT".clone();
+        let mut is_enum: bool = kind == "KW_ENUM".clone();
+        let mut is_shape: bool = kind == "KW_SHAPE".clone();
+        let mut is_type: bool = kind == "KW_TYPE".clone();
+        let mut is_macro: bool = kind == "KW_MACRO".clone();
+        let mut is_raw: bool = kind == "KW_RAW".clone();
+        let mut is_rust_blk: bool = kind == "KW_RUST".clone();
+        let mut is_block_decl: bool = is_fn || is_struct || is_enum || is_type || is_macro.clone();
+        if is_block_decl {
+            let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), is_fn.clone());
+            let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
+            if !already_seen {
+                seen.push(decl_name.clone());
+            }
+            let mut block_end: i32 = end_of_block(tokens.clone(), pos.clone());
+            if !already_seen {
+                let mut copy_len: i32 = block_end - pos.clone();
+                for copy_idx in 0..copy_len {
+                    let mut tok_pos: i32 = pos + copy_idx.clone();
+                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
+                    result.push(copy_tok.clone());
+                }
+            }
+            pos = block_end;
+        } else if is_shape {
+            let mut not_fn: bool = false;
+            let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), not_fn.clone());
+            let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
+            if !already_seen {
+                seen.push(decl_name.clone());
+            }
+            let mut shape_end: i32 = end_of_shape(tokens.clone(), pos.clone());
+            if !already_seen {
+                let mut copy_len: i32 = shape_end - pos.clone();
+                for copy_idx in 0..copy_len {
+                    let mut tok_pos: i32 = pos + copy_idx.clone();
+                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
+                    result.push(copy_tok.clone());
+                }
+            }
+            pos = shape_end;
+        } else if is_raw {
+            let mut not_fn2: bool = false;
+            let mut raw_name: String = name_of_decl(tokens.clone(), pos.clone(), not_fn2.clone());
+            let mut raw_pfx: String = "_raw_".to_string();
+            let mut raw_key_parts: Vec<String> = vec![raw_pfx.clone(), raw_name.clone()];
+            let mut raw_key: String = s_join(raw_key_parts.clone());
+            let mut already_seen: bool = list_has(seen.clone(), raw_key.clone());
+            if !already_seen {
+                seen.push(raw_key.clone());
+            }
+            let mut raw_end: i32 = end_of_shape(tokens.clone(), pos.clone());
+            if !already_seen {
+                let mut copy_len: i32 = raw_end - pos.clone();
+                for copy_idx in 0..copy_len {
+                    let mut tok_pos: i32 = pos + copy_idx.clone();
+                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
+                    result.push(copy_tok.clone());
+                }
+            }
+            pos = raw_end;
+        } else if is_rust_blk {
+            let mut rust_content_pos: i32 = pos + 2.clone();
+            let mut rust_in_range: bool = rust_content_pos < token_count.clone();
+            if rust_in_range {
+                let mut rust_tok: Token = tokens[rust_content_pos as usize].clone();
+                let value = rust_tok.value.clone();
+                let mut newline: String = "\n".to_string();
+                let mut rust_lines: Vec<String> = s_split(value.clone(), newline.clone());
+                let mut rust_first: String = rust_lines[0 as usize].clone();
+                let mut rk_pfx: String = "_rust_".to_string();
+                let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), rust_first.clone()];
+                let mut rust_key: String = s_join(rk_parts.clone());
+                let mut already_seen: bool = list_has(seen.clone(), rust_key.clone());
+                if !already_seen {
+                    seen.push(rust_key.clone());
+                    for copy_idx in 0..3 {
+                        let mut tok_pos: i32 = pos + copy_idx.clone();
+                        let mut copy_tok: Token = tokens[tok_pos as usize].clone();
+                        result.push(copy_tok.clone());
+                    }
+                }
+            }
+            pos = pos + 3;
+        } else {
+            result.push(token.clone());
+            pos = pos + 1;
+        }
+    }
+    return result;
+}
+
+fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
+    let mut merged: Vec<Token> = load_file(path.clone());
+    return deduplicate_decls(merged.clone());
+}
+
+fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
+    let mut macros: std::collections::HashMap<String, Vec<Token>> = std::collections::HashMap::new();
+    let mut result: Vec<Token> = vec![];
+    let mut i: usize = 0;
+    while i < tokens.len() {
+    	let kind = tokens[i].kind.as_str();
+
+    	// collect macro definition (new KW_MACRO or legacy KW_MACRO_DEFINE)
+    	if kind == "KW_MACRO" || kind == "KW_MACRO_DEFINE" {
+    		let mut j = i + 1;
+    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
+    		j += 1;
+    		// legacy macro_define has a parameter list — skip to RPAREN
+    		if kind == "KW_MACRO_DEFINE" {
+    			while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
+    			if j < tokens.len() { j += 1; }
+    		}
+    		// skip NEWLINE then INDENT
+    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		while j < tokens.len() && tokens[j].kind == "INDENT" { j += 1; }
+    		// collect body tokens, excluding the outer INDENT/DEDENT pair
+    		let mut body: Vec<Token> = vec![];
+    		let mut depth: i32 = 1;
+    		while j < tokens.len() {
+    			if tokens[j].kind == "INDENT" {
+    				depth += 1;
+    				body.push(tokens[j].clone());
+    			} else if tokens[j].kind == "DEDENT" {
+    				depth -= 1;
+    				if depth == 0 { j += 1; break; }
+    				body.push(tokens[j].clone());
+    			} else {
+    				body.push(tokens[j].clone());
+    			}
+    			j += 1;
+    		}
+    		if !name.is_empty() { macros.insert(name, body); }
+    		// skip trailing NEWLINE after the definition block
+    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		i = j;
+    		continue;
+    	}
+
+    	// expand macro_run call site
+    	if kind == "KW_MACRO_RUN" {
+    		let mut j = i + 1;
+    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
+    		j += 1;
+    		// skip trailing NEWLINE after the call
+    		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		// splice body tokens inline, wrapped in a bare block for scoping
+    		if let Some(body) = macros.get(&name) {
+    			result.push(Token { kind: "BLOCK_START".to_string(), value: "{".to_string(), line: 0, file: String::new() });
+    			for tok in body { result.push(tok.clone()); }
+    			result.push(Token { kind: "BLOCK_END".to_string(), value: "}".to_string(), line: 0, file: String::new() });
+    		}
+    		i = j;
+    		continue;
+    	}
+
+    	result.push(tokens[i].clone());
+    	i += 1;
+    }
+    result
 }
 
 fn is_pascal(name: String) -> bool {
@@ -581,155 +1625,6 @@ fn validate_tokens(tokens: Vec<Token>) {
     handle_errors(errors.clone());
 }
 
-fn pr_code(result: ParseResult) -> String {
-    let code = result.code.clone();
-    let new_pos = result.new_pos.clone();
-    return code;
-}
-
-fn pr_pos(result: ParseResult) -> i32 {
-    let code = result.code.clone();
-    let new_pos = result.new_pos.clone();
-    return new_pos;
-}
-
-fn make_result(code: String, new_pos: i32) -> ParseResult {
-    let result = ParseResult { code: code.clone(), new_pos: new_pos.clone() };
-    return result;
-}
-
-fn make_token(kind: String, value: String, line: i32, file: String) -> Token {
-    let token = Token { kind: kind.clone(), value: value.clone(), line: line.clone(), file: file.clone() };
-    return token;
-}
-
-fn adv_nl(pos: i32, tokens: Vec<Token>) -> i32 {
-    let mut token_count: i32 = (tokens.len() as i32);
-    if pos < token_count {
-        let mut cur_token: Token = tokens[pos as usize].clone();
-        let kind = cur_token.kind.clone();
-        if kind == "NEWLINE" {
-            return pos + 1;
-        }
-    }
-    return pos;
-}
-
-fn adv_indent(pos: i32, tokens: Vec<Token>) -> i32 {
-    let mut token_count: i32 = (tokens.len() as i32);
-    if pos < token_count {
-        let mut cur_token: Token = tokens[pos as usize].clone();
-        let kind = cur_token.kind.clone();
-        if kind == "INDENT" {
-            return pos + 1;
-        }
-    }
-    return pos;
-}
-
-fn skip_to_body(tokens: Vec<Token>, pos: i32) -> i32 {
-    let mut cur: i32 = adv_nl(pos.clone(), tokens.clone());
-    cur = adv_indent(cur.clone(), tokens.clone());
-    return cur;
-}
-
-fn adv_nl_ref(pos: i32, tokens: TokensRef) -> i32 {
-    let mut token_count: i32 = (tokens.len() as i32);
-    if pos < token_count {
-        let mut cur_token: Token = tokens[pos as usize].clone();
-        let kind = cur_token.kind.clone();
-        if kind == "NEWLINE" {
-            return pos + 1;
-        }
-    }
-    return pos;
-}
-
-fn adv_indent_ref(pos: i32, tokens: TokensRef) -> i32 {
-    let mut token_count: i32 = (tokens.len() as i32);
-    if pos < token_count {
-        let mut cur_token: Token = tokens[pos as usize].clone();
-        let kind = cur_token.kind.clone();
-        if kind == "INDENT" {
-            return pos + 1;
-        }
-    }
-    return pos;
-}
-
-fn skip_to_body_ref(tokens: TokensRef, pos: i32) -> i32 {
-    let mut cur: i32 = adv_nl_ref(pos.clone(), tokens.clone());
-    cur = adv_indent_ref(cur.clone(), tokens.clone());
-    return cur;
-}
-
-fn is_empty(source: String) -> bool {
-    let mut length: i32 = (source.len() as i32);
-    return length == 0;
-}
-
-fn str_eq(left: String, right: String) -> bool {
-    return left == right;
-}
-
-fn reg_get_stride(pairs: Vec<String>, key: String, stride: i32) -> String {
-    let mut pairs_count: i32 = (pairs.len() as i32);
-    let mut index: i32 = 0;
-    while index < pairs_count {
-        let mut current_key: String = pairs[index as usize].clone();
-        if current_key == key {
-            let mut val_index: i32 = index + 1.clone();
-            return pairs[val_index as usize].clone();
-        }
-        index = index + stride;
-    }
-    return "".to_string();
-}
-
-fn reg_has_stride(pairs: Vec<String>, key: String, stride: i32) -> bool {
-    let mut pairs_count: i32 = (pairs.len() as i32);
-    let mut index: i32 = 0;
-    while index < pairs_count {
-        let mut current_key: String = pairs[index as usize].clone();
-        if current_key == key {
-            return true;
-        }
-        index = index + stride;
-    }
-    return false;
-}
-
-fn reg_get(pairs: Vec<String>, key: String) -> String {
-    let mut two: i32 = 2;
-    return reg_get_stride(pairs.clone(), key.clone(), two.clone());
-}
-
-fn reg_has(pairs: Vec<String>, key: String) -> bool {
-    let mut two: i32 = 2;
-    return reg_has_stride(pairs.clone(), key.clone(), two.clone());
-}
-
-fn reg3_get(pairs: Vec<String>, key: String) -> String {
-    let mut thr: i32 = 3;
-    return reg_get_stride(pairs.clone(), key.clone(), thr.clone());
-}
-
-fn reg3_has(pairs: Vec<String>, key: String) -> bool {
-    let mut thr: i32 = 3;
-    return reg_has_stride(pairs.clone(), key.clone(), thr.clone());
-}
-
-fn list_has(items: Vec<String>, val: String) -> bool {
-    let mut item_count: i32 = (items.len() as i32);
-    for index in 0..item_count {
-        let mut item: String = items[index as usize].clone();
-        if item == val {
-            return true;
-        }
-    }
-    return false;
-}
-
 fn skip_to_block_start(tokens: Vec<Token>, start: i32) -> ParseResult {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut cur: i32 = start.clone();
@@ -1081,256 +1976,6 @@ fn collect_mut_names(tokens: Vec<Token>, start: i32, end_pos: i32) -> Vec<String
         }
     }
     return result;
-}
-
-fn cur_at(tokens: Vec<Token>, pos: i32) -> TokenCursor {
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut current: Token = tokens[pos as usize].clone();
-    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
-    return c;
-}
-
-fn cur_next(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
-    let token_count = c.token_count.clone();
-    let mut pos = c.pos.clone();
-    let mut current = c.current.clone();
-    let mut pos: i32 = pos + 1.clone();
-    if pos < token_count {
-        let mut current: Token = tokens[pos as usize].clone();
-        return TokenCursor { token_count, pos, current };
-    }
-    return TokenCursor { token_count, pos, current };
-}
-
-fn c_at_end(c: TokenCursor) -> bool {
-    let token_count = c.token_count.clone();
-    let pos = c.pos.clone();
-    return pos >= token_count;
-}
-
-fn cur_skip_to_body(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
-    let pos = c.pos.clone();
-    let mut body_pos: i32 = adv_nl(pos.clone(), tokens.clone());
-    body_pos = adv_indent(body_pos.clone(), tokens.clone());
-    return cur_at(tokens.clone(), body_pos.clone());
-}
-
-fn cur_peek(c: TokenCursor, tokens: Vec<Token>, offset: i32) -> Token {
-    let pos = c.pos.clone();
-    let mut peek_pos: i32 = pos + offset.clone();
-    return tokens[peek_pos as usize].clone();
-}
-
-fn l_slice(tokens: Vec<Token>, start: i32, end_val: i32) -> Vec<Token> {
-    {
-    	let end = (end_val as usize).min(tokens.len());
-    	tokens[start as usize..end].to_vec()
-    }
-}
-
-fn word_to_kind(word: String) -> String {
-    if word == "fn" {
-        return "KW_FN".to_string();
-    }
-    if word == "as" {
-        return "KW_AS".to_string();
-    }
-    if word == "return" {
-        return "KW_RETURN".to_string();
-    }
-    if word == "if" {
-        return "KW_IF".to_string();
-    }
-    if word == "else" {
-        return "KW_ELSE".to_string();
-    }
-    if word == "for" {
-        return "KW_FOR".to_string();
-    }
-    if word == "in" {
-        return "KW_IN".to_string();
-    }
-    if word == "break" {
-        return "KW_BREAK".to_string();
-    }
-    if word == "continue" {
-        return "KW_CONTINUE".to_string();
-    }
-    if word == "and" {
-        return "KW_AND".to_string();
-    }
-    if word == "or" {
-        return "KW_OR".to_string();
-    }
-    if word == "not" {
-        return "KW_NOT".to_string();
-    }
-    if word == "is" {
-        return "KW_IS".to_string();
-    }
-    if word == "true" {
-        return "KW_TRUE".to_string();
-    }
-    if word == "false" {
-        return "KW_FALSE".to_string();
-    }
-    if word == "bad" {
-        return "KW_BAD".to_string();
-    }
-    if word == "avow" {
-        return "KW_AVOW".to_string();
-    }
-    if word == "empty" {
-        return "KW_EMPTY".to_string();
-    }
-    if word == "type" {
-        return "KW_TYPE".to_string();
-    }
-    if word == "struct" {
-        return "KW_STRUCT".to_string();
-    }
-    if word == "shape" {
-        return "KW_SHAPE".to_string();
-    }
-    if word == "list" {
-        return "KW_LIST".to_string();
-    }
-    if word == "of" {
-        return "KW_OF".to_string();
-    }
-    if word == "insert" {
-        return "KW_INSERT".to_string();
-    }
-    if word == "enum" {
-        return "KW_ENUM".to_string();
-    }
-    if word == "at" {
-        return "KW_AT".to_string();
-    }
-    if word == "remove" {
-        return "KW_REMOVE".to_string();
-    }
-    if word == "rust" {
-        return "KW_RUST".to_string();
-    }
-    if word == "void" {
-        return "KW_VOID".to_string();
-    }
-    if word == "using" {
-        return "KW_USING".to_string();
-    }
-    if word == "with" {
-        return "KW_WITH".to_string();
-    }
-    if word == "giveup" {
-        return "KW_GIVEUP".to_string();
-    }
-    if word == "raw" {
-        return "KW_RAW".to_string();
-    }
-    if word == "macro" {
-        return "KW_MACRO".to_string();
-    }
-    if word == "macro_define" {
-        return "KW_MACRO_DEFINE".to_string();
-    }
-    if word == "macro_run" {
-        return "KW_MACRO_RUN".to_string();
-    }
-    if word == "place" {
-        return "KW_PLACE".to_string();
-    }
-    if word == "import" {
-        return "KW_IMPORT".to_string();
-    }
-    return "IDENT".to_string();
-}
-
-fn is_binary_op(kind: String) -> bool {
-    if kind == "PLUS" {
-        return true;
-    }
-    if kind == "MINUS" {
-        return true;
-    }
-    if kind == "STAR" {
-        return true;
-    }
-    if kind == "SLASH" {
-        return true;
-    }
-    if kind == "PERCENT" {
-        return true;
-    }
-    if kind == "GT" {
-        return true;
-    }
-    if kind == "LT" {
-        return true;
-    }
-    if kind == "GTE" {
-        return true;
-    }
-    if kind == "LTE" {
-        return true;
-    }
-    if kind == "KW_IS" {
-        return true;
-    }
-    if kind == "KW_AND" {
-        return true;
-    }
-    if kind == "KW_OR" {
-        return true;
-    }
-    return false;
-}
-
-fn map_op(operator: String) -> String {
-    if operator == "is" {
-        return "==".to_string();
-    }
-    if operator == "is not" {
-        return "!=".to_string();
-    }
-    if operator == "and" {
-        return "&&".to_string();
-    }
-    if operator == "or" {
-        return "||".to_string();
-    }
-    if operator == ">" {
-        return ">".to_string();
-    }
-    if operator == "<" {
-        return "<".to_string();
-    }
-    if operator == ">=" {
-        return ">=".to_string();
-    }
-    if operator == "<=" {
-        return "<=".to_string();
-    }
-    return operator;
-}
-
-fn render_rust_type(type_name: String) -> String {
-    if type_name == "void" {
-        return "".to_string();
-    }
-    if type_name == "int" {
-        return "i32".to_string();
-    }
-    if type_name == "string" {
-        return "String".to_string();
-    }
-    if type_name == "bool" {
-        return "bool".to_string();
-    }
-    if type_name == "float" {
-        return "f64".to_string();
-    }
-    return s_pascal(type_name.clone());
 }
 
 fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
@@ -3033,651 +3678,6 @@ fn gen_raw_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut emp: String = "".to_string();
     let mut raw_next: i32 = adv_nl(after.clone(), tokens.clone());
     return make_result(emp.clone(), raw_next.clone());
-}
-
-fn count_tabs(line: String) -> i32 {
-    let mut chars: Vec<String> = c_chars(line.clone());
-    let mut char_count: i32 = (chars.len() as i32);
-    let mut count: i32 = 0;
-    for index in 0..char_count {
-        let mut character: String = chars[index as usize].clone();
-        if character == "\t" {
-            count = count + 1;
-        } else {
-            break;
-        }
-    }
-    return count;
-}
-
-fn tokenize(source: String, path: String) -> Vec<Token> {
-    let mut tokens: Vec<Token> = Vec::new();
-    let mut newline: String = "\n".to_string();
-    let mut lines: Vec<String> = s_split(source.clone(), newline.clone());
-    let mut n_lines: i32 = (lines.len() as i32);
-    let mut indent_stack: Vec<String> = Vec::new();
-    let mut zero_str: String = "0".to_string();
-    indent_stack.push(zero_str.clone());
-    let mut cur_line: i32 = 0;
-    let mut skip: i32 = 0;
-    let mut empty_val: String = "".to_string();
-    let mut kind_indent: String = "INDENT".to_string();
-    let mut kind_dedent: String = "DEDENT".to_string();
-    let mut kind_newline: String = "NEWLINE".to_string();
-    let mut kind_kw_rust: String = "KW_RUST".to_string();
-    let mut kw_rust_val: String = "rust".to_string();
-    let mut kind_rust_block: String = "RUST_BLOCK".to_string();
-    let mut kind_string: String = "STRING".to_string();
-    let mut kind_int: String = "INT".to_string();
-    let mut kind_eof: String = "EOF".to_string();
-    let mut kind_gte: String = "GTE".to_string();
-    let mut kind_lte: String = "LTE".to_string();
-    let mut kind_plus: String = "PLUS".to_string();
-    let mut kind_minus: String = "MINUS".to_string();
-    let mut kind_star: String = "STAR".to_string();
-    let mut kind_slash: String = "SLASH".to_string();
-    let mut kind_pct: String = "PERCENT".to_string();
-    let mut kind_eq: String = "EQUALS".to_string();
-    let mut kind_gt: String = "GT".to_string();
-    let mut kind_lt: String = "LT".to_string();
-    let mut kind_lp: String = "LPAREN".to_string();
-    let mut kind_rp: String = "RPAREN".to_string();
-    let mut kind_lb: String = "LBRACKET".to_string();
-    let mut kind_rb: String = "RBRACKET".to_string();
-    let mut kind_cm: String = "COMMA".to_string();
-    let mut val_gte: String = ">=".to_string();
-    let mut val_lte: String = "<=".to_string();
-    let mut val_plus: String = "+".to_string();
-    let mut val_minus: String = "-".to_string();
-    let mut val_star: String = "*".to_string();
-    let mut val_slash: String = "/".to_string();
-    let mut val_pct: String = "%".to_string();
-    let mut val_eq: String = "=".to_string();
-    let mut val_gt: String = ">".to_string();
-    let mut val_lt: String = "<".to_string();
-    let mut val_lp: String = "(".to_string();
-    let mut val_rp: String = ")".to_string();
-    let mut val_lb: String = "[".to_string();
-    let mut val_rb: String = "]".to_string();
-    let mut val_cm: String = ",".to_string();
-    let mut ch_nl: String = "\n".to_string();
-    let mut ch_tab: String = "\t".to_string();
-    let mut ch_bs: String = "\\".to_string();
-    let mut ch_qt: String = "\"".to_string();
-    for raw_li in 0..n_lines {
-        cur_line = cur_line + 1;
-        if skip > 0 {
-            skip = skip - 1;
-            continue;
-        }
-        let mut raw_line: String = lines[raw_li as usize].clone();
-        let mut line: String = s_rtrim(raw_line.clone());
-        let mut stripped: String = s_trim(line.clone());
-        if is_empty(stripped.clone()) {
-            continue;
-        }
-        let mut indent: i32 = count_tabs(line.clone());
-        let mut content: String = s_from(line.clone(), indent.clone());
-        let mut slen: i32 = (indent_stack.len() as i32);
-        let mut top_idx: i32 = slen - 1.clone();
-        let mut top: i32 = n_parse(indent_stack[top_idx as usize].clone());
-        if indent > top {
-            tokens.push(make_token(kind_indent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
-            let mut indent_str: String = n_to_str(indent.clone());
-            indent_stack.push(indent_str.clone());
-        } else {
-            let mut dedenting: bool = indent < top.clone();
-            while dedenting {
-                let mut new_slen: i32 = (indent_stack.len() as i32);
-                let mut new_top_idx: i32 = new_slen - 1.clone();
-                let mut cur_top: i32 = n_parse(indent_stack[new_top_idx as usize].clone());
-                if indent < cur_top {
-                    tokens.push(make_token(kind_dedent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
-                    indent_stack.remove(new_top_idx as usize);
-                } else {
-                    dedenting = false;
-                }
-            }
-        }
-        if content == "rust" {
-            tokens.push(make_token(kind_kw_rust.clone(), kw_rust_val.clone(), cur_line.clone(), path.clone()).clone());
-            tokens.push(make_token(kind_newline.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
-            let mut rust_base: i32 = indent + 1.clone();
-            let mut rust_lines: Vec<String> = Vec::new();
-            let mut rli_start: i32 = raw_li + 1.clone();
-            for rli in rli_start..n_lines {
-                let mut rust_line: String = lines[rli as usize].clone();
-                let mut rl_indent: i32 = count_tabs(rust_line.clone());
-                let mut rl_stripped: String = s_trim(rust_line.clone());
-                if is_empty(rl_stripped.clone()) {
-                    rust_lines.push("".to_string());
-                    skip = skip + 1;
-                } else if rl_indent >= rust_base {
-                    let mut rl_content: String = s_from(rust_line.clone(), rust_base.clone());
-                    rust_lines.push(s_rtrim(rl_content.clone()).clone());
-                    skip = skip + 1;
-                } else {
-                    break;
-                }
-            }
-            let mut trimming: bool = true;
-            while trimming {
-                let mut rl_len: i32 = (rust_lines.len() as i32);
-                if rl_len > 0 {
-                    let mut last_rl: i32 = rl_len - 1.clone();
-                    let mut last_line: String = rust_lines[last_rl as usize].clone();
-                    if last_line == "" {
-                        rust_lines.remove(last_rl as usize);
-                    } else {
-                        trimming = false;
-                    }
-                } else {
-                    trimming = false;
-                }
-            }
-            let mut block_content: String = s_join_nl(rust_lines.clone());
-            tokens.push(make_token(kind_rust_block.clone(), block_content.clone(), cur_line.clone(), path.clone()).clone());
-            continue;
-        }
-        let mut chars: Vec<String> = c_chars(content.clone());
-        let mut char_count: i32 = (chars.len() as i32);
-        let mut char_index: i32 = 0;
-        while char_index < char_count {
-            let mut character: String = chars[char_index as usize].clone();
-            if character == " " {
-                char_index = char_index + 1;
-                continue;
-            }
-            if character == "#" {
-                break;
-            }
-            if character == "\"" {
-                let mut val: String = "".to_string();
-                let mut escape_next: bool = false;
-                let mut str_start: i32 = char_index + 1.clone();
-                char_index = char_index + 1;
-                for string_index in str_start..char_count {
-                    let mut string_char: String = chars[string_index as usize].clone();
-                    if escape_next {
-                        if string_char == "n" {
-                            val = s_cat(val.clone(), ch_nl.clone());
-                        } else if string_char == "t" {
-                            val = s_cat(val.clone(), ch_tab.clone());
-                        } else if string_char == "\\" {
-                            val = s_cat(val.clone(), ch_bs.clone());
-                        } else if string_char == "\"" {
-                            val = s_cat(val.clone(), ch_qt.clone());
-                        } else {
-                            val = s_cat(val.clone(), ch_bs.clone());
-                            val = s_cat(val.clone(), string_char.clone());
-                        }
-                        escape_next = false;
-                        char_index = string_index + 1;
-                    } else if string_char == ch_bs {
-                        escape_next = true;
-                        char_index = string_index + 1;
-                    } else if string_char == ch_qt {
-                        char_index = string_index + 1;
-                        break;
-                    } else {
-                        val = s_cat(val.clone(), string_char.clone());
-                        char_index = string_index + 1;
-                    }
-                }
-                tokens.push(make_token(kind_string.clone(), val.clone(), cur_line.clone(), path.clone()).clone());
-                continue;
-            }
-            if c_digit(character.clone()) {
-                let mut num: String = s_cat(empty_val.clone(), character.clone());
-                let mut num_start: i32 = char_index + 1.clone();
-                char_index = char_index + 1;
-                for number_index in num_start..char_count {
-                    let mut number_char: String = chars[number_index as usize].clone();
-                    if c_digit(number_char.clone()) {
-                        num = s_cat(num.clone(), number_char.clone());
-                        char_index = number_index + 1;
-                    } else {
-                        break;
-                    }
-                }
-                tokens.push(make_token(kind_int.clone(), num.clone(), cur_line.clone(), path.clone()).clone());
-                continue;
-            }
-            if c_alpha(character.clone()) {
-                let mut word: String = s_cat(empty_val.clone(), character.clone());
-                let mut word_start: i32 = char_index + 1.clone();
-                char_index = char_index + 1;
-                for word_index in word_start..char_count {
-                    let mut word_char: String = chars[word_index as usize].clone();
-                    if c_alnum(word_char.clone()) {
-                        word = s_cat(word.clone(), word_char.clone());
-                        char_index = word_index + 1;
-                    } else {
-                        break;
-                    }
-                }
-                let mut word_kind: String = word_to_kind(word.clone());
-                tokens.push(make_token(word_kind.clone(), word.clone(), cur_line.clone(), path.clone()).clone());
-                continue;
-            }
-            let mut peek_idx: i32 = char_index + 1.clone();
-            let mut peek: String = "".to_string();
-            if peek_idx < char_count {
-                peek = chars[peek_idx as usize].clone();
-            }
-            if character == ">" && peek == "=" {
-                tokens.push(make_token(kind_gte.clone(), val_gte.clone(), cur_line.clone(), path.clone()).clone());
-                char_index = char_index + 2;
-                continue;
-            }
-            if character == "<" && peek == "=" {
-                tokens.push(make_token(kind_lte.clone(), val_lte.clone(), cur_line.clone(), path.clone()).clone());
-                char_index = char_index + 2;
-                continue;
-            }
-            if character == "+" {
-                tokens.push(make_token(kind_plus.clone(), val_plus.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "-" {
-                tokens.push(make_token(kind_minus.clone(), val_minus.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "*" {
-                tokens.push(make_token(kind_star.clone(), val_star.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "/" {
-                tokens.push(make_token(kind_slash.clone(), val_slash.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "%" {
-                tokens.push(make_token(kind_pct.clone(), val_pct.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "=" {
-                tokens.push(make_token(kind_eq.clone(), val_eq.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == ">" {
-                tokens.push(make_token(kind_gt.clone(), val_gt.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "<" {
-                tokens.push(make_token(kind_lt.clone(), val_lt.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "(" {
-                tokens.push(make_token(kind_lp.clone(), val_lp.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == ")" {
-                tokens.push(make_token(kind_rp.clone(), val_rp.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "[" {
-                tokens.push(make_token(kind_lb.clone(), val_lb.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "]" {
-                tokens.push(make_token(kind_rb.clone(), val_rb.clone(), cur_line.clone(), path.clone()).clone());
-            } else if character == "," {
-                tokens.push(make_token(kind_cm.clone(), val_cm.clone(), cur_line.clone(), path.clone()).clone());
-            }
-            char_index = char_index + 1;
-        }
-        tokens.push(make_token(kind_newline.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
-    }
-    let mut final_stack_len: i32 = (indent_stack.len() as i32);
-    for _ in 1..final_stack_len {
-        tokens.push(make_token(kind_dedent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
-    }
-    tokens.push(make_token(kind_eof.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
-    return tokens;
-}
-
-thread_local! {
-	static INCLUDED_FILES: std::cell::RefCell<std::collections::HashSet<String>> = std::cell::RefCell::new(std::collections::HashSet::new());
-}
-fn file_is_new(path: String) -> bool {
-	INCLUDED_FILES.with(|set| {
-		let mut s = set.borrow_mut();
-		if s.contains(&path) { false } else { s.insert(path); true }
-	})
-}
-fn scan_import_new(tokens: Vec<Token>, pos: i32) -> ParseResult {
-    let mut path_pos: i32 = pos + 1.clone();
-    let mut token_count: i32 = (tokens.len() as i32);
-    if path_pos < token_count {
-        let mut path_tok: Token = tokens[path_pos as usize].clone();
-        let kind = path_tok.kind.clone();
-        let value = path_tok.value.clone();
-        if kind == "STRING" {
-            let mut after_path: i32 = path_pos + 1.clone();
-            return make_result(value.clone(), after_path.clone());
-        }
-    }
-    let mut emp: String = "".to_string();
-    return make_result(emp.clone(), pos.clone());
-}
-
-fn scan_import(tokens: Vec<Token>, pos: i32) -> ParseResult {
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut scan: i32 = pos + 1.clone();
-    while scan < token_count {
-        let mut scan_tok: Token = tokens[scan as usize].clone();
-        let kind = scan_tok.kind.clone();
-        scan = scan + 1;
-        if kind == "RPAREN" {
-            break;
-        }
-    }
-    let mut path_pos: i32 = scan + 1.clone();
-    if path_pos < token_count {
-        let mut in_tok: Token = tokens[scan as usize].clone();
-        let kind = in_tok.kind.clone();
-        let mut is_in: bool = kind == "KW_IN".clone();
-        if is_in {
-            let mut path_tok: Token = tokens[path_pos as usize].clone();
-            let value = path_tok.value.clone();
-            let mut after_path: i32 = path_pos + 1.clone();
-            return make_result(value.clone(), after_path.clone());
-        }
-    }
-    let mut emp: String = "".to_string();
-    return make_result(emp.clone(), pos.clone());
-}
-
-fn name_of_decl(tokens: Vec<Token>, pos: i32, is_fn: bool) -> String {
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut name_offset: i32 = 1;
-    if is_fn {
-        name_offset = 2;
-    }
-    let mut name_pos: i32 = pos + name_offset.clone();
-    if name_pos < token_count {
-        let mut name_tok: Token = tokens[name_pos as usize].clone();
-        let value = name_tok.value.clone();
-        return value;
-    }
-    return "".to_string();
-}
-
-fn end_of_block(tokens: Vec<Token>, pos: i32) -> i32 {
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut cur: i32 = pos.clone();
-    let mut depth: i32 = 0;
-    let mut entered: bool = false;
-    while cur < token_count {
-        let mut tok: Token = tokens[cur as usize].clone();
-        let kind = tok.kind.clone();
-        cur = cur + 1;
-        if kind == "INDENT" {
-            depth = depth + 1;
-            entered = true;
-        } else if kind == "DEDENT" {
-            depth = depth - 1;
-            if depth == 0 && entered {
-                break;
-            }
-        }
-    }
-    return cur;
-}
-
-fn end_of_shape(tokens: Vec<Token>, pos: i32) -> i32 {
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut cur: i32 = pos.clone();
-    while cur < token_count {
-        let mut tok: Token = tokens[cur as usize].clone();
-        let kind = tok.kind.clone();
-        cur = cur + 1;
-        if kind == "NEWLINE" {
-            break;
-        }
-    }
-    return cur;
-}
-
-fn load_file(path: String) -> Vec<Token> {
-    let mut source: String = f_read(path.clone());
-    let mut tok_raw: Vec<Token> = tokenize(source.clone(), path.clone());
-    let mut result: Vec<Token> = Vec::new();
-    let mut token_count: i32 = (tok_raw.len() as i32);
-    let mut pos: i32 = 0;
-    let mut depth: i32 = 0;
-    let mut seen_decl: bool = false;
-    while true {
-        let is_at_end_of_file = pos >= token_count;
-        if is_at_end_of_file {
-            break;
-        }
-        let mut tok: Token = tok_raw[pos as usize].clone();
-        let kind = tok.kind.clone();
-        if kind == "EOF" {
-            break;
-        }
-        if kind == "INDENT" {
-            depth = depth + 1;
-            result.push(tok.clone());
-            pos = pos + 1;
-            continue;
-        }
-        if kind == "DEDENT" {
-            depth = depth - 1;
-            result.push(tok.clone());
-            pos = pos + 1;
-            continue;
-        }
-        let mut at_root_depth: bool = depth == 0.clone();
-        let mut is_new_import: bool = kind == "KW_IMPORT" && at_root_depth.clone();
-        let mut is_old_import: bool = kind == "LPAREN" && at_root_depth.clone();
-        let mut is_any_import: bool = is_new_import || is_old_import.clone();
-        if is_any_import {
-            let mut imp_r_new: ParseResult = scan_import_new(tok_raw.clone(), pos.clone());
-            let mut imp_r_old: ParseResult = scan_import(tok_raw.clone(), pos.clone());
-            let mut imp_path: String = "".to_string();
-            let mut imp_end: i32 = pos.clone();
-            if is_new_import {
-                imp_path = pr_code(imp_r_new.clone());
-                imp_end = pr_pos(imp_r_new.clone());
-            } else {
-                imp_path = pr_code(imp_r_old.clone());
-                imp_end = pr_pos(imp_r_old.clone());
-            }
-            if !is_empty(imp_path.clone()) {
-                if seen_decl {
-                    let mut err_pre: String = "[error] ".to_string();
-                    let mut err_mid: String = ": imports must appear at the top of the file before any declarations".to_string();
-                    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_mid.clone()];
-                    let mut err_msg: String = s_join(err_parts.clone());
-                    println!("{}", err_msg.clone());
-                    std::process::exit(1);
-                }
-                let mut is_new: bool = file_is_new(imp_path.clone());
-                if is_new {
-                    let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
-                    let mut imp_len: i32 = (imp_tokens.len() as i32);
-                    for imp_index in 0..imp_len {
-                        let mut imp_tok: Token = imp_tokens[imp_index as usize].clone();
-                        let kind = imp_tok.kind.clone();
-                        let mut imp_is_eof: bool = kind == "EOF".clone();
-                        if !imp_is_eof {
-                            result.push(imp_tok.clone());
-                        }
-                    }
-                }
-                pos = imp_end;
-                continue;
-            }
-        }
-        if at_root_depth && kind != "NEWLINE" {
-            seen_decl = true;
-        }
-        result.push(tok.clone());
-        pos = pos + 1;
-    }
-    return result;
-}
-
-fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
-    let mut result: Vec<Token> = Vec::new();
-    let mut seen: Vec<String> = Vec::new();
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut pos: i32 = 0;
-    while pos < token_count {
-        let mut token: Token = tokens[pos as usize].clone();
-        let kind = token.kind.clone();
-        if kind == "EOF" {
-            result.push(token.clone());
-            pos = pos + 1;
-            continue;
-        }
-        if kind == "NEWLINE" {
-            result.push(token.clone());
-            pos = pos + 1;
-            continue;
-        }
-        let mut is_fn: bool = kind == "KW_FN".clone();
-        let mut is_struct: bool = kind == "KW_STRUCT".clone();
-        let mut is_enum: bool = kind == "KW_ENUM".clone();
-        let mut is_shape: bool = kind == "KW_SHAPE".clone();
-        let mut is_type: bool = kind == "KW_TYPE".clone();
-        let mut is_macro: bool = kind == "KW_MACRO".clone();
-        let mut is_raw: bool = kind == "KW_RAW".clone();
-        let mut is_rust_blk: bool = kind == "KW_RUST".clone();
-        let mut is_block_decl: bool = is_fn || is_struct || is_enum || is_type || is_macro.clone();
-        if is_block_decl {
-            let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), is_fn.clone());
-            let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
-            if !already_seen {
-                seen.push(decl_name.clone());
-            }
-            let mut block_end: i32 = end_of_block(tokens.clone(), pos.clone());
-            if !already_seen {
-                let mut copy_len: i32 = block_end - pos.clone();
-                for copy_idx in 0..copy_len {
-                    let mut tok_pos: i32 = pos + copy_idx.clone();
-                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                    result.push(copy_tok.clone());
-                }
-            }
-            pos = block_end;
-        } else if is_shape {
-            let mut not_fn: bool = false;
-            let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), not_fn.clone());
-            let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
-            if !already_seen {
-                seen.push(decl_name.clone());
-            }
-            let mut shape_end: i32 = end_of_shape(tokens.clone(), pos.clone());
-            if !already_seen {
-                let mut copy_len: i32 = shape_end - pos.clone();
-                for copy_idx in 0..copy_len {
-                    let mut tok_pos: i32 = pos + copy_idx.clone();
-                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                    result.push(copy_tok.clone());
-                }
-            }
-            pos = shape_end;
-        } else if is_raw {
-            let mut not_fn2: bool = false;
-            let mut raw_name: String = name_of_decl(tokens.clone(), pos.clone(), not_fn2.clone());
-            let mut raw_pfx: String = "_raw_".to_string();
-            let mut raw_key_parts: Vec<String> = vec![raw_pfx.clone(), raw_name.clone()];
-            let mut raw_key: String = s_join(raw_key_parts.clone());
-            let mut already_seen: bool = list_has(seen.clone(), raw_key.clone());
-            if !already_seen {
-                seen.push(raw_key.clone());
-            }
-            let mut raw_end: i32 = end_of_shape(tokens.clone(), pos.clone());
-            if !already_seen {
-                let mut copy_len: i32 = raw_end - pos.clone();
-                for copy_idx in 0..copy_len {
-                    let mut tok_pos: i32 = pos + copy_idx.clone();
-                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                    result.push(copy_tok.clone());
-                }
-            }
-            pos = raw_end;
-        } else if is_rust_blk {
-            let mut rust_content_pos: i32 = pos + 2.clone();
-            let mut rust_in_range: bool = rust_content_pos < token_count.clone();
-            if rust_in_range {
-                let mut rust_tok: Token = tokens[rust_content_pos as usize].clone();
-                let value = rust_tok.value.clone();
-                let mut newline: String = "\n".to_string();
-                let mut rust_lines: Vec<String> = s_split(value.clone(), newline.clone());
-                let mut rust_first: String = rust_lines[0 as usize].clone();
-                let mut rk_pfx: String = "_rust_".to_string();
-                let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), rust_first.clone()];
-                let mut rust_key: String = s_join(rk_parts.clone());
-                let mut already_seen: bool = list_has(seen.clone(), rust_key.clone());
-                if !already_seen {
-                    seen.push(rust_key.clone());
-                    for copy_idx in 0..3 {
-                        let mut tok_pos: i32 = pos + copy_idx.clone();
-                        let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                        result.push(copy_tok.clone());
-                    }
-                }
-            }
-            pos = pos + 3;
-        } else {
-            result.push(token.clone());
-            pos = pos + 1;
-        }
-    }
-    return result;
-}
-
-fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
-    let mut merged: Vec<Token> = load_file(path.clone());
-    return deduplicate_decls(merged.clone());
-}
-
-fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
-    let mut macros: std::collections::HashMap<String, Vec<Token>> = std::collections::HashMap::new();
-    let mut result: Vec<Token> = vec![];
-    let mut i: usize = 0;
-    while i < tokens.len() {
-    	let kind = tokens[i].kind.as_str();
-
-    	// collect macro definition (new KW_MACRO or legacy KW_MACRO_DEFINE)
-    	if kind == "KW_MACRO" || kind == "KW_MACRO_DEFINE" {
-    		let mut j = i + 1;
-    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
-    		j += 1;
-    		// legacy macro_define has a parameter list — skip to RPAREN
-    		if kind == "KW_MACRO_DEFINE" {
-    			while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
-    			if j < tokens.len() { j += 1; }
-    		}
-    		// skip NEWLINE then INDENT
-    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		while j < tokens.len() && tokens[j].kind == "INDENT" { j += 1; }
-    		// collect body tokens, excluding the outer INDENT/DEDENT pair
-    		let mut body: Vec<Token> = vec![];
-    		let mut depth: i32 = 1;
-    		while j < tokens.len() {
-    			if tokens[j].kind == "INDENT" {
-    				depth += 1;
-    				body.push(tokens[j].clone());
-    			} else if tokens[j].kind == "DEDENT" {
-    				depth -= 1;
-    				if depth == 0 { j += 1; break; }
-    				body.push(tokens[j].clone());
-    			} else {
-    				body.push(tokens[j].clone());
-    			}
-    			j += 1;
-    		}
-    		if !name.is_empty() { macros.insert(name, body); }
-    		// skip trailing NEWLINE after the definition block
-    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		i = j;
-    		continue;
-    	}
-
-    	// expand macro_run call site
-    	if kind == "KW_MACRO_RUN" {
-    		let mut j = i + 1;
-    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
-    		j += 1;
-    		// skip trailing NEWLINE after the call
-    		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		// splice body tokens inline, wrapped in a bare block for scoping
-    		if let Some(body) = macros.get(&name) {
-    			result.push(Token { kind: "BLOCK_START".to_string(), value: "{".to_string(), line: 0, file: String::new() });
-    			for tok in body { result.push(tok.clone()); }
-    			result.push(Token { kind: "BLOCK_END".to_string(), value: "}".to_string(), line: 0, file: String::new() });
-    		}
-    		i = j;
-    		continue;
-    	}
-
-    	result.push(tokens[i].clone());
-    	i += 1;
-    }
-    result
 }
 
 fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {

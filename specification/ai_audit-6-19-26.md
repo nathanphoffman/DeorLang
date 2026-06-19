@@ -2,8 +2,6 @@
   Documented But Not Implemented (20 items)
 
   High severity — would cause silent failures or compile errors:
-  - Validator truthiness in if — if area emits if area { which is a Rust compile error (Option isn't bool); if area is not also unimplemented
-  - Null-coalescing else — int val = area else 0 completely missing from codegen
   - Float literals — 3.14 is tokenized as INT 3, junk ., INT 14; no float literal parsing in lexer
 
   Medium severity — features that appear to work but don't:

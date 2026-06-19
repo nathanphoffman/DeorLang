@@ -1,0 +1,37 @@
+# primitives and lib
+import "transpiler-deor/types.deor"
+import "transpiler-deor/lib/char.deor"
+import "transpiler-deor/lib/string.deor"
+import "transpiler-deor/lib/num.deor"
+import "transpiler-deor/lib/file.deor"
+import "transpiler-deor/lib/list.deor"
+import "transpiler-deor/utils.deor"
+
+# core infrastructure
+import "transpiler-deor/deor_helpers.deor"
+import "transpiler-deor/mappings.deor"
+import "transpiler-deor/cursor.deor"
+
+# lexer and importer
+import "transpiler-deor/lexer.deor"
+import "transpiler-deor/importer.deor"
+
+# macro expander
+import "transpiler-deor/macro_expander.deor"
+
+# validators
+import "transpiler-deor/tokens_validator/casing.deor"
+import "transpiler-deor/tokens_validator/arg_helpers.deor"
+import "transpiler-deor/tokens_validator/error_handling.deor"
+import "transpiler-deor/tokens_validator/macros/skip_if_match.deor"
+import "transpiler-deor/tokens_validator/macros/ident_validator.deor"
+import "transpiler-deor/tokens_validator/macros/check_var_decl.deor"
+import "transpiler-deor/tokens_validator/macros/check_rust_generic.deor"
+import "transpiler-deor/tokens_validator/macros/check_call_args.deor"
+import "transpiler-deor/tokens_validation.deor"
+
+# registry and codegen
+import "transpiler-deor/registry.deor"
+import "transpiler-deor/codegen_expr.deor"
+import "transpiler-deor/codegen_stmt.deor"
+import "transpiler-deor/codegen_decl.deor"

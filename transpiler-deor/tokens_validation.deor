@@ -1,20 +1,8 @@
 # Libs
-import "transpiler-deor/types.deor"
-import "transpiler-deor/lib/string.deor"
-import "transpiler-deor/lib/char.deor"
-import "transpiler-deor/lib/num.deor"
 
 # Helper functions
-import "transpiler-deor/tokens_validator/casing.deor"
-import "transpiler-deor/tokens_validator/arg_helpers.deor"
-import "transpiler-deor/tokens_validator/error_handling.deor"
 
 # Macro Imports
-import "transpiler-deor/tokens_validator/macros/ident_validator.deor"
-import "transpiler-deor/tokens_validator/macros/skip_if_match.deor"
-import "transpiler-deor/tokens_validator/macros/check_var_decl.deor"
-import "transpiler-deor/tokens_validator/macros/check_rust_generic.deor"
-import "transpiler-deor/tokens_validator/macros/check_call_args.deor"
 
 shape fnTestRule = func of string to bool
 

@@ -1,13 +1,8 @@
-import "transpiler-deor/types.deor"
 (
     make_result, pr_code, pr_pos,
     adv_nl, adv_indent, skip_to_body,
     adv_nl_ref, skip_to_body_ref,
 ) in "transpiler-deor/deor_helpers.deor"
-import "transpiler-deor/lib/string.deor"
-import "transpiler-deor/utils.deor"
-import "transpiler-deor/registry.deor"
-import "transpiler-deor/codegen_expr.deor"
 
 # === Statement code generation ===
 

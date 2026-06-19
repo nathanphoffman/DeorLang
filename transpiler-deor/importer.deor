@@ -1,9 +1,3 @@
-import "transpiler-deor/types.deor"
-import "transpiler-deor/lib/file.deor"
-import "transpiler-deor/utils.deor"
-import "transpiler-deor/lexer.deor"
-import "transpiler-deor/deor_helpers.deor"
-import "transpiler-deor/lib/string.deor"
 
 
 # this rust performance shim gave us 14x improvement on imports

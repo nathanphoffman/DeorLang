@@ -1,4 +1,3 @@
-import "transpiler-deor/types.deor"
 
 fn bool s_upper_char(string ch)
 	rust

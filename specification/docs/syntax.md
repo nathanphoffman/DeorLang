@@ -80,8 +80,7 @@ Open an indented block when followed by a newline.
 | Word | Use |
 |---|---|
 | `fn` | Function declaration |
-| `if` | Conditional block |
-| `else` | Else branch / null-coalescing (`value else default`) |
+| `if`,`else`,`else if` | Conditional block |
 | `for` | Loop |
 | `type` | Validator type declaration |
 | `struct` | Struct declaration (`struct`, `struct+`, `struct*`) |

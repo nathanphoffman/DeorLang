@@ -1,4 +1,3 @@
-import "transpiler-deor/types.deor"
 
 # === ParseResult helpers ===
 

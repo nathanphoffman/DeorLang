@@ -1,4 +1,3 @@
-import "transpiler-deor/types.deor"
 
 # Returns a sub-slice of a token list from `start` (inclusive) to `end_val` (exclusive),
 # clamping end_val to the list length. Used in gen_fn_decl to extract just the body

@@ -1,13 +1,3 @@
-import "transpiler-deor/types.deor"
-import "transpiler-deor/deor_helpers.deor"
-import "transpiler-deor/cursor.deor"
-import "transpiler-deor/lib/string.deor"
-import "transpiler-deor/lib/list.deor"
-import "transpiler-deor/utils.deor"
-import "transpiler-deor/mappings.deor"
-import "transpiler-deor/registry.deor"
-import "transpiler-deor/codegen_expr.deor"
-import "transpiler-deor/codegen_stmt.deor"
 
 # === Declaration code generation ===
 

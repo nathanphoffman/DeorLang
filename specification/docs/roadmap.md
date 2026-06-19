@@ -5,14 +5,6 @@ Note the roadmap is more to list out my raw notes and get feedback, however it i
 ## Make file imports global
 I decided this is easiest for brevity
 
-## Good Candidates for Macro Simplification
-  1. is_mut/mut_kw guard — 4 lines, appears 8 times in codegen_stmt.deor. Closes over mut_names and a target variable name. This is the clear winner.
-  2. gen_expr call + destructure — 3 lines, appears 10+ times throughout codegen. Closes over tokens, val_pos, ctx. Every statement handler does this before
-  emitting code.
-  3. Peek name token — 6 lines, appears 5 times in tokens_validation.deor. This is exactly what you were already trying to do with validate_ident — peek at
-  the token after a keyword and run the naming checks.
-  4. min3 + style check pair — pairs naturally with #3 into a single macro that does the full peek-and-validate in one shot.
-
 ## Audit Documentation
 *Large Lift* | *Critical Priority*
 
@@ -21,10 +13,6 @@ A lot of the documentation needs refreshed it is based on an old AI structure I 
 In need of extra auditing:
 - Conditionals
 - Enforced Practices
-
-## Private
-*Small Lift* | *Medium Priority*
-Filters the item in from being imported, done on a file level sould be easy to implement with the transpiler in the existing import logic which is stage 1 of the pipeline.
 
 ## Transpiler Performance Improvement
 *Large Lift* | *Medium Priority*
@@ -55,6 +43,15 @@ It would be good to start a doc that takes users from 0 to completion of at leas
 ---
 # Smaller items that are in no hurry
 ---
+
+## Good Candidates for Macro Simplification
+  1. is_mut/mut_kw guard — 4 lines, appears 8 times in codegen_stmt.deor. Closes over mut_names and a target variable name. This is the clear winner.
+  2. gen_expr call + destructure — 3 lines, appears 10+ times throughout codegen. Closes over tokens, val_pos, ctx. Every statement handler does this before
+  emitting code.
+  3. Peek name token — 6 lines, appears 5 times in tokens_validation.deor. This is exactly what you were already trying to do with validate_ident — peek at
+  the token after a keyword and run the naming checks.
+  4. min3 + style check pair — pairs naturally with #3 into a single macro that does the full peek-and-validate in one shot.
+
 
 ## Should empty and [] stay?
 *Small Lift* | *Medium Priority*
