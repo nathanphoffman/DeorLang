@@ -7,14 +7,7 @@ AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
 
 looking into:
-  - Legacy macro_define / place — old macro syntax still wired up but entirely absent from docs
 
-
-  ---
-  Implemented But Undocumented (9 items)
-  - Deduplication behavior — first occurrence wins when merging imports; later definitions silently dropped
-
-  ---
   Documented Incorrectly (10 items)
 
   - Named-arg rule threshold — spec says all args must be named variables; transpiler only checks when there are 2+ args (single-arg literals pass silently)

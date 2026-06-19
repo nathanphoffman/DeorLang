@@ -410,14 +410,8 @@ fn word_to_kind(word: String) -> String {
     if word == "macro" {
         return "KW_MACRO".to_string();
     }
-    if word == "macro_define" {
-        return "KW_MACRO_DEFINE".to_string();
-    }
     if word == "macro_run" {
         return "KW_MACRO_RUN".to_string();
-    }
-    if word == "place" {
-        return "KW_PLACE".to_string();
     }
     if word == "import" {
         return "KW_IMPORT".to_string();
@@ -1178,16 +1172,11 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     while i < tokens.len() {
     	let kind = tokens[i].kind.as_str();
 
-    	// collect macro definition (new KW_MACRO or legacy KW_MACRO_DEFINE)
-    	if kind == "KW_MACRO" || kind == "KW_MACRO_DEFINE" {
+    	// collect macro definition
+    	if kind == "KW_MACRO" {
     		let mut j = i + 1;
     		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
     		j += 1;
-    		// legacy macro_define has a parameter list — skip to RPAREN
-    		if kind == "KW_MACRO_DEFINE" {
-    			while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
-    			if j < tokens.len() { j += 1; }
-    		}
     		// skip NEWLINE then INDENT
     		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
     		while j < tokens.len() && tokens[j].kind == "INDENT" { j += 1; }
@@ -1432,23 +1421,6 @@ fn validate_tokens(tokens: Vec<Token>) {
             if is_forbidden {
                 errors.push(val_err(tok.clone(), lbl_var.clone(), rule_kw_in_parens.clone()).clone());
             }
-        }
-        let mut cur_indicator: String = "KW_MACRO_DEFINE".to_string();
-        let mut next_indicator: String = "RPAREN".to_string();
-        {
-        if cur_kind == cur_indicator {
-            let mut skip_pos: i32 = pos + 1.clone();
-            while skip_pos < token_count {
-                let mut skip_tok: Token = tokens[skip_pos as usize].clone();
-                let kind = skip_tok.kind.clone();
-                skip_pos = skip_pos + 1;
-                if kind == next_indicator {
-                    break;
-                }
-            }
-            pos = skip_pos;
-            continue;
-        }
         }
         let mut cur_indicator: String = "KW_RUST".to_string();
         let mut next_indicator: String = "RUST_BLOCK".to_string();

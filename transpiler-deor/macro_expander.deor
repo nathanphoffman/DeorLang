@@ -2,7 +2,7 @@
 # Single-pass Deor macro expander. Runs on the merged token list before validation
 # and codegen. Collects `macro name` definitions as it encounters them, removes their
 # tokens from the output, and splices the body tokens inline at every `macro_run name`
-# call site. Also silently removes legacy `macro_define` blocks.
+# call site.
 #
 # `with (vars)` at the call site is purely documentary — it names which outer variables
 # the macro body touches but has no effect on expansion.
@@ -14,16 +14,11 @@ fn tokenList expand_deor_macros(tokenList tokens)
 		while i < tokens.len() {
 			let kind = tokens[i].kind.as_str();
 
-			// collect macro definition (new KW_MACRO or legacy KW_MACRO_DEFINE)
-			if kind == "KW_MACRO" || kind == "KW_MACRO_DEFINE" {
+			// collect macro definition
+			if kind == "KW_MACRO" {
 				let mut j = i + 1;
 				let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
 				j += 1;
-				// legacy macro_define has a parameter list — skip to RPAREN
-				if kind == "KW_MACRO_DEFINE" {
-					while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
-					if j < tokens.len() { j += 1; }
-				}
 				// skip NEWLINE then INDENT
 				while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
 				while j < tokens.len() && tokens[j].kind == "INDENT" { j += 1; }

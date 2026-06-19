@@ -52,11 +52,6 @@ fn void validate_tokens(tokenList tokens)
 			if is_forbidden
 				errors at end = val_err(tok, lbl_var, rule_kw_in_parens)
 
-		# skip macro_define headers — name(place p1, place p2) is a declaration, not a call
-		string cur_indicator = "KW_MACRO_DEFINE"
-		string next_indicator = "RPAREN"
-		macro_run skip_if_match
-
 		# skip rust blocks entirely — their content is raw Rust and not subject to Deor rules
 		string cur_indicator = "KW_RUST"
 		string next_indicator = "RUST_BLOCK"
