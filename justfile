@@ -23,6 +23,10 @@ install-ext:
     code --install-extension $(ls deor-vscode/*.vsix | tail -1)
     @echo "Done — reload VS Code window to apply."
 
+run-cargo-test:
+    ./output/out examples/cargo_test/main.deor examples/cargo_test/output/main.rs
+    cargo run --manifest-path examples/cargo_test/output/Cargo.toml
+
 run-spec:
     cd specification && npm run start
 

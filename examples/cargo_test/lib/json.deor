@@ -1,0 +1,31 @@
+rust
+	fn json_make_str(key: String, val: String) -> String {
+		let mut m = serde_json::Map::new();
+		m.insert(key, serde_json::Value::String(val));
+		serde_json::to_string(&m).unwrap_or_default()
+	}
+	fn json_set_str(src: String, key: String, val: String) -> String {
+		let mut v: serde_json::Value = serde_json::from_str(&src)
+			.unwrap_or(serde_json::Value::Object(serde_json::Map::new()));
+		if let serde_json::Value::Object(ref mut m) = v {
+			m.insert(key, serde_json::Value::String(val));
+		}
+		serde_json::to_string(&v).unwrap_or_default()
+	}
+	fn json_get_str(src: String, key: String) -> String {
+		let v: serde_json::Value = serde_json::from_str(&src)
+			.unwrap_or(serde_json::Value::Null);
+		v.get(&key).and_then(|x| x.as_str()).unwrap_or("").to_string()
+	}
+
+fn string json_make(string key, string val)
+	string result = json_make_str(key, val)
+	return result
+
+fn string json_set(string src, string key, string val)
+	string result = json_set_str(src, key, val)
+	return result
+
+fn string json_get(string src, string key)
+	string result = json_get_str(src, key)
+	return result

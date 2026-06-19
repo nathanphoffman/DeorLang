@@ -2,8 +2,11 @@
 Note the roadmap is more to list out my raw notes and get feedback, however it is subject to frequent change and is not written in a singular viewpoint, I frequently will switch from personal to general throughout this.
 ---
 
-## Compiler Constants
-We should add in compiler constants
+## Explore Piping to link code together
+
+
+## Constants
+We should add in compiler constants or constants?
 *Small Lift* | *High Priority*
 
 ## Require file imports match the file they are referenced in

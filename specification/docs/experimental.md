@@ -16,6 +16,9 @@ The intention of ```giveup``` is to expose Rust ownership to Deor. The reason is
 listBigStruct big_list = a_value
 do_something(giveup big_list)
 
+# allows the collection/item to not be constantly cloned
+for giveup (item in collection) 
+
 prev_var as "something"
 # takes ownership
 new_var as giveup prev_var
