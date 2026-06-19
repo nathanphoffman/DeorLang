@@ -4,11 +4,14 @@ run file="examples/hello.deor":
     rustc output/out.rs -o output/out
     ./output/out
 
+# Self-compiles the Deor transpiler, then runs it on `file`.
+# -O: optimize the transpiler binary (cuts codegen time significantly)
+# -A warnings: suppress Rust warnings from Deor-generated clone-heavy code
 run-deor file="examples/hello.deor":
     ./output/out transpiler-deor/main.deor output/out.rs
-    rustc -A warnings output/out.rs -o output/out
+    rustc -O -A warnings output/out.rs -o output/out
     ./output/out {{file}} output/run.rs
-    rustc -A warnings output/run.rs -o output/run
+    rustc -O -A warnings output/run.rs -o output/run
     ./output/run
 
 run-ts file="examples/hello.deor":

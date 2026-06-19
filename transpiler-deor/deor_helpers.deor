@@ -11,8 +11,8 @@ fn string pr_code(ParseResult result)
 # Extracts the resume token index from a ParseResult. Every gen_* call returns the
 # next position alongside the code so callers always know where to continue parsing.
 fn int pr_pos(ParseResult result)
-	(code, new_pos) in result
-	return new_pos
+	rust
+		result.new_pos
 
 # Constructs a ParseResult. The canonical way to return from any code-generation or
 # registry-scanning function since Deor uses struct literals for multi-value returns.

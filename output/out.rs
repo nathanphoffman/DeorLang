@@ -229,9 +229,7 @@ fn pr_code(result: ParseResult) -> String {
 }
 
 fn pr_pos(result: ParseResult) -> i32 {
-    let code = result.code.clone();
-    let new_pos = result.new_pos.clone();
-    return new_pos;
+    result.new_pos
 }
 
 fn make_result(code: String, new_pos: i32) -> ParseResult {
@@ -1396,6 +1394,7 @@ fn validate_tokens(tokens: Vec<Token>) {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut errors: Vec<String> = Vec::new();
     let mut pos: i32 = 0;
+    let mut paren_depth: i32 = 0;
     let mut lbl_struct: String = "struct".to_string();
     let mut lbl_enum: String = "enum".to_string();
     let mut lbl_shape: String = "shape".to_string();
@@ -1412,6 +1411,8 @@ fn validate_tokens(tokens: Vec<Token>) {
     let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args".to_string();
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
+    let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
+    let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_INSERT".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_USING".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
     while pos < token_count {
         let mut tok: Token = tokens[pos as usize].clone();
         let kind = tok.kind.clone();
@@ -1422,6 +1423,18 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut cur_val: String = value.clone();
         let mut cur_line: i32 = line.clone();
         let mut cur_file: String = file.clone();
+        if cur_kind == "LPAREN" {
+            paren_depth = paren_depth + 1;
+        }
+        if cur_kind == "RPAREN" {
+            paren_depth = paren_depth - 1;
+        }
+        if paren_depth > 0 {
+            let mut is_forbidden: bool = list_has(forbidden_in_parens.clone(), cur_kind.clone());
+            if is_forbidden {
+                errors.push(val_err(tok.clone(), lbl_var.clone(), rule_kw_in_parens.clone()).clone());
+            }
+        }
         let mut cur_indicator: String = "KW_MACRO_DEFINE".to_string();
         let mut next_indicator: String = "RPAREN".to_string();
         {
