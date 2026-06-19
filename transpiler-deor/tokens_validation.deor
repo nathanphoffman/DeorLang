@@ -30,7 +30,23 @@ fn void validate_tokens(tokenList tokens)
 	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
 	string rule_max_params = "functions may have at most 3 parameters"
 	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"
+	string rule_empty_bracket = "use 'empty' to initialize an empty list — [] is only valid with items inside"
+	string rule_list_validator = "list shapes cannot be validator base types — validators only wrap primitives"
 	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_INSERT", "KW_REMOVE", "KW_RUST", "KW_USING", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
+
+	# pre-scan: collect all shape names for use in type validator check
+	strList shape_names = empty
+	int pre_i = 0
+	for if pre_i < token_count
+		Token pre_tok = tokens at pre_i
+		(kind) in pre_tok
+		if kind is "KW_SHAPE"
+			int sn_pos = pre_i + 1
+			if sn_pos < token_count
+				Token sn_tok = tokens at sn_pos
+				(value) in sn_tok
+				shape_names at end = value
+		pre_i = pre_i + 1
 
 	for if pos < token_count
 		Token tok = tokens at pos
@@ -103,12 +119,23 @@ fn void validate_tokens(tokenList tokens)
 		fnTestRule test_rule = is_camel
 		macro_run validate_ident
 
-		# Type Validator → camelCase, min 3
+		# Type Validator → PascalCase, min 3; also ban list shapes as base types
 		string keyword = "KW_TYPE"
 		string lbl = lbl_type
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
 		macro_run validate_ident
+
+		if cur_kind is "KW_TYPE"
+			int base_type_pos = pos + 3
+			if base_type_pos < token_count
+				Token base_type_tok = tokens at base_type_pos
+				(value) in base_type_tok
+				bool base_is_shape = list_has(shape_names, value)
+				if base_is_shape
+					int type_name_pos = pos + 1
+					Token type_name_tok = tokens at type_name_pos
+					errors at end = val_err(type_name_tok, lbl_type, rule_list_validator)
 
 		# Fn param count: max 3 parameters
 		# pattern: KW_FN <return_type> <fn_name> LPAREN params RPAREN
@@ -147,6 +174,30 @@ fn void validate_tokens(tokenList tokens)
 		# unlike other validators, we skip ahead to skip over type to reach ident
 		int validate_indent_offset = 2
 		macro_run validate_ident
+
+		# crash must take exactly 1 string argument
+		if cur_kind is "IDENT"
+			bool is_crash = cur_val is "crash"
+			if is_crash
+				int crash_lp = pos + 1
+				if crash_lp < token_count
+					Token crash_lp_tok = tokens at crash_lp
+					(kind) in crash_lp_tok
+					if kind is "LPAREN"
+						int crash_arg_count = count_call_args(tokens, crash_lp)
+						bool wrong_count = crash_arg_count is not 1
+						if wrong_count
+							string rule_crash = "crash takes exactly 1 string argument"
+							errors at end = val_err(tok, lbl_call, rule_crash)
+
+		# [] with nothing inside is always an empty list init — must use empty instead
+		if cur_kind is "LBRACKET"
+			int next_pos = pos + 1
+			if next_pos < token_count
+				Token next_tok = tokens at next_pos
+				(kind) in next_tok
+				if kind is "RBRACKET"
+					errors at end = val_err(tok, lbl_var, rule_empty_bracket)
 
 		# variable declaration: TYPE_IDENT VAR_NAME EQUALS
 		# struct fields are TYPE_IDENT FIELD_NAME NEWLINE (no EQUALS), so this is safe

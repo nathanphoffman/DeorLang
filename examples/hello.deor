@@ -31,6 +31,7 @@ struct Error
 	int code
 
 fn Test say_hi(Test test)
+
 	(hello) in test
 	string message = "hi"
 	message = message + " there"
@@ -110,9 +111,8 @@ fn void main()
 	SquareFeet sqft = 4
 	int actual_sqft = (avow sqft)
 
-
 	Test old_test = (hello,world)
-
+	set_test(old_test)
 
 	# message as "An unknown server problem occurred"
 	# code as 500

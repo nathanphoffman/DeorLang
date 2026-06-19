@@ -1399,7 +1399,24 @@ fn validate_tokens(tokens: Vec<Token>) {
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
+    let mut rule_empty_bracket: String = "use 'empty' to initialize an empty list — [] is only valid with items inside".to_string();
+    let mut rule_list_validator: String = "list shapes cannot be validator base types — validators only wrap primitives".to_string();
     let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_INSERT".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_USING".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
+    let mut shape_names: Vec<String> = Vec::new();
+    let mut pre_i: i32 = 0;
+    while pre_i < token_count {
+        let mut pre_tok: Token = tokens[pre_i as usize].clone();
+        let kind = pre_tok.kind.clone();
+        if kind == "KW_SHAPE" {
+            let mut sn_pos: i32 = pre_i + 1.clone();
+            if sn_pos < token_count {
+                let mut sn_tok: Token = tokens[sn_pos as usize].clone();
+                let value = sn_tok.value.clone();
+                shape_names.push(value.clone());
+            }
+        }
+        pre_i = pre_i + 1;
+    }
     while pos < token_count {
         let mut tok: Token = tokens[pos as usize].clone();
         let kind = tok.kind.clone();
@@ -1562,6 +1579,19 @@ fn validate_tokens(tokens: Vec<Token>) {
             continue;
         }
         }
+        if cur_kind == "KW_TYPE" {
+            let mut base_type_pos: i32 = pos + 3.clone();
+            if base_type_pos < token_count {
+                let mut base_type_tok: Token = tokens[base_type_pos as usize].clone();
+                let value = base_type_tok.value.clone();
+                let mut base_is_shape: bool = list_has(shape_names.clone(), value.clone());
+                if base_is_shape {
+                    let mut type_name_pos: i32 = pos + 1.clone();
+                    let mut type_name_tok: Token = tokens[type_name_pos as usize].clone();
+                    errors.push(val_err(type_name_tok.clone(), lbl_type.clone(), rule_list_validator.clone()).clone());
+                }
+            }
+        }
         if cur_kind == "KW_FN" {
             let mut lp_pos: i32 = pos + 3.clone();
             if lp_pos < token_count {
@@ -1618,6 +1648,34 @@ fn validate_tokens(tokens: Vec<Token>) {
             pos = pos + 1;
             continue;
         }
+        }
+        if cur_kind == "IDENT" {
+            let mut is_crash: bool = cur_val == "crash".clone();
+            if is_crash {
+                let mut crash_lp: i32 = pos + 1.clone();
+                if crash_lp < token_count {
+                    let mut crash_lp_tok: Token = tokens[crash_lp as usize].clone();
+                    let kind = crash_lp_tok.kind.clone();
+                    if kind == "LPAREN" {
+                        let mut crash_arg_count: i32 = count_call_args(tokens.clone(), crash_lp.clone());
+                        let mut wrong_count: bool = crash_arg_count != 1.clone();
+                        if wrong_count {
+                            let mut rule_crash: String = "crash takes exactly 1 string argument".to_string();
+                            errors.push(val_err(tok.clone(), lbl_call.clone(), rule_crash.clone()).clone());
+                        }
+                    }
+                }
+            }
+        }
+        if cur_kind == "LBRACKET" {
+            let mut next_pos: i32 = pos + 1.clone();
+            if next_pos < token_count {
+                let mut next_tok: Token = tokens[next_pos as usize].clone();
+                let kind = next_tok.kind.clone();
+                if kind == "RBRACKET" {
+                    errors.push(val_err(tok.clone(), lbl_var.clone(), rule_empty_bracket.clone()).clone());
+                }
+            }
         }
         if cur_kind == "IDENT" {
             {
@@ -3064,12 +3122,10 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                         let mut val_next_pos: i32 = val_pos + 1.clone();
                         let mut after_empty: i32 = adv_nl_ref(val_next_pos.clone(), tokens.clone());
                         if is_validator {
-                            let mut vv_pfx: String = "let mut ".to_string();
-                            let mut vv_mid: String = ": Option<".to_string();
-                            let mut vv_sfx: String = "> = None;\n".to_string();
-                            let mut vv_parts: Vec<String> = vec![pad.clone(), vv_pfx.clone(), var_name.clone(), vv_mid.clone(), var_type.clone(), vv_sfx.clone()];
-                            let mut vv_code: String = s_join(vv_parts.clone());
-                            return make_result(vv_code.clone(), after_empty.clone());
+                            let mut err_msg: String = "/* error: use 'bad' not 'empty' for validator types */\n".to_string();
+                            let mut err_parts: Vec<String> = vec![pad.clone(), err_msg.clone()];
+                            let mut err_code: String = s_join(err_parts.clone());
+                            return make_result(err_code.clone(), after_empty.clone());
                         }
                         if is_shape {
                             let mut sh_pfx: String = "let mut ".to_string();
@@ -3079,7 +3135,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                             let mut sh_code: String = s_join(sh_parts.clone());
                             return make_result(sh_code.clone(), after_empty.clone());
                         }
-                        let mut err_msg: String = "/* error: empty only valid for validator types and list shapes */\n".to_string();
+                        let mut err_msg: String = "/* error: empty is only valid for list shapes */\n".to_string();
                         let mut err_parts: Vec<String> = vec![pad.clone(), err_msg.clone()];
                         let mut err_code: String = s_join(err_parts.clone());
                         return make_result(err_code.clone(), after_empty.clone());

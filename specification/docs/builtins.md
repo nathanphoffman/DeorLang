@@ -69,4 +69,4 @@ Error err = (message)
 catch(message)
 ```
 
-Rust: nearly identical to ```panic!()```
+Rust: nearly identical to ```panic!("{}",message)```

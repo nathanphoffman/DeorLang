@@ -514,19 +514,17 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 					string rust_type = resolve_type(var_type, shape_reg, variant_reg)
 					Token val_token = tokens at val_pos
 					(kind) in val_token
-					# empty → None for validator types, Vec::new() for list shapes
+					# empty → Vec::new() for list shapes only; validator types must use bad
 					if kind is "KW_EMPTY"
 						bool is_validator = reg3_has(type_reg, var_type)
 						bool is_shape = reg_has(shape_reg, var_type)
 						int val_next_pos = val_pos + 1
 						int after_empty = adv_nl_ref(val_next_pos, tokens)
 						if is_validator
-							string vv_pfx = "let mut "
-							string vv_mid = ": Option<"
-							string vv_sfx = "> = None;\n"
-							strList vv_parts = [pad, vv_pfx, var_name, vv_mid, var_type, vv_sfx]
-							string vv_code = s_join(vv_parts)
-							return make_result(vv_code, after_empty)
+							string err_msg = "/* error: use 'bad' not 'empty' for validator types */\n"
+							strList err_parts = [pad, err_msg]
+							string err_code = s_join(err_parts)
+							return make_result(err_code, after_empty)
 						if is_shape
 							string sh_pfx = "let mut "
 							string sh_mid = ": "
@@ -534,7 +532,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 							strList sh_parts = [pad, sh_pfx, var_name, sh_mid, rust_type, sh_sfx]
 							string sh_code = s_join(sh_parts)
 							return make_result(sh_code, after_empty)
-						string err_msg = "/* error: empty only valid for validator types and list shapes */\n"
+						string err_msg = "/* error: empty is only valid for list shapes */\n"
 						strList err_parts = [pad, err_msg]
 						string err_code = s_join(err_parts)
 						return make_result(err_code, after_empty)
