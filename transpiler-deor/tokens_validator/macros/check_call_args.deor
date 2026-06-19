@@ -1,0 +1,34 @@
+
+macro check_call_args
+	int call_lp = pos + 1
+	if call_lp < token_count
+		Token call_lp_tok = tokens at call_lp
+		(kind) in call_lp_tok
+		if kind is "LPAREN"
+			int arg_count = count_call_args(tokens, call_lp)
+			if arg_count >= 2
+				int scan_pos = call_lp + 1
+				int scan_depth = 0
+				bool at_arg_start = true
+				for if scan_pos < token_count
+					Token scan_tok = tokens at scan_pos
+					(kind) in scan_tok
+					if kind is "RPAREN"
+						bool scan_root = scan_depth is 0
+						if scan_root
+							break
+						scan_depth = scan_depth - 1
+						at_arg_start = false
+					else if kind is "LPAREN"
+						scan_depth = scan_depth + 1
+						at_arg_start = false
+					else if kind is "COMMA"
+						bool scan_root = scan_depth is 0
+						if scan_root
+							at_arg_start = true
+					else if at_arg_start
+						bool named = arg_is_named(tokens, scan_pos, token_count, kind)
+						if not named
+							errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
+						at_arg_start = false
+					scan_pos = scan_pos + 1

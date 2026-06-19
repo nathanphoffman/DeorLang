@@ -1,0 +1,11 @@
+
+macro check_rust_generic
+	bool is_option = cur_val is "Option"
+	bool is_vec = cur_val is "Vec"
+	bool is_box = cur_val is "Box"
+	bool is_rc = cur_val is "Rc"
+	bool is_arc = cur_val is "Arc"
+	bool is_result = cur_val is "Result"
+	bool is_rust_generic = is_option or is_vec or is_box or is_rc or is_arc or is_result
+	if is_rust_generic
+		errors at end = val_err(cur_line, lbl_rust, cur_val, rule_no_option)

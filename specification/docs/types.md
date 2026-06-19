@@ -32,6 +32,8 @@ See [Rust Interop — The `raw` Type](interop.md#the-raw-type) for full document
 
 ## Validator Types (`type`)
 
+A Validator type uses bad over none as of June 18
+
 A `type` definition wraps a base primitive with a predicate. **The predicate body is mandatory** — the transpiler errors on a `type` with an empty body. A validator type without a constraint adds no meaning over its base primitive; use the base type directly instead.
 
 The body evaluates to a `bool`. Simple predicates are a single boolean expression; predicates that need intermediate values may declare bindings before the final bool expression, following the same rules as a function body.

@@ -3,7 +3,6 @@ Note the roadmap is more to list out my raw notes and get feedback, however it i
 ---
 
 ## Compiler Constants
-
 We should add in compiler constants
 *Small Lift* | *High Priority*
 
@@ -23,15 +22,6 @@ A lot of the documentation needs refreshed it is based on an old AI structure I 
 In need of extra auditing:
 - Conditionals
 - Enforced Practices
-
-## Should empty or [] stay?
-*Small Lift* | *Medium Priority*
-Right now both empty and [] exist which violates the core concepts in Deor, there should be a limited number of ways to write code two explicit ways seems odd. Taking the side of empty (which I am now leaning away from):
-- Pro: it reads more like a book -- aligns with core principles
-- Pro: it gets rid of more [] symbols -- aligns with core principles
-- Lean-Con: fn([]) to makes more contextual sense than fn(empty) but if it's more than one param it must be named anyway, giving neither a strong edge -- so this is a pretty specific use case, one param and empty both needed.
-- Con: it is harder to recognize and in code that reads entirely like a book it might be getting too hard to pick out
-- Con: [1,2,3] when filled in is already used for defining literal array data and () is might too cluttered
 
 ## Private
 *Small Lift* | *Medium Priority*
@@ -67,12 +57,21 @@ It would be good to start a doc that takes users from 0 to completion of at leas
 # Smaller items that are in no hurry
 ---
 
-## Add additional validation
-- Validator: Change type alias to PascalCase, shape alias to camelCase
-- Validator: We should not allow any & | ^ < > { } unless it is in string data
-- Validator: Do we check for rust keywords like mut? we should have an exception to catch rust-named keywords that are not in rust blocks
-- Add validation to prevent primitives/structs from being assigned to none, only Custom Types can be assigned none
+## Should empty and [] stay?
+*Small Lift* | *Medium Priority*
+Right now both empty and [] exist which violates the core concepts in Deor, there should be a limited number of ways to write code two explicit ways seems odd. Taking the side of empty (which I am now leaning away from):
+- Pro: it reads more like a book -- aligns with core principles
+- Pro: it gets rid of more [] symbols -- aligns with core principles
+- Lean-Con: fn([]) to makes more contextual sense than fn(empty) but if it's more than one param it must be named anyway, giving neither a strong edge -- so this is a pretty specific use case, one param and empty both needed.
+- Con: it is harder to recognize and in code that reads entirely like a book it might be getting too hard to pick out
+- Con: [1,2,3] when filled in is already used for defining literal array data and () is might too cluttered
 
+## Add additional validation
+- Validator: We should not allow any & | ^ < > { } unless it is in string data
+  - Some of this has already been done, but not quite all yet validator is being built out
+- Validator: Do we check for rust keywords like mut? we should have an exception to catch rust-named keywords that are not in rust blocks
+  - No but this is a todo
+  
 ## Add Async Lib Shims If they Don't Exist
 Try to make it more like Go channels if possible
 

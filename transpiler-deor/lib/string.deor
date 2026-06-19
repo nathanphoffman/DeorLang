@@ -1,5 +1,14 @@
 (tokenList, Token) in "transpiler-deor/types.deor"
 
+fn bool s_upper_char(string ch)
+	rust
+		ch.chars().next().map(|c| c.is_uppercase()).unwrap_or(false)
+
+fn bool s_lower_char(string ch)
+	rust
+		ch.chars().next().map(|c| c.is_lowercase()).unwrap_or(false)
+
+
 # Concatenates two strings. Rust's `+` operator moves left, so right must be .as_str().
 fn string s_cat(string left, string right)
 	rust

@@ -37,15 +37,7 @@ There are no exceptions. All runtime identifiers — variables, parameters, fiel
 ---
 
 ## Order of Declarations
-Declarations must be done in the following order in any file:
-
-1. Imports - Everything else could use it, relies on nothing else in the file
-2. Enums - Relies likely on nothing else in the file
-3. Consts - They could rely on enums and are important to see (at top)
-4. Types - Type validators being types must be defined early
-5. Structs - Reliant on most everything above but still structural (so above functions)
-6. Shapes - Shapes can reference almost anything above, including structs
-7. Functions - Reliant on everything above
+Imports are required to be at the top of a file, however there are no other restrictions, but there are suggestions for [best practices](docs/best_practices.md).
 
 ## Field Extraction Order
 Struct field extraction with `in` must follow declaration order within the struct — the same rule as struct construction with `as`. The field you write first must match the first declared field of the struct.

@@ -1,0 +1,60 @@
+
+fn bool arg_is_named(tokenList tokens, int scan_pos, int token_count, string kind)
+	int check_pos = scan_pos
+	string chk_kind = kind
+	if kind is "KW_GIVEUP"
+		check_pos = scan_pos + 1
+		if check_pos < token_count
+			Token giveup_tok = tokens at check_pos
+			(kind) in giveup_tok
+			chk_kind = kind
+	if chk_kind is not "IDENT"
+		return false
+	int peek_pos = check_pos + 1
+	if peek_pos < token_count
+		Token peek_tok = tokens at peek_pos
+		(kind) in peek_tok
+		bool arg_is_call = kind is "LPAREN"
+		bool arg_is_idx = kind is "KW_AT"
+		bool arg_is_plus = kind is "PLUS"
+		bool arg_is_minus = kind is "MINUS"
+		bool arg_is_star = kind is "STAR"
+		bool arg_is_slash = kind is "SLASH"
+		bool arg_is_pct = kind is "PERCENT"
+		bool arg_is_op = arg_is_plus or arg_is_minus or arg_is_star or arg_is_slash or arg_is_pct
+		if arg_is_call or arg_is_idx or arg_is_op
+			return false
+	return true
+
+
+# Counts arguments between LPAREN at lp_pos and its matching RPAREN.
+# Returns 0 for empty calls, 1 for single-arg, N for N-arg calls.
+fn int count_call_args(tokenList tokens, int lp_pos)
+	int token_count = len(tokens)
+	int cur = lp_pos + 1
+	int depth = 0
+	int comma_count = 0
+	bool saw_token = false
+	for if cur < token_count
+		Token tok = tokens at cur
+		(kind) in tok
+		if kind is "RPAREN"
+			bool at_root = depth is 0
+			if at_root
+				break
+			depth = depth - 1
+		else if kind is "LPAREN"
+			depth = depth + 1
+			saw_token = true
+		else if kind is "COMMA"
+			bool at_root = depth is 0
+			if at_root
+				comma_count = comma_count + 1
+			saw_token = true
+		else
+			saw_token = true
+		cur = cur + 1
+	int result = 0
+	if saw_token
+		result = comma_count + 1
+	return result

@@ -1,139 +1,20 @@
+# Libs
 (tokenList, Token) in "transpiler-deor/types.deor"
-(s_cat, s_join) in "transpiler-deor/lib/string.deor"
+(s_cat, s_join, s_lower_char, s_upper_char) in "transpiler-deor/lib/string.deor"
 (c_chars) in "transpiler-deor/lib/char.deor"
 (n_to_str) in "transpiler-deor/lib/num.deor"
 
-macro validate_ident
-		# enum → PascalCase, min 3
-		if cur_kind is keyword
-			int name_pos = pos + validate_indent_offset
-			if name_pos < token_count
-				Token name_tok = tokens at name_pos
-				(kind, value) in name_tok
-				string name_kind = kind
-				string name_val = value
-				if name_kind is "IDENT"
-					if len(name_val) < 3
-						errors at end = val_err(cur_line, lbl, name_val, rule_min3)
-					if not test_rule(name_val)
-						errors at end = val_err(cur_line, lbl, name_val, rule)
-			pos = pos + 1
-			continue
+# Helper functions
+(is_pascal, is_camel, is_snake) in "transpiler-deor/tokens_validator/casing.deor"
+(arg_is_named, count_call_args) in "transpiler-deor/tokens_validator/arg_helpers.deor"
+(val_err, handle_errors) in "transpiler-deor/tokens_validator/error_handling.deor"
 
-
-fn bool is_upper_char(string ch)
-	rust
-		ch.chars().next().map(|c| c.is_uppercase()).unwrap_or(false)
-
-fn bool is_lower_char(string ch)
-	rust
-		ch.chars().next().map(|c| c.is_lowercase()).unwrap_or(false)
-
-# First char uppercase → PascalCase
-fn bool is_pascal(string name)
-	strList chars = c_chars(name)
-	int name_len = len(chars)
-	if name_len is 0
-		return false
-	string first = chars at 0
-	return is_upper_char(first)
-
-# First char lowercase, no underscores → camelCase
-fn bool is_camel(string name)
-	strList chars = c_chars(name)
-	int name_len = len(chars)
-	if name_len is 0
-		return false
-	string first = chars at 0
-	if not is_lower_char(first)
-		return false
-	int idx = 0
-	for if idx < name_len
-		string chr = chars at idx
-		if chr is "_"
-			return false
-		idx = idx + 1
-	return true
-
-# No uppercase letters → lower_snake_case
-fn bool is_snake(string name)
-	strList chars = c_chars(name)
-	int name_len = len(chars)
-	int idx = 0
-	for if idx < name_len
-		string chr = chars at idx
-		if is_upper_char(chr)
-			return false
-		idx = idx + 1
-	return true
-
-fn bool arg_is_named(tokenList tokens, int scan_pos, int token_count, string kind)
-	int check_pos = scan_pos
-	string chk_kind = kind
-	if kind is "KW_GIVEUP"
-		check_pos = scan_pos + 1
-		if check_pos < token_count
-			Token giveup_tok = tokens at check_pos
-			(kind) in giveup_tok
-			chk_kind = kind
-	if chk_kind is not "IDENT"
-		return false
-	int peek_pos = check_pos + 1
-	if peek_pos < token_count
-		Token peek_tok = tokens at peek_pos
-		(kind) in peek_tok
-		bool arg_is_call = kind is "LPAREN"
-		bool arg_is_idx = kind is "KW_AT"
-		bool arg_is_plus = kind is "PLUS"
-		bool arg_is_minus = kind is "MINUS"
-		bool arg_is_star = kind is "STAR"
-		bool arg_is_slash = kind is "SLASH"
-		bool arg_is_pct = kind is "PERCENT"
-		bool arg_is_op = arg_is_plus or arg_is_minus or arg_is_star or arg_is_slash or arg_is_pct
-		if arg_is_call or arg_is_idx or arg_is_op
-			return false
-	return true
-
-fn string val_err(int line_num, string label, string name, string rule)
-	string line_str = n_to_str(line_num)
-	string val_pfx = "[validation] line "
-	string val_col = ": "
-	string val_qt1 = " '"
-	string val_qt2 = "' - "
-	strList val_parts = [val_pfx, line_str, val_col, label, val_qt1, name, val_qt2, rule]
-	return s_join(val_parts)
-
-# Counts arguments between LPAREN at lp_pos and its matching RPAREN.
-# Returns 0 for empty calls, 1 for single-arg, N for N-arg calls.
-fn int count_call_args(tokenList tokens, int lp_pos)
-	int token_count = len(tokens)
-	int cur = lp_pos + 1
-	int depth = 0
-	int comma_count = 0
-	bool saw_token = false
-	for if cur < token_count
-		Token tok = tokens at cur
-		(kind) in tok
-		if kind is "RPAREN"
-			bool at_root = depth is 0
-			if at_root
-				break
-			depth = depth - 1
-		else if kind is "LPAREN"
-			depth = depth + 1
-			saw_token = true
-		else if kind is "COMMA"
-			bool at_root = depth is 0
-			if at_root
-				comma_count = comma_count + 1
-			saw_token = true
-		else
-			saw_token = true
-		cur = cur + 1
-	int result = 0
-	if saw_token
-		result = comma_count + 1
-	return result
+# Macro Imports
+(validate_ident) in "transpiler-deor/tokens_validator/macros/ident_validator.deor"
+(skip_if_match) in "transpiler-deor/tokens_validator/macros/skip_if_match.deor"
+(check_var_decl) in "transpiler-deor/tokens_validator/macros/check_var_decl.deor"
+(check_rust_generic) in "transpiler-deor/tokens_validator/macros/check_rust_generic.deor"
+(check_call_args) in "transpiler-deor/tokens_validator/macros/check_call_args.deor"
 
 shape fnTestRule = func of string to bool
 
@@ -159,88 +40,12 @@ fn void validate_tokens(tokenList tokens)
 	string rule_named_arg = "each arg must be a named variable when passing 2 or more args"
 	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
 
-	macro check_call_args
-		int call_lp = pos + 1
-		if call_lp < token_count
-			Token call_lp_tok = tokens at call_lp
-			(kind) in call_lp_tok
-			if kind is "LPAREN"
-				int arg_count = count_call_args(tokens, call_lp)
-				if arg_count >= 2
-					int scan_pos = call_lp + 1
-					int scan_depth = 0
-					bool at_arg_start = true
-					for if scan_pos < token_count
-						Token scan_tok = tokens at scan_pos
-						(kind) in scan_tok
-						if kind is "RPAREN"
-							bool scan_root = scan_depth is 0
-							if scan_root
-								break
-							scan_depth = scan_depth - 1
-							at_arg_start = false
-						else if kind is "LPAREN"
-							scan_depth = scan_depth + 1
-							at_arg_start = false
-						else if kind is "COMMA"
-							bool scan_root = scan_depth is 0
-							if scan_root
-								at_arg_start = true
-						else if at_arg_start
-							bool named = arg_is_named(tokens, scan_pos, token_count, kind)
-							if not named
-								errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
-							at_arg_start = false
-						scan_pos = scan_pos + 1
-
-	macro check_rust_generic
-		bool is_option = cur_val is "Option"
-		bool is_vec = cur_val is "Vec"
-		bool is_box = cur_val is "Box"
-		bool is_rc = cur_val is "Rc"
-		bool is_arc = cur_val is "Arc"
-		bool is_result = cur_val is "Result"
-		bool is_rust_generic = is_option or is_vec or is_box or is_rc or is_arc or is_result
-		if is_rust_generic
-			errors at end = val_err(cur_line, lbl_rust, cur_val, rule_no_option)
-
-	macro check_var_decl
-		int next1 = pos + 1
-		int next2 = pos + 2
-		if next2 < token_count
-			Token tok_one = tokens at next1
-			Token tok_two = tokens at next2
-			(kind) in tok_one
-			string one_kind = kind
-			(kind) in tok_two
-			string two_kind = kind
-			if one_kind is "IDENT" and two_kind is "EQUALS"
-				(value, line) in tok_one
-				string var_name = value
-				int var_line = line
-				if len(var_name) < 3
-					errors at end = val_err(var_line, lbl_var, var_name, rule_min3)
-				if not is_snake(var_name)
-					errors at end = val_err(var_line, lbl_var, var_name, rule_snake)
-
 	for if pos < token_count
 		Token tok = tokens at pos
 		(kind, value, line) in tok
 		string cur_kind = kind
 		string cur_val = value
 		int cur_line = line
-
-		macro skip_if_match
-			if cur_kind is cur_indicator
-				int skip_pos = pos + 1
-				for if skip_pos < token_count
-					Token skip_tok = tokens at skip_pos
-					(kind) in skip_tok
-					skip_pos = skip_pos + 1
-					if kind is next_indicator
-						break
-				pos = skip_pos
-				continue
 
 		# skip macro_define headers — name(place p1, place p2) is a declaration, not a call
 		string cur_indicator = "KW_MACRO_DEFINE"
@@ -324,12 +129,4 @@ fn void validate_tokens(tokenList tokens)
 
 		pos = pos + 1
 
-	int error_count = len(errors)
-	if error_count > 0
-		int err_idx = 0
-		for if err_idx < error_count
-			string err_msg = errors at err_idx
-			print(err_msg)
-			err_idx = err_idx + 1
-		rust
-			std::process::exit(1);
+	handle_errors(errors)

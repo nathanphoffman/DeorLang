@@ -79,7 +79,7 @@
     },
     "keywords-other": {
       "name": "keyword.other.deor",
-      "match": "\\b(as|in|with|is|and|or|not|avow|of|to|rust|deps|end|import|insert|remove|at)\\b"
+      "match": "\\b(as|in|with|is|and|or|not|avow|of|to|rust|deps|end|remove|at)\\b"
     },
     "builtin-types": {
       "name": "support.type.deor",
@@ -87,7 +87,7 @@
     },
     "constants": {
       "name": "constant.language.deor",
-      "match": "\\b(true|false|none)\\b"
+      "match": "\\b(true|false|bad)\\b"
     },
     "number": {
       "name": "constant.numeric.deor",

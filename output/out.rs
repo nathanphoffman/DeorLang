@@ -62,6 +62,14 @@ fn n_to_str(number: i32) -> String {
     number.to_string()
 }
 
+fn s_upper_char(ch: String) -> bool {
+    ch.chars().next().map(|c| c.is_uppercase()).unwrap_or(false)
+}
+
+fn s_lower_char(ch: String) -> bool {
+    ch.chars().next().map(|c| c.is_lowercase()).unwrap_or(false)
+}
+
 fn s_cat(left: String, right: String) -> String {
     left + right.as_str()
 }
@@ -132,14 +140,6 @@ fn c_alnum(character: String) -> bool {
     character.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)
 }
 
-fn is_upper_char(ch: String) -> bool {
-    ch.chars().next().map(|c| c.is_uppercase()).unwrap_or(false)
-}
-
-fn is_lower_char(ch: String) -> bool {
-    ch.chars().next().map(|c| c.is_lowercase()).unwrap_or(false)
-}
-
 fn is_pascal(name: String) -> bool {
     let mut chars: Vec<String> = c_chars(name.clone());
     let mut name_len: i32 = (chars.len() as i32);
@@ -147,7 +147,7 @@ fn is_pascal(name: String) -> bool {
         return false;
     }
     let mut first: String = chars[0 as usize].clone();
-    return is_upper_char(first.clone());
+    return s_upper_char(first.clone());
 }
 
 fn is_camel(name: String) -> bool {
@@ -157,7 +157,7 @@ fn is_camel(name: String) -> bool {
         return false;
     }
     let mut first: String = chars[0 as usize].clone();
-    if !is_lower_char(first.clone()) {
+    if !s_lower_char(first.clone()) {
         return false;
     }
     let mut idx: i32 = 0;
@@ -177,7 +177,7 @@ fn is_snake(name: String) -> bool {
     let mut idx: i32 = 0;
     while idx < name_len {
         let mut chr: String = chars[idx as usize].clone();
-        if is_upper_char(chr.clone()) {
+        if s_upper_char(chr.clone()) {
             return false;
         }
         idx = idx + 1;
@@ -218,16 +218,6 @@ fn arg_is_named(tokens: Vec<Token>, scan_pos: i32, token_count: i32, kind: Strin
     return true;
 }
 
-fn val_err(line_num: i32, label: String, name: String, rule: String) -> String {
-    let mut line_str: String = n_to_str(line_num.clone());
-    let mut val_pfx: String = "[validation] line ".to_string();
-    let mut val_col: String = ": ".to_string();
-    let mut val_qt1: String = " '".to_string();
-    let mut val_qt2: String = "' - ".to_string();
-    let mut val_parts: Vec<String> = vec![val_pfx.clone(), line_str.clone(), val_col.clone(), label.clone(), val_qt1.clone(), name.clone(), val_qt2.clone(), rule.clone()];
-    return s_join(val_parts.clone());
-}
-
 fn count_call_args(tokens: Vec<Token>, lp_pos: i32) -> i32 {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut cur: i32 = lp_pos + 1.clone();
@@ -262,6 +252,29 @@ fn count_call_args(tokens: Vec<Token>, lp_pos: i32) -> i32 {
         result = comma_count + 1;
     }
     return result;
+}
+
+fn val_err(line_num: i32, label: String, name: String, rule: String) -> String {
+    let mut line_str: String = n_to_str(line_num.clone());
+    let mut val_pfx: String = "[validation] line ".to_string();
+    let mut val_col: String = ": ".to_string();
+    let mut val_qt1: String = " '".to_string();
+    let mut val_qt2: String = "' - ".to_string();
+    let mut val_parts: Vec<String> = vec![val_pfx.clone(), line_str.clone(), val_col.clone(), label.clone(), val_qt1.clone(), name.clone(), val_qt2.clone(), rule.clone()];
+    return s_join(val_parts.clone());
+}
+
+fn handle_errors(errors: Vec<String>) {
+    let mut error_count: i32 = (errors.len() as i32);
+    if error_count > 0 {
+        let mut err_idx: i32 = 0;
+        while err_idx < error_count {
+            let mut err_msg: String = errors[err_idx as usize].clone();
+            println!("{}", err_msg.clone());
+            err_idx = err_idx + 1;
+        }
+        std::process::exit(1);
+    }
 }
 
 type FnTestRule = fn(String) -> bool;
@@ -559,16 +572,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         }
         pos = pos + 1;
     }
-    let mut error_count: i32 = (errors.len() as i32);
-    if error_count > 0 {
-        let mut err_idx: i32 = 0;
-        while err_idx < error_count {
-            let mut err_msg: String = errors[err_idx as usize].clone();
-            println!("{}", err_msg.clone());
-            err_idx = err_idx + 1;
-        }
-        std::process::exit(1);
-    }
+    handle_errors(errors.clone());
 }
 
 fn pr_code(result: ParseResult) -> String {
@@ -3480,9 +3484,11 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
         let mut is_struct: bool = kind == "KW_STRUCT".clone();
         let mut is_enum: bool = kind == "KW_ENUM".clone();
         let mut is_shape: bool = kind == "KW_SHAPE".clone();
+        let mut is_type: bool = kind == "KW_TYPE".clone();
+        let mut is_macro: bool = kind == "KW_MACRO".clone();
         let mut is_raw: bool = kind == "KW_RAW".clone();
         let mut is_rust_blk: bool = kind == "KW_RUST".clone();
-        let mut is_block_decl: bool = is_fn || is_struct || is_enum.clone();
+        let mut is_block_decl: bool = is_fn || is_struct || is_enum || is_type || is_macro.clone();
         if is_block_decl {
             let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), is_fn.clone());
             let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());

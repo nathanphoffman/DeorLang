@@ -1,0 +1,19 @@
+fn string val_err(int line_num, string label, string name, string rule)
+	string line_str = n_to_str(line_num)
+	string val_pfx = "[validation] line "
+	string val_col = ": "
+	string val_qt1 = " '"
+	string val_qt2 = "' - "
+	strList val_parts = [val_pfx, line_str, val_col, label, val_qt1, name, val_qt2, rule]
+	return s_join(val_parts)
+
+fn void handle_errors(strList: errors)
+	int error_count = len(errors)
+	if error_count > 0
+		int err_idx = 0
+		for if err_idx < error_count
+			string err_msg = errors at err_idx
+			print(err_msg)
+			err_idx = err_idx + 1
+		rust
+			std::process::exit(1);

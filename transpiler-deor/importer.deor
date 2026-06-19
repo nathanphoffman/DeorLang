@@ -5,6 +5,7 @@
 (make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
 (s_join, s_split) in "transpiler-deor/lib/string.deor"
 
+
 # this rust performance shim gave us 14x improvement on imports
 rust
 	thread_local! {
@@ -180,9 +181,11 @@ fn tokenList deduplicate_decls(tokenList tokens)
 		bool is_struct = kind is "KW_STRUCT"
 		bool is_enum = kind is "KW_ENUM"
 		bool is_shape = kind is "KW_SHAPE"
+		bool is_type = kind is "KW_TYPE"
+		bool is_macro = kind is "KW_MACRO"
 		bool is_raw = kind is "KW_RAW"
 		bool is_rust_blk = kind is "KW_RUST"
-		bool is_block_decl = is_fn or is_struct or is_enum
+		bool is_block_decl = is_fn or is_struct or is_enum or is_type or is_macro
 		if is_block_decl
 			string decl_name = name_of_decl(tokens, pos, is_fn)
 			bool already_seen = list_has(seen, decl_name)

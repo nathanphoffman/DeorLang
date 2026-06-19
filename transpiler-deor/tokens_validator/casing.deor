@@ -1,0 +1,40 @@
+(s_lower_char, s_upper_char) in "transpiler-deor/lib/string.deor"
+(c_chars) in "transpiler-deor/lib/char.deor"
+
+# First char uppercase → PascalCase
+fn bool is_pascal(string name)
+	strList chars = c_chars(name)
+	int name_len = len(chars)
+	if name_len is 0
+		return false
+	string first = chars at 0
+	return s_upper_char(first)
+
+# First char lowercase, no underscores → camelCase
+fn bool is_camel(string name)
+	strList chars = c_chars(name)
+	int name_len = len(chars)
+	if name_len is 0
+		return false
+	string first = chars at 0
+	if not s_lower_char(first)
+		return false
+	int idx = 0
+	for if idx < name_len
+		string chr = chars at idx
+		if chr is "_"
+			return false
+		idx = idx + 1
+	return true
+
+# No uppercase letters → lower_snake_case
+fn bool is_snake(string name)
+	strList chars = c_chars(name)
+	int name_len = len(chars)
+	int idx = 0
+	for if idx < name_len
+		string chr = chars at idx
+		if s_upper_char(chr)
+			return false
+		idx = idx + 1
+	return true

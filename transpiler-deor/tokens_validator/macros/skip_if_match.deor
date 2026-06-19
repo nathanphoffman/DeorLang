@@ -1,0 +1,12 @@
+
+macro skip_if_match
+	if cur_kind is cur_indicator
+		int skip_pos = pos + 1
+		for if skip_pos < token_count
+			Token skip_tok = tokens at skip_pos
+			(kind) in skip_tok
+			skip_pos = skip_pos + 1
+			if kind is next_indicator
+				break
+		pos = skip_pos
+		continue
