@@ -108,11 +108,16 @@ fn void main()
 
 	print(world)
 
-	SquareFeet sqft = 4
-	int actual_sqft = (avow sqft)
+	#SquareFeet sqft = 4
+	#int actual_sqft = (avow sqft)
+
+	SquareFeet sqft = 0
+	if sqft is bad
+		print("sqft is bad")
+
 
 	Test old_test = (hello,world)
-	set_test(old_test)
+	#set_test(old_test)
 
 	# message as "An unknown server problem occurred"
 	# code as 500

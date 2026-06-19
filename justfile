@@ -1,8 +1,7 @@
 run file="examples/hello.deor":
-    cd transpiler && go build -o ./bin/deor .
-    ./transpiler/bin/deor {{file}} output/out.rs
-    rustc output/out.rs -o output/out
-    ./output/out
+    ./output/out {{file}} output/run.rs
+    rustc -O -A warnings output/run.rs -o output/run
+    ./output/run
 
 # Self-compiles the Deor transpiler, then runs it on `file`.
 # -O: optimize the transpiler binary (cuts codegen time significantly)
@@ -13,6 +12,7 @@ run-deor file="examples/hello.deor":
     ./output/out {{file}} output/run.rs
     rustc -O -A warnings output/run.rs -o output/run
     ./output/run
+
 
 run-ts file="examples/hello.deor":
     cd transpiler-ts && npm install --silent
