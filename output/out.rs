@@ -17,6 +17,12 @@ struct ParseResult {
 }
 
 #[derive(Clone, PartialEq, Debug)]
+struct TokenMeta {
+    line: i32,
+    file: String,
+}
+
+#[derive(Clone, PartialEq, Debug)]
 struct GenCtx {
     variant_reg: StrList,
     shape_reg: StrList,
@@ -233,7 +239,14 @@ fn make_result(code: String, new_pos: i32) -> ParseResult {
     return result;
 }
 
-fn make_token(kind: String, value: String, line: i32, file: String) -> Token {
+fn make_meta(line: i32, file: String) -> TokenMeta {
+    let meta = TokenMeta { line: line.clone(), file: file.clone() };
+    return meta;
+}
+
+fn make_token(kind: String, value: String, meta: TokenMeta) -> Token {
+    let line = meta.line.clone();
+    let file = meta.file.clone();
     let token = Token { kind: kind.clone(), value: value.clone(), line: line.clone(), file: file.clone() };
     return token;
 }
@@ -613,6 +626,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     let mut ch_qt: String = "\"".to_string();
     for raw_li in 0..n_lines {
         cur_line = cur_line + 1;
+        let mut meta: TokenMeta = make_meta(cur_line.clone(), path.clone());
         if skip > 0 {
             skip = skip - 1;
             continue;
@@ -629,7 +643,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
         let mut top_idx: i32 = slen - 1.clone();
         let mut top: i32 = n_parse(indent_stack[top_idx as usize].clone());
         if indent > top {
-            tokens.push(make_token(kind_indent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+            tokens.push(make_token(kind_indent.clone(), empty_val.clone(), meta.clone()).clone());
             let mut indent_str: String = n_to_str(indent.clone());
             indent_stack.push(indent_str.clone());
         } else {
@@ -639,7 +653,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut new_top_idx: i32 = new_slen - 1.clone();
                 let mut cur_top: i32 = n_parse(indent_stack[new_top_idx as usize].clone());
                 if indent < cur_top {
-                    tokens.push(make_token(kind_dedent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+                    tokens.push(make_token(kind_dedent.clone(), empty_val.clone(), meta.clone()).clone());
                     indent_stack.remove(new_top_idx as usize);
                 } else {
                     dedenting = false;
@@ -647,8 +661,8 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
             }
         }
         if content == "rust" {
-            tokens.push(make_token(kind_kw_rust.clone(), kw_rust_val.clone(), cur_line.clone(), path.clone()).clone());
-            tokens.push(make_token(kind_newline.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+            tokens.push(make_token(kind_kw_rust.clone(), kw_rust_val.clone(), meta.clone()).clone());
+            tokens.push(make_token(kind_newline.clone(), empty_val.clone(), meta.clone()).clone());
             let mut rust_base: i32 = indent + 1.clone();
             let mut rust_lines: Vec<String> = Vec::new();
             let mut rli_start: i32 = raw_li + 1.clone();
@@ -683,7 +697,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 }
             }
             let mut block_content: String = s_join_nl(rust_lines.clone());
-            tokens.push(make_token(kind_rust_block.clone(), block_content.clone(), cur_line.clone(), path.clone()).clone());
+            tokens.push(make_token(kind_rust_block.clone(), block_content.clone(), meta.clone()).clone());
             continue;
         }
         let mut chars: Vec<String> = c_chars(content.clone());
@@ -731,7 +745,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                         char_index = string_index + 1;
                     }
                 }
-                tokens.push(make_token(kind_string.clone(), val.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_string.clone(), val.clone(), meta.clone()).clone());
                 continue;
             }
             if c_digit(character.clone()) {
@@ -783,9 +797,9 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                     }
                 }
                 if is_float {
-                    tokens.push(make_token(kind_float.clone(), num.clone(), cur_line.clone(), path.clone()).clone());
+                    tokens.push(make_token(kind_float.clone(), num.clone(), meta.clone()).clone());
                 } else {
-                    tokens.push(make_token(kind_int.clone(), num.clone(), cur_line.clone(), path.clone()).clone());
+                    tokens.push(make_token(kind_int.clone(), num.clone(), meta.clone()).clone());
                 }
                 continue;
             }
@@ -803,7 +817,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                     }
                 }
                 let mut word_kind: String = word_to_kind(word.clone());
-                tokens.push(make_token(word_kind.clone(), word.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(word_kind.clone(), word.clone(), meta.clone()).clone());
                 continue;
             }
             let mut peek_idx: i32 = char_index + 1.clone();
@@ -812,51 +826,52 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 peek = chars[peek_idx as usize].clone();
             }
             if character == ">" && peek == "=" {
-                tokens.push(make_token(kind_gte.clone(), val_gte.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_gte.clone(), val_gte.clone(), meta.clone()).clone());
                 char_index = char_index + 2;
                 continue;
             }
             if character == "<" && peek == "=" {
-                tokens.push(make_token(kind_lte.clone(), val_lte.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_lte.clone(), val_lte.clone(), meta.clone()).clone());
                 char_index = char_index + 2;
                 continue;
             }
             if character == "+" {
-                tokens.push(make_token(kind_plus.clone(), val_plus.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_plus.clone(), val_plus.clone(), meta.clone()).clone());
             } else if character == "-" {
-                tokens.push(make_token(kind_minus.clone(), val_minus.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_minus.clone(), val_minus.clone(), meta.clone()).clone());
             } else if character == "*" {
-                tokens.push(make_token(kind_star.clone(), val_star.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_star.clone(), val_star.clone(), meta.clone()).clone());
             } else if character == "/" {
-                tokens.push(make_token(kind_slash.clone(), val_slash.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_slash.clone(), val_slash.clone(), meta.clone()).clone());
             } else if character == "%" {
-                tokens.push(make_token(kind_pct.clone(), val_pct.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_pct.clone(), val_pct.clone(), meta.clone()).clone());
             } else if character == "=" {
-                tokens.push(make_token(kind_eq.clone(), val_eq.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_eq.clone(), val_eq.clone(), meta.clone()).clone());
             } else if character == ">" {
-                tokens.push(make_token(kind_gt.clone(), val_gt.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_gt.clone(), val_gt.clone(), meta.clone()).clone());
             } else if character == "<" {
-                tokens.push(make_token(kind_lt.clone(), val_lt.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_lt.clone(), val_lt.clone(), meta.clone()).clone());
             } else if character == "(" {
-                tokens.push(make_token(kind_lp.clone(), val_lp.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_lp.clone(), val_lp.clone(), meta.clone()).clone());
             } else if character == ")" {
-                tokens.push(make_token(kind_rp.clone(), val_rp.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_rp.clone(), val_rp.clone(), meta.clone()).clone());
             } else if character == "[" {
-                tokens.push(make_token(kind_lb.clone(), val_lb.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_lb.clone(), val_lb.clone(), meta.clone()).clone());
             } else if character == "]" {
-                tokens.push(make_token(kind_rb.clone(), val_rb.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_rb.clone(), val_rb.clone(), meta.clone()).clone());
             } else if character == "," {
-                tokens.push(make_token(kind_cm.clone(), val_cm.clone(), cur_line.clone(), path.clone()).clone());
+                tokens.push(make_token(kind_cm.clone(), val_cm.clone(), meta.clone()).clone());
             }
             char_index = char_index + 1;
         }
-        tokens.push(make_token(kind_newline.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+        tokens.push(make_token(kind_newline.clone(), empty_val.clone(), meta.clone()).clone());
     }
     let mut final_stack_len: i32 = (indent_stack.len() as i32);
+    let mut tail_meta: TokenMeta = make_meta(cur_line.clone(), path.clone());
     for _ in 1..final_stack_len {
-        tokens.push(make_token(kind_dedent.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+        tokens.push(make_token(kind_dedent.clone(), empty_val.clone(), tail_meta.clone()).clone());
     }
-    tokens.push(make_token(kind_eof.clone(), empty_val.clone(), cur_line.clone(), path.clone()).clone());
+    tokens.push(make_token(kind_eof.clone(), empty_val.clone(), tail_meta.clone()).clone());
     return tokens;
 }
 
@@ -1271,7 +1286,8 @@ fn is_snake(name: String) -> bool {
     return true;
 }
 
-fn arg_is_named(tokens: Vec<Token>, scan_pos: i32, token_count: i32, kind: String) -> bool {
+fn arg_is_named(tokens: Vec<Token>, scan_pos: i32, kind: String) -> bool {
+    let mut token_count: i32 = (tokens.len() as i32);
     let mut check_pos: i32 = scan_pos.clone();
     let mut chk_kind: String = kind.clone();
     if kind == "KW_GIVEUP" {
@@ -1340,8 +1356,12 @@ fn count_call_args(tokens: Vec<Token>, lp_pos: i32) -> i32 {
     return result;
 }
 
-fn val_err(file: String, line_num: i32, label: String, name: String, rule: String) -> String {
-    let mut line_str: String = n_to_str(line_num.clone());
+fn val_err(tok: Token, label: String, rule: String) -> String {
+    let value = tok.value.clone();
+    let line = tok.line.clone();
+    let file = tok.file.clone();
+    let mut name: String = value.clone();
+    let mut line_str: String = n_to_str(line.clone());
     let mut val_pfx: String = "[validation] ".to_string();
     let mut val_sep: String = " line ".to_string();
     let mut val_col: String = ": ".to_string();
@@ -1443,7 +1463,7 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut after_is_is: bool = after_not_kind == "KW_IS".clone();
                 if next_is_ident && after_is_is {
                     let value = next_not_tok.value.clone();
-                    errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl_var.clone(), value.clone(), rule_not_is.clone()).clone());
+                    errors.push(val_err(next_not_tok.clone(), lbl_var.clone(), rule_not_is.clone()).clone());
                 }
             }
         }
@@ -1463,10 +1483,10 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule_min3.clone()).clone());
                     }
                     if !test_rule(name_val.clone()) {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
                 }
             }
@@ -1489,10 +1509,10 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule_min3.clone()).clone());
                     }
                     if !test_rule(name_val.clone()) {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
                 }
             }
@@ -1515,10 +1535,10 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule_min3.clone()).clone());
                     }
                     if !test_rule(name_val.clone()) {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
                 }
             }
@@ -1541,10 +1561,10 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule_min3.clone()).clone());
                     }
                     if !test_rule(name_val.clone()) {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
                 }
             }
@@ -1568,10 +1588,10 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule_min3.clone()).clone());
                     }
                     if !test_rule(name_val.clone()) {
-                        errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
+                        errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
                 }
             }
@@ -1610,9 +1630,9 @@ fn validate_tokens(tokens: Vec<Token>) {
                                     at_arg_start = true;
                                 }
                             } else if at_arg_start {
-                                let mut named: bool = arg_is_named(tokens.clone(), scan_pos.clone(), token_count.clone(), kind.clone());
+                                let mut named: bool = arg_is_named(tokens.clone(), scan_pos.clone(), kind.clone());
                                 if !named {
-                                    errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl_call.clone(), cur_val.clone(), rule_named_arg.clone()).clone());
+                                    errors.push(val_err(tok.clone(), lbl_call.clone(), rule_named_arg.clone()).clone());
                                 }
                                 at_arg_start = false;
                             }
@@ -1631,7 +1651,7 @@ fn validate_tokens(tokens: Vec<Token>) {
             let mut is_result: bool = cur_val == "Result".clone();
             let mut is_rust_generic: bool = is_option || is_vec || is_box || is_rc || is_arc || is_result.clone();
             if is_rust_generic {
-                errors.push(val_err(cur_file.clone(), cur_line.clone(), lbl_rust.clone(), cur_val.clone(), rule_no_option.clone()).clone());
+                errors.push(val_err(tok.clone(), lbl_rust.clone(), rule_no_option.clone()).clone());
             }
             }
             {
@@ -1652,10 +1672,10 @@ fn validate_tokens(tokens: Vec<Token>) {
                     let mut var_line: i32 = line.clone();
                     let mut var_file: String = file.clone();
                     if (var_name.len() as i32) < 3 {
-                        errors.push(val_err(var_file.clone(), var_line.clone(), lbl_var.clone(), var_name.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(tok_one.clone(), lbl_var.clone(), rule_min3.clone()).clone());
                     }
                     if !is_snake(var_name.clone()) {
-                        errors.push(val_err(var_file.clone(), var_line.clone(), lbl_var.clone(), var_name.clone(), rule_snake.clone()).clone());
+                        errors.push(val_err(tok_one.clone(), lbl_var.clone(), rule_snake.clone()).clone());
                     }
                 }
             }
@@ -2427,11 +2447,17 @@ fn emit_val(val_code: String, val_kind: String) -> String {
     return val_code;
 }
 
-fn make_destruct_code(var_name: String, struct_type: String, struct_reg: Vec<String>, mut_names: Vec<String>, pad: String) -> String {
+fn make_destruct_code(var_name: String, depth: i32, ctx: RcCtx) -> String {
+    let struct_reg = ctx.struct_reg.clone();
+    let mut_names = ctx.mut_names.clone();
+    let var_type_reg = ctx.var_type_reg.clone();
+    let mut struct_type: String = reg_get(var_type_reg.clone(), var_name.clone());
     let mut fields_str: String = reg_get(struct_reg.clone(), struct_type.clone());
     if is_empty(fields_str.clone()) {
         return "".to_string();
     }
+    let mut indent: String = "    ".to_string();
+    let mut pad: String = s_repeat(indent.clone(), depth.clone());
     let mut comma: String = ",".to_string();
     let mut fields: Vec<String> = s_split(fields_str.clone(), comma.clone());
     let mut field_count: i32 = (fields.len() as i32);
@@ -2632,7 +2658,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut using_var: String = value.clone();
         let mut struct_type: String = reg_get(var_type_reg.clone(), using_var.clone());
         let mut using_type: String = struct_type.clone();
-        let mut init_destruct: String = make_destruct_code(using_var.clone(), struct_type.clone(), struct_reg.clone(), mut_names.clone(), pad.clone());
+        let mut init_destruct: String = make_destruct_code(using_var.clone(), depth.clone(), ctx.clone());
         let mut var_next: i32 = var_pos + 1.clone();
         let mut body_start: i32 = skip_to_body_ref(tokens.clone(), var_next.clone());
 /* unhandled(IDENT) */
@@ -2825,7 +2851,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                     let mut shm2_parts: Vec<String> = vec![pad.clone(), using_var.clone(), shm2_eq.clone(), ident_name.clone(), shm2_op.clone(), using_var.clone(), shm2_cl.clone()];
                     shim_code = s_join(shm2_parts.clone());
                 }
-                let mut re_destruct: String = make_destruct_code(using_var.clone(), using_type.clone(), struct_reg.clone(), mut_names.clone(), pad.clone());
+                let mut re_destruct: String = make_destruct_code(using_var.clone(), depth.clone(), ctx.clone());
                 shim_code = s_cat(shim_code.clone(), re_destruct.clone());
                 let mut shm_next: i32 = adv_nl_ref(after_with.clone(), tokens.clone());
                 return make_result(shim_code, shm_next.clone());

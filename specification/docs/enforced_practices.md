@@ -94,27 +94,22 @@ copy as original    # transpiler error — use Type name = original
 ---
 ## Variable Shadowing
 
-Re-declaring a variable with the same name in the same block is a transpiler error. Shadowing in an inner block (inside an `if`, `for`, or nested `fn` body) is allowed.
+Variable shadowing is allowed. A new declaration with the same name in the same block or an inner block replaces the binding from that point forward.
 
-**Correct — inner block shadows outer:**
+```
+int val = 5
+int val = 10    # allowed — val is now 10
+print(val)      # 10
+```
+
+Inner block shadowing is also allowed and does not affect the outer binding:
+
 ```
 int val = 5
 if condition
     int val = 10    # shadows outer val within this block only
     print(val)      # 10
 print(val)          # 5
-```
-
-**Incorrect — same block re-declaration:**
-```
-int val = 5
-int val = 10    # transpiler error
-```
-
-Use reassignment instead:
-```
-int val = 5
-val = 10    # correct
 ```
 
 ---
@@ -228,44 +223,6 @@ for range(5)
 The rationale: named variables make call sites self-documenting for user-defined functions, where the parameter names may not be universally known. Built-ins like `print`, `len`, and `range` are part of the language and universally understood — requiring named variables for them adds ceremony with no clarity benefit. This same logic applies to system constructs: `if` conditions, `for` headers, and compound assignments accept expressions freely.
 
 ---
-## Top-to-Bottom Declaration Order
-All top-level declarations must appear before any code that references them. This applies to `struct`, `type`, `const`, and `fn` definitions within a file.
-
-**Correct:**
-```
-type Roll(int val)
-    val >= 1 and val <= 20
-
-struct RollResult
-    Roll value
-    string source
-
-fn RollResult roll_die(Die die)
-    ...
-```
-
-**Incorrect — transpiler errors:**
-```
-fn RollResult roll_die(Die die)    # uses RollResult before it's declared
-    ...
-
-struct RollResult
-    Roll value
-    string source
-```
-
-Recommended file layout:
-1. `const` declarations
-2. `type` definitions
-3. `struct` definitions
-4. Helper functions (called by others below them)
-5. Main logic functions
-6. Entry point (`fn main`)
-
-This makes files readable top-to-bottom without needing to jump around to understand what a name means.
-
----
-
 ## No Nested Functions
 Functions may only be declared at the top level of a file. Defining a `fn` inside another `fn` body is a transpiler error.
 

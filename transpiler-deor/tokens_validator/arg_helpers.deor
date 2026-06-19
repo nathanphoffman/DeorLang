@@ -1,5 +1,6 @@
 
-fn bool arg_is_named(tokenList tokens, int scan_pos, int token_count, string kind)
+fn bool arg_is_named(tokenList tokens, int scan_pos, string kind)
+	int token_count = len(tokens)
 	int check_pos = scan_pos
 	string chk_kind = kind
 	if kind is "KW_GIVEUP"

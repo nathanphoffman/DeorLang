@@ -2,29 +2,18 @@
 
 # In progress
 
-  - Where in the docs do I address seperators?
-
  - Void-input/output func shapes — func to bool and func of Error read wrong token positions; registry stores garbage
-  -- Got AI Advice
 
 - Destructuring and three argument limitations
-  -- Working
-
 
 # More Stuff
-
-  - Variable shadowing enforcement — never checked
-  - Top-to-bottom declaration order — not enforced (registries are pre-built so forward refs silently work)
-  - Field order in as (f1, f2) — not enforced
 
   ---
   Implemented But Undocumented (9 items)
 
   - for (start, end) range syntax — used in examples, no mention in loops.md
-  - for giveup var in collection — loop form, completely undocumented
   - BLOCK_START/BLOCK_END tokens — internal synthetic tokens from macro expansion
   - var_type_reg — variable type registry for using support
-  - using auto-destructuring — using varname also re-binds all struct fields before each shimmed call; spec never mentions this
   - Legacy macro_define / place — old macro syntax still wired up but entirely absent from docs
   - Deduplication behavior — first occurrence wins when merging imports; later definitions silently dropped
 

@@ -27,8 +27,8 @@ macro check_call_args
 						if scan_root
 							at_arg_start = true
 					else if at_arg_start
-						bool named = arg_is_named(tokens, scan_pos, token_count, kind)
+						bool named = arg_is_named(tokens, scan_pos, kind)
 						if not named
-							errors at end = val_err(cur_file, cur_line, lbl_call, cur_val, rule_named_arg)
+							errors at end = val_err(tok, lbl_call, rule_named_arg)
 						at_arg_start = false
 					scan_pos = scan_pos + 1

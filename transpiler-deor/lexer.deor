@@ -79,6 +79,7 @@ fn tokenList tokenize(string source, string path)
 
 	for raw_li in range(n_lines)
 		cur_line = cur_line + 1
+		TokenMeta meta = make_meta(cur_line, path)
 		if skip > 0
 			skip = skip - 1
 			continue
@@ -99,7 +100,7 @@ fn tokenList tokenize(string source, string path)
 		int top = n_parse(indent_stack at top_idx)
 
 		if indent > top
-			tokens at end = make_token(kind_indent, empty_val, cur_line, path)
+			tokens at end = make_token(kind_indent, empty_val, meta)
 			string indent_str = n_to_str(indent)
 			indent_stack at end = indent_str
 		else
@@ -109,15 +110,15 @@ fn tokenList tokenize(string source, string path)
 				int new_top_idx = new_slen - 1
 				int cur_top = n_parse(indent_stack at new_top_idx)
 				if indent < cur_top
-					tokens at end = make_token(kind_dedent, empty_val, cur_line, path)
+					tokens at end = make_token(kind_dedent, empty_val, meta)
 					indent_stack remove at new_top_idx
 				else
 					dedenting = false
 
 		# rust block: entire content (trimmed) is exactly "rust"
 		if content is "rust"
-			tokens at end = make_token(kind_kw_rust, kw_rust_val, cur_line, path)
-			tokens at end = make_token(kind_newline, empty_val, cur_line, path)
+			tokens at end = make_token(kind_kw_rust, kw_rust_val, meta)
+			tokens at end = make_token(kind_newline, empty_val, meta)
 			int rust_base = indent + 1
 			strList rust_lines = []
 			int rli_start = raw_li + 1
@@ -148,7 +149,7 @@ fn tokenList tokenize(string source, string path)
 				else
 					trimming = false
 			string block_content = s_join_nl(rust_lines)
-			tokens at end = make_token(kind_rust_block, block_content, cur_line, path)
+			tokens at end = make_token(kind_rust_block, block_content, meta)
 			continue
 
 		# scan content characters for tokens
@@ -198,7 +199,7 @@ fn tokenList tokenize(string source, string path)
 					else
 						val = s_cat(val, string_char)
 						char_index = string_index + 1
-				tokens at end = make_token(kind_string, val, cur_line, path)
+				tokens at end = make_token(kind_string, val, meta)
 				continue
 
 			# integer or float literal
@@ -242,9 +243,9 @@ fn tokenList tokenize(string source, string path)
 								else
 									break
 				if is_float
-					tokens at end = make_token(kind_float, num, cur_line, path)
+					tokens at end = make_token(kind_float, num, meta)
 				else
-					tokens at end = make_token(kind_int, num, cur_line, path)
+					tokens at end = make_token(kind_int, num, meta)
 				continue
 
 			# identifier or keyword
@@ -260,7 +261,7 @@ fn tokenList tokenize(string source, string path)
 					else
 						break
 				string word_kind = word_to_kind(word)
-				tokens at end = make_token(word_kind, word, cur_line, path)
+				tokens at end = make_token(word_kind, word, meta)
 				continue
 
 			# two-char operators
@@ -270,49 +271,50 @@ fn tokenList tokenize(string source, string path)
 				peek = chars at peek_idx
 
 			if character is ">" and peek is "="
-				tokens at end = make_token(kind_gte, val_gte, cur_line, path)
+				tokens at end = make_token(kind_gte, val_gte, meta)
 				char_index = char_index + 2
 				continue
 			if character is "<" and peek is "="
-				tokens at end = make_token(kind_lte, val_lte, cur_line, path)
+				tokens at end = make_token(kind_lte, val_lte, meta)
 				char_index = char_index + 2
 				continue
 
 			# single-char tokens
 			if character is "+"
-				tokens at end = make_token(kind_plus, val_plus, cur_line, path)
+				tokens at end = make_token(kind_plus, val_plus, meta)
 			else if character is "-"
-				tokens at end = make_token(kind_minus, val_minus, cur_line, path)
+				tokens at end = make_token(kind_minus, val_minus, meta)
 			else if character is "*"
-				tokens at end = make_token(kind_star, val_star, cur_line, path)
+				tokens at end = make_token(kind_star, val_star, meta)
 			else if character is "/"
-				tokens at end = make_token(kind_slash, val_slash, cur_line, path)
+				tokens at end = make_token(kind_slash, val_slash, meta)
 			else if character is "%"
-				tokens at end = make_token(kind_pct, val_pct, cur_line, path)
+				tokens at end = make_token(kind_pct, val_pct, meta)
 			else if character is "="
-				tokens at end = make_token(kind_eq, val_eq, cur_line, path)
+				tokens at end = make_token(kind_eq, val_eq, meta)
 			else if character is ">"
-				tokens at end = make_token(kind_gt, val_gt, cur_line, path)
+				tokens at end = make_token(kind_gt, val_gt, meta)
 			else if character is "<"
-				tokens at end = make_token(kind_lt, val_lt, cur_line, path)
+				tokens at end = make_token(kind_lt, val_lt, meta)
 			else if character is "("
-				tokens at end = make_token(kind_lp, val_lp, cur_line, path)
+				tokens at end = make_token(kind_lp, val_lp, meta)
 			else if character is ")"
-				tokens at end = make_token(kind_rp, val_rp, cur_line, path)
+				tokens at end = make_token(kind_rp, val_rp, meta)
 			else if character is "["
-				tokens at end = make_token(kind_lb, val_lb, cur_line, path)
+				tokens at end = make_token(kind_lb, val_lb, meta)
 			else if character is "]"
-				tokens at end = make_token(kind_rb, val_rb, cur_line, path)
+				tokens at end = make_token(kind_rb, val_rb, meta)
 			else if character is ","
-				tokens at end = make_token(kind_cm, val_cm, cur_line, path)
+				tokens at end = make_token(kind_cm, val_cm, meta)
 			char_index = char_index + 1
 
-		tokens at end = make_token(kind_newline, empty_val, cur_line, path)
+		tokens at end = make_token(kind_newline, empty_val, meta)
 
 	# emit remaining DEDENTs
 	int final_stack_len = len(indent_stack)
+	TokenMeta tail_meta = make_meta(cur_line, path)
 	for in (1, final_stack_len)
-		tokens at end = make_token(kind_dedent, empty_val, cur_line, path)
+		tokens at end = make_token(kind_dedent, empty_val, tail_meta)
 
-	tokens at end = make_token(kind_eof, empty_val, cur_line, path)
+	tokens at end = make_token(kind_eof, empty_val, tail_meta)
 	return tokens

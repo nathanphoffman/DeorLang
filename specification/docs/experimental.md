@@ -36,6 +36,10 @@ do_something(giveup new_var)
 ### Using
 The using block was added to aid with the fact that Deor is not OOP-centric, it greatly simplifies composing structs, but at a very high cloning cost. Good for small structs and small lists, ok for large structs in small lists or large lists of small structs, but likely quite bad for both large lists and large structs. You should consider using a rust wrapper see: [Rust Interop](docs/interop.md)
 
+Any function in the using list that has no argument provided, has the object passed to it as its first argument.  Each function then chains on the output of the above function so that any non-argument functions form a pipe chain.  If something provides an argument, it is ignored.  Additionally, each time a () function is called on the pipe chain, the values of the object are deconstructed automatically (hence why last_name works below)
+
+This entire procedure is quite expensive and is why it is still experimental and being considered to be removed.
+
 ```
 
 struct Employee
@@ -43,8 +47,12 @@ struct Employee
     string last_name
     int: processed_number
 
-shape listEmployee = list of Employee
+shape listEmployee employee_list = list of Employee
 
-using
+using employee_list
+    set_first_name()
+    get_record_by_lastname(last_name)
+    set_last_name()
+    
 
 ```

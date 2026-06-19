@@ -22,8 +22,15 @@ fn ParseResult make_result(string code, int new_pos)
 
 # === Token helpers ===
 
-# Constructs a Token value. Used by the lexer for every token it emits into the output list.
-fn Token make_token(string kind, string value, int line, string file)
+# Constructs a TokenMeta from a line number and file path. Passed to make_token so the
+# lexer doesn't have to repeat line and file at every token emission site.
+fn TokenMeta make_meta(int line, string file)
+	meta as (line, file)
+	return meta
+
+# Constructs a Token value. Used by the lexer for every token it emits.
+fn Token make_token(string kind, string value, TokenMeta meta)
+	(line, file) in meta
 	token as (kind, value, line, file)
 	return token
 

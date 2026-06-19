@@ -15,6 +15,6 @@ macro check_var_decl
 			int var_line = line
 			string var_file = file
 			if len(var_name) < 3
-				errors at end = val_err(var_file, var_line, lbl_var, var_name, rule_min3)
+				errors at end = val_err(tok_one, lbl_var, rule_min3)
 			if not is_snake(var_name)
-				errors at end = val_err(var_file, var_line, lbl_var, var_name, rule_snake)
+				errors at end = val_err(tok_one, lbl_var, rule_snake)

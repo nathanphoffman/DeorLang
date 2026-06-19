@@ -1,5 +1,7 @@
-fn string val_err(string file, int line_num, string label, string name, string rule)
-	string line_str = n_to_str(line_num)
+fn string val_err(Token tok, string label, string rule)
+	(value, line, file) in tok
+	string name = value
+	string line_str = n_to_str(line)
 	string val_pfx = "[validation] "
 	string val_sep = " line "
 	string val_col = ": "

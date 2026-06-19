@@ -65,7 +65,7 @@ fn void validate_tokens(tokenList tokens)
 
 				if next_is_ident and after_is_is
 					(value) in next_not_tok
-					errors at end = val_err(cur_file, cur_line, lbl_var, value, rule_not_is)
+					errors at end = val_err(next_not_tok, lbl_var, rule_not_is)
 
 		###########################  These are validators for each type #####################
 		

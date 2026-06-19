@@ -24,10 +24,14 @@ fn string emit_val(string val_code, string val_kind)
 # field of a struct. Used by the `using` statement to initially unpack a struct's fields
 # into local variables, and re-called after `using`-style method calls to re-bind
 # updated field values after the struct has been mutated by the called function.
-fn string make_destruct_code(string var_name, string struct_type, strList struct_reg, strList mut_names, string pad)
+fn string make_destruct_code(string var_name, int depth, RcCtx ctx)
+	(struct_reg, mut_names, var_type_reg) in ctx
+	string struct_type = reg_get(var_type_reg, var_name)
 	string fields_str = reg_get(struct_reg, struct_type)
 	if is_empty(fields_str)
 		return ""
+	string indent = "    "
+	string pad = s_repeat(indent, depth)
 	string comma = ","
 	strList fields = s_split(fields_str, comma)
 	int field_count = len(fields)
@@ -207,7 +211,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		string using_var = value
 		string struct_type = reg_get(var_type_reg, using_var)
 		string using_type = struct_type
-		string init_destruct = make_destruct_code(using_var, struct_type, struct_reg, mut_names, pad)
+		string init_destruct = make_destruct_code(using_var, depth, ctx)
 		int var_next = var_pos + 1
 		int body_start = skip_to_body_ref(tokens, var_next)
 		GenCtx using_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
@@ -381,7 +385,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 					string shm2_cl = ".clone());\n"
 					strList shm2_parts = [pad, using_var, shm2_eq, ident_name, shm2_op, using_var, shm2_cl]
 					shim_code = s_join(shm2_parts)
-				string re_destruct = make_destruct_code(using_var, using_type, struct_reg, mut_names, pad)
+				string re_destruct = make_destruct_code(using_var, depth, ctx)
 				shim_code = s_cat(shim_code, re_destruct)
 				int shm_next = adv_nl_ref(after_with, tokens)
 				return make_result(giveup shim_code, shm_next)

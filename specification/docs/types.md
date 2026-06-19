@@ -13,6 +13,10 @@ Deor's built-in primitive types and their Rust equivalents:
 
 For raw binary data (HTTP bodies, files, crypto, pixel buffers) use a `raw` variable and handle it entirely inside `rust` blocks. See [`raw` Variables](#raw-variables) below.
 
+For integers seperators are allowed such as
+```
+int val = 1_000_000
+```
 ---
 
 ## `raw` Variables
