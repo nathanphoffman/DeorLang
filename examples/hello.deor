@@ -2,6 +2,10 @@ struct Test
 	int hello
 	int world
 
+enum Planets
+	Jupiter
+	Mars
+
 fn Test increment(Test test)
 	(hello, world) = test
 	world = world + 1
@@ -52,7 +56,7 @@ fn void main()
 		print(value)
 
 	label as "HOYO"
-	macro_run log_check with (label)
+	macro_run log_check
 	
 	x as 10
 	y as 20
