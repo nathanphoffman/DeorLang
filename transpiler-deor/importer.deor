@@ -93,7 +93,7 @@ fn int end_of_shape(tokenList tokens, int pos)
 # file and every imported file go through exactly the same logic — no special cases.
 fn tokenList load_file(string path)
 	string source = f_read(path)
-	tokenList tok_raw = tokenize(source)
+	tokenList tok_raw = tokenize(source, path)
 	tokenList result = []
 	int token_count = len(tok_raw)
 	int pos = 0

@@ -6,6 +6,9 @@ Note the roadmap is more to list out my raw notes and get feedback, however it i
 We should add in compiler constants
 *Small Lift* | *High Priority*
 
+## Require file imports match the file they are referenced in
+
+
 ## Good Candidates for Macro Simplification
   1. is_mut/mut_kw guard — 4 lines, appears 8 times in codegen_stmt.deor. Closes over mut_names and a target variable name. This is the clear winner.
   2. gen_expr call + destructure — 3 lines, appears 10+ times throughout codegen. Closes over tokens, val_pos, ctx. Every statement handler does this before

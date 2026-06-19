@@ -8,4 +8,4 @@ macro check_rust_generic
 	bool is_result = cur_val is "Result"
 	bool is_rust_generic = is_option or is_vec or is_box or is_rc or is_arc or is_result
 	if is_rust_generic
-		errors at end = val_err(cur_line, lbl_rust, cur_val, rule_no_option)
+		errors at end = val_err(cur_file, cur_line, lbl_rust, cur_val, rule_no_option)

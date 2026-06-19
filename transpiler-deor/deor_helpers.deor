@@ -24,8 +24,8 @@ fn ParseResult make_result(string code, int new_pos)
 # === Token helpers ===
 
 # Constructs a Token value. Used by the lexer for every token it emits into the output list.
-fn Token make_token(string kind, string value, int line)
-	token as (kind, value, line)
+fn Token make_token(string kind, string value, int line, string file)
+	token as (kind, value, line, file)
 	return token
 
 # If the token at `pos` is a NEWLINE, returns pos+1; otherwise returns pos unchanged.

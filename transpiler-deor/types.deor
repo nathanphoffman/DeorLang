@@ -7,6 +7,7 @@ struct Token
 	string kind
 	string value
 	int line
+	string file
 
 # Returned by every code-generation function: the Rust source text produced so far
 # (`code`) and the token-stream index to resume from after consuming this construct

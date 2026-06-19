@@ -10,8 +10,8 @@ macro validate_ident
 			string name_val = value
 			if name_kind is "IDENT"
 				if len(name_val) < 3
-					errors at end = val_err(cur_line, lbl, name_val, rule_min3)
+					errors at end = val_err(cur_file, cur_line, lbl, name_val, rule_min3)
 				if not test_rule(name_val)
-					errors at end = val_err(cur_line, lbl, name_val, rule)
+					errors at end = val_err(cur_file, cur_line, lbl, name_val, rule)
 		pos = pos + 1
 		continue

@@ -42,10 +42,11 @@ fn void validate_tokens(tokenList tokens)
 
 	for if pos < token_count
 		Token tok = tokens at pos
-		(kind, value, line) in tok
+		(kind, value, line, file) in tok
 		string cur_kind = kind
 		string cur_val = value
 		int cur_line = line
+		string cur_file = file
 
 		# skip macro_define headers — name(place p1, place p2) is a declaration, not a call
 		string cur_indicator = "KW_MACRO_DEFINE"
@@ -76,7 +77,7 @@ fn void validate_tokens(tokenList tokens)
 
 				if next_is_ident and after_is_is
 					(value) in next_not_tok
-					errors at end = val_err(cur_line, lbl_var, value, rule_not_is)
+					errors at end = val_err(cur_file, cur_line, lbl_var, value, rule_not_is)
 
 		###########################  These are validators for each type #####################
 		
