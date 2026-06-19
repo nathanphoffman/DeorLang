@@ -5,7 +5,6 @@
   - Float literals — 3.14 is tokenized as INT 3, junk ., INT 14; no float literal parsing in lexer
 
   Medium severity — features that appear to work but don't:
-  - deps blocks — no Cargo.toml generation
   - rust: imports — the rust:math_utils path is read but then lexed as Deor source (would crash)
   - Named import filtering — (gen_fn_decl, gen_struct_decl) in "./file" imports everything; the names in parens are parsed but never used to filter
   - Compact ternary — int result = value\n  if value > 0\n  else 0 not handled in codegen

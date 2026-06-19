@@ -11,6 +11,8 @@ import {
   TextDocumentSyncKind,
   Diagnostic,
   DiagnosticSeverity,
+  Location,
+  Range,
 } from 'vscode-languageserver/node';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -30,12 +32,86 @@ connection.onInitialize((params: InitializeParams): InitializeResult => {
   return {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
+      definitionProvider: true,
     },
   };
 });
 
-// Walk up from the saved file looking for a main.deor to use as the entry point.
-// Falls back to the saved file itself if none is found before leaving the workspace.
+// ─── Go to Definition ────────────────────────────────────────────────────────
+
+connection.onDefinition((params) => {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc || !workspaceRoot) return null;
+
+  const lines = doc.getText().split('\n');
+  const line  = lines[params.position.line] ?? '';
+  const word  = wordAt(line, params.position.character);
+  if (!word) return null;
+
+  return findDefinition(word, workspaceRoot);
+});
+
+function wordAt(line: string, char: number): string {
+  let start = char;
+  while (start > 0 && /[a-zA-Z0-9_]/.test(line[start - 1])) start--;
+  let end = char;
+  while (end < line.length && /[a-zA-Z0-9_]/.test(line[end])) end++;
+  return line.slice(start, end);
+}
+
+// Patterns for every Deor declaration kind. All top-level so no leading tabs.
+function definitionPatterns(name: string): RegExp[] {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return [
+    new RegExp(`^fn \\S+ ${escaped}\\(`),   // fn <type> name(
+    new RegExp(`^fn ${escaped}\\(`),         // fn name( (void shorthand if ever used)
+    new RegExp(`^struct ${escaped}\\b`),
+    new RegExp(`^enum ${escaped}\\b`),
+    new RegExp(`^shape ${escaped}\\b`),
+    new RegExp(`^type ${escaped}\\b`),
+    new RegExp(`^macro ${escaped}\\b`),
+    new RegExp(`^raw ${escaped}\\b`),
+  ];
+}
+
+function findDefinition(name: string, root: string): Location | null {
+  const patterns = definitionPatterns(name);
+
+  for (const file of allDeorFiles(root)) {
+    const content = fs.readFileSync(file, 'utf8');
+    const lines   = content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      for (const pat of patterns) {
+        if (pat.test(lines[i])) {
+          const uri: string = `file://${file}`;
+          const range: Range = {
+            start: { line: i, character: 0 },
+            end:   { line: i, character: lines[i].length },
+          };
+          return Location.create(uri, range);
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function allDeorFiles(dir: string): string[] {
+  const results: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === 'node_modules' || entry.name === 'target') continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...allDeorFiles(full));
+    } else if (entry.isFile() && entry.name.endsWith('.deor')) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
+// ─── Diagnostics ─────────────────────────────────────────────────────────────
+
 function findEntryPoint(savedPath: string, root: string): string {
   let dir = path.dirname(savedPath);
   while (true) {
@@ -69,11 +145,7 @@ function runValidation(savedUri: string): void {
   proc.stdout.on('data', (chunk: Buffer) => { output += chunk.toString(); });
   proc.stderr.on('data', (chunk: Buffer) => { output += chunk.toString(); });
 
-  proc.on('close', () => {
-    running = false;
-    publishDiagnostics(output);
-  });
-
+  proc.on('close', () => { running = false; publishDiagnostics(output); });
   proc.on('error', () => { running = false; });
 }
 
@@ -105,11 +177,8 @@ function publishDiagnostics(output: string): void {
     byUri.get(uri)!.push(diag);
   }
 
-  // Clear files that were previously red but are clean now
   for (const uri of prevDiagnosticUris) {
-    if (!byUri.has(uri)) {
-      connection.sendDiagnostics({ uri, diagnostics: [] });
-    }
+    if (!byUri.has(uri)) connection.sendDiagnostics({ uri, diagnostics: [] });
   }
 
   prevDiagnosticUris = new Set();
