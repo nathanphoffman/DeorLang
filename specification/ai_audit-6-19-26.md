@@ -2,9 +2,9 @@
 
 # In progress
 
- - Void-input/output func shapes — func to bool and func of Error read wrong token positions; registry stores garbage
+ - Void-input/output func shapes — func to bool and func of Error read wrong token positions; registry stores garbage -- in process
 
-- Destructuring and three argument limitations
+- make fix to transpiler order on construction, we will no longer enforce order
 
 # More Stuff
 

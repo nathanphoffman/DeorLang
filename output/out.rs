@@ -1788,29 +1788,61 @@ fn build_shape_reg(tokens: Vec<Token>) -> Vec<String> {
         if kind == "KW_SHAPE" {
             let mut name_pos: i32 = index + 1.clone();
             let mut form_pos: i32 = index + 3.clone();
-            let mut elem_pos: i32 = index + 5.clone();
-            if elem_pos < token_count {
+            let mut t4_pos: i32 = index + 4.clone();
+            if t4_pos < token_count {
                 let mut name_token: Token = tokens[name_pos as usize].clone();
                 let mut form_token: Token = tokens[form_pos as usize].clone();
-                let mut elem_token: Token = tokens[elem_pos as usize].clone();
                 let value = name_token.value.clone();
                 let mut shape_name: String = value.clone();
                 let kind = form_token.kind.clone();
-                let value = elem_token.value.clone();
-                let mut elem_type: String = value.clone();
                 if kind == "KW_LIST" {
-                    result.push(shape_name.clone());
-                    result.push(elem_type.clone());
-                } else {
-                    let mut out_pos: i32 = index + 7.clone();
-                    if out_pos < token_count {
-                        let mut out_token: Token = tokens[out_pos as usize].clone();
-                        let value = out_token.value.clone();
-                        let mut out_type: String = value.clone();
+                    let mut elem_pos: i32 = index + 5.clone();
+                    if elem_pos < token_count {
+                        let mut elem_token: Token = tokens[elem_pos as usize].clone();
+                        let value = elem_token.value.clone();
                         result.push(shape_name.clone());
-                        let mut fn_parts: Vec<String> = vec!["fn:".to_string(), elem_type.clone(), ":".to_string(), out_type.clone()];
-                        result.push(s_join(fn_parts.clone()).clone());
+                        result.push(value.clone());
                     }
+                } else {
+                    let mut t4_token: Token = tokens[t4_pos as usize].clone();
+                    let kind = t4_token.kind.clone();
+                    let value = t4_token.value.clone();
+                    let mut t4_is_of: bool = kind == "KW_OF".clone();
+                    let mut t4_is_to: bool = value == "to".clone();
+                    let mut in_type: String = "".to_string();
+                    let mut out_type: String = "".to_string();
+                    if t4_is_of {
+                        let mut t5_pos: i32 = index + 5.clone();
+                        if t5_pos < token_count {
+                            let mut t5_token: Token = tokens[t5_pos as usize].clone();
+                            let value = t5_token.value.clone();
+                            in_type = value;
+                        }
+                        let mut t6_pos: i32 = index + 6.clone();
+                        if t6_pos < token_count {
+                            let mut t6_token: Token = tokens[t6_pos as usize].clone();
+                            let value = t6_token.value.clone();
+                            let mut t6_is_to: bool = value == "to".clone();
+                            if t6_is_to {
+                                let mut t7_pos: i32 = index + 7.clone();
+                                if t7_pos < token_count {
+                                    let mut t7_token: Token = tokens[t7_pos as usize].clone();
+                                    let value = t7_token.value.clone();
+                                    out_type = value;
+                                }
+                            }
+                        }
+                    } else if t4_is_to {
+                        let mut t5_pos: i32 = index + 5.clone();
+                        if t5_pos < token_count {
+                            let mut t5_token: Token = tokens[t5_pos as usize].clone();
+                            let value = t5_token.value.clone();
+                            out_type = value;
+                        }
+                    }
+                    result.push(shape_name.clone());
+                    let mut fn_parts: Vec<String> = vec!["fn:".to_string(), in_type.clone(), ":".to_string(), out_type.clone()];
+                    result.push(s_join(fn_parts.clone()).clone());
                 }
             }
         }
@@ -3489,17 +3521,17 @@ fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut name_pos: i32 = pos + 1.clone();
     let mut form_pos: i32 = pos + 3.clone();
-    let mut elem_pos: i32 = pos + 5.clone();
     let mut name_token: Token = tokens[name_pos as usize].clone();
     let mut form_token: Token = tokens[form_pos as usize].clone();
-    let mut elem_token: Token = tokens[elem_pos as usize].clone();
     let value = name_token.value.clone();
     let mut shape_name: String = value.clone();
     let kind = form_token.kind.clone();
-    let value = elem_token.value.clone();
-    let mut elem_type: String = value.clone();
     let mut rust_name: String = s_pascal(shape_name.clone());
     if kind == "KW_LIST" {
+        let mut elem_pos: i32 = pos + 5.clone();
+        let mut elem_token: Token = tokens[elem_pos as usize].clone();
+        let value = elem_token.value.clone();
+        let mut elem_type: String = value.clone();
         let mut rust_elem: String = render_rust_type(elem_type.clone());
         let mut shp_pfx: String = "type ".to_string();
         let mut shp_mid: String = " = Vec<".to_string();
@@ -3510,11 +3542,40 @@ fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
         let mut shape_next: i32 = adv_nl(after.clone(), tokens.clone());
         return make_result(decl, shape_next.clone());
     }
-    let mut out_pos: i32 = pos + 7.clone();
-    let mut out_token: Token = tokens[out_pos as usize].clone();
-    let value = out_token.value.clone();
-    let mut out_type: String = value.clone();
-    let mut rust_in: String = render_rust_type(elem_type.clone());
+    let mut t4_pos: i32 = pos + 4.clone();
+    let mut t4_token: Token = tokens[t4_pos as usize].clone();
+    let kind = t4_token.kind.clone();
+    let value = t4_token.value.clone();
+    let mut t4_is_of: bool = kind == "KW_OF".clone();
+    let mut t4_is_to: bool = value == "to".clone();
+    let mut in_type: String = "".to_string();
+    let mut out_type: String = "".to_string();
+    let mut func_end: i32 = t4_pos.clone();
+    if t4_is_of {
+        let mut t5_pos: i32 = pos + 5.clone();
+        let mut t5_token: Token = tokens[t5_pos as usize].clone();
+        let value = t5_token.value.clone();
+        in_type = value;
+        let mut t6_pos: i32 = pos + 6.clone();
+        let mut t6_token: Token = tokens[t6_pos as usize].clone();
+        let value = t6_token.value.clone();
+        let mut t6_is_to: bool = value == "to".clone();
+        func_end = t6_pos;
+        if t6_is_to {
+            let mut t7_pos: i32 = pos + 7.clone();
+            let mut t7_token: Token = tokens[t7_pos as usize].clone();
+            let value = t7_token.value.clone();
+            out_type = value;
+            func_end = t7_pos;
+        }
+    } else if t4_is_to {
+        let mut t5_pos: i32 = pos + 5.clone();
+        let mut t5_token: Token = tokens[t5_pos as usize].clone();
+        let value = t5_token.value.clone();
+        out_type = value;
+        func_end = t5_pos;
+    }
+    let mut rust_in: String = render_rust_type(in_type.clone());
     let mut rust_out: String = render_rust_type(out_type.clone());
     let mut ost_pfx: String = " -> ".to_string();
     let mut ost_parts: Vec<String> = vec![ost_pfx.clone(), rust_out.clone()];
@@ -3528,7 +3589,7 @@ fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut fns_sfx: String = ";\n\n".to_string();
     let mut fns_parts: Vec<String> = vec![fns_pfx.clone(), rust_name.clone(), fns_mid.clone(), rust_in.clone(), fns_rp.clone(), out_suffix.clone(), fns_sfx.clone()];
     let mut decl: String = s_join(fns_parts.clone());
-    let mut after: i32 = out_pos + 1.clone();
+    let mut after: i32 = func_end + 1.clone();
     let mut fn_shape_next: i32 = adv_nl(after.clone(), tokens.clone());
     return make_result(decl, fn_shape_next.clone());
 }

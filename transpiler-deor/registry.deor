@@ -84,28 +84,53 @@ fn strList build_shape_reg(tokenList tokens)
 		if kind is "KW_SHAPE"
 			int name_pos = index + 1
 			int form_pos = index + 3
-			int elem_pos = index + 5
-			if elem_pos < token_count
+			int t4_pos = index + 4
+			if t4_pos < token_count
 				Token name_token = tokens at name_pos
 				Token form_token = tokens at form_pos
-				Token elem_token = tokens at elem_pos
 				(value) in name_token
 				string shape_name = value
 				(kind) in form_token
-				(value) in elem_token
-				string elem_type = value
 				if kind is "KW_LIST"
-					result at end = shape_name
-					result at end = elem_type
-				else
-					int out_pos = index + 7
-					if out_pos < token_count
-						Token out_token = tokens at out_pos
-						(value) in out_token
-						string out_type = value
+					int elem_pos = index + 5
+					if elem_pos < token_count
+						Token elem_token = tokens at elem_pos
+						(value) in elem_token
 						result at end = shape_name
-						strList fn_parts = ["fn:", elem_type, ":", out_type]
-						result at end = s_join(fn_parts)
+						result at end = value
+				else
+					Token t4_token = tokens at t4_pos
+					(kind, value) in t4_token
+					bool t4_is_of = kind is "KW_OF"
+					bool t4_is_to = value is "to"
+					string in_type = ""
+					string out_type = ""
+					if t4_is_of
+						int t5_pos = index + 5
+						if t5_pos < token_count
+							Token t5_token = tokens at t5_pos
+							(value) in t5_token
+							in_type = value
+						int t6_pos = index + 6
+						if t6_pos < token_count
+							Token t6_token = tokens at t6_pos
+							(value) in t6_token
+							bool t6_is_to = value is "to"
+							if t6_is_to
+								int t7_pos = index + 7
+								if t7_pos < token_count
+									Token t7_token = tokens at t7_pos
+									(value) in t7_token
+									out_type = value
+					else if t4_is_to
+						int t5_pos = index + 5
+						if t5_pos < token_count
+							Token t5_token = tokens at t5_pos
+							(value) in t5_token
+							out_type = value
+					result at end = shape_name
+					strList fn_parts = ["fn:", in_type, ":", out_type]
+					result at end = s_join(fn_parts)
 		if kind is "KW_RAW"
 			int name_pos = index + 1
 			if name_pos < token_count
