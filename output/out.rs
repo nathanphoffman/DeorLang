@@ -284,6 +284,7 @@ fn validate_tokens(tokens: Vec<Token>) {
     let mut rule_camel: String = "name must be camelCase (start lowercase, no underscores)".to_string();
     let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters)".to_string();
     let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args".to_string();
+    let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     while pos < token_count {
         let mut tok: Token = tokens[pos as usize].clone();
         let kind = tok.kind.clone();
@@ -292,38 +293,61 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut cur_kind: String = kind.clone();
         let mut cur_val: String = value.clone();
         let mut cur_line: i32 = line.clone();
-        if cur_kind == "KW_MACRO_DEFINE" {
+        let mut cur_indicator: String = "KW_MACRO_DEFINE".to_string();
+        let mut next_indicator: String = "RPAREN".to_string();
+        if cur_kind == cur_indicator {
             let mut skip_pos: i32 = pos + 1.clone();
             while skip_pos < token_count {
                 let mut skip_tok: Token = tokens[skip_pos as usize].clone();
                 let kind = skip_tok.kind.clone();
                 skip_pos = skip_pos + 1;
-                if kind == "RPAREN" {
+                if kind == next_indicator {
                     break;
                 }
             }
             pos = skip_pos;
             continue;
         }
-        if cur_kind == "KW_RUST" {
+        let mut cur_indicator: String = "KW_RUST".to_string();
+        let mut next_indicator: String = "RUST_BLOCK".to_string();
+        if cur_kind == cur_indicator {
             let mut skip_pos: i32 = pos + 1.clone();
             while skip_pos < token_count {
                 let mut skip_tok: Token = tokens[skip_pos as usize].clone();
                 let kind = skip_tok.kind.clone();
                 skip_pos = skip_pos + 1;
-                if kind == "RUST_BLOCK" {
+                if kind == next_indicator {
                     break;
                 }
             }
             pos = skip_pos;
             continue;
         }
+        if cur_kind == "KW_NOT" {
+            let mut next_not: i32 = pos + 1.clone();
+            let mut after_not: i32 = pos + 2.clone();
+            if after_not < token_count {
+                let mut not_next_tok: Token = tokens[next_not as usize].clone();
+                let mut not_after_tok: Token = tokens[after_not as usize].clone();
+                let kind = not_next_tok.kind.clone();
+                let mut not_next_kind: String = kind.clone();
+                let kind = not_after_tok.kind.clone();
+                let mut not_after_kind: String = kind.clone();
+                let mut next_is_ident: bool = not_next_kind == "IDENT".clone();
+                let mut after_is_is: bool = not_after_kind == "KW_IS".clone();
+                if next_is_ident && after_is_is {
+                    let value = not_next_tok.value.clone();
+                    errors.push(val_err(cur_line.clone(), lbl_var.clone(), value.clone(), rule_not_is.clone()).clone());
+                }
+            }
+        }
+        let mut validate_indent_offset = 1;
         let mut keyword: String = "KW_STRUCT".to_string();
         let mut lbl: String = lbl_struct.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
         if cur_kind == keyword {
-            let mut name_pos: i32 = pos + 1.clone();
+            let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
                 let kind = name_tok.kind.clone();
@@ -347,7 +371,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
         if cur_kind == keyword {
-            let mut name_pos: i32 = pos + 1.clone();
+            let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
                 let kind = name_tok.kind.clone();
@@ -371,7 +395,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut rule: String = rule_camel.clone();
         let mut test_rule: fn(String) -> bool = is_camel.clone();
         if cur_kind == keyword {
-            let mut name_pos: i32 = pos + 1.clone();
+            let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
                 let kind = name_tok.kind.clone();
@@ -390,8 +414,12 @@ fn validate_tokens(tokens: Vec<Token>) {
             pos = pos + 1;
             continue;
         }
-        if cur_kind == "KW_TYPE" {
-            let mut name_pos: i32 = pos + 1.clone();
+        let mut keyword: String = "KW_TYPE".to_string();
+        let mut lbl: String = lbl_type.clone();
+        let mut rule: String = rule_pascal.clone();
+        let mut test_rule: fn(String) -> bool = is_pascal.clone();
+        if cur_kind == keyword {
+            let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
                 let kind = name_tok.kind.clone();
@@ -400,18 +428,23 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_line.clone(), lbl_type.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
                     }
-                    if !is_pascal(name_val.clone()) {
-                        errors.push(val_err(cur_line.clone(), lbl_type.clone(), name_val.clone(), rule_camel.clone()).clone());
+                    if !test_rule(name_val.clone()) {
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
                     }
                 }
             }
             pos = pos + 1;
             continue;
         }
-        if cur_kind == "KW_FN" {
-            let mut name_pos: i32 = pos + 2.clone();
+        let mut keyword: String = "KW_FN".to_string();
+        let mut lbl: String = lbl_fn.clone();
+        let mut rule: String = rule_snake.clone();
+        let mut test_rule: fn(String) -> bool = is_snake.clone();
+        let mut validate_indent_offset: i32 = 2;
+        if cur_kind == keyword {
+            let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
                 let kind = name_tok.kind.clone();
@@ -420,10 +453,10 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_line.clone(), lbl_fn.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
                     }
-                    if !is_snake(name_val.clone()) {
-                        errors.push(val_err(cur_line.clone(), lbl_fn.clone(), name_val.clone(), rule_snake.clone()).clone());
+                    if !test_rule(name_val.clone()) {
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
                     }
                 }
             }
