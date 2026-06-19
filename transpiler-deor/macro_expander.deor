@@ -61,11 +61,9 @@ fn tokenList expand_deor_macros(tokenList tokens)
 				j += 1;
 				// skip trailing NEWLINE after the call
 				if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-				// splice body tokens inline, wrapped in a bare block for scoping
+				// splice body tokens inline
 				if let Some((body, _)) = macros.get(&name) {
-					result.push(Token { kind: "BLOCK_START".to_string(), value: "{".to_string(), line: 0, file: String::new() });
 					for tok in body { result.push(tok.clone()); }
-					result.push(Token { kind: "BLOCK_END".to_string(), value: "}".to_string(), line: 0, file: String::new() });
 				}
 				i = j;
 				continue;

@@ -2,6 +2,9 @@
 AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
 # In progress
+- Give macros a ! alias for running
+
+- I need to add block as a keyword to close off macro blocks and add functionality in that sense
 
 - We have to implement is empty better for the check
 it looks like lists can't compare on empty in the transpiler, this fails in hello.deor     listString thing = empty                                      

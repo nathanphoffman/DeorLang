@@ -44,7 +44,11 @@ fn Test say_hi(Test test)
 # val1 + val2
 
 fn void handle_message(string message)
-	print(message)
+
+	macro print_message
+		print(message)
+
+	macro_run print_message
 
 shape listString = list of string
 shape sayFirst = func of listString
@@ -58,6 +62,11 @@ fn void say_first(listString items)
 
 fn void main()
 
+
+	handle_message("hello jupiter!")
+	
+	message as "Hello Yo"
+	macro_run print_message
 
 	listString thing = empty
 	# if thing is empty

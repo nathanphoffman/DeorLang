@@ -5,7 +5,8 @@ import "transpiler-deor/imports.deor"
 # token stream dispatching each top-level declaration to its gen_* function and
 # concatenating the results into a single Rust source string.
 fn string generate_rust_from_tokens(tokenList all_tokens)
-	int t_reg_start = now_ms()
+	string _timer_label = "[timer]   registries: "
+	macro_run start_timer
 	strList struct_reg = build_struct_reg(all_tokens)
 	strList shape_reg = build_shape_reg(all_tokens)
 	strList enum_reg = build_enum_reg(all_tokens)
@@ -13,12 +14,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 	strList type_reg = build_type_reg(all_tokens)
 	strList mut_names = empty
 	strList var_type_reg = build_var_type_reg(all_tokens)
-	int t_reg = elapsed_ms(t_reg_start)
-	string trg_str = n_to_str(t_reg)
-	string trg_pfx = "[timer]   registries: "
-	string trg_sfx = "ms"
-	strList trg_parts = [trg_pfx, trg_str, trg_sfx]
-	print(s_join(trg_parts))
+	macro_run end_timer
 	string using_type = ""
 	string using_var = ""
 	tokenList tok_placeholder = empty
@@ -29,7 +25,8 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 	strList parts = empty
 	int token_count = len(all_tokens)
 	int pos = 0
-	int t_loop_start = now_ms()
+	string _timer_label = "[timer]   codegen-loop: "
+	macro_run start_timer
 
 	for if true
 		if pos >= token_count
@@ -84,12 +81,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 			continue
 		pos = pos + 1
 
-	int t_loop = elapsed_ms(t_loop_start)
-	string tlp_str = n_to_str(t_loop)
-	string tlp_pfx = "[timer]   codegen-loop: "
-	string tlp_sfx = "ms"
-	strList tlp_parts = [tlp_pfx, tlp_str, tlp_sfx]
-	print(s_join(tlp_parts))
+	macro_run end_timer
 	return s_join(parts)
 
 # Entry point. Reads input and output paths from command-line arguments, calls
@@ -106,25 +98,20 @@ fn void main()
 		string input_path = args at 0
 		string output_path = args at 1
 
-		int t_start = now_ms()
+		string _timer_label = "[timer] load+dedup: "
+		macro_run start_timer
 		tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
-		int t_load = elapsed_ms(t_start)
-		string tld_str = n_to_str(t_load)
-		string tld_pfx = "[timer] load+dedup: "
-		string tld_sfx = "ms"
-		strList tld_parts = [tld_pfx, tld_str, tld_sfx]
-		print(s_join(tld_parts))
+		macro_run end_timer
 
+		string _timer_label = "[timer] macro-expand: "
+		macro_run start_timer
 		tokenList tokens = expand_deor_macros(raw_tokens)
+		macro_run end_timer
 		validate_tokens(tokens)
 
-		int t_gen_start = now_ms()
+		string _timer_label = "[timer] total-codegen: "
+		macro_run start_timer
 		string rust_code = generate_rust_from_tokens(tokens)
-		int t_gen = elapsed_ms(t_gen_start)
-		string tgn_str = n_to_str(t_gen)
-		string tgn_pfx = "[timer] total-codegen: "
-		string tgn_sfx = "ms"
-		strList tgn_parts = [tgn_pfx, tgn_str, tgn_sfx]
-		print(s_join(tgn_parts))
+		macro_run end_timer
 
 		f_write(output_path, rust_code)

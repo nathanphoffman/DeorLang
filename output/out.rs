@@ -1226,11 +1226,9 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     		j += 1;
     		// skip trailing NEWLINE after the call
     		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		// splice body tokens inline, wrapped in a bare block for scoping
+    		// splice body tokens inline
     		if let Some((body, _)) = macros.get(&name) {
-    			result.push(Token { kind: "BLOCK_START".to_string(), value: "{".to_string(), line: 0, file: String::new() });
     			for tok in body { result.push(tok.clone()); }
-    			result.push(Token { kind: "BLOCK_END".to_string(), value: "}".to_string(), line: 0, file: String::new() });
     		}
     		i = j;
     		continue;
@@ -1457,7 +1455,6 @@ fn validate_tokens(tokens: Vec<Token>) {
         }
         let mut cur_indicator: String = "KW_RUST".to_string();
         let mut next_indicator: String = "RUST_BLOCK".to_string();
-        {
         if cur_kind == cur_indicator {
             let mut skip_pos: i32 = pos + 1.clone();
             while skip_pos < token_count {
@@ -1470,7 +1467,6 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = skip_pos;
             continue;
-        }
         }
         if cur_kind == "KW_NOT" {
             let mut next_not: i32 = pos + 1.clone();
@@ -1495,7 +1491,6 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut lbl: String = lbl_struct.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
-        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -1515,13 +1510,11 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = pos + 1;
             continue;
-        }
         }
         let mut keyword: String = "KW_ENUM".to_string();
         let mut lbl: String = lbl_enum.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
-        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -1541,13 +1534,11 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = pos + 1;
             continue;
-        }
         }
         let mut keyword: String = "KW_SHAPE".to_string();
         let mut lbl: String = lbl_shape.clone();
         let mut rule: String = rule_camel.clone();
         let mut test_rule: fn(String) -> bool = is_camel.clone();
-        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -1567,13 +1558,11 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = pos + 1;
             continue;
-        }
         }
         let mut keyword: String = "KW_TYPE".to_string();
         let mut lbl: String = lbl_type.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
-        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -1593,7 +1582,6 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = pos + 1;
             continue;
-        }
         }
         if cur_kind == "KW_TYPE" {
             let mut base_type_pos: i32 = pos + 3.clone();
@@ -1643,7 +1631,6 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut rule: String = rule_snake.clone();
         let mut test_rule: fn(String) -> bool = is_snake.clone();
         let mut validate_indent_offset: i32 = 2;
-        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -1663,7 +1650,6 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = pos + 1;
             continue;
-        }
         }
         if cur_kind == "IDENT" {
             let mut is_crash: bool = cur_val == "crash".clone();
@@ -1694,7 +1680,6 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
         }
         if cur_kind == "IDENT" {
-            {
             let mut call_lp: i32 = pos + 1.clone();
             if call_lp < token_count {
                 let mut call_lp_tok: Token = tokens[call_lp as usize].clone();
@@ -1741,8 +1726,6 @@ fn validate_tokens(tokens: Vec<Token>) {
                     }
                 }
             }
-            }
-            {
             let mut is_option: bool = cur_val == "Option".clone();
             let mut is_vec: bool = cur_val == "Vec".clone();
             let mut is_box: bool = cur_val == "Box".clone();
@@ -1753,8 +1736,6 @@ fn validate_tokens(tokens: Vec<Token>) {
             if is_rust_generic {
                 errors.push(val_err(tok.clone(), lbl_rust.clone(), rule_no_option.clone()).clone());
             }
-            }
-            {
             let mut next1: i32 = pos + 1.clone();
             let mut next2: i32 = pos + 2.clone();
             if next2 < token_count {
@@ -1778,7 +1759,6 @@ fn validate_tokens(tokens: Vec<Token>) {
                         errors.push(val_err(tok_one.clone(), lbl_var.clone(), rule_snake.clone()).clone());
                     }
                 }
-            }
             }
             let mut next_pos: i32 = pos + 1.clone();
             if next_pos < token_count {
@@ -2483,7 +2463,6 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut call_code: String = s_join(call_parts.clone());
                 return make_result(call_code.clone(), after_paren.clone());
             }
-            {
             if kind == "KW_AT" {
                 let mut idx_pos: i32 = next_pos + 1.clone();
                 let mut idx_r: ParseResult = gen_primary(tokens.clone(), idx_pos.clone(), ctx.clone());
@@ -2494,7 +2473,6 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut idx_parts: Vec<String> = vec![value.clone(), idx_mid.clone(), idx_code.clone(), idx_sfx.clone()];
                 let mut idx_expr: String = s_join(idx_parts.clone());
                 return make_result(idx_expr.clone(), idx_end.clone());
-            }
             }
         }
         let mut variant_enum: String = reg_get(variant_reg.clone(), value.clone());
@@ -3935,7 +3913,8 @@ fn gen_raw_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
 }
 
 fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
-    let mut t_reg_start: i32 = now_ms();
+    let mut _timer_label: String = "[timer]   registries: ".to_string();
+    let mut _timer_start: i32 = now_ms();
     let mut struct_reg: Vec<String> = build_struct_reg(all_tokens.clone());
     let mut shape_reg: Vec<String> = build_shape_reg(all_tokens.clone());
     let mut enum_reg: Vec<String> = build_enum_reg(all_tokens.clone());
@@ -3943,12 +3922,11 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     let mut type_reg: Vec<String> = build_type_reg(all_tokens.clone());
     let mut mut_names: Vec<String> = Vec::new();
     let mut var_type_reg: Vec<String> = build_var_type_reg(all_tokens.clone());
-    let mut t_reg: i32 = elapsed_ms(t_reg_start.clone());
-    let mut trg_str: String = n_to_str(t_reg.clone());
-    let mut trg_pfx: String = "[timer]   registries: ".to_string();
-    let mut trg_sfx: String = "ms".to_string();
-    let mut trg_parts: Vec<String> = vec![trg_pfx.clone(), trg_str.clone(), trg_sfx.clone()];
-    println!("{}", s_join(trg_parts.clone()));
+    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+    let mut _timer_sfx: String = "ms".to_string();
+    let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
+    println!("{}", s_join(_timer_parts.clone()));
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
     let mut tok_placeholder: Vec<Token> = Vec::new();
@@ -3959,7 +3937,8 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     let mut parts: Vec<String> = Vec::new();
     let mut token_count: i32 = (all_tokens.len() as i32);
     let mut pos: i32 = 0;
-    let mut t_loop_start: i32 = now_ms();
+    let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
+    let mut _timer_start: i32 = now_ms();
     while true {
         if pos >= token_count {
             break;
@@ -4021,12 +4000,11 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
         }
         pos = pos + 1;
     }
-    let mut t_loop: i32 = elapsed_ms(t_loop_start.clone());
-    let mut tlp_str: String = n_to_str(t_loop.clone());
-    let mut tlp_pfx: String = "[timer]   codegen-loop: ".to_string();
-    let mut tlp_sfx: String = "ms".to_string();
-    let mut tlp_parts: Vec<String> = vec![tlp_pfx.clone(), tlp_str.clone(), tlp_sfx.clone()];
-    println!("{}", s_join(tlp_parts.clone()));
+    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+    let mut _timer_sfx: String = "ms".to_string();
+    let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
+    println!("{}", s_join(_timer_parts.clone()));
     return s_join(parts.clone());
 }
 
@@ -4038,24 +4016,31 @@ fn main() {
     } else {
         let mut input_path: String = args[0 as usize].clone();
         let mut output_path: String = args[1 as usize].clone();
-        let mut t_start: i32 = now_ms();
+        let mut _timer_label: String = "[timer] load+dedup: ".to_string();
+        let mut _timer_start: i32 = now_ms();
         let mut raw_tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
-        let mut t_load: i32 = elapsed_ms(t_start.clone());
-        let mut tld_str: String = n_to_str(t_load.clone());
-        let mut tld_pfx: String = "[timer] load+dedup: ".to_string();
-        let mut tld_sfx: String = "ms".to_string();
-        let mut tld_parts: Vec<String> = vec![tld_pfx.clone(), tld_str.clone(), tld_sfx.clone()];
-        println!("{}", s_join(tld_parts.clone()));
+        let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+        let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+        let mut _timer_sfx: String = "ms".to_string();
+        let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
+        println!("{}", s_join(_timer_parts.clone()));
+        let mut _timer_label: String = "[timer] macro-expand: ".to_string();
+        let mut _timer_start: i32 = now_ms();
         let mut tokens: Vec<Token> = expand_deor_macros(raw_tokens.clone());
+        let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+        let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+        let mut _timer_sfx: String = "ms".to_string();
+        let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
+        println!("{}", s_join(_timer_parts.clone()));
         validate_tokens(tokens.clone());
-        let mut t_gen_start: i32 = now_ms();
+        let mut _timer_label: String = "[timer] total-codegen: ".to_string();
+        let mut _timer_start: i32 = now_ms();
         let mut rust_code: String = generate_rust_from_tokens(tokens.clone());
-        let mut t_gen: i32 = elapsed_ms(t_gen_start.clone());
-        let mut tgn_str: String = n_to_str(t_gen.clone());
-        let mut tgn_pfx: String = "[timer] total-codegen: ".to_string();
-        let mut tgn_sfx: String = "ms".to_string();
-        let mut tgn_parts: Vec<String> = vec![tgn_pfx.clone(), tgn_str.clone(), tgn_sfx.clone()];
-        println!("{}", s_join(tgn_parts.clone()));
+        let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+        let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+        let mut _timer_sfx: String = "ms".to_string();
+        let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
+        println!("{}", s_join(_timer_parts.clone()));
         f_write(output_path.clone(), rust_code.clone());
     }
 }
