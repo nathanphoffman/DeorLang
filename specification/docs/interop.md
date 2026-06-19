@@ -215,6 +215,11 @@ Built-in functions (`print`, `len`, `range`, and the string operations) are alwa
 
 ---
 
+### Hex and Binary Numeric Literals (dismissed)
+Decision: use a `rust` block if hex or binary literals are required.
+
+---
+
 ## When to Use What
 
 | Scenario | Approach |

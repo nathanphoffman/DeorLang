@@ -85,9 +85,6 @@ Crash wraps panic! and so likely provides 2 arguments, the second of which is fo
 # Quick Notes
 ---
 
-### Hex and Binary Numeric Literals (dismissed)
-Decision: use a `rust` block if hex or binary literals are required.
-
 ### List of Validator Type -- Possible Bug?
 Is `shape rollList = list of Roll` valid (a list whose element type is a validator type)? It would be `Vec<Option<Roll>>` in Rust. Iterating it gives `Option<Roll>` elements, each truthy/falsy. Useful but semantics need to be explicit — especially around `at end =`, `remove at`, and whether a failed predicate on assignment silently inserts `None` into the list.
 
@@ -95,5 +92,10 @@ So to summarize this issue there are basically two ways to think of a list:
 
 A list that allows Options and trusts them, which means some could be none (unsafe)
 Or a list that does not allow a value to append -- which in rust nothing happens but in deor it will check
+
+### Should Macro be more Obvious?
+Right now macro just uses ```macro``` and ```macro_run``` I wonder if we should consider something more identifyable to scream that there is code you are missing (and not seeing by running your eye over it)
+
+I am considering ```MACRO``` or ```__MACRO__``` or something similar.  The one counter argument is technically functions also don't stand out any more than macro_run does and being a keyword macro_run might stand-out more.  The counter argument to that though is at least functions are contained with the variables you pass it, whereas macro can do anything to the outer scope, making its impact even higher and less visible.
 
 ---

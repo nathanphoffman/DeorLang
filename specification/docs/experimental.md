@@ -3,6 +3,12 @@ These features should not be used
 
 ---
 ### Give Up
+As of June 19th 2026, another problem has come up: ```as``` unintentionally is avoided by the cloning process, so as takes ownership of whatever is assigned to it.  This is actually an unintended good practice that I am going to keep.  The question here is do we change the wording of give up to ```as```.  I like this for brevity and it keeps the number of reserved keywords at a minimum which continues to grow.
+
+```
+call_fn(as arg1, as arg2)
+```
+
 The intention of ```giveup``` is to expose Rust ownership to Deor. The reason is that Deor clones every value for developer ease, but it can cost serious performance. Normal rust ownership transfers the variable into the block it is sent to (such as passing a variable into a function) that has the side-effect of losing the variable below that function. This is the default in Rust, but not ideal for Deor's simplicity.  
 
 ```giveup``` allows the ownership of rust to be restored
@@ -37,25 +43,5 @@ struct Employee
 shape listEmployee = list of Employee
 
 using
-
-```
-
----
-### Macros
-Macros are extra useful in deor because it eliminates an enormous amount of cloning that can happen by defining seperate functions and organizing code (since deor for ease clones nearly everything).  It also is much more human readable than rust macros and more flexible as it doesn't have the same level of safety but still uses Rust's safety under the hood.
-
-Macros automatically rap themselves in bare blocks {} a rust convention but this is hidden to the user, this means that variables will not pollute anything outside of the macro (important as the macro code is literally copy and pasted everywhere you have the macro_run command).
-
-```
-macro say_hello
-    print(hello)
-
-hello as "Hi There"
-macro_run say_hello
-
-hello as "Hi There Again"
-macro_run say_hello
-
-# output is High There \n High There Again
 
 ```

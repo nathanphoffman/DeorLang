@@ -27,6 +27,8 @@
 
 [Loops](docs/loops.md) — `for` collection and numeric iteration
 
+[Macros](docs/macros.md) — macros for organizing code, useful for avoiding clone
+
 [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded
 
 [Roadmap](docs/roadmap.md) — deferred features
