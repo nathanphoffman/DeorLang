@@ -1145,6 +1145,9 @@ fn word_to_kind(word: String) -> String {
     if word == "raw" {
         return "KW_RAW".to_string();
     }
+    if word == "macro" {
+        return "KW_MACRO".to_string();
+    }
     if word == "macro_define" {
         return "KW_MACRO_DEFINE".to_string();
     }
@@ -3472,6 +3475,90 @@ fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
     return deduplicate_decls(merged.clone());
 }
 
+fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
+    let mut macros: std::collections::HashMap<String, Vec<Token>> = std::collections::HashMap::new();
+    let mut result: Vec<Token> = vec![];
+    let mut i: usize = 0;
+    while i < tokens.len() {
+    	let kind = tokens[i].kind.as_str();
+
+    	// collect macro definition (new KW_MACRO or legacy KW_MACRO_DEFINE)
+    	if kind == "KW_MACRO" || kind == "KW_MACRO_DEFINE" {
+    		let mut j = i + 1;
+    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
+    		j += 1;
+    		// legacy macro_define has a parameter list — skip to RPAREN
+    		if kind == "KW_MACRO_DEFINE" {
+    			while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
+    			if j < tokens.len() { j += 1; }
+    		}
+    		// skip NEWLINE then INDENT
+    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		while j < tokens.len() && tokens[j].kind == "INDENT" { j += 1; }
+    		// collect body tokens, excluding the outer INDENT/DEDENT pair
+    		let mut body: Vec<Token> = vec![];
+    		let mut depth: i32 = 1;
+    		while j < tokens.len() {
+    			if tokens[j].kind == "INDENT" {
+    				depth += 1;
+    				body.push(tokens[j].clone());
+    			} else if tokens[j].kind == "DEDENT" {
+    				depth -= 1;
+    				if depth == 0 { j += 1; break; }
+    				body.push(tokens[j].clone());
+    			} else {
+    				body.push(tokens[j].clone());
+    			}
+    			j += 1;
+    		}
+    		if !name.is_empty() { macros.insert(name, body); }
+    		// skip trailing NEWLINE after the definition block
+    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		i = j;
+    		continue;
+    	}
+
+    	// expand macro_run call site
+    	if kind == "KW_MACRO_RUN" {
+    		let mut j = i + 1;
+    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
+    		j += 1;
+    		// consume optional `with (vars)` — same-line or indented-block form
+    		if j < tokens.len() && tokens[j].kind == "KW_WITH" {
+    			// same-line: macro_run name with (vars)
+    			j += 1;
+    			if j < tokens.len() && tokens[j].kind == "LPAREN" { j += 1; }
+    			while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
+    			if j < tokens.len() { j += 1; }
+    		} else if j < tokens.len() && tokens[j].kind == "NEWLINE" {
+    			// block form: macro_run name \n INDENT with (vars) \n DEDENT
+    			let mut k = j + 1;
+    			if k < tokens.len() && tokens[k].kind == "INDENT" { k += 1; }
+    			if k < tokens.len() && tokens[k].kind == "KW_WITH" {
+    				j = k + 1;
+    				if j < tokens.len() && tokens[j].kind == "LPAREN" { j += 1; }
+    				while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
+    				if j < tokens.len() { j += 1; }
+    				while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    				if j < tokens.len() && tokens[j].kind == "DEDENT" { j += 1; }
+    			}
+    		}
+    		// skip trailing NEWLINE after the call
+    		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		// splice body tokens inline
+    		if let Some(body) = macros.get(&name) {
+    			for tok in body { result.push(tok.clone()); }
+    		}
+    		i = j;
+    		continue;
+    	}
+
+    	result.push(tokens[i].clone());
+    	i += 1;
+    }
+    result
+}
+
 fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {
     let mut t_reg_start: i32 = now_ms();
     let mut struct_reg: Vec<String> = build_struct_reg(tokens.clone());
@@ -3581,13 +3668,14 @@ fn main() {
         let mut input_path: String = args[0 as usize].clone();
         let mut output_path: String = args[1 as usize].clone();
         let mut t_start: i32 = now_ms();
-        let mut tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
+        let mut raw_tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
         let mut t_load: i32 = elapsed_ms(t_start.clone());
         let mut tld_str: String = n_to_str(t_load.clone());
         let mut tld_pfx: String = "[timer] load+dedup: ".to_string();
         let mut tld_sfx: String = "ms".to_string();
         let mut tld_parts: Vec<String> = vec![tld_pfx.clone(), tld_str.clone(), tld_sfx.clone()];
         println!("{}", s_join(tld_parts.clone()));
+        let mut tokens: Vec<Token> = expand_deor_macros(raw_tokens.clone());
         validate_tokens(tokens.clone());
         let mut t_gen_start: i32 = now_ms();
         let mut rust_code: String = generate_rust_from_tokens(tokens.clone());

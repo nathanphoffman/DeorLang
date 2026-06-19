@@ -71,6 +71,8 @@ fn string word_to_kind(string word)
 		return "KW_GIVEUP"
 	if word is "raw"
 		return "KW_RAW"
+	if word is "macro"
+		return "KW_MACRO"
 	if word is "macro_define"
 		return "KW_MACRO_DEFINE"
 	if word is "macro_run"

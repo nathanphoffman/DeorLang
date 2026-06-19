@@ -5,6 +5,7 @@
 (build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg) in "transpiler-deor/registry.deor"
 (gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl, gen_raw_decl) in "transpiler-deor/codegen_decl.deor"
 (collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
+(expand_deor_macros) in "transpiler-deor/macro_expander.deor"
 
 # Top-level code generator. Takes the fully merged and deduplicated token list, builds
 # all six registries (struct, shape, enum, variant, type, var_type), then walks the
@@ -117,7 +118,7 @@ fn void main()
 		string output_path = args at 1
 
 		int t_start = now_ms()
-		tokenList tokens = collect_all_tokens_with_all_imports(input_path)
+		tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
 		int t_load = elapsed_ms(t_start)
 		string tld_str = n_to_str(t_load)
 		string tld_pfx = "[timer] load+dedup: "
@@ -125,6 +126,7 @@ fn void main()
 		strList tld_parts = [tld_pfx, tld_str, tld_sfx]
 		print(s_join(tld_parts))
 
+		tokenList tokens = expand_deor_macros(raw_tokens)
 		validate_tokens(tokens)
 
 		int t_gen_start = now_ms()
