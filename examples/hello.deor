@@ -50,8 +50,9 @@ shape sayFirst = func of listString
 
 # see if the keyword func somehow works too
 # first as may not work?
-fn void say_first(listString: list)
-	string first = list[0]
+# make sure it requires return type
+fn void say_first(listString items)
+	string first = items at 0
 	print(first)
 
 fn void main()

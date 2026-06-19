@@ -114,6 +114,20 @@ fn void validate_tokens(tokenList tokens)
 						Token fn_name_tok = tokens at fn_name_pos
 						errors at end = val_err(fn_name_tok, lbl_fn, rule_max_params)
 
+			# missing return type: KW_FN IDENT LPAREN — no room for both return type and fn name
+			string rule_no_ret = "missing return type — use 'fn void name()' for functions that return nothing"
+			int ret_pos = pos + 1
+			int lp2_pos = pos + 2
+			if lp2_pos < token_count
+				Token ret_tok = tokens at ret_pos
+				Token lp2_tok = tokens at lp2_pos
+				(kind) in ret_tok
+				string ret_kind = kind
+				(kind) in lp2_tok
+				if ret_kind is "IDENT"
+					if kind is "LPAREN"
+						errors at end = val_err(ret_tok, lbl_fn, rule_no_ret)
+
 		# Fn Validator → lower_snake_case, min 3
 		# pattern: KW_FN <return_type> <fn_name> LPAREN
 		string keyword = "KW_FN"
@@ -130,6 +144,14 @@ fn void validate_tokens(tokenList tokens)
 			macro_run check_call_args
 			macro_run check_rust_generic
 			macro_run check_var_decl
+
+			int next_pos = pos + 1
+			if next_pos < token_count
+				Token next_tok = tokens at next_pos
+				(kind) in next_tok
+				string bracket_rule = "bracket indexing is not valid in Deor — use 'name at index' instead"
+				if kind is "LBRACKET"
+					errors at end = val_err(tok, lbl_var, bracket_rule)
 
 		pos = pos + 1
 

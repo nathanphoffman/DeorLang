@@ -1593,6 +1593,21 @@ fn validate_tokens(tokens: Vec<Token>) {
                     }
                 }
             }
+            let mut rule_no_ret: String = "missing return type — use 'fn void name()' for functions that return nothing".to_string();
+            let mut ret_pos: i32 = pos + 1.clone();
+            let mut lp2_pos: i32 = pos + 2.clone();
+            if lp2_pos < token_count {
+                let mut ret_tok: Token = tokens[ret_pos as usize].clone();
+                let mut lp2_tok: Token = tokens[lp2_pos as usize].clone();
+                let kind = ret_tok.kind.clone();
+                let mut ret_kind: String = kind.clone();
+                let kind = lp2_tok.kind.clone();
+                if ret_kind == "IDENT" {
+                    if kind == "LPAREN" {
+                        errors.push(val_err(ret_tok.clone(), lbl_fn.clone(), rule_no_ret.clone()).clone());
+                    }
+                }
+            }
         }
         let mut keyword: String = "KW_FN".to_string();
         let mut lbl: String = lbl_fn.clone();
@@ -1707,6 +1722,15 @@ fn validate_tokens(tokens: Vec<Token>) {
                     }
                 }
             }
+            }
+            let mut next_pos: i32 = pos + 1.clone();
+            if next_pos < token_count {
+                let mut next_tok: Token = tokens[next_pos as usize].clone();
+                let kind = next_tok.kind.clone();
+                let mut bracket_rule: String = "bracket indexing is not valid in Deor — use 'name at index' instead".to_string();
+                if kind == "LBRACKET" {
+                    errors.push(val_err(tok.clone(), lbl_var.clone(), bracket_rule.clone()).clone());
+                }
             }
         }
         pos = pos + 1;
