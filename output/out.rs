@@ -3636,9 +3636,9 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
     		// splice body tokens inline, wrapped in a bare block for scoping
     		if let Some(body) = macros.get(&name) {
-    			result.push(Token { kind: "BLOCK_START".to_string(), value: "{".to_string(), line: 0 });
+    			result.push(Token { kind: "BLOCK_START".to_string(), value: "{".to_string(), line: 0, file: String::new() });
     			for tok in body { result.push(tok.clone()); }
-    			result.push(Token { kind: "BLOCK_END".to_string(), value: "}".to_string(), line: 0 });
+    			result.push(Token { kind: "BLOCK_END".to_string(), value: "}".to_string(), line: 0, file: String::new() });
     		}
     		i = j;
     		continue;
