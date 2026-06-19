@@ -2,26 +2,67 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Deor",
   "scopeName": "source.deor",
-  "fileTypes": ["deor"],
+  "fileTypes": [
+    "deor"
+  ],
   "patterns": [
-    { "include": "#comment" },
-    { "include": "#string" },
-    { "include": "#struct-definition" },
-    { "include": "#type-definition" },
-    { "include": "#enum-definition" },
-    { "include": "#shape-definition" },
-    { "include": "#keyword-fn" },
-    { "include": "#keywords-storage" },
-    { "include": "#keywords-control" },
-    { "include": "#keywords-other" },
-    { "include": "#builtin-types" },
-    { "include": "#constants" },
-    { "include": "#number" },
-    { "include": "#shape-name" },
-    { "include": "#user-type" },
-    { "include": "#function-call" },
-    { "include": "#banned-operators" },
-    { "include": "#operator" }
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#struct-definition"
+    },
+    {
+      "include": "#type-definition"
+    },
+    {
+      "include": "#enum-definition"
+    },
+    {
+      "include": "#shape-definition"
+    },
+    {
+      "include": "#keyword-fn"
+    },
+    {
+      "include": "#keywords-storage"
+    },
+    {
+      "include": "#keywords-control"
+    },
+    {
+      "include": "#keywords-other"
+    },
+    {
+      "include": "#builtin-types"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#shape-name"
+    },
+    {
+      "include": "#user-type"
+    },
+    {
+      "include": "#macro-bang"
+    },
+    {
+      "include": "#function-call"
+    },
+    {
+      "include": "#banned-operators"
+    },
+    {
+      "include": "#operator"
+    }
   ],
   "repository": {
     "comment": {
@@ -33,36 +74,62 @@
       "begin": "\"",
       "end": "\"",
       "patterns": [
-        { "name": "variable.other.interpolated.deor", "match": "\\{[a-z_][a-z0-9_]*\\}" },
-        { "name": "constant.character.escape.deor", "match": "\\\\." }
+        {
+          "name": "variable.other.interpolated.deor",
+          "match": "\\{[a-z_][a-z0-9_]*\\}"
+        },
+        {
+          "name": "constant.character.escape.deor",
+          "match": "\\\\."
+        }
       ]
+    },
+    "macro-bang": {
+      "name": "entity.name.function.deor",
+      "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)(!)"
     },
     "struct-definition": {
       "match": "\\b(struct[+*]?)\\s+([A-Z][A-Za-z0-9_]*)",
       "captures": {
-        "1": { "name": "storage.type.deor" },
-        "2": { "name": "entity.name.type.deor" }
+        "1": {
+          "name": "storage.type.deor"
+        },
+        "2": {
+          "name": "entity.name.type.deor"
+        }
       }
     },
     "type-definition": {
       "match": "\\b(type)\\s+([A-Z][A-Za-z0-9_]*)",
       "captures": {
-        "1": { "name": "storage.type.deor" },
-        "2": { "name": "entity.name.type.deor" }
+        "1": {
+          "name": "storage.type.deor"
+        },
+        "2": {
+          "name": "entity.name.type.deor"
+        }
       }
     },
     "enum-definition": {
       "match": "\\b(enum)\\s+([a-z][a-z0-9]*[A-Z][a-zA-Z0-9]*)",
       "captures": {
-        "1": { "name": "storage.type.deor" },
-        "2": { "name": "entity.name.type.deor" }
+        "1": {
+          "name": "storage.type.deor"
+        },
+        "2": {
+          "name": "entity.name.type.deor"
+        }
       }
     },
     "shape-definition": {
       "match": "\\b(shape)\\s+([a-z][a-z0-9]*[A-Z][a-zA-Z0-9]*)",
       "captures": {
-        "1": { "name": "storage.type.deor" },
-        "2": { "name": "entity.name.type.deor" }
+        "1": {
+          "name": "storage.type.deor"
+        },
+        "2": {
+          "name": "entity.name.type.deor"
+        }
       }
     },
     "keyword-fn": {

@@ -99,14 +99,14 @@ fn void main()
 		string output_path = args at 1
 
 		string _timer_label = "[timer] load+dedup: "
-		macro_run start_timer
+		start_timer!
 		tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
-		macro_run end_timer
+		end_timer!
 
 		string _timer_label = "[timer] macro-expand: "
-		macro_run start_timer
+		start_timer!
 		tokenList tokens = expand_deor_macros(raw_tokens)
-		macro_run end_timer
+		end_timer!
 		validate_tokens(tokens)
 
 		string _timer_label = "[timer] total-codegen: "
