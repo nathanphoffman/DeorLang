@@ -814,6 +814,18 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                     }
                 }
                 let mut word_kind: String = word_to_kind(word.clone());
+                if char_index < char_count {
+                    let mut maybe_bang: String = chars[char_index as usize].clone();
+                    if maybe_bang == "!" {
+                        char_index = char_index + 1;
+                        let mut kind_macro_run: String = "KW_MACRO_RUN".to_string();
+                        let mut macro_run_val: String = "macro_run".to_string();
+                        let mut kind_ident: String = "IDENT".to_string();
+                        tokens.push(make_token(kind_macro_run.clone(), macro_run_val.clone(), meta.clone()).clone());
+                        tokens.push(make_token(kind_ident.clone(), word.clone(), meta.clone()).clone());
+                        continue;
+                    }
+                }
                 tokens.push(make_token(word_kind.clone(), word.clone(), meta.clone()).clone());
                 continue;
             }

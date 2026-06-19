@@ -110,8 +110,8 @@ fn void main()
 		validate_tokens(tokens)
 
 		string _timer_label = "[timer] total-codegen: "
-		macro_run start_timer
+		start_timer!
 		string rust_code = generate_rust_from_tokens(tokens)
-		macro_run end_timer
+		end_timer!
 
 		f_write(output_path, rust_code)
