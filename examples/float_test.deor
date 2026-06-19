@@ -1,0 +1,7 @@
+fn void main()
+	float phi = 1.618
+	float pie = 3.14159
+	int pop = 1_000_000
+	print(phi)
+	print(pie)
+	print(pop)

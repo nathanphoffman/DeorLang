@@ -7,7 +7,7 @@
 
 [Collections](docs/collections.md) — index access, append, remove, slices
 
-[Conditionals](docs/conditionals.md) — `if`, `else if`, `else`, compact ternary
+[Conditionals](docs/conditionals.md) — `if`, `else if`, `else`
 
 [Destructuring](docs/destructuring.md) — field extraction with `in`
 
@@ -43,6 +43,6 @@
 
 [Syntax](docs/syntax.md) — block structure, keywords, comments
 
-[Types](docs/types.md) — validator types (`type`), structs (`struct` / `struct+` / `struct*`)
+[Types](docs/types.md) — validator types (`type`), structs (`struct`)
 
 [Variables](docs/variables.md) — `as`, explicit typing, struct construction, reassignment

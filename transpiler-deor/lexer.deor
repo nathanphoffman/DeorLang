@@ -40,6 +40,7 @@ fn tokenList tokenize(string source, string path)
 	string kind_rust_block = "RUST_BLOCK"
 	string kind_string = "STRING"
 	string kind_int = "INT"
+	string kind_float = "FLOAT"
 	string kind_eof = "EOF"
 	string kind_gte = "GTE"
 	string kind_lte = "LTE"
@@ -200,7 +201,7 @@ fn tokenList tokenize(string source, string path)
 				tokens at end = make_token(kind_string, val, cur_line, path)
 				continue
 
-			# integer literal
+			# integer or float literal
 			if c_digit(character)
 				string num = s_cat(empty_val, character)
 				int num_start = char_index + 1
@@ -210,9 +211,40 @@ fn tokenList tokenize(string source, string path)
 					if c_digit(number_char)
 						num = s_cat(num, number_char)
 						char_index = number_index + 1
+					else if number_char is "_" # skip underscore separator; consume if next char is a digit so 1_000_000 → INT "1000000"
+						int peek_idx = number_index + 1
+						if peek_idx < char_count
+							string peek_char = chars at peek_idx
+							if c_digit(peek_char)
+								char_index = number_index + 1
+							else
+								break
+						else
+							break
 					else
 						break
-				tokens at end = make_token(kind_int, num, cur_line, path)
+				bool is_float = false
+				if char_index < char_count
+					string dot_char = chars at char_index
+					int frac_start = char_index + 1
+					if dot_char is "." and frac_start < char_count
+						string frac_first = chars at frac_start
+						if c_digit(frac_first)
+							is_float = true
+							string dot_str = "."
+							num = s_cat(num, dot_str)
+							char_index = frac_start
+							for frac_index in (frac_start, char_count)
+								string frac_char = chars at frac_index
+								if c_digit(frac_char)
+									num = s_cat(num, frac_char)
+									char_index = frac_index + 1
+								else
+									break
+				if is_float
+					tokens at end = make_token(kind_float, num, cur_line, path)
+				else
+					tokens at end = make_token(kind_int, num, cur_line, path)
 				continue
 
 			# identifier or keyword

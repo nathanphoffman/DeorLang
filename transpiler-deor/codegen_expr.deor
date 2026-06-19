@@ -164,6 +164,10 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 		int next = pos + 1
 		return make_result(value, next)
 
+	if kind is "FLOAT"
+		int next = pos + 1
+		return make_result(value, next)
+
 	if kind is "STRING"
 		string debug_val = s_debug(value)
 		int next = pos + 1

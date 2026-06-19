@@ -1,31 +1,22 @@
  ---
   Documented But Not Implemented (20 items)
 
-  High severity — would cause silent failures or compile errors:
-  - Float literals — 3.14 is tokenized as INT 3, junk ., INT 14; no float literal parsing in lexer
+Where in the docs do I address seperators?
+
 
   Medium severity — features that appear to work but don't:
-  - rust: imports — the rust:math_utils path is read but then lexed as Deor source (would crash)
-  - Named import filtering — (gen_fn_decl, gen_struct_decl) in "./file" imports everything; the names in parens are parsed but never used to filter
-  - Compact ternary — int result = value\n  if value > 0\n  else 0 not handled in codegen
-  - struct+ / struct* — all structs always get identical treatment; no Rc<T> wrapping
   - Void-input/output func shapes — func to bool and func of Error read wrong token positions; registry stores garbage
   - Variable shadowing enforcement — never checked
   - Max 3 parameters enforcement — never checked
-  - Numeric underscore separators — 1_000_000 tokenizes as INT 1, IDENT _000_000
   - Destructuring order enforcement — out-of-order destructuring silently passes
 
   Low severity:
-  - Void function return enforcement — not checked
-  - empty at declaration only — re-assigning = empty silently accepted
   - Top-to-bottom declaration order — not enforced (registries are pre-built so forward refs silently work)
   - Field order in as (f1, f2) — not enforced
 
   ---
   Implemented But Undocumented (9 items)
 
-  - giveup — marked "experimental" in the spec but used pervasively throughout the transpiler itself; effectively a stable feature with no real docs
-  - bad — partially replaced empty for validator None-init; the spec has one note dated June 18 but examples still show empty
   - for (start, end) range syntax — used in examples, no mention in loops.md
   - for giveup var in collection — loop form, completely undocumented
   - BLOCK_START/BLOCK_END tokens — internal synthetic tokens from macro expansion
@@ -37,8 +28,6 @@
   ---
   Documented Incorrectly (10 items)
 
-  - import keyword — imports.md says to write import (names) in "path" but import is not a keyword; the real syntax is bare (names) in "path"
-  - crash vs throw — functions.md says throw, syntax.md says crash, transpiler only has crash
   - Named-arg rule threshold — spec says all args must be named variables; transpiler only checks when there are 2+ args (single-arg literals pass silently)
   - [] claimed to be a transpiler error — transpiler accepts [] for empty list init; struct_test.deor example uses it
   - avow statement context — checks var_type is "int" etc. to decide whether to add .0, but tests the binding type not the validator's base type

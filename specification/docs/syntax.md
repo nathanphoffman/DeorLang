@@ -83,7 +83,7 @@ Open an indented block when followed by a newline.
 | `if`,`else`,`else if` | Conditional block |
 | `for` | Loop |
 | `type` | Validator type declaration |
-| `struct` | Struct declaration (`struct`, `struct+`, `struct*`) |
+| `struct` | Struct declaration (`struct`) |
 | `shape` | Shape declaration (`shape name = list of T` / `func of T to O`) |
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |

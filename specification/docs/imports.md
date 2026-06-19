@@ -1,45 +1,22 @@
 # Imports
 
-Imports use the `import` keyword followed by the names in parentheses and `in` with a string path.
+Imports use the `import` keyword followed by a path
 
 ```
-(Room, House, Squarefeet, total_area) in "./models"
+import "models/customer.deor"
 ```
 
-Empty parens import everything from the file:
+All imports are pulled in everywhere, there is no way to scope down specific imported items, or privatize them. So naming functions, enums, structs, etc. well is important to preventing collisions.
 
+Although you can put the imports whereever you want (as long as they are at the top of the file), since they are all global anyway, it is easier to create an imports.deor, and just import that one file from main.
+
+main.deor
 ```
-() in "./models"
-```
-
-**Private declarations:** a declaration marked `private` in its source file cannot be imported. Attempting to name it in an import is a transpiler error..
-
----
-
-## Named Imports
-
-List the specific declarations to import between the parentheses. The transpiler filters the imported file to only those names — all other declarations are excluded from the resulting token stream.
-
-```
-(gen_fn_decl, gen_struct_decl) in "./codegen_decl"
+import "imports.deor"
 ```
 
-This keeps the compiled output lean and makes dependencies explicit.
-
----
-
-## No Wildcard Imports
-
-No wildcard imports are supported, it is anti-Deorian
-
----
-
-## Import Resolution
-
-Imports are resolved recursively at transpile time: if an imported file has its own imports, those are inlined first. The final token stream seen by the code generator is fully flattened — there is no module namespace at runtime.
-
----
-
-**Conversion notes:**
-- Imports are processed entirely at transpile time. The resulting Rust file is a single flat source — no `use` or `mod` statements are generated from Deor imports.
-- The `import` keyword is consumed by the importer and does not appear in generated Rust.
+imports.deor
+```
+import "models/customer.deor"
+import "utility.deor"
+```

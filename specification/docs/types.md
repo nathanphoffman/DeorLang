@@ -263,7 +263,7 @@ int bonus = crit else 0
 
 ---
 
-## Structs (`struct` / `struct+` / `struct*`)
+## Structs (`struct`)
 
 ```
 struct Room
@@ -286,17 +286,12 @@ struct Room {
 | Form | Meaning | Rust representation |
 |---|---|---|
 | `struct Name` | Transpiler decides | `Name` (value) or `Rc<Name>` (reference), based on size + whether any field is an unsized list shape |
-| `struct+ Name` | Force value, always | `Name`, `.clone()` is a full (possibly deep) copy |
-| `struct* Name` | Force reference, always | `Rc<Name>`, `.clone()` is a refcount bump |
 
 ```
 struct House
     string address
     roomList rooms         # unsized list shape -> auto becomes struct*
 
-struct+ House               # explicit override: always a value, full clone on copy
-    string address
-    roomList rooms
 ```
 
 Struct fields may be primitives, validator types, list shapes, or other structs. Func shapes as struct fields are a transpiler error — structs are pure data.

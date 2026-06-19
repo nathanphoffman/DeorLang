@@ -47,6 +47,9 @@ fn void handle_message(string message)
 
 fn void main()
 
+	float test = 12.5
+	print(test)
+
 	label as "test"
 	value as "test2"
 

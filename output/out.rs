@@ -574,6 +574,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     let mut kind_rust_block: String = "RUST_BLOCK".to_string();
     let mut kind_string: String = "STRING".to_string();
     let mut kind_int: String = "INT".to_string();
+    let mut kind_float: String = "FLOAT".to_string();
     let mut kind_eof: String = "EOF".to_string();
     let mut kind_gte: String = "GTE".to_string();
     let mut kind_lte: String = "LTE".to_string();
@@ -741,11 +742,50 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                     if c_digit(number_char.clone()) {
                         num = s_cat(num.clone(), number_char.clone());
                         char_index = number_index + 1;
+                    } else if number_char == "_" {
+                        let mut peek_idx: i32 = number_index + 1.clone();
+                        if peek_idx < char_count {
+                            let mut peek_char: String = chars[peek_idx as usize].clone();
+                            if c_digit(peek_char.clone()) {
+                                char_index = number_index + 1;
+                            } else {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
                     } else {
                         break;
                     }
                 }
-                tokens.push(make_token(kind_int.clone(), num.clone(), cur_line.clone(), path.clone()).clone());
+                let mut is_float: bool = false;
+                if char_index < char_count {
+                    let mut dot_char: String = chars[char_index as usize].clone();
+                    let mut frac_start: i32 = char_index + 1.clone();
+                    if dot_char == "." && frac_start < char_count {
+                        let mut frac_first: String = chars[frac_start as usize].clone();
+                        if c_digit(frac_first.clone()) {
+                            is_float = true;
+                            let mut dot_str: String = ".".to_string();
+                            num = s_cat(num.clone(), dot_str.clone());
+                            char_index = frac_start;
+                            for frac_index in frac_start..char_count {
+                                let mut frac_char: String = chars[frac_index as usize].clone();
+                                if c_digit(frac_char.clone()) {
+                                    num = s_cat(num.clone(), frac_char.clone());
+                                    char_index = frac_index + 1;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                if is_float {
+                    tokens.push(make_token(kind_float.clone(), num.clone(), cur_line.clone(), path.clone()).clone());
+                } else {
+                    tokens.push(make_token(kind_int.clone(), num.clone(), cur_line.clone(), path.clone()).clone());
+                }
                 continue;
             }
             if c_alpha(character.clone()) {
@@ -2134,6 +2174,10 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let value = token.value.clone();
     let line = token.line.clone();
     if kind == "INT" {
+        let mut next: i32 = pos + 1.clone();
+        return make_result(value.clone(), next.clone());
+    }
+    if kind == "FLOAT" {
         let mut next: i32 = pos + 1.clone();
         return make_result(value.clone(), next.clone());
     }
