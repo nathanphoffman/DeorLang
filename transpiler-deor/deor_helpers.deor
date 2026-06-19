@@ -1,4 +1,4 @@
-(tokenList, TokensRef, Token, ParseResult) in "transpiler-deor/types.deor"
+import "transpiler-deor/types.deor"
 
 # === ParseResult helpers ===
 

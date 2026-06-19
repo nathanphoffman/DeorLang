@@ -1,5 +1,5 @@
-(s_lower_char, s_upper_char) in "transpiler-deor/lib/string.deor"
-(c_chars) in "transpiler-deor/lib/char.deor"
+import "transpiler-deor/lib/string.deor"
+import "transpiler-deor/lib/char.deor"
 
 # First char uppercase → PascalCase
 fn bool is_pascal(string name)

@@ -1,5 +1,5 @@
-(tokenList, Token, TokenCursor) in "transpiler-deor/types.deor"
-(adv_nl, adv_indent) in "transpiler-deor/deor_helpers.deor"
+import "transpiler-deor/types.deor"
+import "transpiler-deor/deor_helpers.deor"
 
 # Constructs a fresh TokenCursor anchored at `pos`. Used to start cursor-based
 # traversal at the beginning of a declaration body during code generation.

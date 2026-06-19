@@ -170,31 +170,6 @@ Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
 
 ---
 
-## `throw`
-
-`throw` is an unrecoverable hard stop — transpiles to `panic!()` in Rust. Takes a named string variable — inline string literals are a transpiler error, the same as any other function argument. For recoverable error handling, accept an error handler as a `func` shape parameter instead.
-
-```
-fn int divide(int left, int right)
-    if right is 0
-        msg as "division by zero"
-        throw msg
-    return left / right
-```
-
-```rust
-fn divide(left: i32, right: i32) -> i32 {
-    if right == 0 {
-        panic!("division by zero");
-    }
-    left / right
-}
-```
-
-`throw` accepts a string only. Struct-based throw (e.g. `throw Error`) is flagged for v2.
-
----
-
 ## No Lambdas / Closures / Nested Functions
 
 All callable values are named top-level `fn`s. There is no anonymous-function syntax, and functions may not be defined inside other function bodies. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.

@@ -59,3 +59,11 @@ fn RollResult roll_die(Die die)
 
     return result
 ```
+## Naming External Libs
+Because deor does not support any third party importing, the standard convention is just to copy and paste deor files into the lib folder. Because of this, it is highly recommended the following pattern be used.
+
+Rust Wrappers lead all functions with **x_func** so a string join would be ```s_join```.  These should closely if not exactly mirror existing rust code in the std library.
+
+Cargo crate wrappers written in rust needed for imports should be of the form **cx_fn** so a cargo serde json tool might be ```cs_json_parse()```.  Note that these are for wrappers, just because something calls cargo does not make it a wrapper, a third party .deor file that relies on some cargo packages does not mean it gets the ```cx_``` prefix.
+
+Finally, a personal third party item you created distributed by a blog, git, or copy paste should use the convention **ex_fn** or external.  So en_do_cool_things() might be the nate library of cool deor tricks.  These might import rust code, use rust blocks, or use cargo, but they are at least doing some logic with deor, if not all logic.

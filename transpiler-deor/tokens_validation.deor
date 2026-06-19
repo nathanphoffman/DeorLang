@@ -1,20 +1,20 @@
 # Libs
-(tokenList, Token) in "transpiler-deor/types.deor"
-(s_cat, s_join, s_lower_char, s_upper_char) in "transpiler-deor/lib/string.deor"
-(c_chars) in "transpiler-deor/lib/char.deor"
-(n_to_str) in "transpiler-deor/lib/num.deor"
+import "transpiler-deor/types.deor"
+import "transpiler-deor/lib/string.deor"
+import "transpiler-deor/lib/char.deor"
+import "transpiler-deor/lib/num.deor"
 
 # Helper functions
-(is_pascal, is_camel, is_snake) in "transpiler-deor/tokens_validator/casing.deor"
-(arg_is_named, count_call_args) in "transpiler-deor/tokens_validator/arg_helpers.deor"
-(val_err, handle_errors) in "transpiler-deor/tokens_validator/error_handling.deor"
+import "transpiler-deor/tokens_validator/casing.deor"
+import "transpiler-deor/tokens_validator/arg_helpers.deor"
+import "transpiler-deor/tokens_validator/error_handling.deor"
 
 # Macro Imports
-(validate_ident) in "transpiler-deor/tokens_validator/macros/ident_validator.deor"
-(skip_if_match) in "transpiler-deor/tokens_validator/macros/skip_if_match.deor"
-(check_var_decl) in "transpiler-deor/tokens_validator/macros/check_var_decl.deor"
-(check_rust_generic) in "transpiler-deor/tokens_validator/macros/check_rust_generic.deor"
-(check_call_args) in "transpiler-deor/tokens_validator/macros/check_call_args.deor"
+import "transpiler-deor/tokens_validator/macros/ident_validator.deor"
+import "transpiler-deor/tokens_validator/macros/skip_if_match.deor"
+import "transpiler-deor/tokens_validator/macros/check_var_decl.deor"
+import "transpiler-deor/tokens_validator/macros/check_rust_generic.deor"
+import "transpiler-deor/tokens_validator/macros/check_call_args.deor"
 
 shape fnTestRule = func of string to bool
 

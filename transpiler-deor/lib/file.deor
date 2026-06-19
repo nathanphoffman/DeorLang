@@ -1,4 +1,4 @@
-(tokenList, Token) in "transpiler-deor/types.deor"
+import "transpiler-deor/types.deor"
 
 # Reads an entire file to a string. Used by the importer to load .deor source files
 # for tokenization. Panics with a clear message on failure so the user knows which path

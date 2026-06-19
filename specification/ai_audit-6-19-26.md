@@ -2,8 +2,6 @@
   Documented But Not Implemented (20 items)
 
   High severity — would cause silent failures or compile errors:
-  - const declarations — const is not a keyword; lexed as IDENT and silently mishandled
-  - private visibility — not a keyword; no access control during import
   - Validator truthiness in if — if area emits if area { which is a Rust compile error (Option isn't bool); if area is not also unimplemented
   - Null-coalescing else — int val = area else 0 completely missing from codegen
   - Float literals — 3.14 is tokenized as INT 3, junk ., INT 14; no float literal parsing in lexer
@@ -23,7 +21,6 @@
   Low severity:
   - Void function return enforcement — not checked
   - empty at declaration only — re-assigning = empty silently accepted
-  - throw keyword — spec uses both crash and throw; transpiler only implements crash
   - Top-to-bottom declaration order — not enforced (registries are pre-built so forward refs silently work)
   - Field order in as (f1, f2) — not enforced
 
@@ -44,7 +41,6 @@
   Documented Incorrectly (10 items)
 
   - import keyword — imports.md says to write import (names) in "path" but import is not a keyword; the real syntax is bare (names) in "path"
-  - avow emits .unwrap() not .unwrap().0 — in expression context (sub-expression inside larger expression) the .0 is missing, which breaks newtype validators
   - crash vs throw — functions.md says throw, syntax.md says crash, transpiler only has crash
   - Named-arg rule threshold — spec says all args must be named variables; transpiler only checks when there are 2+ args (single-arg literals pass silently)
   - [] claimed to be a transpiler error — transpiler accepts [] for empty list init; struct_test.deor example uses it

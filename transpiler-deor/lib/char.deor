@@ -1,4 +1,4 @@
-(tokenList, Token) in "transpiler-deor/types.deor"
+import "transpiler-deor/types.deor"
 
 # Splits a string into a list of single-character strings. The lexer works one character
 # at a time; this bridges Deor's string type (which has no indexing) to per-char access.

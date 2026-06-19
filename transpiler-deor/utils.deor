@@ -1,4 +1,4 @@
-(s_pascal) in "transpiler-deor/lib/string.deor"
+import "transpiler-deor/lib/string.deor"
 
 # === String utilities ===
 

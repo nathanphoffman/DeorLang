@@ -25,7 +25,7 @@ install-ext:
 
 run-cargo-test:
     ./output/out examples/cargo_test/main.deor examples/cargo_test/output/main.rs
-    cargo run --manifest-path examples/cargo_test/output/Cargo.toml
+    cargo run --manifest-path examples/cargo_test/Cargo.toml
 
 run-spec:
     cd specification && npm run start

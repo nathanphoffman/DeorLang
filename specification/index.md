@@ -3,7 +3,7 @@
 
 [Best Practices](docs/best_practices.md) — style recommendations not enforced by the transpiler
 
-[Built-ins](docs/builtins.md) — `print`, `len`, `range`, `throw`
+[Built-ins](docs/builtins.md) — `print`, `len`, `range`, `crash`
 
 [Collections](docs/collections.md) — index access, append, remove, slices
 

@@ -1,13 +1,13 @@
-(tokenList, strList, Token, ParseResult, GenCtx, TokensRef, RcCtx, make_rctx) in "transpiler-deor/types.deor"
+import "transpiler-deor/types.deor"
 (
     make_result, pr_code, pr_pos,
     adv_nl, adv_indent, skip_to_body,
     adv_nl_ref, skip_to_body_ref,
 ) in "transpiler-deor/deor_helpers.deor"
-(s_join, s_join_nl, s_join_with, s_cat, s_repeat, s_split) in "transpiler-deor/lib/string.deor"
-(is_empty, list_has, reg_get, reg_has, reg3_has) in "transpiler-deor/utils.deor"
-(resolve_type, build_var_type_reg) in "transpiler-deor/registry.deor"
-(find_struct_for_fields, find_struct_for_field, gen_call_args, gen_expr) in "transpiler-deor/codegen_expr.deor"
+import "transpiler-deor/lib/string.deor"
+import "transpiler-deor/utils.deor"
+import "transpiler-deor/registry.deor"
+import "transpiler-deor/codegen_expr.deor"
 
 # === Statement code generation ===
 

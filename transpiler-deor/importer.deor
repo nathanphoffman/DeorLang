@@ -1,9 +1,9 @@
-(tokenList, strList, Token, ParseResult) in "transpiler-deor/types.deor"
-(f_read) in "transpiler-deor/lib/file.deor"
-(list_has, is_empty) in "transpiler-deor/utils.deor"
-(tokenize) in "transpiler-deor/lexer.deor"
-(make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
-(s_join, s_split) in "transpiler-deor/lib/string.deor"
+import "transpiler-deor/types.deor"
+import "transpiler-deor/lib/file.deor"
+import "transpiler-deor/utils.deor"
+import "transpiler-deor/lexer.deor"
+import "transpiler-deor/deor_helpers.deor"
+import "transpiler-deor/lib/string.deor"
 
 
 # this rust performance shim gave us 14x improvement on imports
@@ -18,8 +18,20 @@ rust
 		})
 	}
 
-# Checks whether a LPAREN at pos starts an import line `(names) in "path"`. Returns the
-# import path and the position after the line on success, or ("", pos) if not an import.
+# Handles `import "path"` — KW_IMPORT is at pos, STRING path is at pos+1.
+fn ParseResult scan_import_new(tokenList tokens, int pos)
+	int path_pos = pos + 1
+	int token_count = len(tokens)
+	if path_pos < token_count
+		Token path_tok = tokens at path_pos
+		(kind, value) in path_tok
+		if kind is "STRING"
+			int after_path = path_pos + 1
+			return make_result(value, after_path)
+	string emp = ""
+	return make_result(emp, pos)
+
+# Handles `(names) in "path"` — LPAREN is at pos, scans to find the STRING path.
 fn ParseResult scan_import(tokenList tokens, int pos)
 	int token_count = len(tokens)
 	int scan = pos + 1
@@ -125,10 +137,22 @@ fn tokenList load_file(string path)
 			continue
 
 		bool at_root_depth = depth is 0
-		if kind is "LPAREN" and at_root_depth
-			ParseResult imp_r = scan_import(tok_raw, pos)
-			string imp_path = pr_code(imp_r)
-			int imp_end = pr_pos(imp_r)
+
+		bool is_new_import = kind is "KW_IMPORT" and at_root_depth
+		bool is_old_import = kind is "LPAREN" and at_root_depth
+		bool is_any_import = is_new_import or is_old_import
+
+		if is_any_import
+			ParseResult imp_r_new = scan_import_new(tok_raw, pos)
+			ParseResult imp_r_old = scan_import(tok_raw, pos)
+			string imp_path = ""
+			int imp_end = pos
+			if is_new_import
+				imp_path = pr_code(imp_r_new)
+				imp_end = pr_pos(imp_r_new)
+			else
+				imp_path = pr_code(imp_r_old)
+				imp_end = pr_pos(imp_r_old)
 			if not is_empty(imp_path)
 				if seen_decl
 					string err_pre = "[error] "

@@ -1,4 +1,4 @@
-(json_make, json_set, json_get) in "examples/cargo_test/lib/json.deor"
+import "examples/cargo_test/lib/json.deor"
 
 fn void main()
 	string name_key = "name"

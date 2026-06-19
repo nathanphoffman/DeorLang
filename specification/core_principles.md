@@ -25,7 +25,7 @@
 ---
 
 ### Slimness
-- **Slim Built-Ins** - only ``len``, ``range``, ``throw``, and ``print`` -- all others use rust wrappers
+- **Slim Built-Ins** - only ``len``, ``range``, ``crash``, and ``print`` -- all others use rust wrappers
 - **Only For** - no while loop / for loop distinction, just for if and for in
 ---
 

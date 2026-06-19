@@ -1,13 +1,13 @@
-(tokenList, strList, Token, ParseResult, GenCtx, TokensRef, RcCtx, make_rctx, tokens_wrap) in "transpiler-deor/types.deor"
-(make_result, pr_code, pr_pos, adv_nl, skip_to_body) in "transpiler-deor/deor_helpers.deor"
-(cur_at, cur_next, c_at_end, cur_skip_to_body, cur_peek) in "transpiler-deor/cursor.deor"
-(s_join, s_join_nl, s_join_with, s_pascal) in "transpiler-deor/lib/string.deor"
-(l_slice) in "transpiler-deor/lib/list.deor"
-(is_empty) in "transpiler-deor/utils.deor"
-(render_rust_type) in "transpiler-deor/mappings.deor"
-(resolve_type, find_block_end, collect_mut_names, build_var_type_reg) in "transpiler-deor/registry.deor"
-(gen_expr) in "transpiler-deor/codegen_expr.deor"
-(gen_block) in "transpiler-deor/codegen_stmt.deor"
+import "transpiler-deor/types.deor"
+import "transpiler-deor/deor_helpers.deor"
+import "transpiler-deor/cursor.deor"
+import "transpiler-deor/lib/string.deor"
+import "transpiler-deor/lib/list.deor"
+import "transpiler-deor/utils.deor"
+import "transpiler-deor/mappings.deor"
+import "transpiler-deor/registry.deor"
+import "transpiler-deor/codegen_expr.deor"
+import "transpiler-deor/codegen_stmt.deor"
 
 # === Declaration code generation ===
 

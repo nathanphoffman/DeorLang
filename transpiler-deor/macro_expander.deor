@@ -1,4 +1,4 @@
-(tokenList, Token) in "transpiler-deor/types.deor"
+import "transpiler-deor/types.deor"
 
 # Single-pass Deor macro expander. Runs on the merged token list before validation
 # and codegen. Collects `macro name` definitions as it encounters them, removes their

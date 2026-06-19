@@ -79,6 +79,8 @@ fn string word_to_kind(string word)
 		return "KW_MACRO_RUN"
 	if word is "place"
 		return "KW_PLACE"
+	if word is "import"
+		return "KW_IMPORT"
 	return "IDENT"
 
 # === Operator helpers ===

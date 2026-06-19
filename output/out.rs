@@ -1240,6 +1240,9 @@ fn word_to_kind(word: String) -> String {
     if word == "place" {
         return "KW_PLACE".to_string();
     }
+    if word == "import" {
+        return "KW_IMPORT".to_string();
+    }
     return "IDENT".to_string();
 }
 
@@ -3320,6 +3323,22 @@ fn file_is_new(path: String) -> bool {
 		if s.contains(&path) { false } else { s.insert(path); true }
 	})
 }
+fn scan_import_new(tokens: Vec<Token>, pos: i32) -> ParseResult {
+    let mut path_pos: i32 = pos + 1.clone();
+    let mut token_count: i32 = (tokens.len() as i32);
+    if path_pos < token_count {
+        let mut path_tok: Token = tokens[path_pos as usize].clone();
+        let kind = path_tok.kind.clone();
+        let value = path_tok.value.clone();
+        if kind == "STRING" {
+            let mut after_path: i32 = path_pos + 1.clone();
+            return make_result(value.clone(), after_path.clone());
+        }
+    }
+    let mut emp: String = "".to_string();
+    return make_result(emp.clone(), pos.clone());
+}
+
 fn scan_import(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut scan: i32 = pos + 1.clone();
@@ -3429,10 +3448,21 @@ fn load_file(path: String) -> Vec<Token> {
             continue;
         }
         let mut at_root_depth: bool = depth == 0.clone();
-        if kind == "LPAREN" && at_root_depth {
-            let mut imp_r: ParseResult = scan_import(tok_raw.clone(), pos.clone());
-            let mut imp_path: String = pr_code(imp_r.clone());
-            let mut imp_end: i32 = pr_pos(imp_r.clone());
+        let mut is_new_import: bool = kind == "KW_IMPORT" && at_root_depth.clone();
+        let mut is_old_import: bool = kind == "LPAREN" && at_root_depth.clone();
+        let mut is_any_import: bool = is_new_import || is_old_import.clone();
+        if is_any_import {
+            let mut imp_r_new: ParseResult = scan_import_new(tok_raw.clone(), pos.clone());
+            let mut imp_r_old: ParseResult = scan_import(tok_raw.clone(), pos.clone());
+            let mut imp_path: String = "".to_string();
+            let mut imp_end: i32 = pos.clone();
+            if is_new_import {
+                imp_path = pr_code(imp_r_new.clone());
+                imp_end = pr_pos(imp_r_new.clone());
+            } else {
+                imp_path = pr_code(imp_r_old.clone());
+                imp_end = pr_pos(imp_r_old.clone());
+            }
             if !is_empty(imp_path.clone()) {
                 if seen_decl {
                     let mut err_pre: String = "[error] ".to_string();

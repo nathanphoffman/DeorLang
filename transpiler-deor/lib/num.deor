@@ -1,4 +1,4 @@
-(tokenList, Token) in "transpiler-deor/types.deor"
+import "transpiler-deor/types.deor"
 
 # Parses a string as a base-10 i32, returning 0 on failure. Used by the lexer to
 # convert the top of the indent stack (stored as a string) back to an integer for

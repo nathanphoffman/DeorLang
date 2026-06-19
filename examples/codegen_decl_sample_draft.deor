@@ -1,15 +1,15 @@
-(tokenList, strList, Token, ParseResult, GenCtx) in "transpiler-deor/types.deor"
+import "transpiler-deor/types.deor"
 (
     make_result, tok_kind, tok_value, pr_code, pr_pos,
     cur_at, cur_next, tok_kind_at, tok_value_at, c_pos, c_at_end,
     cur_skip_to_body, adv_nl, skip_to_body,
 ) in "transpiler-deor/deor_helpers.deor"
-(s_join, s_join_nl, s_join_with, pascal_case, token_slice) in "transpiler-deor/rust_helpers.deor"
-(is_empty) in "transpiler-deor/utils.deor"
-(render_rust_type) in "transpiler-deor/mappings.deor"
-(resolve_type, find_block_end, collect_mut_names) in "transpiler-deor/registry.deor"
-(gen_expr) in "transpiler-deor/codegen_expr.deor"
-(gen_block) in "transpiler-deor/codegen_stmt.deor"
+import "transpiler-deor/rust_helpers.deor"
+import "transpiler-deor/utils.deor"
+import "transpiler-deor/mappings.deor"
+import "transpiler-deor/registry.deor"
+import "transpiler-deor/codegen_expr.deor"
+import "transpiler-deor/codegen_stmt.deor"
 
 # === Declaration code generation ===
 

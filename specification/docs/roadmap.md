@@ -2,15 +2,8 @@
 Note the roadmap is more to list out my raw notes and get feedback, however it is subject to frequent change and is not written in a singular viewpoint, I frequently will switch from personal to general throughout this.
 ---
 
-## Explore Piping to link code together
-
-
-## Constants
-We should add in compiler constants or constants?
-*Small Lift* | *High Priority*
-
-## Require file imports match the file they are referenced in
-
+## Make file imports global
+I decided this is easiest for brevity
 
 ## Good Candidates for Macro Simplification
   1. is_mut/mut_kw guard — 4 lines, appears 8 times in codegen_stmt.deor. Closes over mut_names and a target variable name. This is the clear winner.
@@ -90,6 +83,12 @@ Crash wraps panic! and so likely provides 2 arguments, the second of which is fo
 ---
 # Quick Notes
 ---
+
+### For using rust modules this is really easy
+There is an example project created that demonstrates json, basically a deor wrapped rust block is all you need you just use cargo to build it and the standard cargo file simple.  Deor will support no native external importing other than copy and paste libs.
+
+### Const abandoned as of June 19th
+Const is a difficult feature to add because Rust requires these to be of a-non deor compatible type for string that will conflict with deor strings as compile time strings cant live on the heap.  The lift is not worth the gain.
 
 ### List of Validator Type -- Possible Bug?
 Is `shape rollList = list of Roll` valid (a list whose element type is a validator type)? It would be `Vec<Option<Roll>>` in Rust. Iterating it gives `Option<Roll>` elements, each truthy/falsy. Useful but semantics need to be explicit — especially around `at end =`, `remove at`, and whether a failed predicate on assignment silently inserts `None` into the list.

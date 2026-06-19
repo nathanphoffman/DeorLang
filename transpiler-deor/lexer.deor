@@ -1,10 +1,10 @@
-(tokenList, Token) in "transpiler-deor/types.deor"
-(s_cat, s_join_nl, s_rtrim, s_trim, s_from, s_split) in "transpiler-deor/lib/string.deor"
-(c_chars, c_alpha, c_digit, c_alnum) in "transpiler-deor/lib/char.deor"
-(n_parse, n_to_str) in "transpiler-deor/lib/num.deor"
-(make_token) in "transpiler-deor/deor_helpers.deor"
-(word_to_kind) in "transpiler-deor/mappings.deor"
-(is_empty) in "transpiler-deor/utils.deor"
+import "transpiler-deor/types.deor"
+import "transpiler-deor/lib/string.deor"
+import "transpiler-deor/lib/char.deor"
+import "transpiler-deor/lib/num.deor"
+import "transpiler-deor/deor_helpers.deor"
+import "transpiler-deor/mappings.deor"
+import "transpiler-deor/utils.deor"
 
 # === Lexer ===
 

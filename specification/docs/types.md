@@ -142,6 +142,8 @@ The parentheses are always required — this is intentional. Without them, `avow
 
 `avow` gives you the raw primitive beneath the validator type — `int` from a `Roll`, `float` from a `Squarefeet`. When you need to pass a validator type value to a function that accepts that validator type, pass the variable directly — no `avow` needed. Only reach for `avow` when you specifically need the underlying primitive.
 
+**Note:** Avow must be captured by a variable declaration you can not try passing it around directly as a function argument, this is intentional, and matches the rust output / compiler limitations.
+
 ```
 Roll roll = roll_die(d20)
 if roll

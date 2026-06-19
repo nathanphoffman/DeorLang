@@ -1,11 +1,11 @@
-(tokenList, strList, Token, ParseResult, GenCtx, RcCtx, make_rctx) in "transpiler-deor/types.deor"
-(f_write, f_args) in "transpiler-deor/lib/file.deor"
-(n_to_str) in "transpiler-deor/lib/num.deor"
-(validate_tokens) in "transpiler-deor/tokens_validation.deor"
-(build_struct_reg, build_shape_reg, build_enum_reg, build_variant_reg, build_type_reg, build_var_type_reg) in "transpiler-deor/registry.deor"
-(gen_struct_decl, gen_shape_decl, gen_enum_decl, gen_type_decl, gen_fn_decl, gen_raw_decl) in "transpiler-deor/codegen_decl.deor"
-(collect_all_tokens_with_all_imports) in "transpiler-deor/importer.deor"
-(expand_deor_macros) in "transpiler-deor/macro_expander.deor"
+import "transpiler-deor/types.deor"
+import "transpiler-deor/lib/file.deor"
+import "transpiler-deor/lib/num.deor"
+import "transpiler-deor/tokens_validation.deor"
+import "transpiler-deor/registry.deor"
+import "transpiler-deor/codegen_decl.deor"
+import "transpiler-deor/importer.deor"
+import "transpiler-deor/macro_expander.deor"
 
 # Top-level code generator. Takes the fully merged and deduplicated token list, builds
 # all six registries (struct, shape, enum, variant, type, var_type), then walks the

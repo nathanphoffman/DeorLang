@@ -1,7 +1,7 @@
-(tokenList, strList, Token, ParseResult) in "transpiler-deor/types.deor"
-(make_result, pr_code, pr_pos) in "transpiler-deor/deor_helpers.deor"
-(s_join, s_join_with, s_pascal, s_starts_with, s_split) in "transpiler-deor/lib/string.deor"
-(is_empty, reg_get, render_rust_type, list_has) in "transpiler-deor/utils.deor"
+import "transpiler-deor/types.deor"
+import "transpiler-deor/deor_helpers.deor"
+import "transpiler-deor/lib/string.deor"
+import "transpiler-deor/utils.deor"
 
 # === Registry builders ===
 
