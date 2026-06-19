@@ -1338,6 +1338,12 @@ fn count_call_args(tokens: Vec<Token>, lp_pos: i32) -> i32 {
         } else if kind == "LPAREN" {
             depth = depth + 1;
             saw_token = true;
+        } else if kind == "LBRACKET" {
+            depth = depth + 1;
+            saw_token = true;
+        } else if kind == "RBRACKET" {
+            depth = depth - 1;
+            saw_token = true;
         } else if kind == "COMMA" {
             let mut at_root: bool = depth == 0.clone();
             if at_root {
@@ -1639,6 +1645,12 @@ fn validate_tokens(tokens: Vec<Token>) {
                                 at_arg_start = false;
                             } else if kind == "LPAREN" {
                                 scan_depth = scan_depth + 1;
+                                at_arg_start = false;
+                            } else if kind == "LBRACKET" {
+                                scan_depth = scan_depth + 1;
+                                at_arg_start = false;
+                            } else if kind == "RBRACKET" {
+                                scan_depth = scan_depth - 1;
                                 at_arg_start = false;
                             } else if kind == "COMMA" {
                                 let mut scan_root: bool = scan_depth == 0.clone();
@@ -2089,15 +2101,27 @@ fn collect_mut_names(tokens: Vec<Token>, start: i32, end_pos: i32) -> Vec<String
 
 fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
     let mut comma: String = ",".to_string();
-    let mut fields_key: String = s_join_with(fields.clone(), comma.clone());
+    let mut input_count: i32 = (fields.len() as i32);
     let mut reg_count: i32 = (struct_reg.len() as i32);
     let mut next_is_val: bool = false;
     let mut cur_name: String = "".to_string();
     for index in 0..reg_count {
         let mut item: String = struct_reg[index as usize].clone();
         if next_is_val {
-            if item == fields_key {
-                return cur_name;
+            let mut reg_fields: Vec<String> = s_split(item.clone(), comma.clone());
+            let mut reg_count_f: i32 = (reg_fields.len() as i32);
+            if reg_count_f == input_count {
+                let mut all_match: bool = true;
+                for fi in 0..input_count {
+                    let mut field: String = fields[fi as usize].clone();
+                    let mut found: bool = list_has(reg_fields.clone(), field.clone());
+                    if !found {
+                        all_match = false;
+                    }
+                }
+                if all_match {
+                    return cur_name;
+                }
             }
             next_is_val = false;
         } else {

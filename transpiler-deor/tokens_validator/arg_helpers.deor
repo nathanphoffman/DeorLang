@@ -47,6 +47,12 @@ fn int count_call_args(tokenList tokens, int lp_pos)
 		else if kind is "LPAREN"
 			depth = depth + 1
 			saw_token = true
+		else if kind is "LBRACKET"
+			depth = depth + 1
+			saw_token = true
+		else if kind is "RBRACKET"
+			depth = depth - 1
+			saw_token = true
 		else if kind is "COMMA"
 			bool at_root = depth is 0
 			if at_root

@@ -22,6 +22,12 @@ macro check_call_args
 					else if kind is "LPAREN"
 						scan_depth = scan_depth + 1
 						at_arg_start = false
+					else if kind is "LBRACKET"
+						scan_depth = scan_depth + 1
+						at_arg_start = false
+					else if kind is "RBRACKET"
+						scan_depth = scan_depth - 1
+						at_arg_start = false
 					else if kind is "COMMA"
 						bool scan_root = scan_depth is 0
 						if scan_root

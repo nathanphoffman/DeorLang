@@ -4,6 +4,8 @@
 
 # More Stuff
 
+  Do functions require a return type
+
   ---
   Implemented But Undocumented (9 items)
 

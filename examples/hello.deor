@@ -48,13 +48,16 @@ fn void handle_message(string message)
 shape listString = list of string
 shape sayFirst = func of listString
 
-func say_first(listString: list)
-	first as listString[0]
+# see if the keyword func somehow works too
+# first as may not work?
+fn void say_first(listString: list)
+	string first = list[0]
 	print(first)
 
 fn void main()
 
-	say_first(["test","test1"])
+	thing as ["test","test1"]
+	say_first(thing)
 
 	int test = 10_0000
 	print(test)
