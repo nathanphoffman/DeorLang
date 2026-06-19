@@ -231,6 +231,8 @@ fn count_call_args(tokens: Vec<Token>, lp_pos: i32) -> i32 {
     return result;
 }
 
+type FnTestRule = fn(String) -> bool;
+
 fn validate_tokens(tokens: Vec<Token>) {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut errors: Vec<String> = Vec::new();
@@ -283,7 +285,11 @@ fn validate_tokens(tokens: Vec<Token>) {
             pos = skip_pos;
             continue;
         }
-        if cur_kind == "KW_STRUCT" {
+        let mut keyword: String = "KW_STRUCT".to_string();
+        let mut lbl: String = lbl_struct.clone();
+        let mut rule: String = rule_pascal.clone();
+        let mut test_rule: fn(String) -> bool = is_pascal.clone();
+        if cur_kind == keyword {
             let mut name_pos: i32 = pos + 1.clone();
             if name_pos < token_count {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
@@ -293,17 +299,21 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_line.clone(), lbl_struct.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
                     }
-                    if !is_pascal(name_val.clone()) {
-                        errors.push(val_err(cur_line.clone(), lbl_struct.clone(), name_val.clone(), rule_pascal.clone()).clone());
+                    if !test_rule(name_val.clone()) {
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
                     }
                 }
             }
             pos = pos + 1;
             continue;
         }
-        if cur_kind == "KW_ENUM" {
+        let mut keyword: String = "KW_ENUM".to_string();
+        let mut lbl: String = lbl_enum.clone();
+        let mut rule: String = rule_pascal.clone();
+        let mut test_rule: fn(String) -> bool = is_pascal.clone();
+        if cur_kind == keyword {
             let mut name_pos: i32 = pos + 1.clone();
             if name_pos < token_count {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
@@ -313,17 +323,21 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_line.clone(), lbl_enum.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
                     }
-                    if !is_pascal(name_val.clone()) {
-                        errors.push(val_err(cur_line.clone(), lbl_enum.clone(), name_val.clone(), rule_pascal.clone()).clone());
+                    if !test_rule(name_val.clone()) {
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
                     }
                 }
             }
             pos = pos + 1;
             continue;
         }
-        if cur_kind == "KW_SHAPE" {
+        let mut keyword: String = "KW_SHAPE".to_string();
+        let mut lbl: String = lbl_shape.clone();
+        let mut rule: String = rule_camel.clone();
+        let mut test_rule: fn(String) -> bool = is_camel.clone();
+        if cur_kind == keyword {
             let mut name_pos: i32 = pos + 1.clone();
             if name_pos < token_count {
                 let mut name_tok: Token = tokens[name_pos as usize].clone();
@@ -333,10 +347,10 @@ fn validate_tokens(tokens: Vec<Token>) {
                 let mut name_val: String = value.clone();
                 if name_kind == "IDENT" {
                     if (name_val.len() as i32) < 3 {
-                        errors.push(val_err(cur_line.clone(), lbl_shape.clone(), name_val.clone(), rule_min3.clone()).clone());
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule_min3.clone()).clone());
                     }
-                    if !is_camel(name_val.clone()) {
-                        errors.push(val_err(cur_line.clone(), lbl_shape.clone(), name_val.clone(), rule_camel.clone()).clone());
+                    if !test_rule(name_val.clone()) {
+                        errors.push(val_err(cur_line.clone(), lbl.clone(), name_val.clone(), rule.clone()).clone());
                     }
                 }
             }

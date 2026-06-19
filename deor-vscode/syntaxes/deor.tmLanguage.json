@@ -83,7 +83,7 @@
     },
     "builtin-types": {
       "name": "support.type.deor",
-      "match": "\\b(int|float|bool|string|bytes|list|func|void|macro_define|macro_run)\\b"
+      "match": "\\b(int|float|bool|string|bytes|list|func|void|macro|macro_run)\\b"
     },
     "constants": {
       "name": "constant.language.deor",
