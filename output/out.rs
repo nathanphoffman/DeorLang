@@ -3891,7 +3891,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
 /* unhandled(IDENT) */
     let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
     let mut ctx: RcCtx = make_rctx(ctx_raw);
-    let mut output: String = "".to_string();
+    let mut parts: Vec<String> = Vec::new();
     let mut token_count: i32 = (all_tokens.len() as i32);
     let mut pos: i32 = 0;
     let mut t_loop_start: i32 = now_ms();
@@ -3910,43 +3910,37 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
         }
         if kind == "KW_STRUCT" {
             let mut result: ParseResult = gen_struct_decl(all_tokens.clone(), pos.clone());
-            let mut decl_code: String = pr_code(result.clone());
-            output = s_cat(output.clone(), decl_code.clone());
+            parts.push(pr_code(result.clone()).clone());
             pos = pr_pos(result.clone());
             continue;
         }
         if kind == "KW_SHAPE" {
             let mut result: ParseResult = gen_shape_decl(all_tokens.clone(), pos.clone());
-            let mut decl_code: String = pr_code(result.clone());
-            output = s_cat(output.clone(), decl_code.clone());
+            parts.push(pr_code(result.clone()).clone());
             pos = pr_pos(result.clone());
             continue;
         }
         if kind == "KW_ENUM" {
             let mut result: ParseResult = gen_enum_decl(all_tokens.clone(), pos.clone());
-            let mut decl_code: String = pr_code(result.clone());
-            output = s_cat(output.clone(), decl_code.clone());
+            parts.push(pr_code(result.clone()).clone());
             pos = pr_pos(result.clone());
             continue;
         }
         if kind == "KW_TYPE" {
             let mut result: ParseResult = gen_type_decl(all_tokens.clone(), pos.clone(), ctx.clone());
-            let mut decl_code: String = pr_code(result.clone());
-            output = s_cat(output.clone(), decl_code.clone());
+            parts.push(pr_code(result.clone()).clone());
             pos = pr_pos(result.clone());
             continue;
         }
         if kind == "KW_FN" {
             let mut result: ParseResult = gen_fn_decl(all_tokens.clone(), pos.clone(), ctx.clone());
-            let mut decl_code: String = pr_code(result.clone());
-            output = s_cat(output.clone(), decl_code.clone());
+            parts.push(pr_code(result.clone()).clone());
             pos = pr_pos(result.clone());
             continue;
         }
         if kind == "KW_RAW" {
             let mut result: ParseResult = gen_raw_decl(all_tokens.clone(), pos.clone());
-            let mut decl_code: String = pr_code(result.clone());
-            output = s_cat(output.clone(), decl_code.clone());
+            parts.push(pr_code(result.clone()).clone());
             pos = pr_pos(result.clone());
             continue;
         }
@@ -3954,9 +3948,9 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
             let mut block_pos: i32 = pos + 2.clone();
             let mut block_token: Token = all_tokens[block_pos as usize].clone();
             let value = block_token.value.clone();
-            output = s_cat(output.clone(), value.clone());
             let mut newline: String = "\n".to_string();
-            output = s_cat(output.clone(), newline.clone());
+            let mut rust_chunk: String = s_cat(value.clone(), newline.clone());
+            parts.push(rust_chunk.clone());
             pos = block_pos + 1;
             continue;
         }
@@ -3968,7 +3962,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     let mut tlp_sfx: String = "ms".to_string();
     let mut tlp_parts: Vec<String> = vec![tlp_pfx.clone(), tlp_str.clone(), tlp_sfx.clone()];
     println!("{}", s_join(tlp_parts.clone()));
-    return output;
+    return s_join(parts.clone());
 }
 
 fn main() {

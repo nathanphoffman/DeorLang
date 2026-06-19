@@ -35,7 +35,7 @@ fn string make_destruct_code(string var_name, int depth, RcCtx ctx)
 	string comma = ","
 	strList fields = s_split(fields_str, comma)
 	int field_count = len(fields)
-	strList lines = []
+	strList lines = empty
 	for i in range(field_count)
 		string field = fields at i
 		bool is_mut = list_has(mut_names, field)
@@ -62,7 +62,7 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 	string indent = "    "
 	string pad = s_repeat(indent, depth)
 	# LPAREN f1 COMMA f2 RPAREN KW_IN source NEWLINE
-	strList fields = []
+	strList fields = empty
 	int cur = pos + 1
 	for if cur < token_count
 		Token field_token = tokens at cur
@@ -81,7 +81,7 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 	string src_code = pr_code(src_r)
 	int src_end = pr_pos(src_r)
 	int after = adv_nl_ref(src_end, tokens)
-	strList dest_lines = []
+	strList dest_lines = empty
 	int field_count = len(fields)
 	for field_index in range(field_count)
 		string field = fields at field_index
@@ -133,7 +133,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		(value) in block_token
 		string block_content = value
 		strList rust_lines = s_split(block_content, newline)
-		strList padded = []
+		strList padded = empty
 		int rust_line_count = len(rust_lines)
 		for rust_index in range(rust_line_count)
 			string rust_line = rust_lines at rust_index
@@ -241,7 +241,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			string after_as_value = value
 			# struct construction: name as (f1, f2, ...)
 			if kind is "LPAREN"
-				strList fields = []
+				strList fields = empty
 				int fend = after_as + 1
 				for if fend < token_count
 					Token field_token = tokens at fend
@@ -260,7 +260,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 				if is_mut
 					mut_kw = "mut "
 				int field_count = len(fields)
-				strList field_pairs = []
+				strList field_pairs = empty
 				for field_idx in range(field_count)
 					string field_name = fields at field_idx
 					string fp_sep = ": "
@@ -295,7 +295,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 					if kind is "KW_WITH"
 						string source_name = after_as_value
 						int lparen_pos = maybe_with_pos + 1
-						strList override_fields = []
+						strList override_fields = empty
 						int fend = lparen_pos + 1
 						for if fend < token_count
 							Token field_tok = tokens at fend
@@ -548,7 +548,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 							string struct_fields_str = reg_get(struct_reg, var_type)
 							string comma = ","
 							strList field_names = s_split(struct_fields_str, comma)
-							strList field_pairs = []
+							strList field_pairs = empty
 							int fend = val_pos + 1
 							int fni = 0
 							int fn_count = len(field_names)
@@ -698,7 +698,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 # DEDENT. Used for function bodies, if/else branches, for/while bodies, and using blocks.
 fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 	(tokens) in ctx
-	strList stmts = []
+	strList stmts = empty
 	int cur = pos
 	int token_count = len(tokens)
 	for if true

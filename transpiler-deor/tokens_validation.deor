@@ -10,7 +10,7 @@ shape fnTestRule = func of string to bool
 # Prints all violations and exits with code 1 if any are found.
 fn void validate_tokens(tokenList tokens)
 	int token_count = len(tokens)
-	strList errors = []
+	strList errors = empty
 	int pos = 0
 	int paren_depth = 0
 	string lbl_struct = "struct"

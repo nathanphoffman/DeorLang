@@ -27,7 +27,7 @@ fn main()
 	print(y)
 	int da = manhattan(a)
 	print(da)
-	pointList pts = []
+	pointList pts = empty
 	pts insert a
 	pts insert b
 	int total = sum_distances(pts)

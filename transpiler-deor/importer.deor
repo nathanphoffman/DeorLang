@@ -100,7 +100,7 @@ fn int end_of_shape(tokenList tokens, int pos)
 fn tokenList load_file(string path)
 	string source = f_read(path)
 	tokenList tok_raw = tokenize(source, path)
-	tokenList result = []
+	tokenList result = empty
 	int token_count = len(tok_raw)
 	int pos = 0
 	int depth = 0
@@ -180,8 +180,8 @@ fn tokenList load_file(string path)
 # dropped. Necessary because the multi-file import system may inline the same utility
 # file multiple times when it is a transitive dependency of more than one import.
 fn tokenList deduplicate_decls(tokenList tokens)
-	tokenList result = []
-	strList seen = []
+	tokenList result = empty
+	strList seen = empty
 	int token_count = len(tokens)
 	int pos = 0
 	for if pos < token_count

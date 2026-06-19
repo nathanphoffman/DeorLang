@@ -22,11 +22,11 @@ fn int count_tabs(string line)
 # and keywords (dispatched via word_to_kind); two-character operators (>=, <=); and
 # single-character operators/punctuation. Emits trailing DEDENTs and a terminal EOF.
 fn tokenList tokenize(string source, string path)
-	tokenList tokens = []
+	tokenList tokens = empty
 	string newline = "\n"
 	strList lines = s_split(source, newline)
 	int n_lines = len(lines)
-	strList indent_stack = []
+	strList indent_stack = empty
 	string zero_str = "0"
 	indent_stack at end = zero_str
 	int cur_line = 0
@@ -120,7 +120,7 @@ fn tokenList tokenize(string source, string path)
 			tokens at end = make_token(kind_kw_rust, kw_rust_val, meta)
 			tokens at end = make_token(kind_newline, empty_val, meta)
 			int rust_base = indent + 1
-			strList rust_lines = []
+			strList rust_lines = empty
 			int rli_start = raw_li + 1
 			for rli in (rli_start, n_lines)
 				string rust_line = lines at rli

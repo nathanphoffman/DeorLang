@@ -13,7 +13,7 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 		string struct_name = value
 		cur_next() with tokens
 		cur_skip_to_body() with tokens
-		strList field_lines = []
+		strList field_lines = empty
 		for if not c_at_end(cur)
 			(current) in cur
 			(kind, value) in current
@@ -131,7 +131,7 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 		string rust_name = s_pascal(enum_name)
 		cur_next() with tokens
 		cur_skip_to_body() with tokens
-		strList variant_lines = []
+		strList variant_lines = empty
 		for if not c_at_end(cur)
 			(current) in cur
 			(kind, value) in current
@@ -224,7 +224,7 @@ fn ParseResult gen_fn_decl(tokenList fn_tokens, int pos, RcCtx ctx)
 		string fn_name = value
 		cur_next() with fn_tokens
 		cur_next() with fn_tokens   # skip LPAREN
-		strList param_strs = []
+		strList param_strs = empty
 		for if not c_at_end(cur)
 			(current) in cur
 			(kind, value) in current

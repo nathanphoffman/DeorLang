@@ -11,7 +11,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 	strList enum_reg = build_enum_reg(all_tokens)
 	strList variant_reg = build_variant_reg(all_tokens, enum_reg)
 	strList type_reg = build_type_reg(all_tokens)
-	strList mut_names = []
+	strList mut_names = empty
 	strList var_type_reg = build_var_type_reg(all_tokens)
 	int t_reg = elapsed_ms(t_reg_start)
 	string trg_str = n_to_str(t_reg)
@@ -21,12 +21,12 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 	print(s_join(trg_parts))
 	string using_type = ""
 	string using_var = ""
-	tokenList tok_placeholder = []
+	tokenList tok_placeholder = empty
 	TokensRef tokens = tokens_wrap(giveup tok_placeholder)
 	GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
 	RcCtx ctx = make_rctx(giveup ctx_raw)
 
-	string output = ""
+	strList parts = empty
 	int token_count = len(all_tokens)
 	int pos = 0
 	int t_loop_start = now_ms()
@@ -45,47 +45,41 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 			continue
 		if kind is "KW_STRUCT"
 			ParseResult result = gen_struct_decl(all_tokens, pos)
-			string decl_code = pr_code(result)
-			output = s_cat(output, decl_code)
+			parts at end = pr_code(result)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_SHAPE"
 			ParseResult result = gen_shape_decl(all_tokens, pos)
-			string decl_code = pr_code(result)
-			output = s_cat(output, decl_code)
+			parts at end = pr_code(result)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_ENUM"
 			ParseResult result = gen_enum_decl(all_tokens, pos)
-			string decl_code = pr_code(result)
-			output = s_cat(output, decl_code)
+			parts at end = pr_code(result)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_TYPE"
 			ParseResult result = gen_type_decl(all_tokens, pos, ctx)
-			string decl_code = pr_code(result)
-			output = s_cat(output, decl_code)
+			parts at end = pr_code(result)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_FN"
 			ParseResult result = gen_fn_decl(all_tokens, pos, ctx)
-			string decl_code = pr_code(result)
-			output = s_cat(output, decl_code)
+			parts at end = pr_code(result)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_RAW"
 			ParseResult result = gen_raw_decl(all_tokens, pos)
-			string decl_code = pr_code(result)
-			output = s_cat(output, decl_code)
+			parts at end = pr_code(result)
 			pos = pr_pos(result)
 			continue
 		if kind is "KW_RUST"
 			int block_pos = pos + 2
 			Token block_token = all_tokens at block_pos
 			(value) in block_token
-			output = s_cat(output, value)
 			string newline = "\n"
-			output = s_cat(output, newline)
+			string rust_chunk = s_cat(value, newline)
+			parts at end = rust_chunk
 			pos = block_pos + 1
 			continue
 		pos = pos + 1
@@ -96,7 +90,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 	string tlp_sfx = "ms"
 	strList tlp_parts = [tlp_pfx, tlp_str, tlp_sfx]
 	print(s_join(tlp_parts))
-	return output
+	return s_join(parts)
 
 # Entry point. Reads input and output paths from command-line arguments, calls
 # collect_all_tokens_with_all_imports to load and resolve all imports, calls generate

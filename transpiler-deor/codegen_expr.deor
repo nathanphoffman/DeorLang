@@ -61,7 +61,7 @@ fn string find_struct_for_field(strList struct_reg, string field)
 # results are left as-is because they already return owned values.
 fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 
-	strList arg_codes = []
+	strList arg_codes = empty
 	int cur = pos
 	int token_count = len(tokens)
 
@@ -114,7 +114,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 # items. All elements get `.clone()` or `.to_string()` applied because the vec![] macro
 # expects owned values; expressions are treated the same as identifiers here.
 fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
-	strList item_codes = []
+	strList item_codes = empty
 	int cur = pos
 	int token_count = len(tokens)
 	for if true
@@ -231,7 +231,7 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				string unwrap_code = s_join(unw_parts)
 				return make_result(unwrap_code, after_rparen)
 			# struct construction expression: (f1, f2, ...)
-			strList fields = []
+			strList fields = empty
 			int cur = peek_pos
 			for if cur < token_count
 				Token field_token = tokens at cur

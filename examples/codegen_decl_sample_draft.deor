@@ -20,7 +20,7 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 	string struct_name = tok_value(name_token)
 	int cur = name_pos + 1
 	cur = skip_to_body(tokens, cur)
-	strList field_lines = []
+	strList field_lines = empty
 	for if cur < token_count
 		Token field_token = tokens at cur
 		string field_kind = tok_kind(field_token)
@@ -80,7 +80,7 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 		cur_skip_to_body()
 		# update_first_name() with "nate"
 
-		strList variant_lines = []
+		strList variant_lines = empty
 		for if not c_at_end(cursor)
 			cur_next()
 
@@ -135,7 +135,7 @@ fn ParseResult gen_fn_decl(tokenList tokens, int pos, GenCtx ctx)
 	# skip LPAREN
 	cur = cur + 1
 	# collect params until RPAREN
-	strList param_strs = []
+	strList param_strs = empty
 	for if cur < token_count
 		Token param_token = tokens at cur
 		string param_kind = tok_kind(param_token)

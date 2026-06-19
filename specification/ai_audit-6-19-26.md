@@ -5,14 +5,16 @@ AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
 # More Stuff
 
+Clarification: validator types can only be compared on bad and avowed
+
+Important: Look to see if args are required to be named variables, should be required for more than 1 arg.
+
+Important: Use empty for lists, bad for values, clearup that distinction empty and bad should not be interchangeable.  bad is for validator types empty for lists.  So a list of a validator type could be empty or have multiple bad values inside it, but the values inside could never be empty and the list could never be bad.  This also means lists should be banned from being validator types.  So you cant have a type natesdeal(listString: stringList) that is not allowed.  Also we should prevent [] from being used to initialize an empty array, only empty can do that.  The only place [] should be used is in composing arrays with actual data/variables.
 
 looking into:
 
   Documented Incorrectly (10 items)
-
-  - Named-arg rule threshold — spec says all args must be named variables; transpiler only checks when there are 2+ args (single-arg literals pass silently)
   - [] claimed to be a transpiler error — transpiler accepts [] for empty list init; struct_test.deor example uses it
-  - avow statement context — checks var_type is "int" etc. to decide whether to add .0, but tests the binding type not the validator's base type
   - Comment in tokens_validation.deor — says "camelCase" for type validators but calls is_pascal (implementation is correct, comment is wrong)
   - r_join[...] in loops.md — references a function that doesn't exist anywhere
   - crash argument count — spec says 1 string arg; transpiler emits panic!("{}", args) which is a 2-arg Rust macro with no count validation
@@ -20,10 +22,6 @@ looking into:
 
   ---
   General Concerns
-
-  1. Collection loops missing & — for room in rooms emits for room in rooms { which moves the collection; Rust requires &rooms to borrow it — this would cause
-  compile errors for most loops
-  2. bad/empty transition is half-done — both keywords coexist with no policy; docs are mid-migration
   3. hello.deor line 10 — (hello, world) = test uses = instead of in; syntax error per spec
   4. hello.deor macro inside function — macro defined inside fn void main(), which violates the flat-structure rule
   5. s_pascal only capitalizes first char — not true PascalCase conversion; would silently produce broken Rust type names if shape names ever contain
@@ -31,6 +29,3 @@ looking into:
   6. Import path extension — spec examples use "./models" (no extension) but the transpiler reads paths literally; no .deor suffix injection means spec-style
   paths would fail
 
-  ---
-  The biggest functional gaps worth prioritizing: float literals, collection loop & borrowing, the import keyword doc error, the named import filtering not
-  actually filtering, and the avow .unwrap().0 mismatch in expression context. Those will cause actual Rust compile errors in real code.
