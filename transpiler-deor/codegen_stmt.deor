@@ -116,6 +116,18 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 	string pad = s_repeat(indent, depth)
 	string newline = "\n"
 
+	if kind is "BLOCK_START"
+		string open_brace = "{\n"
+		string blk_open = s_cat(pad, open_brace)
+		int blk_next = pos + 1
+		return make_result(giveup blk_open, blk_next)
+
+	if kind is "BLOCK_END"
+		string close_brace = "}\n"
+		string blk_close = s_cat(pad, close_brace)
+		int blk_next = pos + 1
+		return make_result(giveup blk_close, blk_next)
+
 	if kind is "KW_RUST"
 		int block_pos = pos + 2
 		Token block_token = tokens at block_pos

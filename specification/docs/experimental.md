@@ -42,16 +42,20 @@ using
 
 ---
 ### Macros
-Macros are extra useful in deor because it eliminates an enormous amount of cloning that can happen by defining seperate functions and organizing code (since deor for ease clones nearly everything).  It also is much more human readable than rust macros -- this is still in experimentation phase and is one of the newest added features
+Macros are extra useful in deor because it eliminates an enormous amount of cloning that can happen by defining seperate functions and organizing code (since deor for ease clones nearly everything).  It also is much more human readable than rust macros and more flexible as it doesn't have the same level of safety but still uses Rust's safety under the hood.
+
+Macros automatically rap themselves in bare blocks {} a rust convention but this is hidden to the user, this means that variables will not pollute anything outside of the macro (important as the macro code is literally copy and pasted everywhere you have the macro_run command).
 
 ```
-macro_define log_check(place label, place value)
-      print(label)
-      print(value)
+macro say_hello
+    print(hello)
 
-  fn void main()
-      string lbl = "score:"
-      int score = 42
-      macro_run log_check(lbl, score)
+hello as "Hi There"
+macro_run say_hello
+
+hello as "Hi There Again"
+macro_run say_hello
+
+# output is High There \n High There Again
 
 ```

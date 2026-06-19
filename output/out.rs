@@ -295,6 +295,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut cur_line: i32 = line.clone();
         let mut cur_indicator: String = "KW_MACRO_DEFINE".to_string();
         let mut next_indicator: String = "RPAREN".to_string();
+        {
         if cur_kind == cur_indicator {
             let mut skip_pos: i32 = pos + 1.clone();
             while skip_pos < token_count {
@@ -308,8 +309,10 @@ fn validate_tokens(tokens: Vec<Token>) {
             pos = skip_pos;
             continue;
         }
+        }
         let mut cur_indicator: String = "KW_RUST".to_string();
         let mut next_indicator: String = "RUST_BLOCK".to_string();
+        {
         if cur_kind == cur_indicator {
             let mut skip_pos: i32 = pos + 1.clone();
             while skip_pos < token_count {
@@ -322,6 +325,7 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = skip_pos;
             continue;
+        }
         }
         if cur_kind == "KW_NOT" {
             let mut next_not: i32 = pos + 1.clone();
@@ -346,6 +350,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut lbl: String = lbl_struct.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
+        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -365,11 +370,13 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = pos + 1;
             continue;
+        }
         }
         let mut keyword: String = "KW_ENUM".to_string();
         let mut lbl: String = lbl_enum.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
+        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -389,11 +396,13 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = pos + 1;
             continue;
+        }
         }
         let mut keyword: String = "KW_SHAPE".to_string();
         let mut lbl: String = lbl_shape.clone();
         let mut rule: String = rule_camel.clone();
         let mut test_rule: fn(String) -> bool = is_camel.clone();
+        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -414,10 +423,12 @@ fn validate_tokens(tokens: Vec<Token>) {
             pos = pos + 1;
             continue;
         }
+        }
         let mut keyword: String = "KW_TYPE".to_string();
         let mut lbl: String = lbl_type.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
+        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -437,12 +448,14 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
             pos = pos + 1;
             continue;
+        }
         }
         let mut keyword: String = "KW_FN".to_string();
         let mut lbl: String = lbl_fn.clone();
         let mut rule: String = rule_snake.clone();
         let mut test_rule: fn(String) -> bool = is_snake.clone();
         let mut validate_indent_offset: i32 = 2;
+        {
         if cur_kind == keyword {
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
             if name_pos < token_count {
@@ -463,7 +476,9 @@ fn validate_tokens(tokens: Vec<Token>) {
             pos = pos + 1;
             continue;
         }
+        }
         if cur_kind == "IDENT" {
+            {
             let mut call_lp: i32 = pos + 1.clone();
             if call_lp < token_count {
                 let mut call_lp_tok: Token = tokens[call_lp as usize].clone();
@@ -504,6 +519,8 @@ fn validate_tokens(tokens: Vec<Token>) {
                     }
                 }
             }
+            }
+            {
             let mut is_option: bool = cur_val == "Option".clone();
             let mut is_vec: bool = cur_val == "Vec".clone();
             let mut is_box: bool = cur_val == "Box".clone();
@@ -514,6 +531,8 @@ fn validate_tokens(tokens: Vec<Token>) {
             if is_rust_generic {
                 errors.push(val_err(cur_line.clone(), lbl_rust.clone(), cur_val.clone(), rule_no_option.clone()).clone());
             }
+            }
+            {
             let mut next1: i32 = pos + 1.clone();
             let mut next2: i32 = pos + 2.clone();
             if next2 < token_count {
@@ -535,6 +554,7 @@ fn validate_tokens(tokens: Vec<Token>) {
                         errors.push(val_err(var_line.clone(), lbl_var.clone(), var_name.clone(), rule_snake.clone()).clone());
                     }
                 }
+            }
             }
         }
         pos = pos + 1;
@@ -1805,6 +1825,18 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
     let mut indent: String = "    ".to_string();
     let mut pad: String = s_repeat(indent.clone(), depth.clone());
     let mut newline: String = "\n".to_string();
+    if kind == "BLOCK_START" {
+        let mut open_brace: String = "{\n".to_string();
+        let mut blk_open: String = s_cat(pad.clone(), open_brace.clone());
+        let mut blk_next: i32 = pos + 1.clone();
+        return make_result(blk_open, blk_next.clone());
+    }
+    if kind == "BLOCK_END" {
+        let mut close_brace: String = "}\n".to_string();
+        let mut blk_close: String = s_cat(pad.clone(), close_brace.clone());
+        let mut blk_next: i32 = pos + 1.clone();
+        return make_result(blk_close, blk_next.clone());
+    }
     if kind == "KW_RUST" {
         let mut block_pos: i32 = pos + 2.clone();
         let mut block_token: Token = tokens[block_pos as usize].clone();
@@ -3576,31 +3608,13 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     		let mut j = i + 1;
     		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
     		j += 1;
-    		// consume optional `with (vars)` — same-line or indented-block form
-    		if j < tokens.len() && tokens[j].kind == "KW_WITH" {
-    			// same-line: macro_run name with (vars)
-    			j += 1;
-    			if j < tokens.len() && tokens[j].kind == "LPAREN" { j += 1; }
-    			while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
-    			if j < tokens.len() { j += 1; }
-    		} else if j < tokens.len() && tokens[j].kind == "NEWLINE" {
-    			// block form: macro_run name \n INDENT with (vars) \n DEDENT
-    			let mut k = j + 1;
-    			if k < tokens.len() && tokens[k].kind == "INDENT" { k += 1; }
-    			if k < tokens.len() && tokens[k].kind == "KW_WITH" {
-    				j = k + 1;
-    				if j < tokens.len() && tokens[j].kind == "LPAREN" { j += 1; }
-    				while j < tokens.len() && tokens[j].kind != "RPAREN" { j += 1; }
-    				if j < tokens.len() { j += 1; }
-    				while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    				if j < tokens.len() && tokens[j].kind == "DEDENT" { j += 1; }
-    			}
-    		}
     		// skip trailing NEWLINE after the call
     		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		// splice body tokens inline
+    		// splice body tokens inline, wrapped in a bare block for scoping
     		if let Some(body) = macros.get(&name) {
+    			result.push(Token { kind: "BLOCK_START".to_string(), value: "{".to_string(), line: 0 });
     			for tok in body { result.push(tok.clone()); }
+    			result.push(Token { kind: "BLOCK_END".to_string(), value: "}".to_string(), line: 0 });
     		}
     		i = j;
     		continue;

@@ -227,12 +227,12 @@ fn void validate_tokens(tokenList tokens)
 		# skip macro_define headers — name(place p1, place p2) is a declaration, not a call
 		string cur_indicator = "KW_MACRO_DEFINE"
 		string next_indicator = "RPAREN"
-		macro_run skip_if_match with (cur_indicator, next_indicator)
+		macro_run skip_if_match
 
 		# skip rust blocks entirely — their content is raw Rust and not subject to Deor rules
 		string cur_indicator = "KW_RUST"
 		string next_indicator = "RUST_BLOCK"
-		macro_run skip_if_match with (cur_indicator, next_indicator)
+		macro_run skip_if_match
 
 		# forces "not is" rather than not X is
 		if cur_kind is "KW_NOT"
@@ -259,12 +259,12 @@ fn void validate_tokens(tokenList tokens)
 		
 		validate_indent_offset as 1
 		macro validate_ident
-			
+
 			# enum → PascalCase, min 3
 			if cur_kind is keyword
 				int name_pos = pos + validate_indent_offset
 				if name_pos < token_count
-				
+
 					Token name_tok = tokens at name_pos
 					(kind, value) in name_tok
 					string name_kind = kind
@@ -283,28 +283,28 @@ fn void validate_tokens(tokenList tokens)
 		string lbl = lbl_struct
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
-		macro_run validate_ident with (keyword, lbl, rule, test_rule)
+		macro_run validate_ident
 
 		# Enum Validator
 		string keyword = "KW_ENUM"
 		string lbl = lbl_enum
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
-		macro_run validate_ident with (keyword, lbl, rule, test_rule)
+		macro_run validate_ident
 
 		# Shape Validator
 		string keyword = "KW_SHAPE"
 		string lbl = lbl_shape
 		string rule = rule_camel
 		fnTestRule test_rule = is_camel
-		macro_run validate_ident with (keyword, lbl, rule, test_rule)
+		macro_run validate_ident
 
 		# Type Validator → camelCase, min 3
 		string keyword = "KW_TYPE"
 		string lbl = lbl_type
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
-		macro_run validate_ident with (keyword, lbl, rule, test_rule)
+		macro_run validate_ident
 
 		# Fn Validator → lower_snake_case, min 3
 		# pattern: KW_FN <return_type> <fn_name> LPAREN
@@ -319,9 +319,9 @@ fn void validate_tokens(tokenList tokens)
 		# variable declaration: TYPE_IDENT VAR_NAME EQUALS
 		# struct fields are TYPE_IDENT FIELD_NAME NEWLINE (no EQUALS), so this is safe
 		if cur_kind is "IDENT"
-			macro_run check_call_args with (tokens, pos, token_count, cur_line, cur_val, lbl_call, rule_named_arg, errors)
-			macro_run check_rust_generic with (cur_val, cur_line, lbl_rust, rule_no_option, errors)
-			macro_run check_var_decl with (tokens, pos, token_count, lbl_var, rule_min3, rule_snake, errors)
+			macro_run check_call_args
+			macro_run check_rust_generic
+			macro_run check_var_decl
 
 		pos = pos + 1
 
