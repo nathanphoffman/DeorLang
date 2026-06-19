@@ -3395,6 +3395,7 @@ fn load_file(path: String) -> Vec<Token> {
     let mut token_count: i32 = (tok_raw.len() as i32);
     let mut pos: i32 = 0;
     let mut depth: i32 = 0;
+    let mut seen_decl: bool = false;
     while true {
         let is_at_end_of_file = pos >= token_count;
         if is_at_end_of_file {
@@ -3423,6 +3424,14 @@ fn load_file(path: String) -> Vec<Token> {
             let mut imp_path: String = pr_code(imp_r.clone());
             let mut imp_end: i32 = pr_pos(imp_r.clone());
             if !is_empty(imp_path.clone()) {
+                if seen_decl {
+                    let mut err_pre: String = "[error] ".to_string();
+                    let mut err_mid: String = ": imports must appear at the top of the file before any declarations".to_string();
+                    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_mid.clone()];
+                    let mut err_msg: String = s_join(err_parts.clone());
+                    println!("{}", err_msg.clone());
+                    std::process::exit(1);
+                }
                 let mut is_new: bool = file_is_new(imp_path.clone());
                 if is_new {
                     let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
@@ -3439,6 +3448,9 @@ fn load_file(path: String) -> Vec<Token> {
                 pos = imp_end;
                 continue;
             }
+        }
+        if at_root_depth && kind != "NEWLINE" {
+            seen_decl = true;
         }
         result.push(tok.clone());
         pos = pos + 1;

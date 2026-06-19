@@ -97,6 +97,7 @@ fn tokenList load_file(string path)
 	int token_count = len(tok_raw)
 	int pos = 0
 	int depth = 0
+	bool seen_decl = false
 
 	for if true
 
@@ -128,6 +129,14 @@ fn tokenList load_file(string path)
 			string imp_path = pr_code(imp_r)
 			int imp_end = pr_pos(imp_r)
 			if not is_empty(imp_path)
+				if seen_decl
+					string err_pre = "[error] "
+					string err_mid = ": imports must appear at the top of the file before any declarations"
+					strList err_parts = [err_pre, path, err_mid]
+					string err_msg = s_join(err_parts)
+					print(err_msg)
+					rust
+						std::process::exit(1);
 				bool is_new = file_is_new(imp_path)
 				if is_new
 					tokenList imp_tokens = load_file(imp_path)
@@ -140,6 +149,8 @@ fn tokenList load_file(string path)
 							result at end = imp_tok
 				pos = imp_end
 				continue
+		if at_root_depth and kind is not "NEWLINE"
+			seen_decl = true
 		result at end = tok
 		pos = pos + 1
 
