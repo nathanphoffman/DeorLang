@@ -238,17 +238,21 @@ fn void validate_tokens(tokenList tokens)
 		if cur_kind is "KW_NOT"
 			int next_not = pos + 1
 			int after_not = pos + 2
+			
 			if after_not < token_count
-				Token not_next_tok = tokens at next_not
-				Token not_after_tok = tokens at after_not
-				(kind) in not_next_tok
-				string not_next_kind = kind
-				(kind) in not_after_tok
-				string not_after_kind = kind
-				bool next_is_ident = not_next_kind is "IDENT"
-				bool after_is_is = not_after_kind is "KW_IS"
+				Token next_not_tok = tokens at next_not
+				Token after_not_tok = tokens at after_not
+
+				(kind) in next_not_tok
+				string next_not_kind = kind
+				(kind) in after_not_tok
+				string after_not_kind = kind
+
+				bool next_is_ident = next_not_kind is "IDENT"
+				bool after_is_is = after_not_kind is "KW_IS"
+
 				if next_is_ident and after_is_is
-					(value) in not_next_tok
+					(value) in next_not_tok
 					errors at end = val_err(cur_line, lbl_var, value, rule_not_is)
 
 		###########################  These are validators for each type #####################
@@ -260,10 +264,12 @@ fn void validate_tokens(tokenList tokens)
 			if cur_kind is keyword
 				int name_pos = pos + validate_indent_offset
 				if name_pos < token_count
+				
 					Token name_tok = tokens at name_pos
 					(kind, value) in name_tok
 					string name_kind = kind
 					string name_val = value
+
 					if name_kind is "IDENT"
 						if len(name_val) < 3
 							errors at end = val_err(cur_line, lbl, name_val, rule_min3)
@@ -293,14 +299,14 @@ fn void validate_tokens(tokenList tokens)
 		fnTestRule test_rule = is_camel
 		macro_run validate_ident with (keyword, lbl, rule, test_rule)
 
-		# type → camelCase, min 3
+		# Type Validator → camelCase, min 3
 		string keyword = "KW_TYPE"
 		string lbl = lbl_type
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
 		macro_run validate_ident with (keyword, lbl, rule, test_rule)
 
-		# fn → lower_snake_case, min 3
+		# Fn Validator → lower_snake_case, min 3
 		# pattern: KW_FN <return_type> <fn_name> LPAREN
 		string keyword = "KW_FN"
 		string lbl = lbl_fn
@@ -308,7 +314,7 @@ fn void validate_tokens(tokenList tokens)
 		fnTestRule test_rule = is_snake
 		# unlike other validators, we skip ahead to skip over type to reach ident
 		int validate_indent_offset = 2
-		macro_run validate_ident with (keyword, lbl, rule, test_rule, validate_indent_offset)
+		macro_run validate_ident
 
 		# variable declaration: TYPE_IDENT VAR_NAME EQUALS
 		# struct fields are TYPE_IDENT FIELD_NAME NEWLINE (no EQUALS), so this is safe

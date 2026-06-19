@@ -327,16 +327,16 @@ fn validate_tokens(tokens: Vec<Token>) {
             let mut next_not: i32 = pos + 1.clone();
             let mut after_not: i32 = pos + 2.clone();
             if after_not < token_count {
-                let mut not_next_tok: Token = tokens[next_not as usize].clone();
-                let mut not_after_tok: Token = tokens[after_not as usize].clone();
-                let kind = not_next_tok.kind.clone();
-                let mut not_next_kind: String = kind.clone();
-                let kind = not_after_tok.kind.clone();
-                let mut not_after_kind: String = kind.clone();
-                let mut next_is_ident: bool = not_next_kind == "IDENT".clone();
-                let mut after_is_is: bool = not_after_kind == "KW_IS".clone();
+                let mut next_not_tok: Token = tokens[next_not as usize].clone();
+                let mut after_not_tok: Token = tokens[after_not as usize].clone();
+                let kind = next_not_tok.kind.clone();
+                let mut next_not_kind: String = kind.clone();
+                let kind = after_not_tok.kind.clone();
+                let mut after_not_kind: String = kind.clone();
+                let mut next_is_ident: bool = next_not_kind == "IDENT".clone();
+                let mut after_is_is: bool = after_not_kind == "KW_IS".clone();
                 if next_is_ident && after_is_is {
-                    let value = not_next_tok.value.clone();
+                    let value = next_not_tok.value.clone();
                     errors.push(val_err(cur_line.clone(), lbl_var.clone(), value.clone(), rule_not_is.clone()).clone());
                 }
             }
