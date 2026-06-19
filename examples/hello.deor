@@ -58,8 +58,16 @@ fn void say_first(listString items)
 
 fn void main()
 
-	thing as ["test","test1"]
+
+	listString thing = empty
+	# if thing is empty
+	# 	print("array is empty")
+
+	thing = ["test","test1"]
+	
+
 	say_first(thing)
+	
 
 	int test = 10_0000
 	print(test)
@@ -111,8 +119,9 @@ fn void main()
 	#SquareFeet sqft = 4
 	#int actual_sqft = (avow sqft)
 
-	SquareFeet sqft = 0
-	if sqft is bad
+	#SquareFeet sqft = 0
+	SquareFeet sqft = bad
+	if sqft is not bad
 		print("sqft is bad")
 
 

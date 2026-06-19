@@ -87,7 +87,7 @@
     },
     "constants": {
       "name": "constant.language.deor",
-      "match": "\\b(true|false|bad)\\b"
+      "match": "\\b(true|false|bad|empty)\\b"
     },
     "number": {
       "name": "constant.numeric.deor",

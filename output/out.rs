@@ -2362,15 +2362,6 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     }
     if kind == "LBRACKET" {
         let mut inner_pos: i32 = pos + 1.clone();
-        if inner_pos < token_count {
-            let mut next_token: Token = tokens[inner_pos as usize].clone();
-            let kind = next_token.kind.clone();
-            if kind == "RBRACKET" {
-                let mut after: i32 = inner_pos + 1.clone();
-                let mut empty_vec: String = "Vec::new()".to_string();
-                return make_result(empty_vec.clone(), after.clone());
-            }
-        }
         let mut items_r: ParseResult = gen_list_items(tokens.clone(), inner_pos.clone(), ctx.clone());
         let mut items_code: String = pr_code(items_r.clone());
         let mut items_pos: i32 = pr_pos(items_r.clone());
@@ -3233,6 +3224,23 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                         let mut lst_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
                         return make_result(lst_code.clone(), lst_next.clone());
                     }
+                    if kind == "KW_BAD" {
+                        let mut bad_is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
+                        let mut bad_pos_next: i32 = val_pos + 1.clone();
+                        let mut bad_next: i32 = adv_nl_ref(bad_pos_next.clone(), tokens.clone());
+                        if bad_is_validator {
+                            let mut non_pfx: String = "let mut ".to_string();
+                            let mut non_mid: String = ": Option<".to_string();
+                            let mut non_sfx: String = "> = None;\n".to_string();
+                            let mut non_parts: Vec<String> = vec![pad.clone(), non_pfx.clone(), var_name.clone(), non_mid.clone(), rust_type.clone(), non_sfx.clone()];
+                            let mut none_code: String = s_join(non_parts.clone());
+                            return make_result(none_code.clone(), bad_next.clone());
+                        }
+                        let mut bad_err: String = "/* error: bad is only valid for validator types */\n".to_string();
+                        let mut bad_err_parts: Vec<String> = vec![pad.clone(), bad_err.clone()];
+                        let mut bad_err_code: String = s_join(bad_err_parts.clone());
+                        return make_result(bad_err_code.clone(), bad_next.clone());
+                    }
                     let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
                     if is_validator {
                         let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -3252,23 +3260,6 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                         let mut vld_code: String = s_join(vld_parts.clone());
                         let mut vld_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
                         return make_result(vld_code.clone(), vld_next.clone());
-                    }
-                    if kind == "KW_BAD" {
-                        let mut bad_is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
-                        let mut bad_pos_next: i32 = val_pos + 1.clone();
-                        let mut bad_next: i32 = adv_nl_ref(bad_pos_next.clone(), tokens.clone());
-                        if bad_is_validator {
-                            let mut non_pfx: String = "let mut ".to_string();
-                            let mut non_mid: String = ": Option<".to_string();
-                            let mut non_sfx: String = "> = None;\n".to_string();
-                            let mut non_parts: Vec<String> = vec![pad.clone(), non_pfx.clone(), var_name.clone(), non_mid.clone(), rust_type.clone(), non_sfx.clone()];
-                            let mut none_code: String = s_join(non_parts.clone());
-                            return make_result(none_code.clone(), bad_next.clone());
-                        }
-                        let mut bad_err: String = "/* error: bad is only valid for validator types */\n".to_string();
-                        let mut bad_err_parts: Vec<String> = vec![pad.clone(), bad_err.clone()];
-                        let mut bad_err_code: String = s_join(bad_err_parts.clone());
-                        return make_result(bad_err_code.clone(), bad_next.clone());
                     }
                     let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
                     let mut val_code: String = pr_code(val_r.clone());

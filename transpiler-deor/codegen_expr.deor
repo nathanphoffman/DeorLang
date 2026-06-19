@@ -199,13 +199,6 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 
 	if kind is "LBRACKET"
 		int inner_pos = pos + 1
-		if inner_pos < token_count
-			Token next_token = tokens at inner_pos
-			(kind) in next_token
-			if kind is "RBRACKET"
-				int after = inner_pos + 1
-				string empty_vec = "Vec::new()"
-				return make_result(empty_vec, after)
 		ParseResult items_r = gen_list_items(tokens, inner_pos, ctx)
 		string items_code = pr_code(items_r)
 		int items_pos = pr_pos(items_r)
