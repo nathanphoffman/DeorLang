@@ -26,8 +26,6 @@ struct GenCtx {
     using_type: String,
     using_var: String,
     var_type_reg: StrList,
-    macro_reg: StrList,
-    macro_params: StrList,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -945,44 +943,6 @@ fn resolve_type(type_name: String, shape_reg: Vec<String>, enum_reg: Vec<String>
     return render_rust_type(type_name.clone());
 }
 
-fn build_macro_reg(tokens: Vec<Token>) -> Vec<String> {
-    let mut result: Vec<String> = Vec::new();
-    let mut token_count: i32 = (tokens.len() as i32);
-    for index in 0..token_count {
-        let mut token: Token = tokens[index as usize].clone();
-        let kind = token.kind.clone();
-        let value = token.value.clone();
-        let line = token.line.clone();
-        if kind == "KW_MACRO_DEFINE" {
-            let mut name_pos: i32 = index + 1.clone();
-            if name_pos < token_count {
-                let mut name_tok: Token = tokens[name_pos as usize].clone();
-                let value = name_tok.value.clone();
-                let mut macro_name: String = value.clone();
-                let mut params: Vec<String> = Vec::new();
-                let mut scan: i32 = name_pos + 2.clone();
-                while scan < token_count {
-                    let mut scan_tok: Token = tokens[scan as usize].clone();
-                    let kind = scan_tok.kind.clone();
-                    let value = scan_tok.value.clone();
-                    if kind == "RPAREN" {
-                        break;
-                    }
-                    if kind == "IDENT" {
-                        params.push(value.clone());
-                    }
-                    scan = scan + 1;
-                }
-                let mut comma: String = ",".to_string();
-                let mut params_joined: String = s_join_with(params.clone(), comma.clone());
-                result.push(macro_name.clone());
-                result.push(params_joined.clone());
-            }
-        }
-    }
-    return result;
-}
-
 fn find_block_end(tokens: Vec<Token>, indent_pos: i32) -> i32 {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut depth: i32 = 1;
@@ -1434,7 +1394,6 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let enum_reg = ctx.enum_reg.clone();
     let mut_names = ctx.mut_names.clone();
     let type_reg = ctx.type_reg.clone();
-    let macro_params = ctx.macro_params.clone();
     let mut token_count: i32 = (tokens.len() as i32);
     let mut token: Token = tokens[pos as usize].clone();
     let kind = token.kind.clone();
@@ -1546,24 +1505,6 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         if next_pos < token_count {
             let mut next_token: Token = tokens[next_pos as usize].clone();
             let kind = next_token.kind.clone();
-            let mut is_place: bool = list_has(macro_params.clone(), value.clone());
-            if is_place {
-                let mut dollar: String = "$".to_string();
-                let mut place_code: String = s_cat(dollar.clone(), value.clone());
-                if kind == "LPAREN" {
-                    let mut place_args_pos: i32 = next_pos + 1.clone();
-                    let mut place_args_r: ParseResult = gen_call_args(tokens.clone(), place_args_pos.clone(), ctx.clone());
-                    let mut place_args_code: String = pr_code(place_args_r.clone());
-                    let mut place_args_end: i32 = pr_pos(place_args_r.clone());
-                    let mut place_after: i32 = place_args_end + 1.clone();
-                    let mut plc_op: String = "(".to_string();
-                    let mut plc_cp: String = ")".to_string();
-                    let mut plc_parts: Vec<String> = vec![place_code.clone(), plc_op.clone(), place_args_code.clone(), plc_cp.clone()];
-                    let mut plc_code: String = s_join(plc_parts.clone());
-                    return make_result(plc_code.clone(), place_after.clone());
-                }
-                return make_result(place_code.clone(), next_pos.clone());
-            }
             if kind == "LPAREN" {
                 let mut func_name: String = value.clone();
                 let mut args_pos: i32 = next_pos + 1.clone();
@@ -1800,8 +1741,6 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
     let mut using_type = ctx.using_type.clone();
     let mut using_var = ctx.using_var.clone();
     let var_type_reg = ctx.var_type_reg.clone();
-    let macro_reg = ctx.macro_reg.clone();
-    let macro_params = ctx.macro_params.clone();
     let mut token_count: i32 = (tokens.len() as i32);
     let mut token: Token = tokens[pos as usize].clone();
     let kind = token.kind.clone();
@@ -1810,23 +1749,6 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
     let mut indent: String = "    ".to_string();
     let mut pad: String = s_repeat(indent.clone(), depth.clone());
     let mut newline: String = "\n".to_string();
-    if kind == "KW_MACRO_RUN" {
-        let mut mr_name_pos: i32 = pos + 1.clone();
-        let mut mr_name_tok: Token = tokens[mr_name_pos as usize].clone();
-        let value = mr_name_tok.value.clone();
-        let mut mr_macro_name: String = value.clone();
-        let mut mr_args_pos: i32 = pos + 3.clone();
-        let mut mr_args_r: ParseResult = gen_call_args(tokens.clone(), mr_args_pos.clone(), ctx.clone());
-        let mut mr_args_code: String = pr_code(mr_args_r.clone());
-        let mut mr_args_end: i32 = pr_pos(mr_args_r.clone());
-        let mut mr_after: i32 = mr_args_end + 1.clone();
-        let mut mr_bang: String = "!(".to_string();
-        let mut mr_sfx: String = ");\n".to_string();
-        let mut mr_parts: Vec<String> = vec![pad.clone(), mr_macro_name.clone(), mr_bang.clone(), mr_args_code.clone(), mr_sfx.clone()];
-        let mut mr_code: String = s_join(mr_parts.clone());
-        let mut mr_next: i32 = adv_nl_ref(mr_after.clone(), tokens.clone());
-        return make_result(mr_code.clone(), mr_next.clone());
-    }
     if kind == "KW_RUST" {
         let mut block_pos: i32 = pos + 2.clone();
         let mut block_token: Token = tokens[block_pos as usize].clone();
@@ -1920,7 +1842,7 @@ fn gen_stmt(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult 
         let mut var_next: i32 = var_pos + 1.clone();
         let mut body_start: i32 = skip_to_body_ref(tokens.clone(), var_next.clone());
 /* unhandled(IDENT) */
-        let using_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), macro_reg: macro_reg.clone(), macro_params: macro_params.clone() };
+        let using_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone() };
         let mut using_ctx: RcCtx = make_rctx(using_ctx_raw);
         let mut block_r: ParseResult = gen_block(tokens.clone(), body_start.clone(), depth.clone(), using_ctx);
         let mut blk_code: String = pr_code(block_r.clone());
@@ -2900,7 +2822,6 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut using_type = ctx.using_type.clone();
     let mut using_var = ctx.using_var.clone();
     let mut var_type_reg = ctx.var_type_reg.clone();
-    let macro_reg = ctx.macro_reg.clone();
     let mut start_pos: i32 = pos + 1.clone();
     let mut cur: TokenCursor = cur_at(tokens.clone(), start_pos.clone());
     let token_count = cur.token_count.clone();
@@ -2978,9 +2899,8 @@ fn gen_fn_decl(tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut var_type_reg: Vec<String> = build_var_type_reg(body_tokens_raw.clone());
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
-    let mut macro_params: Vec<String> = Vec::new();
 /* unhandled(IDENT) */
-    let body_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), macro_reg: macro_reg.clone(), macro_params: macro_params.clone() };
+    let body_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone() };
     let mut body_ctx: RcCtx = make_rctx(body_ctx_raw);
     let mut body_tokens: TokensRef = tokens_wrap(body_tokens_raw);
     let mut body_pos: i32 = 0;
@@ -3012,76 +2932,6 @@ fn gen_raw_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut emp: String = "".to_string();
     let mut raw_next: i32 = adv_nl(after.clone(), tokens.clone());
     return make_result(emp.clone(), raw_next.clone());
-}
-
-fn gen_macro_define(tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
-    let variant_reg = ctx.variant_reg.clone();
-    let shape_reg = ctx.shape_reg.clone();
-    let struct_reg = ctx.struct_reg.clone();
-    let enum_reg = ctx.enum_reg.clone();
-    let type_reg = ctx.type_reg.clone();
-    let macro_reg = ctx.macro_reg.clone();
-    let mut name_pos: i32 = pos + 1.clone();
-    let mut name_tok: Token = tokens[name_pos as usize].clone();
-    let value = name_tok.value.clone();
-    let mut macro_name: String = value.clone();
-    let mut place_params: Vec<String> = Vec::new();
-    let mut scan: i32 = name_pos + 2.clone();
-    let mut token_count: i32 = (tokens.len() as i32);
-    while scan < token_count {
-        let mut scan_tok: Token = tokens[scan as usize].clone();
-        let kind = scan_tok.kind.clone();
-        let value = scan_tok.value.clone();
-        if kind == "RPAREN" {
-            scan = scan + 1;
-            break;
-        }
-        if kind == "IDENT" {
-            place_params.push(value.clone());
-        }
-        scan = scan + 1;
-    }
-    let mut first_body_pos: i32 = skip_to_body(tokens.clone(), scan.clone());
-    let mut indent_tok_pos: i32 = first_body_pos - 1.clone();
-    let mut body_end_pos: i32 = find_block_end(tokens.clone(), indent_tok_pos.clone());
-    let mut body_start: i32 = first_body_pos.clone();
-    let mut body_slice_end: i32 = body_end_pos + 1.clone();
-    let mut body_tokens_raw: Vec<Token> = l_slice(tokens.clone(), body_start.clone(), body_slice_end.clone());
-    let mut body_len: i32 = (body_tokens_raw.len() as i32);
-    let mut zero: i32 = 0;
-    let mut body_last: i32 = body_len - 1.clone();
-    let mut mut_names: Vec<String> = collect_mut_names(body_tokens_raw.clone(), zero.clone(), body_last.clone());
-    let mut var_type_reg: Vec<String> = build_var_type_reg(body_tokens_raw.clone());
-    let mut using_type: String = "".to_string();
-    let mut using_var: String = "".to_string();
-    let mut macro_params: Vec<String> = place_params.clone();
-/* unhandled(IDENT) */
-    let macro_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), macro_reg: macro_reg.clone(), macro_params: macro_params.clone() };
-    let mut macro_ctx: RcCtx = make_rctx(macro_ctx_raw);
-    let mut body_tokens: TokensRef = tokens_wrap(body_tokens_raw);
-    let mut body_pos: i32 = 0;
-    let mut body_depth: i32 = 2;
-    let mut body_r: ParseResult = gen_block(body_tokens, body_pos.clone(), body_depth.clone(), macro_ctx);
-    let mut body_code: String = pr_code(body_r.clone());
-    let mut param_count: i32 = (place_params.len() as i32);
-    let mut param_strs: Vec<String> = Vec::new();
-    for pi in 0..param_count {
-        let mut pname: String = place_params[pi as usize].clone();
-        let mut dollar: String = "$".to_string();
-        let mut tt_sfx: String = ":expr".to_string();
-        let mut pp_parts: Vec<String> = vec![dollar.clone(), pname.clone(), tt_sfx.clone()];
-        param_strs.push(s_join(pp_parts.clone()).clone());
-    }
-    let mut comma_sep: String = ", ".to_string();
-    let mut params_str: String = s_join_with(param_strs.clone(), comma_sep.clone());
-    let mut mr_open: String = "macro_rules! ".to_string();
-    let mut mr_match: String = " {\n    (".to_string();
-    let mut mr_arrow: String = ") => {\n".to_string();
-    let mut mr_close: String = "    };\n}\n\n".to_string();
-    let mut mr_parts: Vec<String> = vec![mr_open.clone(), macro_name.clone(), mr_match.clone(), params_str.clone(), mr_arrow.clone(), body_code.clone(), mr_close.clone()];
-    let mut macro_code: String = s_join(mr_parts.clone());
-    let mut after_pos: i32 = body_end_pos + 1.clone();
-    return make_result(macro_code, after_pos.clone());
 }
 
 fn count_tabs(line: String) -> i32 {
@@ -3631,7 +3481,6 @@ fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {
     let mut type_reg: Vec<String> = build_type_reg(tokens.clone());
     let mut mut_names: Vec<String> = Vec::new();
     let mut var_type_reg: Vec<String> = build_var_type_reg(tokens.clone());
-    let mut macro_reg: Vec<String> = build_macro_reg(tokens.clone());
     let mut t_reg: i32 = elapsed_ms(t_reg_start.clone());
     let mut trg_str: String = n_to_str(t_reg.clone());
     let mut trg_pfx: String = "[timer]   registries: ".to_string();
@@ -3640,9 +3489,8 @@ fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {
     println!("{}", s_join(trg_parts.clone()));
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
-    let mut macro_params: Vec<String> = Vec::new();
 /* unhandled(IDENT) */
-    let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), macro_reg: macro_reg.clone(), macro_params: macro_params.clone() };
+    let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone() };
     let mut ctx: RcCtx = make_rctx(ctx_raw);
     let mut output: String = "".to_string();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -3698,13 +3546,6 @@ fn generate_rust_from_tokens(tokens: Vec<Token>) -> String {
         }
         if kind == "KW_RAW" {
             let mut result: ParseResult = gen_raw_decl(tokens.clone(), pos.clone());
-            let mut decl_code: String = pr_code(result.clone());
-            output = s_cat(output.clone(), decl_code.clone());
-            pos = pr_pos(result.clone());
-            continue;
-        }
-        if kind == "KW_MACRO_DEFINE" {
-            let mut result: ParseResult = gen_macro_define(tokens.clone(), pos.clone(), ctx.clone());
             let mut decl_code: String = pr_code(result.clone());
             output = s_cat(output.clone(), decl_code.clone());
             pos = pr_pos(result.clone());

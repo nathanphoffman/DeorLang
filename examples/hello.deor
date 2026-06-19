@@ -41,17 +41,17 @@ fn Test say_hi(Test test)
 fn void handle_message(string message)
 	print(message)
 
-macro_define log_check(place label, place value)
-	print(label)
-	print(value)
+# macro_define log_check(place label, place value)
+# 	print(label)
+# 	print(value)
 
 fn void main()
 
 
-	print("just before")
-	string lbl = "score:"
-	string score = "42"
-	macro_run log_check(lbl, score)
+	# print("just before")
+	# string lbl = "score:"
+	# string score = "42"
+	# macro_run log_check(lbl, score)
 
 	x as 10
 	y as 20
