@@ -319,9 +319,9 @@ fn void validate_tokens(tokenList tokens)
 		# variable declaration: TYPE_IDENT VAR_NAME EQUALS
 		# struct fields are TYPE_IDENT FIELD_NAME NEWLINE (no EQUALS), so this is safe
 		if cur_kind is "IDENT"
-			macro_run check_call_args
-			macro_run check_rust_generic
-			macro_run check_var_decl
+			macro_run check_call_args with (tokens, pos, token_count, cur_line, cur_val, lbl_call, rule_named_arg, errors)
+			macro_run check_rust_generic with (cur_val, cur_line, lbl_rust, rule_no_option, errors)
+			macro_run check_var_decl with (tokens, pos, token_count, lbl_var, rule_min3, rule_snake, errors)
 
 		pos = pos + 1
 
