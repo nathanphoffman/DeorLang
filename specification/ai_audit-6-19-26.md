@@ -3,7 +3,11 @@ AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
 # In progress
 
-- Check empty bad enforcement, fact check ai work
+- We have to implement is empty better for the check
+it looks like lists can't compare on empty in the transpiler, this fails in hello.deor     listString thing = empty                                      
+      if thing is empty                                                                                                                                      
+          print("array is empty")      
+
 - Make sure proper import paths / relative paths are understood for docs
 
 # More Stuff

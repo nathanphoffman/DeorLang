@@ -302,7 +302,7 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				string call_code = s_join(call_parts)
 				return make_result(call_code, after_paren)
 
-			# index read: name at idx
+			# index read: name at idx -- !!! this is what i will change
 			if kind is "KW_AT"
 				int idx_pos = next_pos + 1
 				ParseResult idx_r = gen_primary(tokens, idx_pos, ctx)

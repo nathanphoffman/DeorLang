@@ -14,6 +14,10 @@ run-deor file="examples/hello.deor":
     ./output/run
 
 
+build-transpiler:
+    ./output/out transpiler-deor/main.deor output/out.rs
+    rustc -O -A warnings output/out.rs -o output/out
+
 run-ts file="examples/hello.deor":
     cd transpiler-ts && npm install --silent
     cd transpiler-ts && npx tsx src/main.ts ../{{file}} ../output/out.rs

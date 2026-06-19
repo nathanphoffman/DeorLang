@@ -1,0 +1,12 @@
+macro codegen_expr_at
+	# index read: name at idx
+	if kind is "KW_AT"
+		int idx_pos = next_pos + 1
+		ParseResult idx_r = gen_primary(tokens, idx_pos, ctx)
+		string idx_code = pr_code(idx_r)
+		int idx_end = pr_pos(idx_r)
+		string idx_mid = "["
+		string idx_sfx = " as usize].clone()"
+		strList idx_parts = [value, idx_mid, idx_code, idx_sfx]
+		string idx_expr = s_join(idx_parts)
+		return make_result(idx_expr, idx_end)

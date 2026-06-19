@@ -1,3 +1,5 @@
+# It is important imports are loaded in the order they are first referenced
+
 # primitives and lib
 import "transpiler-deor/types.deor"
 import "transpiler-deor/lib/char.deor"
@@ -30,8 +32,13 @@ import "transpiler-deor/tokens_validator/macros/check_rust_generic.deor"
 import "transpiler-deor/tokens_validator/macros/check_call_args.deor"
 import "transpiler-deor/tokens_validation.deor"
 
+
+
 # registry and codegen
 import "transpiler-deor/registry.deor"
+#import "transpiler-deor/codegen_expr/at.deor"
 import "transpiler-deor/codegen_expr.deor"
 import "transpiler-deor/codegen_stmt.deor"
 import "transpiler-deor/codegen_decl.deor"
+
+
