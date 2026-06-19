@@ -3211,8 +3211,11 @@ fn gen_if(tokens: TokensRef, pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         }
         let mut else_token: Token = tokens[cur as usize].clone();
         let kind = else_token.kind.clone();
-        let mut is_else: bool = kind == "KW_ELSE".clone();
-        if !is_else {
+        if kind == "NEWLINE" {
+            cur = cur + 1;
+            continue;
+        }
+        if kind != "KW_ELSE" {
             break;
         }
         let mut after_else: i32 = cur + 1.clone();

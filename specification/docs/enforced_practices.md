@@ -35,59 +35,9 @@ type Roll(int n)      # transpiler error — parameter too short
 There are no exceptions. All runtime identifiers — variables, parameters, fields, functions, type names, and shape names — must be at least 3 characters.
 
 ---
-
-## Order of Declarations
+## Ordering
 Imports are required to be at the top of a file, however there are no other restrictions, but there are suggestions for [best practices](docs/best_practices.md).
 
-## Field Extraction Order
-Struct field extraction with `in` must follow declaration order within the struct — the same rule as struct construction with `as`. The field you write first must match the first declared field of the struct.
-
-**Correct:**
-```
-struct Room
-    Squarefeet area
-    string name
-
-(area, name) in room    # correct — matches declaration order
-```
-
-**Incorrect — transpiler errors:**
-```
-(name, area) in room    # wrong order — area is declared first
-```
-
-Single-field extraction has no ordering constraint.
-
----
-
-**Incorrect — transpiler warns:**
-```
-fn RollResult roll_die(Die die)
-    int raw = random(1, die)
-    (sides, label) in die
-```
-
-This keeps blocks consistent: you always see what a block unpacks before reading its logic, the same way function parameters are declared before the body.
-
----
-## Compact Ternary — No Blank Lines
-
-In a compact ternary expression, the assignment line, `if` line, and `else` line must be vertically adjacent with no blank lines between them. The visual tightness is the signal that they form one expression.
-
-**Correct:**
-```
-int result = value
-    if value > 0
-    else 0
-```
-
-**Incorrect — transpiler errors:**
-```
-int result = value
-
-    if value > 0
-    else 0
-```
 
 ---
 ## Validator Type Predicate Required

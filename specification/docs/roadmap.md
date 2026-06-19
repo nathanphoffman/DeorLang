@@ -2,8 +2,8 @@
 Note the roadmap is more to list out my raw notes and get feedback, however it is subject to frequent change and is not written in a singular viewpoint, I frequently will switch from personal to general throughout this.
 ---
 
-## Make file imports global
-I decided this is easiest for brevity
+## Three argument max is documented and needs fixed
+
 
 ## Audit Documentation
 *Large Lift* | *Critical Priority*
@@ -33,12 +33,7 @@ The codegen loop in generate_rust_from_tokens builds output like this:
 
   Current cost: ~3.1s out of ~3.6s total runtime. It's the last major bottleneck.
 
-## Individual File Mapping Output
-Another important logical step is to have the files outputted 
 
-## Add Better Onboarding Document
-*Large Lift* | *Low Priority*
-It would be good to start a doc that takes users from 0 to completion of at least a small sized project
 
 ---
 # Smaller items that are in no hurry
@@ -61,6 +56,11 @@ Right now both empty and [] exist which violates the core concepts in Deor, ther
 - Lean-Con: fn([]) to makes more contextual sense than fn(empty) but if it's more than one param it must be named anyway, giving neither a strong edge -- so this is a pretty specific use case, one param and empty both needed.
 - Con: it is harder to recognize and in code that reads entirely like a book it might be getting too hard to pick out
 - Con: [1,2,3] when filled in is already used for defining literal array data and () is might too cluttered
+
+## Add Better Onboarding Document
+*Large Lift* | *Low Priority*
+It would be good to start a doc that takes users from 0 to completion of at least a small sized project
+
 
 ## Add additional validation
 - Validator: We should not allow any & | ^ < > { } unless it is in string data

@@ -42,7 +42,18 @@ fn int square(int val)
 ---
 ## Destructuring
 
-All `in` extractions should appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
+It is best to destructure structs in order of how they are defined in the struct for consistency.
+```
+struct Employee
+    int employee_id
+    string first_name
+    string last_name
+
+(employee_id, first_name, last_name) in employee
+```
+
+
+Additionally, all `in` extractions should appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
 
 **Correct:**
 ```

@@ -753,8 +753,10 @@ fn ParseResult gen_if(TokensRef tokens, int pos, int depth, RcCtx ctx)
 			break
 		Token else_token = tokens at cur
 		(kind) in else_token
-		bool is_else = kind is "KW_ELSE"
-		if not is_else
+		if kind is "NEWLINE"
+			cur = cur + 1
+			continue
+		if kind is not "KW_ELSE"
 			break
 		int after_else = cur + 1
 		if after_else >= token_count

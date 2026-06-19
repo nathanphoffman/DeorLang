@@ -5,3 +5,11 @@ fn void main()
 	print(phi)
 	print(pie)
 	print(pop)
+	int val = 5
+	if val > 10
+		print(val)
+	# comment between if and else if
+	else if val > 3
+		print(pie)
+	else
+		print(phi)
