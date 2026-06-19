@@ -52,8 +52,8 @@ fn string make_destruct_code(string var_name, string struct_type, strList struct
 # field becomes a separate `let [mut] field = source.field.clone();` line. The `mut`
 # annotation is applied when the field name appears in mut_names because it is
 # re-assigned later in the same function body.
-fn ParseResult gen_destructure(TokensRef tokens, int pos, int depth, RcCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
+fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens) in ctx
 	int token_count = len(tokens)
 	string indent = "    "
 	string pad = s_repeat(indent, depth)
@@ -102,8 +102,8 @@ fn ParseResult gen_destructure(TokensRef tokens, int pos, int depth, RcCtx ctx)
 # `(fields) in source` destructuring, `using varName` block, and all identifier-led
 # statements: `as`-binding, function calls, `insert`, `at end =` append,
 # `at idx =` index write, `remove at idx`, plain `=` assignment, and typed bindings.
-fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
+fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
@@ -178,10 +178,10 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 		return make_result(cnt_code, cnt_after)
 
 	if kind is "KW_IF"
-		return gen_if(tokens, pos, depth, ctx)
+		return gen_if(pos, depth, ctx)
 
 	if kind is "KW_FOR"
-		return gen_for(tokens, pos, depth, ctx)
+		return gen_for(pos, depth, ctx)
 
 	if kind is "LPAREN"
 		int peek_pos = pos + 1
@@ -198,7 +198,7 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 				string avow_code = s_join(avw_parts)
 				int avow_next = adv_nl_ref(after_rparen, tokens)
 				return make_result(avow_code, avow_next)
-		return gen_destructure(tokens, pos, depth, ctx)
+		return gen_destructure(pos, depth, ctx)
 
 	if kind is "KW_USING"
 		int var_pos = pos + 1
@@ -210,9 +210,9 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 		string init_destruct = make_destruct_code(using_var, struct_type, struct_reg, mut_names, pad)
 		int var_next = var_pos + 1
 		int body_start = skip_to_body_ref(tokens, var_next)
-		GenCtx using_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg)
+		GenCtx using_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
 		RcCtx using_ctx = make_rctx(giveup using_ctx_raw)
-		ParseResult block_r = gen_block(tokens, body_start, depth, giveup using_ctx)
+		ParseResult block_r = gen_block(body_start, depth, giveup using_ctx)
 		string blk_code = pr_code(block_r)
 		int blk_pos = pr_pos(block_r)
 		string full_code = s_cat(init_destruct, blk_code)
@@ -692,7 +692,8 @@ fn ParseResult gen_stmt(TokensRef tokens, int pos, int depth, RcCtx ctx)
 # Generates a block of statements by calling gen_stmt repeatedly until a DEDENT or EOF
 # is reached. Returns the concatenated Rust code and the position just after the closing
 # DEDENT. Used for function bodies, if/else branches, for/while bodies, and using blocks.
-fn ParseResult gen_block(TokensRef tokens, int pos, int depth, RcCtx ctx)
+fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
+	(tokens) in ctx
 	strList stmts = []
 	int cur = pos
 	int token_count = len(tokens)
@@ -708,7 +709,7 @@ fn ParseResult gen_block(TokensRef tokens, int pos, int depth, RcCtx ctx)
 		if kind is "NEWLINE"
 			cur = cur + 1
 			continue
-		ParseResult stmt_r = gen_stmt(tokens, cur, depth, ctx)
+		ParseResult stmt_r = gen_stmt(cur, depth, ctx)
 		stmts at end = pr_code(stmt_r)
 		cur = pr_pos(stmt_r)
 	string block_joined = s_join(stmts)
@@ -719,12 +720,13 @@ fn ParseResult gen_block(TokensRef tokens, int pos, int depth, RcCtx ctx)
 # Generates the condition expression and body for one arm of an if/else-if chain.
 # Returns code up to (but not including) the closing `}` so that gen_if can chain
 # additional `else if` and `else` arms onto the same Rust if statement.
-fn ParseResult gen_if_branch(TokensRef tokens, int cond_pos, int depth, RcCtx ctx)
+fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
+	(tokens) in ctx
 	ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
 	int cond_end = pr_pos(cond_r)
 	int body_start = skip_to_body_ref(tokens, cond_end)
 	int body_depth = depth + 1
-	ParseResult body_r = gen_block(tokens, body_start, body_depth, ctx)
+	ParseResult body_r = gen_block(body_start, body_depth, ctx)
 	string cond_code = pr_code(cond_r)
 	string body_code = pr_code(body_r)
 	string brc_open = " {\n"
@@ -736,12 +738,13 @@ fn ParseResult gen_if_branch(TokensRef tokens, int cond_pos, int depth, RcCtx ct
 # Generates a complete Rust `if / else if / else` from a Deor `if / else if / else`
 # chain. Calls gen_if_branch for the initial `if`, then loops consuming `else` tokens
 # to append `else if` branches or a final `else` block.
-fn ParseResult gen_if(TokensRef tokens, int pos, int depth, RcCtx ctx)
+fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
+	(tokens) in ctx
 	int token_count = len(tokens)
 	string indent = "    "
 	string pad = s_repeat(indent, depth)
 	int if_cond_pos = pos + 1
-	ParseResult then_r = gen_if_branch(tokens, if_cond_pos, depth, ctx)
+	ParseResult then_r = gen_if_branch(if_cond_pos, depth, ctx)
 	string then_code = pr_code(then_r)
 	string if_kw = "if "
 	string brc_cl = "}"
@@ -765,7 +768,7 @@ fn ParseResult gen_if(TokensRef tokens, int pos, int depth, RcCtx ctx)
 		(kind) in after_else_token
 		if kind is "KW_IF"
 			int ei_cond = after_else + 1
-			ParseResult ei_r = gen_if_branch(tokens, ei_cond, depth, ctx)
+			ParseResult ei_r = gen_if_branch(ei_cond, depth, ctx)
 			string ei_code = pr_code(ei_r)
 			string eli_kw = " else if "
 			string eli_cl = "}"
@@ -775,7 +778,7 @@ fn ParseResult gen_if(TokensRef tokens, int pos, int depth, RcCtx ctx)
 		else
 			int else_body_start = skip_to_body_ref(tokens, after_else)
 			int else_depth = depth + 1
-			ParseResult else_r = gen_block(tokens, else_body_start, else_depth, ctx)
+			ParseResult else_r = gen_block(else_body_start, else_depth, ctx)
 			string else_code = pr_code(else_r)
 			string els_kw = " else {\n"
 			string els_cl = "}"
@@ -794,7 +797,8 @@ fn ParseResult gen_if(TokensRef tokens, int pos, int depth, RcCtx ctx)
 #   `for item in range(n)` → `for item in 0..n { ... }` (or start..end with two args)
 #   `for in (start, end)`  → `for _ in start..end { ... }` (bare range, no index variable)
 #   `for item in collection` → `for item in collection { ... }`
-fn ParseResult gen_for(TokensRef tokens, int pos, int depth, RcCtx ctx)
+fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
+	(tokens) in ctx
 	int token_count = len(tokens)
 	string indent = "    "
 	string pad = s_repeat(indent, depth)
@@ -809,7 +813,7 @@ fn ParseResult gen_for(TokensRef tokens, int pos, int depth, RcCtx ctx)
 		int cond_end = pr_pos(cond_r)
 		int while_body_start = skip_to_body_ref(tokens,cond_end)
 		int whl_depth = depth + 1
-		ParseResult while_body_r = gen_block(tokens, while_body_start, whl_depth, ctx)
+		ParseResult while_body_r = gen_block(while_body_start, whl_depth, ctx)
 		string while_body_code = pr_code(while_body_r)
 		int while_body_end = pr_pos(while_body_r)
 		string whl_kw = "while "
@@ -833,7 +837,7 @@ fn ParseResult gen_for(TokensRef tokens, int pos, int depth, RcCtx ctx)
 		int iter_next = iter_end + 1
 		int body_start = skip_to_body_ref(tokens, iter_next)
 		int body_depth = depth + 1
-		ParseResult body_r = gen_block(tokens, body_start, body_depth, ctx)
+		ParseResult body_r = gen_block(body_start, body_depth, ctx)
 		string body_code = pr_code(body_r)
 		int body_end = pr_pos(body_r)
 		string gfr_kw = "for "
@@ -906,7 +910,7 @@ fn ParseResult gen_for(TokensRef tokens, int pos, int depth, RcCtx ctx)
 
 	body_tok_pos = skip_to_body_ref(tokens, body_tok_pos)
 	int for_body_depth = depth + 1
-	ParseResult body_r = gen_block(tokens, body_tok_pos, for_body_depth, ctx)
+	ParseResult body_r = gen_block(body_tok_pos, for_body_depth, ctx)
 	string body_code = pr_code(body_r)
 	int body_end = pr_pos(body_r)
 

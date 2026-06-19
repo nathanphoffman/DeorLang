@@ -141,7 +141,8 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 # Helper that generates a single-argument built-in call by appending a Rust method
 # suffix to the argument's generated expression. Currently used for `len(x)` which
 # becomes `x.len() as i32` to bridge Deor's `int` type against Rust's usize len return.
-fn ParseResult gen_unary_method(TokensRef tokens, int args_pos, string suffix, RcCtx ctx)
+fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
+	(tokens) in ctx
 	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
 	string inner_code = pr_code(inner_r)
 	int close = pr_pos(inner_r) + 1
@@ -271,7 +272,7 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 				int args_pos = next_pos + 1
 				if func_name is "len"
 					string len_sfx = ".len() as i32"
-					ParseResult len_r = gen_unary_method(tokens, args_pos, len_sfx, ctx)
+					ParseResult len_r = gen_unary_method(args_pos, len_sfx, ctx)
 					string len_code = pr_code(len_r)
 					int len_end = pr_pos(len_r)
 					string lpn = "("

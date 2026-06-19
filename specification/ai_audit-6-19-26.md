@@ -1,17 +1,19 @@
- ---
-  Documented But Not Implemented (20 items)
 
-Where in the docs do I address seperators?
 
+# In progress
+
+  - Where in the docs do I address seperators?
 
  - Void-input/output func shapes — func to bool and func of Error read wrong token positions; registry stores garbage
+  -- Got AI Advice
 
 - Destructuring and three argument limitations
+  -- Working
 
-  Medium severity — features that appear to work but don't:
+
+# More Stuff
+
   - Variable shadowing enforcement — never checked
- 
-  Low severity:
   - Top-to-bottom declaration order — not enforced (registries are pre-built so forward refs silently work)
   - Field order in as (f1, f2) — not enforced
 

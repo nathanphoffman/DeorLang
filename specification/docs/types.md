@@ -117,7 +117,6 @@ if area.is_none() {
 ---
 
 ### Initializing to Empty
-
 A validator type variable can be explicitly initialized to `empty` to start absent. List shapes also use `empty` to start with no elements — `[]` is a transpiler error. See [Enforced Practices — empty at Declaration Only](enforced_practices.md#empty-at-declaration-only) for the assignment restriction.
 
 ```
@@ -169,23 +168,6 @@ let sum: i32 = value.unwrap().0 + 2;
 ```
 
 ---
-
-### Safe Default — `else`
-
-`value else default` returns the inner primitive if `Some`, or the default if `None`. Always safe — no panic risk.
-
-```
-int val = area else 0
-```
-
-```rust
-let val: i32 = area.map(|v| v.0).unwrap_or(0);
-```
-
-`else` here is null-coalescing — only valid on validator type variables. It extracts the inner primitive if `Some`, or returns the default if `None`. This is distinct from `if/else` block syntax and from the compact ternary `else` branch — see [Conditionals — The Three Uses of `else`](conditionals.md#the-three-uses-of-else).
-
----
-
 ### Validator Types in Structs
 
 Struct fields typed as a validator type are `Option<T>` under the hood. Extracting them with `in` preserves the Option — the extracted variable is still truthy/falsy and must be checked before use.
@@ -212,9 +194,7 @@ let safe_cap: i32 = max_capacity.map(|v| v.0).unwrap_or(0);
 ```
 
 ---
-
 ### Functions Returning Validator Types
-
 A function whose return type is a validator type may return a `None` value through its return variable. `return empty` and `return none` are both transpiler errors — always return a named typed variable. The caller knows the return may be `None` because the return type is a validator type.
 
 ```
