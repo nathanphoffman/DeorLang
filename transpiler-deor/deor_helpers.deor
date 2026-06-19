@@ -5,8 +5,8 @@
 # has no dot-access syntax — struct fields must be reached via destructuring or
 # named accessors like this one.
 fn string pr_code(ParseResult result)
-	(code, new_pos) in result
-	return code
+	rust
+		result.code
 
 # Extracts the resume token index from a ParseResult. Every gen_* call returns the
 # next position alongside the code so callers always know where to continue parsing.

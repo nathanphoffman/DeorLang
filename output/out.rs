@@ -223,9 +223,7 @@ fn list_has(items: Vec<String>, val: String) -> bool {
 }
 
 fn pr_code(result: ParseResult) -> String {
-    let code = result.code.clone();
-    let new_pos = result.new_pos.clone();
-    return code;
+    result.code
 }
 
 fn pr_pos(result: ParseResult) -> i32 {

@@ -1,16 +1,17 @@
 
+AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
 # In progress
 
 # More Stuff
 
+
+looking into:
+  - Legacy macro_define / place — old macro syntax still wired up but entirely absent from docs
+
+
   ---
   Implemented But Undocumented (9 items)
-
-  - for (start, end) range syntax — used in examples, no mention in loops.md
-  - BLOCK_START/BLOCK_END tokens — internal synthetic tokens from macro expansion
-  - var_type_reg — variable type registry for using support
-  - Legacy macro_define / place — old macro syntax still wired up but entirely absent from docs
   - Deduplication behavior — first occurrence wins when merging imports; later definitions silently dropped
 
   ---
