@@ -1,14 +1,13 @@
 
 # === Expression code generation ===
 
-# Given an ordered list of field names, searches the struct registry for a struct whose
-# field list exactly matches. Used when the code generator sees an anonymous tuple
-# (f1, f2) and must determine which struct type to instantiate, since Deor has no
-# explicit type annotation at anonymous construction sites.
+# Given a list of field names (any order), searches the struct registry for a struct
+# whose field set matches. Used when the code generator sees an anonymous tuple
+# (f1, f2) and must determine which struct type to instantiate.
 fn string find_struct_for_fields(strList struct_reg, strList fields)
 
 	string comma = ","
-	string fields_key = s_join_with(fields, comma)
+	int input_count = len(fields)
 	int reg_count = len(struct_reg)
 	bool next_is_val = false
 	string cur_name = ""
@@ -16,8 +15,17 @@ fn string find_struct_for_fields(strList struct_reg, strList fields)
 	for index in range(reg_count)
 		string item = struct_reg at index
 		if next_is_val
-			if item is fields_key
-				return cur_name
+			strList reg_fields = s_split(item, comma)
+			int reg_count_f = len(reg_fields)
+			if reg_count_f is input_count
+				bool all_match = true
+				for fi in range(input_count)
+					string field = fields at fi
+					bool found = list_has(reg_fields, field)
+					if not found
+						all_match = false
+				if all_match
+					return cur_name
 			next_is_val = false
 		else
 			cur_name = item

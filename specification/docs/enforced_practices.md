@@ -145,15 +145,17 @@ struct Config
 ```
 
 ---
-## Unified `()` Rule — Named Variables, Declaration Order
+## Unified `()` Rule — Named Variables
 
-Everything placed inside `()` must be a named variable already in scope, and must appear in the order the receiving side declares its fields/parameters. This rule applies uniformly to:
+Everything placed inside `()` must be a named variable already in scope. This rule applies uniformly to:
 
-| Context | Example | Order source |
-|---|---|---|
-| Function call | `add(value1, value2)` | Function parameter order |
-| Struct construction | `Room room = (area, name, occupied)` | Struct field declaration order |
-| Tuple return | `return (quotient, remainder)` | Function return type declaration order |
+| Context | Example |
+|---|---|
+| Function call | `add(value1, value2)` |
+| Struct construction | `Room room = (area, name, occupied)` |
+| Tuple return | `return (quotient, remainder)` |
+
+Order does not matter for struct construction — fields are matched by name. Order does matter for function calls and tuple returns, since those are positional.
 
 **Correct:**
 ```
@@ -163,12 +165,12 @@ struct Room
 
 Squarefeet area = 20
 name as "Office"
-Room room = (area, name)      # correct — matches declaration order
+Room room = (area, name)      # correct
+Room room = (name, area)      # also correct — order doesn't matter for structs
 ```
 
 **Incorrect — transpiler errors:**
 ```
-Room room = (name, area)      # wrong order — area must come first
 Room room = ("Office", area)  # literal not allowed — name must be a variable
 room as (area, name)          # no anonymous struct construction — type required
 ```

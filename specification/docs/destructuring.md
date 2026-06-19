@@ -38,17 +38,17 @@ struct Room
     bool occupied
 
 (name) in room          # valid — ignores area and occupied
-(area, occupied) in room  # valid — any subset, but must follow declaration order
+(area, occupied) in room  # valid — any subset, any order
 ```
 
 ---
 
 ## Extraction Order
-Fields must be extracted in declaration order — the same rule as struct construction. The transpiler enforces this; wrong order is a transpiler error. Single-field extraction has no ordering constraint.
+Fields can be extracted in any order — the names drive the binding, not the position. Any subset of a struct's fields is valid.
 
 ```
-(area, name) in room    # correct — matches declaration order
-(name, area) in room    # transpiler error — area is declared before name
+(area, name) in room    # valid
+(name, area) in room    # also valid — same result
 ```
 ---
 

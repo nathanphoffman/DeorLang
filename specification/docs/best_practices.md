@@ -42,7 +42,7 @@ fn int square(int val)
 ---
 ## Destructuring
 
-It is best to destructure structs in order of how they are defined in the struct for consistency.
+Field order does not matter in destructuring — fields are matched by name. Any subset in any order is valid.
 ```
 struct Employee
     int employee_id
