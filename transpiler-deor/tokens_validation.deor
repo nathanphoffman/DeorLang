@@ -49,6 +49,33 @@ fn bool is_snake(string name)
 		idx = idx + 1
 	return true
 
+fn bool arg_is_named(tokenList tokens, int scan_pos, int token_count, string kind)
+	int check_pos = scan_pos
+	string chk_kind = kind
+	if kind is "KW_GIVEUP"
+		check_pos = scan_pos + 1
+		if check_pos < token_count
+			Token giveup_tok = tokens at check_pos
+			(kind) in giveup_tok
+			chk_kind = kind
+	if chk_kind is not "IDENT"
+		return false
+	int peek_pos = check_pos + 1
+	if peek_pos < token_count
+		Token peek_tok = tokens at peek_pos
+		(kind) in peek_tok
+		bool arg_is_call = kind is "LPAREN"
+		bool arg_is_idx = kind is "KW_AT"
+		bool arg_is_plus = kind is "PLUS"
+		bool arg_is_minus = kind is "MINUS"
+		bool arg_is_star = kind is "STAR"
+		bool arg_is_slash = kind is "SLASH"
+		bool arg_is_pct = kind is "PERCENT"
+		bool arg_is_op = arg_is_plus or arg_is_minus or arg_is_star or arg_is_slash or arg_is_pct
+		if arg_is_call or arg_is_idx or arg_is_op
+			return false
+	return true
+
 fn string val_err(int line_num, string label, string name, string rule)
 	string line_str = n_to_str(line_num)
 	string val_pfx = "[validation] line "
@@ -141,32 +168,9 @@ fn void validate_tokens(tokenList tokens)
 							if scan_root
 								at_arg_start = true
 						else if at_arg_start
-							int check_pos = scan_pos
-							string chk_kind = kind
-							if kind is "KW_GIVEUP"
-								check_pos = scan_pos + 1
-								if check_pos < token_count
-									Token giveup_tok = tokens at check_pos
-									(kind) in giveup_tok
-									chk_kind = kind
-							bool arg_is_ident = chk_kind is "IDENT"
-							if not arg_is_ident
+							bool named = arg_is_named(tokens, scan_pos, token_count, kind)
+							if not named
 								errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
-							else
-								int peek_pos = check_pos + 1
-								if peek_pos < token_count
-									Token peek_tok = tokens at peek_pos
-									(kind) in peek_tok
-									bool arg_is_call = kind is "LPAREN"
-									bool arg_is_idx = kind is "KW_AT"
-									bool arg_is_plus = kind is "PLUS"
-									bool arg_is_minus = kind is "MINUS"
-									bool arg_is_star = kind is "STAR"
-									bool arg_is_slash = kind is "SLASH"
-									bool arg_is_pct = kind is "PERCENT"
-									bool arg_is_op = arg_is_plus or arg_is_minus or arg_is_star or arg_is_slash or arg_is_pct
-									if arg_is_call or arg_is_idx or arg_is_op
-										errors at end = val_err(cur_line, lbl_call, cur_val, rule_named_arg)
 							at_arg_start = false
 						scan_pos = scan_pos + 1
 

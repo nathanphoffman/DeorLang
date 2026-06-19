@@ -185,6 +185,39 @@ fn is_snake(name: String) -> bool {
     return true;
 }
 
+fn arg_is_named(tokens: Vec<Token>, scan_pos: i32, token_count: i32, kind: String) -> bool {
+    let mut check_pos: i32 = scan_pos.clone();
+    let mut chk_kind: String = kind.clone();
+    if kind == "KW_GIVEUP" {
+        check_pos = scan_pos + 1;
+        if check_pos < token_count {
+            let mut giveup_tok: Token = tokens[check_pos as usize].clone();
+            let kind = giveup_tok.kind.clone();
+            chk_kind = kind;
+        }
+    }
+    if chk_kind != "IDENT" {
+        return false;
+    }
+    let mut peek_pos: i32 = check_pos + 1.clone();
+    if peek_pos < token_count {
+        let mut peek_tok: Token = tokens[peek_pos as usize].clone();
+        let kind = peek_tok.kind.clone();
+        let mut arg_is_call: bool = kind == "LPAREN".clone();
+        let mut arg_is_idx: bool = kind == "KW_AT".clone();
+        let mut arg_is_plus: bool = kind == "PLUS".clone();
+        let mut arg_is_minus: bool = kind == "MINUS".clone();
+        let mut arg_is_star: bool = kind == "STAR".clone();
+        let mut arg_is_slash: bool = kind == "SLASH".clone();
+        let mut arg_is_pct: bool = kind == "PERCENT".clone();
+        let mut arg_is_op: bool = arg_is_plus || arg_is_minus || arg_is_star || arg_is_slash || arg_is_pct.clone();
+        if arg_is_call || arg_is_idx || arg_is_op {
+            return false;
+        }
+    }
+    return true;
+}
+
 fn val_err(line_num: i32, label: String, name: String, rule: String) -> String {
     let mut line_str: String = n_to_str(line_num.clone());
     let mut val_pfx: String = "[validation] line ".to_string();
@@ -427,36 +460,9 @@ fn validate_tokens(tokens: Vec<Token>) {
                                     at_arg_start = true;
                                 }
                             } else if at_arg_start {
-                                let mut check_pos: i32 = scan_pos.clone();
-                                let mut chk_kind: String = kind.clone();
-                                if kind == "KW_GIVEUP" {
-                                    check_pos = scan_pos + 1;
-                                    if check_pos < token_count {
-                                        let mut giveup_tok: Token = tokens[check_pos as usize].clone();
-                                        let kind = giveup_tok.kind.clone();
-                                        chk_kind = kind;
-                                    }
-                                }
-                                let mut arg_is_ident: bool = chk_kind == "IDENT".clone();
-                                if !arg_is_ident {
+                                let mut named: bool = arg_is_named(tokens.clone(), scan_pos.clone(), token_count.clone(), kind.clone());
+                                if !named {
                                     errors.push(val_err(cur_line.clone(), lbl_call.clone(), cur_val.clone(), rule_named_arg.clone()).clone());
-                                } else {
-                                    let mut peek_pos: i32 = check_pos + 1.clone();
-                                    if peek_pos < token_count {
-                                        let mut peek_tok: Token = tokens[peek_pos as usize].clone();
-                                        let kind = peek_tok.kind.clone();
-                                        let mut arg_is_call: bool = kind == "LPAREN".clone();
-                                        let mut arg_is_idx: bool = kind == "KW_AT".clone();
-                                        let mut arg_is_plus: bool = kind == "PLUS".clone();
-                                        let mut arg_is_minus: bool = kind == "MINUS".clone();
-                                        let mut arg_is_star: bool = kind == "STAR".clone();
-                                        let mut arg_is_slash: bool = kind == "SLASH".clone();
-                                        let mut arg_is_pct: bool = kind == "PERCENT".clone();
-                                        let mut arg_is_op: bool = arg_is_plus || arg_is_minus || arg_is_star || arg_is_slash || arg_is_pct.clone();
-                                        if arg_is_call || arg_is_idx || arg_is_op {
-                                            errors.push(val_err(cur_line.clone(), lbl_call.clone(), cur_val.clone(), rule_named_arg.clone()).clone());
-                                        }
-                                    }
                                 }
                                 at_arg_start = false;
                             }
