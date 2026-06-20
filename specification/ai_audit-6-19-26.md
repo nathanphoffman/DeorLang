@@ -2,8 +2,7 @@
 AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
 # In progress
-- Give macros a ! alias for running
-
+-- Still in progress
 - I need to add block as a keyword to close off macro blocks and add functionality in that sense
 
 - We have to implement is empty better for the check

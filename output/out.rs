@@ -416,6 +416,9 @@ fn word_to_kind(word: String) -> String {
     if word == "import" {
         return "KW_IMPORT".to_string();
     }
+    if word == "block" {
+        return "KW_BLOCK".to_string();
+    }
     return "IDENT".to_string();
 }
 
@@ -2693,17 +2696,20 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut indent: String = "    ".to_string();
     let mut pad: String = s_repeat(indent.clone(), depth.clone());
     let mut newline: String = "\n".to_string();
-    if kind == "BLOCK_START" {
+    if kind == "KW_BLOCK" {
+        let mut next_line_position: i32 = pos + 1.clone();
+        let mut body_start: i32 = skip_to_body_ref(tokens.clone(), next_line_position.clone());
+        let mut body_depth: i32 = depth + 1.clone();
+        let mut body_r: ParseResult = gen_block(body_start.clone(), body_depth.clone(), ctx.clone());
+        let mut body_code: String = pr_code(body_r.clone());
+        let mut body_end: i32 = pr_pos(body_r.clone());
         let mut open_brace: String = "{\n".to_string();
-        let mut blk_open: String = s_cat(pad.clone(), open_brace.clone());
-        let mut blk_next: i32 = pos + 1.clone();
-        return make_result(blk_open, blk_next.clone());
-    }
-    if kind == "BLOCK_END" {
         let mut close_brace: String = "}\n".to_string();
+        let mut blk_open: String = s_cat(pad.clone(), open_brace.clone());
         let mut blk_close: String = s_cat(pad.clone(), close_brace.clone());
-        let mut blk_next: i32 = pos + 1.clone();
-        return make_result(blk_close, blk_next.clone());
+        let mut blk_parts: Vec<String> = vec![blk_open.clone(), body_code.clone(), blk_close.clone()];
+        let mut blk_code: String = s_join(blk_parts.clone());
+        return make_result(blk_code, body_end.clone());
     }
     if kind == "KW_RUST" {
         let mut block_pos: i32 = pos + 2.clone();

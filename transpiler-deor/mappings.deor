@@ -77,6 +77,8 @@ fn string word_to_kind(string word)
 		return "KW_MACRO_RUN"
 	if word is "import"
 		return "KW_IMPORT"
+	if word is "block"
+		return "KW_BLOCK"
 	return "IDENT"
 
 # === Operator helpers ===

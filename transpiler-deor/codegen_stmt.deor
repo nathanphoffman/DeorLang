@@ -115,17 +115,20 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	string pad = s_repeat(indent, depth)
 	string newline = "\n"
 
-	if kind is "BLOCK_START"
+	if kind is "KW_BLOCK"
+		int next_line_position = pos + 1
+		int body_start = skip_to_body_ref(tokens, next_line_position)
+		int body_depth = depth + 1
+		ParseResult body_r = gen_block(body_start, body_depth, ctx)
+		string body_code = pr_code(body_r)
+		int body_end = pr_pos(body_r)
 		string open_brace = "{\n"
-		string blk_open = s_cat(pad, open_brace)
-		int blk_next = pos + 1
-		return make_result(giveup blk_open, blk_next)
-
-	if kind is "BLOCK_END"
 		string close_brace = "}\n"
+		string blk_open = s_cat(pad, open_brace)
 		string blk_close = s_cat(pad, close_brace)
-		int blk_next = pos + 1
-		return make_result(giveup blk_close, blk_next)
+		strList blk_parts = [blk_open, body_code, blk_close]
+		string blk_code = s_join(blk_parts)
+		return make_result(giveup blk_code, body_end)
 
 	if kind is "KW_RUST"
 		int block_pos = pos + 2

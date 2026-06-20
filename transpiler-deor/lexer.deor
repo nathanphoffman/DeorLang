@@ -43,6 +43,7 @@ fn tokenList tokenize(string source, string path)
 	string kind_dedent = "DEDENT"
 	string kind_newline = "NEWLINE"
 	string kind_kw_rust = "KW_RUST"
+	# !! We should think about updating this what is this doing out here?
 	string kw_rust_val = "rust"
 	string kind_rust_block = "RUST_BLOCK"
 	string kind_string = "STRING"
@@ -59,6 +60,7 @@ fn tokenList tokenize(string source, string path)
 	string kind_eq = "EQUALS"
 	string kind_gt = "GT"
 	string kind_lt = "LT"
+
 	string kind_lp = "LPAREN"
 	string kind_rp = "RPAREN"
 	string kind_lb = "LBRACKET"
