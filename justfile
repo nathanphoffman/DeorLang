@@ -16,6 +16,9 @@ run-deor file="examples/hello.deor":
 
 build-transpiler:
     ./output/out transpiler-deor/main.deor output/out.rs
+    
+rebuild-binary:
+    rm -rf output/out
     rustc -O -A warnings output/out.rs -o output/out
 
 run-ts file="examples/hello.deor":
