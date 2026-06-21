@@ -1,0 +1,77 @@
+
+# Emits a token for the current operator character. Peeks one ahead to catch the
+# two-character operators >= and <=, advancing char_index by 2 for those (via
+# continue back to the outer scan loop). All single-character operators fall through
+# to the char_index = char_index + 1 at the end.
+macro emit_operator_token
+	string op_kind_gte = "GTE"
+	string op_val_gte = ">="
+	string op_kind_lte = "LTE"
+	string op_val_lte = "<="
+	string op_kind_plus = "PLUS"
+	string op_val_plus = "+"
+	string op_kind_minus = "MINUS"
+	string op_val_minus = "-"
+	string op_kind_star = "STAR"
+	string op_val_star = "*"
+	string op_kind_slash = "SLASH"
+	string op_val_slash = "/"
+	string op_kind_pct = "PERCENT"
+	string op_val_pct = "%"
+	string op_kind_eq = "EQUALS"
+	string op_val_eq = "="
+	string op_kind_gt = "GT"
+	string op_val_gt = ">"
+	string op_kind_lt = "LT"
+	string op_val_lt = "<"
+	string op_kind_lp = "LPAREN"
+	string op_val_lp = "("
+	string op_kind_rp = "RPAREN"
+	string op_val_rp = ")"
+	string op_kind_lb = "LBRACKET"
+	string op_val_lb = "["
+	string op_kind_rb = "RBRACKET"
+	string op_val_rb = "]"
+	string op_kind_cm = "COMMA"
+	string op_val_cm = ","
+	int op_peek_idx = char_index + 1
+	string op_peek = ""
+
+	
+	if op_peek_idx < char_count
+		op_peek = chars at op_peek_idx
+	if character is ">" and op_peek is "="
+		tokens at end = make_token(op_kind_gte, op_val_gte, meta)
+		char_index = char_index + 2
+		continue
+	if character is "<" and op_peek is "="
+		tokens at end = make_token(op_kind_lte, op_val_lte, meta)
+		char_index = char_index + 2
+		continue
+	if character is "+"
+		tokens at end = make_token(op_kind_plus, op_val_plus, meta)
+	else if character is "-"
+		tokens at end = make_token(op_kind_minus, op_val_minus, meta)
+	else if character is "*"
+		tokens at end = make_token(op_kind_star, op_val_star, meta)
+	else if character is "/"
+		tokens at end = make_token(op_kind_slash, op_val_slash, meta)
+	else if character is "%"
+		tokens at end = make_token(op_kind_pct, op_val_pct, meta)
+	else if character is "="
+		tokens at end = make_token(op_kind_eq, op_val_eq, meta)
+	else if character is ">"
+		tokens at end = make_token(op_kind_gt, op_val_gt, meta)
+	else if character is "<"
+		tokens at end = make_token(op_kind_lt, op_val_lt, meta)
+	else if character is "("
+		tokens at end = make_token(op_kind_lp, op_val_lp, meta)
+	else if character is ")"
+		tokens at end = make_token(op_kind_rp, op_val_rp, meta)
+	else if character is "["
+		tokens at end = make_token(op_kind_lb, op_val_lb, meta)
+	else if character is "]"
+		tokens at end = make_token(op_kind_rb, op_val_rb, meta)
+	else if character is ","
+		tokens at end = make_token(op_kind_cm, op_val_cm, meta)
+	char_index = char_index + 1

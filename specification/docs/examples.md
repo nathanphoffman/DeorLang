@@ -21,7 +21,9 @@ fn int total_area(roomList rooms)
     sum as 0
     for room in rooms
         area in room
-        int sqm = area else 0
+        int sqm as 0
+        if area is not bad
+            sqm = (avow area)
         sum = sum + sqm
     return sum
 
@@ -114,8 +116,11 @@ fn total_area(rooms: &Vec<Room>) -> i32 {
     let mut sum = 0;
     for room in rooms {
         let area = room.area;
-        let sqm: i32 = area.map(|v| v.0).unwrap_or(0);
-        sum += sqm;
+        let mut sqm: i32 = 0;
+        if area != None {
+            sqm = area.unwrap().0;
+        }
+        sum = sum + sqm;
     }
     return sum;
 }
@@ -186,6 +191,6 @@ fn main() {
 - `House` contains a `roomList rooms` field. Since `Vec<Room>` is unsized, the struct defaults to `struct*` (`Rc<House>`) per the auto-representation rule. In this `main` it isn't shared, so the transpiler may keep it a plain value — the heuristic is a default, not an absolute.
 - `area`, `name`, and `occupied` are declared once with `as` then reassigned with `=` to build multiple rooms. The transpiler emits them as `let mut` because they are reassigned after first declaration.
 - `Room` contains a `String` field so it can never be `Copy` — only `Clone`. Every place a `Room` is duplicated needs an explicit `.clone()` in Rust, even though source never writes it.
-- `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` uses `area else 0` (→ `.map(|v| v.0).unwrap_or(0)`) to safely extract the inner `i32`.
+- `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` checks `if area is not bad` and uses `(avow area)` to safely extract the inner `i32` with a default of `0`.
 - `rooms[idx]` requires an `as usize` cast — the transpiler inserts this on every list-index operation.
 - `print(...)` → `println!("{}", ...)`.

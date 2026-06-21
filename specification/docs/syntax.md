@@ -87,7 +87,6 @@ Open an indented block when followed by a newline.
 | `shape` | Shape declaration (`shape name = list of T` / `func of T to O`) |
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
-| `deps` | Inline Cargo dependency declarations — lists crate dependencies directly in a `.deor` file so they are added to `Cargo.toml` at transpile time |
 | `using` | Subject-scoped block — names a variable as the implicit subject for zero-arg calls in the block |
 
 ### Statement Keywords
@@ -99,8 +98,6 @@ Open an indented block when followed by a newline.
 | `avow` | Forced unwrap of a validator type — panics if None |
 | `break` | Exit the innermost loop |
 | `continue` | Skip to the next loop iteration |
-| `const` | Constant declaration |
-| `private` | Restrict a declaration to the current file |
 
 ### Operators and Expression Keywords
 

@@ -160,7 +160,7 @@ fn Roll find_best(rollList rolls)
     Roll best = empty
 
     for roll in rolls
-        if roll
+        if roll is not bad
             best = roll
 
     return best    # may be None if rolls is empty or all None

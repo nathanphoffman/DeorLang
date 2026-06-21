@@ -28,7 +28,9 @@ fn int sum_rolls(rollResultList rolls)
     sum as 0
     for roll in rolls
         value in roll
-        int val = value else 0
+        int val as 0
+        if value is not bad
+            val = (avow value)
         sum = sum + val
 
     return sum

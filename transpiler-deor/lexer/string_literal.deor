@@ -1,0 +1,39 @@
+
+# Scans a double-quoted string literal starting at char_index (the opening quote).
+# Resolves escape sequences: \n, \t, \\, \". Returns the unescaped string content
+# and the position of the first character after the closing quote.
+fn ParseResult scan_string_literal(strList chars, int char_index, int char_count)
+	string val = ""
+	bool escape_next = false
+	int str_start = char_index + 1
+	int new_pos = char_index + 1
+	string ch_nl = "\n"
+	string ch_tab = "\t"
+	string ch_bs = "\\"
+	string ch_qt = "\""
+	for string_index in (str_start, char_count)
+		string string_char = chars at string_index
+		if escape_next
+			if string_char is "n"
+				val = s_cat(val, ch_nl)
+			else if string_char is "t"
+				val = s_cat(val, ch_tab)
+			else if string_char is "\\"
+				val = s_cat(val, ch_bs)
+			else if string_char is "\""
+				val = s_cat(val, ch_qt)
+			else
+				val = s_cat(val, ch_bs)
+				val = s_cat(val, string_char)
+			escape_next = false
+			new_pos = string_index + 1
+		else if string_char is ch_bs
+			escape_next = true
+			new_pos = string_index + 1
+		else if string_char is ch_qt
+			new_pos = string_index + 1
+			break
+		else
+			val = s_cat(val, string_char)
+			new_pos = string_index + 1
+	return make_result(val, new_pos)

@@ -219,39 +219,12 @@ let mut result: Vec<i32> = Vec::new();
 ## Reassignment
 
 ```
-total = total + 1    # explicit form
-total += 1           # compound assignment — equivalent
+total = total + 1
 ```
 
 ```rust
-total += 1;
+total = total + 1;
 ```
-
-Both forms are valid. `+=`, `-=`, `*=`, `/=`, and `%=` are all supported. See [Operators](operators.md#compound-assignment).
-
----
-
-## Constants
-
-Constants are immutable primitive bindings. They use `const` as a prefix, must be named in SCREAMING_SNAKE_CASE, and are always explicitly typed. Only primitive types can be `const`.
-
-```
-const int DELAY_TIME = 500
-const string APP_NAME = "Deor"
-const bool DEBUG = false
-const float PHI = 1.61803
-```
-
-```rust
-const DELAY_TIME: i32 = 500;
-const APP_NAME: &str = "Deor";
-const DEBUG: bool = false;
-const PI: f64 = 3.14159;
-```
-
-- Valid at any scope — top-level or inside a function
-- Reassignment is a compile-time error
-- `list`, structs, and validator types cannot be `const` (structs are already immutable; `list` constants are not yet specified)
 
 ---
 

@@ -15,6 +15,12 @@ import "transpiler-deor/mappings.deor"
 import "transpiler-deor/cursor.deor"
 
 # lexer and importer
+import "transpiler-deor/lexer/indent.deor"
+import "transpiler-deor/lexer/rust_block.deor"
+import "transpiler-deor/lexer/string_literal.deor"
+import "transpiler-deor/lexer/number_literal.deor"
+import "transpiler-deor/lexer/word_token.deor"
+import "transpiler-deor/lexer/operators.deor"
 import "transpiler-deor/lexer.deor"
 import "transpiler-deor/importer.deor"
 

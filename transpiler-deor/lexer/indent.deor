@@ -1,0 +1,46 @@
+
+# Counts leading tab characters (or groups of 4 spaces) in a source line to determine
+# its indentation depth. Deor uses depth to delimit blocks.
+fn int count_tabs(string line)
+	string space = " "
+	strList chars = c_chars(line)
+	int char_count = len(chars)
+	int count = 0
+	space_run as 0
+	for index in range(char_count)
+		string character = chars at index
+		if character is "\t"
+			count = count + 1
+		else if character is space
+			space_run = space_run + 1
+			if space_run is 4
+				count = count + 1
+				space_run = 0
+		else
+			break
+	return count
+
+# Emits INDENT or DEDENT tokens by comparing the current line's depth against the
+# indent stack. Pushes INDENT when deeper, pops and emits DEDENTs when shallower.
+macro emit_indent_or_dedent
+	string iod_kind_indent = "INDENT"
+	string iod_kind_dedent = "DEDENT"
+	string iod_empty = ""
+	int slen = len(indent_stack)
+	int top_idx = slen - 1
+	int top = n_parse(indent_stack at top_idx)
+	if indent > top
+		tokens at end = make_token(iod_kind_indent, iod_empty, meta)
+		string indent_str = n_to_str(indent)
+		indent_stack at end = indent_str
+	else
+		bool dedenting = indent < top
+		for if dedenting
+			int new_slen = len(indent_stack)
+			int new_top_idx = new_slen - 1
+			int cur_top = n_parse(indent_stack at new_top_idx)
+			if indent < cur_top
+				tokens at end = make_token(iod_kind_dedent, iod_empty, meta)
+				indent_stack remove at new_top_idx
+			else
+				dedenting = false

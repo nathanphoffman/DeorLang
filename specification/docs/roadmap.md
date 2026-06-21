@@ -1,9 +1,51 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
-# In progress
 
-- Considering removing the ! macro and keepign macro_run it is more deorian
+# New In Progress
+  - re consider const declarations — lexer has no token, no codegen
 - Make sure proper import paths / relative paths are understood for docs
+- Talk about removing insert keyword, legacy instead of results at end = 
+
+
+# Easy Fixes
+  - raw varname = rust ... statement — gen_stmt has no KW_RAW branch for function-body use
+  - Where else should this be documented?: is empty / is not empty comparison form — only documented as an initializer value
+
+
+# New audit June 21st
+
+  Documented but NOT implemented
+  - List slice syntax (list in range(start, end)) — no codegen branch for in in typed binding
+  Implemented but NOT documented
+  - block keyword — not in the keyword table in syntax.md
+  - word! macro invocation shorthand — spec only documents macro_run name form
+  - for in (start, end) bare tuple range — used in transpiler's own code, absent from loops.md
+
+  Direct contradictions
+
+  - name as (f1, f2) struct construction — variables.md says it's a transpiler error; codegen
+  handles it fine
+  - Roll best = empty for validator types — types.md says valid, transpiler actively errors
+  with "use 'bad' not 'empty'"
+  - struct* / struct+ sigils — documented in types.md, zero implementation
+  - using block — experimental.md says likely to be removed; it's fully implemented and in
+  syntax.md as first-class
+  - return empty vs return none — functions.md and types.md give conflicting lists of what's a
+  transpiler error
+  - func, to, end keywords — spec lists them as reserved; transpiler detects them by
+  string-matching plain IDENTs (fragile)
+
+
+ Other issues
+
+  - crash builtin example in builtins.md shows catch(message) — appears to be a copy-paste
+  error
+  - is bad / is not bad emits == None / != None instead of .is_none() / .is_some() as spec
+  says
+  - for move loop form — experimental.md shows it without parentheses; transpiler requires
+  them
+
+
 
 # More Stuff
 
@@ -19,6 +61,8 @@ Note the roadmap is more to list out my raw notes and get feedback, however it i
 
 ## Audit Documentation
 *Large Lift* | *Critical Priority*
+
+-- prolly about 60% done as of June 21st
 
 A lot of the documentation needs refreshed it is based on an old AI structure I build in pair-theorizing with AI about the Deor programming language, as I have been implementing it with Claude we have started going off the beaten track and a lot of the docs are either out of date or in great need of adjusting.
 

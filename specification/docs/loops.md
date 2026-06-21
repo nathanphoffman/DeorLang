@@ -96,7 +96,7 @@ for if cur < token_count
 ```rust
 while cur < token_count {
     // process token at cur
-    cur += 1;
+    cur = cur + 1;
 }
 ```
 

@@ -171,13 +171,13 @@ The parentheses are always required — this is intentional. Without them, `avow
 
 ```
 Roll roll = roll_die(d20)
-if roll
+if roll is not bad
     int val = (avow roll)          # need the raw int — use avow
     bool crit = is_critical(roll)  # function takes Roll — pass directly, no avow
 ```
 
 ```rust
-if roll.is_some() {
+if roll != None {
     let val: i32 = roll.unwrap().0;
     let crit: bool = is_critical(roll);
 }
@@ -206,17 +206,15 @@ struct Room
 
 ```
 (area, max_capacity) in room
-if max_capacity
+if max_capacity is not bad
     int cap = (avow max_capacity)
-int safe_cap = max_capacity else 0
 ```
 
 ```rust
 let (area, max_capacity) = (room.area, room.max_capacity);
-if max_capacity.is_some() {
+if max_capacity != None {
     let cap: i32 = max_capacity.unwrap().0;
 }
-let safe_cap: i32 = max_capacity.map(|v| v.0).unwrap_or(0);
 ```
 
 ---
@@ -250,11 +248,12 @@ fn find_crit(rolls: &Vec<RollResult>) -> Option<Roll> {
 }
 ```
 
-The caller uses `if` or `else` to handle the result:
+The caller uses `if` to handle the result:
 
 ```
 Roll crit = find_crit(rolls)
-int bonus = crit else 0
+if crit is not bad
+    int bonus = (avow crit)
 ```
 
 ---
@@ -262,7 +261,7 @@ int bonus = crit else 0
 **Conversion notes:**
 - Constructor becomes `fn new(n: T) -> Option<Self>` — never panics, returns `None` on predicate failure.
 - Truthy/falsy maps to `.is_some()` / `.is_none()`.
-- `(avow val)` → `.unwrap().0`; `value else default` → `.map(|v| v.0).unwrap_or(default)`.
+- `(avow val)` → `.unwrap().0`.
 - Equality (`is` / `is not`) transpiles to `==` / `!=` in Rust and falls through to `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
 - `and` / `or` / `not` map to `&&` / `||` / `!`.
 - Literal predicate failures (`Squarefeet bad = -1`) are caught at transpile time.
@@ -302,7 +301,7 @@ struct House
 
 Struct fields may be primitives, validator types, list shapes, or other structs. Func shapes as struct fields are a transpiler error — structs are pure data.
 
-**Visibility applies to top-level declarations, not to fields.** Structs, shapes, functions, and types are all public by default; marking one `private` prevents it from being imported by other files. There are no per-field visibility modifiers — all fields are always accessible via destructuring whenever the struct itself is in scope.
+There are no per-field visibility modifiers — all fields are always accessible via destructuring whenever the struct itself is in scope.
 
 **Conversion notes:**
 - The **struct definition itself is identical** regardless of `+`/`*`/auto — only how *usages* are represented changes (`House` vs `Rc<House>`).

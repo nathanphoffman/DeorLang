@@ -1,0 +1,43 @@
+
+# Captures everything under a `rust` keyword as a single RUST_BLOCK token. Reads
+# ahead past the `rust` line, collects raw Rust source at the expected indentation
+# depth, trims trailing blank lines, then emits KW_RUST + NEWLINE + RUST_BLOCK.
+# Advances `skip` for each consumed line so the outer loop skips them.
+macro collect_rust_block
+	string rb_kind_kw_rust = "KW_RUST"
+	string rb_kw_rust_val = "rust"
+	string rb_kind_newline = "NEWLINE"
+	string rb_kind_rust_block = "RUST_BLOCK"
+	string rb_empty = ""
+	tokens at end = make_token(rb_kind_kw_rust, rb_kw_rust_val, meta)
+	tokens at end = make_token(rb_kind_newline, rb_empty, meta)
+	int rust_base = indent + 1
+	strList rust_lines = empty
+	int rli_start = raw_li + 1
+	for rli in (rli_start, n_lines)
+		string rust_line = lines at rli
+		int rl_indent = count_tabs(rust_line)
+		string rl_stripped = s_trim(rust_line)
+		if is_empty(rl_stripped)
+			rust_lines at end = ""
+			skip = skip + 1
+		else if rl_indent >= rust_base
+			string rl_content = s_from(rust_line, rust_base)
+			rust_lines at end = s_rtrim(rl_content)
+			skip = skip + 1
+		else
+			break
+	bool trimming = true
+	for if trimming
+		int rl_len = len(rust_lines)
+		if rl_len > 0
+			int last_rl = rl_len - 1
+			string last_line = rust_lines at last_rl
+			if last_line is ""
+				rust_lines remove at last_rl
+			else
+				trimming = false
+		else
+			trimming = false
+	string block_content = s_join_nl(rust_lines)
+	tokens at end = make_token(rb_kind_rust_block, block_content, meta)

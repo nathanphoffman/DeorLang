@@ -6,12 +6,9 @@ Copy-paste Deor wrapper functions for common operations. Each one wraps a Rust f
 
 ## Random
 
-Requires the `rand` crate. Declare the dependency once at the top of any file that uses it.
+Requires the `rand` crate. Add it to `Cargo.toml` manually before using this shim.
 
 ```
-deps
-    rand = "0.8"
-
 fn int random(int min, int max)
     rust
         use rand::Rng;
@@ -104,11 +101,13 @@ fn ParsedFloat parse_float(string str)
 Usage:
 ```
 ParsedInt result = parse_int(user_input)
-if result
+if result is not bad
     int val = (avow result)
     print(val)
 
-int port = parse_int(port_str) else 8080
+int port as 8080
+if result is not bad
+    port = (avow result)
 ```
 
 ---

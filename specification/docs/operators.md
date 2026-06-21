@@ -112,37 +112,6 @@ When in doubt, use parentheses. Deor has no operator precedence surprises beyond
 
 ---
 
-## Compound Assignment
-
-`+=`, `-=`, `*=`, `/=`, and `%=` are supported shorthand for the explicit reassignment form.
-
-```
-sum += value
-sum -= value
-sum *= value
-sum /= value
-sum %= value
-```
-
-```rust
-sum += value;
-sum -= value;
-sum *= value;
-sum /= value;
-sum %= value;
-```
-
-The explicit form (`sum = sum + value`) is always equally valid — use whichever reads more clearly for the context. The RHS of a compound assignment follows the same rules as any expression: literals and arithmetic are allowed, since this is not a function call.
-
-```
-count += 1      # correct — literal RHS in assignment expression, not a function arg
-count -= 1      # correct
-```
-
-`++` and `--` are not supported — use `+= 1` and `-= 1`.
-
----
-
 ## No Bitwise Operators
 
 Bitwise operations (`&`, `|`, `^`, `~`, `<<`, `>>`) are not exposed in Deor. Use a `rust` block for any code that requires bitwise manipulation.

@@ -1,0 +1,45 @@
+
+# Scans an integer or float literal starting at char_index. Accepts underscore
+# separators (1_000_000 becomes "1000000"). If a decimal point followed by digits
+# is found, includes those in the result. The caller distinguishes int from float
+# by checking whether the returned string contains a ".".
+fn ParseResult scan_number(strList chars, int char_index, int char_count)
+	string first_char = chars at char_index
+	string empty_str = ""
+	string num = s_cat(empty_str, first_char)
+	int num_start = char_index + 1
+	int new_pos = char_index + 1
+	for number_index in (num_start, char_count)
+		string number_char = chars at number_index
+		if c_digit(number_char)
+			num = s_cat(num, number_char)
+			new_pos = number_index + 1
+		else if number_char is "_"
+			int peek_idx = number_index + 1
+			if peek_idx < char_count
+				string peek_char = chars at peek_idx
+				if c_digit(peek_char)
+					new_pos = number_index + 1
+				else
+					break
+			else
+				break
+		else
+			break
+	if new_pos < char_count
+		string dot_char = chars at new_pos
+		int frac_start = new_pos + 1
+		if dot_char is "." and frac_start < char_count
+			string frac_first = chars at frac_start
+			if c_digit(frac_first)
+				string dot_str = "."
+				num = s_cat(num, dot_str)
+				new_pos = frac_start
+				for frac_index in (frac_start, char_count)
+					string frac_char = chars at frac_index
+					if c_digit(frac_char)
+						num = s_cat(num, frac_char)
+						new_pos = frac_index + 1
+					else
+						break
+	return make_result(num, new_pos)

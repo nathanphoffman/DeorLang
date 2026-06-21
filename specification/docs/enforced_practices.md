@@ -12,10 +12,6 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 - variable and function names must be snake_case
   - think runtime items = snake_case
   - the logic behind this is that these are very important to be readable as readability > boldness
-- constants must be SCREAMING_SNAKE
-  - think runtime item but it SCREAMS louder than the rest
-  - the logic behind this is that these are THE MOST IMPORTANT to be read attention > readability > boldness
-
 ---
 ## Minimum Name Length — 3 Characters
 All identifiers must be at least 3 characters long. This applies to every named thing in Deor source: variables, function parameters, function names, struct names, validator type names, struct field names, and list names.
@@ -222,7 +218,7 @@ for range(5)
     ...
 ```
 
-The rationale: named variables make call sites self-documenting for user-defined functions, where the parameter names may not be universally known. Built-ins like `print`, `len`, and `range` are part of the language and universally understood — requiring named variables for them adds ceremony with no clarity benefit. This same logic applies to system constructs: `if` conditions, `for` headers, and compound assignments accept expressions freely.
+The rationale: named variables make call sites self-documenting for user-defined functions, where the parameter names may not be universally known. Built-ins like `print`, `len`, and `range` are part of the language and universally understood — requiring named variables for them adds ceremony with no clarity benefit. This same logic applies to system constructs: `if` conditions and `for` headers accept expressions freely.
 
 ---
 ## No Nested Functions

@@ -33,7 +33,7 @@
 
 [Roadmap](docs/roadmap.md) — deferred features
 
-[Rust Interop](docs/interop.md) — `rust` blocks, `raw` variables, `rust:` imports, `deps`
+[Rust Interop](docs/interop.md) — `rust` blocks, `raw` variables, `rust:` imports
 
 [Shapes](docs/shapes.md) — `shape`, list shapes, func shapes, naming, file ordering
 
