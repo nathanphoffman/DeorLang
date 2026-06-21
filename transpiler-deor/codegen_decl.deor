@@ -41,7 +41,7 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 		strList sdcl_parts = [sdcl_pfx, struct_name, sdcl_ob, fields_code, sdcl_cb]
 		string decl = s_join(sdcl_parts)
 		(pos) in cur
-		return make_result(giveup decl, pos)
+		return make_result(move decl, pos)
 
 # Generates a Rust type alias from a Deor `shape` declaration. Two forms:
 # `shape Foo = list of T` → `type Foo = Vec<T>;` and
@@ -70,7 +70,7 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 		string decl = s_join(shp_parts)
 		int after = elem_pos + 1
 		int shape_next = adv_nl(after, tokens)
-		return make_result(giveup decl, shape_next)
+		return make_result(move decl, shape_next)
 	int t4_pos = pos + 4
 	Token t4_token = tokens at t4_pos
 	(kind, value) in t4_token
@@ -116,7 +116,7 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	string decl = s_join(fns_parts)
 	int after = func_end + 1
 	int fn_shape_next = adv_nl(after, tokens)
-	return make_result(giveup decl, fn_shape_next)
+	return make_result(move decl, fn_shape_next)
 
 # Generates a Rust enum definition from a Deor `enum Name` declaration. Emits
 # `#[derive(Clone, Copy, PartialEq, Debug)]` — Copy is viable because Deor enum
@@ -150,7 +150,7 @@ fn ParseResult gen_enum_decl(tokenList tokens, int pos)
 		strList enm_parts = [enm_pfx, rust_name, enm_ob, variants_code, enm_cb]
 		string decl = s_join(enm_parts)
 		(pos) in cur
-		return make_result(giveup decl, pos)
+		return make_result(move decl, pos)
 
 # Generates a Rust newtype struct plus a `new()` constructor from a Deor
 # `type Name(baseType paramName)` declaration. The constructor returns Option<Self>,
@@ -201,7 +201,7 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 	string imp_sfx = "))\n        } else {\n            None\n        }\n    }\n}\n\n"
 	strList imp_parts = [imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx]
 	string impl_code = s_join(imp_parts)
-	string type_code = s_cat(giveup struct_code, giveup impl_code)
+	string type_code = s_cat(move struct_code, move impl_code)
 	return make_result(type_code, pos)
 
 # Generates a complete Rust function from a Deor `fn RetType name(params)` declaration.
@@ -261,13 +261,13 @@ fn ParseResult gen_fn_decl(tokenList fn_tokens, int pos, RcCtx ctx)
 	strList var_type_reg = build_var_type_reg(body_tokens_raw)
 	string using_type = ""
 	string using_var = ""
-	TokensRef tokens = tokens_wrap(giveup body_tokens_raw)
+	TokensRef tokens = tokens_wrap(move body_tokens_raw)
 	GenCtx body_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
-	RcCtx body_ctx = make_rctx(giveup body_ctx_raw)
+	RcCtx body_ctx = make_rctx(move body_ctx_raw)
 	# Rc wrappers make recursive clones inside gen_block cheap (Rc::clone vs full copy)
 	int body_pos = 0
 	int body_depth = 1
-	ParseResult body_r = gen_block(body_pos, body_depth, giveup body_ctx)
+	ParseResult body_r = gen_block(body_pos, body_depth, move body_ctx)
 	string body_code = pr_code(body_r)
 	int body_end = body_start + pr_pos(body_r)
 	string sep = ", "
@@ -284,7 +284,7 @@ fn ParseResult gen_fn_decl(tokenList fn_tokens, int pos, RcCtx ctx)
 	string fnc_cb = "}\n\n"
 	strList fnc_parts = [fnc_kw, fn_name, fnc_op, params_code, fnc_rp, ret_suffix, fnc_ob, body_code, fnc_cb]
 	string fn_code = s_join(fnc_parts)
-	return make_result(giveup fn_code, body_end)
+	return make_result(move fn_code, body_end)
 
 # Consumes a `raw TypeName` declaration and emits nothing into the Rust output.
 # The type is registered in shape_reg (with "raw:" marker) by build_shape_reg so

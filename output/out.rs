@@ -401,7 +401,7 @@ fn word_to_kind(word: String) -> String {
     if word == "with" {
         return "KW_WITH".to_string();
     }
-    if word == "giveup" {
+    if word == "move" {
         return "KW_GIVEUP".to_string();
     }
     if word == "raw" {

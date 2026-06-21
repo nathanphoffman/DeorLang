@@ -5,6 +5,8 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
 # In progress
+
+- Renaming 
     
 - Make sure proper import paths / relative paths are understood for docs
 

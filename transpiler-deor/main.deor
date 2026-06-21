@@ -18,9 +18,9 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 	string using_type = ""
 	string using_var = ""
 	tokenList tok_placeholder = empty
-	TokensRef tokens = tokens_wrap(giveup tok_placeholder)
+	TokensRef tokens = tokens_wrap(move tok_placeholder)
 	GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
-	RcCtx ctx = make_rctx(giveup ctx_raw)
+	RcCtx ctx = make_rctx(move ctx_raw)
 
 	strList parts = empty
 	int token_count = len(all_tokens)
