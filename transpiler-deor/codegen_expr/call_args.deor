@@ -1,0 +1,46 @@
+
+# Parses the argument list for a function call and generates Rust code for each arg.
+# Applies ownership coercions: string literals get `.to_string()`, plain identifiers
+# get `.clone()`. Call results and index reads are already owned and pass through as-is.
+fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
+	strList arg_codes = empty
+	int cur = pos
+	int token_count = len(tokens)
+	for if true
+		if cur >= token_count
+			break
+		Token token = tokens at cur
+		(kind) in token
+		if kind is "RPAREN"
+			break
+		if kind is "COMMA"
+			cur = cur + 1
+			continue
+		ParseResult arg_r = gen_expr(tokens, cur, ctx)
+		string arg_code = pr_code(arg_r)
+		int arg_pos = pr_pos(arg_r)
+		Token start_token = tokens at cur
+		(kind) in start_token
+		if kind is "STRING"
+			string str_suf = ".to_string()"
+			strList str_parts = [arg_code, str_suf]
+			arg_code = s_join(str_parts)
+		else if kind is "IDENT"
+			int next_cur = cur + 1
+			bool peek_is_call = false
+			bool peek_is_idx = false
+			if next_cur < token_count
+				Token next_tok = tokens at next_cur
+				(kind) in next_tok
+				peek_is_call = kind is "LPAREN"
+				peek_is_idx = kind is "KW_AT"
+			if not peek_is_call
+				if not peek_is_idx
+					string cln_suf = ".clone()"
+					strList cln_parts = [arg_code, cln_suf]
+					arg_code = s_join(cln_parts)
+		arg_codes at end = arg_code
+		cur = arg_pos
+	string sep = ", "
+	string args_str = s_join_with(arg_codes, sep)
+	return make_result(args_str, cur)

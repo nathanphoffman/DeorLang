@@ -1,0 +1,88 @@
+
+# Parses a full expression using a left-associative loop over binary operators. Calls
+# gen_primary for the left operand, then repeatedly folds in right operands as long as
+# the next token is a binary operator. Handles the two-token `is not` operator and
+# string-concatenation promotion: emits `format!("{}{}", ...)` when either side is a
+# string literal, and appends `.as_str()` when chaining an identifier onto an already
+# promoted String expression.
+fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
+	ParseResult primary_r = gen_primary(tokens, pos, ctx)
+	string left_code = pr_code(primary_r)
+	int cur_pos = pr_pos(primary_r)
+	int token_count = len(tokens)
+	Token first_token = tokens at pos
+	(kind) in first_token
+	bool left_has_str = kind is "STRING"
+
+	for if cur_pos < token_count
+		Token operator_token = tokens at cur_pos
+		(kind, value) in operator_token
+		if not is_binary_op(kind)
+			break
+		# handle "is not" as two-token operator
+		string operator_str = value
+		int after_op = cur_pos + 1
+		if kind is "KW_IS"
+			if after_op < token_count
+				Token maybe_not = tokens at after_op
+				(kind) in maybe_not
+				if kind is "KW_NOT"
+					operator_str = "is not"
+					after_op = after_op + 1
+				# "is empty" → left.is_empty()
+				if kind is "KW_EMPTY"
+					string ie_sfx = ".is_empty()"
+					strList ie_parts = [left_code, ie_sfx]
+					left_code = s_join(ie_parts)
+					cur_pos = after_op + 1
+					continue
+		# "is not empty" → !left.is_empty()
+		if operator_str is "is not"
+			if after_op < token_count
+				Token maybe_empty = tokens at after_op
+				(kind) in maybe_empty
+				if kind is "KW_EMPTY"
+					string ine_pfx = "!"
+					string ine_sfx = ".is_empty()"
+					strList ine_parts = [ine_pfx, left_code, ine_sfx]
+					left_code = s_join(ine_parts)
+					cur_pos = after_op + 1
+					continue
+		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
+		string rhs_code = pr_code(rhs_r)
+		int rhs_pos = pr_pos(rhs_r)
+		string rust_op = map_op(operator_str)
+		# string concat handling
+		if operator_str is "+"
+			Token left_token = tokens at pos
+			(kind) in left_token
+			bool left_is_str = kind is "STRING"
+			Token rhs_token = tokens at after_op
+			(kind) in rhs_token
+			bool rhs_is_str = kind is "STRING"
+			bool rhs_is_ident = kind is "IDENT"
+			# left is a STRING literal: emit format!
+			if left_is_str
+				string fmt_pfx = "format!(\"{}{}\", "
+				string fmt_mid = ", "
+				string fmt_sfx = ")"
+				strList fmt_parts = [fmt_pfx, left_code, fmt_mid, rhs_code, fmt_sfx]
+				left_code = s_join(fmt_parts)
+				left_has_str = true
+				cur_pos = rhs_pos
+				continue
+			# left is a String expr from prior concat: rhs identifier needs .as_str()
+			if left_has_str
+				if rhs_is_ident
+					string astr_sfx = ".as_str()"
+					strList astr_parts = [rhs_code, astr_sfx]
+					rhs_code = s_join(astr_parts)
+			# rhs is a string literal → left will now be a String expr
+			if rhs_is_str
+				left_has_str = true
+		string op_sp = " "
+		strList bin_parts = [left_code, op_sp, rust_op, op_sp, rhs_code]
+		left_code = s_join(bin_parts)
+		cur_pos = rhs_pos
+
+	return make_result(left_code, cur_pos)

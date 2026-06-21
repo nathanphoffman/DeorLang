@@ -1,0 +1,50 @@
+
+# Given a set of field names, searches the struct registry for a struct whose field
+# set matches exactly. Used when an anonymous tuple (f1, f2) must resolve to a struct
+# type for construction — both in expressions and in statement-level typed bindings.
+fn string find_struct_for_fields(strList struct_reg, strList fields)
+	string comma = ","
+	int input_count = len(fields)
+	int reg_count = len(struct_reg)
+	bool next_is_val = false
+	string cur_name = ""
+	for index in range(reg_count)
+		string item = struct_reg at index
+		if next_is_val
+			strList reg_fields = s_split(item, comma)
+			int reg_count_f = len(reg_fields)
+			if reg_count_f is input_count
+				bool all_match = true
+				for fi in range(input_count)
+					string field = fields at fi
+					bool found = list_has(reg_fields, field)
+					if not found
+						all_match = false
+				if all_match
+					return cur_name
+			next_is_val = false
+		else
+			cur_name = item
+			next_is_val = true
+	return "Unknown"
+
+# Given a single field name, returns the first struct in the registry that contains it.
+# Used by the `with` record-update path where only one override field is visible and
+# the struct type must be inferred to emit `StructName { field, ..source }`.
+fn string find_struct_for_field(strList struct_reg, string field)
+	int reg_count = len(struct_reg)
+	bool next_is_val = false
+	string cur_name = ""
+	for index in range(reg_count)
+		string item = struct_reg at index
+		if next_is_val
+			string comma = ","
+			strList fields = s_split(item, comma)
+			bool has_field = list_has(fields, field)
+			if has_field
+				return cur_name
+			next_is_val = false
+		else
+			cur_name = item
+			next_is_val = true
+	return "Unknown"
