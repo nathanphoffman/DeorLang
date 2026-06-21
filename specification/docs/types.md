@@ -50,7 +50,7 @@ type Squarefeet(int val)
     float flt = to_float(val)
     float root = sqrt_f(flt)
     int root_i = floor_f(root)
-    root_i * root_i is val
+    return root_i * root_i is val
 ```
 
 `to_float`, `sqrt_f`, and `floor_f` are user-defined shims — copy them from [Shims — Math](shims.md#math). Each intermediate result is stored before being passed to the next call. A negative `val` makes `sqrt_f` return NaN; `floor_f(NaN)` gives `0`; `0 * 0 is val` fails — no separate guard needed.
@@ -84,11 +84,39 @@ let bad: Option<Squarefeet> = Squarefeet::new(-1);
 
 ---
 
+
+
+### Validator Types / Bad / "Null"
+A validator type is assigned ```bad``` when its response for its boolean return is falsy. You can do comparisons on whether the value is bad or not, and then avow it if you know it is good to extract the value (avowing a bad result will cause a ```crash``` -- a panic! equivalent in rust)
+
+```
+Squarefeet area = 9
+if area is not bad
+    int val = (avow area)
+if area is bad
+    print("no value")
+```
+
+A validator type is considered bad if it is invalid, but it is the only concept in the language for null.  This was a bit of Deors human-language philosophy. A number being null makes no sense in the real world as it explains no reason as to why it is null, how could a pure mathematical number ever not be a value? However, a customer_id, that makes more sense, as the context tells us that a customer_id could be bad.
+
+This means that for these values you must define a validator type to explain what would make that id bad, for a customer_id it is probably anything below 1.  In almost all cases something that is non-primitive will have a constraint.
+
+If for some reason a validator type never has a constraint of any kind you could simply return ```true``` from the validator type and assign bad like a null value, however this is considered bad practice as almost all types conceptually different than primitives should be narrowerer than their base types and thus definable as where they are "bad"
+```
+type BadableInt
+    true
+
+# bad practice, but allowed for the odd edge cases where you would need this
+BadableInt num = bad
+
+```
+
+
 ### Truthy / Falsy
 
-A validator type variable is truthy when `Some`, falsy when `None`. Use `if` to check presence and `if X is not` to check absence before using the value.
 
-**Only validator types and `bool` have truthiness.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — they have no presence/absence concept. Use explicit comparisons instead:
+
+**Only `bool` has truthiness.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — they have no presence/absence concept. Use explicit comparisons instead:
 
 ```
 if len(my_list) > 0    # correct — explicit non-empty check
@@ -101,13 +129,7 @@ if my_string != ""     # correct
 if my_string           # transpiler error
 ```
 
-```
-Squarefeet area = 9
-if area
-    int val = (avow area)
-if area is not
-    print("no value")
-```
+
 
 ```rust
 if area.is_some() {

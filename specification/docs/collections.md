@@ -2,6 +2,20 @@
 List operations assume a list shape has already been declared — see [Shapes](docs/shapes.md) for how to declare one and use it in function signatures and struct fields.
 
 ---
+## Empty Lisy
+To define an empty list use the ```empty``` keyword.  Comparisons can also be done on the empty keyword, [] is never valid for setting lists to empty ([, ] are only used for definint list content, as seen below)
+
+```
+listString list_names as empty
+if list_names is empty
+    print("list is empty")
+
+if list_names is not empty
+    print("list is not empty")
+
+```
+
+---
 ## Index Read
 Elements are read by index using `at`. Zero-indexed, matching Rust's behavior.
 
@@ -117,7 +131,7 @@ The `range()` arguments follow the same rules as everywhere else — built-in fu
 
 ---
 ## No Membership Test
-Deor has no built-in membership operator. `item in list` would conflict with the `in` destructuring and import grammar. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
+Deor has no built-in membership operator. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
 
 ```
 shape matchFunc = func of Room to bool
