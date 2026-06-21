@@ -1,0 +1,36 @@
+
+# Handles simple flow-control statements that produce one line of output and return.
+#   return expr  → `return expr[.to_string()];`
+#   break        → `break;`
+#   continue     → `continue;`
+macro stmt_flow
+	if kind is "KW_RETURN"
+		int sf_val_pos = pos + 1
+		Token sf_val_tok = tokens at sf_val_pos
+		(kind) in sf_val_tok
+		ParseResult sf_val_r = gen_expr(tokens, sf_val_pos, ctx)
+		string sf_val_code = pr_code(sf_val_r)
+		int sf_val_end = pr_pos(sf_val_r)
+		string sf_suffix = ""
+		if kind is "STRING"
+			sf_suffix = ".to_string()"
+		string sf_ret_kw = "return "
+		string sf_ret_sc = ";\n"
+		strList sf_ret_parts = [pad, sf_ret_kw, sf_val_code, sf_suffix, sf_ret_sc]
+		string sf_ret_code = s_join(sf_ret_parts)
+		int sf_ret_next = adv_nl_ref(sf_val_end, tokens)
+		return make_result(sf_ret_code, sf_ret_next)
+	if kind is "KW_BREAK"
+		string sf_brk_kw = "break;\n"
+		strList sf_brk_parts = [pad, sf_brk_kw]
+		string sf_brk_code = s_join(sf_brk_parts)
+		int sf_brk_n = pos + 1
+		int sf_brk_next = adv_nl_ref(sf_brk_n, tokens)
+		return make_result(sf_brk_code, sf_brk_next)
+	if kind is "KW_CONTINUE"
+		string sf_cnt_kw = "continue;\n"
+		strList sf_cnt_parts = [pad, sf_cnt_kw]
+		string sf_cnt_code = s_join(sf_cnt_parts)
+		int sf_cnt_n = pos + 1
+		int sf_cnt_next = adv_nl_ref(sf_cnt_n, tokens)
+		return make_result(sf_cnt_code, sf_cnt_next)

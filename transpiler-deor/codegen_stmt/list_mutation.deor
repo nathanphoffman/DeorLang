@@ -1,0 +1,92 @@
+
+# Generates code for list-mutation statements where the target is an identifier.
+# pos points to the list name. Dispatches based on the next token:
+#   name insert val       → `.push(val)` (legacy append keyword)
+#   name at end = val     → `.push(val)` (preferred append syntax)
+#   name at idx = val     → `name[idx as usize] = val`
+#   name remove at idx    → `.remove(idx as usize)`
+fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
+	(tokens) in ctx
+	int token_count = len(tokens)
+	string indent = "    "
+	string pad = s_repeat(indent, depth)
+	Token name_token = tokens at pos
+	(value) in name_token
+	string ident_name = value
+	int next_pos = pos + 1
+	Token next_token = tokens at next_pos
+	(kind) in next_token
+
+	# name insert val  (legacy append)
+	if kind is "KW_INSERT"
+		int val_pos = next_pos + 1
+		ParseResult val_r = gen_expr(tokens, val_pos, ctx)
+		string val_code = pr_code(val_r)
+		int val_end = pr_pos(val_r)
+		Token val_tok = tokens at val_pos
+		(kind) in val_tok
+		string push_val = emit_val(val_code, kind)
+		string psh_pfx = ".push("
+		string psh_sfx = ");\n"
+		strList psh_parts = [pad, ident_name, psh_pfx, push_val, psh_sfx]
+		string push_code = s_join(psh_parts)
+		int push_next = adv_nl_ref(val_end, tokens)
+		return make_result(push_code, push_next)
+
+	# name at end = val  OR  name at idx = val
+	if kind is "KW_AT"
+		int after_at = next_pos + 1
+		if after_at < token_count
+			Token at_next_token = tokens at after_at
+			(kind, value) in at_next_token
+			if kind is "IDENT" and value is "end"
+				int val_pos = after_at + 2
+				ParseResult val_r = gen_expr(tokens, val_pos, ctx)
+				string val_code = pr_code(val_r)
+				int val_end = pr_pos(val_r)
+				Token val_tok = tokens at val_pos
+				(kind) in val_tok
+				string app_val = emit_val(val_code, kind)
+				string app_pfx = ".push("
+				string app_sfx = ");\n"
+				strList app_parts = [pad, ident_name, app_pfx, app_val, app_sfx]
+				string app_code = s_join(app_parts)
+				int app_next = adv_nl_ref(val_end, tokens)
+				return make_result(app_code, app_next)
+			ParseResult idx_r = gen_expr(tokens, after_at, ctx)
+			string idx_code = pr_code(idx_r)
+			int idx_end = pr_pos(idx_r)
+			int val_pos = idx_end + 1
+			ParseResult val_r = gen_expr(tokens, val_pos, ctx)
+			string val_code = pr_code(val_r)
+			int val_end = pr_pos(val_r)
+			Token val_tok = tokens at val_pos
+			(kind) in val_tok
+			string idx_val = emit_val(val_code, kind)
+			string idw_op = "["
+			string idw_mid = " as usize] = "
+			string idw_sfx = ";\n"
+			strList idw_parts = [pad, ident_name, idw_op, idx_code, idw_mid, idx_val, idw_sfx]
+			string idw_code = s_join(idw_parts)
+			int idw_next = adv_nl_ref(val_end, tokens)
+			return make_result(idw_code, idw_next)
+
+	# name remove at idx
+	if kind is "KW_REMOVE"
+		int idx_pos = next_pos + 2
+		ParseResult idx_r = gen_expr(tokens, idx_pos, ctx)
+		string idx_code = pr_code(idx_r)
+		int idx_end = pr_pos(idx_r)
+		string rem_pfx = ".remove("
+		string rem_sfx = " as usize);\n"
+		strList rem_parts = [pad, ident_name, rem_pfx, idx_code, rem_sfx]
+		string rem_code = s_join(rem_parts)
+		int rem_next = adv_nl_ref(idx_end, tokens)
+		return make_result(rem_code, rem_next)
+
+	string lm_unh_pfx = "/* unhandled_list_mut("
+	string lm_unh_sfx = ") */\n"
+	strList lm_unh_parts = [lm_unh_pfx, kind, lm_unh_sfx]
+	string lm_unhand = s_join(lm_unh_parts)
+	int lm_next = pos + 1
+	return make_result(lm_unhand, lm_next)

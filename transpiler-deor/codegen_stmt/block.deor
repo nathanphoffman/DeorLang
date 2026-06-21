@@ -1,0 +1,26 @@
+
+# Runs gen_stmt repeatedly until DEDENT or EOF, collecting and joining the statement
+# code strings. Used for function bodies, if/else branches, for/while bodies, and
+# using blocks — anywhere Deor uses indentation to define a scope.
+fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
+	(tokens) in ctx
+	strList stmts = empty
+	int cur = pos
+	int token_count = len(tokens)
+	for if true
+		if cur >= token_count
+			break
+		Token token = tokens at cur
+		(kind) in token
+		if kind is "DEDENT" or kind is "EOF"
+			if kind is "DEDENT"
+				cur = cur + 1
+			break
+		if kind is "NEWLINE"
+			cur = cur + 1
+			continue
+		ParseResult stmt_r = gen_stmt(cur, depth, ctx)
+		stmts at end = pr_code(stmt_r)
+		cur = pr_pos(stmt_r)
+	string block_joined = s_join(stmts)
+	return make_result(block_joined, cur)

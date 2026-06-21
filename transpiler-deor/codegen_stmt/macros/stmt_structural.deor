@@ -1,0 +1,39 @@
+
+# Handles structural statement forms — those that reshape or unpack data.
+#   (avow expr)       → statement-level forced unwrap: `expr.unwrap();`
+#   (f1, f2) in src  → destructuring: delegates to gen_destructure
+#   using varName     → unpacks a struct into locals, runs body with re-binding shims
+macro stmt_structural
+	if kind is "LPAREN"
+		int su_peek = pos + 1
+		if su_peek < token_count
+			Token su_peek_tok = tokens at su_peek
+			(kind) in su_peek_tok
+			if kind is "KW_AVOW"
+				int su_expr_pos = su_peek + 1
+				ParseResult su_expr_r = gen_expr(tokens, su_expr_pos, ctx)
+				string su_expr_code = pr_code(su_expr_r)
+				int su_after_rp = pr_pos(su_expr_r) + 1
+				string su_avw_sfx = ".unwrap();\n"
+				strList su_avw_parts = [pad, su_expr_code, su_avw_sfx]
+				string su_avow_code = s_join(su_avw_parts)
+				int su_avow_next = adv_nl_ref(su_after_rp, tokens)
+				return make_result(su_avow_code, su_avow_next)
+		return gen_destructure(pos, depth, ctx)
+	if kind is "KW_USING"
+		int su_var_pos = pos + 1
+		Token su_var_tok = tokens at su_var_pos
+		(value) in su_var_tok
+		string using_var = value
+		string su_struct_type = reg_get(var_type_reg, using_var)
+		string using_type = su_struct_type
+		string su_init = make_destruct_code(using_var, depth, ctx)
+		int su_var_next = su_var_pos + 1
+		int su_body_start = skip_to_body_ref(tokens, su_var_next)
+		GenCtx su_uctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
+		RcCtx su_using_ctx = make_rctx(move su_uctx_raw)
+		ParseResult su_block_r = gen_block(su_body_start, depth, move su_using_ctx)
+		string su_blk_code = pr_code(su_block_r)
+		int su_blk_pos = pr_pos(su_block_r)
+		string su_full = s_cat(su_init, su_blk_code)
+		return make_result(move su_full, su_blk_pos)

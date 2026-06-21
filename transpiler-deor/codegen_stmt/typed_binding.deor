@@ -1,0 +1,203 @@
+
+# Generates code for typed variable declarations: `Type varName = expr`. pos points to
+# the type token. Sub-cases dispatched by the kind of the value expression:
+#   empty       — Vec::new() for list shapes; error for validators or unknown types
+#   (avow x)    — forced unwrap: .unwrap() for custom types, .unwrap().0 for primitives
+#   (f1, f2)    — positional struct construction: StructType { f1: v1, f2: v2, ... }
+#   [items]     — list literal: let mut varName: RustType = vec![...]
+#   bad         — Option<T> None (validator types only)
+#   validator   — ValidatorType::new(expr) wrapped in Option<ValidatorType>
+#   default     — let [mut] varName: RustType = val[.clone()/.to_string()]
+fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
+	(tokens, struct_reg, shape_reg, type_reg, mut_names, variant_reg) in ctx
+	int token_count = len(tokens)
+	string indent = "    "
+	string pad = s_repeat(indent, depth)
+	Token type_token = tokens at pos
+	(value) in type_token
+	string var_type = value
+	int name_pos = pos + 1
+	Token name_token = tokens at name_pos
+	(value) in name_token
+	string var_name = value
+	int eq_pos = name_pos + 1
+	int val_pos = eq_pos + 1
+	string rust_type = resolve_type(var_type, shape_reg, variant_reg)
+	Token val_token = tokens at val_pos
+	(kind) in val_token
+
+	# empty → Vec::new() for list shapes; error otherwise
+	if kind is "KW_EMPTY"
+		bool is_validator = reg3_has(type_reg, var_type)
+		bool is_shape = reg_has(shape_reg, var_type)
+		int val_next_pos = val_pos + 1
+		int after_empty = adv_nl_ref(val_next_pos, tokens)
+		if is_validator
+			string err_msg = "/* error: use 'bad' not 'empty' for validator types */\n"
+			strList err_parts = [pad, err_msg]
+			string err_code = s_join(err_parts)
+			return make_result(err_code, after_empty)
+		if is_shape
+			string sh_pfx = "let mut "
+			string sh_mid = ": "
+			string sh_sfx = " = Vec::new();\n"
+			strList sh_parts = [pad, sh_pfx, var_name, sh_mid, rust_type, sh_sfx]
+			string sh_code = s_join(sh_parts)
+			return make_result(sh_code, after_empty)
+		string err_msg = "/* error: empty is only valid for list shapes */\n"
+		strList err_parts = [pad, err_msg]
+		string err_code = s_join(err_parts)
+		return make_result(err_code, after_empty)
+
+	# (avow x) or positional struct construction
+	if kind is "LPAREN"
+		int peek_pos = val_pos + 1
+		Token peek_token = tokens at peek_pos
+		(kind) in peek_token
+		bool is_avow_expr = kind is "KW_AVOW"
+		if not is_avow_expr
+			string struct_fields_str = reg_get(struct_reg, var_type)
+			string comma = ","
+			strList field_names = s_split(struct_fields_str, comma)
+			strList field_pairs = empty
+			int fend = val_pos + 1
+			int fni = 0
+			int fn_count = len(field_names)
+			for if fend < token_count
+				Token field_tok = tokens at fend
+				(kind) in field_tok
+				if kind is "RPAREN"
+					fend = fend + 1
+					break
+				if kind is "COMMA"
+					fend = fend + 1
+					continue
+				ParseResult fv_r = gen_expr(tokens, fend, ctx)
+				string fv_code = pr_code(fv_r)
+				if fni < fn_count
+					string fname = field_names at fni
+					string sfp_sep = ": "
+					string sfp_cln = ".clone()"
+					strList sfp_parts = [fname, sfp_sep, fv_code, sfp_cln]
+					field_pairs at end = s_join(sfp_parts)
+					fni = fni + 1
+				fend = pr_pos(fv_r)
+			string sep = ", "
+			string fields_code = s_join_with(field_pairs, sep)
+			bool is_mut = list_has(mut_names, var_name)
+			string mut_kw = ""
+			if is_mut
+				mut_kw = "mut "
+			string scc_let = "let "
+			string scc_eq = " = "
+			string scc_ob = " { "
+			string scc_cb = " };\n"
+			strList scc_parts = [pad, scc_let, mut_kw, var_name, scc_eq, var_type, scc_ob, fields_code, scc_cb]
+			string sc_code = s_join(scc_parts)
+			int sc_next = adv_nl_ref(fend, tokens)
+			return make_result(sc_code, sc_next)
+		# (avow inner) — .unwrap().0 for primitives, .unwrap() for custom types
+		int inner_pos = peek_pos + 1
+		ParseResult inner_r = gen_expr(tokens, inner_pos, ctx)
+		string inner_code = pr_code(inner_r)
+		int after_rparen = pr_pos(inner_r) + 1
+		string suf_unwrap = ".unwrap()"
+		string suf_unwrap0 = ".unwrap().0"
+		string unwrap_expr = s_cat(inner_code, suf_unwrap)
+		if var_type is "int"
+			unwrap_expr = s_cat(inner_code, suf_unwrap0)
+		if var_type is "string"
+			unwrap_expr = s_cat(inner_code, suf_unwrap0)
+		if var_type is "bool"
+			unwrap_expr = s_cat(inner_code, suf_unwrap0)
+		if var_type is "float"
+			unwrap_expr = s_cat(inner_code, suf_unwrap0)
+		string awc_let = "let "
+		string awc_col = ": "
+		string awc_eq = " = "
+		string awc_sc = ";\n"
+		strList awc_parts = [pad, awc_let, var_name, awc_col, rust_type, awc_eq, unwrap_expr, awc_sc]
+		string aw_code = s_join(awc_parts)
+		int aw_next = adv_nl_ref(after_rparen, tokens)
+		return make_result(aw_code, aw_next)
+
+	# list literal → always let mut
+	if kind is "LBRACKET"
+		ParseResult val_r = gen_expr(tokens, val_pos, ctx)
+		string val_code = pr_code(val_r)
+		int val_end = pr_pos(val_r)
+		string lst_pfx = "let mut "
+		string lst_col = ": "
+		string lst_eq = " = "
+		string lst_sc = ";\n"
+		strList lst_parts = [pad, lst_pfx, var_name, lst_col, rust_type, lst_eq, val_code, lst_sc]
+		string lst_code = s_join(lst_parts)
+		int lst_next = adv_nl_ref(val_end, tokens)
+		return make_result(lst_code, lst_next)
+
+	# bad → Option<T> None (validator types only)
+	if kind is "KW_BAD"
+		bool bad_is_validator = reg3_has(type_reg, var_type)
+		int bad_pos_next = val_pos + 1
+		int bad_next = adv_nl_ref(bad_pos_next, tokens)
+		if bad_is_validator
+			string non_pfx = "let mut "
+			string non_mid = ": Option<"
+			string non_sfx = "> = None;\n"
+			strList non_parts = [pad, non_pfx, var_name, non_mid, rust_type, non_sfx]
+			string none_code = s_join(non_parts)
+			return make_result(none_code, bad_next)
+		string bad_err = "/* error: bad is only valid for validator types */\n"
+		strList bad_err_parts = [pad, bad_err]
+		string bad_err_code = s_join(bad_err_parts)
+		return make_result(bad_err_code, bad_next)
+
+	# validator type → ValidatorType::new(val) wrapped in Option<>
+	bool is_validator = reg3_has(type_reg, var_type)
+	if is_validator
+		ParseResult val_r = gen_expr(tokens, val_pos, ctx)
+		string val_code = pr_code(val_r)
+		int val_end = pr_pos(val_r)
+		bool is_mut = list_has(mut_names, var_name)
+		string mut_kw = ""
+		if is_mut
+			mut_kw = "mut "
+		string vld_let = "let "
+		string vld_opt = ": Option<"
+		string vld_new = "> = "
+		string vld_nop = "::new("
+		string vld_sc = ");\n"
+		strList vld_parts = [pad, vld_let, mut_kw, var_name, vld_opt, var_type, vld_new, var_type, vld_nop, val_code, vld_sc]
+		string vld_code = s_join(vld_parts)
+		int vld_next = adv_nl_ref(val_end, tokens)
+		return make_result(vld_code, vld_next)
+
+	# default: let [mut] varName: RustType = val[.clone()/.to_string()];
+	ParseResult val_r = gen_expr(tokens, val_pos, ctx)
+	string val_code = pr_code(val_r)
+	int val_end = pr_pos(val_r)
+	bool is_mut = list_has(mut_names, var_name)
+	string mut_kw = ""
+	if is_mut
+		mut_kw = "mut "
+	string suffix = ""
+	if kind is "STRING"
+		suffix = ".to_string()"
+	else if kind is "IDENT"
+		int val_next_idx = val_pos + 1
+		if val_next_idx < token_count
+			Token next_val_tok = tokens at val_next_idx
+			(kind) in next_val_tok
+			bool val_is_call = kind is "LPAREN"
+			bool val_is_idx = kind is "KW_AT"
+			if not val_is_call
+				if not val_is_idx
+					suffix = ".clone()"
+	string bnd_let = "let "
+	string bnd_col = ": "
+	string bnd_eq = " = "
+	string bnd_sc = ";\n"
+	strList bnd_parts = [pad, bnd_let, mut_kw, var_name, bnd_col, rust_type, bnd_eq, val_code, suffix, bnd_sc]
+	string bind_code = s_join(bnd_parts)
+	int bind_next = adv_nl_ref(val_end, tokens)
+	return make_result(bind_code, bind_next)

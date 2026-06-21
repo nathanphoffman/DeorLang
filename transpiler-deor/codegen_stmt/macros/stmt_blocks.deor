@@ -1,0 +1,39 @@
+
+# Handles block-level statement forms that wrap a child block.
+#   block  → bare `{ ... }` scope block at the current indentation depth
+#   rust   → inline Rust source block, re-indented to match current depth
+macro stmt_blocks
+	if kind is "KW_BLOCK"
+		int sb_nl = pos + 1
+		int sb_body_start = skip_to_body_ref(tokens, sb_nl)
+		int sb_body_depth = depth + 1
+		ParseResult sb_body_r = gen_block(sb_body_start, sb_body_depth, ctx)
+		string sb_body_code = pr_code(sb_body_r)
+		int sb_body_end = pr_pos(sb_body_r)
+		string sb_open_brace = "{\n"
+		string sb_close_brace = "}\n"
+		string sb_blk_open = s_cat(pad, sb_open_brace)
+		string sb_blk_close = s_cat(pad, sb_close_brace)
+		strList sb_blk_parts = [sb_blk_open, sb_body_code, sb_blk_close]
+		string sb_blk_code = s_join(sb_blk_parts)
+		return make_result(move sb_blk_code, sb_body_end)
+	if kind is "KW_RUST"
+		int sb_block_pos = pos + 2
+		Token sb_block_tok = tokens at sb_block_pos
+		(value) in sb_block_tok
+		string sb_content = value
+		strList sb_rust_lines = s_split(sb_content, newline)
+		strList sb_padded = empty
+		int sb_line_count = len(sb_rust_lines)
+		for sb_ri in range(sb_line_count)
+			string sb_rust_line = sb_rust_lines at sb_ri
+			if is_empty(sb_rust_line)
+				string sb_empty_line = ""
+				sb_padded at end = sb_empty_line
+			else
+				strList sb_rsl_parts = [pad, sb_rust_line]
+				sb_padded at end = s_join(sb_rsl_parts)
+		string sb_block_code = s_join_nl(sb_padded)
+		sb_block_code = s_cat(sb_block_code, newline)
+		int sb_block_next = sb_block_pos + 1
+		return make_result(move sb_block_code, sb_block_next)

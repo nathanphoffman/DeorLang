@@ -2,9 +2,9 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 
 # New In Progress
-  - re consider const declarations — lexer has no token, no codegen
+- Add function const declarations
 - Make sure proper import paths / relative paths are understood for docs
-- Talk about removing insert keyword, legacy instead of results at end = 
+- Remove insert keyword, keep only the results at end = thing, logic
 
 
 # Easy Fixes

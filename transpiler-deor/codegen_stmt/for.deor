@@ -1,0 +1,130 @@
+
+# Generates Rust loop code from a Deor `for` statement. Four dispatch paths:
+#   `for if cond`            → `while cond { ... }`
+#   `for move var in expr`   → `for var in expr { ... }` (consuming ownership)
+#   `for var in range(n)`    → `for var in 0..n { ... }` (or start..end)
+#   `for in (start, end)`    → `for _ in start..end { ... }` (bare range)
+#   `for var in collection`  → `for var in collection { ... }`
+fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
+	(tokens) in ctx
+	int token_count = len(tokens)
+	string indent = "    "
+	string pad = s_repeat(indent, depth)
+	int next_pos = pos + 1
+	Token next_token = tokens at next_pos
+	(kind) in next_token
+
+	if kind is "KW_IF"
+		int cond_pos = next_pos + 1
+		ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
+		string cond_code = pr_code(cond_r)
+		int cond_end = pr_pos(cond_r)
+		int while_body_start = skip_to_body_ref(tokens, cond_end)
+		int whl_depth = depth + 1
+		ParseResult while_body_r = gen_block(while_body_start, whl_depth, ctx)
+		string while_body_code = pr_code(while_body_r)
+		int while_body_end = pr_pos(while_body_r)
+		string whl_kw = "while "
+		string whl_ob = " {\n"
+		string whl_cb = "}\n"
+		strList whl_parts = [pad, whl_kw, cond_code, whl_ob, while_body_code, pad, whl_cb]
+		string while_code = s_join(whl_parts)
+		return make_result(move while_code, while_body_end)
+
+	if kind is "KW_GIVEUP"
+		int lparen_pos = next_pos + 1
+		int var_pos = lparen_pos + 1
+		Token var_tok = tokens at var_pos
+		(value) in var_tok
+		string giveup_var = value
+		int in_pos = var_pos + 1
+		int iter_pos = in_pos + 1
+		ParseResult iter_r = gen_expr(tokens, iter_pos, ctx)
+		string iter_code = pr_code(iter_r)
+		int iter_end = pr_pos(iter_r)
+		int iter_next = iter_end + 1
+		int body_start = skip_to_body_ref(tokens, iter_next)
+		int body_depth = depth + 1
+		ParseResult body_r = gen_block(body_start, body_depth, ctx)
+		string body_code = pr_code(body_r)
+		int body_end = pr_pos(body_r)
+		string gfr_kw = "for "
+		string gfr_in = " in "
+		string gfr_ob = " {\n"
+		string gfr_cb = "}\n"
+		strList gfr_parts = [pad, gfr_kw, giveup_var, gfr_in, iter_code, gfr_ob, body_code, pad, gfr_cb]
+		string for_code = s_join(gfr_parts)
+		return make_result(move for_code, body_end)
+
+	string var_name = "_"
+	int iter_pos = 0
+	if kind is "KW_IN"
+		iter_pos = next_pos + 1
+	else
+		(value) in next_token
+		var_name = value
+		int in_pos = next_pos + 1
+		iter_pos = in_pos + 1
+
+	Token iter_token = tokens at iter_pos
+	(kind, value) in iter_token
+
+	string range_expr = ""
+	int body_tok_pos = 0
+
+	if kind is "IDENT" and value is "range"
+		int lparen = iter_pos + 1
+		int first_pos = lparen + 1
+		ParseResult first_r = gen_expr(tokens, first_pos, ctx)
+		string first_code = pr_code(first_r)
+		int first_p = pr_pos(first_r)
+		Token comma_token = tokens at first_p
+		(kind) in comma_token
+		bool has_start = kind is "COMMA"
+		if has_start
+			int second_pos = first_p + 1
+			ParseResult second_r = gen_expr(tokens, second_pos, ctx)
+			string second_code = pr_code(second_r)
+			int second_p = pr_pos(second_r)
+			string rng_dot = ".."
+			strList rng_parts = [first_code, rng_dot, second_code]
+			range_expr = s_join(rng_parts)
+			body_tok_pos = second_p + 1
+		else
+			string rng0_pfx = "0.."
+			strList rng0_parts = [rng0_pfx, first_code]
+			range_expr = s_join(rng0_parts)
+			body_tok_pos = first_p + 1
+	else if kind is "LPAREN"
+		int start_pos = iter_pos + 1
+		ParseResult start_r = gen_expr(tokens, start_pos, ctx)
+		string start_code = pr_code(start_r)
+		int start_p = pr_pos(start_r)
+		int end_pos = start_p + 1
+		ParseResult end_r = gen_expr(tokens, end_pos, ctx)
+		string end_code = pr_code(end_r)
+		int end_p = pr_pos(end_r)
+		string rng2_dot = ".."
+		strList rng2_parts = [start_code, rng2_dot, end_code]
+		range_expr = s_join(rng2_parts)
+		body_tok_pos = end_p + 1
+	else
+		ParseResult src_r = gen_expr(tokens, iter_pos, ctx)
+		string src_code = pr_code(src_r)
+		int src_p = pr_pos(src_r)
+		range_expr = src_code
+		body_tok_pos = src_p
+
+	body_tok_pos = skip_to_body_ref(tokens, body_tok_pos)
+	int for_body_depth = depth + 1
+	ParseResult body_r = gen_block(body_tok_pos, for_body_depth, ctx)
+	string body_code = pr_code(body_r)
+	int body_end = pr_pos(body_r)
+
+	string frc_kw = "for "
+	string frc_in = " in "
+	string frc_ob = " {\n"
+	string frc_cb = "}\n"
+	strList frc_parts = [pad, frc_kw, var_name, frc_in, range_expr, frc_ob, body_code, pad, frc_cb]
+	string for_code = s_join(frc_parts)
+	return make_result(for_code, body_end)

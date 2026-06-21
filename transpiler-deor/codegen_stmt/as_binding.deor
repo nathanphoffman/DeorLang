@@ -1,0 +1,133 @@
+
+# Generates code for all `name as ...` binding forms. Called when gen_stmt detects
+# an IDENT followed by KW_AS. pos points to the identifier (the target variable name).
+# Four sub-cases dispatched by the token immediately after `as`:
+#   name as (f1, f2)              — struct construction binding
+#   name as empty                 — empty list: Vec::new()
+#   name as source with (f1, f2)  — record update spread: StructName { f1, f2, ..source }
+#   name as expr                  — regular let binding
+fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
+	(tokens, struct_reg, mut_names) in ctx
+	int token_count = len(tokens)
+	string indent = "    "
+	string pad = s_repeat(indent, depth)
+	Token name_token = tokens at pos
+	(value) in name_token
+	string ident_name = value
+	int next_pos = pos + 1
+	int after_as = next_pos + 1
+	Token after_as_token = tokens at after_as
+	(kind) in after_as_token
+	(value) in after_as_token
+	string after_as_value = value
+
+	# struct construction: name as (f1, f2, ...)
+	if kind is "LPAREN"
+		strList aas_fields = empty
+		int aas_fend = after_as + 1
+		for if aas_fend < token_count
+			Token aas_field_tok = tokens at aas_fend
+			(kind, value) in aas_field_tok
+			if kind is "RPAREN"
+				aas_fend = aas_fend + 1
+				break
+			else if kind is "COMMA"
+				aas_fend = aas_fend + 1
+			else if kind is "IDENT"
+				aas_fields at end = value
+				aas_fend = aas_fend + 1
+		string aas_struct = find_struct_for_fields(struct_reg, aas_fields)
+		bool aas_is_mut = list_has(mut_names, ident_name)
+		string aas_mut = ""
+		if aas_is_mut
+			aas_mut = "mut "
+		int aas_fcount = len(aas_fields)
+		strList aas_pairs = empty
+		for aas_fi in range(aas_fcount)
+			string aas_fname = aas_fields at aas_fi
+			string aas_fp_sep = ": "
+			string aas_fp_cln = ".clone()"
+			strList aas_fp = [aas_fname, aas_fp_sep, aas_fname, aas_fp_cln]
+			aas_pairs at end = s_join(aas_fp)
+		string aas_fld_sep = ", "
+		string aas_fields_code = s_join_with(aas_pairs, aas_fld_sep)
+		string aas_let = "let "
+		string aas_eq = " = "
+		string aas_ob = " { "
+		string aas_cb = " };\n"
+		strList aas_parts = [pad, aas_let, aas_mut, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb]
+		string aas_code = s_join(aas_parts)
+		int aas_next = adv_nl_ref(aas_fend, tokens)
+		return make_result(move aas_code, aas_next)
+
+	# empty → empty list: let mut name = Vec::new();
+	if kind is "KW_EMPTY"
+		string aas_emp_pfx = "let mut "
+		string aas_emp_sfx = " = Vec::new();\n"
+		strList aas_emp_parts = [pad, aas_emp_pfx, ident_name, aas_emp_sfx]
+		string aas_empty_code = s_join(aas_emp_parts)
+		int aas_after_empty = after_as + 1
+		int aas_empty_next = adv_nl_ref(aas_after_empty, tokens)
+		return make_result(aas_empty_code, aas_empty_next)
+
+	# record update: name as source with (f1, f2, ...)
+	if kind is "IDENT"
+		int aas_with_pos = after_as + 1
+		if aas_with_pos < token_count
+			Token aas_with_tok = tokens at aas_with_pos
+			(kind) in aas_with_tok
+			if kind is "KW_WITH"
+				string aas_src = after_as_value
+				int aas_lp = aas_with_pos + 1
+				strList aas_ovr = empty
+				int aas_wend = aas_lp + 1
+				for if aas_wend < token_count
+					Token aas_wtok = tokens at aas_wend
+					(kind, value) in aas_wtok
+					if kind is "RPAREN"
+						aas_wend = aas_wend + 1
+						break
+					if kind is "COMMA"
+						aas_wend = aas_wend + 1
+						continue
+					if kind is "IDENT"
+						aas_ovr at end = value
+						aas_wend = aas_wend + 1
+				string aas_first = aas_ovr at 0
+				string aas_struct_w = find_struct_for_field(struct_reg, aas_first)
+				string aas_wsep = ", "
+				string aas_wfields = s_join_with(aas_ovr, aas_wsep)
+				bool aas_wmut = list_has(mut_names, ident_name)
+				string aas_wmutkw = ""
+				if aas_wmut
+					aas_wmutkw = "mut "
+				string aas_wlet = "let "
+				string aas_weq = " = "
+				string aas_wob = " { "
+				string aas_wsp = ", .."
+				string aas_wcb = " };\n"
+				strList aas_wparts = [pad, aas_wlet, aas_wmutkw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wcb]
+				string aas_with_code = s_join(aas_wparts)
+				int aas_wnext = adv_nl_ref(aas_wend, tokens)
+				return make_result(move aas_with_code, aas_wnext)
+
+	# regular as-binding: let [mut] name = expr[.to_string()];
+	(kind) in after_as_token
+	ParseResult aas_val_r = gen_expr(tokens, after_as, ctx)
+	string aas_val_code = pr_code(aas_val_r)
+	int aas_val_end = pr_pos(aas_val_r)
+	bool aas_is_str = kind is "STRING"
+	bool aas_is_mut2 = list_has(mut_names, ident_name)
+	string aas_mut2 = ""
+	if aas_is_mut2
+		aas_mut2 = "mut "
+	string aas_suffix = ""
+	if aas_is_str
+		aas_suffix = ".to_string()"
+	string aas_let2 = "let "
+	string aas_eq2 = " = "
+	string aas_sc2 = ";\n"
+	strList aas_parts2 = [pad, aas_let2, aas_mut2, ident_name, aas_eq2, aas_val_code, aas_suffix, aas_sc2]
+	string aas_code2 = s_join(aas_parts2)
+	int aas_next2 = adv_nl_ref(aas_val_end, tokens)
+	return make_result(aas_code2, aas_next2)
