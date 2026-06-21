@@ -1,0 +1,65 @@
+
+raw TaskPool
+raw Sender
+raw Receiver
+raw ChanPair
+
+shape receiverList = list of Receiver
+
+rust
+    use std::sync::{Arc, Mutex};
+    use std::sync::mpsc::{self, Sender, Receiver};
+    use std::thread;
+
+    struct TaskPool {
+        sender: mpsc::Sender<Box<dyn FnOnce() + Send + 'static>>,
+    }
+
+    struct ChanPair {
+        snd: Sender<String>,
+        rcv: Receiver<String>,
+    }
+
+# Creates a thread pool sized to the number of logical CPU cores on the system.
+# Worker threads pull jobs from a shared queue and run them until the pool is dropped.
+fn TaskPool t_pool_make()
+    rust
+        let thread_count = thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(4);
+        let (tx, rx) = mpsc::channel::<Box<dyn FnOnce() + Send + 'static>>();
+        let rx = Arc::new(Mutex::new(rx));
+        for _ in 0..thread_count {
+            let rx = Arc::clone(&rx);
+            thread::spawn(move || loop {
+                let job = rx.lock().unwrap().recv();
+                match job {
+                    Ok(f) => f(),
+                    Err(_) => break,
+                }
+            });
+        }
+        TaskPool { sender: tx }
+
+# Creates a paired string channel returned as a ChanPair struct.
+# Use t_chan_sender and t_chan_receiver to split it before passing to t_spawn.
+fn ChanPair t_chan_make()
+    rust
+        let (tx, rx) = mpsc::channel::<String>();
+        ChanPair { snd: tx, rcv: rx }
+
+# Sends a string value through a channel sender.
+fn void t_chan_send(Sender snd, string val)
+    rust
+        snd.send(val.clone()).unwrap();
+
+# Blocks until a string value arrives on the channel receiver and returns it.
+fn string t_chan_recv(Receiver rcv)
+    rust
+        rcv.recv().unwrap()
+
+# Spawns a task onto the pool. The task function receives the sender so it can
+# push its result back to the caller via t_chan_recv on the matching receiver.
+fn void t_spawn(TaskPool pool, Sender snd, fn(Sender) func)
+    rust
+        pool.sender.send(Box::new(move || func(snd))).unwrap();

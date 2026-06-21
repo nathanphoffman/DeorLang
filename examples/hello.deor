@@ -1,3 +1,4 @@
+
 struct Test
 	int hello
 	int world
@@ -60,8 +61,25 @@ fn void say_first(listString items)
 	string first = items at 0
 	print(first)
 
-fn void main()
 
+
+# fn void do_work(Sender snd)
+
+#     string result = "some result"
+#     t_chan_send(snd, result)
+
+
+fn void main()
+	# TaskPool pool = t_pool_make()
+	# int task_count = 8
+	# receiverList receivers = empt	
+	# for i in range(task_count)
+	#     (snd, rcv) in t_chan_make()
+	#     t_spawn(pool, move snd, do_work)
+	#     receivers at end = move rc	
+	# for rcv in receivers
+	#     string result = t_chan_recv(move rcv)
+	#     print(result)
 
 	handle_message("hello jupiter!")
 	
