@@ -1,0 +1,41 @@
+
+# Handles parenthesised expressions. Two cases share the `(` open token:
+#   (avow expr)  — forced unwrap: generates `expr.unwrap()`
+#   (f1, f2)     — struct construction: looks up the struct by its field set and
+#                  generates `StructName { f1, f2 }`
+macro primary_paren_expr
+	if kind is "LPAREN"
+		int pe_peek = pos + 1
+		if pe_peek < token_count
+			Token pe_peek_tok = tokens at pe_peek
+			(kind) in pe_peek_tok
+			if kind is "KW_AVOW"
+				int pe_expr_pos = pe_peek + 1
+				ParseResult pe_expr_r = gen_expr(tokens, pe_expr_pos, ctx)
+				string pe_expr_code = pr_code(pe_expr_r)
+				int pe_after = pr_pos(pe_expr_r) + 1
+				string pe_unw = ".unwrap()"
+				strList pe_unw_parts = [pe_expr_code, pe_unw]
+				string pe_unwrap_code = s_join(pe_unw_parts)
+				return make_result(pe_unwrap_code, pe_after)
+			strList pe_fields = empty
+			int pe_cur = pe_peek
+			for if pe_cur < token_count
+				Token pe_field_tok = tokens at pe_cur
+				(kind, value) in pe_field_tok
+				if kind is "RPAREN"
+					pe_cur = pe_cur + 1
+					break
+				else if kind is "COMMA"
+					pe_cur = pe_cur + 1
+				else if kind is "IDENT"
+					pe_fields at end = value
+					pe_cur = pe_cur + 1
+			string pe_struct_name = find_struct_for_fields(struct_reg, pe_fields)
+			string pe_sep = ", "
+			string pe_fields_code = s_join_with(pe_fields, pe_sep)
+			string pe_sco = " { "
+			string pe_scc = " }"
+			strList pe_sct_parts = [pe_struct_name, pe_sco, pe_fields_code, pe_scc]
+			string pe_struct_code = s_join(pe_sct_parts)
+			return make_result(pe_struct_code, pe_cur)

@@ -1,6 +1,6 @@
 
 # Generates a single-argument built-in call by appending a Rust method suffix to the
-# argument's generated expression. Used for `len(x)` → `(x.len() as i32)`.
+# argument expression. Used by ident_expr for `len(x)` → `(x.len() as i32)`.
 fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	(tokens) in ctx
 	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
@@ -10,161 +10,24 @@ fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	string result_code = s_join(res_parts)
 	return make_result(result_code, close)
 
-# Parses a primary expression — the atomic units the expression grammar is built from:
-# integer or string literal, boolean/none keyword, empty list [], list literal [items],
-# struct construction (f1, f2), `(avow expr)` forced unwrap, `not expr`, function call
-# `name(args)`, index read `name at idx`, and plain identifier (potentially an enum
-# variant which must be emitted as `EnumName::Variant` in Rust).
+# Dispatches to one of five sub-cases based on the current token kind. Each macro
+# returns immediately if it recognises the token, otherwise falls through to the next.
+#   primary/literals.deor     — INT FLOAT STRING TRUE FALSE BAD
+#   primary/list_literal.deor — [items]
+#   primary/paren_expr.deor   — (avow x) unwrap and (f1, f2) struct construction
+#   primary/prefix_ops.deor   — move and not
+#   primary/ident_expr.deor   — function call, index read, enum variant, plain name
 fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
 
-	if kind is "INT"
-		int next = pos + 1
-		return make_result(value, next)
-
-	if kind is "FLOAT"
-		int next = pos + 1
-		return make_result(value, next)
-
-	if kind is "STRING"
-		string debug_val = s_debug(value)
-		int next = pos + 1
-		return make_result(debug_val, next)
-
-	if kind is "KW_TRUE"
-		string true_str = "true"
-		int next = pos + 1
-		return make_result(true_str, next)
-
-	if kind is "KW_FALSE"
-		string false_str = "false"
-		int next = pos + 1
-		return make_result(false_str, next)
-
-	if kind is "KW_BAD"
-		string none_str = "None"
-		int next = pos + 1
-		return make_result(none_str, next)
-
-	if kind is "LBRACKET"
-		int inner_pos = pos + 1
-		ParseResult items_r = gen_list_items(tokens, inner_pos, ctx)
-		string items_code = pr_code(items_r)
-		int items_pos = pr_pos(items_r)
-		string vec_open = "vec!["
-		string vec_close = "]"
-		strList list_parts = [vec_open, items_code, vec_close]
-		string list_code = s_join(list_parts)
-		int after_bracket = items_pos + 1
-		return make_result(list_code, after_bracket)
-
-	if kind is "LPAREN"
-		int peek_pos = pos + 1
-		if peek_pos < token_count
-			Token peek_token = tokens at peek_pos
-			(kind) in peek_token
-			if kind is "KW_AVOW"
-				int expr_pos = peek_pos + 1
-				ParseResult expr_r = gen_expr(tokens, expr_pos, ctx)
-				string expr_code = pr_code(expr_r)
-				int after_rparen = pr_pos(expr_r) + 1
-				string unw_suf = ".unwrap()"
-				strList unw_parts = [expr_code, unw_suf]
-				string unwrap_code = s_join(unw_parts)
-				return make_result(unwrap_code, after_rparen)
-			# struct construction expression: (f1, f2, ...)
-			strList fields = empty
-			int cur = peek_pos
-			for if cur < token_count
-				Token field_token = tokens at cur
-				(kind, value) in field_token
-				if kind is "RPAREN"
-					cur = cur + 1
-					break
-				else if kind is "COMMA"
-					cur = cur + 1
-				else if kind is "IDENT"
-					fields at end = value
-					cur = cur + 1
-			string struct_name = find_struct_for_fields(struct_reg, fields)
-			string sep = ", "
-			string fields_code = s_join_with(fields, sep)
-			string sco = " { "
-			string scc = " }"
-			strList sct_parts = [struct_name, sco, fields_code, scc]
-			string struct_code = s_join(sct_parts)
-			return make_result(struct_code, cur)
-
-	if kind is "KW_GIVEUP"
-		int inner_pos = pos + 1
-		ParseResult inner_r = gen_primary(tokens, inner_pos, ctx)
-		return inner_r
-
-	if kind is "KW_NOT"
-		int operand_pos = pos + 1
-		ParseResult operand_r = gen_primary(tokens, operand_pos, ctx)
-		string operand_code = pr_code(operand_r)
-		int operand_pos_end = pr_pos(operand_r)
-		string not_pfx = "!"
-		strList not_parts = [not_pfx, operand_code]
-		string not_code = s_join(not_parts)
-		return make_result(not_code, operand_pos_end)
-
-	if kind is "IDENT"
-		int next_pos = pos + 1
-		if next_pos < token_count
-			Token next_token = tokens at next_pos
-			(kind) in next_token
-
-			# function call: name(args)
-			if kind is "LPAREN"
-				string func_name = value
-				int args_pos = next_pos + 1
-				if func_name is "len"
-					string len_sfx = ".len() as i32"
-					ParseResult len_r = gen_unary_method(args_pos, len_sfx, ctx)
-					string len_code = pr_code(len_r)
-					int len_end = pr_pos(len_r)
-					string lpn = "("
-					string rpn = ")"
-					strList wpd_parts = [lpn, len_code, rpn]
-					string wrapped = s_join(wpd_parts)
-					return make_result(wrapped, len_end)
-				else if func_name is "crash"
-					ParseResult crash_r = gen_call_args(tokens, args_pos, ctx)
-					string crash_code = pr_code(crash_r)
-					int crash_end = pr_pos(crash_r)
-					string pan_pfx = "panic!(\"{}\", "
-					string pan_sfx = ")"
-					strList pan_parts = [pan_pfx, crash_code, pan_sfx]
-					string panic_code = s_join(pan_parts)
-					int after_crash = crash_end + 1
-					return make_result(panic_code, after_crash)
-				# generic call
-				ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
-				string args_code = pr_code(args_r)
-				int args_end = pr_pos(args_r)
-				int after_paren = args_end + 1
-				string clp = "("
-				string crp = ")"
-				strList call_parts = [func_name, clp, args_code, crp]
-				string call_code = s_join(call_parts)
-				return make_result(call_code, after_paren)
-
-			macro_run codegen_expr_at
-
-		# check enum variant registry
-		string variant_enum = reg_get(variant_reg, value)
-		if not is_empty(variant_enum)
-			string dbl_colon = "::"
-			strList var_parts = [variant_enum, dbl_colon, value]
-			string variant_code = s_join(var_parts)
-			return make_result(variant_code, next_pos)
-
-		return make_result(value, next_pos)
+	macro_run primary_literals
+	macro_run primary_list_literal
+	macro_run primary_paren_expr
+	macro_run primary_prefix_ops
+	macro_run primary_ident_expr
 
 	string unknown = "/* unknown_primary */"
 	int next = pos + 1

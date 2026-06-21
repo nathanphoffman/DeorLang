@@ -1,0 +1,19 @@
+
+# Handles prefix keyword operators that modify the next primary expression.
+#   move expr  — transparently passes through to the inner expression (ownership transfer,
+#                no Rust code difference needed since Deor values are already moved by default)
+#   not expr   — logical negation: prepends `!` to the inner expression code
+macro primary_prefix_ops
+	if kind is "KW_GIVEUP"
+		int po_inner = pos + 1
+		ParseResult po_r = gen_primary(tokens, po_inner, ctx)
+		return po_r
+	if kind is "KW_NOT"
+		int po_operand = pos + 1
+		ParseResult po_operand_r = gen_primary(tokens, po_operand, ctx)
+		string po_code = pr_code(po_operand_r)
+		int po_end = pr_pos(po_operand_r)
+		string po_bang = "!"
+		strList po_parts = [po_bang, po_code]
+		string po_not_code = s_join(po_parts)
+		return make_result(po_not_code, po_end)
