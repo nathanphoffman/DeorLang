@@ -1,0 +1,55 @@
+
+# Builds the enum and variant registries.
+# enum_reg:    [deorName, RustName] pairs (deorName lowercase, RustName PascalCase)
+# variant_reg: [variantName, rustEnumName] pairs for every variant of every enum
+
+fn strList build_enum_reg(tokenList tokens)
+	strList result = empty
+	int token_count = len(tokens)
+	for index in range(token_count)
+		Token token = tokens at index
+		(kind, value, line) in token
+		if kind is "KW_ENUM"
+			int name_pos = index + 1
+			if name_pos < token_count
+				Token name_token = tokens at name_pos
+				(value) in name_token
+				string enum_name = value
+				string rust_name = s_pascal(enum_name)
+				result at end = enum_name
+				result at end = rust_name
+	return result
+
+fn strList build_variant_reg(tokenList tokens, strList enum_reg)
+	strList result = empty
+	int token_count = len(tokens)
+	int raw_i = 0
+	for if raw_i < token_count
+		Token token = tokens at raw_i
+		(kind, value, line) in token
+		if kind is "KW_ENUM"
+			int name_pos = raw_i + 1
+			if name_pos < token_count
+				Token name_token = tokens at name_pos
+				(value) in name_token
+				string enum_name = value
+				string rust_name = reg_get(enum_reg, enum_name)
+				raw_i = name_pos + 1
+				for if raw_i < token_count
+					Token skip_token = tokens at raw_i
+					(kind) in skip_token
+					raw_i = raw_i + 1
+					if kind is "INDENT"
+						break
+				for if raw_i < token_count
+					Token variant_token = tokens at raw_i
+					(kind, value) in variant_token
+					raw_i = raw_i + 1
+					if kind is "DEDENT"
+						break
+					else if kind is "IDENT"
+						result at end = value
+						result at end = rust_name
+				continue
+		raw_i = raw_i + 1
+	return result

@@ -1,0 +1,30 @@
+
+# Resolves a Deor type name to its full Rust type string. Checks the enum registry first
+# (returning the PascalCase Rust name), then the shape registry (expanding to Vec<T> or
+# fn(T)->U), then falls back to render_rust_type for primitives and user-defined structs.
+fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
+	string enum_rust = reg_get(enum_reg, type_name)
+	if not is_empty(enum_rust)
+		return enum_rust
+	string elem_type = reg_get(shape_reg, type_name)
+	if not is_empty(elem_type)
+		string raw_prefix = "raw:"
+		string fn_prefix = "fn:"
+		string colon = ":"
+		if s_starts_with(elem_type, raw_prefix)
+			return type_name
+		if s_starts_with(elem_type, fn_prefix)
+			strList parts = s_split(elem_type, colon)
+			string in_type = parts at 1
+			string out_type = parts at 2
+			string rust_in = render_rust_type(in_type)
+			string rust_out = render_rust_type(out_type)
+			if is_empty(rust_out)
+				strList fn_no_ret = ["fn(", rust_in, ")"]
+				return s_join(fn_no_ret)
+			strList fn_with_ret = ["fn(", rust_in, ") -> ", rust_out]
+			return s_join(fn_with_ret)
+		string rust_elem = render_rust_type(elem_type)
+		strList vec_parts = ["Vec<", rust_elem, ">"]
+		return s_join(vec_parts)
+	return render_rust_type(type_name)

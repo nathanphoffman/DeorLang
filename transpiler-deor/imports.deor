@@ -44,6 +44,13 @@ import "transpiler-deor/tokens_validation.deor"
 import "transpiler-deor/utility_macros.deor"
 
 # registry and codegen
+import "transpiler-deor/registry/struct.deor"
+import "transpiler-deor/registry/shape.deor"
+import "transpiler-deor/registry/enum.deor"
+import "transpiler-deor/registry/validator_type.deor"
+import "transpiler-deor/registry/var_type.deor"
+import "transpiler-deor/registry/type_resolve.deor"
+import "transpiler-deor/registry/mut_scan.deor"
 import "transpiler-deor/registry.deor"
 import "transpiler-deor/codegen_expr/at.deor"
 import "transpiler-deor/codegen_expr/struct_lookup.deor"

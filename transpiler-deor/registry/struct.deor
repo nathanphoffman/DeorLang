@@ -1,0 +1,61 @@
+
+# Builds the struct registry: a flat strList of [structName, "field1,field2,..."] pairs.
+# Helpers walk a struct body to collect field names joined by commas.
+
+fn ParseResult skip_to_block_start(tokenList tokens, int start)
+	int token_count = len(tokens)
+	int cur = start
+	for skip_index in (start, token_count)
+		Token skip_token = tokens at skip_index
+		(kind) in skip_token
+		cur = skip_index + 1
+		if kind is "INDENT"
+			break
+	string emp = ""
+	return make_result(emp, cur)
+
+fn ParseResult collect_struct_fields(tokenList tokens, int start)
+	int token_count = len(tokens)
+	strList fields = empty
+	int cur = start
+	for field_index in (start, token_count)
+		Token field_token = tokens at field_index
+		(kind) in field_token
+		if kind is "DEDENT"
+			cur = field_index + 1
+			break
+		else if kind is "IDENT"
+			int fname_pos = field_index + 1
+			if fname_pos < token_count
+				Token fname_token = tokens at fname_pos
+				(kind, value) in fname_token
+				if kind is "IDENT"
+					fields at end = value
+					cur = fname_pos + 1
+	string comma = ","
+	string fields_joined = s_join_with(fields, comma)
+	return make_result(fields_joined, cur)
+
+fn strList build_struct_reg(tokenList tokens)
+	strList result = empty
+	int token_count = len(tokens)
+	int raw_i = 0
+	for if raw_i < token_count
+		Token token = tokens at raw_i
+		(kind, value, line) in token
+		if kind is "KW_STRUCT"
+			int name_pos = raw_i + 1
+			if name_pos < token_count
+				Token name_token = tokens at name_pos
+				(kind, value) in name_token
+				if kind is "IDENT"
+					int blk_start = name_pos + 1
+					ParseResult block_r = skip_to_block_start(tokens, blk_start)
+					int fld_start = pr_pos(block_r)
+					ParseResult fields_r = collect_struct_fields(tokens, fld_start)
+					result at end = value
+					result at end = pr_code(fields_r)
+					raw_i = pr_pos(fields_r)
+					continue
+		raw_i = raw_i + 1
+	return result

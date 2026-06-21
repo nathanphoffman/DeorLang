@@ -1,0 +1,46 @@
+
+# Mutability pre-scan helpers. These run before code generation to determine which
+# variables need `let mut` in the generated Rust.
+
+# Finds the DEDENT token that closes the block opened by the INDENT at indent_pos.
+# Tracks nesting depth so inner blocks don't terminate the search prematurely.
+fn int find_block_end(tokenList tokens, int indent_pos)
+	int token_count = len(tokens)
+	int depth = 1
+	int result = indent_pos
+	int start = indent_pos + 1
+	for raw_i in (start, token_count)
+		Token token = tokens at raw_i
+		(kind, value, line) in token
+		if kind is "INDENT"
+			depth = depth + 1
+		else if kind is "DEDENT"
+			depth = depth - 1
+			if depth is 0
+				result = raw_i
+				break
+	return result
+
+# Scans a block's token range for re-assignment patterns (IDENT EQUALS ...) and `using`
+# statements, collecting every variable name that is written after its initial binding.
+fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
+	strList result = empty
+	for raw_i in (start, end_pos)
+		Token token = tokens at raw_i
+		(kind, value, line) in token
+		if kind is "EQUALS"
+			int prev_pos = raw_i - 1
+			if prev_pos >= start
+				Token prev_token = tokens at prev_pos
+				(kind, value) in prev_token
+				if kind is "IDENT"
+					if not list_has(result, value)
+						result at end = value
+		if kind is "KW_USING"
+			int using_var_pos = raw_i + 1
+			if using_var_pos < end_pos
+				Token using_var_token = tokens at using_var_pos
+				(value) in using_var_token
+				if not list_has(result, value)
+					result at end = value
+	return result
