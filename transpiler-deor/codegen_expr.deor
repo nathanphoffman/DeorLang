@@ -359,6 +359,25 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 				if kind is "KW_NOT"
 					operator_str = "is not"
 					after_op = after_op + 1
+				# "is empty" → left.is_empty()
+				if kind is "KW_EMPTY"
+					string ie_sfx = ".is_empty()"
+					strList ie_parts = [left_code, ie_sfx]
+					left_code = s_join(ie_parts)
+					cur_pos = after_op + 1
+					continue
+		# "is not empty" → !left.is_empty()
+		if operator_str is "is not"
+			if after_op < token_count
+				Token maybe_empty = tokens at after_op
+				(kind) in maybe_empty
+				if kind is "KW_EMPTY"
+					string ine_pfx = "!"
+					string ine_sfx = ".is_empty()"
+					strList ine_parts = [ine_pfx, left_code, ine_sfx]
+					left_code = s_join(ine_parts)
+					cur_pos = after_op + 1
+					continue
 		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
 		string rhs_code = pr_code(rhs_r)
 		int rhs_pos = pr_pos(rhs_r)

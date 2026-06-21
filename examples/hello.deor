@@ -69,8 +69,8 @@ fn void main()
 	macro_run print_message
 
 	listString thing = empty
-	# if thing is empty
-	# 	print("array is empty")
+	if thing is empty
+		print("array is empty")
 
 	thing = ["test","test1"]
 	
@@ -123,6 +123,12 @@ fn void main()
 	hello as 1
 	world as 2
 	t as (hello,world)
+
+	#block
+	print("block works")
+	string inner_block = "this is an inner block"
+
+	print(inner_block)
 
 	(world) in t
 

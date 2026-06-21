@@ -2529,6 +2529,27 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     operator_str = "is not".to_string();
                     after_op = after_op + 1;
                 }
+                if kind == "KW_EMPTY" {
+                    let mut ie_sfx: String = ".is_empty()".to_string();
+                    let mut ie_parts: Vec<String> = vec![left_code.clone(), ie_sfx.clone()];
+                    left_code = s_join(ie_parts.clone());
+                    cur_pos = after_op + 1;
+                    continue;
+                }
+            }
+        }
+        if operator_str == "is not" {
+            if after_op < token_count {
+                let mut maybe_empty: Token = tokens[after_op as usize].clone();
+                let kind = maybe_empty.kind.clone();
+                if kind == "KW_EMPTY" {
+                    let mut ine_pfx: String = "!".to_string();
+                    let mut ine_sfx: String = ".is_empty()".to_string();
+                    let mut ine_parts: Vec<String> = vec![ine_pfx.clone(), left_code.clone(), ine_sfx.clone()];
+                    left_code = s_join(ine_parts.clone());
+                    cur_pos = after_op + 1;
+                    continue;
+                }
             }
         }
         let mut rhs_r: ParseResult = gen_primary(tokens.clone(), after_op.clone(), ctx.clone());
