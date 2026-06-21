@@ -1,10 +1,5 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
-# Left over from last audit
-
-AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
-
-
 # In progress
 
 - Considering removing the ! macro and keepign macro_run it is more deorian

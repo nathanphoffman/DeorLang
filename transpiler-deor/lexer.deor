@@ -269,16 +269,6 @@ fn tokenList tokenize(string source, string path)
 					else
 						break
 				string word_kind = word_to_kind(word)
-				if char_index < char_count
-					string maybe_bang = chars at char_index
-					if maybe_bang is "!"
-						char_index = char_index + 1
-						string kind_macro_run = "KW_MACRO_RUN"
-						string macro_run_val = "macro_run"
-						string kind_ident = "IDENT"
-						tokens at end = make_token(kind_macro_run, macro_run_val, meta)
-						tokens at end = make_token(kind_ident, word, meta)
-						continue
 				tokens at end = make_token(word_kind, word, meta)
 				continue
 

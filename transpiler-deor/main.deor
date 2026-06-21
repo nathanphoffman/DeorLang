@@ -99,19 +99,19 @@ fn void main()
 		string output_path = args at 1
 
 		string _timer_label = "[timer] load+dedup: "
-		start_timer!
+		macro_run start_timer
 		tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
-		end_timer!
+		macro_run end_timer
 
 		string _timer_label = "[timer] macro-expand: "
-		start_timer!
+		macro_run start_timer
 		tokenList tokens = expand_deor_macros(raw_tokens)
-		end_timer!
+		macro_run end_timer
 		validate_tokens(tokens)
 
 		string _timer_label = "[timer] total-codegen: "
-		start_timer!
+		macro_run start_timer
 		string rust_code = generate_rust_from_tokens(tokens)
-		end_timer!
+		macro_run end_timer
 
 		f_write(output_path, rust_code)
