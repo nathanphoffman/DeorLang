@@ -1,0 +1,52 @@
+
+# Generates a Rust newtype struct plus a `new()` constructor from a Deor
+# `type Name(baseType paramName)` declaration. The constructor returns Option<Self>,
+# evaluating the user's predicate: if it passes, wraps the value in Some(TypeName(val));
+# otherwise returns None. This is Deor's mechanism for validated/constrained scalar types.
+fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
+	int start_pos = pos + 1
+	TokenCursor cur = cur_at(tokens, start_pos)
+	using cur
+		(value) in current
+		string type_name = value
+		cur_next() with tokens   # LPAREN
+		cur_next() with tokens   # param_type
+		(value) in current
+		string param_type = value
+		string rust_param_type = render_rust_type(param_type)
+		cur_next() with tokens   # param_name
+		(value) in current
+		string param_name = value
+		cur_next() with tokens   # RPAREN
+		cur_next() with tokens   # NEWLINE
+		cur_skip_to_body() with tokens
+		(pos) in cur
+	TokensRef tokens_ref = tokens_wrap(tokens)
+	ParseResult pred_r = gen_expr(tokens_ref, pos, ctx)
+	string pred_code = pr_code(pred_r)
+	int pred_end = pr_pos(pred_r)
+	TokenCursor cur2 = cur_at(tokens, pred_end)
+	using cur2
+		for if not c_at_end(cur2)
+			(current) in cur2
+			(kind) in current
+			cur_next() with tokens
+			if kind is "DEDENT"
+				break
+		(pos) in cur2
+	string tsc_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
+	string tsc_op = "("
+	string tsc_sfx = ");\n\n"
+	strList tsc_parts = [tsc_pfx, type_name, tsc_op, rust_param_type, tsc_sfx]
+	string struct_code = s_join(tsc_parts)
+	string imp_pfx = "impl "
+	string imp_fn = " {\n    fn new("
+	string imp_col = ": "
+	string imp_ret = ") -> Option<Self> {\n        if "
+	string imp_som = " {\n            Some("
+	string imp_inn = "("
+	string imp_sfx = "))\n        } else {\n            None\n        }\n    }\n}\n\n"
+	strList imp_parts = [imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx]
+	string impl_code = s_join(imp_parts)
+	string type_code = s_cat(move struct_code, move impl_code)
+	return make_result(type_code, pos)

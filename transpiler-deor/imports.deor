@@ -48,6 +48,12 @@ import "transpiler-deor/registry.deor"
 import "transpiler-deor/codegen_expr/at.deor"
 import "transpiler-deor/codegen_expr.deor"
 import "transpiler-deor/codegen_stmt.deor"
+import "transpiler-deor/codegen_decl/struct.deor"
+import "transpiler-deor/codegen_decl/enum.deor"
+import "transpiler-deor/codegen_decl/shape.deor"
+import "transpiler-deor/codegen_decl/validator_type.deor"
+import "transpiler-deor/codegen_decl/function.deor"
+import "transpiler-deor/codegen_decl/raw.deor"
 import "transpiler-deor/codegen_decl.deor"
 
 
