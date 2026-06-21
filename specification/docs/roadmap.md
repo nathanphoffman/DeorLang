@@ -4,16 +4,15 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
+
 # In progress
 
-- Renaming 
-    
+- Considering removing the ! macro and keepign macro_run it is more deorian
 - Make sure proper import paths / relative paths are understood for docs
 
 # More Stuff
 
 remove from loops or clarify it:
-  - r_join[...] in loops.md — references a function that doesn't exist anywhere
 
   Documented Incorrectly (10 items)
   - collections_test.deor example — calls contains and to_upper which don't exist; should be s_contains/s_to_upper

@@ -142,15 +142,15 @@
     },
     "keywords-control": {
       "name": "keyword.control.deor",
-      "match": "\\b(if|else|for|return|break|continue|throw|using|move|block)\\b"
+      "match": "\\b(if|else|for|return|break|continue|crash|using|move|block)\\b"
     },
     "keywords-other": {
       "name": "keyword.other.deor",
-      "match": "\\b(as|in|with|is|and|or|not|avow|of|to|rust|deps|end|remove|at)\\b"
+      "match": "\\b(as|in|with|is|and|or|not|avow|of|to|rust|end|remove|at)\\b"
     },
     "builtin-types": {
       "name": "support.type.deor",
-      "match": "\\b(int|float|bool|string|bytes|list|func|void|macro|macro_run)\\b"
+      "match": "\\b(int|float|bool|string|bytes|list|func|void|macro|macro_run|raw)\\b"
     },
     "constants": {
       "name": "constant.language.deor",
