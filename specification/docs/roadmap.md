@@ -14,11 +14,6 @@ AI DONT TOUCH THIS DOCUMENT THIS IS FOR NATE ONLY
 
 remove from loops or clarify it:
 
-  Documented Incorrectly (10 items)
-  - collections_test.deor example — calls contains and to_upper which don't exist; should be s_contains/s_to_upper
-
-
-
 
 # Roadmap
 Note the roadmap is more to list out my raw notes and get feedback, however it is subject to frequent change and is not written in a singular viewpoint, I frequently will switch from personal to general throughout this.
