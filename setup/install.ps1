@@ -7,9 +7,12 @@ $LibDir   = "$DeorHome\lib"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot  = Split-Path -Parent $ScriptDir
 
-$DefaultProject = "$(Get-Location)\hello-deor"
+$ProjectNameInput = Read-Host "Project name (default: hello)"
+$ProjectName = if ([string]::IsNullOrWhiteSpace($ProjectNameInput)) { "hello" } else { $ProjectNameInput }
+
+$DefaultProject = "$(Get-Location)\$ProjectName"
 while ($true) {
-    $Input = Read-Host "Where would you like to create your starter project? (default: $DefaultProject)"
+    $Input = Read-Host "Where would you like to create your project? (default: $DefaultProject)"
     if ([string]::IsNullOrWhiteSpace($Input)) {
         $ProjectDir = $DefaultProject
     } else {
@@ -21,14 +24,8 @@ while ($true) {
         continue
     }
 
-    $ParentDir = Split-Path -Parent $ProjectDir
-    if (-not (Test-Path -PathType Container $ParentDir)) {
-        Write-Host "  Error: parent directory '$ParentDir' does not exist. Please choose a different path."
-        continue
-    }
-
     if (Test-Path -PathType Container $ProjectDir) {
-        $Confirm = Read-Host "  '$ProjectDir' already exists. Install hello.deor there anyway? [Y/n]"
+        $Confirm = Read-Host "  '$ProjectDir' already exists. Install project there anyway? [Y/n]"
         if ($Confirm -match '^[nN]') { Write-Host "  Aborted."; exit 0 }
     }
 
@@ -41,6 +38,12 @@ New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
 New-Item -ItemType Directory -Force -Path $LibDir | Out-Null
 New-Item -ItemType Directory -Force -Path $ProjectDir | Out-Null
 
+if (-not (Get-Command just -ErrorAction SilentlyContinue)) {
+    Write-Host "  Installing just..."
+    & cargo install just
+    if ($LASTEXITCODE -ne 0) { throw "cargo install just failed" }
+}
+
 Write-Host "  Compiling transpiler..."
 & rustc -O -A warnings "$ScriptDir\out.rs" -o "$BinDir\deor.exe"
 if ($LASTEXITCODE -ne 0) { throw "rustc failed" }
@@ -49,7 +52,11 @@ Write-Host "  Installing lib\..."
 Copy-Item -Recurse -Force "$RepoRoot\lib\*" "$LibDir\"
 
 Write-Host "  Creating starter project..."
-Copy-Item "$ScriptDir\hello.deor" "$ProjectDir\hello.deor"
+Copy-Item "$ScriptDir\hello.deor"   "$ProjectDir\hello.deor"
+Copy-Item "$ScriptDir\.gitignore"   "$ProjectDir\.gitignore"
+Copy-Item "$ScriptDir\justfile"     "$ProjectDir\justfile"
+(Get-Content "$ScriptDir\Cargo.toml") -replace '{{PROJECT_NAME}}', $ProjectName |
+    Set-Content "$ProjectDir\Cargo.toml"
 
 $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
 if ($userPath -notlike "*$BinDir*") {
@@ -65,4 +72,6 @@ Write-Host "Done! Restart your terminal for PATH changes to take effect."
 Write-Host ""
 Write-Host "To run your hello world:"
 Write-Host "  cd `"$ProjectDir`""
-Write-Host "  deor hello.deor hello.rs; rustc hello.rs -o hello.exe; .\hello.exe"
+Write-Host "  just run"
+Write-Host ""
+Write-Host "  (Without just: deor hello.deor build\main.rs; cargo run)"

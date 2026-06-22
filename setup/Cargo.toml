@@ -1,0 +1,10 @@
+[package]
+name = "{{PROJECT_NAME}}"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "{{PROJECT_NAME}}"
+path = "build/main.rs"
+
+[dependencies]

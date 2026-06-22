@@ -15,6 +15,9 @@ if [ -f "$SCRIPT_DIR/out.rs" ] && [ -d "$SCRIPT_DIR/../lib" ]; then
     OUT_RS="$SCRIPT_DIR/out.rs"
     LIB_SRC="$SCRIPT_DIR/../lib"
     HELLO_SRC="$SCRIPT_DIR/hello.deor"
+    GITIGNORE_SRC="$SCRIPT_DIR/.gitignore"
+    CARGO_SRC="$SCRIPT_DIR/Cargo.toml"
+    JUSTFILE_SRC="$SCRIPT_DIR/justfile"
 else
     echo "  Downloading from GitHub..."
     TMP="$(mktemp -d)"
@@ -24,11 +27,18 @@ else
     OUT_RS="$TMP/DeorLang-$BRANCH/setup/out.rs"
     LIB_SRC="$TMP/DeorLang-$BRANCH/lib"
     HELLO_SRC="$TMP/DeorLang-$BRANCH/setup/hello.deor"
+    GITIGNORE_SRC="$TMP/DeorLang-$BRANCH/setup/.gitignore"
+    CARGO_SRC="$TMP/DeorLang-$BRANCH/setup/Cargo.toml"
+    JUSTFILE_SRC="$TMP/DeorLang-$BRANCH/setup/justfile"
 fi
 
-DEFAULT_PROJECT="$(pwd)/hello-deor"
+printf "Project name (default: hello): " > /dev/tty
+read -r PROJECT_NAME < /dev/tty
+[ -z "$PROJECT_NAME" ] && PROJECT_NAME="hello"
+
+DEFAULT_PROJECT="$(pwd)/$PROJECT_NAME"
 while true; do
-    printf "Where would you like to create your starter project? (default: %s): " "$DEFAULT_PROJECT" > /dev/tty
+    printf "Where would you like to create your project? (default: %s): " "$DEFAULT_PROJECT" > /dev/tty
     read -r PROJECT_DIR < /dev/tty
     [ -z "$PROJECT_DIR" ] && PROJECT_DIR="$DEFAULT_PROJECT"
     case "$PROJECT_DIR" in
@@ -41,14 +51,8 @@ while true; do
         continue
     fi
 
-    PARENT_DIR="$(dirname "$PROJECT_DIR")"
-    if [ ! -d "$PARENT_DIR" ]; then
-        echo "  Error: parent directory '$PARENT_DIR' does not exist. Please choose a different path." > /dev/tty
-        continue
-    fi
-
     if [ -d "$PROJECT_DIR" ]; then
-        printf "  '%s' already exists. Install hello.deor there anyway? [Y/n]: " "$PROJECT_DIR" > /dev/tty
+        printf "  '%s' already exists. Install project there anyway? [Y/n]: " "$PROJECT_DIR" > /dev/tty
         read -r CONFIRM < /dev/tty
         case "$CONFIRM" in
             [nN]*) echo "  Aborted." > /dev/tty; exit 0 ;;
@@ -64,6 +68,11 @@ mkdir -p "$BIN_DIR"
 mkdir -p "$LIB_DIR"
 mkdir -p "$PROJECT_DIR"
 
+if ! command -v just > /dev/null 2>&1; then
+    echo "  Installing just..."
+    cargo install just
+fi
+
 echo "  Compiling transpiler..."
 rustc -O -A warnings "$OUT_RS" -o "$BIN_DIR/deor"
 
@@ -72,6 +81,9 @@ cp -r "$LIB_SRC/." "$LIB_DIR/"
 
 echo "  Creating starter project..."
 cp "$HELLO_SRC" "$PROJECT_DIR/hello.deor"
+cp "$GITIGNORE_SRC" "$PROJECT_DIR/.gitignore"
+cp "$JUSTFILE_SRC" "$PROJECT_DIR/justfile"
+sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "$CARGO_SRC" > "$PROJECT_DIR/Cargo.toml"
 
 cat > "$ENV_FILE" << EOF
 export PATH="$BIN_DIR:\$PATH"
@@ -99,4 +111,6 @@ echo "  . \"$ENV_FILE\""
 echo ""
 echo "To run your hello world:"
 echo "  cd \"$PROJECT_DIR\""
-echo "  deor hello.deor hello.rs && rustc hello.rs -o hello && ./hello"
+echo "  just run"
+echo ""
+echo "  (Without just: deor hello.deor build/main.rs && cargo run)"
