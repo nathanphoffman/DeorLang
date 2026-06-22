@@ -18,7 +18,7 @@ macro stmt_structural
 				strList su_avw_parts = [pad, su_expr_code, su_avw_sfx]
 				string su_avow_code = s_join(su_avw_parts)
 				int su_avow_next = adv_nl_ref(su_after_rp, tokens)
-				return make_result(su_avow_code, su_avow_next)
+				return make_result(move su_avow_code, su_avow_next)
 		return gen_destructure(pos, depth, ctx)
 	if kind is "KW_USING"
 		int su_var_pos = pos + 1

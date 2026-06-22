@@ -127,4 +127,4 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	string frc_cb = "}\n"
 	strList frc_parts = [pad, frc_kw, var_name, frc_in, range_expr, frc_ob, body_code, pad, frc_cb]
 	string for_code = s_join(frc_parts)
-	return make_result(for_code, body_end)
+	return make_result(move for_code, body_end)

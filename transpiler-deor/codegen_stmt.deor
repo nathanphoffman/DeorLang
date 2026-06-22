@@ -51,7 +51,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		strList raw_parts = [pad, raw_let, raw_mut_kw, raw_var_name, raw_eq, raw_val_code, raw_sc]
 		string raw_code = s_join(raw_parts)
 		int raw_next = adv_nl_ref(raw_val_end, tokens)
-		return make_result(raw_code, raw_next)
+		return make_result(move raw_code, raw_next)
 
 	if kind is "KW_CONST"
 		int const_type_pos = pos + 1
@@ -68,7 +68,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		int next_pos = pos + 1
 		if next_pos >= token_count
 			string eof_code = "/* eof */\n"
-			return make_result(eof_code, next_pos)
+			return make_result(move eof_code, next_pos)
 		Token next_token = tokens at next_pos
 		(kind) in next_token
 
@@ -100,7 +100,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			strList asg_parts = [pad, ident_name, asg_eq, val_code, assign_suffix, asg_sc]
 			string asgn_code = s_join(asg_parts)
 			int asgn_next = adv_nl_ref(val_end, tokens)
-			return make_result(asgn_code, asgn_next)
+			return make_result(move asgn_code, asgn_next)
 
 		# Type name = expr  (typed binding)
 		if kind is "IDENT"
@@ -116,4 +116,4 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	strList unh_parts = [unh_pfx, kind, unh_sfx]
 	string unhand = s_join(unh_parts)
 	int unhand_next = pos + 1
-	return make_result(unhand, unhand_next)
+	return make_result(move unhand, unhand_next)

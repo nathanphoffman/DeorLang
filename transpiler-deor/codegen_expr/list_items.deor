@@ -33,4 +33,4 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 		cur = item_pos
 	string sep = ", "
 	string items_str = s_join_with(item_codes, sep)
-	return make_result(items_str, cur)
+	return make_result(move items_str, cur)

@@ -49,4 +49,4 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 	strList imp_parts = [imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx]
 	string impl_code = s_join(imp_parts)
 	string type_code = s_cat(move struct_code, move impl_code)
-	return make_result(type_code, pos)
+	return make_result(move type_code, pos)

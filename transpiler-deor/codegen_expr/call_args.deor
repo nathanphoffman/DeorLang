@@ -43,4 +43,4 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		cur = arg_pos
 	string sep = ", "
 	string args_str = s_join_with(arg_codes, sep)
-	return make_result(args_str, cur)
+	return make_result(move args_str, cur)

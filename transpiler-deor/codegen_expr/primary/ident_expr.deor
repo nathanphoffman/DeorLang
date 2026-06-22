@@ -22,7 +22,7 @@ macro primary_ident_expr
 					string ie_rp = ")"
 					strList ie_len_parts = [ie_lp, ie_len_code, ie_rp]
 					string ie_len_wrapped = s_join(ie_len_parts)
-					return make_result(ie_len_wrapped, ie_len_end)
+					return make_result(move ie_len_wrapped, ie_len_end)
 				else if ie_func is "crash"
 					ParseResult ie_crash_r = gen_call_args(tokens, ie_args_pos, ctx)
 					string ie_crash_code = pr_code(ie_crash_r)
@@ -32,7 +32,7 @@ macro primary_ident_expr
 					strList ie_pan_parts = [ie_pan_pfx, ie_crash_code, ie_pan_sfx]
 					string ie_panic_code = s_join(ie_pan_parts)
 					int ie_after_crash = ie_crash_end + 1
-					return make_result(ie_panic_code, ie_after_crash)
+					return make_result(move ie_panic_code, ie_after_crash)
 				ParseResult ie_args_r = gen_call_args(tokens, ie_args_pos, ctx)
 				string ie_args_code = pr_code(ie_args_r)
 				int ie_args_end = pr_pos(ie_args_r)
@@ -41,7 +41,7 @@ macro primary_ident_expr
 				string ie_rp = ")"
 				strList ie_call_parts = [ie_func, ie_lp, ie_args_code, ie_rp]
 				string ie_call_code = s_join(ie_call_parts)
-				return make_result(ie_call_code, ie_after)
+				return make_result(move ie_call_code, ie_after)
 			if kind is "KW_AT"
 				int ie_idx_pos = ie_next + 1
 				ParseResult ie_idx_r = gen_primary(tokens, ie_idx_pos, ctx)
@@ -51,11 +51,11 @@ macro primary_ident_expr
 				string ie_idx_sfx = " as usize].clone()"
 				strList ie_idx_parts = [value, ie_idx_mid, ie_idx_code, ie_idx_sfx]
 				string ie_idx_expr = s_join(ie_idx_parts)
-				return make_result(ie_idx_expr, ie_idx_end)
+				return make_result(move ie_idx_expr, ie_idx_end)
 		string ie_variant_enum = reg_get(variant_reg, value)
 		if not is_empty(ie_variant_enum)
 			string ie_dbl = "::"
 			strList ie_var_parts = [ie_variant_enum, ie_dbl, value]
 			string ie_variant_code = s_join(ie_var_parts)
-			return make_result(ie_variant_code, ie_next)
-		return make_result(value, ie_next)
+			return make_result(move ie_variant_code, ie_next)
+		return make_result(move value, ie_next)

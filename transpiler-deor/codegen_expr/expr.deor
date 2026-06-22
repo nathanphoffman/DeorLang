@@ -85,4 +85,4 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 		left_code = s_join(bin_parts)
 		cur_pos = rhs_pos
 
-	return make_result(left_code, cur_pos)
+	return make_result(move left_code, cur_pos)

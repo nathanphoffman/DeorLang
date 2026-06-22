@@ -12,4 +12,4 @@ macro primary_list_literal
 		strList ll_parts = [ll_open, ll_items_code, ll_close]
 		string ll_code = s_join(ll_parts)
 		int ll_after = ll_items_pos + 1
-		return make_result(ll_code, ll_after)
+		return make_result(move ll_code, ll_after)

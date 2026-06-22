@@ -68,7 +68,7 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 		string aas_empty_code = s_join(aas_emp_parts)
 		int aas_after_empty = after_as + 1
 		int aas_empty_next = adv_nl_ref(aas_after_empty, tokens)
-		return make_result(aas_empty_code, aas_empty_next)
+		return make_result(move aas_empty_code, aas_empty_next)
 
 	# record update: name as source with (f1, f2, ...)
 	if kind is "IDENT"
@@ -130,4 +130,4 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	strList aas_parts2 = [pad, aas_let2, aas_mut2, ident_name, aas_eq2, aas_val_code, aas_suffix, aas_sc2]
 	string aas_code2 = s_join(aas_parts2)
 	int aas_next2 = adv_nl_ref(aas_val_end, tokens)
-	return make_result(aas_code2, aas_next2)
+	return make_result(move aas_code2, aas_next2)

@@ -2332,7 +2332,7 @@ fn gen_call_args(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     }
     let mut sep: String = ", ".to_string();
     let mut args_str: String = s_join_with(arg_codes.clone(), sep.clone());
-    return make_result(args_str.clone(), cur.clone());
+    return make_result(args_str, cur.clone());
 }
 
 fn gen_list_items(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
@@ -2371,7 +2371,7 @@ fn gen_list_items(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     }
     let mut sep: String = ", ".to_string();
     let mut items_str: String = s_join_with(item_codes.clone(), sep.clone());
-    return make_result(items_str.clone(), cur.clone());
+    return make_result(items_str, cur.clone());
 }
 
 fn gen_unary_method(args_pos: i32, suffix: String, ctx: RcCtx) -> ParseResult {
@@ -2381,7 +2381,7 @@ fn gen_unary_method(args_pos: i32, suffix: String, ctx: RcCtx) -> ParseResult {
     let mut close: i32 = pr_pos(inner_r.clone()) + 1;
     let mut res_parts: Vec<String> = vec![inner_code.clone(), suffix.clone()];
     let mut result_code: String = s_join(res_parts.clone());
-    return make_result(result_code.clone(), close.clone());
+    return make_result(result_code, close.clone());
 }
 
 fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
@@ -2398,31 +2398,31 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let line = token.line.clone();
     if kind == "INT" {
         let mut lit_next: i32 = pos + 1.clone();
-        return make_result(value.clone(), lit_next.clone());
+        return make_result(value, lit_next.clone());
     }
     if kind == "FLOAT" {
         let mut lit_next: i32 = pos + 1.clone();
-        return make_result(value.clone(), lit_next.clone());
+        return make_result(value, lit_next.clone());
     }
     if kind == "STRING" {
         let mut lit_debug: String = s_debug(value.clone());
         let mut lit_next: i32 = pos + 1.clone();
-        return make_result(lit_debug.clone(), lit_next.clone());
+        return make_result(lit_debug, lit_next.clone());
     }
     if kind == "KW_TRUE" {
         let mut lit_true: String = "true".to_string();
         let mut lit_next: i32 = pos + 1.clone();
-        return make_result(lit_true.clone(), lit_next.clone());
+        return make_result(lit_true, lit_next.clone());
     }
     if kind == "KW_FALSE" {
         let mut lit_false: String = "false".to_string();
         let mut lit_next: i32 = pos + 1.clone();
-        return make_result(lit_false.clone(), lit_next.clone());
+        return make_result(lit_false, lit_next.clone());
     }
     if kind == "KW_BAD" {
         let mut lit_none: String = "None".to_string();
         let mut lit_next: i32 = pos + 1.clone();
-        return make_result(lit_none.clone(), lit_next.clone());
+        return make_result(lit_none, lit_next.clone());
     }
     if kind == "LBRACKET" {
         let mut ll_inner: i32 = pos + 1.clone();
@@ -2434,7 +2434,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let mut ll_parts: Vec<String> = vec![ll_open.clone(), ll_items_code.clone(), ll_close.clone()];
         let mut ll_code: String = s_join(ll_parts.clone());
         let mut ll_after: i32 = ll_items_pos + 1.clone();
-        return make_result(ll_code.clone(), ll_after.clone());
+        return make_result(ll_code, ll_after.clone());
     }
     if kind == "LPAREN" {
         let mut pe_peek: i32 = pos + 1.clone();
@@ -2449,7 +2449,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut pe_unw: String = ".unwrap()".to_string();
                 let mut pe_unw_parts: Vec<String> = vec![pe_expr_code.clone(), pe_unw.clone()];
                 let mut pe_unwrap_code: String = s_join(pe_unw_parts.clone());
-                return make_result(pe_unwrap_code.clone(), pe_after.clone());
+                return make_result(pe_unwrap_code, pe_after.clone());
             }
             let mut pe_fields: Vec<String> = Vec::new();
             let mut pe_cur: i32 = pe_peek.clone();
@@ -2474,7 +2474,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
             let mut pe_scc: String = " }".to_string();
             let mut pe_sct_parts: Vec<String> = vec![pe_struct_name.clone(), pe_sco.clone(), pe_fields_code.clone(), pe_scc.clone()];
             let mut pe_struct_code: String = s_join(pe_sct_parts.clone());
-            return make_result(pe_struct_code.clone(), pe_cur.clone());
+            return make_result(pe_struct_code, pe_cur.clone());
         }
     }
     if kind == "KW_GIVEUP" {
@@ -2490,7 +2490,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let mut po_bang: String = "!".to_string();
         let mut po_parts: Vec<String> = vec![po_bang.clone(), po_code.clone()];
         let mut po_not_code: String = s_join(po_parts.clone());
-        return make_result(po_not_code.clone(), po_end.clone());
+        return make_result(po_not_code, po_end.clone());
     }
     if kind == "IDENT" {
         let mut ie_next: i32 = pos + 1.clone();
@@ -2509,7 +2509,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     let mut ie_rp: String = ")".to_string();
                     let mut ie_len_parts: Vec<String> = vec![ie_lp.clone(), ie_len_code.clone(), ie_rp.clone()];
                     let mut ie_len_wrapped: String = s_join(ie_len_parts.clone());
-                    return make_result(ie_len_wrapped.clone(), ie_len_end.clone());
+                    return make_result(ie_len_wrapped, ie_len_end.clone());
                 } else if ie_func == "crash" {
                     let mut ie_crash_r: ParseResult = gen_call_args(tokens.clone(), ie_args_pos.clone(), ctx.clone());
                     let mut ie_crash_code: String = pr_code(ie_crash_r.clone());
@@ -2519,7 +2519,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     let mut ie_pan_parts: Vec<String> = vec![ie_pan_pfx.clone(), ie_crash_code.clone(), ie_pan_sfx.clone()];
                     let mut ie_panic_code: String = s_join(ie_pan_parts.clone());
                     let mut ie_after_crash: i32 = ie_crash_end + 1.clone();
-                    return make_result(ie_panic_code.clone(), ie_after_crash.clone());
+                    return make_result(ie_panic_code, ie_after_crash.clone());
                 }
                 let mut ie_args_r: ParseResult = gen_call_args(tokens.clone(), ie_args_pos.clone(), ctx.clone());
                 let mut ie_args_code: String = pr_code(ie_args_r.clone());
@@ -2529,7 +2529,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut ie_rp: String = ")".to_string();
                 let mut ie_call_parts: Vec<String> = vec![ie_func.clone(), ie_lp.clone(), ie_args_code.clone(), ie_rp.clone()];
                 let mut ie_call_code: String = s_join(ie_call_parts.clone());
-                return make_result(ie_call_code.clone(), ie_after.clone());
+                return make_result(ie_call_code, ie_after.clone());
             }
             if kind == "KW_AT" {
                 let mut ie_idx_pos: i32 = ie_next + 1.clone();
@@ -2540,7 +2540,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut ie_idx_sfx: String = " as usize].clone()".to_string();
                 let mut ie_idx_parts: Vec<String> = vec![value.clone(), ie_idx_mid.clone(), ie_idx_code.clone(), ie_idx_sfx.clone()];
                 let mut ie_idx_expr: String = s_join(ie_idx_parts.clone());
-                return make_result(ie_idx_expr.clone(), ie_idx_end.clone());
+                return make_result(ie_idx_expr, ie_idx_end.clone());
             }
         }
         let mut ie_variant_enum: String = reg_get(variant_reg.clone(), value.clone());
@@ -2548,13 +2548,13 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
             let mut ie_dbl: String = "::".to_string();
             let mut ie_var_parts: Vec<String> = vec![ie_variant_enum.clone(), ie_dbl.clone(), value.clone()];
             let mut ie_variant_code: String = s_join(ie_var_parts.clone());
-            return make_result(ie_variant_code.clone(), ie_next.clone());
+            return make_result(ie_variant_code, ie_next.clone());
         }
-        return make_result(value.clone(), ie_next.clone());
+        return make_result(value, ie_next.clone());
     }
     let mut unknown: String = "/* unknown_primary */".to_string();
     let mut next: i32 = pos + 1.clone();
-    return make_result(unknown.clone(), next.clone());
+    return make_result(unknown, next.clone());
 }
 
 fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
@@ -2643,7 +2643,7 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         left_code = s_join(bin_parts.clone());
         cur_pos = rhs_pos;
     }
-    return make_result(left_code.clone(), cur_pos.clone());
+    return make_result(left_code, cur_pos.clone());
 }
 
 fn emit_val(val_code: String, val_kind: String) -> String {
@@ -2777,7 +2777,7 @@ fn gen_block(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         cur = pr_pos(stmt_r.clone());
     }
     let mut block_joined: String = s_join(stmts.clone());
-    return make_result(block_joined.clone(), cur.clone());
+    return make_result(block_joined, cur.clone());
 }
 
 fn gen_if_branch(cond_pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
@@ -2975,7 +2975,7 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut frc_cb: String = "}\n".to_string();
     let mut frc_parts: Vec<String> = vec![pad.clone(), frc_kw.clone(), var_name.clone(), frc_in.clone(), range_expr.clone(), frc_ob.clone(), body_code.clone(), pad.clone(), frc_cb.clone()];
     let mut for_code: String = s_join(frc_parts.clone());
-    return make_result(for_code.clone(), body_end.clone());
+    return make_result(for_code, body_end.clone());
 }
 
 fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
@@ -3044,7 +3044,7 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut aas_empty_code: String = s_join(aas_emp_parts.clone());
         let mut aas_after_empty: i32 = after_as + 1.clone();
         let mut aas_empty_next: i32 = adv_nl_ref(aas_after_empty.clone(), tokens.clone());
-        return make_result(aas_empty_code.clone(), aas_empty_next.clone());
+        return make_result(aas_empty_code, aas_empty_next.clone());
     }
     if kind == "IDENT" {
         let mut aas_with_pos: i32 = after_as + 1.clone();
@@ -3114,7 +3114,7 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut aas_parts2: Vec<String> = vec![pad.clone(), aas_let2.clone(), aas_mut2.clone(), ident_name.clone(), aas_eq2.clone(), aas_val_code.clone(), aas_suffix.clone(), aas_sc2.clone()];
     let mut aas_code2: String = s_join(aas_parts2.clone());
     let mut aas_next2: i32 = adv_nl_ref(aas_val_end.clone(), tokens.clone());
-    return make_result(aas_code2.clone(), aas_next2.clone());
+    return make_result(aas_code2, aas_next2.clone());
 }
 
 fn gen_call_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
@@ -3231,7 +3231,7 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 let mut app_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), app_pfx.clone(), app_val.clone(), app_sfx.clone()];
                 let mut app_code: String = s_join(app_parts.clone());
                 let mut app_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
-                return make_result(app_code.clone(), app_next.clone());
+                return make_result(app_code, app_next.clone());
             }
             let mut idx_r: ParseResult = gen_expr(tokens.clone(), after_at.clone(), ctx.clone());
             let mut idx_code: String = pr_code(idx_r.clone());
@@ -3249,7 +3249,7 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut idw_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), idw_op.clone(), idx_code.clone(), idw_mid.clone(), idx_val.clone(), idw_sfx.clone()];
             let mut idw_code: String = s_join(idw_parts.clone());
             let mut idw_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
-            return make_result(idw_code.clone(), idw_next.clone());
+            return make_result(idw_code, idw_next.clone());
         }
     }
     if kind == "KW_REMOVE" {
@@ -3262,14 +3262,14 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut rem_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), rem_pfx.clone(), idx_code.clone(), rem_sfx.clone()];
         let mut rem_code: String = s_join(rem_parts.clone());
         let mut rem_next: i32 = adv_nl_ref(idx_end.clone(), tokens.clone());
-        return make_result(rem_code.clone(), rem_next.clone());
+        return make_result(rem_code, rem_next.clone());
     }
     let mut lm_unh_pfx: String = "/* unhandled_list_mut(".to_string();
     let mut lm_unh_sfx: String = ") */\n".to_string();
     let mut lm_unh_parts: Vec<String> = vec![lm_unh_pfx.clone(), kind.clone(), lm_unh_sfx.clone()];
     let mut lm_unhand: String = s_join(lm_unh_parts.clone());
     let mut lm_next: i32 = pos + 1.clone();
-    return make_result(lm_unhand.clone(), lm_next.clone());
+    return make_result(lm_unhand, lm_next.clone());
 }
 
 fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
@@ -3303,7 +3303,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut err_msg: String = "/* error: use 'bad' not 'empty' for validator types */\n".to_string();
             let mut err_parts: Vec<String> = vec![pad.clone(), err_msg.clone()];
             let mut err_code: String = s_join(err_parts.clone());
-            return make_result(err_code.clone(), after_empty.clone());
+            return make_result(err_code, after_empty.clone());
         }
         if is_shape {
             let mut sh_pfx: String = "let mut ".to_string();
@@ -3311,12 +3311,12 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut sh_sfx: String = " = Vec::new();\n".to_string();
             let mut sh_parts: Vec<String> = vec![pad.clone(), sh_pfx.clone(), var_name.clone(), sh_mid.clone(), rust_type.clone(), sh_sfx.clone()];
             let mut sh_code: String = s_join(sh_parts.clone());
-            return make_result(sh_code.clone(), after_empty.clone());
+            return make_result(sh_code, after_empty.clone());
         }
         let mut err_msg: String = "/* error: empty is only valid for list shapes */\n".to_string();
         let mut err_parts: Vec<String> = vec![pad.clone(), err_msg.clone()];
         let mut err_code: String = s_join(err_parts.clone());
-        return make_result(err_code.clone(), after_empty.clone());
+        return make_result(err_code, after_empty.clone());
     }
     if kind == "LPAREN" {
         let mut peek_pos: i32 = val_pos + 1.clone();
@@ -3368,7 +3368,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut scc_parts: Vec<String> = vec![pad.clone(), scc_let.clone(), mut_kw.clone(), var_name.clone(), scc_eq.clone(), var_type.clone(), scc_ob.clone(), fields_code.clone(), scc_cb.clone()];
             let mut sc_code: String = s_join(scc_parts.clone());
             let mut sc_next: i32 = adv_nl_ref(fend.clone(), tokens.clone());
-            return make_result(sc_code.clone(), sc_next.clone());
+            return make_result(sc_code, sc_next.clone());
         }
         let mut inner_pos: i32 = peek_pos + 1.clone();
         let mut inner_r: ParseResult = gen_expr(tokens.clone(), inner_pos.clone(), ctx.clone());
@@ -3396,7 +3396,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut awc_parts: Vec<String> = vec![pad.clone(), awc_let.clone(), var_name.clone(), awc_col.clone(), rust_type.clone(), awc_eq.clone(), unwrap_expr.clone(), awc_sc.clone()];
         let mut aw_code: String = s_join(awc_parts.clone());
         let mut aw_next: i32 = adv_nl_ref(after_rparen.clone(), tokens.clone());
-        return make_result(aw_code.clone(), aw_next.clone());
+        return make_result(aw_code, aw_next.clone());
     }
     if kind == "LBRACKET" {
         let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -3409,7 +3409,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut lst_parts: Vec<String> = vec![pad.clone(), lst_pfx.clone(), var_name.clone(), lst_col.clone(), rust_type.clone(), lst_eq.clone(), val_code.clone(), lst_sc.clone()];
         let mut lst_code: String = s_join(lst_parts.clone());
         let mut lst_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
-        return make_result(lst_code.clone(), lst_next.clone());
+        return make_result(lst_code, lst_next.clone());
     }
     if kind == "KW_BAD" {
         let mut bad_is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
@@ -3421,12 +3421,12 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut non_sfx: String = "> = None;\n".to_string();
             let mut non_parts: Vec<String> = vec![pad.clone(), non_pfx.clone(), var_name.clone(), non_mid.clone(), rust_type.clone(), non_sfx.clone()];
             let mut none_code: String = s_join(non_parts.clone());
-            return make_result(none_code.clone(), bad_next.clone());
+            return make_result(none_code, bad_next.clone());
         }
         let mut bad_err: String = "/* error: bad is only valid for validator types */\n".to_string();
         let mut bad_err_parts: Vec<String> = vec![pad.clone(), bad_err.clone()];
         let mut bad_err_code: String = s_join(bad_err_parts.clone());
-        return make_result(bad_err_code.clone(), bad_next.clone());
+        return make_result(bad_err_code, bad_next.clone());
     }
     let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
     if is_validator {
@@ -3446,7 +3446,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut vld_parts: Vec<String> = vec![pad.clone(), vld_let.clone(), mut_kw.clone(), var_name.clone(), vld_opt.clone(), var_type.clone(), vld_new.clone(), var_type.clone(), vld_nop.clone(), val_code.clone(), vld_sc.clone()];
         let mut vld_code: String = s_join(vld_parts.clone());
         let mut vld_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
-        return make_result(vld_code.clone(), vld_next.clone());
+        return make_result(vld_code, vld_next.clone());
     }
     let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
     let mut val_code: String = pr_code(val_r.clone());
@@ -3480,7 +3480,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut bnd_parts: Vec<String> = vec![pad.clone(), bnd_let.clone(), mut_kw.clone(), var_name.clone(), bnd_col.clone(), rust_type.clone(), bnd_eq.clone(), val_code.clone(), suffix.clone(), bnd_sc.clone()];
     let mut bind_code: String = s_join(bnd_parts.clone());
     let mut bind_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
-    return make_result(bind_code.clone(), bind_next.clone());
+    return make_result(bind_code, bind_next.clone());
 }
 
 fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
@@ -3518,7 +3518,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut sf_ret_parts: Vec<String> = vec![pad.clone(), sf_ret_kw.clone(), sf_val_code.clone(), sf_suffix.clone(), sf_ret_sc.clone()];
         let mut sf_ret_code: String = s_join(sf_ret_parts.clone());
         let mut sf_ret_next: i32 = adv_nl_ref(sf_val_end.clone(), tokens.clone());
-        return make_result(sf_ret_code.clone(), sf_ret_next.clone());
+        return make_result(sf_ret_code, sf_ret_next.clone());
     }
     if kind == "KW_BREAK" {
         let mut sf_brk_kw: String = "break;\n".to_string();
@@ -3526,7 +3526,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut sf_brk_code: String = s_join(sf_brk_parts.clone());
         let mut sf_brk_n: i32 = pos + 1.clone();
         let mut sf_brk_next: i32 = adv_nl_ref(sf_brk_n.clone(), tokens.clone());
-        return make_result(sf_brk_code.clone(), sf_brk_next.clone());
+        return make_result(sf_brk_code, sf_brk_next.clone());
     }
     if kind == "KW_CONTINUE" {
         let mut sf_cnt_kw: String = "continue;\n".to_string();
@@ -3534,7 +3534,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut sf_cnt_code: String = s_join(sf_cnt_parts.clone());
         let mut sf_cnt_n: i32 = pos + 1.clone();
         let mut sf_cnt_next: i32 = adv_nl_ref(sf_cnt_n.clone(), tokens.clone());
-        return make_result(sf_cnt_code.clone(), sf_cnt_next.clone());
+        return make_result(sf_cnt_code, sf_cnt_next.clone());
     }
     if kind == "KW_BLOCK" {
         let mut sb_nl: i32 = pos + 1.clone();
@@ -3588,7 +3588,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 let mut su_avw_parts: Vec<String> = vec![pad.clone(), su_expr_code.clone(), su_avw_sfx.clone()];
                 let mut su_avow_code: String = s_join(su_avw_parts.clone());
                 let mut su_avow_next: i32 = adv_nl_ref(su_after_rp.clone(), tokens.clone());
-                return make_result(su_avow_code.clone(), su_avow_next.clone());
+                return make_result(su_avow_code, su_avow_next.clone());
             }
         }
         return gen_destructure(pos.clone(), depth.clone(), ctx.clone());
@@ -3632,7 +3632,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut raw_parts: Vec<String> = vec![pad.clone(), raw_let.clone(), raw_mut_kw.clone(), raw_var_name.clone(), raw_eq.clone(), raw_val_code.clone(), raw_sc.clone()];
         let mut raw_code: String = s_join(raw_parts.clone());
         let mut raw_next: i32 = adv_nl_ref(raw_val_end.clone(), tokens.clone());
-        return make_result(raw_code.clone(), raw_next.clone());
+        return make_result(raw_code, raw_next.clone());
     }
     if kind == "KW_CONST" {
         let mut const_type_pos: i32 = pos + 1.clone();
@@ -3649,7 +3649,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut next_pos: i32 = pos + 1.clone();
         if next_pos >= token_count {
             let mut eof_code: String = "/* eof */\n".to_string();
-            return make_result(eof_code.clone(), next_pos.clone());
+            return make_result(eof_code, next_pos.clone());
         }
         let mut next_token: Token = tokens[next_pos as usize].clone();
         let kind = next_token.kind.clone();
@@ -3681,7 +3681,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut asg_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), asg_eq.clone(), val_code.clone(), assign_suffix.clone(), asg_sc.clone()];
             let mut asgn_code: String = s_join(asg_parts.clone());
             let mut asgn_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
-            return make_result(asgn_code.clone(), asgn_next.clone());
+            return make_result(asgn_code, asgn_next.clone());
         }
         if kind == "IDENT" {
             let mut eq_pos: i32 = next_pos + 1.clone();
@@ -3699,7 +3699,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut unh_parts: Vec<String> = vec![unh_pfx.clone(), kind.clone(), unh_sfx.clone()];
     let mut unhand: String = s_join(unh_parts.clone());
     let mut unhand_next: i32 = pos + 1.clone();
-    return make_result(unhand.clone(), unhand_next.clone());
+    return make_result(unhand, unhand_next.clone());
 }
 
 fn gen_struct_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
@@ -3968,7 +3968,7 @@ fn gen_type_decl(tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut imp_parts: Vec<String> = vec![imp_pfx.clone(), type_name.clone(), imp_fn.clone(), param_name.clone(), imp_col.clone(), rust_param_type.clone(), imp_ret.clone(), pred_code.clone(), imp_som.clone(), type_name.clone(), imp_inn.clone(), param_name.clone(), imp_sfx.clone()];
     let mut impl_code: String = s_join(imp_parts.clone());
     let mut type_code: String = s_cat(struct_code, impl_code);
-    return make_result(type_code.clone(), pos.clone());
+    return make_result(type_code, pos.clone());
 }
 
 fn gen_fn_decl(fn_tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
@@ -4090,7 +4090,7 @@ fn gen_raw_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut after: i32 = name_pos + 1.clone();
     let mut emp: String = "".to_string();
     let mut raw_next: i32 = adv_nl(after.clone(), tokens.clone());
-    return make_result(emp.clone(), raw_next.clone());
+    return make_result(emp, raw_next.clone());
 }
 
 fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {

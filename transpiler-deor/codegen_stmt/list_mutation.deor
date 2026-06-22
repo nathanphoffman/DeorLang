@@ -35,7 +35,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 				strList app_parts = [pad, ident_name, app_pfx, app_val, app_sfx]
 				string app_code = s_join(app_parts)
 				int app_next = adv_nl_ref(val_end, tokens)
-				return make_result(app_code, app_next)
+				return make_result(move app_code, app_next)
 			ParseResult idx_r = gen_expr(tokens, after_at, ctx)
 			string idx_code = pr_code(idx_r)
 			int idx_end = pr_pos(idx_r)
@@ -52,7 +52,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 			strList idw_parts = [pad, ident_name, idw_op, idx_code, idw_mid, idx_val, idw_sfx]
 			string idw_code = s_join(idw_parts)
 			int idw_next = adv_nl_ref(val_end, tokens)
-			return make_result(idw_code, idw_next)
+			return make_result(move idw_code, idw_next)
 
 	# name remove at idx
 	if kind is "KW_REMOVE"
@@ -65,11 +65,11 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 		strList rem_parts = [pad, ident_name, rem_pfx, idx_code, rem_sfx]
 		string rem_code = s_join(rem_parts)
 		int rem_next = adv_nl_ref(idx_end, tokens)
-		return make_result(rem_code, rem_next)
+		return make_result(move rem_code, rem_next)
 
 	string lm_unh_pfx = "/* unhandled_list_mut("
 	string lm_unh_sfx = ") */\n"
 	strList lm_unh_parts = [lm_unh_pfx, kind, lm_unh_sfx]
 	string lm_unhand = s_join(lm_unh_parts)
 	int lm_next = pos + 1
-	return make_result(lm_unhand, lm_next)
+	return make_result(move lm_unhand, lm_next)

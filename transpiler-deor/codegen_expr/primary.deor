@@ -8,7 +8,7 @@ fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	int close = pr_pos(inner_r) + 1
 	strList res_parts = [inner_code, suffix]
 	string result_code = s_join(res_parts)
-	return make_result(result_code, close)
+	return make_result(move result_code, close)
 
 # Dispatches to one of five sub-cases based on the current token kind. Each macro
 # returns immediately if it recognises the token, otherwise falls through to the next.
@@ -31,4 +31,4 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 
 	string unknown = "/* unknown_primary */"
 	int next = pos + 1
-	return make_result(unknown, next)
+	return make_result(move unknown, next)

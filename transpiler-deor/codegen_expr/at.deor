@@ -9,4 +9,4 @@ macro codegen_expr_at
 		string idx_sfx = " as usize].clone()"
 		strList idx_parts = [value, idx_mid, idx_code, idx_sfx]
 		string idx_expr = s_join(idx_parts)
-		return make_result(idx_expr, idx_end)
+		return make_result(move idx_expr, idx_end)
