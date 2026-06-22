@@ -10,7 +10,6 @@ macro primary_list_literal
 		ll_items_pos as new_pos
 		string ll_open = "vec!["
 		string ll_close = "]"
-		strList ll_parts = [ll_open, ll_items_code, ll_close]
-		string ll_code = s_join(ll_parts)
+		string ll_code = s_join([ll_open, ll_items_code, ll_close])
 		int ll_after = ll_items_pos + 1
 		return make_result(move ll_code, ll_after)

@@ -5,15 +5,16 @@ import "transpiler-deor/imports.deor"
 # token stream dispatching each top-level declaration to its gen_* function and
 # concatenating the results into a single Rust source string.
 fn string generate_rust_from_tokens(tokenList all_tokens)
+	TokensRef all_ref = tokens_wrap(all_tokens)
 	string _timer_label = "[timer]   registries: "
 	macro_run start_timer
-	strList struct_reg = build_struct_reg(all_tokens)
-	strList shape_reg = build_shape_reg(all_tokens)
-	strList enum_reg = build_enum_reg(all_tokens)
-	strList variant_reg = build_variant_reg(all_tokens, enum_reg)
-	strList type_reg = build_type_reg(all_tokens)
+	strList struct_reg = build_struct_reg(all_ref)
+	strList shape_reg = build_shape_reg(all_ref)
+	strList enum_reg = build_enum_reg(all_ref)
+	strList variant_reg = build_variant_reg(all_ref, enum_reg)
+	strList type_reg = build_type_reg(all_ref)
 	strList mut_names = empty
-	strList var_type_reg = build_var_type_reg(all_tokens)
+	strList var_type_reg = build_var_type_reg(all_ref)
 	macro_run end_timer
 	string using_type = ""
 	string using_var = ""
@@ -24,6 +25,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 
 	strList parts = empty
 	int token_count = len(all_tokens)
+	print(s_join(["[diag] token_count: ", n_to_str(token_count)]))
 	int pos = 0
 	string last_file = ""
 	string _timer_label = "[timer]   codegen-loop: "
@@ -55,7 +57,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 			pos = new_pos
 			continue
 		if kind is "KW_SHAPE"
-			ParseResult result = gen_shape_decl(all_tokens, pos)
+			ParseResult result = gen_shape_decl(all_ref, pos)
 			move (code, new_pos) in result
 			parts at end = code
 			pos = new_pos
@@ -79,7 +81,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 			pos = new_pos
 			continue
 		if kind is "KW_RAW"
-			ParseResult result = gen_raw_decl(all_tokens, pos)
+			ParseResult result = gen_raw_decl(all_ref, pos)
 			move (code, new_pos) in result
 			parts at end = code
 			pos = new_pos

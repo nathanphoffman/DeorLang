@@ -34,19 +34,16 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		int after_empty = adv_nl_ref(val_next_pos, tokens)
 		if is_validator
 			string err_msg = "/* error: use 'bad' not 'empty' for validator types */\n"
-			strList err_parts = [pad, err_msg]
-			string err_code = s_join(err_parts)
+			string err_code = s_join([pad, err_msg])
 			return make_result(move err_code, after_empty)
 		if is_shape
 			string sh_pfx = "let mut "
 			string sh_mid = ": "
 			string sh_sfx = " = Vec::new();\n"
-			strList sh_parts = [pad, sh_pfx, var_name, sh_mid, rust_type, sh_sfx]
-			string sh_code = s_join(sh_parts)
+			string sh_code = s_join([pad, sh_pfx, var_name, sh_mid, rust_type, sh_sfx])
 			return make_result(move sh_code, after_empty)
 		string err_msg = "/* error: empty is only valid for list shapes */\n"
-		strList err_parts = [pad, err_msg]
-		string err_code = s_join(err_parts)
+		string err_code = s_join([pad, err_msg])
 		return make_result(move err_code, after_empty)
 
 	# (avow x) or positional struct construction
@@ -79,8 +76,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 					string fname = field_names at fni
 					string sfp_sep = ": "
 					string sfp_cln = ".clone()"
-					strList sfp_parts = [fname, sfp_sep, fv_code, sfp_cln]
-					field_pairs at end = s_join(sfp_parts)
+					field_pairs at end = s_join([fname, sfp_sep, fv_code, sfp_cln])
 					fni = fni + 1
 				fend = new_pos
 			string sep = ", "
@@ -93,8 +89,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 			string scc_eq = " = "
 			string scc_ob = " { "
 			string scc_cb = " };\n"
-			strList scc_parts = [pad, scc_let, mut_kw, var_name, scc_eq, var_type, scc_ob, fields_code, scc_cb]
-			string sc_code = s_join(scc_parts)
+			string sc_code = s_join([pad, scc_let, mut_kw, var_name, scc_eq, var_type, scc_ob, fields_code, scc_cb])
 			int sc_next = adv_nl_ref(fend, tokens)
 			return make_result(move sc_code, sc_next)
 		# (avow inner) — .unwrap().0 for primitives, .unwrap() for custom types
@@ -118,8 +113,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		string awc_col = ": "
 		string awc_eq = " = "
 		string awc_sc = ";\n"
-		strList awc_parts = [pad, awc_let, var_name, awc_col, rust_type, awc_eq, unwrap_expr, awc_sc]
-		string aw_code = s_join(awc_parts)
+		string aw_code = s_join([pad, awc_let, var_name, awc_col, rust_type, awc_eq, unwrap_expr, awc_sc])
 		int aw_next = adv_nl_ref(after_rparen, tokens)
 		return make_result(move aw_code, aw_next)
 
@@ -133,8 +127,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		string lst_col = ": "
 		string lst_eq = " = "
 		string lst_sc = ";\n"
-		strList lst_parts = [pad, lst_pfx, var_name, lst_col, rust_type, lst_eq, val_code, lst_sc]
-		string lst_code = s_join(lst_parts)
+		string lst_code = s_join([pad, lst_pfx, var_name, lst_col, rust_type, lst_eq, val_code, lst_sc])
 		int lst_next = adv_nl_ref(val_end, tokens)
 		return make_result(move lst_code, lst_next)
 
@@ -147,12 +140,10 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 			string non_pfx = "let mut "
 			string non_mid = ": Option<"
 			string non_sfx = "> = None;\n"
-			strList non_parts = [pad, non_pfx, var_name, non_mid, rust_type, non_sfx]
-			string none_code = s_join(non_parts)
+			string none_code = s_join([pad, non_pfx, var_name, non_mid, rust_type, non_sfx])
 			return make_result(move none_code, bad_next)
 		string bad_err = "/* error: bad is only valid for validator types */\n"
-		strList bad_err_parts = [pad, bad_err]
-		string bad_err_code = s_join(bad_err_parts)
+		string bad_err_code = s_join([pad, bad_err])
 		return make_result(move bad_err_code, bad_next)
 
 	# validator type → ValidatorType::new(val) wrapped in Option<>
@@ -171,8 +162,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		string vld_new = "> = "
 		string vld_nop = "::new("
 		string vld_sc = ");\n"
-		strList vld_parts = [pad, vld_let, mut_kw, var_name, vld_opt, var_type, vld_new, var_type, vld_nop, val_code, vld_sc]
-		string vld_code = s_join(vld_parts)
+		string vld_code = s_join([pad, vld_let, mut_kw, var_name, vld_opt, var_type, vld_new, var_type, vld_nop, val_code, vld_sc])
 		int vld_next = adv_nl_ref(val_end, tokens)
 		return make_result(move vld_code, vld_next)
 
@@ -202,7 +192,6 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	string bnd_col = ": "
 	string bnd_eq = " = "
 	string bnd_sc = ";\n"
-	strList bnd_parts = [pad, bnd_let, mut_kw, var_name, bnd_col, rust_type, bnd_eq, val_code, suffix, bnd_sc]
-	string bind_code = s_join(bnd_parts)
+	string bind_code = s_join([pad, bnd_let, mut_kw, var_name, bnd_col, rust_type, bnd_eq, val_code, suffix, bnd_sc])
 	int bind_next = adv_nl_ref(val_end, tokens)
 	return make_result(move bind_code, bind_next)

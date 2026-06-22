@@ -3,7 +3,7 @@
 # enum_reg:    [deorName, RustName] pairs (deorName lowercase, RustName PascalCase)
 # variant_reg: [variantName, rustEnumName] pairs for every variant of every enum
 
-fn strList build_enum_reg(tokenList tokens)
+fn strList build_enum_reg(TokensRef tokens)
 	strList result = empty
 	int token_count = len(tokens)
 	for index in range(token_count)
@@ -20,7 +20,7 @@ fn strList build_enum_reg(tokenList tokens)
 				result at end = rust_name
 	return result
 
-fn strList build_variant_reg(tokenList tokens, strList enum_reg)
+fn strList build_variant_reg(TokensRef tokens, strList enum_reg)
 	strList result = empty
 	int token_count = len(tokens)
 	int raw_i = 0

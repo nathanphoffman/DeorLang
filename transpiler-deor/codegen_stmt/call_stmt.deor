@@ -43,14 +43,12 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 			string shm_op = "("
 			string shm_cl = ".clone(), "
 			string shm_ea = ".clone());\n"
-			strList shm_parts = [pad, using_var, shm_eq, ident_name, shm_op, using_var, shm_cl, extra_arg, shm_ea]
-			shim_code = s_join(shm_parts)
+			shim_code = s_join([pad, using_var, shm_eq, ident_name, shm_op, using_var, shm_cl, extra_arg, shm_ea])
 		else
 			string shm2_eq = " = "
 			string shm2_op = "("
 			string shm2_cl = ".clone());\n"
-			strList shm2_parts = [pad, using_var, shm2_eq, ident_name, shm2_op, using_var, shm2_cl]
-			shim_code = s_join(shm2_parts)
+			shim_code = s_join([pad, using_var, shm2_eq, ident_name, shm2_op, using_var, shm2_cl])
 		string re_destruct = make_destruct_code(using_var, depth, ctx)
 		shim_code = s_cat(shim_code, re_destruct)
 		int shm_next = adv_nl_ref(after_with, tokens)
@@ -64,17 +62,14 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	if ident_name is "print"
 		string prt_pfx = "println!(\"{}\", "
 		string prt_sfx = ");\n"
-		strList prt_parts = [pad, prt_pfx, args_code, prt_sfx]
-		call_code = s_join(prt_parts)
+		call_code = s_join([pad, prt_pfx, args_code, prt_sfx])
 	else if ident_name is "crash"
 		string crsh_pfx = "panic!(\"{}\", "
 		string crsh_sfx = ");\n"
-		strList crsh_parts = [pad, crsh_pfx, args_code, crsh_sfx]
-		call_code = s_join(crsh_parts)
+		call_code = s_join([pad, crsh_pfx, args_code, crsh_sfx])
 	else
 		string cal_op = "("
 		string cal_sfx = ");\n"
-		strList cal_parts = [pad, ident_name, cal_op, args_code, cal_sfx]
-		call_code = s_join(cal_parts)
+		call_code = s_join([pad, ident_name, cal_op, args_code, cal_sfx])
 	int call_next = adv_nl_ref(after_paren, tokens)
 	return make_result(move call_code, call_next)

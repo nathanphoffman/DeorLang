@@ -23,8 +23,7 @@ macro for_build_fields_into_mut_clones
 		string dst_eq = " = "
 		string dst_dot = "."
 		string dst_cln = ".clone();"
-		strList dst_parts = [pad, dst_let, mut_kw, field, dst_eq, src_code, dst_dot, field, dst_cln]
-		dest_lines at end = s_join(dst_parts)
+		dest_lines at end = s_join([pad, dst_let, mut_kw, field, dst_eq, src_code, dst_dot, field, dst_cln])
 
 
 macro initialize_gen_destructure
@@ -79,8 +78,7 @@ macro for_build_fields_into_moves
     	string dst_eq = " = "
     	string dst_dot = "."
     	string dst_sc = ";"
-    	strList dst_parts = [pad, dst_let, mut_kw, field, dst_eq, src_code, dst_dot, field, dst_sc]
-    	dest_lines at end = s_join(dst_parts)
+    	dest_lines at end = s_join([pad, dst_let, mut_kw, field, dst_eq, src_code, dst_dot, field, dst_sc])
 
 # Generates code for a `move (f1, f2) in source` destructuring statement. Each named
 # field becomes a separate `let [mut] field = source.field;` line — moves instead of

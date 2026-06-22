@@ -2,7 +2,7 @@
 # Builds the struct registry: a flat strList of [structName, "field1,field2,..."] pairs.
 # Helpers walk a struct body to collect field names joined by commas.
 
-fn ParseResult skip_to_block_start(tokenList tokens, int start)
+fn ParseResult skip_to_block_start(TokensRef tokens, int start)
 	int token_count = len(tokens)
 	int cur = start
 	for skip_index in (start, token_count)
@@ -14,7 +14,7 @@ fn ParseResult skip_to_block_start(tokenList tokens, int start)
 	string emp = ""
 	return make_result(emp, cur)
 
-fn ParseResult collect_struct_fields(tokenList tokens, int start)
+fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 	int token_count = len(tokens)
 	strList fields = empty
 	int cur = start
@@ -36,7 +36,7 @@ fn ParseResult collect_struct_fields(tokenList tokens, int start)
 	string fields_joined = s_join_with(fields, comma)
 	return make_result(fields_joined, cur)
 
-fn strList build_struct_reg(tokenList tokens)
+fn strList build_struct_reg(TokensRef tokens)
 	strList result = empty
 	int token_count = len(tokens)
 	int raw_i = 0

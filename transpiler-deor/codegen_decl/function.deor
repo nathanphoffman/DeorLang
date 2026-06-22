@@ -35,8 +35,7 @@ fn ParseResult gen_fn_decl(tokenList fn_tokens, int pos, RcCtx ctx)
 				string param_name = value
 				string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
 				string prm_sep = ": "
-				strList prm_parts = [param_name, prm_sep, rust_param_type]
-				param_strs at end = s_join(prm_parts)
+				param_strs at end = s_join([param_name, prm_sep, rust_param_type])
 				cur_next() with fn_tokens
 			else
 				cur_next() with fn_tokens
@@ -52,17 +51,26 @@ fn ParseResult gen_fn_decl(tokenList fn_tokens, int pos, RcCtx ctx)
 	int body_len = len(body_tokens_raw)
 	int zero = 0
 	int body_last = body_len - 1
+	string _timer_label = s_join(["[timer]     ", fn_name, " collect-mut: "])
+	macro_run start_timer
 	strList mut_names = collect_mut_names(body_tokens_raw, zero, body_last)
-	strList var_type_reg = build_var_type_reg(body_tokens_raw)
+	macro_run end_timer
+	TokensRef tokens = tokens_wrap(move body_tokens_raw)
+	string _timer_label = s_join(["[timer]     ", fn_name, " var-type-reg: "])
+	macro_run start_timer
+	strList var_type_reg = build_var_type_reg(tokens)
+	macro_run end_timer
 	string using_type = ""
 	string using_var = ""
-	TokensRef tokens = tokens_wrap(move body_tokens_raw)
 	GenCtx body_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
 	RcCtx body_ctx = make_rctx(move body_ctx_raw)
 	# Rc wrappers make recursive clones inside gen_block cheap (Rc::clone vs full copy)
 	int body_pos = 0
 	int body_depth = 1
+	string _timer_label = s_join(["[timer]     ", fn_name, " gen-block: "])
+	macro_run start_timer
 	ParseResult body_r = gen_block(body_pos, body_depth, move body_ctx)
+	macro_run end_timer
 	move (code, new_pos) in body_r
 	body_code as code
 	body_end as body_start + new_pos
@@ -71,13 +79,11 @@ fn ParseResult gen_fn_decl(tokenList fn_tokens, int pos, RcCtx ctx)
 	string ret_suffix = ""
 	if not is_empty(ret_type)
 		string rts_pfx = " -> "
-		strList rts_parts = [rts_pfx, ret_type]
-		ret_suffix = s_join(rts_parts)
+		ret_suffix = s_join([rts_pfx, ret_type])
 	string fnc_kw = "fn "
 	string fnc_op = "("
 	string fnc_rp = ")"
 	string fnc_ob = " {\n"
 	string fnc_cb = "}\n\n"
-	strList fnc_parts = [fnc_kw, fn_name, fnc_op, params_code, fnc_rp, ret_suffix, fnc_ob, body_code, fnc_cb]
-	string fn_code = s_join(fnc_parts)
+	string fn_code = s_join([fnc_kw, fn_name, fnc_op, params_code, fnc_rp, ret_suffix, fnc_ob, body_code, fnc_cb])
 	return make_result(move fn_code, body_end)

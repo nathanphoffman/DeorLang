@@ -24,12 +24,41 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 		(kind) in start_token
 		if kind is "STRING"
 			string its_suf = ".to_string()"
-			strList its_parts = [item_code, its_suf]
-			item_code = s_join(its_parts)
+			item_code = s_join([item_code, its_suf])
 		else
 			string itc_suf = ".clone()"
-			strList itc_parts = [item_code, itc_suf]
-			item_code = s_join(itc_parts)
+			item_code = s_join([item_code, itc_suf])
+		item_codes at end = item_code
+		cur = item_pos
+	string sep = ", "
+	string items_str = s_join_with(item_codes, sep)
+	return make_result(move items_str, cur)
+
+# Like gen_list_items but generates `.as_str()` per item for use in [].concat() joins.
+# STRING items are already &str and need no suffix; everything else is String and gets .as_str().
+fn ParseResult gen_join_items(TokensRef tokens, int pos, RcCtx ctx)
+	strList item_codes = empty
+	int cur = pos
+	int token_count = len(tokens)
+	for if true
+		if cur >= token_count
+			break
+		Token token = tokens at cur
+		(kind) in token
+		if kind is "RBRACKET"
+			break
+		if kind is "COMMA"
+			cur = cur + 1
+			continue
+		ParseResult item_r = gen_expr(tokens, cur, ctx)
+		move (code, new_pos) in item_r
+		item_code as code
+		item_pos as new_pos
+		Token start_token = tokens at cur
+		(kind) in start_token
+		if kind is not "STRING"
+			string ias_suf = ".as_str()"
+			item_code = s_cat(move item_code, ias_suf)
 		item_codes at end = item_code
 		cur = item_pos
 	string sep = ", "

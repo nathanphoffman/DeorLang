@@ -7,8 +7,7 @@ fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	move (code, new_pos) in inner_r
 	inner_code as code
 	close as new_pos + 1
-	strList res_parts = [inner_code, suffix]
-	string result_code = s_join(res_parts)
+	string result_code = s_join([inner_code, suffix])
 	return make_result(move result_code, close)
 
 # Dispatches to one of five sub-cases based on the current token kind. Each macro

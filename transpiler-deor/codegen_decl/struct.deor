@@ -29,14 +29,12 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 				string fln_ind = "    "
 				string fln_sep = ": "
 				string fln_com = ","
-				strList fln_parts = [fln_ind, field_name, fln_sep, rust_type, fln_com]
-				field_lines at end = s_join(fln_parts)
+				field_lines at end = s_join([fln_ind, field_name, fln_sep, rust_type, fln_com])
 				cur_next() with tokens
 		string fields_code = s_join_nl(field_lines)
 		string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
 		string sdcl_ob = " {\n"
 		string sdcl_cb = "\n}\n\n"
-		strList sdcl_parts = [sdcl_pfx, struct_name, sdcl_ob, fields_code, sdcl_cb]
-		string decl = s_join(sdcl_parts)
+		string decl = s_join([sdcl_pfx, struct_name, sdcl_ob, fields_code, sdcl_cb])
 		(pos) in cur
 		return make_result(move decl, pos)

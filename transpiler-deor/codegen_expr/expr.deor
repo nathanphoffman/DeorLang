@@ -33,8 +33,7 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 				# "is empty" → left.is_empty()
 				if kind is "KW_EMPTY"
 					string ie_sfx = ".is_empty()"
-					strList ie_parts = [left_code, ie_sfx]
-					left_code = s_join(ie_parts)
+					left_code = s_cat(move left_code, ie_sfx)
 					cur_pos = after_op + 1
 					continue
 		# "is not empty" → !left.is_empty()
@@ -45,8 +44,8 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 				if kind is "KW_EMPTY"
 					string ine_pfx = "!"
 					string ine_sfx = ".is_empty()"
-					strList ine_parts = [ine_pfx, left_code, ine_sfx]
-					left_code = s_join(ine_parts)
+					left_code = s_cat(ine_pfx, move left_code)
+					left_code = s_cat(move left_code, ine_sfx)
 					cur_pos = after_op + 1
 					continue
 		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
@@ -68,8 +67,10 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 				string fmt_pfx = "format!(\"{}{}\", "
 				string fmt_mid = ", "
 				string fmt_sfx = ")"
-				strList fmt_parts = [fmt_pfx, left_code, fmt_mid, rhs_code, fmt_sfx]
-				left_code = s_join(fmt_parts)
+				left_code = s_cat(fmt_pfx, move left_code)
+				left_code = s_cat(move left_code, fmt_mid)
+				left_code = s_cat(move left_code, rhs_code)
+				left_code = s_cat(move left_code, fmt_sfx)
 				left_has_str = true
 				cur_pos = rhs_pos
 				continue
@@ -77,14 +78,15 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 			if left_has_str
 				if rhs_is_ident
 					string astr_sfx = ".as_str()"
-					strList astr_parts = [rhs_code, astr_sfx]
-					rhs_code = s_join(astr_parts)
+					rhs_code = s_cat(move rhs_code, astr_sfx)
 			# rhs is a string literal → left will now be a String expr
 			if rhs_is_str
 				left_has_str = true
 		string op_sp = " "
-		strList bin_parts = [left_code, op_sp, rust_op, op_sp, rhs_code]
-		left_code = s_join(bin_parts)
+		left_code = s_cat(move left_code, op_sp)
+		left_code = s_cat(move left_code, rust_op)
+		left_code = s_cat(move left_code, op_sp)
+		left_code = s_cat(move left_code, rhs_code)
 		cur_pos = rhs_pos
 
 	return make_result(move left_code, cur_pos)

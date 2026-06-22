@@ -13,8 +13,7 @@ fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 	move (code, new_pos) in body_r
 	body_code as code
 	string brc_open = " {\n"
-	strList cmb_parts = [cond_code, brc_open, body_code]
-	string combined = s_join(cmb_parts)
+	string combined = s_join([cond_code, brc_open, body_code])
 	branch_end as new_pos
 	return make_result(move combined, branch_end)
 
@@ -31,8 +30,7 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 	then_code as code
 	string if_kw = "if "
 	string brc_cl = "}"
-	strList if_parts = [pad, if_kw, then_code, pad, brc_cl]
-	string result_code = s_join(if_parts)
+	string result_code = s_join([pad, if_kw, then_code, pad, brc_cl])
 	cur as new_pos
 	for if true
 		if cur >= token_count
@@ -56,8 +54,10 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 			ei_code as code
 			string eli_kw = " else if "
 			string eli_cl = "}"
-			strList eli_parts = [result_code, eli_kw, ei_code, pad, eli_cl]
-			result_code = s_join(eli_parts)
+			result_code = s_cat(move result_code, eli_kw)
+			result_code = s_cat(move result_code, ei_code)
+			result_code = s_cat(move result_code, pad)
+			result_code = s_cat(move result_code, eli_cl)
 			cur = new_pos
 		else
 			int else_body_start = skip_to_body_ref(tokens, after_else)
@@ -67,10 +67,12 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 			else_code as code
 			string els_kw = " else {\n"
 			string els_cl = "}"
-			strList els_parts = [result_code, els_kw, else_code, pad, els_cl]
-			result_code = s_join(els_parts)
+			result_code = s_cat(move result_code, els_kw)
+			result_code = s_cat(move result_code, else_code)
+			result_code = s_cat(move result_code, pad)
+			result_code = s_cat(move result_code, els_cl)
 			cur = new_pos
 			break
 	string if_newline = "\n"
-	result_code = s_cat(result_code, if_newline)
+	result_code = s_cat(move result_code, if_newline)
 	return make_result(move result_code, cur)

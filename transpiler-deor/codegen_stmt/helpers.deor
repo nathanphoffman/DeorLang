@@ -5,12 +5,10 @@
 fn string emit_val(string val_code, string val_kind)
 	if val_kind is "STRING"
 		string tos_sfx = ".to_string()"
-		strList tos_parts = [val_code, tos_sfx]
-		return s_join(tos_parts)
+		return s_join([val_code, tos_sfx])
 	if val_kind is "IDENT"
 		string cln_sfx = ".clone()"
-		strList cln_parts = [val_code, cln_sfx]
-		return s_join(cln_parts)
+		return s_join([val_code, cln_sfx])
 	return val_code
 
 # Generates a block of `let [mut] field = var_name.field.clone();` lines for every
@@ -38,8 +36,7 @@ fn string make_destruct_code(string var_name, int depth, RcCtx ctx)
 		string fld_eq = " = "
 		string fld_dot = "."
 		string fld_cln = ".clone();"
-		strList fld_parts = [pad, fld_let, mut_kw, field, fld_eq, var_name, fld_dot, field, fld_cln]
-		lines at end = s_join(fld_parts)
+		lines at end = s_join([pad, fld_let, mut_kw, field, fld_eq, var_name, fld_dot, field, fld_cln])
 	string code = s_join_nl(lines)
 	string newline = "\n"
 	return s_cat(code, newline)

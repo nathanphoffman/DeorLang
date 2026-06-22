@@ -4,27 +4,24 @@ fn string gen_list_shape_code(string rust_name, string rust_elem)
 	string shp_pfx = "type "
 	string shp_mid = " = Vec<"
 	string shp_sfx = ">;\n\n"
-	strList shp_parts = [shp_pfx, rust_name, shp_mid, rust_elem, shp_sfx]
-	return s_join(shp_parts)
+	return s_join([shp_pfx, rust_name, shp_mid, rust_elem, shp_sfx])
 
 # Builds the Rust source for `shape Foo = func of T to U` → `type Foo = fn(T) -> U;`
 fn string gen_func_shape_code(string rust_name, string rust_in, string rust_out)
 	string out_suffix = ""
 	if not is_empty(rust_out)
 		string ost_pfx = " -> "
-		strList ost_parts = [ost_pfx, rust_out]
-		out_suffix = s_join(ost_parts)
+		out_suffix = s_join([ost_pfx, rust_out])
 	string fns_pfx = "type "
 	string fns_mid = " = fn("
 	string fns_rp = ")"
 	string fns_sfx = ";\n\n"
-	strList fns_parts = [fns_pfx, rust_name, fns_mid, rust_in, fns_rp, out_suffix, fns_sfx]
-	return s_join(fns_parts)
+	return s_join([fns_pfx, rust_name, fns_mid, rust_in, fns_rp, out_suffix, fns_sfx])
 
 # Generates a Rust type alias from a Deor `shape` declaration. Dispatches to
 # gen_list_shape_code for `list of T` forms and gen_func_shape_code for `func of T to U`
 # forms. Deor uses shapes to name parameterized types Rust requires explicit aliases for.
-fn ParseResult gen_shape_decl(tokenList tokens, int pos)
+fn ParseResult gen_shape_decl(TokensRef tokens, int pos)
 	int token_count = len(tokens)
 	int name_pos = pos + 1
 	int form_pos = pos + 3
@@ -42,7 +39,7 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 		string rust_elem = render_rust_type(elem_type)
 		string decl = gen_list_shape_code(rust_name, rust_elem)
 		int after = elem_pos + 1
-		int shape_next = adv_nl(after, tokens)
+		int shape_next = adv_nl_ref(after, tokens)
 		return make_result(move decl, shape_next)
 	int t4_pos = pos + 4
 	Token t4_token = tokens at t4_pos
@@ -78,5 +75,5 @@ fn ParseResult gen_shape_decl(tokenList tokens, int pos)
 	string rust_out = render_rust_type(out_type)
 	string decl = gen_func_shape_code(rust_name, rust_in, rust_out)
 	int after = func_end + 1
-	int fn_shape_next = adv_nl(after, tokens)
+	int fn_shape_next = adv_nl_ref(after, tokens)
 	return make_result(move decl, fn_shape_next)

@@ -31,6 +31,7 @@ while true; do
     printf "Where would you like to create your starter project? (default: %s): " "$DEFAULT_PROJECT" > /dev/tty
     read -r PROJECT_DIR < /dev/tty
     [ -z "$PROJECT_DIR" ] && PROJECT_DIR="$DEFAULT_PROJECT"
+    PROJECT_DIR="${PROJECT_DIR/#\~/$HOME}"
 
     if [ -f "$PROJECT_DIR" ]; then
         echo "  Error: '$PROJECT_DIR' is a file, not a directory. Please choose a different path." > /dev/tty

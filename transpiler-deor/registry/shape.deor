@@ -2,7 +2,7 @@
 # Builds the shape registry. For list shapes stores [shapeName, elemType]; for function
 # shapes stores [shapeName, "fn:inType:outType"]; for raw types stores [shapeName, "raw:"].
 # Used by resolve_type to expand shape aliases into Vec<T> or fn(T)->U Rust forms.
-fn strList build_shape_reg(tokenList tokens)
+fn strList build_shape_reg(TokensRef tokens)
 	strList result = empty
 	int token_count = len(tokens)
 	for index in range(token_count)

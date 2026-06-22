@@ -8,6 +8,5 @@ macro codegen_expr_at
 		idx_end as new_pos
 		string idx_mid = "["
 		string idx_sfx = " as usize].clone()"
-		strList idx_parts = [value, idx_mid, idx_code, idx_sfx]
-		string idx_expr = s_join(idx_parts)
+		string idx_expr = s_join([value, idx_mid, idx_code, idx_sfx])
 		return make_result(move idx_expr, idx_end)

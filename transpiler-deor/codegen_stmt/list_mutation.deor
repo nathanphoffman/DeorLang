@@ -33,8 +33,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 				string app_val = emit_val(val_code, kind)
 				string app_pfx = ".push("
 				string app_sfx = ");\n"
-				strList app_parts = [pad, ident_name, app_pfx, app_val, app_sfx]
-				string app_code = s_join(app_parts)
+				string app_code = s_join([pad, ident_name, app_pfx, app_val, app_sfx])
 				int app_next = adv_nl_ref(val_end, tokens)
 				return make_result(move app_code, app_next)
 			ParseResult idx_r = gen_expr(tokens, after_at, ctx)
@@ -52,8 +51,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 			string idw_op = "["
 			string idw_mid = " as usize] = "
 			string idw_sfx = ";\n"
-			strList idw_parts = [pad, ident_name, idw_op, idx_code, idw_mid, idx_val, idw_sfx]
-			string idw_code = s_join(idw_parts)
+			string idw_code = s_join([pad, ident_name, idw_op, idx_code, idw_mid, idx_val, idw_sfx])
 			int idw_next = adv_nl_ref(val_end, tokens)
 			return make_result(move idw_code, idw_next)
 
@@ -66,14 +64,12 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 		idx_end as new_pos
 		string rem_pfx = ".remove("
 		string rem_sfx = " as usize);\n"
-		strList rem_parts = [pad, ident_name, rem_pfx, idx_code, rem_sfx]
-		string rem_code = s_join(rem_parts)
+		string rem_code = s_join([pad, ident_name, rem_pfx, idx_code, rem_sfx])
 		int rem_next = adv_nl_ref(idx_end, tokens)
 		return make_result(move rem_code, rem_next)
 
 	string lm_unh_pfx = "/* unhandled_list_mut("
 	string lm_unh_sfx = ") */\n"
-	strList lm_unh_parts = [lm_unh_pfx, kind, lm_unh_sfx]
-	string lm_unhand = s_join(lm_unh_parts)
+	string lm_unhand = s_join([lm_unh_pfx, kind, lm_unh_sfx])
 	int lm_next = pos + 1
 	return make_result(move lm_unhand, lm_next)

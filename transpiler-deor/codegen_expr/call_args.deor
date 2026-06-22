@@ -24,8 +24,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		(kind) in start_token
 		if kind is "STRING"
 			string str_suf = ".to_string()"
-			strList str_parts = [arg_code, str_suf]
-			arg_code = s_join(str_parts)
+			arg_code = s_join([arg_code, str_suf])
 		else if kind is "IDENT"
 			int next_cur = cur + 1
 			bool peek_is_call = false
@@ -38,8 +37,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 			if not peek_is_call
 				if not peek_is_idx
 					string cln_suf = ".clone()"
-					strList cln_parts = [arg_code, cln_suf]
-					arg_code = s_join(cln_parts)
+					arg_code = s_join([arg_code, cln_suf])
 		arg_codes at end = arg_code
 		cur = arg_pos
 	string sep = ", "

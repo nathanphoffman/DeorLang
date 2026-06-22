@@ -3,7 +3,7 @@
 # patterns and recording [varName, TypeName] pairs for non-primitive types. Used by
 # the `using` statement handler to determine what struct type a variable holds so it
 # can auto-destructure its fields into the local scope.
-fn strList build_var_type_reg(tokenList tokens)
+fn strList build_var_type_reg(TokensRef tokens)
 	strList result = empty
 	int token_count = len(tokens)
 	int tok_idx = 0

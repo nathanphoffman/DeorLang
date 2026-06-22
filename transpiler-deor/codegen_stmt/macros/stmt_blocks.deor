@@ -15,8 +15,7 @@ macro stmt_blocks
 		string sb_close_brace = "}\n"
 		string sb_blk_open = s_cat(pad, sb_open_brace)
 		string sb_blk_close = s_cat(pad, sb_close_brace)
-		strList sb_blk_parts = [sb_blk_open, sb_body_code, sb_blk_close]
-		string sb_blk_code = s_join(sb_blk_parts)
+		string sb_blk_code = s_join([sb_blk_open, sb_body_code, sb_blk_close])
 		return make_result(move sb_blk_code, sb_body_end)
 	if kind is "KW_RUST"
 		int sb_block_pos = pos + 2
@@ -32,8 +31,7 @@ macro stmt_blocks
 				string sb_empty_line = ""
 				sb_padded at end = sb_empty_line
 			else
-				strList sb_rsl_parts = [pad, sb_rust_line]
-				sb_padded at end = s_join(sb_rsl_parts)
+				sb_padded at end = s_join([pad, sb_rust_line])
 		string sb_block_code = s_join_nl(sb_padded)
 		sb_block_code = s_cat(sb_block_code, newline)
 		int sb_block_next = sb_block_pos + 1

@@ -47,16 +47,14 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 			string aas_fname = aas_fields at aas_fi
 			string aas_fp_sep = ": "
 			string aas_fp_cln = ".clone()"
-			strList aas_fp = [aas_fname, aas_fp_sep, aas_fname, aas_fp_cln]
-			aas_pairs at end = s_join(aas_fp)
+			aas_pairs at end = s_join([aas_fname, aas_fp_sep, aas_fname, aas_fp_cln])
 		string aas_fld_sep = ", "
 		string aas_fields_code = s_join_with(aas_pairs, aas_fld_sep)
 		string aas_let = "let "
 		string aas_eq = " = "
 		string aas_ob = " { "
 		string aas_cb = " };\n"
-		strList aas_parts = [pad, aas_let, aas_mut, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb]
-		string aas_code = s_join(aas_parts)
+		string aas_code = s_join([pad, aas_let, aas_mut, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb])
 		int aas_next = adv_nl_ref(aas_fend, tokens)
 		return make_result(move aas_code, aas_next)
 
@@ -64,8 +62,7 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	if kind is "KW_EMPTY"
 		string aas_emp_pfx = "let mut "
 		string aas_emp_sfx = " = Vec::new();\n"
-		strList aas_emp_parts = [pad, aas_emp_pfx, ident_name, aas_emp_sfx]
-		string aas_empty_code = s_join(aas_emp_parts)
+		string aas_empty_code = s_join([pad, aas_emp_pfx, ident_name, aas_emp_sfx])
 		int aas_after_empty = after_as + 1
 		int aas_empty_next = adv_nl_ref(aas_after_empty, tokens)
 		return make_result(move aas_empty_code, aas_empty_next)
@@ -106,8 +103,7 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 				string aas_wob = " { "
 				string aas_wsp = ", .."
 				string aas_wcb = " };\n"
-				strList aas_wparts = [pad, aas_wlet, aas_wmutkw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wcb]
-				string aas_with_code = s_join(aas_wparts)
+				string aas_with_code = s_join([pad, aas_wlet, aas_wmutkw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wcb])
 				int aas_wnext = adv_nl_ref(aas_wend, tokens)
 				return make_result(move aas_with_code, aas_wnext)
 
@@ -128,7 +124,6 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	string aas_let2 = "let "
 	string aas_eq2 = " = "
 	string aas_sc2 = ";\n"
-	strList aas_parts2 = [pad, aas_let2, aas_mut2, ident_name, aas_eq2, aas_val_code, aas_suffix, aas_sc2]
-	string aas_code2 = s_join(aas_parts2)
+	string aas_code2 = s_join([pad, aas_let2, aas_mut2, ident_name, aas_eq2, aas_val_code, aas_suffix, aas_sc2])
 	int aas_next2 = adv_nl_ref(aas_val_end, tokens)
 	return make_result(move aas_code2, aas_next2)

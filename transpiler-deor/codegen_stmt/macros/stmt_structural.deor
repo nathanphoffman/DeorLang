@@ -27,8 +27,7 @@ macro stmt_structural
 				su_expr_code as code
 				su_after_rp as new_pos + 1
 				string su_avw_sfx = ".unwrap();\n"
-				strList su_avw_parts = [pad, su_expr_code, su_avw_sfx]
-				string su_avow_code = s_join(su_avw_parts)
+				string su_avow_code = s_join([pad, su_expr_code, su_avw_sfx])
 				int su_avow_next = adv_nl_ref(su_after_rp, tokens)
 				return make_result(move su_avow_code, su_avow_next)
 		return gen_destructure(pos, depth, ctx)

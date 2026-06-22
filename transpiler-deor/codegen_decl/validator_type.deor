@@ -38,8 +38,7 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 	string tsc_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
 	string tsc_op = "("
 	string tsc_sfx = ");\n\n"
-	strList tsc_parts = [tsc_pfx, type_name, tsc_op, rust_param_type, tsc_sfx]
-	string struct_code = s_join(tsc_parts)
+	string struct_code = s_join([tsc_pfx, type_name, tsc_op, rust_param_type, tsc_sfx])
 	string imp_pfx = "impl "
 	string imp_fn = " {\n    fn new("
 	string imp_col = ": "
@@ -47,7 +46,6 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 	string imp_som = " {\n            Some("
 	string imp_inn = "("
 	string imp_sfx = "))\n        } else {\n            None\n        }\n    }\n}\n\n"
-	strList imp_parts = [imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx]
-	string impl_code = s_join(imp_parts)
+	string impl_code = s_join([imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx])
 	string type_code = s_cat(move struct_code, move impl_code)
 	return make_result(move type_code, pos)

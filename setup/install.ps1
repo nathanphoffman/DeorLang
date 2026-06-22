@@ -8,11 +8,31 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot  = Split-Path -Parent $ScriptDir
 
 $DefaultProject = "$(Get-Location)\hello-deor"
-$Input = Read-Host "Where would you like to create your starter project? (default: $DefaultProject)"
-if ([string]::IsNullOrWhiteSpace($Input)) {
-    $ProjectDir = $DefaultProject
-} else {
-    $ProjectDir = $Input
+while ($true) {
+    $Input = Read-Host "Where would you like to create your starter project? (default: $DefaultProject)"
+    if ([string]::IsNullOrWhiteSpace($Input)) {
+        $ProjectDir = $DefaultProject
+    } else {
+        $ProjectDir = $Input -replace '^~', $HOME
+    }
+
+    if (Test-Path -PathType Leaf $ProjectDir) {
+        Write-Host "  Error: '$ProjectDir' is a file, not a directory. Please choose a different path."
+        continue
+    }
+
+    $ParentDir = Split-Path -Parent $ProjectDir
+    if (-not (Test-Path -PathType Container $ParentDir)) {
+        Write-Host "  Error: parent directory '$ParentDir' does not exist. Please choose a different path."
+        continue
+    }
+
+    if (Test-Path -PathType Container $ProjectDir) {
+        $Confirm = Read-Host "  '$ProjectDir' already exists. Install hello.deor there anyway? [Y/n]"
+        if ($Confirm -match '^[nN]') { Write-Host "  Aborted."; exit 0 }
+    }
+
+    break
 }
 
 Write-Host "Installing Deor..."

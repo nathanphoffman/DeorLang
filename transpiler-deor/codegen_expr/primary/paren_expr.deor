@@ -16,8 +16,7 @@ macro primary_paren_expr
 				pe_expr_code as code
 				pe_after as new_pos + 1
 				string pe_unw = ".unwrap()"
-				strList pe_unw_parts = [pe_expr_code, pe_unw]
-				string pe_unwrap_code = s_join(pe_unw_parts)
+				string pe_unwrap_code = s_join([pe_expr_code, pe_unw])
 				return make_result(move pe_unwrap_code, pe_after)
 			strList pe_fields = empty
 			int pe_cur = pe_peek
@@ -37,6 +36,5 @@ macro primary_paren_expr
 			string pe_fields_code = s_join_with(pe_fields, pe_sep)
 			string pe_sco = " { "
 			string pe_scc = " }"
-			strList pe_sct_parts = [pe_struct_name, pe_sco, pe_fields_code, pe_scc]
-			string pe_struct_code = s_join(pe_sct_parts)
+			string pe_struct_code = s_join([pe_struct_name, pe_sco, pe_fields_code, pe_scc])
 			return make_result(move pe_struct_code, pe_cur)

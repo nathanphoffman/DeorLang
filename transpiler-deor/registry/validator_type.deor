@@ -2,7 +2,7 @@
 # Builds the validator-type registry: for each `type Name(baseType paramName)` declaration,
 # stores [Name, baseType, paramName] triplets. Enables the code generator to emit
 # `Name::new(val)` for construction sites and `Option<Name>` for empty declarations.
-fn strList build_type_reg(tokenList tokens)
+fn strList build_type_reg(TokensRef tokens)
 	strList result = empty
 	int token_count = len(tokens)
 	for index in range(token_count)

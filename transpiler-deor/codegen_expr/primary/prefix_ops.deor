@@ -15,6 +15,5 @@ macro primary_prefix_ops
 		po_code as code
 		po_end as new_pos
 		string po_bang = "!"
-		strList po_parts = [po_bang, po_code]
-		string po_not_code = s_join(po_parts)
+		string po_not_code = s_join([po_bang, po_code])
 		return make_result(move po_not_code, po_end)

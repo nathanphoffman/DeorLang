@@ -2396,7 +2396,7 @@ fn validate_tokens(tokens: Vec<Token>) {
 }
 
 // transpiler-deor/registry/struct.deor
-fn skip_to_block_start(tokens: Vec<Token>, start: i32) -> ParseResult {
+fn skip_to_block_start(tokens: TokensRef, start: i32) -> ParseResult {
     // transpiler-deor/registry/struct.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut cur: i32 = start.clone();
@@ -2414,7 +2414,7 @@ fn skip_to_block_start(tokens: Vec<Token>, start: i32) -> ParseResult {
     return make_result(emp.clone(), cur.clone());
 }
 
-fn collect_struct_fields(tokens: Vec<Token>, start: i32) -> ParseResult {
+fn collect_struct_fields(tokens: TokensRef, start: i32) -> ParseResult {
     // transpiler-deor/registry/struct.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut fields: Vec<String> = Vec::new();
@@ -2448,7 +2448,7 @@ fn collect_struct_fields(tokens: Vec<Token>, start: i32) -> ParseResult {
     return make_result(fields_joined.clone(), cur.clone());
 }
 
-fn build_struct_reg(tokens: Vec<Token>) -> Vec<String> {
+fn build_struct_reg(tokens: TokensRef) -> Vec<String> {
     // transpiler-deor/registry/struct.deor
     let mut result: Vec<String> = Vec::new();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -2486,7 +2486,7 @@ fn build_struct_reg(tokens: Vec<Token>) -> Vec<String> {
 }
 
 // transpiler-deor/registry/shape.deor
-fn build_shape_reg(tokens: Vec<Token>) -> Vec<String> {
+fn build_shape_reg(tokens: TokensRef) -> Vec<String> {
     // transpiler-deor/registry/shape.deor
     let mut result: Vec<String> = Vec::new();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -2585,7 +2585,7 @@ fn build_shape_reg(tokens: Vec<Token>) -> Vec<String> {
 }
 
 // transpiler-deor/registry/enum.deor
-fn build_enum_reg(tokens: Vec<Token>) -> Vec<String> {
+fn build_enum_reg(tokens: TokensRef) -> Vec<String> {
     // transpiler-deor/registry/enum.deor
     let mut result: Vec<String> = Vec::new();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -2612,7 +2612,7 @@ fn build_enum_reg(tokens: Vec<Token>) -> Vec<String> {
     return result;
 }
 
-fn build_variant_reg(tokens: Vec<Token>, enum_reg: Vec<String>) -> Vec<String> {
+fn build_variant_reg(tokens: TokensRef, enum_reg: Vec<String>) -> Vec<String> {
     // transpiler-deor/registry/enum.deor
     let mut result: Vec<String> = Vec::new();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -2667,7 +2667,7 @@ fn build_variant_reg(tokens: Vec<Token>, enum_reg: Vec<String>) -> Vec<String> {
 }
 
 // transpiler-deor/registry/validator_type.deor
-fn build_type_reg(tokens: Vec<Token>) -> Vec<String> {
+fn build_type_reg(tokens: TokensRef) -> Vec<String> {
     // transpiler-deor/registry/validator_type.deor
     let mut result: Vec<String> = Vec::new();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -2700,7 +2700,7 @@ fn build_type_reg(tokens: Vec<Token>) -> Vec<String> {
 }
 
 // transpiler-deor/registry/var_type.deor
-fn build_var_type_reg(tokens: Vec<Token>) -> Vec<String> {
+fn build_var_type_reg(tokens: TokensRef) -> Vec<String> {
     // transpiler-deor/registry/var_type.deor
     let mut result: Vec<String> = Vec::new();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -2979,8 +2979,7 @@ fn gen_call_args(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         if kind == "STRING" {
             // transpiler-deor/codegen_expr/call_args.deor
             let mut str_suf: String = ".to_string()".to_string();
-            let mut str_parts: Vec<String> = vec![arg_code.clone(), str_suf.clone()];
-            arg_code = s_join(str_parts.clone());
+            arg_code = [arg_code.as_str(), str_suf.as_str()].concat();
         } else if kind == "IDENT" {
             // transpiler-deor/codegen_expr/call_args.deor
             let mut next_cur: i32 = cur + 1.clone();
@@ -2998,8 +2997,7 @@ fn gen_call_args(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 if !peek_is_idx {
                     // transpiler-deor/codegen_expr/call_args.deor
                     let mut cln_suf: String = ".clone()".to_string();
-                    let mut cln_parts: Vec<String> = vec![arg_code.clone(), cln_suf.clone()];
-                    arg_code = s_join(cln_parts.clone());
+                    arg_code = [arg_code.as_str(), cln_suf.as_str()].concat();
                 }
             }
         }
@@ -3044,13 +3042,53 @@ fn gen_list_items(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         if kind == "STRING" {
             // transpiler-deor/codegen_expr/list_items.deor
             let mut its_suf: String = ".to_string()".to_string();
-            let mut its_parts: Vec<String> = vec![item_code.clone(), its_suf.clone()];
-            item_code = s_join(its_parts.clone());
+            item_code = [item_code.as_str(), its_suf.as_str()].concat();
         } else {
             // transpiler-deor/codegen_expr/list_items.deor
             let mut itc_suf: String = ".clone()".to_string();
-            let mut itc_parts: Vec<String> = vec![item_code.clone(), itc_suf.clone()];
-            item_code = s_join(itc_parts.clone());
+            item_code = [item_code.as_str(), itc_suf.as_str()].concat();
+        }
+        item_codes.push(item_code.clone());
+        cur = item_pos;
+    }
+    let mut sep: String = ", ".to_string();
+    let mut items_str: String = s_join_with(item_codes.clone(), sep.clone());
+    return make_result(items_str, cur.clone());
+}
+
+fn gen_join_items(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
+    // transpiler-deor/codegen_expr/list_items.deor
+    let mut item_codes: Vec<String> = Vec::new();
+    let mut cur: i32 = pos.clone();
+    let mut token_count: i32 = (tokens.len() as i32);
+    while true {
+        // transpiler-deor/codegen_expr/list_items.deor
+        if cur >= token_count {
+            // transpiler-deor/codegen_expr/list_items.deor
+            break;
+        }
+        let mut token: Token = tokens[cur as usize].clone();
+        let kind = token.kind.clone();
+        if kind == "RBRACKET" {
+            // transpiler-deor/codegen_expr/list_items.deor
+            break;
+        }
+        if kind == "COMMA" {
+            // transpiler-deor/codegen_expr/list_items.deor
+            cur = cur + 1;
+            continue;
+        }
+        let mut item_r: ParseResult = gen_expr(tokens.clone(), cur.clone(), ctx.clone());
+        let code = item_r.code;
+        let new_pos = item_r.new_pos;
+        let mut item_code = code;
+        let item_pos = new_pos;
+        let mut start_token: Token = tokens[cur as usize].clone();
+        let kind = start_token.kind.clone();
+        if kind != "STRING" {
+            // transpiler-deor/codegen_expr/list_items.deor
+            let mut ias_suf: String = ".as_str()".to_string();
+            item_code = s_cat(item_code, ias_suf.clone());
         }
         item_codes.push(item_code.clone());
         cur = item_pos;
@@ -3069,8 +3107,7 @@ fn gen_unary_method(args_pos: i32, suffix: String, ctx: RcCtx) -> ParseResult {
     let new_pos = inner_r.new_pos;
     let inner_code = code;
     let close = new_pos + 1;
-    let mut res_parts: Vec<String> = vec![inner_code.clone(), suffix.clone()];
-    let mut result_code: String = s_join(res_parts.clone());
+    let mut result_code: String = [inner_code.as_str(), suffix.as_str()].concat();
     return make_result(result_code, close.clone());
 }
 
@@ -3133,8 +3170,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let ll_items_pos = new_pos;
         let mut ll_open: String = "vec![".to_string();
         let mut ll_close: String = "]".to_string();
-        let mut ll_parts: Vec<String> = vec![ll_open.clone(), ll_items_code.clone(), ll_close.clone()];
-        let mut ll_code: String = s_join(ll_parts.clone());
+        let mut ll_code: String = [ll_open.as_str(), ll_items_code.as_str(), ll_close.as_str()].concat();
         let mut ll_after: i32 = ll_items_pos + 1.clone();
         return make_result(ll_code, ll_after.clone());
     }
@@ -3155,8 +3191,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let pe_expr_code = code;
                 let pe_after = new_pos + 1;
                 let mut pe_unw: String = ".unwrap()".to_string();
-                let mut pe_unw_parts: Vec<String> = vec![pe_expr_code.clone(), pe_unw.clone()];
-                let mut pe_unwrap_code: String = s_join(pe_unw_parts.clone());
+                let mut pe_unwrap_code: String = [pe_expr_code.as_str(), pe_unw.as_str()].concat();
                 return make_result(pe_unwrap_code, pe_after.clone());
             }
             let mut pe_fields: Vec<String> = Vec::new();
@@ -3184,8 +3219,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
             let mut pe_fields_code: String = s_join_with(pe_fields.clone(), pe_sep.clone());
             let mut pe_sco: String = " { ".to_string();
             let mut pe_scc: String = " }".to_string();
-            let mut pe_sct_parts: Vec<String> = vec![pe_struct_name.clone(), pe_sco.clone(), pe_fields_code.clone(), pe_scc.clone()];
-            let mut pe_struct_code: String = s_join(pe_sct_parts.clone());
+            let mut pe_struct_code: String = [pe_struct_name.as_str(), pe_sco.as_str(), pe_fields_code.as_str(), pe_scc.as_str()].concat();
             return make_result(pe_struct_code, pe_cur.clone());
         }
     }
@@ -3205,8 +3239,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let po_code = code;
         let po_end = new_pos;
         let mut po_bang: String = "!".to_string();
-        let mut po_parts: Vec<String> = vec![po_bang.clone(), po_code.clone()];
-        let mut po_not_code: String = s_join(po_parts.clone());
+        let mut po_not_code: String = [po_bang.as_str(), po_code.as_str()].concat();
         return make_result(po_not_code, po_end.clone());
     }
     // macro: primary_ident_expr (transpiler-deor/codegen_expr/primary/ident_expr.deor)
@@ -3231,8 +3264,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     let ie_len_end = new_pos;
                     let mut ie_lp: String = "(".to_string();
                     let mut ie_rp: String = ")".to_string();
-                    let mut ie_len_parts: Vec<String> = vec![ie_lp.clone(), ie_len_code.clone(), ie_rp.clone()];
-                    let mut ie_len_wrapped: String = s_join(ie_len_parts.clone());
+                    let mut ie_len_wrapped: String = [ie_lp.as_str(), ie_len_code.as_str(), ie_rp.as_str()].concat();
                     return make_result(ie_len_wrapped, ie_len_end.clone());
                 } else if ie_func == "crash" {
                     // transpiler-deor/codegen_expr/primary/ident_expr.deor
@@ -3243,10 +3275,28 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     let ie_crash_end = new_pos;
                     let mut ie_pan_pfx: String = "panic!(\"{}\", ".to_string();
                     let mut ie_pan_sfx: String = ")".to_string();
-                    let mut ie_pan_parts: Vec<String> = vec![ie_pan_pfx.clone(), ie_crash_code.clone(), ie_pan_sfx.clone()];
-                    let mut ie_panic_code: String = s_join(ie_pan_parts.clone());
+                    let mut ie_panic_code: String = [ie_pan_pfx.as_str(), ie_crash_code.as_str(), ie_pan_sfx.as_str()].concat();
                     let mut ie_after_crash: i32 = ie_crash_end + 1.clone();
                     return make_result(ie_panic_code, ie_after_crash.clone());
+                }
+                if ie_func == "s_join" {
+                    // transpiler-deor/codegen_expr/primary/ident_expr.deor
+                    let mut sj_arg_tok: Token = tokens[ie_args_pos as usize].clone();
+                    let kind = sj_arg_tok.kind.clone();
+                    if kind == "LBRACKET" {
+                        // transpiler-deor/codegen_expr/primary/ident_expr.deor
+                        let mut sj_inner: i32 = ie_args_pos + 1.clone();
+                        let mut sj_r: ParseResult = gen_join_items(tokens.clone(), sj_inner.clone(), ctx.clone());
+                        let code = sj_r.code;
+                        let new_pos = sj_r.new_pos;
+                        let sj_items = code;
+                        let sj_end = new_pos;
+                        let mut sj_after: i32 = sj_end + 2.clone();
+                        let mut sj_open: String = "[".to_string();
+                        let mut sj_close: String = "].concat()".to_string();
+                        let mut sj_code: String = [sj_open.as_str(), sj_items.as_str(), sj_close.as_str()].concat();
+                        return make_result(sj_code, sj_after.clone());
+                    }
                 }
                 let mut ie_args_r: ParseResult = gen_call_args(tokens.clone(), ie_args_pos.clone(), ctx.clone());
                 let code = ie_args_r.code;
@@ -3256,8 +3306,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut ie_after: i32 = ie_args_end + 1.clone();
                 let mut ie_lp: String = "(".to_string();
                 let mut ie_rp: String = ")".to_string();
-                let mut ie_call_parts: Vec<String> = vec![ie_func.clone(), ie_lp.clone(), ie_args_code.clone(), ie_rp.clone()];
-                let mut ie_call_code: String = s_join(ie_call_parts.clone());
+                let mut ie_call_code: String = [ie_func.as_str(), ie_lp.as_str(), ie_args_code.as_str(), ie_rp.as_str()].concat();
                 return make_result(ie_call_code, ie_after.clone());
             }
             if kind == "KW_AT" {
@@ -3270,8 +3319,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let ie_idx_end = new_pos;
                 let mut ie_idx_mid: String = "[".to_string();
                 let mut ie_idx_sfx: String = " as usize].clone()".to_string();
-                let mut ie_idx_parts: Vec<String> = vec![value.clone(), ie_idx_mid.clone(), ie_idx_code.clone(), ie_idx_sfx.clone()];
-                let mut ie_idx_expr: String = s_join(ie_idx_parts.clone());
+                let mut ie_idx_expr: String = [value.as_str(), ie_idx_mid.as_str(), ie_idx_code.as_str(), ie_idx_sfx.as_str()].concat();
                 return make_result(ie_idx_expr, ie_idx_end.clone());
             }
         }
@@ -3279,8 +3327,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         if !is_empty(ie_variant_enum.clone()) {
             // transpiler-deor/codegen_expr/primary/ident_expr.deor
             let mut ie_dbl: String = "::".to_string();
-            let mut ie_var_parts: Vec<String> = vec![ie_variant_enum.clone(), ie_dbl.clone(), value.clone()];
-            let mut ie_variant_code: String = s_join(ie_var_parts.clone());
+            let mut ie_variant_code: String = [ie_variant_enum.as_str(), ie_dbl.as_str(), value.as_str()].concat();
             return make_result(ie_variant_code, ie_next.clone());
         }
         return make_result(value, ie_next.clone());
@@ -3328,8 +3375,7 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 if kind == "KW_EMPTY" {
                     // transpiler-deor/codegen_expr/expr.deor
                     let mut ie_sfx: String = ".is_empty()".to_string();
-                    let mut ie_parts: Vec<String> = vec![left_code.clone(), ie_sfx.clone()];
-                    left_code = s_join(ie_parts.clone());
+                    left_code = s_cat(left_code, ie_sfx.clone());
                     cur_pos = after_op + 1;
                     continue;
                 }
@@ -3345,8 +3391,8 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     // transpiler-deor/codegen_expr/expr.deor
                     let mut ine_pfx: String = "!".to_string();
                     let mut ine_sfx: String = ".is_empty()".to_string();
-                    let mut ine_parts: Vec<String> = vec![ine_pfx.clone(), left_code.clone(), ine_sfx.clone()];
-                    left_code = s_join(ine_parts.clone());
+                    left_code = s_cat(ine_pfx.clone(), left_code);
+                    left_code = s_cat(left_code, ine_sfx.clone());
                     cur_pos = after_op + 1;
                     continue;
                 }
@@ -3372,8 +3418,10 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut fmt_pfx: String = "format!(\"{}{}\", ".to_string();
                 let mut fmt_mid: String = ", ".to_string();
                 let mut fmt_sfx: String = ")".to_string();
-                let mut fmt_parts: Vec<String> = vec![fmt_pfx.clone(), left_code.clone(), fmt_mid.clone(), rhs_code.clone(), fmt_sfx.clone()];
-                left_code = s_join(fmt_parts.clone());
+                left_code = s_cat(fmt_pfx.clone(), left_code);
+                left_code = s_cat(left_code, fmt_mid.clone());
+                left_code = s_cat(left_code, rhs_code.clone());
+                left_code = s_cat(left_code, fmt_sfx.clone());
                 left_has_str = true;
                 cur_pos = rhs_pos;
                 continue;
@@ -3383,8 +3431,7 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 if rhs_is_ident {
                     // transpiler-deor/codegen_expr/expr.deor
                     let mut astr_sfx: String = ".as_str()".to_string();
-                    let mut astr_parts: Vec<String> = vec![rhs_code.clone(), astr_sfx.clone()];
-                    rhs_code = s_join(astr_parts.clone());
+                    rhs_code = s_cat(rhs_code, astr_sfx.clone());
                 }
             }
             if rhs_is_str {
@@ -3393,8 +3440,10 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
             }
         }
         let mut op_sp: String = " ".to_string();
-        let mut bin_parts: Vec<String> = vec![left_code.clone(), op_sp.clone(), rust_op.clone(), op_sp.clone(), rhs_code.clone()];
-        left_code = s_join(bin_parts.clone());
+        left_code = s_cat(left_code, op_sp.clone());
+        left_code = s_cat(left_code, rust_op.clone());
+        left_code = s_cat(left_code, op_sp.clone());
+        left_code = s_cat(left_code, rhs_code.clone());
         cur_pos = rhs_pos;
     }
     return make_result(left_code, cur_pos.clone());
@@ -3406,14 +3455,12 @@ fn emit_val(val_code: String, val_kind: String) -> String {
     if val_kind == "STRING" {
         // transpiler-deor/codegen_stmt/helpers.deor
         let mut tos_sfx: String = ".to_string()".to_string();
-        let mut tos_parts: Vec<String> = vec![val_code.clone(), tos_sfx.clone()];
-        return s_join(tos_parts.clone());
+        return [val_code.as_str(), tos_sfx.as_str()].concat();
     }
     if val_kind == "IDENT" {
         // transpiler-deor/codegen_stmt/helpers.deor
         let mut cln_sfx: String = ".clone()".to_string();
-        let mut cln_parts: Vec<String> = vec![val_code.clone(), cln_sfx.clone()];
-        return s_join(cln_parts.clone());
+        return [val_code.as_str(), cln_sfx.as_str()].concat();
     }
     return val_code;
 }
@@ -3448,8 +3495,7 @@ fn make_destruct_code(var_name: String, depth: i32, ctx: RcCtx) -> String {
         let mut fld_eq: String = " = ".to_string();
         let mut fld_dot: String = ".".to_string();
         let mut fld_cln: String = ".clone();".to_string();
-        let mut fld_parts: Vec<String> = vec![pad.clone(), fld_let.clone(), mut_kw.clone(), field.clone(), fld_eq.clone(), var_name.clone(), fld_dot.clone(), field.clone(), fld_cln.clone()];
-        lines.push(s_join(fld_parts.clone()).clone());
+        lines.push([pad.as_str(), fld_let.as_str(), mut_kw.as_str(), field.as_str(), fld_eq.as_str(), var_name.as_str(), fld_dot.as_str(), field.as_str(), fld_cln.as_str()].concat().clone());
     }
     let mut code: String = s_join_nl(lines.clone());
     let mut newline: String = "\n".to_string();
@@ -3515,8 +3561,7 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut dst_eq: String = " = ".to_string();
         let mut dst_dot: String = ".".to_string();
         let mut dst_cln: String = ".clone();".to_string();
-        let mut dst_parts: Vec<String> = vec![pad.clone(), dst_let.clone(), mut_kw.clone(), field.clone(), dst_eq.clone(), src_code.clone(), dst_dot.clone(), field.clone(), dst_cln.clone()];
-        dest_lines.push(s_join(dst_parts.clone()).clone());
+        dest_lines.push([pad.as_str(), dst_let.as_str(), mut_kw.as_str(), field.as_str(), dst_eq.as_str(), src_code.as_str(), dst_dot.as_str(), field.as_str(), dst_cln.as_str()].concat().clone());
     }
     let mut after: i32 = adv_nl_ref(src_end.clone(), tokens.clone());
     let mut dest_code: String = s_join_nl(dest_lines.clone());
@@ -3583,8 +3628,7 @@ fn gen_move_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut dst_eq: String = " = ".to_string();
         let mut dst_dot: String = ".".to_string();
         let mut dst_sc: String = ";".to_string();
-        let mut dst_parts: Vec<String> = vec![pad.clone(), dst_let.clone(), mut_kw.clone(), field.clone(), dst_eq.clone(), src_code.clone(), dst_dot.clone(), field.clone(), dst_sc.clone()];
-        dest_lines.push(s_join(dst_parts.clone()).clone());
+        dest_lines.push([pad.as_str(), dst_let.as_str(), mut_kw.as_str(), field.as_str(), dst_eq.as_str(), src_code.as_str(), dst_dot.as_str(), field.as_str(), dst_sc.as_str()].concat().clone());
     }
     let mut after: i32 = adv_nl_ref(src_end.clone(), tokens.clone());
     let mut dest_code: String = s_join_nl(dest_lines.clone());
@@ -3679,8 +3723,7 @@ fn gen_if_branch(cond_pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let new_pos = body_r.new_pos;
     let body_code = code;
     let mut brc_open: String = " {\n".to_string();
-    let mut cmb_parts: Vec<String> = vec![cond_code.clone(), brc_open.clone(), body_code.clone()];
-    let mut combined: String = s_join(cmb_parts.clone());
+    let mut combined: String = [cond_code.as_str(), brc_open.as_str(), body_code.as_str()].concat();
     let branch_end = new_pos;
     return make_result(combined, branch_end.clone());
 }
@@ -3698,8 +3741,7 @@ fn gen_if(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let then_code = code;
     let mut if_kw: String = "if ".to_string();
     let mut brc_cl: String = "}".to_string();
-    let mut if_parts: Vec<String> = vec![pad.clone(), if_kw.clone(), then_code.clone(), pad.clone(), brc_cl.clone()];
-    let mut result_code: String = s_join(if_parts.clone());
+    let mut result_code: String = [pad.as_str(), if_kw.as_str(), then_code.as_str(), pad.as_str(), brc_cl.as_str()].concat();
     let mut cur = new_pos;
     while true {
         // transpiler-deor/codegen_stmt/if.deor
@@ -3734,8 +3776,10 @@ fn gen_if(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let ei_code = code;
             let mut eli_kw: String = " else if ".to_string();
             let mut eli_cl: String = "}".to_string();
-            let mut eli_parts: Vec<String> = vec![result_code.clone(), eli_kw.clone(), ei_code.clone(), pad.clone(), eli_cl.clone()];
-            result_code = s_join(eli_parts.clone());
+            result_code = s_cat(result_code, eli_kw.clone());
+            result_code = s_cat(result_code, ei_code.clone());
+            result_code = s_cat(result_code, pad.clone());
+            result_code = s_cat(result_code, eli_cl.clone());
             cur = new_pos;
         } else {
             // transpiler-deor/codegen_stmt/if.deor
@@ -3747,14 +3791,16 @@ fn gen_if(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let else_code = code;
             let mut els_kw: String = " else {\n".to_string();
             let mut els_cl: String = "}".to_string();
-            let mut els_parts: Vec<String> = vec![result_code.clone(), els_kw.clone(), else_code.clone(), pad.clone(), els_cl.clone()];
-            result_code = s_join(els_parts.clone());
+            result_code = s_cat(result_code, els_kw.clone());
+            result_code = s_cat(result_code, else_code.clone());
+            result_code = s_cat(result_code, pad.clone());
+            result_code = s_cat(result_code, els_cl.clone());
             cur = new_pos;
             break;
         }
     }
     let mut if_newline: String = "\n".to_string();
-    result_code = s_cat(result_code.clone(), if_newline.clone());
+    result_code = s_cat(result_code, if_newline.clone());
     return make_result(result_code, cur.clone());
 }
 
@@ -3786,8 +3832,7 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut whl_kw: String = "while ".to_string();
         let mut whl_ob: String = " {\n".to_string();
         let mut whl_cb: String = "}\n".to_string();
-        let mut whl_parts: Vec<String> = vec![pad.clone(), whl_kw.clone(), cond_code.clone(), whl_ob.clone(), while_body_code.clone(), pad.clone(), whl_cb.clone()];
-        let mut while_code: String = s_join(whl_parts.clone());
+        let mut while_code: String = [pad.as_str(), whl_kw.as_str(), cond_code.as_str(), whl_ob.as_str(), while_body_code.as_str(), pad.as_str(), whl_cb.as_str()].concat();
         return make_result(while_code, while_body_end.clone());
     }
     if kind == "KW_GIVEUP" {
@@ -3816,8 +3861,7 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut gfr_in: String = " in ".to_string();
         let mut gfr_ob: String = " {\n".to_string();
         let mut gfr_cb: String = "}\n".to_string();
-        let mut gfr_parts: Vec<String> = vec![pad.clone(), gfr_kw.clone(), giveup_var.clone(), gfr_in.clone(), iter_code.clone(), gfr_ob.clone(), body_code.clone(), pad.clone(), gfr_cb.clone()];
-        let mut for_code: String = s_join(gfr_parts.clone());
+        let mut for_code: String = [pad.as_str(), gfr_kw.as_str(), giveup_var.as_str(), gfr_in.as_str(), iter_code.as_str(), gfr_ob.as_str(), body_code.as_str(), pad.as_str(), gfr_cb.as_str()].concat();
         return make_result(for_code, body_end.clone());
     }
     let mut var_name: String = "_".to_string();
@@ -3858,14 +3902,12 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let second_code = code;
             let second_p = new_pos;
             let mut rng_dot: String = "..".to_string();
-            let mut rng_parts: Vec<String> = vec![first_code.clone(), rng_dot.clone(), second_code.clone()];
-            range_expr = s_join(rng_parts.clone());
+            range_expr = [first_code.as_str(), rng_dot.as_str(), second_code.as_str()].concat();
             body_tok_pos = second_p + 1;
         } else {
             // transpiler-deor/codegen_stmt/for.deor
             let mut rng0_pfx: String = "0..".to_string();
-            let mut rng0_parts: Vec<String> = vec![rng0_pfx.clone(), first_code.clone()];
-            range_expr = s_join(rng0_parts.clone());
+            range_expr = [rng0_pfx.as_str(), first_code.as_str()].concat();
             body_tok_pos = first_p + 1;
         }
     } else if kind == "LPAREN" {
@@ -3883,8 +3925,7 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let end_code = code;
         let end_p = new_pos;
         let mut rng2_dot: String = "..".to_string();
-        let mut rng2_parts: Vec<String> = vec![start_code.clone(), rng2_dot.clone(), end_code.clone()];
-        range_expr = s_join(rng2_parts.clone());
+        range_expr = [start_code.as_str(), rng2_dot.as_str(), end_code.as_str()].concat();
         body_tok_pos = end_p + 1;
     } else {
         // transpiler-deor/codegen_stmt/for.deor
@@ -3907,8 +3948,7 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut frc_in: String = " in ".to_string();
     let mut frc_ob: String = " {\n".to_string();
     let mut frc_cb: String = "}\n".to_string();
-    let mut frc_parts: Vec<String> = vec![pad.clone(), frc_kw.clone(), var_name.clone(), frc_in.clone(), range_expr.clone(), frc_ob.clone(), body_code.clone(), pad.clone(), frc_cb.clone()];
-    let mut for_code: String = s_join(frc_parts.clone());
+    let mut for_code: String = [pad.as_str(), frc_kw.as_str(), var_name.as_str(), frc_in.as_str(), range_expr.as_str(), frc_ob.as_str(), body_code.as_str(), pad.as_str(), frc_cb.as_str()].concat();
     return make_result(for_code, body_end.clone());
 }
 
@@ -3966,8 +4006,7 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut aas_fname: String = aas_fields[aas_fi as usize].clone();
             let mut aas_fp_sep: String = ": ".to_string();
             let mut aas_fp_cln: String = ".clone()".to_string();
-            let mut aas_fp: Vec<String> = vec![aas_fname.clone(), aas_fp_sep.clone(), aas_fname.clone(), aas_fp_cln.clone()];
-            aas_pairs.push(s_join(aas_fp.clone()).clone());
+            aas_pairs.push([aas_fname.as_str(), aas_fp_sep.as_str(), aas_fname.as_str(), aas_fp_cln.as_str()].concat().clone());
         }
         let mut aas_fld_sep: String = ", ".to_string();
         let mut aas_fields_code: String = s_join_with(aas_pairs.clone(), aas_fld_sep.clone());
@@ -3975,8 +4014,7 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut aas_eq: String = " = ".to_string();
         let mut aas_ob: String = " { ".to_string();
         let mut aas_cb: String = " };\n".to_string();
-        let mut aas_parts: Vec<String> = vec![pad.clone(), aas_let.clone(), aas_mut.clone(), ident_name.clone(), aas_eq.clone(), aas_struct.clone(), aas_ob.clone(), aas_fields_code.clone(), aas_cb.clone()];
-        let mut aas_code: String = s_join(aas_parts.clone());
+        let mut aas_code: String = [pad.as_str(), aas_let.as_str(), aas_mut.as_str(), ident_name.as_str(), aas_eq.as_str(), aas_struct.as_str(), aas_ob.as_str(), aas_fields_code.as_str(), aas_cb.as_str()].concat();
         let mut aas_next: i32 = adv_nl_ref(aas_fend.clone(), tokens.clone());
         return make_result(aas_code, aas_next.clone());
     }
@@ -3984,8 +4022,7 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         // transpiler-deor/codegen_stmt/as_binding.deor
         let mut aas_emp_pfx: String = "let mut ".to_string();
         let mut aas_emp_sfx: String = " = Vec::new();\n".to_string();
-        let mut aas_emp_parts: Vec<String> = vec![pad.clone(), aas_emp_pfx.clone(), ident_name.clone(), aas_emp_sfx.clone()];
-        let mut aas_empty_code: String = s_join(aas_emp_parts.clone());
+        let mut aas_empty_code: String = [pad.as_str(), aas_emp_pfx.as_str(), ident_name.as_str(), aas_emp_sfx.as_str()].concat();
         let mut aas_after_empty: i32 = after_as + 1.clone();
         let mut aas_empty_next: i32 = adv_nl_ref(aas_after_empty.clone(), tokens.clone());
         return make_result(aas_empty_code, aas_empty_next.clone());
@@ -4039,8 +4076,7 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 let mut aas_wob: String = " { ".to_string();
                 let mut aas_wsp: String = ", ..".to_string();
                 let mut aas_wcb: String = " };\n".to_string();
-                let mut aas_wparts: Vec<String> = vec![pad.clone(), aas_wlet.clone(), aas_wmutkw.clone(), ident_name.clone(), aas_weq.clone(), aas_struct_w.clone(), aas_wob.clone(), aas_wfields.clone(), aas_wsp.clone(), aas_src.clone(), aas_wcb.clone()];
-                let mut aas_with_code: String = s_join(aas_wparts.clone());
+                let mut aas_with_code: String = [pad.as_str(), aas_wlet.as_str(), aas_wmutkw.as_str(), ident_name.as_str(), aas_weq.as_str(), aas_struct_w.as_str(), aas_wob.as_str(), aas_wfields.as_str(), aas_wsp.as_str(), aas_src.as_str(), aas_wcb.as_str()].concat();
                 let mut aas_wnext: i32 = adv_nl_ref(aas_wend.clone(), tokens.clone());
                 return make_result(aas_with_code, aas_wnext.clone());
             }
@@ -4067,8 +4103,7 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut aas_let2: String = "let ".to_string();
     let mut aas_eq2: String = " = ".to_string();
     let mut aas_sc2: String = ";\n".to_string();
-    let mut aas_parts2: Vec<String> = vec![pad.clone(), aas_let2.clone(), aas_mut2.clone(), ident_name.clone(), aas_eq2.clone(), aas_val_code.clone(), aas_suffix.clone(), aas_sc2.clone()];
-    let mut aas_code2: String = s_join(aas_parts2.clone());
+    let mut aas_code2: String = [pad.as_str(), aas_let2.as_str(), aas_mut2.as_str(), ident_name.as_str(), aas_eq2.as_str(), aas_val_code.as_str(), aas_suffix.as_str(), aas_sc2.as_str()].concat();
     let mut aas_next2: i32 = adv_nl_ref(aas_val_end.clone(), tokens.clone());
     return make_result(aas_code2, aas_next2.clone());
 }
@@ -4126,15 +4161,13 @@ fn gen_call_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut shm_op: String = "(".to_string();
             let mut shm_cl: String = ".clone(), ".to_string();
             let mut shm_ea: String = ".clone());\n".to_string();
-            let mut shm_parts: Vec<String> = vec![pad.clone(), using_var.clone(), shm_eq.clone(), ident_name.clone(), shm_op.clone(), using_var.clone(), shm_cl.clone(), extra_arg.clone(), shm_ea.clone()];
-            shim_code = s_join(shm_parts.clone());
+            shim_code = [pad.as_str(), using_var.as_str(), shm_eq.as_str(), ident_name.as_str(), shm_op.as_str(), using_var.as_str(), shm_cl.as_str(), extra_arg.as_str(), shm_ea.as_str()].concat();
         } else {
             // transpiler-deor/codegen_stmt/call_stmt.deor
             let mut shm2_eq: String = " = ".to_string();
             let mut shm2_op: String = "(".to_string();
             let mut shm2_cl: String = ".clone());\n".to_string();
-            let mut shm2_parts: Vec<String> = vec![pad.clone(), using_var.clone(), shm2_eq.clone(), ident_name.clone(), shm2_op.clone(), using_var.clone(), shm2_cl.clone()];
-            shim_code = s_join(shm2_parts.clone());
+            shim_code = [pad.as_str(), using_var.as_str(), shm2_eq.as_str(), ident_name.as_str(), shm2_op.as_str(), using_var.as_str(), shm2_cl.as_str()].concat();
         }
         let mut re_destruct: String = make_destruct_code(using_var.clone(), depth.clone(), ctx.clone());
         shim_code = s_cat(shim_code.clone(), re_destruct.clone());
@@ -4152,20 +4185,17 @@ fn gen_call_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         // transpiler-deor/codegen_stmt/call_stmt.deor
         let mut prt_pfx: String = "println!(\"{}\", ".to_string();
         let mut prt_sfx: String = ");\n".to_string();
-        let mut prt_parts: Vec<String> = vec![pad.clone(), prt_pfx.clone(), args_code.clone(), prt_sfx.clone()];
-        call_code = s_join(prt_parts.clone());
+        call_code = [pad.as_str(), prt_pfx.as_str(), args_code.as_str(), prt_sfx.as_str()].concat();
     } else if ident_name == "crash" {
         // transpiler-deor/codegen_stmt/call_stmt.deor
         let mut crsh_pfx: String = "panic!(\"{}\", ".to_string();
         let mut crsh_sfx: String = ");\n".to_string();
-        let mut crsh_parts: Vec<String> = vec![pad.clone(), crsh_pfx.clone(), args_code.clone(), crsh_sfx.clone()];
-        call_code = s_join(crsh_parts.clone());
+        call_code = [pad.as_str(), crsh_pfx.as_str(), args_code.as_str(), crsh_sfx.as_str()].concat();
     } else {
         // transpiler-deor/codegen_stmt/call_stmt.deor
         let mut cal_op: String = "(".to_string();
         let mut cal_sfx: String = ");\n".to_string();
-        let mut cal_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), cal_op.clone(), args_code.clone(), cal_sfx.clone()];
-        call_code = s_join(cal_parts.clone());
+        call_code = [pad.as_str(), ident_name.as_str(), cal_op.as_str(), args_code.as_str(), cal_sfx.as_str()].concat();
     }
     let mut call_next: i32 = adv_nl_ref(after_paren.clone(), tokens.clone());
     return make_result(call_code, call_next.clone());
@@ -4205,8 +4235,7 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 let mut app_val: String = emit_val(val_code.clone(), kind.clone());
                 let mut app_pfx: String = ".push(".to_string();
                 let mut app_sfx: String = ");\n".to_string();
-                let mut app_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), app_pfx.clone(), app_val.clone(), app_sfx.clone()];
-                let mut app_code: String = s_join(app_parts.clone());
+                let mut app_code: String = [pad.as_str(), ident_name.as_str(), app_pfx.as_str(), app_val.as_str(), app_sfx.as_str()].concat();
                 let mut app_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
                 return make_result(app_code, app_next.clone());
             }
@@ -4227,8 +4256,7 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut idw_op: String = "[".to_string();
             let mut idw_mid: String = " as usize] = ".to_string();
             let mut idw_sfx: String = ";\n".to_string();
-            let mut idw_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), idw_op.clone(), idx_code.clone(), idw_mid.clone(), idx_val.clone(), idw_sfx.clone()];
-            let mut idw_code: String = s_join(idw_parts.clone());
+            let mut idw_code: String = [pad.as_str(), ident_name.as_str(), idw_op.as_str(), idx_code.as_str(), idw_mid.as_str(), idx_val.as_str(), idw_sfx.as_str()].concat();
             let mut idw_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
             return make_result(idw_code, idw_next.clone());
         }
@@ -4243,15 +4271,13 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let idx_end = new_pos;
         let mut rem_pfx: String = ".remove(".to_string();
         let mut rem_sfx: String = " as usize);\n".to_string();
-        let mut rem_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), rem_pfx.clone(), idx_code.clone(), rem_sfx.clone()];
-        let mut rem_code: String = s_join(rem_parts.clone());
+        let mut rem_code: String = [pad.as_str(), ident_name.as_str(), rem_pfx.as_str(), idx_code.as_str(), rem_sfx.as_str()].concat();
         let mut rem_next: i32 = adv_nl_ref(idx_end.clone(), tokens.clone());
         return make_result(rem_code, rem_next.clone());
     }
     let mut lm_unh_pfx: String = "/* unhandled_list_mut(".to_string();
     let mut lm_unh_sfx: String = ") */\n".to_string();
-    let mut lm_unh_parts: Vec<String> = vec![lm_unh_pfx.clone(), kind.clone(), lm_unh_sfx.clone()];
-    let mut lm_unhand: String = s_join(lm_unh_parts.clone());
+    let mut lm_unhand: String = [lm_unh_pfx.as_str(), kind.as_str(), lm_unh_sfx.as_str()].concat();
     let mut lm_next: i32 = pos + 1.clone();
     return make_result(lm_unhand, lm_next.clone());
 }
@@ -4289,8 +4315,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         if is_validator {
             // transpiler-deor/codegen_stmt/typed_binding.deor
             let mut err_msg: String = "/* error: use 'bad' not 'empty' for validator types */\n".to_string();
-            let mut err_parts: Vec<String> = vec![pad.clone(), err_msg.clone()];
-            let mut err_code: String = s_join(err_parts.clone());
+            let mut err_code: String = [pad.as_str(), err_msg.as_str()].concat();
             return make_result(err_code, after_empty.clone());
         }
         if is_shape {
@@ -4298,13 +4323,11 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut sh_pfx: String = "let mut ".to_string();
             let mut sh_mid: String = ": ".to_string();
             let mut sh_sfx: String = " = Vec::new();\n".to_string();
-            let mut sh_parts: Vec<String> = vec![pad.clone(), sh_pfx.clone(), var_name.clone(), sh_mid.clone(), rust_type.clone(), sh_sfx.clone()];
-            let mut sh_code: String = s_join(sh_parts.clone());
+            let mut sh_code: String = [pad.as_str(), sh_pfx.as_str(), var_name.as_str(), sh_mid.as_str(), rust_type.as_str(), sh_sfx.as_str()].concat();
             return make_result(sh_code, after_empty.clone());
         }
         let mut err_msg: String = "/* error: empty is only valid for list shapes */\n".to_string();
-        let mut err_parts: Vec<String> = vec![pad.clone(), err_msg.clone()];
-        let mut err_code: String = s_join(err_parts.clone());
+        let mut err_code: String = [pad.as_str(), err_msg.as_str()].concat();
         return make_result(err_code, after_empty.clone());
     }
     if kind == "LPAREN" {
@@ -4345,8 +4368,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                     let mut fname: String = field_names[fni as usize].clone();
                     let mut sfp_sep: String = ": ".to_string();
                     let mut sfp_cln: String = ".clone()".to_string();
-                    let mut sfp_parts: Vec<String> = vec![fname.clone(), sfp_sep.clone(), fv_code.clone(), sfp_cln.clone()];
-                    field_pairs.push(s_join(sfp_parts.clone()).clone());
+                    field_pairs.push([fname.as_str(), sfp_sep.as_str(), fv_code.as_str(), sfp_cln.as_str()].concat().clone());
                     fni = fni + 1;
                 }
                 fend = new_pos;
@@ -4363,8 +4385,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut scc_eq: String = " = ".to_string();
             let mut scc_ob: String = " { ".to_string();
             let mut scc_cb: String = " };\n".to_string();
-            let mut scc_parts: Vec<String> = vec![pad.clone(), scc_let.clone(), mut_kw.clone(), var_name.clone(), scc_eq.clone(), var_type.clone(), scc_ob.clone(), fields_code.clone(), scc_cb.clone()];
-            let mut sc_code: String = s_join(scc_parts.clone());
+            let mut sc_code: String = [pad.as_str(), scc_let.as_str(), mut_kw.as_str(), var_name.as_str(), scc_eq.as_str(), var_type.as_str(), scc_ob.as_str(), fields_code.as_str(), scc_cb.as_str()].concat();
             let mut sc_next: i32 = adv_nl_ref(fend.clone(), tokens.clone());
             return make_result(sc_code, sc_next.clone());
         }
@@ -4397,8 +4418,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut awc_col: String = ": ".to_string();
         let mut awc_eq: String = " = ".to_string();
         let mut awc_sc: String = ";\n".to_string();
-        let mut awc_parts: Vec<String> = vec![pad.clone(), awc_let.clone(), var_name.clone(), awc_col.clone(), rust_type.clone(), awc_eq.clone(), unwrap_expr.clone(), awc_sc.clone()];
-        let mut aw_code: String = s_join(awc_parts.clone());
+        let mut aw_code: String = [pad.as_str(), awc_let.as_str(), var_name.as_str(), awc_col.as_str(), rust_type.as_str(), awc_eq.as_str(), unwrap_expr.as_str(), awc_sc.as_str()].concat();
         let mut aw_next: i32 = adv_nl_ref(after_rparen.clone(), tokens.clone());
         return make_result(aw_code, aw_next.clone());
     }
@@ -4413,8 +4433,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut lst_col: String = ": ".to_string();
         let mut lst_eq: String = " = ".to_string();
         let mut lst_sc: String = ";\n".to_string();
-        let mut lst_parts: Vec<String> = vec![pad.clone(), lst_pfx.clone(), var_name.clone(), lst_col.clone(), rust_type.clone(), lst_eq.clone(), val_code.clone(), lst_sc.clone()];
-        let mut lst_code: String = s_join(lst_parts.clone());
+        let mut lst_code: String = [pad.as_str(), lst_pfx.as_str(), var_name.as_str(), lst_col.as_str(), rust_type.as_str(), lst_eq.as_str(), val_code.as_str(), lst_sc.as_str()].concat();
         let mut lst_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
         return make_result(lst_code, lst_next.clone());
     }
@@ -4428,13 +4447,11 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut non_pfx: String = "let mut ".to_string();
             let mut non_mid: String = ": Option<".to_string();
             let mut non_sfx: String = "> = None;\n".to_string();
-            let mut non_parts: Vec<String> = vec![pad.clone(), non_pfx.clone(), var_name.clone(), non_mid.clone(), rust_type.clone(), non_sfx.clone()];
-            let mut none_code: String = s_join(non_parts.clone());
+            let mut none_code: String = [pad.as_str(), non_pfx.as_str(), var_name.as_str(), non_mid.as_str(), rust_type.as_str(), non_sfx.as_str()].concat();
             return make_result(none_code, bad_next.clone());
         }
         let mut bad_err: String = "/* error: bad is only valid for validator types */\n".to_string();
-        let mut bad_err_parts: Vec<String> = vec![pad.clone(), bad_err.clone()];
-        let mut bad_err_code: String = s_join(bad_err_parts.clone());
+        let mut bad_err_code: String = [pad.as_str(), bad_err.as_str()].concat();
         return make_result(bad_err_code, bad_next.clone());
     }
     let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
@@ -4456,8 +4473,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut vld_new: String = "> = ".to_string();
         let mut vld_nop: String = "::new(".to_string();
         let mut vld_sc: String = ");\n".to_string();
-        let mut vld_parts: Vec<String> = vec![pad.clone(), vld_let.clone(), mut_kw.clone(), var_name.clone(), vld_opt.clone(), var_type.clone(), vld_new.clone(), var_type.clone(), vld_nop.clone(), val_code.clone(), vld_sc.clone()];
-        let mut vld_code: String = s_join(vld_parts.clone());
+        let mut vld_code: String = [pad.as_str(), vld_let.as_str(), mut_kw.as_str(), var_name.as_str(), vld_opt.as_str(), var_type.as_str(), vld_new.as_str(), var_type.as_str(), vld_nop.as_str(), val_code.as_str(), vld_sc.as_str()].concat();
         let mut vld_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
         return make_result(vld_code, vld_next.clone());
     }
@@ -4498,8 +4514,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut bnd_col: String = ": ".to_string();
     let mut bnd_eq: String = " = ".to_string();
     let mut bnd_sc: String = ";\n".to_string();
-    let mut bnd_parts: Vec<String> = vec![pad.clone(), bnd_let.clone(), mut_kw.clone(), var_name.clone(), bnd_col.clone(), rust_type.clone(), bnd_eq.clone(), val_code.clone(), suffix.clone(), bnd_sc.clone()];
-    let mut bind_code: String = s_join(bnd_parts.clone());
+    let mut bind_code: String = [pad.as_str(), bnd_let.as_str(), mut_kw.as_str(), var_name.as_str(), bnd_col.as_str(), rust_type.as_str(), bnd_eq.as_str(), val_code.as_str(), suffix.as_str(), bnd_sc.as_str()].concat();
     let mut bind_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
     return make_result(bind_code, bind_next.clone());
 }
@@ -4543,16 +4558,14 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         }
         let mut sf_ret_kw: String = "return ".to_string();
         let mut sf_ret_sc: String = ";\n".to_string();
-        let mut sf_ret_parts: Vec<String> = vec![pad.clone(), sf_ret_kw.clone(), sf_val_code.clone(), sf_suffix.clone(), sf_ret_sc.clone()];
-        let mut sf_ret_code: String = s_join(sf_ret_parts.clone());
+        let mut sf_ret_code: String = [pad.as_str(), sf_ret_kw.as_str(), sf_val_code.as_str(), sf_suffix.as_str(), sf_ret_sc.as_str()].concat();
         let mut sf_ret_next: i32 = adv_nl_ref(sf_val_end.clone(), tokens.clone());
         return make_result(sf_ret_code, sf_ret_next.clone());
     }
     if kind == "KW_BREAK" {
         // transpiler-deor/codegen_stmt/macros/stmt_flow.deor
         let mut sf_brk_kw: String = "break;\n".to_string();
-        let mut sf_brk_parts: Vec<String> = vec![pad.clone(), sf_brk_kw.clone()];
-        let mut sf_brk_code: String = s_join(sf_brk_parts.clone());
+        let mut sf_brk_code: String = [pad.as_str(), sf_brk_kw.as_str()].concat();
         let mut sf_brk_n: i32 = pos + 1.clone();
         let mut sf_brk_next: i32 = adv_nl_ref(sf_brk_n.clone(), tokens.clone());
         return make_result(sf_brk_code, sf_brk_next.clone());
@@ -4560,8 +4573,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     if kind == "KW_CONTINUE" {
         // transpiler-deor/codegen_stmt/macros/stmt_flow.deor
         let mut sf_cnt_kw: String = "continue;\n".to_string();
-        let mut sf_cnt_parts: Vec<String> = vec![pad.clone(), sf_cnt_kw.clone()];
-        let mut sf_cnt_code: String = s_join(sf_cnt_parts.clone());
+        let mut sf_cnt_code: String = [pad.as_str(), sf_cnt_kw.as_str()].concat();
         let mut sf_cnt_n: i32 = pos + 1.clone();
         let mut sf_cnt_next: i32 = adv_nl_ref(sf_cnt_n.clone(), tokens.clone());
         return make_result(sf_cnt_code, sf_cnt_next.clone());
@@ -4581,8 +4593,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut sb_close_brace: String = "}\n".to_string();
         let mut sb_blk_open: String = s_cat(pad.clone(), sb_open_brace.clone());
         let mut sb_blk_close: String = s_cat(pad.clone(), sb_close_brace.clone());
-        let mut sb_blk_parts: Vec<String> = vec![sb_blk_open.clone(), sb_body_code.clone(), sb_blk_close.clone()];
-        let mut sb_blk_code: String = s_join(sb_blk_parts.clone());
+        let mut sb_blk_code: String = [sb_blk_open.as_str(), sb_body_code.as_str(), sb_blk_close.as_str()].concat();
         return make_result(sb_blk_code, sb_body_end.clone());
     }
     if kind == "KW_RUST" {
@@ -4603,8 +4614,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 sb_padded.push(sb_empty_line.clone());
             } else {
                 // transpiler-deor/codegen_stmt/macros/stmt_blocks.deor
-                let mut sb_rsl_parts: Vec<String> = vec![pad.clone(), sb_rust_line.clone()];
-                sb_padded.push(s_join(sb_rsl_parts.clone()).clone());
+                sb_padded.push([pad.as_str(), sb_rust_line.as_str()].concat().clone());
             }
         }
         let mut sb_block_code: String = s_join_nl(sb_padded.clone());
@@ -4639,8 +4649,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 let su_expr_code = code;
                 let su_after_rp = new_pos + 1;
                 let mut su_avw_sfx: String = ".unwrap();\n".to_string();
-                let mut su_avw_parts: Vec<String> = vec![pad.clone(), su_expr_code.clone(), su_avw_sfx.clone()];
-                let mut su_avow_code: String = s_join(su_avw_parts.clone());
+                let mut su_avow_code: String = [pad.as_str(), su_expr_code.as_str(), su_avw_sfx.as_str()].concat();
                 let mut su_avow_next: i32 = adv_nl_ref(su_after_rp.clone(), tokens.clone());
                 return make_result(su_avow_code, su_avow_next.clone());
             }
@@ -4827,8 +4836,7 @@ fn gen_struct_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
             let mut fln_ind: String = "    ".to_string();
             let mut fln_sep: String = ": ".to_string();
             let mut fln_com: String = ",".to_string();
-            let mut fln_parts: Vec<String> = vec![fln_ind.clone(), field_name.clone(), fln_sep.clone(), rust_type.clone(), fln_com.clone()];
-            field_lines.push(s_join(fln_parts.clone()).clone());
+            field_lines.push([fln_ind.as_str(), field_name.as_str(), fln_sep.as_str(), rust_type.as_str(), fln_com.as_str()].concat().clone());
             cur = cur_next(cur.clone(), tokens.clone());
             let token_count = cur.token_count.clone();
             let pos = cur.pos.clone();
@@ -4839,8 +4847,7 @@ fn gen_struct_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut sdcl_pfx: String = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
     let mut sdcl_ob: String = " {\n".to_string();
     let mut sdcl_cb: String = "\n}\n\n".to_string();
-    let mut sdcl_parts: Vec<String> = vec![sdcl_pfx.clone(), struct_name.clone(), sdcl_ob.clone(), fields_code.clone(), sdcl_cb.clone()];
-    let mut decl: String = s_join(sdcl_parts.clone());
+    let mut decl: String = [sdcl_pfx.as_str(), struct_name.as_str(), sdcl_ob.as_str(), fields_code.as_str(), sdcl_cb.as_str()].concat();
     let pos = cur.pos.clone();
     return make_result(decl, pos.clone());
 }
@@ -4883,16 +4890,14 @@ fn gen_enum_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
             // transpiler-deor/codegen_decl/enum.deor
             let mut vln_ind: String = "    ".to_string();
             let mut vln_com: String = ",".to_string();
-            let mut vln_parts: Vec<String> = vec![vln_ind.clone(), value.clone(), vln_com.clone()];
-            variant_lines.push(s_join(vln_parts.clone()).clone());
+            variant_lines.push([vln_ind.as_str(), value.as_str(), vln_com.as_str()].concat().clone());
         }
     }
     let mut variants_code: String = s_join_nl(variant_lines.clone());
     let mut enm_pfx: String = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum ".to_string();
     let mut enm_ob: String = " {\n".to_string();
     let mut enm_cb: String = "\n}\n\n".to_string();
-    let mut enm_parts: Vec<String> = vec![enm_pfx.clone(), rust_name.clone(), enm_ob.clone(), variants_code.clone(), enm_cb.clone()];
-    let mut decl: String = s_join(enm_parts.clone());
+    let mut decl: String = [enm_pfx.as_str(), rust_name.as_str(), enm_ob.as_str(), variants_code.as_str(), enm_cb.as_str()].concat();
     let pos = cur.pos.clone();
     return make_result(decl, pos.clone());
 }
@@ -4903,8 +4908,7 @@ fn gen_list_shape_code(rust_name: String, rust_elem: String) -> String {
     let mut shp_pfx: String = "type ".to_string();
     let mut shp_mid: String = " = Vec<".to_string();
     let mut shp_sfx: String = ">;\n\n".to_string();
-    let mut shp_parts: Vec<String> = vec![shp_pfx.clone(), rust_name.clone(), shp_mid.clone(), rust_elem.clone(), shp_sfx.clone()];
-    return s_join(shp_parts.clone());
+    return [shp_pfx.as_str(), rust_name.as_str(), shp_mid.as_str(), rust_elem.as_str(), shp_sfx.as_str()].concat();
 }
 
 fn gen_func_shape_code(rust_name: String, rust_in: String, rust_out: String) -> String {
@@ -4913,18 +4917,16 @@ fn gen_func_shape_code(rust_name: String, rust_in: String, rust_out: String) -> 
     if !is_empty(rust_out.clone()) {
         // transpiler-deor/codegen_decl/shape.deor
         let mut ost_pfx: String = " -> ".to_string();
-        let mut ost_parts: Vec<String> = vec![ost_pfx.clone(), rust_out.clone()];
-        out_suffix = s_join(ost_parts.clone());
+        out_suffix = [ost_pfx.as_str(), rust_out.as_str()].concat();
     }
     let mut fns_pfx: String = "type ".to_string();
     let mut fns_mid: String = " = fn(".to_string();
     let mut fns_rp: String = ")".to_string();
     let mut fns_sfx: String = ";\n\n".to_string();
-    let mut fns_parts: Vec<String> = vec![fns_pfx.clone(), rust_name.clone(), fns_mid.clone(), rust_in.clone(), fns_rp.clone(), out_suffix.clone(), fns_sfx.clone()];
-    return s_join(fns_parts.clone());
+    return [fns_pfx.as_str(), rust_name.as_str(), fns_mid.as_str(), rust_in.as_str(), fns_rp.as_str(), out_suffix.as_str(), fns_sfx.as_str()].concat();
 }
 
-fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
+fn gen_shape_decl(tokens: TokensRef, pos: i32) -> ParseResult {
     // transpiler-deor/codegen_decl/shape.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut name_pos: i32 = pos + 1.clone();
@@ -4944,7 +4946,7 @@ fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
         let mut rust_elem: String = render_rust_type(elem_type.clone());
         let mut decl: String = gen_list_shape_code(rust_name.clone(), rust_elem.clone());
         let mut after: i32 = elem_pos + 1.clone();
-        let mut shape_next: i32 = adv_nl(after.clone(), tokens.clone());
+        let mut shape_next: i32 = adv_nl_ref(after.clone(), tokens.clone());
         return make_result(decl, shape_next.clone());
     }
     let mut t4_pos: i32 = pos + 4.clone();
@@ -4987,7 +4989,7 @@ fn gen_shape_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut rust_out: String = render_rust_type(out_type.clone());
     let mut decl: String = gen_func_shape_code(rust_name.clone(), rust_in.clone(), rust_out.clone());
     let mut after: i32 = func_end + 1.clone();
-    let mut fn_shape_next: i32 = adv_nl(after.clone(), tokens.clone());
+    let mut fn_shape_next: i32 = adv_nl_ref(after.clone(), tokens.clone());
     return make_result(decl, fn_shape_next.clone());
 }
 
@@ -5060,8 +5062,7 @@ fn gen_type_decl(tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut tsc_pfx: String = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ".to_string();
     let mut tsc_op: String = "(".to_string();
     let mut tsc_sfx: String = ");\n\n".to_string();
-    let mut tsc_parts: Vec<String> = vec![tsc_pfx.clone(), type_name.clone(), tsc_op.clone(), rust_param_type.clone(), tsc_sfx.clone()];
-    let mut struct_code: String = s_join(tsc_parts.clone());
+    let mut struct_code: String = [tsc_pfx.as_str(), type_name.as_str(), tsc_op.as_str(), rust_param_type.as_str(), tsc_sfx.as_str()].concat();
     let mut imp_pfx: String = "impl ".to_string();
     let mut imp_fn: String = " {\n    fn new(".to_string();
     let mut imp_col: String = ": ".to_string();
@@ -5069,8 +5070,7 @@ fn gen_type_decl(tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut imp_som: String = " {\n            Some(".to_string();
     let mut imp_inn: String = "(".to_string();
     let mut imp_sfx: String = "))\n        } else {\n            None\n        }\n    }\n}\n\n".to_string();
-    let mut imp_parts: Vec<String> = vec![imp_pfx.clone(), type_name.clone(), imp_fn.clone(), param_name.clone(), imp_col.clone(), rust_param_type.clone(), imp_ret.clone(), pred_code.clone(), imp_som.clone(), type_name.clone(), imp_inn.clone(), param_name.clone(), imp_sfx.clone()];
-    let mut impl_code: String = s_join(imp_parts.clone());
+    let mut impl_code: String = [imp_pfx.as_str(), type_name.as_str(), imp_fn.as_str(), param_name.as_str(), imp_col.as_str(), rust_param_type.as_str(), imp_ret.as_str(), pred_code.as_str(), imp_som.as_str(), type_name.as_str(), imp_inn.as_str(), param_name.as_str(), imp_sfx.as_str()].concat();
     let mut type_code: String = s_cat(struct_code, impl_code);
     return make_result(type_code, pos.clone());
 }
@@ -5139,8 +5139,7 @@ fn gen_fn_decl(fn_tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
             let mut param_name: String = value.clone();
             let mut rust_param_type: String = resolve_type(param_type.clone(), shape_reg.clone(), enum_reg.clone());
             let mut prm_sep: String = ": ".to_string();
-            let mut prm_parts: Vec<String> = vec![param_name.clone(), prm_sep.clone(), rust_param_type.clone()];
-            param_strs.push(s_join(prm_parts.clone()).clone());
+            param_strs.push([param_name.as_str(), prm_sep.as_str(), rust_param_type.as_str()].concat().clone());
             cur = cur_next(cur.clone(), fn_tokens.clone());
             let token_count = cur.token_count.clone();
             let pos = cur.pos.clone();
@@ -5166,17 +5165,47 @@ fn gen_fn_decl(fn_tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut body_len: i32 = (body_tokens_raw.len() as i32);
     let mut zero: i32 = 0;
     let mut body_last: i32 = body_len - 1.clone();
+    let mut _timer_label: String = ["[timer]     ", fn_name.as_str(), " collect-mut: "].concat();
+    // macro: start_timer (transpiler-deor/utility_macros.deor)
+    let mut _timer_start: i32 = now_ms();
+    // transpiler-deor/codegen_decl/function.deor
     let mut mut_names: Vec<String> = collect_mut_names(body_tokens_raw.clone(), zero.clone(), body_last.clone());
-    let mut var_type_reg: Vec<String> = build_var_type_reg(body_tokens_raw.clone());
+    // macro: end_timer (transpiler-deor/utility_macros.deor)
+    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+    let mut _timer_sfx: String = "ms".to_string();
+    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+    // transpiler-deor/codegen_decl/function.deor
+    let mut tokens: TokensRef = tokens_wrap(body_tokens_raw);
+    let mut _timer_label: String = ["[timer]     ", fn_name.as_str(), " var-type-reg: "].concat();
+    // macro: start_timer (transpiler-deor/utility_macros.deor)
+    let mut _timer_start: i32 = now_ms();
+    // transpiler-deor/codegen_decl/function.deor
+    let mut var_type_reg: Vec<String> = build_var_type_reg(tokens.clone());
+    // macro: end_timer (transpiler-deor/utility_macros.deor)
+    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+    let mut _timer_sfx: String = "ms".to_string();
+    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+    // transpiler-deor/codegen_decl/function.deor
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
-    let mut tokens: TokensRef = tokens_wrap(body_tokens_raw);
 /* unhandled(IDENT) */
     let body_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
     let mut body_ctx: RcCtx = make_rctx(body_ctx_raw);
     let mut body_pos: i32 = 0;
     let mut body_depth: i32 = 1;
+    let mut _timer_label: String = ["[timer]     ", fn_name.as_str(), " gen-block: "].concat();
+    // macro: start_timer (transpiler-deor/utility_macros.deor)
+    let mut _timer_start: i32 = now_ms();
+    // transpiler-deor/codegen_decl/function.deor
     let mut body_r: ParseResult = gen_block(body_pos.clone(), body_depth.clone(), body_ctx);
+    // macro: end_timer (transpiler-deor/utility_macros.deor)
+    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+    let mut _timer_sfx: String = "ms".to_string();
+    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+    // transpiler-deor/codegen_decl/function.deor
     let code = body_r.code;
     let new_pos = body_r.new_pos;
     let body_code = code;
@@ -5187,49 +5216,47 @@ fn gen_fn_decl(fn_tokens: Vec<Token>, pos: i32, ctx: RcCtx) -> ParseResult {
     if !is_empty(ret_type.clone()) {
         // transpiler-deor/codegen_decl/function.deor
         let mut rts_pfx: String = " -> ".to_string();
-        let mut rts_parts: Vec<String> = vec![rts_pfx.clone(), ret_type.clone()];
-        ret_suffix = s_join(rts_parts.clone());
+        ret_suffix = [rts_pfx.as_str(), ret_type.as_str()].concat();
     }
     let mut fnc_kw: String = "fn ".to_string();
     let mut fnc_op: String = "(".to_string();
     let mut fnc_rp: String = ")".to_string();
     let mut fnc_ob: String = " {\n".to_string();
     let mut fnc_cb: String = "}\n\n".to_string();
-    let mut fnc_parts: Vec<String> = vec![fnc_kw.clone(), fn_name.clone(), fnc_op.clone(), params_code.clone(), fnc_rp.clone(), ret_suffix.clone(), fnc_ob.clone(), body_code.clone(), fnc_cb.clone()];
-    let mut fn_code: String = s_join(fnc_parts.clone());
+    let mut fn_code: String = [fnc_kw.as_str(), fn_name.as_str(), fnc_op.as_str(), params_code.as_str(), fnc_rp.as_str(), ret_suffix.as_str(), fnc_ob.as_str(), body_code.as_str(), fnc_cb.as_str()].concat();
     return make_result(fn_code, body_end.clone());
 }
 
 // transpiler-deor/codegen_decl/raw.deor
-fn gen_raw_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
+fn gen_raw_decl(tokens: TokensRef, pos: i32) -> ParseResult {
     // transpiler-deor/codegen_decl/raw.deor
     let mut name_pos: i32 = pos + 1.clone();
     let mut after: i32 = name_pos + 1.clone();
     let mut emp: String = "".to_string();
-    let mut raw_next: i32 = adv_nl(after.clone(), tokens.clone());
+    let mut raw_next: i32 = adv_nl_ref(after.clone(), tokens.clone());
     return make_result(emp, raw_next.clone());
 }
 
 // transpiler-deor/main.deor
 fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     // transpiler-deor/main.deor
+    let mut all_ref: TokensRef = tokens_wrap(all_tokens.clone());
     let mut _timer_label: String = "[timer]   registries: ".to_string();
     // macro: start_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_start: i32 = now_ms();
     // transpiler-deor/main.deor
-    let mut struct_reg: Vec<String> = build_struct_reg(all_tokens.clone());
-    let mut shape_reg: Vec<String> = build_shape_reg(all_tokens.clone());
-    let mut enum_reg: Vec<String> = build_enum_reg(all_tokens.clone());
-    let mut variant_reg: Vec<String> = build_variant_reg(all_tokens.clone(), enum_reg.clone());
-    let mut type_reg: Vec<String> = build_type_reg(all_tokens.clone());
+    let mut struct_reg: Vec<String> = build_struct_reg(all_ref.clone());
+    let mut shape_reg: Vec<String> = build_shape_reg(all_ref.clone());
+    let mut enum_reg: Vec<String> = build_enum_reg(all_ref.clone());
+    let mut variant_reg: Vec<String> = build_variant_reg(all_ref.clone(), enum_reg.clone());
+    let mut type_reg: Vec<String> = build_type_reg(all_ref.clone());
     let mut mut_names: Vec<String> = Vec::new();
-    let mut var_type_reg: Vec<String> = build_var_type_reg(all_tokens.clone());
+    let mut var_type_reg: Vec<String> = build_var_type_reg(all_ref.clone());
     // macro: end_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
     let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
     let mut _timer_sfx: String = "ms".to_string();
-    let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
-    println!("{}", s_join(_timer_parts.clone()));
+    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
     // transpiler-deor/main.deor
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
@@ -5240,6 +5267,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     let mut ctx: RcCtx = make_rctx(ctx_raw);
     let mut parts: Vec<String> = Vec::new();
     let mut token_count: i32 = (all_tokens.len() as i32);
+    println!("{}", ["[diag] token_count: ", n_to_str(token_count.clone()).as_str()].concat());
     let mut pos: i32 = 0;
     let mut last_file: String = "".to_string();
     let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
@@ -5284,7 +5312,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
         }
         if kind == "KW_SHAPE" {
             // transpiler-deor/main.deor
-            let mut result: ParseResult = gen_shape_decl(all_tokens.clone(), pos.clone());
+            let mut result: ParseResult = gen_shape_decl(all_ref.clone(), pos.clone());
             let code = result.code;
             let new_pos = result.new_pos;
             parts.push(code.clone());
@@ -5320,7 +5348,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
         }
         if kind == "KW_RAW" {
             // transpiler-deor/main.deor
-            let mut result: ParseResult = gen_raw_decl(all_tokens.clone(), pos.clone());
+            let mut result: ParseResult = gen_raw_decl(all_ref.clone(), pos.clone());
             let code = result.code;
             let new_pos = result.new_pos;
             parts.push(code.clone());
@@ -5344,8 +5372,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
     let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
     let mut _timer_sfx: String = "ms".to_string();
-    let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
-    println!("{}", s_join(_timer_parts.clone()));
+    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
     // transpiler-deor/main.deor
     return s_join(parts.clone());
 }
@@ -5370,8 +5397,7 @@ fn main() {
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
-        let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
-        println!("{}", s_join(_timer_parts.clone()));
+        println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
         // transpiler-deor/main.deor
         let mut _timer_label: String = "[timer] macro-expand: ".to_string();
         // macro: start_timer (transpiler-deor/utility_macros.deor)
@@ -5382,8 +5408,7 @@ fn main() {
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
-        let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
-        println!("{}", s_join(_timer_parts.clone()));
+        println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
         // transpiler-deor/main.deor
         validate_tokens(tokens.clone());
         let mut _timer_label: String = "[timer] total-codegen: ".to_string();
@@ -5395,8 +5420,7 @@ fn main() {
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
-        let mut _timer_parts: Vec<String> = vec![_timer_label.clone(), _timer_str.clone(), _timer_sfx.clone()];
-        println!("{}", s_join(_timer_parts.clone()));
+        println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
         // transpiler-deor/main.deor
         f_write(output_path.clone(), rust_code.clone());
     }
