@@ -2798,8 +2798,6 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let var_type_reg = ctx.var_type_reg.clone();
     let tokens = ctx.tokens.clone();
     let mut token_count: i32 = (tokens.len() as i32);
-    let mut indent: String = "    ".to_string();
-    let mut pad: String = s_repeat(indent.clone(), depth.clone());
     let mut fields: Vec<String> = Vec::new();
     let mut cur: i32 = pos + 1.clone();
     while cur < token_count {
@@ -2820,9 +2818,10 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut src_r: ParseResult = gen_expr(tokens.clone(), src_pos.clone(), ctx.clone());
     let mut src_code: String = pr_code(src_r.clone());
     let mut src_end: i32 = pr_pos(src_r.clone());
-    let mut after: i32 = adv_nl_ref(src_end.clone(), tokens.clone());
     let mut dest_lines: Vec<String> = Vec::new();
     let mut field_count: i32 = (fields.len() as i32);
+    let mut indent: String = "    ".to_string();
+    let mut pad: String = s_repeat(indent.clone(), depth.clone());
     for field_index in 0..field_count {
         let mut field: String = fields[field_index as usize].clone();
         let mut is_mut: bool = list_has(mut_names.clone(), field.clone());
@@ -2837,6 +2836,64 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut dst_parts: Vec<String> = vec![pad.clone(), dst_let.clone(), mut_kw.clone(), field.clone(), dst_eq.clone(), src_code.clone(), dst_dot.clone(), field.clone(), dst_cln.clone()];
         dest_lines.push(s_join(dst_parts.clone()).clone());
     }
+    let mut after: i32 = adv_nl_ref(src_end.clone(), tokens.clone());
+    let mut dest_code: String = s_join_nl(dest_lines.clone());
+    let mut newline: String = "\n".to_string();
+    dest_code = s_cat(dest_code.clone(), newline.clone());
+    return make_result(dest_code, after.clone());
+}
+
+fn gen_move_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
+    let variant_reg = ctx.variant_reg.clone();
+    let shape_reg = ctx.shape_reg.clone();
+    let struct_reg = ctx.struct_reg.clone();
+    let enum_reg = ctx.enum_reg.clone();
+    let mut_names = ctx.mut_names.clone();
+    let type_reg = ctx.type_reg.clone();
+    let using_type = ctx.using_type.clone();
+    let using_var = ctx.using_var.clone();
+    let var_type_reg = ctx.var_type_reg.clone();
+    let tokens = ctx.tokens.clone();
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut fields: Vec<String> = Vec::new();
+    let mut cur: i32 = pos + 1.clone();
+    while cur < token_count {
+        let mut field_token: Token = tokens[cur as usize].clone();
+        let kind = field_token.kind.clone();
+        let value = field_token.value.clone();
+        if kind == "RPAREN" {
+            cur = cur + 1;
+            break;
+        } else if kind == "COMMA" {
+            cur = cur + 1;
+        } else if kind == "IDENT" {
+            fields.push(value.clone());
+            cur = cur + 1;
+        }
+    }
+    let mut src_pos: i32 = cur + 1.clone();
+    let mut src_r: ParseResult = gen_expr(tokens.clone(), src_pos.clone(), ctx.clone());
+    let mut src_code: String = pr_code(src_r.clone());
+    let mut src_end: i32 = pr_pos(src_r.clone());
+    let mut dest_lines: Vec<String> = Vec::new();
+    let mut field_count: i32 = (fields.len() as i32);
+    let mut indent: String = "    ".to_string();
+    let mut pad: String = s_repeat(indent.clone(), depth.clone());
+    for field_index in 0..field_count {
+        let mut field: String = fields[field_index as usize].clone();
+        let mut is_mut: bool = list_has(mut_names.clone(), field.clone());
+        let mut mut_kw: String = "".to_string();
+        if is_mut {
+            mut_kw = "mut ".to_string();
+        }
+        let mut dst_let: String = "let ".to_string();
+        let mut dst_eq: String = " = ".to_string();
+        let mut dst_dot: String = ".".to_string();
+        let mut dst_sc: String = ";".to_string();
+        let mut dst_parts: Vec<String> = vec![pad.clone(), dst_let.clone(), mut_kw.clone(), field.clone(), dst_eq.clone(), src_code.clone(), dst_dot.clone(), field.clone(), dst_sc.clone()];
+        dest_lines.push(s_join(dst_parts.clone()).clone());
+    }
+    let mut after: i32 = adv_nl_ref(src_end.clone(), tokens.clone());
     let mut dest_code: String = s_join_nl(dest_lines.clone());
     let mut newline: String = "\n".to_string();
     dest_code = s_cat(dest_code.clone(), newline.clone());
@@ -3665,6 +3722,14 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         sb_block_code = s_cat(sb_block_code.clone(), newline.clone());
         let mut sb_block_next: i32 = sb_block_pos + 1.clone();
         return make_result(sb_block_code, sb_block_next.clone());
+    }
+    if kind == "KW_GIVEUP" {
+        let mut smd_next: i32 = pos + 1.clone();
+        let mut smd_next_tok: Token = tokens[smd_next as usize].clone();
+        let kind = smd_next_tok.kind.clone();
+        if kind == "LPAREN" {
+            return gen_move_destructure(smd_next.clone(), depth.clone(), ctx.clone());
+        }
     }
     if kind == "LPAREN" {
         let mut su_peek: i32 = pos + 1.clone();

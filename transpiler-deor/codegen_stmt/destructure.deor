@@ -1,14 +1,5 @@
-
-# Generates code for a `(f1, f2) in source` destructuring statement. Each named field
-# becomes a separate `let [mut] field = source.field.clone();` line. `mut` is applied
-# when the field appears in mut_names because it is reassigned later in the function.
-fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens) in ctx
-	int token_count = len(tokens)
-	string indent = "    "
-	string pad = s_repeat(indent, depth)
-	strList fields = empty
-	int cur = pos + 1
+macro for_collect_fields_into_fields_list
+	# collects fields names of the struct destructure into fields
 	for if cur < token_count
 		Token field_token = tokens at cur
 		(kind, value) in field_token
@@ -20,13 +11,8 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 		else if kind is "IDENT"
 			fields at end = value
 			cur = cur + 1
-	int src_pos = cur + 1
-	ParseResult src_r = gen_expr(tokens, src_pos, ctx)
-	string src_code = pr_code(src_r)
-	int src_end = pr_pos(src_r)
-	int after = adv_nl_ref(src_end, tokens)
-	strList dest_lines = empty
-	int field_count = len(fields)
+
+macro for_build_fields_into_mut_clones
 	for field_index in range(field_count)
 		string field = fields at field_index
 		bool is_mut = list_has(mut_names, field)
@@ -39,7 +25,82 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 		string dst_cln = ".clone();"
 		strList dst_parts = [pad, dst_let, mut_kw, field, dst_eq, src_code, dst_dot, field, dst_cln]
 		dest_lines at end = s_join(dst_parts)
+
+
+macro initialize_gen_destructure
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens) in ctx
+	int token_count = len(tokens)
+	strList fields = empty
+	int cur = pos + 1
+
+# Generates code for a `(f1, f2) in source` destructuring statement. Each named field
+# becomes a separate `let [mut] field = source.field.clone();` line. `mut` is applied
+# when the field appears in mut_names because it is reassigned later in the function.
+fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
+
+	macro_run initialize_gen_destructure
+	macro_run for_collect_fields_into_fields_list
+
+	# src is what we call right of in
+	int src_pos = cur + 1
+
+	# could be a complex like fn() returning to the in, so figure that out:
+	ParseResult src_r = gen_expr(tokens, src_pos, ctx)
+
+	string src_code = pr_code(src_r)
+	int src_end = pr_pos(src_r)
+
+	strList dest_lines = empty
+	int field_count = len(fields)
+
+	string indent = "    "
+	string pad = s_repeat(indent, depth)
+
+	macro_run for_build_fields_into_mut_clones
+
+	# hands off final code and sets up the next loop
+	int after = adv_nl_ref(src_end, tokens)
 	string dest_code = s_join_nl(dest_lines)
 	string newline = "\n"
 	dest_code = s_cat(dest_code, newline)
+
 	return make_result(move dest_code, after)
+
+macro for_build_fields_into_moves
+	for field_index in range(field_count)
+    	string field = fields at field_index
+    	bool is_mut = list_has(mut_names, field)
+    	string mut_kw = ""
+
+    	if is_mut
+    		mut_kw = "mut "
+
+    	string dst_let = "let "
+    	string dst_eq = " = "
+    	string dst_dot = "."
+    	string dst_sc = ";"
+    	strList dst_parts = [pad, dst_let, mut_kw, field, dst_eq, src_code, dst_dot, field, dst_sc]
+    	dest_lines at end = s_join(dst_parts)
+
+# Generates code for a `move (f1, f2) in source` destructuring statement. Each named
+# field becomes a separate `let [mut] field = source.field;` line — moves instead of
+# cloning. Source becomes unavailable after. Safe when source is not used afterward.
+fn ParseResult gen_move_destructure(int pos, int depth, RcCtx ctx)
+
+	macro_run initialize_gen_destructure
+    macro_run for_collect_fields_into_fields_list
+
+    int src_pos = cur + 1
+    ParseResult src_r = gen_expr(tokens, src_pos, ctx)
+    string src_code = pr_code(src_r)
+    int src_end = pr_pos(src_r)
+    strList dest_lines = empty
+    int field_count = len(fields)
+    string indent = "    "
+    string pad = s_repeat(indent, depth)
+    macro_run for_build_fields_into_moves
+    int after = adv_nl_ref(src_end, tokens)
+    string dest_code = s_join_nl(dest_lines)
+    string newline = "\n"
+    dest_code = s_cat(dest_code, newline)
+    return make_result(move dest_code, after)

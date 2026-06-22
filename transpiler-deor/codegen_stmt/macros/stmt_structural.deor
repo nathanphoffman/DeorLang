@@ -1,9 +1,20 @@
 
+
 # Handles structural statement forms — those that reshape or unpack data.
+#   move (f1, f2) in src  → move destructuring: delegates to gen_move_destructure
+
 #   (avow expr)       → statement-level forced unwrap: `expr.unwrap();`
 #   (f1, f2) in src  → destructuring: delegates to gen_destructure
 #   using varName     → unpacks a struct into locals, runs body with re-binding shims
 macro stmt_structural
+
+    if kind is "KW_GIVEUP"
+    	int smd_next = pos + 1
+    	Token smd_next_tok = tokens at smd_next
+    	(kind) in smd_next_tok
+    	if kind is "LPAREN"
+    		return gen_move_destructure(smd_next, depth, ctx)
+
 	if kind is "LPAREN"
 		int su_peek = pos + 1
 		if su_peek < token_count
