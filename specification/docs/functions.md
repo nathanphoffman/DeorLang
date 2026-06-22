@@ -151,22 +151,32 @@ fn abs(val: i32) -> i32 {
 
 ## Validator Type Returns
 
-A function whose return type is a validator type may return `None` through its return variable — the caller knows to check. `return empty` is a transpiler error; always return a named typed variable.
+A function whose return type is a validator type returns either a named typed variable or `bad`. `bad` explicitly signals that the function could not produce a valid value — for example, a `get_positive` function passed `-1` should return `bad`. `empty` and `none` are both transpiler errors in return position: `empty` represents a temporary list state and has no meaning as a return value; `none` is not a Deor keyword.
 
 ```
 shape rollList = list of Roll
 
 fn Roll find_best(rollList rolls)
-    Roll best = empty
+    Roll best = bad
 
     for roll in rolls
         if roll is not bad
             best = roll
 
-    return best    # may be None if rolls is empty or all None
+    return best    # bad if rolls is empty or all bad
 ```
 
-Primitive return types (`fn int`, `fn bool`, etc.) can never be `None`.
+When a function can fail, return `bad` directly:
+
+```
+fn Positive get_positive(int num)
+    if num < 1
+        return bad
+    Positive result = num
+    return result
+```
+
+Primitive return types (`fn int`, `fn bool`, etc.) can never be `bad`.
 
 ---
 

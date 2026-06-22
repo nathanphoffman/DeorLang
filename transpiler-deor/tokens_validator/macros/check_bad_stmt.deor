@@ -1,0 +1,19 @@
+
+macro check_bad_stmt
+	if paren_depth is 0
+		int next1 = pos + 1
+		int next2 = pos + 2
+		if next2 < token_count
+			Token tok_one = tokens at next1
+			Token tok_two = tokens at next2
+			(kind) in tok_one
+			string one_kind = kind
+			(kind) in tok_two
+			string two_kind = kind
+			if one_kind is "IDENT"
+				bool two_is_str = two_kind is "STRING"
+				bool two_is_int = two_kind is "INT"
+				bool two_is_flt = two_kind is "FLOAT"
+				bool two_is_lit = two_is_str or two_is_int or two_is_flt
+				if two_is_lit
+					errors at end = val_err(tok, lbl_var, rule_bad_stmt)

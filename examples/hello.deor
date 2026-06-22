@@ -94,7 +94,7 @@ fn void main()
 	if thing is empty
 		print("array is empty")
 
-	thing insert "test"
+	#thing insert "test"
 
 	thing = ["test","test1"]
 	

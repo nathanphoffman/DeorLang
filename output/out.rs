@@ -1443,6 +1443,7 @@ fn validate_tokens(tokens: Vec<Token>) {
     let mut rule_camel: String = "name must be camelCase (start lowercase, no underscores)".to_string();
     let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters)".to_string();
     let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args".to_string();
+    let mut rule_bad_stmt: String = "literal cannot follow 'name ident' — capture in a named variable first".to_string();
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
@@ -1790,6 +1791,27 @@ fn validate_tokens(tokens: Vec<Token>) {
                     }
                     if !is_snake(var_name.clone()) {
                         errors.push(val_err(tok_one.clone(), lbl_var.clone(), rule_snake.clone()).clone());
+                    }
+                }
+            }
+            if paren_depth == 0 {
+                let mut next1: i32 = pos + 1.clone();
+                let mut next2: i32 = pos + 2.clone();
+                if next2 < token_count {
+                    let mut tok_one: Token = tokens[next1 as usize].clone();
+                    let mut tok_two: Token = tokens[next2 as usize].clone();
+                    let kind = tok_one.kind.clone();
+                    let mut one_kind: String = kind.clone();
+                    let kind = tok_two.kind.clone();
+                    let mut two_kind: String = kind.clone();
+                    if one_kind == "IDENT" {
+                        let mut two_is_str: bool = two_kind == "STRING".clone();
+                        let mut two_is_int: bool = two_kind == "INT".clone();
+                        let mut two_is_flt: bool = two_kind == "FLOAT".clone();
+                        let mut two_is_lit: bool = two_is_str || two_is_int || two_is_flt.clone();
+                        if two_is_lit {
+                            errors.push(val_err(tok.clone(), lbl_var.clone(), rule_bad_stmt.clone()).clone());
+                        }
                     }
                 }
             }

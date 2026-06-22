@@ -40,6 +40,7 @@ import "transpiler-deor/tokens_validator/macros/ident_validator.deor"
 import "transpiler-deor/tokens_validator/macros/check_var_decl.deor"
 import "transpiler-deor/tokens_validator/macros/check_rust_generic.deor"
 import "transpiler-deor/tokens_validator/macros/check_call_args.deor"
+import "transpiler-deor/tokens_validator/macros/check_bad_stmt.deor"
 import "transpiler-deor/tokens_validation.deor"
 
 

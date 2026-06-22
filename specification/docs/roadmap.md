@@ -1,12 +1,12 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 
+# Considerations for v2
+- Should people be able to return bad or should it be more strict?  exclusively to the validator?
+
 # Easy Fixes
 
----- checking with ai:
--- Can you return empty, none or bad from a function?
- - return empty vs return none — functions.md and types.md give conflicting lists of what's a
-  transpiler error
+
 
 
 # New audit June 21st

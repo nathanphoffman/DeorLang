@@ -219,13 +219,15 @@ if max_capacity != None {
 
 ---
 ### Functions Returning Validator Types
-A function whose return type is a validator type may return a `None` value through its return variable. `return empty` and `return none` are both transpiler errors — always return a named typed variable. The caller knows the return may be `None` because the return type is a validator type.
+A function whose return type is a validator type can return either a named typed variable or `bad`. Use `bad` when the function genuinely cannot produce a valid value — for example, a function that wraps a negative number into a `Positive` type should return `bad` when given `-1`.
+
+`return empty` is a transpiler error — `empty` represents a temporary uninitialized list state and has no meaning as a return value. `return none` is also a transpiler error — `none` is not a Deor keyword.
 
 ```
 shape rollResultList = list of RollResult
 
 fn Roll find_crit(rollResultList rolls)
-    Roll found = empty
+    Roll found = bad
 
     for roll in rolls
         value in roll
