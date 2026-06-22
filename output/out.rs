@@ -1806,7 +1806,7 @@ fn is_snake(name: String) -> bool {
 }
 
 // transpiler-deor/tokens_validator/arg_helpers.deor
-fn arg_is_named(tokens: Vec<Token>, scan_pos: i32, kind: String) -> bool {
+fn arg_is_named(tokens: TokensRef, scan_pos: i32, kind: String) -> bool {
     // transpiler-deor/tokens_validator/arg_helpers.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut check_pos: i32 = scan_pos.clone();
@@ -1846,7 +1846,7 @@ fn arg_is_named(tokens: Vec<Token>, scan_pos: i32, kind: String) -> bool {
     return true;
 }
 
-fn count_call_args(tokens: Vec<Token>, lp_pos: i32) -> i32 {
+fn count_call_args(tokens: TokensRef, lp_pos: i32) -> i32 {
     // transpiler-deor/tokens_validator/arg_helpers.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut cur: i32 = lp_pos + 1.clone();
@@ -1935,7 +1935,7 @@ fn handle_errors(errors: Vec<String>) {
 // transpiler-deor/tokens_validation.deor
 type FnTestRule = fn(String) -> bool;
 
-fn validate_tokens(tokens: Vec<Token>) {
+fn validate_tokens(tokens: TokensRef) {
     // transpiler-deor/tokens_validation.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut errors: Vec<String> = Vec::new();
@@ -5237,29 +5237,9 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut body_len: i32 = (body_tokens_raw.len() as i32);
     let mut zero: i32 = 0;
     let mut body_last: i32 = body_len - 1.clone();
-    let mut _timer_label: String = ["[timer]     ", fn_name.as_str(), " collect-mut: "].concat();
-    // macro: start_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_start: i32 = now_ms();
-    // transpiler-deor/codegen_decl/function.deor
     let mut mut_names: Vec<String> = collect_mut_names(body_tokens_raw.clone(), zero.clone(), body_last.clone());
-    // macro: end_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
-    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-    let mut _timer_sfx: String = "ms".to_string();
-    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-    // transpiler-deor/codegen_decl/function.deor
     let mut tokens: TokensRef = tokens_wrap(body_tokens_raw);
-    let mut _timer_label: String = ["[timer]     ", fn_name.as_str(), " var-type-reg: "].concat();
-    // macro: start_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_start: i32 = now_ms();
-    // transpiler-deor/codegen_decl/function.deor
     let mut var_type_reg: Vec<String> = build_var_type_reg(tokens.clone());
-    // macro: end_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
-    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-    let mut _timer_sfx: String = "ms".to_string();
-    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-    // transpiler-deor/codegen_decl/function.deor
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
 /* unhandled(IDENT) */
@@ -5267,17 +5247,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut body_ctx: RcCtx = make_rctx(body_ctx_raw);
     let mut body_pos: i32 = 0;
     let mut body_depth: i32 = 1;
-    let mut _timer_label: String = ["[timer]     ", fn_name.as_str(), " gen-block: "].concat();
-    // macro: start_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_start: i32 = now_ms();
-    // transpiler-deor/codegen_decl/function.deor
     let mut body_r: ParseResult = gen_block(body_pos.clone(), body_depth.clone(), body_ctx);
-    // macro: end_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
-    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-    let mut _timer_sfx: String = "ms".to_string();
-    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-    // transpiler-deor/codegen_decl/function.deor
     let code = body_r.code;
     let new_pos = body_r.new_pos;
     let body_code = code;
@@ -5310,9 +5280,8 @@ fn gen_raw_decl(tokens: TokensRef, pos: i32) -> ParseResult {
 }
 
 // transpiler-deor/main.deor
-fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
+fn generate_rust_from_tokens(all_ref: TokensRef) -> String {
     // transpiler-deor/main.deor
-    let mut all_ref: TokensRef = tokens_wrap(all_tokens.clone());
     let mut _timer_label: String = "[timer]   registries: ".to_string();
     // macro: start_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_start: i32 = now_ms();
@@ -5482,12 +5451,23 @@ fn main() {
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
         // transpiler-deor/main.deor
-        validate_tokens(tokens.clone());
+        let mut tokens_ref: TokensRef = tokens_wrap(tokens);
+        let mut _timer_label: String = "[timer] validate: ".to_string();
+        // macro: start_timer (transpiler-deor/utility_macros.deor)
+        let mut _timer_start: i32 = now_ms();
+        // transpiler-deor/main.deor
+        validate_tokens(tokens_ref.clone());
+        // macro: end_timer (transpiler-deor/utility_macros.deor)
+        let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
+        let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+        let mut _timer_sfx: String = "ms".to_string();
+        println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+        // transpiler-deor/main.deor
         let mut _timer_label: String = "[timer] total-codegen: ".to_string();
         // macro: start_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_start: i32 = now_ms();
         // transpiler-deor/main.deor
-        let mut rust_code: String = generate_rust_from_tokens(tokens.clone());
+        let mut rust_code: String = generate_rust_from_tokens(tokens_ref.clone());
         // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());

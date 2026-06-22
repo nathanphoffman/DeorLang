@@ -8,7 +8,7 @@ shape fnTestRule = func of string to bool
 
 # Walks the merged token list and enforces naming conventions before codegen runs.
 # Prints all violations and exits with code 1 if any are found.
-fn void validate_tokens(tokenList tokens)
+fn void validate_tokens(TokensRef tokens)
 	int token_count = len(tokens)
 	strList errors = empty
 	int pos = 0

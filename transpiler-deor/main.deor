@@ -4,8 +4,7 @@ import "transpiler-deor/imports.deor"
 # all six registries (struct, shape, enum, variant, type, var_type), then walks the
 # token stream dispatching each top-level declaration to its gen_* function and
 # concatenating the results into a single Rust source string.
-fn string generate_rust_from_tokens(tokenList all_tokens)
-	TokensRef all_ref = tokens_wrap(all_tokens)
+fn string generate_rust_from_tokens(TokensRef all_ref)
 	string _timer_label = "[timer]   registries: "
 	macro_run start_timer
 	strList struct_reg = build_struct_reg(all_ref)
@@ -123,11 +122,15 @@ fn void main()
 		macro_run start_timer
 		tokenList tokens = expand_deor_macros(raw_tokens)
 		macro_run end_timer
-		validate_tokens(tokens)
+		TokensRef tokens_ref = tokens_wrap(move tokens)
+		string _timer_label = "[timer] validate: "
+		macro_run start_timer
+		validate_tokens(tokens_ref)
+		macro_run end_timer
 
 		string _timer_label = "[timer] total-codegen: "
 		macro_run start_timer
-		string rust_code = generate_rust_from_tokens(tokens)
+		string rust_code = generate_rust_from_tokens(tokens_ref)
 		macro_run end_timer
 
 		f_write(output_path, rust_code)

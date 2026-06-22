@@ -1,5 +1,5 @@
 
-fn bool arg_is_named(tokenList tokens, int scan_pos, string kind)
+fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 	int token_count = len(tokens)
 	int check_pos = scan_pos
 	string chk_kind = kind
@@ -30,7 +30,7 @@ fn bool arg_is_named(tokenList tokens, int scan_pos, string kind)
 
 # Counts arguments between LPAREN at lp_pos and its matching RPAREN.
 # Returns 0 for empty calls, 1 for single-arg, N for N-arg calls.
-fn int count_call_args(tokenList tokens, int lp_pos)
+fn int count_call_args(TokensRef tokens, int lp_pos)
 	int token_count = len(tokens)
 	int cur = lp_pos + 1
 	int depth = 0
