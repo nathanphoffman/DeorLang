@@ -22,41 +22,58 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	string after_as_value = value
 
 	# struct construction: name as (f1, f2, ...)
+	# grouped expression: name as (expr) — falls through to gen_expr path below
 	if kind is "LPAREN"
-		strList aas_fields = empty
-		int aas_fend = after_as + 1
-		for if aas_fend < token_count
-			Token aas_field_tok = tokens at aas_fend
-			(kind, value) in aas_field_tok
+		bool aas_is_struct = true
+		int aas_peek = after_as + 1
+		for if aas_peek < token_count
+			Token aas_peek_tok = tokens at aas_peek
+			(kind) in aas_peek_tok
 			if kind is "RPAREN"
-				aas_fend = aas_fend + 1
 				break
-			else if kind is "COMMA"
-				aas_fend = aas_fend + 1
-			else if kind is "IDENT"
-				aas_fields at end = value
-				aas_fend = aas_fend + 1
-		string aas_struct = find_struct_for_fields(struct_reg, aas_fields)
-		bool aas_is_mut = list_has(mut_names, ident_name)
-		string aas_mut = ""
-		if aas_is_mut
-			aas_mut = "mut "
-		int aas_fcount = len(aas_fields)
-		strList aas_pairs = empty
-		for aas_fi in range(aas_fcount)
-			string aas_fname = aas_fields at aas_fi
-			string aas_fp_sep = ": "
-			string aas_fp_cln = ".clone()"
-			aas_pairs at end = s_join([aas_fname, aas_fp_sep, aas_fname, aas_fp_cln])
-		string aas_fld_sep = ", "
-		string aas_fields_code = s_join_with(aas_pairs, aas_fld_sep)
-		string aas_let = "let "
-		string aas_eq = " = "
-		string aas_ob = " { "
-		string aas_cb = " };\n"
-		string aas_code = s_join([pad, aas_let, aas_mut, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb])
-		int aas_next = adv_nl_ref(aas_fend, tokens)
-		return make_result(move aas_code, aas_next)
+			if kind is "IDENT"
+				aas_peek = aas_peek + 1
+				continue
+			if kind is "COMMA"
+				aas_peek = aas_peek + 1
+				continue
+			aas_is_struct = false
+			break
+		if aas_is_struct
+			strList aas_fields = empty
+			int aas_fend = after_as + 1
+			for if aas_fend < token_count
+				Token aas_field_tok = tokens at aas_fend
+				(kind, value) in aas_field_tok
+				if kind is "RPAREN"
+					aas_fend = aas_fend + 1
+					break
+				else if kind is "COMMA"
+					aas_fend = aas_fend + 1
+				else if kind is "IDENT"
+					aas_fields at end = value
+					aas_fend = aas_fend + 1
+			string aas_struct = find_struct_for_fields(struct_reg, aas_fields)
+			bool aas_is_mut = list_has(mut_names, ident_name)
+			string aas_mut = ""
+			if aas_is_mut
+				aas_mut = "mut "
+			int aas_fcount = len(aas_fields)
+			strList aas_pairs = empty
+			for aas_fi in range(aas_fcount)
+				string aas_fname = aas_fields at aas_fi
+				string aas_fp_sep = ": "
+				string aas_fp_cln = ".clone()"
+				aas_pairs at end = s_join([aas_fname, aas_fp_sep, aas_fname, aas_fp_cln])
+			string aas_fld_sep = ", "
+			string aas_fields_code = s_join_with(aas_pairs, aas_fld_sep)
+			string aas_let = "let "
+			string aas_eq = " = "
+			string aas_ob = " { "
+			string aas_cb = " };\n"
+			string aas_code = s_join([pad, aas_let, aas_mut, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb])
+			int aas_next = adv_nl_ref(aas_fend, tokens)
+			return make_result(move aas_code, aas_next)
 
 	# empty → empty list: let mut name = Vec::new();
 	if kind is "KW_EMPTY"

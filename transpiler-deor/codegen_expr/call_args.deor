@@ -16,7 +16,11 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		if kind is "COMMA"
 			cur = cur + 1
 			continue
+		bool arg_saved_ctx = float_ctx_get()
+		float_ctx_disable()
 		ParseResult arg_r = gen_expr(tokens, cur, ctx)
+		if arg_saved_ctx
+			float_ctx_enable()
 		move (code, new_pos) in arg_r
 		arg_code as code
 		arg_pos as new_pos

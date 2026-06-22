@@ -74,3 +74,22 @@ fn bool list_has(strList items, string val)
 		if item is val
 			return true
 	return false
+rust
+	// float literal context flag
+	thread_local! {
+		static FLOAT_CTX: std::cell::Cell<bool> = std::cell::Cell::new(false);
+	}
+	fn _float_ctx_get() -> bool { FLOAT_CTX.with(|f| f.get()) }
+	fn _float_ctx_set(v: bool) { FLOAT_CTX.with(|f| f.set(v)); }
+
+fn bool float_ctx_get()
+	rust
+		_float_ctx_get()
+
+fn void float_ctx_enable()
+	rust
+		_float_ctx_set(true)
+
+fn void float_ctx_disable()
+	rust
+		_float_ctx_set(false)

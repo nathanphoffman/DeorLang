@@ -4,8 +4,13 @@
 # and escape characters. TRUE/FALSE/BAD map to their Rust equivalents.
 macro primary_literals
 	if kind is "INT"
+		string lit_val = value
+		bool lit_in_float = float_ctx_get()
+		if lit_in_float
+			string lit_dot = ".0"
+			lit_val = s_cat(lit_val, lit_dot)
 		int lit_next = pos + 1
-		return make_result(move value, lit_next)
+		return make_result(move lit_val, lit_next)
 	if kind is "FLOAT"
 		int lit_next = pos + 1
 		return make_result(move value, lit_next)

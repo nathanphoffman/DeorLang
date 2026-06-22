@@ -276,6 +276,27 @@ fn list_has(items: Vec<String>, val: String) -> bool {
     return false;
 }
 
+// float literal context flag
+thread_local! {
+	static FLOAT_CTX: std::cell::Cell<bool> = std::cell::Cell::new(false);
+}
+fn _float_ctx_get() -> bool { FLOAT_CTX.with(|f| f.get()) }
+fn _float_ctx_set(v: bool) { FLOAT_CTX.with(|f| f.set(v)); }
+fn float_ctx_get() -> bool {
+    // transpiler-deor/utils.deor
+    _float_ctx_get()
+}
+
+fn float_ctx_enable() {
+    // transpiler-deor/utils.deor
+    _float_ctx_set(true)
+}
+
+fn float_ctx_disable() {
+    // transpiler-deor/utils.deor
+    _float_ctx_set(false)
+}
+
 // transpiler-deor/deor_helpers.deor
 fn pr_code(result: ParseResult) -> String {
     // transpiler-deor/deor_helpers.deor
@@ -3042,7 +3063,13 @@ fn gen_call_args(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
             cur = cur + 1;
             continue;
         }
+        let mut arg_saved_ctx: bool = float_ctx_get();
+        float_ctx_disable();
         let mut arg_r: ParseResult = gen_expr(tokens.clone(), cur.clone(), ctx.clone());
+        if arg_saved_ctx {
+            // transpiler-deor/codegen_expr/call_args.deor
+            float_ctx_enable();
+        }
         let code = arg_r.code;
         let new_pos = arg_r.new_pos;
         let mut arg_code = code;
@@ -3200,8 +3227,15 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     // macro: primary_literals (transpiler-deor/codegen_expr/primary/literals.deor)
     if kind == "INT" {
         // transpiler-deor/codegen_expr/primary/literals.deor
+        let mut lit_val: String = value.clone();
+        let mut lit_in_float: bool = float_ctx_get();
+        if lit_in_float {
+            // transpiler-deor/codegen_expr/primary/literals.deor
+            let mut lit_dot: String = ".0".to_string();
+            lit_val = s_cat(lit_val.clone(), lit_dot.clone());
+        }
         let mut lit_next: i32 = pos + 1.clone();
-        return make_result(value, lit_next.clone());
+        return make_result(lit_val, lit_next.clone());
     }
     if kind == "FLOAT" {
         // transpiler-deor/codegen_expr/primary/literals.deor
@@ -4083,51 +4117,77 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut after_as_value: String = value.clone();
     if kind == "LPAREN" {
         // transpiler-deor/codegen_stmt/as_binding.deor
-        let mut aas_fields: Vec<String> = Vec::new();
-        let mut aas_fend: i32 = after_as + 1.clone();
-        while aas_fend < token_count {
+        let mut aas_is_struct: bool = true;
+        let mut aas_peek: i32 = after_as + 1.clone();
+        while aas_peek < token_count {
             // transpiler-deor/codegen_stmt/as_binding.deor
-            let mut aas_field_tok: Token = tokens[aas_fend as usize].clone();
-            let kind = aas_field_tok.kind.clone();
-            let value = aas_field_tok.value.clone();
+            let mut aas_peek_tok: Token = tokens[aas_peek as usize].clone();
+            let kind = aas_peek_tok.kind.clone();
             if kind == "RPAREN" {
                 // transpiler-deor/codegen_stmt/as_binding.deor
-                aas_fend = aas_fend + 1;
                 break;
-            } else if kind == "COMMA" {
-                // transpiler-deor/codegen_stmt/as_binding.deor
-                aas_fend = aas_fend + 1;
-            } else if kind == "IDENT" {
-                // transpiler-deor/codegen_stmt/as_binding.deor
-                aas_fields.push(value.clone());
-                aas_fend = aas_fend + 1;
             }
+            if kind == "IDENT" {
+                // transpiler-deor/codegen_stmt/as_binding.deor
+                aas_peek = aas_peek + 1;
+                continue;
+            }
+            if kind == "COMMA" {
+                // transpiler-deor/codegen_stmt/as_binding.deor
+                aas_peek = aas_peek + 1;
+                continue;
+            }
+            aas_is_struct = false;
+            break;
         }
-        let mut aas_struct: String = find_struct_for_fields(struct_reg.clone(), aas_fields.clone());
-        let mut aas_is_mut: bool = list_has(mut_names.clone(), ident_name.clone());
-        let mut aas_mut: String = "".to_string();
-        if aas_is_mut {
+        if aas_is_struct {
             // transpiler-deor/codegen_stmt/as_binding.deor
-            aas_mut = "mut ".to_string();
+            let mut aas_fields: Vec<String> = Vec::new();
+            let mut aas_fend: i32 = after_as + 1.clone();
+            while aas_fend < token_count {
+                // transpiler-deor/codegen_stmt/as_binding.deor
+                let mut aas_field_tok: Token = tokens[aas_fend as usize].clone();
+                let kind = aas_field_tok.kind.clone();
+                let value = aas_field_tok.value.clone();
+                if kind == "RPAREN" {
+                    // transpiler-deor/codegen_stmt/as_binding.deor
+                    aas_fend = aas_fend + 1;
+                    break;
+                } else if kind == "COMMA" {
+                    // transpiler-deor/codegen_stmt/as_binding.deor
+                    aas_fend = aas_fend + 1;
+                } else if kind == "IDENT" {
+                    // transpiler-deor/codegen_stmt/as_binding.deor
+                    aas_fields.push(value.clone());
+                    aas_fend = aas_fend + 1;
+                }
+            }
+            let mut aas_struct: String = find_struct_for_fields(struct_reg.clone(), aas_fields.clone());
+            let mut aas_is_mut: bool = list_has(mut_names.clone(), ident_name.clone());
+            let mut aas_mut: String = "".to_string();
+            if aas_is_mut {
+                // transpiler-deor/codegen_stmt/as_binding.deor
+                aas_mut = "mut ".to_string();
+            }
+            let mut aas_fcount: i32 = (aas_fields.len() as i32);
+            let mut aas_pairs: Vec<String> = Vec::new();
+            for aas_fi in 0..aas_fcount {
+                // transpiler-deor/codegen_stmt/as_binding.deor
+                let mut aas_fname: String = aas_fields[aas_fi as usize].clone();
+                let mut aas_fp_sep: String = ": ".to_string();
+                let mut aas_fp_cln: String = ".clone()".to_string();
+                aas_pairs.push([aas_fname.as_str(), aas_fp_sep.as_str(), aas_fname.as_str(), aas_fp_cln.as_str()].concat().clone());
+            }
+            let mut aas_fld_sep: String = ", ".to_string();
+            let mut aas_fields_code: String = s_join_with(aas_pairs.clone(), aas_fld_sep.clone());
+            let mut aas_let: String = "let ".to_string();
+            let mut aas_eq: String = " = ".to_string();
+            let mut aas_ob: String = " { ".to_string();
+            let mut aas_cb: String = " };\n".to_string();
+            let mut aas_code: String = [pad.as_str(), aas_let.as_str(), aas_mut.as_str(), ident_name.as_str(), aas_eq.as_str(), aas_struct.as_str(), aas_ob.as_str(), aas_fields_code.as_str(), aas_cb.as_str()].concat();
+            let mut aas_next: i32 = adv_nl_ref(aas_fend.clone(), tokens.clone());
+            return make_result(aas_code, aas_next.clone());
         }
-        let mut aas_fcount: i32 = (aas_fields.len() as i32);
-        let mut aas_pairs: Vec<String> = Vec::new();
-        for aas_fi in 0..aas_fcount {
-            // transpiler-deor/codegen_stmt/as_binding.deor
-            let mut aas_fname: String = aas_fields[aas_fi as usize].clone();
-            let mut aas_fp_sep: String = ": ".to_string();
-            let mut aas_fp_cln: String = ".clone()".to_string();
-            aas_pairs.push([aas_fname.as_str(), aas_fp_sep.as_str(), aas_fname.as_str(), aas_fp_cln.as_str()].concat().clone());
-        }
-        let mut aas_fld_sep: String = ", ".to_string();
-        let mut aas_fields_code: String = s_join_with(aas_pairs.clone(), aas_fld_sep.clone());
-        let mut aas_let: String = "let ".to_string();
-        let mut aas_eq: String = " = ".to_string();
-        let mut aas_ob: String = " { ".to_string();
-        let mut aas_cb: String = " };\n".to_string();
-        let mut aas_code: String = [pad.as_str(), aas_let.as_str(), aas_mut.as_str(), ident_name.as_str(), aas_eq.as_str(), aas_struct.as_str(), aas_ob.as_str(), aas_fields_code.as_str(), aas_cb.as_str()].concat();
-        let mut aas_next: i32 = adv_nl_ref(aas_fend.clone(), tokens.clone());
-        return make_result(aas_code, aas_next.clone());
     }
     if kind == "KW_EMPTY" {
         // transpiler-deor/codegen_stmt/as_binding.deor
@@ -4595,7 +4655,16 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut vld_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
         return make_result(vld_code, vld_next.clone());
     }
+    let mut tb_is_float: bool = var_type == "float".clone();
+    if tb_is_float {
+        // transpiler-deor/codegen_stmt/typed_binding.deor
+        float_ctx_enable();
+    }
     let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+    if tb_is_float {
+        // transpiler-deor/codegen_stmt/typed_binding.deor
+        float_ctx_disable();
+    }
     let code = val_r.code;
     let new_pos = val_r.new_pos;
     let val_code = code;
