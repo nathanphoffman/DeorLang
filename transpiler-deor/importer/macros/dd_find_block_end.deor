@@ -1,0 +1,21 @@
+
+# Scans forward from pos to find the end of an indented block (fn/struct/enum/type/macro).
+# Tracks INDENT/DEDENT depth and stops after the DEDENT that closes the opening INDENT.
+# Writes: end_pos (int) — position of the token after the closing DEDENT
+# Reads:  pos, token_count, tokens
+macro dd_find_block_end
+	int fbe_cur = pos
+	int fbe_depth = 0
+	bool fbe_entered = false
+	for if fbe_cur < token_count
+		Token fbe_tok = tokens at fbe_cur
+		(kind) in fbe_tok
+		fbe_cur = fbe_cur + 1
+		if kind is "INDENT"
+			fbe_depth = fbe_depth + 1
+			fbe_entered = true
+		else if kind is "DEDENT"
+			fbe_depth = fbe_depth - 1
+			if fbe_depth is 0 and fbe_entered
+				break
+	int end_pos = fbe_cur

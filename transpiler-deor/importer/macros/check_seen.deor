@@ -1,0 +1,13 @@
+
+# Checks whether decl_name is already in the seen list.
+# Uses a direct index loop to avoid cloning the full seen Vec (list_has clones it).
+# Writes: already_seen (bool)
+# Reads:  decl_name, seen
+macro check_seen
+	bool already_seen = false
+	int cs_len = len(seen)
+	for cs_i in range(cs_len)
+		string cs_val = seen at cs_i
+		if cs_val is decl_name
+			already_seen = true
+			break

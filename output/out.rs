@@ -1117,58 +1117,142 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
         let mut is_rust_blk: bool = kind == "KW_RUST".clone();
         let mut is_block_decl: bool = is_fn || is_struct || is_enum || is_type || is_macro.clone();
         if is_block_decl {
-            let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), is_fn.clone());
-            let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
+            let mut dn_offset: i32 = 1;
+            if is_fn {
+                dn_offset = 2;
+            }
+            let mut dn_pos: i32 = pos + dn_offset.clone();
+            let mut decl_name: String = "".to_string();
+            if dn_pos < token_count {
+                let mut dn_tok: Token = tokens[dn_pos as usize].clone();
+                let value = dn_tok.value.clone();
+                decl_name = value;
+            }
+            let mut already_seen: bool = false;
+            let mut cs_len: i32 = (seen.len() as i32);
+            for cs_i in 0..cs_len {
+                let mut cs_val: String = seen[cs_i as usize].clone();
+                if cs_val == decl_name {
+                    already_seen = true;
+                    break;
+                }
+            }
             if !already_seen {
                 seen.push(decl_name.clone());
             }
-            let mut block_end: i32 = end_of_block(tokens.clone(), pos.clone());
-            if !already_seen {
-                let mut copy_len: i32 = block_end - pos.clone();
-                for copy_idx in 0..copy_len {
-                    let mut tok_pos: i32 = pos + copy_idx.clone();
-                    let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                    result.push(copy_tok.clone());
+            let mut fbe_cur: i32 = pos.clone();
+            let mut fbe_depth: i32 = 0;
+            let mut fbe_entered: bool = false;
+            while fbe_cur < token_count {
+                let mut fbe_tok: Token = tokens[fbe_cur as usize].clone();
+                let kind = fbe_tok.kind.clone();
+                fbe_cur = fbe_cur + 1;
+                if kind == "INDENT" {
+                    fbe_depth = fbe_depth + 1;
+                    fbe_entered = true;
+                } else if kind == "DEDENT" {
+                    fbe_depth = fbe_depth - 1;
+                    if fbe_depth == 0 && fbe_entered {
+                        break;
+                    }
                 }
             }
-            pos = block_end;
+            let mut end_pos: i32 = fbe_cur.clone();
+            if !already_seen {
+                for i in (pos as usize)..(end_pos as usize) {
+                	result.push(tokens[i].clone());
+                }
+            }
+            pos = end_pos;
         } else if is_shape {
-            let mut not_fn: bool = false;
-            let mut decl_name: String = name_of_decl(tokens.clone(), pos.clone(), not_fn.clone());
-            let mut already_seen: bool = list_has(seen.clone(), decl_name.clone());
+            let mut dn_offset: i32 = 1;
+            if is_fn {
+                dn_offset = 2;
+            }
+            let mut dn_pos: i32 = pos + dn_offset.clone();
+            let mut decl_name: String = "".to_string();
+            if dn_pos < token_count {
+                let mut dn_tok: Token = tokens[dn_pos as usize].clone();
+                let value = dn_tok.value.clone();
+                decl_name = value;
+            }
+            let mut already_seen: bool = false;
+            let mut cs_len: i32 = (seen.len() as i32);
+            for cs_i in 0..cs_len {
+                let mut cs_val: String = seen[cs_i as usize].clone();
+                if cs_val == decl_name {
+                    already_seen = true;
+                    break;
+                }
+            }
             if !already_seen {
                 seen.push(decl_name.clone());
             }
-            let mut shape_end: i32 = end_of_shape(tokens.clone(), pos.clone());
+            let mut fse_cur: i32 = pos.clone();
+            while fse_cur < token_count {
+                let mut fse_tok: Token = tokens[fse_cur as usize].clone();
+                let kind = fse_tok.kind.clone();
+                fse_cur = fse_cur + 1;
+                if kind == "NEWLINE" {
+                    break;
+                }
+            }
+            let mut end_pos: i32 = fse_cur.clone();
             if !already_seen {
-                let mut copy_len: i32 = shape_end - pos.clone();
+                let mut copy_len: i32 = end_pos - pos.clone();
                 for copy_idx in 0..copy_len {
                     let mut tok_pos: i32 = pos + copy_idx.clone();
                     let mut copy_tok: Token = tokens[tok_pos as usize].clone();
                     result.push(copy_tok.clone());
                 }
             }
-            pos = shape_end;
+            pos = end_pos;
         } else if is_raw {
-            let mut not_fn2: bool = false;
-            let mut raw_name: String = name_of_decl(tokens.clone(), pos.clone(), not_fn2.clone());
-            let mut raw_pfx: String = "_raw_".to_string();
-            let mut raw_key_parts: Vec<String> = vec![raw_pfx.clone(), raw_name.clone()];
-            let mut raw_key: String = s_join(raw_key_parts.clone());
-            let mut already_seen: bool = list_has(seen.clone(), raw_key.clone());
-            if !already_seen {
-                seen.push(raw_key.clone());
+            let mut dn_offset: i32 = 1;
+            if is_fn {
+                dn_offset = 2;
             }
-            let mut raw_end: i32 = end_of_shape(tokens.clone(), pos.clone());
+            let mut dn_pos: i32 = pos + dn_offset.clone();
+            let mut decl_name: String = "".to_string();
+            if dn_pos < token_count {
+                let mut dn_tok: Token = tokens[dn_pos as usize].clone();
+                let value = dn_tok.value.clone();
+                decl_name = value;
+            }
+            let mut raw_pfx: String = "_raw_".to_string();
+            let mut raw_key_parts: Vec<String> = vec![raw_pfx.clone(), decl_name.clone()];
+            decl_name = s_join(raw_key_parts.clone());
+            let mut already_seen: bool = false;
+            let mut cs_len: i32 = (seen.len() as i32);
+            for cs_i in 0..cs_len {
+                let mut cs_val: String = seen[cs_i as usize].clone();
+                if cs_val == decl_name {
+                    already_seen = true;
+                    break;
+                }
+            }
             if !already_seen {
-                let mut copy_len: i32 = raw_end - pos.clone();
+                seen.push(decl_name.clone());
+            }
+            let mut fse_cur: i32 = pos.clone();
+            while fse_cur < token_count {
+                let mut fse_tok: Token = tokens[fse_cur as usize].clone();
+                let kind = fse_tok.kind.clone();
+                fse_cur = fse_cur + 1;
+                if kind == "NEWLINE" {
+                    break;
+                }
+            }
+            let mut end_pos: i32 = fse_cur.clone();
+            if !already_seen {
+                let mut copy_len: i32 = end_pos - pos.clone();
                 for copy_idx in 0..copy_len {
                     let mut tok_pos: i32 = pos + copy_idx.clone();
                     let mut copy_tok: Token = tokens[tok_pos as usize].clone();
                     result.push(copy_tok.clone());
                 }
             }
-            pos = raw_end;
+            pos = end_pos;
         } else if is_rust_blk {
             let mut rust_content_pos: i32 = pos + 2.clone();
             let mut rust_in_range: bool = rust_content_pos < token_count.clone();
@@ -1180,10 +1264,18 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 let mut rust_first: String = rust_lines[0 as usize].clone();
                 let mut rk_pfx: String = "_rust_".to_string();
                 let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), rust_first.clone()];
-                let mut rust_key: String = s_join(rk_parts.clone());
-                let mut already_seen: bool = list_has(seen.clone(), rust_key.clone());
+                let mut decl_name: String = s_join(rk_parts.clone());
+                let mut already_seen: bool = false;
+                let mut cs_len: i32 = (seen.len() as i32);
+                for cs_i in 0..cs_len {
+                    let mut cs_val: String = seen[cs_i as usize].clone();
+                    if cs_val == decl_name {
+                        already_seen = true;
+                        break;
+                    }
+                }
                 if !already_seen {
-                    seen.push(rust_key.clone());
+                    seen.push(decl_name.clone());
                     for copy_idx in 0..3 {
                         let mut tok_pos: i32 = pos + copy_idx.clone();
                         let mut copy_tok: Token = tokens[tok_pos as usize].clone();

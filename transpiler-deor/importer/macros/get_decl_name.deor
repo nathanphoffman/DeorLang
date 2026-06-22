@@ -1,0 +1,16 @@
+
+# Reads the declaration name from the token stream at the current position.
+# For fn declarations (is_fn = true) the name is at pos+2 (skipping return type).
+# For all others (struct/enum/shape/type/macro/raw) the name is at pos+1.
+# Writes: decl_name (string)
+# Reads:  is_fn, pos, token_count, tokens
+macro get_decl_name
+	int dn_offset = 1
+	if is_fn
+		dn_offset = 2
+	int dn_pos = pos + dn_offset
+	string decl_name = ""
+	if dn_pos < token_count
+		Token dn_tok = tokens at dn_pos
+		(value) in dn_tok
+		decl_name = value

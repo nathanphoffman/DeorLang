@@ -29,49 +29,46 @@ fn tokenList deduplicate_decls(tokenList tokens)
 		bool is_rust_blk = kind is "KW_RUST"
 		bool is_block_decl = is_fn or is_struct or is_enum or is_type or is_macro
 		if is_block_decl
-			string decl_name = name_of_decl(tokens, pos, is_fn)
-			bool already_seen = list_has(seen, decl_name)
+			macro_run get_decl_name
+			macro_run check_seen
 			if not already_seen
 				seen at end = decl_name
-			int block_end = end_of_block(tokens, pos)
+			macro_run dd_find_block_end
 			if not already_seen
-				int copy_len = block_end - pos
-				for copy_idx in range(copy_len)
-					int tok_pos = pos + copy_idx
-					Token copy_tok = tokens at tok_pos
-					result at end = copy_tok
-			pos = block_end
+				rust
+					for i in (pos as usize)..(end_pos as usize) {
+						result.push(tokens[i].clone());
+					}
+			pos = end_pos
 		else if is_shape
-			bool not_fn = false
-			string decl_name = name_of_decl(tokens, pos, not_fn)
-			bool already_seen = list_has(seen, decl_name)
+			macro_run get_decl_name
+			macro_run check_seen
 			if not already_seen
 				seen at end = decl_name
-			int shape_end = end_of_shape(tokens, pos)
+			macro_run find_shape_end
 			if not already_seen
-				int copy_len = shape_end - pos
+				int copy_len = end_pos - pos
 				for copy_idx in range(copy_len)
 					int tok_pos = pos + copy_idx
 					Token copy_tok = tokens at tok_pos
 					result at end = copy_tok
-			pos = shape_end
+			pos = end_pos
 		else if is_raw
-			bool not_fn2 = false
-			string raw_name = name_of_decl(tokens, pos, not_fn2)
+			macro_run get_decl_name
 			string raw_pfx = "_raw_"
-			strList raw_key_parts = [raw_pfx, raw_name]
-			string raw_key = s_join(raw_key_parts)
-			bool already_seen = list_has(seen, raw_key)
+			strList raw_key_parts = [raw_pfx, decl_name]
+			decl_name = s_join(raw_key_parts)
+			macro_run check_seen
 			if not already_seen
-				seen at end = raw_key
-			int raw_end = end_of_shape(tokens, pos)
+				seen at end = decl_name
+			macro_run find_shape_end
 			if not already_seen
-				int copy_len = raw_end - pos
+				int copy_len = end_pos - pos
 				for copy_idx in range(copy_len)
 					int tok_pos = pos + copy_idx
 					Token copy_tok = tokens at tok_pos
 					result at end = copy_tok
-			pos = raw_end
+			pos = end_pos
 		else if is_rust_blk
 			int rust_content_pos = pos + 2
 			bool rust_in_range = rust_content_pos < token_count
@@ -83,10 +80,10 @@ fn tokenList deduplicate_decls(tokenList tokens)
 				string rust_first = rust_lines at 0
 				string rk_pfx = "_rust_"
 				strList rk_parts = [rk_pfx, rust_first]
-				string rust_key = s_join(rk_parts)
-				bool already_seen = list_has(seen, rust_key)
+				string decl_name = s_join(rk_parts)
+				macro_run check_seen
 				if not already_seen
-					seen at end = rust_key
+					seen at end = decl_name
 					for copy_idx in range(3)
 						int tok_pos = pos + copy_idx
 						Token copy_tok = tokens at tok_pos
