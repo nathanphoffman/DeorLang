@@ -2,7 +2,6 @@ $ErrorActionPreference = "Stop"
 
 $DeorHome = "$env:USERPROFILE\.deor"
 $BinDir   = "$DeorHome\bin"
-$LibDir   = "$DeorHome\lib"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot  = Split-Path -Parent $ScriptDir
@@ -35,7 +34,6 @@ while ($true) {
 Write-Host "Installing Deor..."
 
 New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
-New-Item -ItemType Directory -Force -Path $LibDir | Out-Null
 New-Item -ItemType Directory -Force -Path $ProjectDir | Out-Null
 
 if (-not (Get-Command just -ErrorAction SilentlyContinue)) {
@@ -48,24 +46,19 @@ Write-Host "  Compiling transpiler..."
 & rustc -O -A warnings "$ScriptDir\out.rs" -o "$BinDir\deor.exe"
 if ($LASTEXITCODE -ne 0) { throw "rustc failed" }
 
-Write-Host "  Installing lib\..."
-Copy-Item -Recurse -Force "$RepoRoot\lib\*" "$LibDir\"
-
 Write-Host "  Creating starter project..."
 Copy-Item "$ScriptDir\hello.deor"   "$ProjectDir\hello.deor"
 Copy-Item "$ScriptDir\.gitignore"   "$ProjectDir\.gitignore"
 Copy-Item "$ScriptDir\justfile"     "$ProjectDir\justfile"
 (Get-Content "$ScriptDir\Cargo.toml") -replace '{{PROJECT_NAME}}', $ProjectName |
     Set-Content "$ProjectDir\Cargo.toml"
+Copy-Item -Recurse -Force "$RepoRoot\lib\*" "$ProjectDir\lib\"
 
 $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
 if ($userPath -notlike "*$BinDir*") {
     [Environment]::SetEnvironmentVariable("PATH", "$BinDir;$userPath", "User")
     Write-Host "  Added $BinDir to user PATH"
 }
-
-[Environment]::SetEnvironmentVariable("DEOR_LIB", $LibDir, "User")
-Write-Host "  Set DEOR_LIB=$LibDir"
 
 Write-Host ""
 Write-Host "Done! Restart your terminal for PATH changes to take effect."
@@ -74,4 +67,4 @@ Write-Host "To run your hello world:"
 Write-Host "  cd `"$ProjectDir`""
 Write-Host "  just run"
 Write-Host ""
-Write-Host "  (Without just: deor hello.deor build\main.rs; cargo run)"
+Write-Host "  (Without just: set DEOR_LIB=lib && deor hello.deor build\main.rs && cargo run)"

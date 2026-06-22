@@ -6,7 +6,6 @@ BRANCH="main"
 
 DEOR_HOME="$HOME/.deor"
 BIN_DIR="$DEOR_HOME/bin"
-LIB_DIR="$DEOR_HOME/lib"
 ENV_FILE="$DEOR_HOME/env"
 
 # Dual-mode: use local files if running from a clone, otherwise fetch from GitHub
@@ -65,7 +64,6 @@ done
 echo "Installing Deor..."
 
 mkdir -p "$BIN_DIR"
-mkdir -p "$LIB_DIR"
 mkdir -p "$PROJECT_DIR"
 
 if ! command -v just > /dev/null 2>&1; then
@@ -76,18 +74,15 @@ fi
 echo "  Compiling transpiler..."
 rustc -O -A warnings "$OUT_RS" -o "$BIN_DIR/deor"
 
-echo "  Installing lib/..."
-cp -r "$LIB_SRC/." "$LIB_DIR/"
-
 echo "  Creating starter project..."
 cp "$HELLO_SRC" "$PROJECT_DIR/hello.deor"
 cp "$GITIGNORE_SRC" "$PROJECT_DIR/.gitignore"
 cp "$JUSTFILE_SRC" "$PROJECT_DIR/justfile"
 sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "$CARGO_SRC" > "$PROJECT_DIR/Cargo.toml"
+cp -r "$LIB_SRC/." "$PROJECT_DIR/lib/"
 
 cat > "$ENV_FILE" << EOF
 export PATH="$BIN_DIR:\$PATH"
-export DEOR_LIB="$LIB_DIR"
 EOF
 
 add_source_line() {
@@ -113,4 +108,4 @@ echo "To run your hello world:"
 echo "  cd \"$PROJECT_DIR\""
 echo "  just run"
 echo ""
-echo "  (Without just: deor hello.deor build/main.rs && cargo run)"
+echo "  (Without just: DEOR_LIB=lib deor hello.deor build/main.rs && cargo run)"
