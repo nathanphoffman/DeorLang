@@ -42,3 +42,6 @@ run-spec:
 run-splash:
     cd ./site && bun run dev
 
+sync-setup:
+    cp output/out.rs setup/out.rs
+
