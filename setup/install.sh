@@ -27,19 +27,21 @@ else
 fi
 
 DEFAULT_PROJECT="$(pwd)/hello-deor"
-printf "Where would you like to create your starter project? (default: %s): " "$DEFAULT_PROJECT" >&2
-read -r PROJECT_DIR < /dev/tty
-if [ -z "$PROJECT_DIR" ]; then
+if [ -t 0 ]; then
+    printf "Where would you like to create your starter project? (default: %s): " "$DEFAULT_PROJECT"
+    read -r PROJECT_DIR
+    [ -z "$PROJECT_DIR" ] && PROJECT_DIR="$DEFAULT_PROJECT"
+    if [ -d "$PROJECT_DIR" ]; then
+        printf "  '%s' already exists. Continue anyway? [y/N]: " "$PROJECT_DIR"
+        read -r CONFIRM
+        case "$CONFIRM" in
+            [yY]*) ;;
+            *) echo "Aborted."; exit 0 ;;
+        esac
+    fi
+else
     PROJECT_DIR="$DEFAULT_PROJECT"
-fi
-
-if [ -d "$PROJECT_DIR" ]; then
-    printf "  '%s' already exists. Continue anyway? [y/N]: " "$PROJECT_DIR" >&2
-    read -r CONFIRM < /dev/tty
-    case "$CONFIRM" in
-        [yY]*) ;;
-        *) echo "Aborted."; exit 0 ;;
-    esac
+    echo "  Starter project will be created at: $PROJECT_DIR"
 fi
 
 echo "Installing Deor..."
