@@ -19,8 +19,11 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 		if kind is "NEWLINE"
 			cur = cur + 1
 			continue
-		ParseResult stmt_r = gen_stmt(cur, depth, ctx)
-		stmts at end = pr_code(stmt_r)
-		cur = pr_pos(stmt_r)
+
+        ParseResult stmt_r = gen_stmt(cur, depth, ctx)
+        move (code, new_pos) in stmt_r
+        stmts at end = code
+        cur = new_pos
+
 	string block_joined = s_join(stmts)
 	return make_result(move block_joined, cur)

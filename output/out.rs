@@ -2922,8 +2922,10 @@ fn gen_block(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             continue;
         }
         let mut stmt_r: ParseResult = gen_stmt(cur.clone(), depth.clone(), ctx.clone());
-        stmts.push(pr_code(stmt_r.clone()).clone());
-        cur = pr_pos(stmt_r.clone());
+        let code = stmt_r.code;
+        let new_pos = stmt_r.new_pos;
+        stmts.push(code.clone());
+        cur = new_pos;
     }
     let mut block_joined: String = s_join(stmts.clone());
     return make_result(block_joined, cur.clone());
