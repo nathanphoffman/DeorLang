@@ -1,19 +1,16 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 
-
-
 # Easy Fixes
- 
-  - Where else should this be documented?: is empty / is not empty comparison form — only documented as an initializer value
 
+---- checking with ai:
+-- Can you return empty, none or bad from a function?
+ - return empty vs return none — functions.md and types.md give conflicting lists of what's a
+  transpiler error
 
 
 # New audit June 21st
 
-  Documented but NOT implemented
- 
-  Implemented but NOT documented
 
   Direct contradictions
 
@@ -21,19 +18,14 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
   handles it fine
   - Roll best = empty for validator types — types.md says valid, transpiler actively errors
   with "use 'bad' not 'empty'"
-  - struct* / struct+ sigils — documented in types.md, zero implementation
-  - using block — experimental.md says likely to be removed; it's fully implemented and in
-  syntax.md as first-class
-  - return empty vs return none — functions.md and types.md give conflicting lists of what's a
-  transpiler error
+ 
   - func, to, end keywords — spec lists them as reserved; transpiler detects them by
   string-matching plain IDENTs (fragile)
 
 
  Other issues
 
-  - crash builtin example in builtins.md shows catch(message) — appears to be a copy-paste
-  error
+ 
   - is bad / is not bad emits == None / != None instead of .is_none() / .is_some() as spec
   says
   - for move loop form — experimental.md shows it without parentheses; transpiler requires

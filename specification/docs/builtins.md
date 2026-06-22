@@ -66,7 +66,7 @@ Deor
 ```
 message as "An unknown server problem occurred"
 Error err = (message)
-catch(message)
+crash(message)
 ```
 
 Rust: nearly identical to ```panic!("{}",message)```

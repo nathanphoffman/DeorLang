@@ -286,25 +286,6 @@ struct Room {
 }
 ```
 
-### Representation Sigils
-
-| Form | Meaning | Rust representation |
-|---|---|---|
-| `struct Name` | Transpiler decides | `Name` (value) or `Rc<Name>` (reference), based on size + whether any field is an unsized list shape |
-
-```
-struct House
-    string address
-    roomList rooms         # unsized list shape -> auto becomes struct*
-
-```
-
 Struct fields may be primitives, validator types, list shapes, or other structs. Func shapes as struct fields are a transpiler error — structs are pure data.
 
 There are no per-field visibility modifiers — all fields are always accessible via destructuring whenever the struct itself is in scope.
-
-**Conversion notes:**
-- The **struct definition itself is identical** regardless of `+`/`*`/auto — only how *usages* are represented changes (`House` vs `Rc<House>`).
-- An **unsized `list` field** makes a struct's clone cost O(n) and unbounded, so it defaults to `*` (reference) unless overridden with `+`.
-- `==` is always `#[derive(PartialEq)]` on the underlying struct. `Rc<T>`'s default `PartialEq` already delegates to `T`'s impl in Rust, so structural equality holds for `struct*` types **with no extra work**.
-- A struct containing only primitives has a fully known size and is `Copy`-eligible if every field is `Copy`.

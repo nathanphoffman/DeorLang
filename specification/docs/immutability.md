@@ -12,7 +12,7 @@
 
 ## Equality
 
-`==` is **always structural**, regardless of how a struct is represented internally. For `struct*` types (`Rc<T>`), Rust's default `PartialEq` already delegates to `T`'s impl, so structural equality holds with no extra work.
+`==` is **always structural** — Deor derives `PartialEq` on all structs, so equality compares field values, not identity.
 
 ---
 

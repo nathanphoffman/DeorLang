@@ -45,6 +45,20 @@ val is 5        # equality — val == 5
 val is not 5    # inequality — val != 5
 ```
 
+`is empty` and `is not empty` test whether a list has zero elements:
+
+```
+if names is empty
+    ...
+if names is not empty
+    ...
+```
+
+```rust
+if names.is_empty() { ... }
+if !names.is_empty() { ... }
+```
+
 Forced unwrap of a validator type uses the separate `avow` keyword — it is not part of the `is` operator:
 
 ```

@@ -188,7 +188,7 @@ fn main() {
 ## Notable Conversion Decisions
 
 - `shape roomList = list of Room` compiles to `type RoomList = Vec<Room>` — the shape name is a type alias used throughout the generated Rust.
-- `House` contains a `roomList rooms` field. Since `Vec<Room>` is unsized, the struct defaults to `struct*` (`Rc<House>`) per the auto-representation rule. In this `main` it isn't shared, so the transpiler may keep it a plain value — the heuristic is a default, not an absolute.
+- `House` contains a `roomList rooms` field (`Vec<Room>`). Structs in Deor are plain value types — the transpiler emits a standard Rust struct with `#[derive(Clone, PartialEq, Debug)]`.
 - `area`, `name`, and `occupied` are declared once with `as` then reassigned with `=` to build multiple rooms. The transpiler emits them as `let mut` because they are reassigned after first declaration.
 - `Room` contains a `String` field so it can never be `Copy` — only `Clone`. Every place a `Room` is duplicated needs an explicit `.clone()` in Rust, even though source never writes it.
 - `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` checks `if area is not bad` and uses `(avow area)` to safely extract the inner `i32` with a default of `0`.
