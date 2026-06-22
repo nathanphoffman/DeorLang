@@ -43,7 +43,7 @@ if (-not (Get-Command just -ErrorAction SilentlyContinue)) {
 }
 
 Write-Host "  Compiling transpiler..."
-& rustc -O -A warnings "$ScriptDir\out.rs" -o "$BinDir\deor.exe"
+& rustc -O "$ScriptDir\out.rs" -o "$BinDir\deor.exe"
 if ($LASTEXITCODE -ne 0) { throw "rustc failed" }
 
 Write-Host "  Creating starter project..."

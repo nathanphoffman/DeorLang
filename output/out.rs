@@ -1,3 +1,4 @@
+#![allow(warnings)]
 // transpiler-deor/types.deor
 type TokenList = Vec<Token>;
 
@@ -5588,6 +5589,8 @@ fn main() {
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
         // transpiler-deor/main.deor
+        let mut allow_warnings: String = "#![allow(warnings)]\n".to_string();
+        rust_code = s_cat(allow_warnings.clone(), rust_code.clone());
         f_write(output_path.clone(), rust_code.clone());
     }
 }

@@ -72,7 +72,7 @@ if ! command -v just > /dev/null 2>&1; then
 fi
 
 echo "  Compiling transpiler..."
-rustc -O -A warnings "$OUT_RS" -o "$BIN_DIR/deor"
+rustc -O "$OUT_RS" -o "$BIN_DIR/deor"
 
 echo "  Creating starter project..."
 cp "$HELLO_SRC" "$PROJECT_DIR/hello.deor"

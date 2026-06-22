@@ -133,4 +133,6 @@ fn void main()
 		string rust_code = generate_rust_from_tokens(tokens_ref)
 		macro_run end_timer
 
+		string allow_warnings = "#![allow(warnings)]\n"
+		rust_code = s_cat(allow_warnings, rust_code)
 		f_write(output_path, rust_code)
