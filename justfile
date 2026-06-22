@@ -1,5 +1,5 @@
 run file="examples/hello.deor":
-    ./output/out {{file}} output/run.rs
+    DEOR_LIB=lib ./output/out {{file}} output/run.rs
     rustc -O output/run.rs -o output/run
     ./output/run
 
@@ -8,7 +8,7 @@ run file="examples/hello.deor":
 run-deor file="examples/hello.deor":
     ./output/out transpiler-deor/main.deor output/out.rs
     rustc -O output/out.rs -o output/out
-    ./output/out {{file}} output/run.rs
+    DEOR_LIB=lib ./output/out {{file}} output/run.rs
     rustc -O output/run.rs -o output/run
     ./output/run
 

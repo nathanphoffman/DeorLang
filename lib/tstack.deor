@@ -1,0 +1,13 @@
+shape tStack = list of T
+
+fn tStack t_T_make()
+	tStack items = empty
+	return items
+
+fn int t_T_size(tStack stack)
+	int size = len(stack)
+	return size
+
+fn T t_T_get(tStack stack, int idx)
+	T item = stack at idx
+	return item

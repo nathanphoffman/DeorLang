@@ -1301,13 +1301,22 @@ fn apply_t_in_name(name: String, concrete: String) -> String {
         // transpiler-deor/importer/t_substitute.deor
         let mut first: String = name_chars[0 as usize].clone();
         let mut second: String = name_chars[1 as usize].clone();
-        let mut first_is_t: bool = first == "T".clone();
         let mut second_is_upper: bool = s_upper_char(second.clone());
-        if first_is_t && second_is_upper {
+        let mut first_is_upper_t: bool = first == "T".clone();
+        let mut first_is_lower_t: bool = first == "t".clone();
+        if first_is_upper_t && second_is_upper {
             // transpiler-deor/importer/t_substitute.deor
             let mut t_offset: i32 = 1;
             let mut rest: String = s_from(name.clone(), t_offset.clone());
-            return s_cat(concrete.clone(), rest.clone());
+            let mut pascal_concrete: String = s_pascal(concrete.clone());
+            return s_cat(pascal_concrete.clone(), rest.clone());
+        }
+        if first_is_lower_t && second_is_upper {
+            // transpiler-deor/importer/t_substitute.deor
+            let mut t_offset: i32 = 1;
+            let mut rest: String = s_from(name.clone(), t_offset.clone());
+            let mut lower_concrete: String = s_to_lower(concrete.clone());
+            return s_cat(lower_concrete.clone(), rest.clone());
         }
     }
     let mut t_sep: String = "_T_".to_string();

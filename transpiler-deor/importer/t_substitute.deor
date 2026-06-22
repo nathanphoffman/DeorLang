@@ -21,12 +21,19 @@ fn string apply_t_in_name(string name, string concrete)
 	if name_len > 1
 		string first = name_chars at 0
 		string second = name_chars at 1
-		bool first_is_t = first is "T"
 		bool second_is_upper = s_upper_char(second)
-		if first_is_t and second_is_upper
+		bool first_is_upper_t = first is "T"
+		bool first_is_lower_t = first is "t"
+		if first_is_upper_t and second_is_upper
 			int t_offset = 1
 			string rest = s_from(name, t_offset)
-			return s_cat(concrete, rest)
+			string pascal_concrete = s_pascal(concrete)
+			return s_cat(pascal_concrete, rest)
+		if first_is_lower_t and second_is_upper
+			int t_offset = 1
+			string rest = s_from(name, t_offset)
+			string lower_concrete = s_to_lower(concrete)
+			return s_cat(lower_concrete, rest)
 	string t_sep = "_T_"
 	strList mid_parts = s_split(name, t_sep)
 	int mid_count = len(mid_parts)

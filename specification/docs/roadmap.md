@@ -2,56 +2,6 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 
 
-# Big Fix to address performance according to claude
-The culprit is in main.deor's codegen loop, lines 76-81:
-
-  if kind is "KW_FN"
-      ParseResult result = gen_fn_decl(all_tokens, pos, ctx)
-
-  In Deor, every IDENT argument gets .clone() appended at the call site. So this generates:
-
-  let mut result: ParseResult = gen_fn_decl(all_tokens.clone(), pos.clone(), ctx.clone());
-
-  all_tokens is Vec<Token> with 24,721 entries. Each Token has 3 String fields (kind, value, file). So each call clones ~74K Strings. The transpiler has ~80+ function declarations, so the
-  loop does this 80+ times:
-
-  80 × 74K = ~6M String clones just for all_tokens.clone() in gen_fn_decl.
-
-  Same problem hits gen_struct_decl, gen_enum_decl, gen_type_decl — another ~14 full clones.
-
-  ---
-  Why it's hard to fix: Inside gen_fn_decl, the parameter fn_tokens: tokenList is used with the cursor API:
-
-  TokenCursor cur = cur_at(fn_tokens, start_pos)
-  using cur
-      cur_next() with fn_tokens
-      cur_next() with fn_tokens
-      ...
-      cur_skip_to_body() with fn_tokens
-
-  int body_end_pos = find_block_end(fn_tokens, indent_pos)
-  tokenList body_tokens_raw = l_slice(fn_tokens, body_start, body_slice_end)
-
-  All of cur_at, cur_next() with, cur_skip_to_body() with, find_block_end, and l_slice take tokenList. Changing gen_fn_decl's parameter to TokensRef would require TokensRef variants of each
-  of those — similar to how adv_nl/adv_nl_ref coexist. None of those variants exist yet.
-
-  Same situation for gen_struct_decl, gen_enum_decl, gen_type_decl — all use cur_at/cur_next() with.
-
-  ---
-  What the fix would require:
-
-  1. cur_at_ref(TokensRef tokens, int pos) -> TokenCursor — probably identical body to cur_at, just different param type
-  2. cur_next_ref() with tokens — for the with syntax inside using cur blocks
-  3. cur_skip_to_body_ref() with tokens
-  4. find_block_end_ref(TokensRef tokens, int pos) -> int — scans for DEDENT, only uses tokens at pos so easy
-  5. l_slice can stay as tokenList output — it returns a body slice, that's fine, but needs a TokensRef input variant
-
-  Then gen_fn_decl, gen_struct_decl, gen_enum_decl, gen_type_decl change to TokensRef, and in main.deor the loop uses all_ref (already exists) for those calls too.
-
-  Do you want to tackle the cursor variants?
-
-
-
 # Bad no longer -> valid comparison only
 Bad should be removed, no user can intentionally assign something bad/none or return it. Instead only comparisons are allowed and rasther than bad it is valid (the inverse of bad) and the bad keyword is dropped.
 
@@ -71,6 +21,9 @@ Additionally, make it so an empty definition is allowed and is not valid by defa
 Implementation wise I think what we should do is still use none under the hood, but when the user does a comparison on valid just replace it with not none in rust, and it should work out I think.  So we are just not not none on not valid checks.  I am ok with the redundancy if it makes it easier to implement in rust
 
 
+Other issues
+  - for move loop form — experimental.md shows it without parentheses; transpiler requires
+  them
 
 # this line should be an as in for.deor
 		range_expr = src_code
@@ -81,6 +34,7 @@ Implementation wise I think what we should do is still use none under the hood, 
 
   - name as (f1, f2) struct construction — variables.md says it's a transpiler error; codegen
   handles it fine
+
   - Roll best = empty for validator types — types.md says valid, transpiler actively errors
   with "use 'bad' not 'empty'"
  
@@ -88,13 +42,7 @@ Implementation wise I think what we should do is still use none under the hood, 
   string-matching plain IDENTs (fragile)
 
 
- Other issues
-
  
-  - is bad / is not bad emits == None / != None instead of .is_none() / .is_some() as spec
-  says
-  - for move loop form — experimental.md shows it without parentheses; transpiler requires
-  them
 
 
 
