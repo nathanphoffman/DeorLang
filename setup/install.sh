@@ -14,6 +14,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SCRIPT_DIR=""
 if [ -f "$SCRIPT_DIR/out.rs" ] && [ -d "$SCRIPT_DIR/../lib" ]; then
     OUT_RS="$SCRIPT_DIR/out.rs"
     LIB_SRC="$SCRIPT_DIR/../lib"
+    HELLO_SRC="$SCRIPT_DIR/hello.deor"
 else
     echo "  Downloading from GitHub..."
     TMP="$(mktemp -d)"
@@ -22,6 +23,7 @@ else
         | tar xz -C "$TMP"
     OUT_RS="$TMP/DeorLang-$BRANCH/setup/out.rs"
     LIB_SRC="$TMP/DeorLang-$BRANCH/lib"
+    HELLO_SRC="$TMP/DeorLang-$BRANCH/setup/hello.deor"
 fi
 
 echo "Installing Deor..."
@@ -34,6 +36,7 @@ rustc -O -A warnings "$OUT_RS" -o "$BIN_DIR/deor"
 
 echo "  Installing lib/..."
 cp -r "$LIB_SRC/." "$LIB_DIR/"
+cp "$HELLO_SRC" "$DEOR_HOME/hello.deor"
 
 cat > "$ENV_FILE" << EOF
 export PATH="$BIN_DIR:\$PATH"
@@ -58,3 +61,7 @@ add_source_line "$HOME/.zshrc"
 echo ""
 echo "Done! Restart your shell or run:"
 echo "  . \"$ENV_FILE\""
+echo ""
+echo "To run the hello world example:"
+echo "  . \"$ENV_FILE\""
+echo "  deor ~/.deor/hello.deor /tmp/hello.rs && rustc /tmp/hello.rs -o /tmp/hello && /tmp/hello"

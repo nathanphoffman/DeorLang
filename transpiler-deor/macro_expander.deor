@@ -61,8 +61,10 @@ fn tokenList expand_deor_macros(tokenList tokens)
 				j += 1;
 				// skip trailing NEWLINE after the call
 				if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-				// splice body tokens inline
+				// splice body tokens inline, preceded by a marker carrying the macro name
 				if let Some((body, _)) = macros.get(&name) {
+					let marker_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
+					result.push(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
 					for tok in body { result.push(tok.clone()); }
 				}
 				i = j;

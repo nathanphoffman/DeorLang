@@ -14,12 +14,27 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 		if cur >= token_count
 			break
 		Token token = tokens at cur
-		(kind, file) in token
+		(kind, value, file) in token
 		if kind is "DEDENT" or kind is "EOF"
 			if kind is "DEDENT"
 				cur = cur + 1
 			break
 		if kind is "NEWLINE"
+			cur = cur + 1
+			continue
+		if kind is "MACRO_MARKER"
+			string mc_prefix = "// macro: "
+			string mc_open = " ("
+			string mc_close = ")"
+			string mc_nl = "\n"
+			string mc1 = s_cat(pad, mc_prefix)
+			string mc2 = s_cat(mc1, value)
+			string mc3 = s_cat(mc2, mc_open)
+			string mc4 = s_cat(mc3, file)
+			string mc5 = s_cat(mc4, mc_close)
+			string macro_comment = s_cat(mc5, mc_nl)
+			stmts at end = macro_comment
+			last_file = file
 			cur = cur + 1
 			continue
 		if file is not last_file

@@ -892,7 +892,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
             continue;
         }
         let mut indent: i32 = count_tabs(line.clone());
-        // transpiler-deor/lexer/indent.deor
+        // macro: emit_indent_or_dedent (transpiler-deor/lexer/indent.deor)
         let mut iod_kind_indent: String = "INDENT".to_string();
         let mut iod_kind_dedent: String = "DEDENT".to_string();
         let mut iod_empty: String = "".to_string();
@@ -924,7 +924,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
         }
         // transpiler-deor/lexer.deor
         if content == "rust" {
-            // transpiler-deor/lexer/rust_block.deor
+            // macro: collect_rust_block (transpiler-deor/lexer/rust_block.deor)
             let mut rb_kind_kw_rust: String = "KW_RUST".to_string();
             let mut rb_kw_rust_val: String = "rust".to_string();
             let mut rb_kind_newline: String = "NEWLINE".to_string();
@@ -1031,7 +1031,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 tokens.push(make_token(word_kind.clone(), word.clone(), meta.clone()).clone());
                 continue;
             }
-            // transpiler-deor/lexer/operators.deor
+            // macro: emit_operator_token (transpiler-deor/lexer/operators.deor)
             let mut op_kind_gte: String = "GTE".to_string();
             let mut op_val_gte: String = ">=".to_string();
             let mut op_kind_lte: String = "LTE".to_string();
@@ -1397,7 +1397,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
         let mut is_rust_blk: bool = kind == "KW_RUST".clone();
         let mut is_block_decl: bool = is_fn || is_struct || is_enum || is_type || is_macro.clone();
         if is_block_decl {
-            // transpiler-deor/importer/macros/get_decl_name.deor
+            // macro: get_decl_name (transpiler-deor/importer/macros/get_decl_name.deor)
             let mut dn_offset: i32 = 1;
             if is_fn {
                 // transpiler-deor/importer/macros/get_decl_name.deor
@@ -1411,7 +1411,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 let value = dn_tok.value.clone();
                 decl_name = value;
             }
-            // transpiler-deor/importer/macros/check_seen.deor
+            // macro: check_seen (transpiler-deor/importer/macros/check_seen.deor)
             let mut already_seen: bool = false;
             let mut cs_len: i32 = (seen.len() as i32);
             for cs_i in 0..cs_len {
@@ -1428,7 +1428,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 // transpiler-deor/importer/dedup.deor
                 seen.push(decl_name.clone());
             }
-            // transpiler-deor/importer/macros/dd_find_block_end.deor
+            // macro: dd_find_block_end (transpiler-deor/importer/macros/dd_find_block_end.deor)
             let mut fbe_cur: i32 = pos.clone();
             let mut fbe_depth: i32 = 0;
             let mut fbe_entered: bool = false;
@@ -1460,7 +1460,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
             }
             pos = end_pos;
         } else if is_shape {
-            // transpiler-deor/importer/macros/get_decl_name.deor
+            // macro: get_decl_name (transpiler-deor/importer/macros/get_decl_name.deor)
             let mut dn_offset: i32 = 1;
             if is_fn {
                 // transpiler-deor/importer/macros/get_decl_name.deor
@@ -1474,7 +1474,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 let value = dn_tok.value.clone();
                 decl_name = value;
             }
-            // transpiler-deor/importer/macros/check_seen.deor
+            // macro: check_seen (transpiler-deor/importer/macros/check_seen.deor)
             let mut already_seen: bool = false;
             let mut cs_len: i32 = (seen.len() as i32);
             for cs_i in 0..cs_len {
@@ -1491,7 +1491,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 // transpiler-deor/importer/dedup.deor
                 seen.push(decl_name.clone());
             }
-            // transpiler-deor/importer/macros/find_shape_end.deor
+            // macro: find_shape_end (transpiler-deor/importer/macros/find_shape_end.deor)
             let mut fse_cur: i32 = pos.clone();
             while fse_cur < token_count {
                 // transpiler-deor/importer/macros/find_shape_end.deor
@@ -1517,7 +1517,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
             }
             pos = end_pos;
         } else if is_raw {
-            // transpiler-deor/importer/macros/get_decl_name.deor
+            // macro: get_decl_name (transpiler-deor/importer/macros/get_decl_name.deor)
             let mut dn_offset: i32 = 1;
             if is_fn {
                 // transpiler-deor/importer/macros/get_decl_name.deor
@@ -1535,7 +1535,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
             let mut raw_pfx: String = "_raw_".to_string();
             let mut raw_key_parts: Vec<String> = vec![raw_pfx.clone(), decl_name.clone()];
             decl_name = s_join(raw_key_parts.clone());
-            // transpiler-deor/importer/macros/check_seen.deor
+            // macro: check_seen (transpiler-deor/importer/macros/check_seen.deor)
             let mut already_seen: bool = false;
             let mut cs_len: i32 = (seen.len() as i32);
             for cs_i in 0..cs_len {
@@ -1552,7 +1552,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 // transpiler-deor/importer/dedup.deor
                 seen.push(decl_name.clone());
             }
-            // transpiler-deor/importer/macros/find_shape_end.deor
+            // macro: find_shape_end (transpiler-deor/importer/macros/find_shape_end.deor)
             let mut fse_cur: i32 = pos.clone();
             while fse_cur < token_count {
                 // transpiler-deor/importer/macros/find_shape_end.deor
@@ -1591,7 +1591,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 let mut rk_pfx: String = "_rust_".to_string();
                 let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), rust_first.clone()];
                 let mut decl_name: String = s_join(rk_parts.clone());
-                // transpiler-deor/importer/macros/check_seen.deor
+                // macro: check_seen (transpiler-deor/importer/macros/check_seen.deor)
                 let mut already_seen: bool = false;
                 let mut cs_len: i32 = (seen.len() as i32);
                 for cs_i in 0..cs_len {
@@ -1688,8 +1688,10 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     		j += 1;
     		// skip trailing NEWLINE after the call
     		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		// splice body tokens inline
+    		// splice body tokens inline, preceded by a marker carrying the macro name
     		if let Some((body, _)) = macros.get(&name) {
+    			let marker_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
+    			result.push(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
     			for tok in body { result.push(tok.clone()); }
     		}
     		i = j;
@@ -1962,7 +1964,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         }
         let mut cur_indicator: String = "KW_RUST".to_string();
         let mut next_indicator: String = "RUST_BLOCK".to_string();
-        // transpiler-deor/tokens_validator/macros/skip_if_match.deor
+        // macro: skip_if_match (transpiler-deor/tokens_validator/macros/skip_if_match.deor)
         if cur_kind == cur_indicator {
             // transpiler-deor/tokens_validator/macros/skip_if_match.deor
             let mut skip_pos: i32 = pos + 1.clone();
@@ -2006,7 +2008,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut lbl: String = lbl_struct.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
-        // transpiler-deor/tokens_validator/macros/ident_validator.deor
+        // macro: validate_ident (transpiler-deor/tokens_validator/macros/ident_validator.deor)
         if cur_kind == keyword {
             // transpiler-deor/tokens_validator/macros/ident_validator.deor
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
@@ -2037,7 +2039,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut lbl: String = lbl_enum.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
-        // transpiler-deor/tokens_validator/macros/ident_validator.deor
+        // macro: validate_ident (transpiler-deor/tokens_validator/macros/ident_validator.deor)
         if cur_kind == keyword {
             // transpiler-deor/tokens_validator/macros/ident_validator.deor
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
@@ -2068,7 +2070,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut lbl: String = lbl_shape.clone();
         let mut rule: String = rule_camel.clone();
         let mut test_rule: fn(String) -> bool = is_camel.clone();
-        // transpiler-deor/tokens_validator/macros/ident_validator.deor
+        // macro: validate_ident (transpiler-deor/tokens_validator/macros/ident_validator.deor)
         if cur_kind == keyword {
             // transpiler-deor/tokens_validator/macros/ident_validator.deor
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
@@ -2099,7 +2101,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut lbl: String = lbl_type.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
-        // transpiler-deor/tokens_validator/macros/ident_validator.deor
+        // macro: validate_ident (transpiler-deor/tokens_validator/macros/ident_validator.deor)
         if cur_kind == keyword {
             // transpiler-deor/tokens_validator/macros/ident_validator.deor
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
@@ -2184,7 +2186,7 @@ fn validate_tokens(tokens: Vec<Token>) {
         let mut rule: String = rule_snake.clone();
         let mut test_rule: fn(String) -> bool = is_snake.clone();
         let mut validate_indent_offset: i32 = 2;
-        // transpiler-deor/tokens_validator/macros/ident_validator.deor
+        // macro: validate_ident (transpiler-deor/tokens_validator/macros/ident_validator.deor)
         if cur_kind == keyword {
             // transpiler-deor/tokens_validator/macros/ident_validator.deor
             let mut name_pos: i32 = pos + validate_indent_offset.clone();
@@ -2248,7 +2250,7 @@ fn validate_tokens(tokens: Vec<Token>) {
             }
         }
         if cur_kind == "IDENT" {
-            // transpiler-deor/tokens_validator/macros/check_call_args.deor
+            // macro: check_call_args (transpiler-deor/tokens_validator/macros/check_call_args.deor)
             let mut call_lp: i32 = pos + 1.clone();
             if call_lp < token_count {
                 // transpiler-deor/tokens_validator/macros/check_call_args.deor
@@ -2308,7 +2310,7 @@ fn validate_tokens(tokens: Vec<Token>) {
                     }
                 }
             }
-            // transpiler-deor/tokens_validator/macros/check_rust_generic.deor
+            // macro: check_rust_generic (transpiler-deor/tokens_validator/macros/check_rust_generic.deor)
             let mut is_option: bool = cur_val == "Option".clone();
             let mut is_vec: bool = cur_val == "Vec".clone();
             let mut is_box: bool = cur_val == "Box".clone();
@@ -2320,7 +2322,7 @@ fn validate_tokens(tokens: Vec<Token>) {
                 // transpiler-deor/tokens_validator/macros/check_rust_generic.deor
                 errors.push(val_err(tok.clone(), lbl_rust.clone(), rule_no_option.clone()).clone());
             }
-            // transpiler-deor/tokens_validator/macros/check_var_decl.deor
+            // macro: check_var_decl (transpiler-deor/tokens_validator/macros/check_var_decl.deor)
             let mut next1: i32 = pos + 1.clone();
             let mut next2: i32 = pos + 2.clone();
             if next2 < token_count {
@@ -2349,7 +2351,7 @@ fn validate_tokens(tokens: Vec<Token>) {
                     }
                 }
             }
-            // transpiler-deor/tokens_validator/macros/check_bad_stmt.deor
+            // macro: check_bad_stmt (transpiler-deor/tokens_validator/macros/check_bad_stmt.deor)
             if paren_depth == 0 {
                 // transpiler-deor/tokens_validator/macros/check_bad_stmt.deor
                 let mut next1: i32 = pos + 1.clone();
@@ -3085,7 +3087,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let kind = token.kind.clone();
     let value = token.value.clone();
     let line = token.line.clone();
-    // transpiler-deor/codegen_expr/primary/literals.deor
+    // macro: primary_literals (transpiler-deor/codegen_expr/primary/literals.deor)
     if kind == "INT" {
         // transpiler-deor/codegen_expr/primary/literals.deor
         let mut lit_next: i32 = pos + 1.clone();
@@ -3120,7 +3122,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let mut lit_next: i32 = pos + 1.clone();
         return make_result(lit_none, lit_next.clone());
     }
-    // transpiler-deor/codegen_expr/primary/list_literal.deor
+    // macro: primary_list_literal (transpiler-deor/codegen_expr/primary/list_literal.deor)
     if kind == "LBRACKET" {
         // transpiler-deor/codegen_expr/primary/list_literal.deor
         let mut ll_inner: i32 = pos + 1.clone();
@@ -3136,7 +3138,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let mut ll_after: i32 = ll_items_pos + 1.clone();
         return make_result(ll_code, ll_after.clone());
     }
-    // transpiler-deor/codegen_expr/primary/paren_expr.deor
+    // macro: primary_paren_expr (transpiler-deor/codegen_expr/primary/paren_expr.deor)
     if kind == "LPAREN" {
         // transpiler-deor/codegen_expr/primary/paren_expr.deor
         let mut pe_peek: i32 = pos + 1.clone();
@@ -3187,7 +3189,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
             return make_result(pe_struct_code, pe_cur.clone());
         }
     }
-    // transpiler-deor/codegen_expr/primary/prefix_ops.deor
+    // macro: primary_prefix_ops (transpiler-deor/codegen_expr/primary/prefix_ops.deor)
     if kind == "KW_GIVEUP" {
         // transpiler-deor/codegen_expr/primary/prefix_ops.deor
         let mut po_inner: i32 = pos + 1.clone();
@@ -3207,7 +3209,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let mut po_not_code: String = s_join(po_parts.clone());
         return make_result(po_not_code, po_end.clone());
     }
-    // transpiler-deor/codegen_expr/primary/ident_expr.deor
+    // macro: primary_ident_expr (transpiler-deor/codegen_expr/primary/ident_expr.deor)
     if kind == "IDENT" {
         // transpiler-deor/codegen_expr/primary/ident_expr.deor
         let mut ie_next: i32 = pos + 1.clone();
@@ -3456,7 +3458,7 @@ fn make_destruct_code(var_name: String, depth: i32, ctx: RcCtx) -> String {
 
 // transpiler-deor/codegen_stmt/destructure.deor
 fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
-    // transpiler-deor/codegen_stmt/destructure.deor
+    // macro: initialize_gen_destructure (transpiler-deor/codegen_stmt/destructure.deor)
     let variant_reg = ctx.variant_reg.clone();
     let shape_reg = ctx.shape_reg.clone();
     let struct_reg = ctx.struct_reg.clone();
@@ -3470,6 +3472,7 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut fields: Vec<String> = Vec::new();
     let mut cur: i32 = pos + 1.clone();
+    // macro: for_collect_fields_into_fields_list (transpiler-deor/codegen_stmt/destructure.deor)
     while cur < token_count {
         // transpiler-deor/codegen_stmt/destructure.deor
         let mut field_token: Token = tokens[cur as usize].clone();
@@ -3498,6 +3501,7 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut field_count: i32 = (fields.len() as i32);
     let mut indent: String = "    ".to_string();
     let mut pad: String = s_repeat(indent.clone(), depth.clone());
+    // macro: for_build_fields_into_mut_clones (transpiler-deor/codegen_stmt/destructure.deor)
     for field_index in 0..field_count {
         // transpiler-deor/codegen_stmt/destructure.deor
         let mut field: String = fields[field_index as usize].clone();
@@ -3522,7 +3526,7 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
 }
 
 fn gen_move_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
-    // transpiler-deor/codegen_stmt/destructure.deor
+    // macro: initialize_gen_destructure (transpiler-deor/codegen_stmt/destructure.deor)
     let variant_reg = ctx.variant_reg.clone();
     let shape_reg = ctx.shape_reg.clone();
     let struct_reg = ctx.struct_reg.clone();
@@ -3536,6 +3540,7 @@ fn gen_move_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut fields: Vec<String> = Vec::new();
     let mut cur: i32 = pos + 1.clone();
+    // macro: for_collect_fields_into_fields_list (transpiler-deor/codegen_stmt/destructure.deor)
     while cur < token_count {
         // transpiler-deor/codegen_stmt/destructure.deor
         let mut field_token: Token = tokens[cur as usize].clone();
@@ -3564,6 +3569,7 @@ fn gen_move_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut field_count: i32 = (fields.len() as i32);
     let mut indent: String = "    ".to_string();
     let mut pad: String = s_repeat(indent.clone(), depth.clone());
+    // macro: for_build_fields_into_moves (transpiler-deor/codegen_stmt/destructure.deor)
     for field_index in 0..field_count {
         // transpiler-deor/codegen_stmt/destructure.deor
         let mut field: String = fields[field_index as usize].clone();
@@ -3605,6 +3611,7 @@ fn gen_block(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         }
         let mut token: Token = tokens[cur as usize].clone();
         let kind = token.kind.clone();
+        let value = token.value.clone();
         let file = token.file.clone();
         if kind == "DEDENT" || kind == "EOF" {
             // transpiler-deor/codegen_stmt/block.deor
@@ -3616,6 +3623,23 @@ fn gen_block(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         }
         if kind == "NEWLINE" {
             // transpiler-deor/codegen_stmt/block.deor
+            cur = cur + 1;
+            continue;
+        }
+        if kind == "MACRO_MARKER" {
+            // transpiler-deor/codegen_stmt/block.deor
+            let mut mc_prefix: String = "// macro: ".to_string();
+            let mut mc_open: String = " (".to_string();
+            let mut mc_close: String = ")".to_string();
+            let mut mc_nl: String = "\n".to_string();
+            let mut mc1: String = s_cat(pad.clone(), mc_prefix.clone());
+            let mut mc2: String = s_cat(mc1.clone(), value.clone());
+            let mut mc3: String = s_cat(mc2.clone(), mc_open.clone());
+            let mut mc4: String = s_cat(mc3.clone(), file.clone());
+            let mut mc5: String = s_cat(mc4.clone(), mc_close.clone());
+            let mut macro_comment: String = s_cat(mc5.clone(), mc_nl.clone());
+            stmts.push(macro_comment.clone());
+            last_file = file;
             cur = cur + 1;
             continue;
         }
@@ -4501,7 +4525,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut indent: String = "    ".to_string();
     let mut pad: String = s_repeat(indent.clone(), depth.clone());
     let mut newline: String = "\n".to_string();
-    // transpiler-deor/codegen_stmt/macros/stmt_flow.deor
+    // macro: stmt_flow (transpiler-deor/codegen_stmt/macros/stmt_flow.deor)
     if kind == "KW_RETURN" {
         // transpiler-deor/codegen_stmt/macros/stmt_flow.deor
         let mut sf_val_pos: i32 = pos + 1.clone();
@@ -4542,7 +4566,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut sf_cnt_next: i32 = adv_nl_ref(sf_cnt_n.clone(), tokens.clone());
         return make_result(sf_cnt_code, sf_cnt_next.clone());
     }
-    // transpiler-deor/codegen_stmt/macros/stmt_blocks.deor
+    // macro: stmt_blocks (transpiler-deor/codegen_stmt/macros/stmt_blocks.deor)
     if kind == "KW_BLOCK" {
         // transpiler-deor/codegen_stmt/macros/stmt_blocks.deor
         let mut sb_nl: i32 = pos + 1.clone();
@@ -4588,7 +4612,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut sb_block_next: i32 = sb_block_pos + 1.clone();
         return make_result(sb_block_code, sb_block_next.clone());
     }
-    // transpiler-deor/codegen_stmt/macros/stmt_structural.deor
+    // macro: stmt_structural (transpiler-deor/codegen_stmt/macros/stmt_structural.deor)
     if kind == "KW_GIVEUP" {
         // transpiler-deor/codegen_stmt/macros/stmt_structural.deor
         let mut smd_next: i32 = pos + 1.clone();
@@ -5190,7 +5214,7 @@ fn gen_raw_decl(tokens: Vec<Token>, pos: i32) -> ParseResult {
 fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     // transpiler-deor/main.deor
     let mut _timer_label: String = "[timer]   registries: ".to_string();
-    // transpiler-deor/utility_macros.deor
+    // macro: start_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_start: i32 = now_ms();
     // transpiler-deor/main.deor
     let mut struct_reg: Vec<String> = build_struct_reg(all_tokens.clone());
@@ -5200,7 +5224,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     let mut type_reg: Vec<String> = build_type_reg(all_tokens.clone());
     let mut mut_names: Vec<String> = Vec::new();
     let mut var_type_reg: Vec<String> = build_var_type_reg(all_tokens.clone());
-    // transpiler-deor/utility_macros.deor
+    // macro: end_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
     let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
     let mut _timer_sfx: String = "ms".to_string();
@@ -5219,7 +5243,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
     let mut pos: i32 = 0;
     let mut last_file: String = "".to_string();
     let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
-    // transpiler-deor/utility_macros.deor
+    // macro: start_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_start: i32 = now_ms();
     // transpiler-deor/main.deor
     while true {
@@ -5316,7 +5340,7 @@ fn generate_rust_from_tokens(all_tokens: Vec<Token>) -> String {
         }
         pos = pos + 1;
     }
-    // transpiler-deor/utility_macros.deor
+    // macro: end_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
     let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
     let mut _timer_sfx: String = "ms".to_string();
@@ -5338,11 +5362,11 @@ fn main() {
         let mut input_path: String = args[0 as usize].clone();
         let mut output_path: String = args[1 as usize].clone();
         let mut _timer_label: String = "[timer] load+dedup: ".to_string();
-        // transpiler-deor/utility_macros.deor
+        // macro: start_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_start: i32 = now_ms();
         // transpiler-deor/main.deor
         let mut raw_tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
-        // transpiler-deor/utility_macros.deor
+        // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
@@ -5350,11 +5374,11 @@ fn main() {
         println!("{}", s_join(_timer_parts.clone()));
         // transpiler-deor/main.deor
         let mut _timer_label: String = "[timer] macro-expand: ".to_string();
-        // transpiler-deor/utility_macros.deor
+        // macro: start_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_start: i32 = now_ms();
         // transpiler-deor/main.deor
         let mut tokens: Vec<Token> = expand_deor_macros(raw_tokens.clone());
-        // transpiler-deor/utility_macros.deor
+        // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
@@ -5363,11 +5387,11 @@ fn main() {
         // transpiler-deor/main.deor
         validate_tokens(tokens.clone());
         let mut _timer_label: String = "[timer] total-codegen: ".to_string();
-        // transpiler-deor/utility_macros.deor
+        // macro: start_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_start: i32 = now_ms();
         // transpiler-deor/main.deor
         let mut rust_code: String = generate_rust_from_tokens(tokens.clone());
-        // transpiler-deor/utility_macros.deor
+        // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
