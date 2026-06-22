@@ -3,35 +3,34 @@
 # `type Name(baseType paramName)` declaration. The constructor returns Option<Self>,
 # evaluating the user's predicate: if it passes, wraps the value in Some(TypeName(val));
 # otherwise returns None. This is Deor's mechanism for validated/constrained scalar types.
-fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
+fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	int start_pos = pos + 1
-	TokenCursor cur = cur_at(tokens, start_pos)
+	TokenCursor cur = cur_at_ref(tokens, start_pos)
 	using cur
 		(value) in current
 		string type_name = value
-		cur_next() with tokens   # LPAREN
-		cur_next() with tokens   # param_type
+		cur_next_ref() with tokens   # LPAREN
+		cur_next_ref() with tokens   # param_type
 		(value) in current
 		string param_type = value
 		string rust_param_type = render_rust_type(param_type)
-		cur_next() with tokens   # param_name
+		cur_next_ref() with tokens   # param_name
 		(value) in current
 		string param_name = value
-		cur_next() with tokens   # RPAREN
-		cur_next() with tokens   # NEWLINE
-		cur_skip_to_body() with tokens
+		cur_next_ref() with tokens   # RPAREN
+		cur_next_ref() with tokens   # NEWLINE
+		cur_skip_to_body_ref() with tokens
 		(pos) in cur
-	TokensRef tokens_ref = tokens_wrap(tokens)
-	ParseResult pred_r = gen_expr(tokens_ref, pos, ctx)
+	ParseResult pred_r = gen_expr(tokens, pos, ctx)
 	move (code, new_pos) in pred_r
 	pred_code as code
 	pred_end as new_pos
-	TokenCursor cur2 = cur_at(tokens, pred_end)
+	TokenCursor cur2 = cur_at_ref(tokens, pred_end)
 	using cur2
 		for if not c_at_end(cur2)
 			(current) in cur2
 			(kind) in current
-			cur_next() with tokens
+			cur_next_ref() with tokens
 			if kind is "DEDENT"
 				break
 		(pos) in cur2

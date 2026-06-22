@@ -23,6 +23,23 @@ fn int find_block_end(tokenList tokens, int indent_pos)
 
 # Scans a block's token range for re-assignment patterns (IDENT EQUALS ...) and `using`
 # statements, collecting every variable name that is written after its initial binding.
+fn int find_block_end_ref(TokensRef tokens, int indent_pos)
+	int token_count = len(tokens)
+	int depth = 1
+	int result = indent_pos
+	int start = indent_pos + 1
+	for raw_i in (start, token_count)
+		Token token = tokens at raw_i
+		(kind, value, line) in token
+		if kind is "INDENT"
+			depth = depth + 1
+		else if kind is "DEDENT"
+			depth = depth - 1
+			if depth is 0
+				result = raw_i
+				break
+	return result
+
 fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 	strList result = empty
 	strList const_names = empty

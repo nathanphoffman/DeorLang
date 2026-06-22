@@ -24,7 +24,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 	RcCtx ctx = make_rctx(move ctx_raw)
 
 	strList parts = empty
-	int token_count = len(all_tokens)
+	int token_count = len(all_ref)
 	print(s_join(["[diag] token_count: ", n_to_str(token_count)]))
 	int pos = 0
 	string last_file = ""
@@ -35,7 +35,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 		if pos >= token_count
 			break
 
-		Token token = all_tokens at pos
+		Token token = all_ref at pos
 		(kind, file) in token
 
 		if kind is "EOF"
@@ -51,7 +51,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 			parts at end = file_comment
 			last_file = file
 		if kind is "KW_STRUCT"
-			ParseResult result = gen_struct_decl(all_tokens, pos)
+			ParseResult result = gen_struct_decl(all_ref, pos)
 			move (code, new_pos) in result
 			parts at end = code
 			pos = new_pos
@@ -63,19 +63,19 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 			pos = new_pos
 			continue
 		if kind is "KW_ENUM"
-			ParseResult result = gen_enum_decl(all_tokens, pos)
+			ParseResult result = gen_enum_decl(all_ref, pos)
 			move (code, new_pos) in result
 			parts at end = code
 			pos = new_pos
 			continue
 		if kind is "KW_TYPE"
-			ParseResult result = gen_type_decl(all_tokens, pos, ctx)
+			ParseResult result = gen_type_decl(all_ref, pos, ctx)
 			move (code, new_pos) in result
 			parts at end = code
 			pos = new_pos
 			continue
 		if kind is "KW_FN"
-			ParseResult result = gen_fn_decl(all_tokens, pos, ctx)
+			ParseResult result = gen_fn_decl(all_ref, pos, ctx)
 			move (code, new_pos) in result
 			parts at end = code
 			pos = new_pos
@@ -88,7 +88,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 			continue
 		if kind is "KW_RUST"
 			int block_pos = pos + 2
-			Token block_token = all_tokens at block_pos
+			Token block_token = all_ref at block_pos
 			(value) in block_token
 			string newline = "\n"
 			string rust_chunk = s_cat(value, newline)

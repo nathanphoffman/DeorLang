@@ -3,26 +3,26 @@
 # `#[derive(Clone, PartialEq, Debug)]` automatically — all Deor structs need Clone
 # for the pervasive .clone() calls the transpiler emits, and PartialEq for `is`
 # comparisons. Maps each field's Deor type to its Rust equivalent via render_rust_type.
-fn ParseResult gen_struct_decl(tokenList tokens, int pos)
+fn ParseResult gen_struct_decl(TokensRef tokens, int pos)
 	int start_pos = pos + 1
-	TokenCursor cur = cur_at(tokens, start_pos)
+	TokenCursor cur = cur_at_ref(tokens, start_pos)
 	using cur
 		(value) in current
 		string struct_name = value
-		cur_next() with tokens
-		cur_skip_to_body() with tokens
+		cur_next_ref() with tokens
+		cur_skip_to_body_ref() with tokens
 		strList field_lines = empty
 		for if not c_at_end(cur)
 			(current) in cur
 			(kind, value) in current
 			if kind is "DEDENT"
-				cur_next() with tokens
+				cur_next_ref() with tokens
 				break
 			else if kind is "NEWLINE"
-				cur_next() with tokens
+				cur_next_ref() with tokens
 			else if kind is "IDENT"
 				string field_type = value
-				cur_next() with tokens
+				cur_next_ref() with tokens
 				(value) in current
 				string field_name = value
 				string rust_type = render_rust_type(field_type)
@@ -30,7 +30,7 @@ fn ParseResult gen_struct_decl(tokenList tokens, int pos)
 				string fln_sep = ": "
 				string fln_com = ","
 				field_lines at end = s_join([fln_ind, field_name, fln_sep, rust_type, fln_com])
-				cur_next() with tokens
+				cur_next_ref() with tokens
 		string fields_code = s_join_nl(field_lines)
 		string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
 		string sdcl_ob = " {\n"

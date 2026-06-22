@@ -10,3 +10,10 @@ fn tokenList l_slice(tokenList tokens, int start, int end_val)
 			let end = (end_val as usize).min(tokens.len());
 			tokens[start as usize..end].to_vec()
 		}
+
+fn tokenList l_slice_ref(TokensRef tokens, int start, int end_val)
+	rust
+		{
+			let end = (end_val as usize).min(tokens.len());
+			tokens[start as usize..end].to_vec()
+		}

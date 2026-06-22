@@ -38,3 +38,28 @@ fn Token cur_peek(TokenCursor c, tokenList tokens, int offset)
 	(pos) in c
 	int peek_pos = pos + offset
 	return tokens at peek_pos
+
+fn TokenCursor cur_at_ref(TokensRef tokens, int pos)
+	int token_count = len(tokens)
+	Token current = tokens at pos
+	c as (token_count, pos, current)
+	return c
+
+fn TokenCursor cur_next_ref(TokenCursor c, TokensRef tokens)
+	(token_count, pos, current) in c
+	int pos = pos + 1
+	if pos < token_count
+		Token current = tokens at pos
+		return (token_count, pos, current)
+	return (token_count, pos, current)
+
+fn TokenCursor cur_skip_to_body_ref(TokenCursor c, TokensRef tokens)
+	(pos) in c
+	int body_pos = adv_nl_ref(pos, tokens)
+	body_pos = adv_indent_ref(body_pos, tokens)
+	return cur_at_ref(tokens, body_pos)
+
+fn Token cur_peek_ref(TokenCursor c, TokensRef tokens, int offset)
+	(pos) in c
+	int peek_pos = pos + offset
+	return tokens at peek_pos

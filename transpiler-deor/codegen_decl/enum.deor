@@ -3,20 +3,20 @@
 # `#[derive(Clone, Copy, PartialEq, Debug)]` — Copy is viable because Deor enum
 # variants carry no payload data. Converts the Deor camelCase name to PascalCase
 # for the Rust type name.
-fn ParseResult gen_enum_decl(tokenList tokens, int pos)
+fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 	int start_pos = pos + 1
-	TokenCursor cur = cur_at(tokens, start_pos)
+	TokenCursor cur = cur_at_ref(tokens, start_pos)
 	using cur
 		(value) in current
 		string enum_name = value
 		string rust_name = s_pascal(enum_name)
-		cur_next() with tokens
-		cur_skip_to_body() with tokens
+		cur_next_ref() with tokens
+		cur_skip_to_body_ref() with tokens
 		strList variant_lines = empty
 		for if not c_at_end(cur)
 			(current) in cur
 			(kind, value) in current
-			cur_next() with tokens
+			cur_next_ref() with tokens
 			if kind is "DEDENT"
 				break
 			if kind is "IDENT"
