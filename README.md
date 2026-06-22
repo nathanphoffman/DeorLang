@@ -38,29 +38,27 @@ Restart your terminal. The binary is added to your user PATH automatically.
 
 ## Quick start
 
-After installing, create a file `hello.deor`:
+During install you'll be prompted for a folder to create your starter project in:
 
 ```
-fn void main()
-    print("Hello, world!")
+Where would you like to create your starter project? (default: /your/current/dir/hello-deor):
 ```
 
-Then run it:
+Hit enter to accept the default or type a custom path. A `hello.deor` file will be placed there. Once your shell is reloaded, run it:
 
 ```sh
-# Unix
-bash setup/run.sh hello.deor
+# Unix / macOS
+cd hello-deor
+deor hello.deor hello.rs && rustc hello.rs -o hello && ./hello
 
 # Windows
-.\setup\run.ps1 hello.deor
+cd hello-deor
+deor hello.deor hello.rs; rustc hello.rs -o hello.exe; .\hello.exe
 ```
 
-Or directly once you have `deor` on your PATH:
-
-```sh
-deor hello.deor out.rs
-rustc -O -A warnings out.rs -o hello
-./hello
+You should see:
+```
+Hello, world!
 ```
 
 ---

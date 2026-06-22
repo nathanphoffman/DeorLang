@@ -26,17 +26,27 @@ else
     HELLO_SRC="$TMP/DeorLang-$BRANCH/setup/hello.deor"
 fi
 
+DEFAULT_PROJECT="$(pwd)/hello-deor"
+printf "Where would you like to create your starter project? (default: %s): " "$DEFAULT_PROJECT"
+read -r PROJECT_DIR
+if [ -z "$PROJECT_DIR" ]; then
+    PROJECT_DIR="$DEFAULT_PROJECT"
+fi
+
 echo "Installing Deor..."
 
 mkdir -p "$BIN_DIR"
 mkdir -p "$LIB_DIR"
+mkdir -p "$PROJECT_DIR"
 
 echo "  Compiling transpiler..."
 rustc -O -A warnings "$OUT_RS" -o "$BIN_DIR/deor"
 
 echo "  Installing lib/..."
 cp -r "$LIB_SRC/." "$LIB_DIR/"
-cp "$HELLO_SRC" "$DEOR_HOME/hello.deor"
+
+echo "  Creating starter project..."
+cp "$HELLO_SRC" "$PROJECT_DIR/hello.deor"
 
 cat > "$ENV_FILE" << EOF
 export PATH="$BIN_DIR:\$PATH"
@@ -62,6 +72,6 @@ echo ""
 echo "Done! Restart your shell or run:"
 echo "  . \"$ENV_FILE\""
 echo ""
-echo "To run the hello world example:"
-echo "  . \"$ENV_FILE\""
-echo "  deor ~/.deor/hello.deor /tmp/hello.rs && rustc /tmp/hello.rs -o /tmp/hello && /tmp/hello"
+echo "To run your hello world:"
+echo "  cd \"$PROJECT_DIR\""
+echo "  deor hello.deor hello.rs && rustc hello.rs -o hello && ./hello"
