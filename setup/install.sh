@@ -1,13 +1,28 @@
 #!/bin/sh
 set -e
 
+REPO="nathanphoffman/DeorLang"
+BRANCH="main"
+
 DEOR_HOME="$HOME/.deor"
 BIN_DIR="$DEOR_HOME/bin"
 LIB_DIR="$DEOR_HOME/lib"
 ENV_FILE="$DEOR_HOME/env"
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Dual-mode: use local files if running from a clone, otherwise fetch from GitHub
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SCRIPT_DIR=""
+if [ -f "$SCRIPT_DIR/out.rs" ] && [ -d "$SCRIPT_DIR/../lib" ]; then
+    OUT_RS="$SCRIPT_DIR/out.rs"
+    LIB_SRC="$SCRIPT_DIR/../lib"
+else
+    echo "  Downloading from GitHub..."
+    TMP="$(mktemp -d)"
+    trap 'rm -rf "$TMP"' EXIT
+    curl -sL "https://github.com/$REPO/archive/refs/heads/$BRANCH.tar.gz" \
+        | tar xz -C "$TMP"
+    OUT_RS="$TMP/DeorLang-$BRANCH/setup/out.rs"
+    LIB_SRC="$TMP/DeorLang-$BRANCH/lib"
+fi
 
 echo "Installing Deor..."
 
@@ -15,10 +30,10 @@ mkdir -p "$BIN_DIR"
 mkdir -p "$LIB_DIR"
 
 echo "  Compiling transpiler..."
-rustc -O -A warnings "$SCRIPT_DIR/out.rs" -o "$BIN_DIR/deor"
+rustc -O -A warnings "$OUT_RS" -o "$BIN_DIR/deor"
 
 echo "  Installing lib/..."
-cp -r "$REPO_ROOT/lib/." "$LIB_DIR/"
+cp -r "$LIB_SRC/." "$LIB_DIR/"
 
 cat > "$ENV_FILE" << EOF
 export PATH="$BIN_DIR:\$PATH"

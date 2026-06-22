@@ -12,13 +12,19 @@ Inspired by Python's opinionated readability, Go's lightweight base syntax, and 
 
 **Prerequisites:** [Rust / rustc](https://rustup.rs) must be installed.
 
-**Unix (Linux / macOS)**
+**Unix — one-liner** (no clone needed):
+```sh
+curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/install.sh | sh
+```
+
+**Unix — manual** (if you prefer to inspect before running):
 ```sh
 git clone https://github.com/nathanphoffman/DeorLang
 cd DeorLang
 bash setup/install.sh
 ```
-Then restart your shell (or run `. ~/.deor/env`). The `deor` binary and standard library are installed to `~/.deor/`.
+
+Both options install the `deor` binary and standard library to `~/.deor/` and patch your `.bashrc`/`.zshrc`. Restart your shell (or run `. ~/.deor/env`) when done.
 
 **Windows (PowerShell)**
 ```powershell

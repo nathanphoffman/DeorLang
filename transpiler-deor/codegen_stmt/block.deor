@@ -7,11 +7,14 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 	strList stmts = empty
 	int cur = pos
 	int token_count = len(tokens)
+	string last_file = ""
+	string indent = "    "
+	string pad = s_repeat(indent, depth)
 	for if true
 		if cur >= token_count
 			break
 		Token token = tokens at cur
-		(kind) in token
+		(kind, file) in token
 		if kind is "DEDENT" or kind is "EOF"
 			if kind is "DEDENT"
 				cur = cur + 1
@@ -19,6 +22,14 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 		if kind is "NEWLINE"
 			cur = cur + 1
 			continue
+		if file is not last_file
+			string fc_slash = "// "
+			string fc_nl = "\n"
+			string fc1 = s_cat(pad, fc_slash)
+			string fc2 = s_cat(fc1, file)
+			string file_comment = s_cat(fc2, fc_nl)
+			stmts at end = file_comment
+			last_file = file
 
         ParseResult stmt_r = gen_stmt(cur, depth, ctx)
         move (code, new_pos) in stmt_r

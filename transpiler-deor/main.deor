@@ -25,6 +25,7 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 	strList parts = empty
 	int token_count = len(all_tokens)
 	int pos = 0
+	string last_file = ""
 	string _timer_label = "[timer]   codegen-loop: "
 	macro_run start_timer
 
@@ -33,13 +34,20 @@ fn string generate_rust_from_tokens(tokenList all_tokens)
 			break
 
 		Token token = all_tokens at pos
-		(kind) in token
+		(kind, file) in token
 
 		if kind is "EOF"
 			break
 		if kind is "NEWLINE"
 			pos = pos + 1
 			continue
+		if file is not last_file
+			string fc_slash = "// "
+			string fc_nl = "\n"
+			string fc1 = s_cat(fc_slash, file)
+			string file_comment = s_cat(fc1, fc_nl)
+			parts at end = file_comment
+			last_file = file
 		if kind is "KW_STRUCT"
 			ParseResult result = gen_struct_decl(all_tokens, pos)
 			move (code, new_pos) in result
