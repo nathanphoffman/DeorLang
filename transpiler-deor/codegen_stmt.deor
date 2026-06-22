@@ -13,7 +13,7 @@
 #   codegen_stmt/macros/stmt_structural.deor — stmt_structural: (avow)/destructure/using
 #   codegen_stmt/as_binding.deor      — gen_as_binding: name as ...
 #   codegen_stmt/call_stmt.deor       — gen_call_stmt: name(args), using shims
-#   codegen_stmt/list_mutation.deor   — gen_list_mutation_stmt: insert/at/remove
+#   codegen_stmt/list_mutation.deor   — gen_list_mutation_stmt: at/remove
 #   codegen_stmt/typed_binding.deor   — gen_typed_binding: Type name = expr
 
 # Main statement dispatcher. Recognizes every statement form and routes to the
@@ -77,9 +77,6 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 
 		if kind is "LPAREN"
 			return gen_call_stmt(pos, depth, ctx)
-
-		if kind is "KW_INSERT"
-			return gen_list_mutation_stmt(pos, depth, ctx)
 
 		if kind is "KW_AT"
 			return gen_list_mutation_stmt(pos, depth, ctx)

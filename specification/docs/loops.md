@@ -36,6 +36,34 @@ for idx in 1..11 {
 `range(count)` is shorthand for `range(0, count)`.
 
 ---
+## Bare Tuple Range
+`(start, end)` is an alternative to `range(start, end)` when both bounds are already named variables in scope. Produces identical Rust output — use whichever reads more clearly.
+
+```
+for idx in (low, high)
+    print(idx)
+```
+
+```rust
+for idx in low..high {
+    println!("{}", idx);
+}
+```
+
+The index-free form works too:
+
+```
+for in (low, high)
+    do_something()
+```
+
+```rust
+for _ in low..high {
+    do_something();
+}
+```
+
+---
 ## Repeat Without an Index
 When the loop index is not needed, write `for in range(n)` — the variable name is omitted but `in` stays:
 

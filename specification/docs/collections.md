@@ -97,39 +97,6 @@ result.remove(1);
 ```
 
 ---
-## Slice
-`in range(start, end)` extracts a contiguous sublist. Returns a new list of the same shape type. `end` is exclusive — the element at `end` is not included, this follows rust behavior.
-
-```
-roomList first_ten = rooms in range(0, 10)
-```
-
-```rust
-let first_ten: Vec<Room> = rooms[0..10].to_vec();
-```
-
-`end` is a reserved keyword meaning "the length of this list" when used as the second argument to `range()` in a slice:
-
-```
-int mid = 5
-roomList tail = rooms in range(mid, end)
-```
-
-```rust
-let tail: Vec<Room> = rooms[5..].to_vec();
-```
-
-Both forms are valid:
-
-```
-start as 0
-roomList head = rooms in range(start, mid)     # from 0 to mid
-roomList tail = rooms in range(mid, end)       # from mid to end of list
-```
-
-The `range()` arguments follow the same rules as everywhere else — built-in function, so literals are valid directly.
-
----
 ## No Membership Test
 Deor has no built-in membership operator. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
 

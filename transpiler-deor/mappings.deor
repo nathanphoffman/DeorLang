@@ -51,8 +51,7 @@ fn string word_to_kind(string word)
 		return "KW_LIST"
 	if word is "of"
 		return "KW_OF"
-	if word is "insert"
-		return "KW_INSERT"
+
 	if word is "enum"
 		return "KW_ENUM"
 	if word is "at"

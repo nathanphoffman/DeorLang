@@ -181,7 +181,9 @@ fn (int quotient, int remainder) divmod(int left, int right)
 
 ---
 ## Named Arguments — User-Defined Functions Only
-All arguments passed to **user-defined functions** must be named variables already in scope. Literals, arithmetic expressions, inline function call results, and inline struct constructions are not valid arguments to user-defined functions.
+When a user-defined function is called with **2 or 3 arguments**, every argument must be a named variable already in scope. Literals, arithmetic expressions, inline function call results, and inline struct constructions are not valid in that position.
+
+When called with **exactly 1 argument**, the argument does not need to be a named variable — a literal or expression is allowed.
 
 **Correct:**
 ```
@@ -190,24 +192,31 @@ fn int add(int left, int right)
 
 num as 5
 amt as 3
-int result = add(num, amt)
+int result = add(num, amt)    # 2 args — both must be named
+```
+
+```
+fn int double(int val)
+    return val * 2
+
+int result = double(5)        # 1 arg — literal allowed
 ```
 
 ```
 message as "Parse failed"
 body as input
 Error err = (message, body)
-error_handler(err)
+error_handler(err)            # 1 arg — named, but not required
 ```
 
 **Incorrect — transpiler errors:**
 ```
-int result = add(5, 3)               # literals not allowed in user function call
-error_handler((message, body))       # inline struct construction not allowed
-int result = add(num + 1, amt)       # expression not allowed in user function call
+int result = add(5, 3)               # 2 args — literals not allowed
+error_handler((message, body))       # inline struct construction not allowed (multi-arg context)
+int result = add(num + 1, amt)       # 2 args — expression not allowed
 ```
 
-**Built-in functions** accept literals and expressions directly — no named variable required:
+**Built-in functions** accept literals and expressions directly regardless of argument count — no named variable required:
 
 ```
 print("Hello, world!")
@@ -218,7 +227,7 @@ for range(5)
     ...
 ```
 
-The rationale: named variables make call sites self-documenting for user-defined functions, where the parameter names may not be universally known. Built-ins like `print`, `len`, and `range` are part of the language and universally understood — requiring named variables for them adds ceremony with no clarity benefit. This same logic applies to system constructs: `if` conditions and `for` headers accept expressions freely.
+The rationale: named variables make call sites self-documenting for user-defined functions with multiple parameters, where readers need anchors to understand what each value represents. A single-argument call is self-evident from context — requiring a named wrapper adds ceremony with no clarity benefit. Built-ins like `print`, `len`, and `range` are part of the language and universally understood — the same exemption applies. This same logic applies to system constructs: `if` conditions and `for` headers accept expressions freely.
 
 ---
 ## No Nested Functions

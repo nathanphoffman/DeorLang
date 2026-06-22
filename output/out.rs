@@ -377,9 +377,6 @@ fn word_to_kind(word: String) -> String {
     if word == "of" {
         return "KW_OF".to_string();
     }
-    if word == "insert" {
-        return "KW_INSERT".to_string();
-    }
     if word == "enum" {
         return "KW_ENUM".to_string();
     }
@@ -1451,7 +1448,7 @@ fn validate_tokens(tokens: Vec<Token>) {
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
     let mut rule_empty_bracket: String = "use 'empty' to initialize an empty list — [] is only valid with items inside".to_string();
     let mut rule_list_validator: String = "list shapes cannot be validator base types — validators only wrap primitives".to_string();
-    let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_INSERT".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_USING".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
+    let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_USING".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
     let mut shape_names: Vec<String> = Vec::new();
     let mut pre_i: i32 = 0;
     while pre_i < token_count {
@@ -3193,21 +3190,6 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut next_pos: i32 = pos + 1.clone();
     let mut next_token: Token = tokens[next_pos as usize].clone();
     let kind = next_token.kind.clone();
-    if kind == "KW_INSERT" {
-        let mut val_pos: i32 = next_pos + 1.clone();
-        let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-        let mut val_code: String = pr_code(val_r.clone());
-        let mut val_end: i32 = pr_pos(val_r.clone());
-        let mut val_tok: Token = tokens[val_pos as usize].clone();
-        let kind = val_tok.kind.clone();
-        let mut push_val: String = emit_val(val_code.clone(), kind.clone());
-        let mut psh_pfx: String = ".push(".to_string();
-        let mut psh_sfx: String = ");\n".to_string();
-        let mut psh_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), psh_pfx.clone(), push_val.clone(), psh_sfx.clone()];
-        let mut push_code: String = s_join(psh_parts.clone());
-        let mut push_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
-        return make_result(push_code.clone(), push_next.clone());
-    }
     if kind == "KW_AT" {
         let mut after_at: i32 = next_pos + 1.clone();
         if after_at < token_count {
@@ -3608,6 +3590,28 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut su_full: String = s_cat(su_init.clone(), su_blk_code.clone());
         return make_result(su_full, su_blk_pos.clone());
     }
+    if kind == "KW_RAW" {
+        let mut raw_name_pos: i32 = pos + 1.clone();
+        let mut raw_name_tok: Token = tokens[raw_name_pos as usize].clone();
+        let value = raw_name_tok.value.clone();
+        let mut raw_var_name: String = value.clone();
+        let mut raw_val_pos: i32 = raw_name_pos + 2.clone();
+        let mut raw_val_r: ParseResult = gen_expr(tokens.clone(), raw_val_pos.clone(), ctx.clone());
+        let mut raw_val_code: String = pr_code(raw_val_r.clone());
+        let mut raw_val_end: i32 = pr_pos(raw_val_r.clone());
+        let mut raw_is_mut: bool = list_has(mut_names.clone(), raw_var_name.clone());
+        let mut raw_mut_kw: String = "".to_string();
+        if raw_is_mut {
+            raw_mut_kw = "mut ".to_string();
+        }
+        let mut raw_let: String = "let ".to_string();
+        let mut raw_eq: String = " = ".to_string();
+        let mut raw_sc: String = ";\n".to_string();
+        let mut raw_parts: Vec<String> = vec![pad.clone(), raw_let.clone(), raw_mut_kw.clone(), raw_var_name.clone(), raw_eq.clone(), raw_val_code.clone(), raw_sc.clone()];
+        let mut raw_code: String = s_join(raw_parts.clone());
+        let mut raw_next: i32 = adv_nl_ref(raw_val_end.clone(), tokens.clone());
+        return make_result(raw_code.clone(), raw_next.clone());
+    }
     if kind == "KW_CONST" {
         let mut const_type_pos: i32 = pos + 1.clone();
         return gen_typed_binding(const_type_pos.clone(), depth.clone(), ctx.clone());
@@ -3632,9 +3636,6 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         }
         if kind == "LPAREN" {
             return gen_call_stmt(pos.clone(), depth.clone(), ctx.clone());
-        }
-        if kind == "KW_INSERT" {
-            return gen_list_mutation_stmt(pos.clone(), depth.clone(), ctx.clone());
         }
         if kind == "KW_AT" {
             return gen_list_mutation_stmt(pos.clone(), depth.clone(), ctx.clone());

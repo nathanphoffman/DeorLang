@@ -5,7 +5,7 @@
 
 [Built-ins](docs/builtins.md) — `print`, `len`, `range`, `crash`
 
-[Collections](docs/collections.md) — index access, append, remove, slices
+[Collections](docs/collections.md) — index access, append, remove
 
 [Conditionals](docs/conditionals.md) — `if`, `else if`, `else`
 

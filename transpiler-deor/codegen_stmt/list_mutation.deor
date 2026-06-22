@@ -1,8 +1,7 @@
 
 # Generates code for list-mutation statements where the target is an identifier.
 # pos points to the list name. Dispatches based on the next token:
-#   name insert val       → `.push(val)` (legacy append keyword)
-#   name at end = val     → `.push(val)` (preferred append syntax)
+#   name at end = val     → `.push(val)`
 #   name at idx = val     → `name[idx as usize] = val`
 #   name remove at idx    → `.remove(idx as usize)`
 fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
@@ -16,22 +15,6 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 	int next_pos = pos + 1
 	Token next_token = tokens at next_pos
 	(kind) in next_token
-
-	# name insert val  (legacy append)
-	if kind is "KW_INSERT"
-		int val_pos = next_pos + 1
-		ParseResult val_r = gen_expr(tokens, val_pos, ctx)
-		string val_code = pr_code(val_r)
-		int val_end = pr_pos(val_r)
-		Token val_tok = tokens at val_pos
-		(kind) in val_tok
-		string push_val = emit_val(val_code, kind)
-		string psh_pfx = ".push("
-		string psh_sfx = ");\n"
-		strList psh_parts = [pad, ident_name, psh_pfx, push_val, psh_sfx]
-		string push_code = s_join(psh_parts)
-		int push_next = adv_nl_ref(val_end, tokens)
-		return make_result(push_code, push_next)
 
 	# name at end = val  OR  name at idx = val
 	if kind is "KW_AT"

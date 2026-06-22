@@ -113,7 +113,7 @@ Open an indented block when followed by a newline.
 | `as` | Shape-derived binding |
 | `with` | Record update (inside `as` binding); extra-argument pass in `using` blocks (`fn_name() with arg`) |
 | `at` | Index access and write (`list at idx`, `list at idx = val`, `list at end = val`) |
-| `end` | Reserved sentinel — "end of list" in `at end` and `in range(start, end)` |
+| `end` | Reserved sentinel — "end of list" in `list at end = val` |
 | `of` | Element type connector in shape declarations (`list of Room`) |
 | `to` | Return type connector in func shapes (`func of Room to bool`) |
 
@@ -139,4 +139,4 @@ These are not standalone words but reserved prefix forms in import paths.
 |---|---|
 | `rust:` | Raw `.rs` file import |
 
-**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a built-in function and should not be shadowed. `end` is a reserved sentinel — only valid as `list at end = val` and as the second argument to `range()` in a slice (`list in range(start, end)`).
+**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a built-in function and should not be shadowed. `end` is a reserved sentinel — only valid as `list at end = val`.
