@@ -125,6 +125,9 @@ fn void main()
 	x as 10
 	y as 20
 
+	float kcount = (2.0*9.0) + 3.0 
+	print(kcount)
+
     z as 120
 	print(z)
 

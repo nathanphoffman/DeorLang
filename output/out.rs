@@ -3267,33 +3267,71 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let mut pe_unwrap_code: String = [pe_expr_code.as_str(), pe_unw.as_str()].concat();
                 return make_result(pe_unwrap_code, pe_after.clone());
             }
-            let mut pe_fields: Vec<String> = Vec::new();
-            let mut pe_cur: i32 = pe_peek.clone();
-            while pe_cur < token_count {
+            let mut pe_is_struct: bool = true;
+            let mut pe_scan: i32 = pe_peek.clone();
+            while pe_scan < token_count {
                 // transpiler-deor/codegen_expr/primary/paren_expr.deor
-                let mut pe_field_tok: Token = tokens[pe_cur as usize].clone();
-                let kind = pe_field_tok.kind.clone();
-                let value = pe_field_tok.value.clone();
+                let mut pe_scan_tok: Token = tokens[pe_scan as usize].clone();
+                let kind = pe_scan_tok.kind.clone();
                 if kind == "RPAREN" {
                     // transpiler-deor/codegen_expr/primary/paren_expr.deor
-                    pe_cur = pe_cur + 1;
                     break;
-                } else if kind == "COMMA" {
-                    // transpiler-deor/codegen_expr/primary/paren_expr.deor
-                    pe_cur = pe_cur + 1;
-                } else if kind == "IDENT" {
-                    // transpiler-deor/codegen_expr/primary/paren_expr.deor
-                    pe_fields.push(value.clone());
-                    pe_cur = pe_cur + 1;
                 }
+                if kind == "IDENT" {
+                    // transpiler-deor/codegen_expr/primary/paren_expr.deor
+                    pe_scan = pe_scan + 1;
+                    continue;
+                }
+                if kind == "COMMA" {
+                    // transpiler-deor/codegen_expr/primary/paren_expr.deor
+                    pe_scan = pe_scan + 1;
+                    continue;
+                }
+                pe_is_struct = false;
+                break;
             }
-            let mut pe_struct_name: String = find_struct_for_fields(struct_reg.clone(), pe_fields.clone());
-            let mut pe_sep: String = ", ".to_string();
-            let mut pe_fields_code: String = s_join_with(pe_fields.clone(), pe_sep.clone());
-            let mut pe_sco: String = " { ".to_string();
-            let mut pe_scc: String = " }".to_string();
-            let mut pe_struct_code: String = [pe_struct_name.as_str(), pe_sco.as_str(), pe_fields_code.as_str(), pe_scc.as_str()].concat();
-            return make_result(pe_struct_code, pe_cur.clone());
+            if pe_is_struct {
+                // transpiler-deor/codegen_expr/primary/paren_expr.deor
+                let mut pe_fields: Vec<String> = Vec::new();
+                let mut pe_cur: i32 = pe_peek.clone();
+                while pe_cur < token_count {
+                    // transpiler-deor/codegen_expr/primary/paren_expr.deor
+                    let mut pe_field_tok: Token = tokens[pe_cur as usize].clone();
+                    let kind = pe_field_tok.kind.clone();
+                    let value = pe_field_tok.value.clone();
+                    if kind == "RPAREN" {
+                        // transpiler-deor/codegen_expr/primary/paren_expr.deor
+                        pe_cur = pe_cur + 1;
+                        break;
+                    } else if kind == "COMMA" {
+                        // transpiler-deor/codegen_expr/primary/paren_expr.deor
+                        pe_cur = pe_cur + 1;
+                    } else if kind == "IDENT" {
+                        // transpiler-deor/codegen_expr/primary/paren_expr.deor
+                        pe_fields.push(value.clone());
+                        pe_cur = pe_cur + 1;
+                    } else {
+                        // transpiler-deor/codegen_expr/primary/paren_expr.deor
+                        pe_cur = pe_cur + 1;
+                    }
+                }
+                let mut pe_struct_name: String = find_struct_for_fields(struct_reg.clone(), pe_fields.clone());
+                let mut pe_sep: String = ", ".to_string();
+                let mut pe_fields_code: String = s_join_with(pe_fields.clone(), pe_sep.clone());
+                let mut pe_sco: String = " { ".to_string();
+                let mut pe_scc: String = " }".to_string();
+                let mut pe_struct_code: String = [pe_struct_name.as_str(), pe_sco.as_str(), pe_fields_code.as_str(), pe_scc.as_str()].concat();
+                return make_result(pe_struct_code, pe_cur.clone());
+            }
+            let mut pe_inner_r: ParseResult = gen_expr(tokens.clone(), pe_peek.clone(), ctx.clone());
+            let code = pe_inner_r.code;
+            let new_pos = pe_inner_r.new_pos;
+            let pe_inner_code = code;
+            let pe_after_inner = new_pos + 1;
+            let mut pe_open: String = "(".to_string();
+            let mut pe_close: String = ")".to_string();
+            let mut pe_grouped: String = [pe_open.as_str(), pe_inner_code.as_str(), pe_close.as_str()].concat();
+            return make_result(pe_grouped, pe_after_inner.clone());
         }
     }
     // macro: primary_prefix_ops (transpiler-deor/codegen_expr/primary/prefix_ops.deor)
@@ -4409,91 +4447,98 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut peek_token: Token = tokens[peek_pos as usize].clone();
         let kind = peek_token.kind.clone();
         let mut is_avow_expr: bool = kind == "KW_AVOW".clone();
+        let mut is_struct_type: bool = reg_has(struct_reg.clone(), var_type.clone());
         if !is_avow_expr {
             // transpiler-deor/codegen_stmt/typed_binding.deor
-            let mut struct_fields_str: String = reg_get(struct_reg.clone(), var_type.clone());
-            let mut comma: String = ",".to_string();
-            let mut field_names: Vec<String> = s_split(struct_fields_str.clone(), comma.clone());
-            let mut field_pairs: Vec<String> = Vec::new();
-            let mut fend: i32 = val_pos + 1.clone();
-            let mut fni: i32 = 0;
-            let mut fn_count: i32 = (field_names.len() as i32);
-            while fend < token_count {
+            if is_struct_type {
                 // transpiler-deor/codegen_stmt/typed_binding.deor
-                let mut field_tok: Token = tokens[fend as usize].clone();
-                let kind = field_tok.kind.clone();
-                if kind == "RPAREN" {
+                let mut struct_fields_str: String = reg_get(struct_reg.clone(), var_type.clone());
+                let mut comma: String = ",".to_string();
+                let mut field_names: Vec<String> = s_split(struct_fields_str.clone(), comma.clone());
+                let mut field_pairs: Vec<String> = Vec::new();
+                let mut fend: i32 = val_pos + 1.clone();
+                let mut fni: i32 = 0;
+                let mut fn_count: i32 = (field_names.len() as i32);
+                while fend < token_count {
                     // transpiler-deor/codegen_stmt/typed_binding.deor
-                    fend = fend + 1;
-                    break;
+                    let mut field_tok: Token = tokens[fend as usize].clone();
+                    let kind = field_tok.kind.clone();
+                    if kind == "RPAREN" {
+                        // transpiler-deor/codegen_stmt/typed_binding.deor
+                        fend = fend + 1;
+                        break;
+                    }
+                    if kind == "COMMA" {
+                        // transpiler-deor/codegen_stmt/typed_binding.deor
+                        fend = fend + 1;
+                        continue;
+                    }
+                    let mut fv_r: ParseResult = gen_expr(tokens.clone(), fend.clone(), ctx.clone());
+                    let code = fv_r.code;
+                    let new_pos = fv_r.new_pos;
+                    let fv_code = code;
+                    if fni < fn_count {
+                        // transpiler-deor/codegen_stmt/typed_binding.deor
+                        let mut fname: String = field_names[fni as usize].clone();
+                        let mut sfp_sep: String = ": ".to_string();
+                        let mut sfp_cln: String = ".clone()".to_string();
+                        field_pairs.push([fname.as_str(), sfp_sep.as_str(), fv_code.as_str(), sfp_cln.as_str()].concat().clone());
+                        fni = fni + 1;
+                    }
+                    fend = new_pos;
                 }
-                if kind == "COMMA" {
+                let mut sep: String = ", ".to_string();
+                let mut fields_code: String = s_join_with(field_pairs.clone(), sep.clone());
+                let mut is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+                let mut mut_kw: String = "".to_string();
+                if is_mut {
                     // transpiler-deor/codegen_stmt/typed_binding.deor
-                    fend = fend + 1;
-                    continue;
+                    mut_kw = "mut ".to_string();
                 }
-                let mut fv_r: ParseResult = gen_expr(tokens.clone(), fend.clone(), ctx.clone());
-                let code = fv_r.code;
-                let new_pos = fv_r.new_pos;
-                let fv_code = code;
-                if fni < fn_count {
-                    // transpiler-deor/codegen_stmt/typed_binding.deor
-                    let mut fname: String = field_names[fni as usize].clone();
-                    let mut sfp_sep: String = ": ".to_string();
-                    let mut sfp_cln: String = ".clone()".to_string();
-                    field_pairs.push([fname.as_str(), sfp_sep.as_str(), fv_code.as_str(), sfp_cln.as_str()].concat().clone());
-                    fni = fni + 1;
-                }
-                fend = new_pos;
+                let mut scc_let: String = "let ".to_string();
+                let mut scc_eq: String = " = ".to_string();
+                let mut scc_ob: String = " { ".to_string();
+                let mut scc_cb: String = " };\n".to_string();
+                let mut sc_code: String = [pad.as_str(), scc_let.as_str(), mut_kw.as_str(), var_name.as_str(), scc_eq.as_str(), var_type.as_str(), scc_ob.as_str(), fields_code.as_str(), scc_cb.as_str()].concat();
+                let mut sc_next: i32 = adv_nl_ref(fend.clone(), tokens.clone());
+                return make_result(sc_code, sc_next.clone());
             }
-            let mut sep: String = ", ".to_string();
-            let mut fields_code: String = s_join_with(field_pairs.clone(), sep.clone());
-            let mut is_mut: bool = list_has(mut_names.clone(), var_name.clone());
-            let mut mut_kw: String = "".to_string();
-            if is_mut {
+        }
+        if is_avow_expr {
+            // transpiler-deor/codegen_stmt/typed_binding.deor
+            let mut inner_pos: i32 = peek_pos + 1.clone();
+            let mut inner_r: ParseResult = gen_expr(tokens.clone(), inner_pos.clone(), ctx.clone());
+            let code = inner_r.code;
+            let new_pos = inner_r.new_pos;
+            let inner_code = code;
+            let after_rparen = new_pos + 1;
+            let mut suf_unwrap: String = ".unwrap()".to_string();
+            let mut suf_unwrap0: String = ".unwrap().0".to_string();
+            let mut unwrap_expr: String = s_cat(inner_code.clone(), suf_unwrap.clone());
+            if var_type == "int" {
                 // transpiler-deor/codegen_stmt/typed_binding.deor
-                mut_kw = "mut ".to_string();
+                unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
             }
-            let mut scc_let: String = "let ".to_string();
-            let mut scc_eq: String = " = ".to_string();
-            let mut scc_ob: String = " { ".to_string();
-            let mut scc_cb: String = " };\n".to_string();
-            let mut sc_code: String = [pad.as_str(), scc_let.as_str(), mut_kw.as_str(), var_name.as_str(), scc_eq.as_str(), var_type.as_str(), scc_ob.as_str(), fields_code.as_str(), scc_cb.as_str()].concat();
-            let mut sc_next: i32 = adv_nl_ref(fend.clone(), tokens.clone());
-            return make_result(sc_code, sc_next.clone());
+            if var_type == "string" {
+                // transpiler-deor/codegen_stmt/typed_binding.deor
+                unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
+            }
+            if var_type == "bool" {
+                // transpiler-deor/codegen_stmt/typed_binding.deor
+                unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
+            }
+            if var_type == "float" {
+                // transpiler-deor/codegen_stmt/typed_binding.deor
+                unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
+            }
+            let mut awc_let: String = "let ".to_string();
+            let mut awc_col: String = ": ".to_string();
+            let mut awc_eq: String = " = ".to_string();
+            let mut awc_sc: String = ";\n".to_string();
+            let mut aw_code: String = [pad.as_str(), awc_let.as_str(), var_name.as_str(), awc_col.as_str(), rust_type.as_str(), awc_eq.as_str(), unwrap_expr.as_str(), awc_sc.as_str()].concat();
+            let mut aw_next: i32 = adv_nl_ref(after_rparen.clone(), tokens.clone());
+            return make_result(aw_code, aw_next.clone());
         }
-        let mut inner_pos: i32 = peek_pos + 1.clone();
-        let mut inner_r: ParseResult = gen_expr(tokens.clone(), inner_pos.clone(), ctx.clone());
-        let code = inner_r.code;
-        let new_pos = inner_r.new_pos;
-        let inner_code = code;
-        let after_rparen = new_pos + 1;
-        let mut suf_unwrap: String = ".unwrap()".to_string();
-        let mut suf_unwrap0: String = ".unwrap().0".to_string();
-        let mut unwrap_expr: String = s_cat(inner_code.clone(), suf_unwrap.clone());
-        if var_type == "int" {
-            // transpiler-deor/codegen_stmt/typed_binding.deor
-            unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
-        }
-        if var_type == "string" {
-            // transpiler-deor/codegen_stmt/typed_binding.deor
-            unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
-        }
-        if var_type == "bool" {
-            // transpiler-deor/codegen_stmt/typed_binding.deor
-            unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
-        }
-        if var_type == "float" {
-            // transpiler-deor/codegen_stmt/typed_binding.deor
-            unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
-        }
-        let mut awc_let: String = "let ".to_string();
-        let mut awc_col: String = ": ".to_string();
-        let mut awc_eq: String = " = ".to_string();
-        let mut awc_sc: String = ";\n".to_string();
-        let mut aw_code: String = [pad.as_str(), awc_let.as_str(), var_name.as_str(), awc_col.as_str(), rust_type.as_str(), awc_eq.as_str(), unwrap_expr.as_str(), awc_sc.as_str()].concat();
-        let mut aw_next: i32 = adv_nl_ref(after_rparen.clone(), tokens.clone());
-        return make_result(aw_code, aw_next.clone());
     }
     if kind == "LBRACKET" {
         // transpiler-deor/codegen_stmt/typed_binding.deor

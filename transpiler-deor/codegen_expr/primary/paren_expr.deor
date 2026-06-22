@@ -1,8 +1,9 @@
 
-# Handles parenthesised expressions. Two cases share the `(` open token:
+# Handles parenthesised expressions. Three cases share the `(` open token:
 #   (avow expr)  — forced unwrap: generates `expr.unwrap()`
 #   (f1, f2)     — struct construction: looks up the struct by its field set and
 #                  generates `StructName { f1, f2 }`
+#   (expr)       — grouped arithmetic/logic: generates `(expr)`
 macro primary_paren_expr
 	if kind is "LPAREN"
 		int pe_peek = pos + 1
@@ -18,23 +19,55 @@ macro primary_paren_expr
 				string pe_unw = ".unwrap()"
 				string pe_unwrap_code = s_join([pe_expr_code, pe_unw])
 				return make_result(move pe_unwrap_code, pe_after)
-			strList pe_fields = empty
-			int pe_cur = pe_peek
-			for if pe_cur < token_count
-				Token pe_field_tok = tokens at pe_cur
-				(kind, value) in pe_field_tok
+
+			# Peek ahead to decide: if every token before RPAREN is IDENT or COMMA
+			# then this is struct construction, otherwise it's a grouped expression.
+			bool pe_is_struct = true
+			int pe_scan = pe_peek
+			for if pe_scan < token_count
+				Token pe_scan_tok = tokens at pe_scan
+				(kind) in pe_scan_tok
 				if kind is "RPAREN"
-					pe_cur = pe_cur + 1
 					break
-				else if kind is "COMMA"
-					pe_cur = pe_cur + 1
-				else if kind is "IDENT"
-					pe_fields at end = value
-					pe_cur = pe_cur + 1
-			string pe_struct_name = find_struct_for_fields(struct_reg, pe_fields)
-			string pe_sep = ", "
-			string pe_fields_code = s_join_with(pe_fields, pe_sep)
-			string pe_sco = " { "
-			string pe_scc = " }"
-			string pe_struct_code = s_join([pe_struct_name, pe_sco, pe_fields_code, pe_scc])
-			return make_result(move pe_struct_code, pe_cur)
+				if kind is "IDENT"
+					pe_scan = pe_scan + 1
+					continue
+				if kind is "COMMA"
+					pe_scan = pe_scan + 1
+					continue
+				pe_is_struct = false
+				break
+
+			if pe_is_struct
+				strList pe_fields = empty
+				int pe_cur = pe_peek
+				for if pe_cur < token_count
+					Token pe_field_tok = tokens at pe_cur
+					(kind, value) in pe_field_tok
+					if kind is "RPAREN"
+						pe_cur = pe_cur + 1
+						break
+					else if kind is "COMMA"
+						pe_cur = pe_cur + 1
+					else if kind is "IDENT"
+						pe_fields at end = value
+						pe_cur = pe_cur + 1
+					else
+						pe_cur = pe_cur + 1
+				string pe_struct_name = find_struct_for_fields(struct_reg, pe_fields)
+				string pe_sep = ", "
+				string pe_fields_code = s_join_with(pe_fields, pe_sep)
+				string pe_sco = " { "
+				string pe_scc = " }"
+				string pe_struct_code = s_join([pe_struct_name, pe_sco, pe_fields_code, pe_scc])
+				return make_result(move pe_struct_code, pe_cur)
+
+			# Grouped expression: parse the inner expr then skip the closing RPAREN
+			ParseResult pe_inner_r = gen_expr(tokens, pe_peek, ctx)
+			move (code, new_pos) in pe_inner_r
+			pe_inner_code as code
+			pe_after_inner as new_pos + 1
+			string pe_open = "("
+			string pe_close = ")"
+			string pe_grouped = s_join([pe_open, pe_inner_code, pe_close])
+			return make_result(move pe_grouped, pe_after_inner)
