@@ -5,8 +5,9 @@ macro primary_list_literal
 	if kind is "LBRACKET"
 		int ll_inner = pos + 1
 		ParseResult ll_items_r = gen_list_items(tokens, ll_inner, ctx)
-		string ll_items_code = pr_code(ll_items_r)
-		int ll_items_pos = pr_pos(ll_items_r)
+		move (code, new_pos) in ll_items_r
+		ll_items_code as code
+		ll_items_pos as new_pos
 		string ll_open = "vec!["
 		string ll_close = "]"
 		strList ll_parts = [ll_open, ll_items_code, ll_close]

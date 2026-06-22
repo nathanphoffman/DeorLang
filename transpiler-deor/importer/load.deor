@@ -13,6 +13,14 @@ rust
 			if s.contains(&path) { false } else { s.insert(path); true }
 		})
 	}
+	fn resolve_lib_path(path: String) -> String {
+		if path.starts_with("lib/") {
+			if let Ok(lib) = std::env::var("DEOR_LIB") {
+				return format!("{}/{}", lib.trim_end_matches('/'), &path[4..]);
+			}
+		}
+		path
+	}
 
 fn tokenList load_file(string path)
 	string source = f_read(path)
@@ -64,6 +72,7 @@ fn tokenList load_file(string path)
 			else
 				imp_path = pr_code(imp_r_old)
 				imp_end = pr_pos(imp_r_old)
+			imp_path = resolve_lib_path(imp_path)
 			if not is_empty(imp_path)
 				if seen_decl
 					string err_pre = "[error] "

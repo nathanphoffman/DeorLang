@@ -12,8 +12,9 @@ macro primary_paren_expr
 			if kind is "KW_AVOW"
 				int pe_expr_pos = pe_peek + 1
 				ParseResult pe_expr_r = gen_expr(tokens, pe_expr_pos, ctx)
-				string pe_expr_code = pr_code(pe_expr_r)
-				int pe_after = pr_pos(pe_expr_r) + 1
+				move (code, new_pos) in pe_expr_r
+				pe_expr_code as code
+				pe_after as new_pos + 1
 				string pe_unw = ".unwrap()"
 				strList pe_unw_parts = [pe_expr_code, pe_unw]
 				string pe_unwrap_code = s_join(pe_unw_parts)

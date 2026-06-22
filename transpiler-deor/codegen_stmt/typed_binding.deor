@@ -73,7 +73,8 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 					fend = fend + 1
 					continue
 				ParseResult fv_r = gen_expr(tokens, fend, ctx)
-				string fv_code = pr_code(fv_r)
+				move (code, new_pos) in fv_r
+				fv_code as code
 				if fni < fn_count
 					string fname = field_names at fni
 					string sfp_sep = ": "
@@ -81,7 +82,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 					strList sfp_parts = [fname, sfp_sep, fv_code, sfp_cln]
 					field_pairs at end = s_join(sfp_parts)
 					fni = fni + 1
-				fend = pr_pos(fv_r)
+				fend = new_pos
 			string sep = ", "
 			string fields_code = s_join_with(field_pairs, sep)
 			bool is_mut = list_has(mut_names, var_name)
@@ -99,8 +100,9 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		# (avow inner) — .unwrap().0 for primitives, .unwrap() for custom types
 		int inner_pos = peek_pos + 1
 		ParseResult inner_r = gen_expr(tokens, inner_pos, ctx)
-		string inner_code = pr_code(inner_r)
-		int after_rparen = pr_pos(inner_r) + 1
+		move (code, new_pos) in inner_r
+		inner_code as code
+		after_rparen as new_pos + 1
 		string suf_unwrap = ".unwrap()"
 		string suf_unwrap0 = ".unwrap().0"
 		string unwrap_expr = s_cat(inner_code, suf_unwrap)
@@ -124,8 +126,9 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	# list literal → always let mut
 	if kind is "LBRACKET"
 		ParseResult val_r = gen_expr(tokens, val_pos, ctx)
-		string val_code = pr_code(val_r)
-		int val_end = pr_pos(val_r)
+		move (code, new_pos) in val_r
+		val_code as code
+		val_end as new_pos
 		string lst_pfx = "let mut "
 		string lst_col = ": "
 		string lst_eq = " = "
@@ -156,8 +159,9 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	bool is_validator = reg3_has(type_reg, var_type)
 	if is_validator
 		ParseResult val_r = gen_expr(tokens, val_pos, ctx)
-		string val_code = pr_code(val_r)
-		int val_end = pr_pos(val_r)
+		move (code, new_pos) in val_r
+		val_code as code
+		val_end as new_pos
 		bool is_mut = list_has(mut_names, var_name)
 		string mut_kw = ""
 		if is_mut
@@ -174,8 +178,9 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 
 	# default: let [mut] varName: RustType = val[.clone()/.to_string()];
 	ParseResult val_r = gen_expr(tokens, val_pos, ctx)
-	string val_code = pr_code(val_r)
-	int val_end = pr_pos(val_r)
+	move (code, new_pos) in val_r
+	val_code as code
+	val_end as new_pos
 	bool is_mut = list_has(mut_names, var_name)
 	string mut_kw = ""
 	if is_mut

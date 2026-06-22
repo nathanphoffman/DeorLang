@@ -17,13 +17,15 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	if kind is "KW_IF"
 		int cond_pos = next_pos + 1
 		ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
-		string cond_code = pr_code(cond_r)
-		int cond_end = pr_pos(cond_r)
+		move (code, new_pos) in cond_r
+		cond_code as code
+		cond_end as new_pos
 		int while_body_start = skip_to_body_ref(tokens, cond_end)
 		int whl_depth = depth + 1
 		ParseResult while_body_r = gen_block(while_body_start, whl_depth, ctx)
-		string while_body_code = pr_code(while_body_r)
-		int while_body_end = pr_pos(while_body_r)
+		move (code, new_pos) in while_body_r
+		while_body_code as code
+		while_body_end as new_pos
 		string whl_kw = "while "
 		string whl_ob = " {\n"
 		string whl_cb = "}\n"
@@ -40,14 +42,16 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 		int in_pos = var_pos + 1
 		int iter_pos = in_pos + 1
 		ParseResult iter_r = gen_expr(tokens, iter_pos, ctx)
-		string iter_code = pr_code(iter_r)
-		int iter_end = pr_pos(iter_r)
+		move (code, new_pos) in iter_r
+		iter_code as code
+		iter_end as new_pos
 		int iter_next = iter_end + 1
 		int body_start = skip_to_body_ref(tokens, iter_next)
 		int body_depth = depth + 1
 		ParseResult body_r = gen_block(body_start, body_depth, ctx)
-		string body_code = pr_code(body_r)
-		int body_end = pr_pos(body_r)
+		move (code, new_pos) in body_r
+		body_code as code
+		body_end as new_pos
 		string gfr_kw = "for "
 		string gfr_in = " in "
 		string gfr_ob = " {\n"
@@ -76,16 +80,18 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 		int lparen = iter_pos + 1
 		int first_pos = lparen + 1
 		ParseResult first_r = gen_expr(tokens, first_pos, ctx)
-		string first_code = pr_code(first_r)
-		int first_p = pr_pos(first_r)
+		move (code, new_pos) in first_r
+		first_code as code
+		first_p as new_pos
 		Token comma_token = tokens at first_p
 		(kind) in comma_token
 		bool has_start = kind is "COMMA"
 		if has_start
 			int second_pos = first_p + 1
 			ParseResult second_r = gen_expr(tokens, second_pos, ctx)
-			string second_code = pr_code(second_r)
-			int second_p = pr_pos(second_r)
+			move (code, new_pos) in second_r
+			second_code as code
+			second_p as new_pos
 			string rng_dot = ".."
 			strList rng_parts = [first_code, rng_dot, second_code]
 			range_expr = s_join(rng_parts)
@@ -98,28 +104,32 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	else if kind is "LPAREN"
 		int start_pos = iter_pos + 1
 		ParseResult start_r = gen_expr(tokens, start_pos, ctx)
-		string start_code = pr_code(start_r)
-		int start_p = pr_pos(start_r)
+		move (code, new_pos) in start_r
+		start_code as code
+		start_p as new_pos
 		int end_pos = start_p + 1
 		ParseResult end_r = gen_expr(tokens, end_pos, ctx)
-		string end_code = pr_code(end_r)
-		int end_p = pr_pos(end_r)
+		move (code, new_pos) in end_r
+		end_code as code
+		end_p as new_pos
 		string rng2_dot = ".."
 		strList rng2_parts = [start_code, rng2_dot, end_code]
 		range_expr = s_join(rng2_parts)
 		body_tok_pos = end_p + 1
 	else
 		ParseResult src_r = gen_expr(tokens, iter_pos, ctx)
-		string src_code = pr_code(src_r)
-		int src_p = pr_pos(src_r)
+		move (code, new_pos) in src_r
+		src_code as code
+		src_p as new_pos
 		range_expr = src_code
 		body_tok_pos = src_p
 
 	body_tok_pos = skip_to_body_ref(tokens, body_tok_pos)
 	int for_body_depth = depth + 1
 	ParseResult body_r = gen_block(body_tok_pos, for_body_depth, ctx)
-	string body_code = pr_code(body_r)
-	int body_end = pr_pos(body_r)
+	move (code, new_pos) in body_r
+	body_code as code
+	body_end as new_pos
 
 	string frc_kw = "for "
 	string frc_in = " in "

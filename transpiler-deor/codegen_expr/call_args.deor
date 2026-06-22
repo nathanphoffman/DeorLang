@@ -17,8 +17,9 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 			cur = cur + 1
 			continue
 		ParseResult arg_r = gen_expr(tokens, cur, ctx)
-		string arg_code = pr_code(arg_r)
-		int arg_pos = pr_pos(arg_r)
+		move (code, new_pos) in arg_r
+		arg_code as code
+		arg_pos as new_pos
 		Token start_token = tokens at cur
 		(kind) in start_token
 		if kind is "STRING"

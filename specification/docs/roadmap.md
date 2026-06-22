@@ -8,6 +8,10 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 
 
+# this line should be an as in for.deor
+		range_expr = src_code
+
+
 
 # New audit June 21st
 

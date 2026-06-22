@@ -1,8 +1,67 @@
 # Deor
 
-A compiled language that transpiles to Rust.
+Deor is a small, highly-procedural, tabbed-block language that transpiles to Rust. It enforces near-book readability, explicit typing, and predictable control flow — with a `rust` block escape hatch for when you need the full language.
 
-## Prerequisites
+Its goal is a comfier entrance point to Rust: simple syntactical sugar, uniform composition rules, and so little room for debate that when there *is* debate, you just drop into `rust {}`.
+
+Inspired by Python's opinionated readability, Go's lightweight base syntax, and Rust's type system.
+
+---
+
+## Install
+
+**Prerequisites:** [Rust / rustc](https://rustup.rs) must be installed.
+
+**Unix (Linux / macOS)**
+```sh
+git clone https://github.com/nathanphoffman/DeorLang
+cd DeorLang
+bash setup/install.sh
+```
+Then restart your shell (or run `. ~/.deor/env`). The `deor` binary and standard library are installed to `~/.deor/`.
+
+**Windows (PowerShell)**
+```powershell
+git clone https://github.com/nathanphoffman/DeorLang
+cd DeorLang
+.\setup\install.ps1
+```
+Restart your terminal. The binary is added to your user PATH automatically.
+
+---
+
+## Quick start
+
+After installing, create a file `hello.deor`:
+
+```
+fn void main()
+    print("Hello, world!")
+```
+
+Then run it:
+
+```sh
+# Unix
+bash setup/run.sh hello.deor
+
+# Windows
+.\setup\run.ps1 hello.deor
+```
+
+Or directly once you have `deor` on your PATH:
+
+```sh
+deor hello.deor out.rs
+rustc -O -A warnings out.rs -o hello
+./hello
+```
+
+---
+
+## Working on the transpiler
+
+The transpiler is written in Deor itself (self-hosted). Clone the repo, then install the prerequisites:
 
 | Tool | Purpose |
 |------|---------|
@@ -10,43 +69,27 @@ A compiled language that transpiles to Rust.
 | [just](https://github.com/casey/just) | Running project commands |
 | [Node.js / npm](https://nodejs.org) | VS Code extension (optional) |
 
-## Running a Deor file
+A prebuilt binary lives at `output/out` so you can run files immediately without rebuilding.
 
-A prebuilt transpiler binary is included at `output/out`.
-
+**Run a Deor file**
 ```sh
-just run                        # runs examples/hello.deor
-just run file=path/to/file.deor # runs a specific file
+just run                          # runs examples/hello.deor
+just run file=path/to/file.deor   # runs a specific file
 ```
 
-## Rebuilding the transpiler
-
-The transpiler is written in Deor itself. To recompile it:
-
+**Rebuild the transpiler**
 ```sh
-just build-transpiler   # transpile main.deor -> out.rs
-just rebuild-binary     # compile out.rs -> output/out
+just build-transpiler   # transpile transpiler-deor/main.deor -> output/out.rs
+just rebuild-binary     # compile output/out.rs -> output/out
 ```
 
-Or do both in one shot (runs the result on a file too):
-
+Or self-compile and run in one shot:
 ```sh
 just run-deor
 ```
 
-## VS Code Extension
-
-Provides syntax highlighting and diagnostics for `.deor` files.
-
-**Option 1 — via npx** (no global install needed, just npm):
+**VS Code extension** — syntax highlighting and diagnostics for `.deor` files:
 ```sh
 just install-ext
 ```
-
-**Option 2 — via global `vsce`** (install once, faster after that):
-```sh
-npm install -g @vscode/vsce
-just install-ext-vsce
-```
-
 After installing, reload VS Code (`Ctrl+Shift+P` → `Reload Window`).

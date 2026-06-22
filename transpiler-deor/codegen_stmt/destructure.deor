@@ -46,9 +46,9 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 
 	# could be a complex like fn() returning to the in, so figure that out:
 	ParseResult src_r = gen_expr(tokens, src_pos, ctx)
-
-	string src_code = pr_code(src_r)
-	int src_end = pr_pos(src_r)
+	move (code, new_pos) in src_r
+	src_code as code
+	src_end as new_pos
 
 	strList dest_lines = empty
 	int field_count = len(fields)
@@ -92,8 +92,9 @@ fn ParseResult gen_move_destructure(int pos, int depth, RcCtx ctx)
 
     int src_pos = cur + 1
     ParseResult src_r = gen_expr(tokens, src_pos, ctx)
-    string src_code = pr_code(src_r)
-    int src_end = pr_pos(src_r)
+    move (code, new_pos) in src_r
+    src_code as code
+    src_end as new_pos
     strList dest_lines = empty
     int field_count = len(fields)
     string indent = "    "

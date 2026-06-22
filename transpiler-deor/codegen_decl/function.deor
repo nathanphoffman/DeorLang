@@ -63,8 +63,9 @@ fn ParseResult gen_fn_decl(tokenList fn_tokens, int pos, RcCtx ctx)
 	int body_pos = 0
 	int body_depth = 1
 	ParseResult body_r = gen_block(body_pos, body_depth, move body_ctx)
-	string body_code = pr_code(body_r)
-	int body_end = body_start + pr_pos(body_r)
+	move (code, new_pos) in body_r
+	body_code as code
+	body_end as body_start + new_pos
 	string sep = ", "
 	string params_code = s_join_with(param_strs, sep)
 	string ret_suffix = ""

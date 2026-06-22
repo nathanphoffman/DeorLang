@@ -4,8 +4,9 @@
 fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	(tokens) in ctx
 	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
-	string inner_code = pr_code(inner_r)
-	int close = pr_pos(inner_r) + 1
+	move (code, new_pos) in inner_r
+	inner_code as code
+	close as new_pos + 1
 	strList res_parts = [inner_code, suffix]
 	string result_code = s_join(res_parts)
 	return make_result(move result_code, close)

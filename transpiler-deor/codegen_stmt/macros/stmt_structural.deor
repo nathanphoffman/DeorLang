@@ -23,8 +23,9 @@ macro stmt_structural
 			if kind is "KW_AVOW"
 				int su_expr_pos = su_peek + 1
 				ParseResult su_expr_r = gen_expr(tokens, su_expr_pos, ctx)
-				string su_expr_code = pr_code(su_expr_r)
-				int su_after_rp = pr_pos(su_expr_r) + 1
+				move (code, new_pos) in su_expr_r
+				su_expr_code as code
+				su_after_rp as new_pos + 1
 				string su_avw_sfx = ".unwrap();\n"
 				strList su_avw_parts = [pad, su_expr_code, su_avw_sfx]
 				string su_avow_code = s_join(su_avw_parts)
@@ -44,7 +45,8 @@ macro stmt_structural
 		GenCtx su_uctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
 		RcCtx su_using_ctx = make_rctx(move su_uctx_raw)
 		ParseResult su_block_r = gen_block(su_body_start, depth, move su_using_ctx)
-		string su_blk_code = pr_code(su_block_r)
-		int su_blk_pos = pr_pos(su_block_r)
+		move (code, new_pos) in su_block_r
+		su_blk_code as code
+		su_blk_pos as new_pos
 		string su_full = s_cat(su_init, su_blk_code)
 		return make_result(move su_full, su_blk_pos)

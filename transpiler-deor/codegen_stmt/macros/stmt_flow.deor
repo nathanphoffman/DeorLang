@@ -9,8 +9,9 @@ macro stmt_flow
 		Token sf_val_tok = tokens at sf_val_pos
 		(kind) in sf_val_tok
 		ParseResult sf_val_r = gen_expr(tokens, sf_val_pos, ctx)
-		string sf_val_code = pr_code(sf_val_r)
-		int sf_val_end = pr_pos(sf_val_r)
+		move (code, new_pos) in sf_val_r
+		sf_val_code as code
+		sf_val_end as new_pos
 		string sf_suffix = ""
 		if kind is "STRING"
 			sf_suffix = ".to_string()"

@@ -17,8 +17,9 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 			cur = cur + 1
 			continue
 		ParseResult item_r = gen_expr(tokens, cur, ctx)
-		string item_code = pr_code(item_r)
-		int item_pos = pr_pos(item_r)
+		move (code, new_pos) in item_r
+		item_code as code
+		item_pos as new_pos
 		Token start_token = tokens at cur
 		(kind) in start_token
 		if kind is "STRING"

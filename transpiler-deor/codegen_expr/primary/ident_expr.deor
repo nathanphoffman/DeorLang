@@ -16,8 +16,9 @@ macro primary_ident_expr
 				if ie_func is "len"
 					string ie_len_sfx = ".len() as i32"
 					ParseResult ie_len_r = gen_unary_method(ie_args_pos, ie_len_sfx, ctx)
-					string ie_len_code = pr_code(ie_len_r)
-					int ie_len_end = pr_pos(ie_len_r)
+					move (code, new_pos) in ie_len_r
+					ie_len_code as code
+					ie_len_end as new_pos
 					string ie_lp = "("
 					string ie_rp = ")"
 					strList ie_len_parts = [ie_lp, ie_len_code, ie_rp]
@@ -25,8 +26,9 @@ macro primary_ident_expr
 					return make_result(move ie_len_wrapped, ie_len_end)
 				else if ie_func is "crash"
 					ParseResult ie_crash_r = gen_call_args(tokens, ie_args_pos, ctx)
-					string ie_crash_code = pr_code(ie_crash_r)
-					int ie_crash_end = pr_pos(ie_crash_r)
+					move (code, new_pos) in ie_crash_r
+					ie_crash_code as code
+					ie_crash_end as new_pos
 					string ie_pan_pfx = "panic!(\"{}\", "
 					string ie_pan_sfx = ")"
 					strList ie_pan_parts = [ie_pan_pfx, ie_crash_code, ie_pan_sfx]
@@ -34,8 +36,9 @@ macro primary_ident_expr
 					int ie_after_crash = ie_crash_end + 1
 					return make_result(move ie_panic_code, ie_after_crash)
 				ParseResult ie_args_r = gen_call_args(tokens, ie_args_pos, ctx)
-				string ie_args_code = pr_code(ie_args_r)
-				int ie_args_end = pr_pos(ie_args_r)
+				move (code, new_pos) in ie_args_r
+				ie_args_code as code
+				ie_args_end as new_pos
 				int ie_after = ie_args_end + 1
 				string ie_lp = "("
 				string ie_rp = ")"
@@ -45,8 +48,9 @@ macro primary_ident_expr
 			if kind is "KW_AT"
 				int ie_idx_pos = ie_next + 1
 				ParseResult ie_idx_r = gen_primary(tokens, ie_idx_pos, ctx)
-				string ie_idx_code = pr_code(ie_idx_r)
-				int ie_idx_end = pr_pos(ie_idx_r)
+				move (code, new_pos) in ie_idx_r
+				ie_idx_code as code
+				ie_idx_end as new_pos
 				string ie_idx_mid = "["
 				string ie_idx_sfx = " as usize].clone()"
 				strList ie_idx_parts = [value, ie_idx_mid, ie_idx_code, ie_idx_sfx]

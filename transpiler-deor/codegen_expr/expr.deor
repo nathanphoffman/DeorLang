@@ -7,8 +7,9 @@
 # promoted String expression.
 fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	ParseResult primary_r = gen_primary(tokens, pos, ctx)
-	string left_code = pr_code(primary_r)
-	int cur_pos = pr_pos(primary_r)
+	move (code, new_pos) in primary_r
+	left_code as code
+	cur_pos as new_pos
 	int token_count = len(tokens)
 	Token first_token = tokens at pos
 	(kind) in first_token
@@ -49,8 +50,9 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 					cur_pos = after_op + 1
 					continue
 		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
-		string rhs_code = pr_code(rhs_r)
-		int rhs_pos = pr_pos(rhs_r)
+		move (code, new_pos) in rhs_r
+		rhs_code as code
+		rhs_pos as new_pos
 		string rust_op = map_op(operator_str)
 		# string concat handling
 		if operator_str is "+"

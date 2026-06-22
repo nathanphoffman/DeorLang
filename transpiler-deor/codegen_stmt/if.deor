@@ -4,16 +4,18 @@
 fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 	(tokens) in ctx
 	ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
-	int cond_end = pr_pos(cond_r)
+	move (code, new_pos) in cond_r
+	cond_end as new_pos
 	int body_start = skip_to_body_ref(tokens, cond_end)
 	int body_depth = depth + 1
 	ParseResult body_r = gen_block(body_start, body_depth, ctx)
-	string cond_code = pr_code(cond_r)
-	string body_code = pr_code(body_r)
+	cond_code as code
+	move (code, new_pos) in body_r
+	body_code as code
 	string brc_open = " {\n"
 	strList cmb_parts = [cond_code, brc_open, body_code]
 	string combined = s_join(cmb_parts)
-	int branch_end = pr_pos(body_r)
+	branch_end as new_pos
 	return make_result(move combined, branch_end)
 
 # Generates a complete Rust `if / else if / else` chain. Calls gen_if_branch for the
@@ -25,12 +27,13 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 	string pad = s_repeat(indent, depth)
 	int if_cond_pos = pos + 1
 	ParseResult then_r = gen_if_branch(if_cond_pos, depth, ctx)
-	string then_code = pr_code(then_r)
+	move (code, new_pos) in then_r
+	then_code as code
 	string if_kw = "if "
 	string brc_cl = "}"
 	strList if_parts = [pad, if_kw, then_code, pad, brc_cl]
 	string result_code = s_join(if_parts)
-	int cur = pr_pos(then_r)
+	cur as new_pos
 	for if true
 		if cur >= token_count
 			break
@@ -49,22 +52,24 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 		if kind is "KW_IF"
 			int ei_cond = after_else + 1
 			ParseResult ei_r = gen_if_branch(ei_cond, depth, ctx)
-			string ei_code = pr_code(ei_r)
+			move (code, new_pos) in ei_r
+			ei_code as code
 			string eli_kw = " else if "
 			string eli_cl = "}"
 			strList eli_parts = [result_code, eli_kw, ei_code, pad, eli_cl]
 			result_code = s_join(eli_parts)
-			cur = pr_pos(ei_r)
+			cur = new_pos
 		else
 			int else_body_start = skip_to_body_ref(tokens, after_else)
 			int else_depth = depth + 1
 			ParseResult else_r = gen_block(else_body_start, else_depth, ctx)
-			string else_code = pr_code(else_r)
+			move (code, new_pos) in else_r
+			else_code as code
 			string els_kw = " else {\n"
 			string els_cl = "}"
 			strList els_parts = [result_code, els_kw, else_code, pad, els_cl]
 			result_code = s_join(els_parts)
-			cur = pr_pos(else_r)
+			cur = new_pos
 			break
 	string if_newline = "\n"
 	result_code = s_cat(result_code, if_newline)

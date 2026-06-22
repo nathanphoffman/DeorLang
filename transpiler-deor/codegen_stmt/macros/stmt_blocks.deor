@@ -8,8 +8,9 @@ macro stmt_blocks
 		int sb_body_start = skip_to_body_ref(tokens, sb_nl)
 		int sb_body_depth = depth + 1
 		ParseResult sb_body_r = gen_block(sb_body_start, sb_body_depth, ctx)
-		string sb_body_code = pr_code(sb_body_r)
-		int sb_body_end = pr_pos(sb_body_r)
+		move (code, new_pos) in sb_body_r
+		sb_body_code as code
+		sb_body_end as new_pos
 		string sb_open_brace = "{\n"
 		string sb_close_brace = "}\n"
 		string sb_blk_open = s_cat(pad, sb_open_brace)

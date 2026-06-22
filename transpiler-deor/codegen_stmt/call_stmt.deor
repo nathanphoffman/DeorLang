@@ -56,8 +56,9 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 		int shm_next = adv_nl_ref(after_with, tokens)
 		return make_result(move shim_code, shm_next)
 	ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
-	string args_code = pr_code(args_r)
-	int args_end = pr_pos(args_r)
+	move (code, new_pos) in args_r
+	args_code as code
+	args_end as new_pos
 	int after_paren = args_end + 1
 	string call_code = ""
 	if ident_name is "print"

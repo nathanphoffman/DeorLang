@@ -23,8 +23,9 @@ fn ParseResult gen_type_decl(tokenList tokens, int pos, RcCtx ctx)
 		(pos) in cur
 	TokensRef tokens_ref = tokens_wrap(tokens)
 	ParseResult pred_r = gen_expr(tokens_ref, pos, ctx)
-	string pred_code = pr_code(pred_r)
-	int pred_end = pr_pos(pred_r)
+	move (code, new_pos) in pred_r
+	pred_code as code
+	pred_end as new_pos
 	TokenCursor cur2 = cur_at(tokens, pred_end)
 	using cur2
 		for if not c_at_end(cur2)

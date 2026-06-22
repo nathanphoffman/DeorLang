@@ -114,8 +114,9 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	# regular as-binding: let [mut] name = expr[.to_string()];
 	(kind) in after_as_token
 	ParseResult aas_val_r = gen_expr(tokens, after_as, ctx)
-	string aas_val_code = pr_code(aas_val_r)
-	int aas_val_end = pr_pos(aas_val_r)
+	move (code, new_pos) in aas_val_r
+	aas_val_code as code
+	aas_val_end as new_pos
 	bool aas_is_str = kind is "STRING"
 	bool aas_is_mut2 = list_has(mut_names, ident_name)
 	string aas_mut2 = ""
