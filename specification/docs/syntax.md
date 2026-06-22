@@ -88,6 +88,7 @@ Open an indented block when followed by a newline.
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
 | `using` | Subject-scoped block — names a variable as the implicit subject for zero-arg calls in the block |
+| `block` | Adds a block scope, all variables inside are non-polluting, similar to rust {}, very useful paired with macros you don't want bleeding into scope |
 
 ### Statement Keywords
 

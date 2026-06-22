@@ -6,6 +6,15 @@ raw ChanPair
 
 shape receiverList = list of Receiver
 
+# Sets up a thread pool and a split channel in one shot.
+# Injects: pool (TaskPool), snd (Sender<String>), rcv (Receiver<String>)
+macro task_runner
+	raw pool = t_pool_make()
+	raw chan = t_chan_make()
+	rust
+		let snd = chan.snd.clone();
+		let rcv = chan.rcv;
+
 rust
     use std::sync::{Arc, Mutex};
     use std::sync::mpsc::{self, Sender, Receiver};

@@ -32,6 +32,27 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	macro_run stmt_blocks
 	macro_run stmt_structural
 
+	if kind is "KW_RAW"
+		int raw_name_pos = pos + 1
+		Token raw_name_tok = tokens at raw_name_pos
+		(value) in raw_name_tok
+		string raw_var_name = value
+		int raw_val_pos = raw_name_pos + 2
+		ParseResult raw_val_r = gen_expr(tokens, raw_val_pos, ctx)
+		string raw_val_code = pr_code(raw_val_r)
+		int raw_val_end = pr_pos(raw_val_r)
+		bool raw_is_mut = list_has(mut_names, raw_var_name)
+		string raw_mut_kw = ""
+		if raw_is_mut
+			raw_mut_kw = "mut "
+		string raw_let = "let "
+		string raw_eq = " = "
+		string raw_sc = ";\n"
+		strList raw_parts = [pad, raw_let, raw_mut_kw, raw_var_name, raw_eq, raw_val_code, raw_sc]
+		string raw_code = s_join(raw_parts)
+		int raw_next = adv_nl_ref(raw_val_end, tokens)
+		return make_result(raw_code, raw_next)
+
 	if kind is "KW_CONST"
 		int const_type_pos = pos + 1
 		return gen_typed_binding(const_type_pos, depth, ctx)

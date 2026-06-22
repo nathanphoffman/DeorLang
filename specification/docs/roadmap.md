@@ -2,8 +2,10 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 
 # New In Progress
-- Add function const declarations
 - Make sure proper import paths / relative paths are understood for docs
+-- path is relative to the main folder for the build
+
+AI Is looking at this:
 - Remove insert keyword, keep only the results at end = thing, logic
 
 
@@ -11,13 +13,16 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
   - raw varname = rust ... statement — gen_stmt has no KW_RAW branch for function-body use
   - Where else should this be documented?: is empty / is not empty comparison form — only documented as an initializer value
 
+ -  Remove list slicing from documentation, this is not possible:  - List slice syntax (list in range(start, end)) — no codegen branch for in in typed binding
+
+  - block keyword — not in the keyword table in syntax.md
+
 
 # New audit June 21st
 
   Documented but NOT implemented
-  - List slice syntax (list in range(start, end)) — no codegen branch for in in typed binding
+ 
   Implemented but NOT documented
-  - block keyword — not in the keyword table in syntax.md
   - word! macro invocation shorthand — spec only documents macro_run name form
   - for in (start, end) bare tuple range — used in transpiler's own code, absent from loops.md
 
