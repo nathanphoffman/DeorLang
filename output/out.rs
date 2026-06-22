@@ -1221,6 +1221,36 @@ fn scan_import_new(tokens: Vec<Token>, pos: i32) -> ParseResult {
     return make_result(emp.clone(), pos.clone());
 }
 
+fn scan_import_where(tokens: Vec<Token>, pos: i32) -> ParseResult {
+    // transpiler-deor/importer/scan.deor
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut where_pos: i32 = pos.clone();
+    let mut eq_pos: i32 = pos + 2.clone();
+    let mut concrete_pos: i32 = pos + 3.clone();
+    if concrete_pos < token_count {
+        // transpiler-deor/importer/scan.deor
+        let mut where_tok: Token = tokens[where_pos as usize].clone();
+        let mut eq_tok: Token = tokens[eq_pos as usize].clone();
+        let mut concrete_tok: Token = tokens[concrete_pos as usize].clone();
+        let kind = where_tok.kind.clone();
+        let value = where_tok.value.clone();
+        let mut is_where: bool = kind == "IDENT" && value == "where".clone();
+        if is_where {
+            // transpiler-deor/importer/scan.deor
+            let kind = eq_tok.kind.clone();
+            let mut is_eq: bool = kind == "EQUALS".clone();
+            if is_eq {
+                // transpiler-deor/importer/scan.deor
+                let value = concrete_tok.value.clone();
+                let mut after_where: i32 = concrete_pos + 1.clone();
+                return make_result(value.clone(), after_where.clone());
+            }
+        }
+    }
+    let mut emp: String = "".to_string();
+    return make_result(emp.clone(), pos.clone());
+}
+
 fn scan_import(tokens: Vec<Token>, pos: i32) -> ParseResult {
     // transpiler-deor/importer/scan.deor
     let mut token_count: i32 = (tokens.len() as i32);
@@ -1251,6 +1281,103 @@ fn scan_import(tokens: Vec<Token>, pos: i32) -> ParseResult {
     }
     let mut emp: String = "".to_string();
     return make_result(emp.clone(), pos.clone());
+}
+
+// transpiler-deor/importer/t_substitute.deor
+fn s_to_lower(source: String) -> String {
+    // transpiler-deor/importer/t_substitute.deor
+    source.to_lowercase()
+}
+
+fn apply_t_in_name(name: String, concrete: String) -> String {
+    // transpiler-deor/importer/t_substitute.deor
+    if name == "T" {
+        // transpiler-deor/importer/t_substitute.deor
+        return concrete;
+    }
+    let mut name_chars: Vec<String> = c_chars(name.clone());
+    let mut name_len: i32 = (name_chars.len() as i32);
+    if name_len > 1 {
+        // transpiler-deor/importer/t_substitute.deor
+        let mut first: String = name_chars[0 as usize].clone();
+        let mut second: String = name_chars[1 as usize].clone();
+        let mut first_is_t: bool = first == "T".clone();
+        let mut second_is_upper: bool = s_upper_char(second.clone());
+        if first_is_t && second_is_upper {
+            // transpiler-deor/importer/t_substitute.deor
+            let mut t_offset: i32 = 1;
+            let mut rest: String = s_from(name.clone(), t_offset.clone());
+            return s_cat(concrete.clone(), rest.clone());
+        }
+    }
+    let mut t_sep: String = "_T_".to_string();
+    let mut mid_parts: Vec<String> = s_split(name.clone(), t_sep.clone());
+    let mut mid_count: i32 = (mid_parts.len() as i32);
+    if mid_count > 1 {
+        // transpiler-deor/importer/t_substitute.deor
+        let mut lower: String = s_to_lower(concrete.clone());
+        let mut new_sep: String = ["_", lower.as_str(), "_"].concat();
+        return s_join_with(mid_parts.clone(), new_sep.clone());
+    }
+    return name;
+}
+
+fn replace_t_in_rust_block(content: String, concrete: String) -> String {
+    // transpiler-deor/importer/t_substitute.deor
+    {
+    	let mut result = String::new();
+    	let chars: Vec<char> = content.chars().collect();
+    	let n = chars.len();
+    	let mut i = 0;
+    	while i < n {
+    		if chars[i] == 'T' {
+    			let before_ok = i == 0 || { let c = chars[i-1]; !c.is_alphanumeric() && c != '_' };
+    			let after_ok = i + 1 >= n || { let c = chars[i+1]; !c.is_alphanumeric() && c != '_' };
+    			if before_ok && after_ok {
+    				result.push_str(concrete.as_str());
+    			} else {
+    				result.push('T');
+    			}
+    		} else {
+    			result.push(chars[i]);
+    		}
+    		i += 1;
+    	}
+    	result
+    }
+}
+
+fn apply_t_substitution(tokens: Vec<Token>, concrete: String) -> Vec<Token> {
+    // transpiler-deor/importer/t_substitute.deor
+    let mut result: Vec<Token> = Vec::new();
+    let mut token_count: i32 = (tokens.len() as i32);
+    for index in 0..token_count {
+        // transpiler-deor/importer/t_substitute.deor
+        let mut tok: Token = tokens[index as usize].clone();
+        let kind = tok.kind.clone();
+        let value = tok.value.clone();
+        let line = tok.line.clone();
+        let file = tok.file.clone();
+        if kind == "IDENT" {
+            // transpiler-deor/importer/t_substitute.deor
+            let mut new_value: String = apply_t_in_name(value.clone(), concrete.clone());
+/* unhandled(IDENT) */
+            let tok_meta = TokenMeta { line: line.clone(), file: file.clone() };
+            let mut new_tok: Token = make_token(kind.clone(), new_value.clone(), tok_meta.clone());
+            result.push(new_tok.clone());
+        } else if kind == "RUST_BLOCK" {
+            // transpiler-deor/importer/t_substitute.deor
+            let mut new_content: String = replace_t_in_rust_block(value.clone(), concrete.clone());
+/* unhandled(IDENT) */
+            let tok_meta = TokenMeta { line: line.clone(), file: file.clone() };
+            let mut new_tok: Token = make_token(kind.clone(), new_content.clone(), tok_meta.clone());
+            result.push(new_tok.clone());
+        } else {
+            // transpiler-deor/importer/t_substitute.deor
+            result.push(tok.clone());
+        }
+    }
+    return result;
 }
 
 // transpiler-deor/importer/decl_bounds.deor
@@ -1326,6 +1453,12 @@ fn file_is_new(path: String) -> bool {
 		if s.contains(&path) { false } else { s.insert(path); true }
 	})
 }
+fn file_is_new_keyed(key: String) -> bool {
+	INCLUDED_FILES.with(|set| {
+		let mut s = set.borrow_mut();
+		if s.contains(&key) { false } else { s.insert(key); true }
+	})
+}
 fn resolve_lib_path(path: String) -> String {
 	if path.starts_with("lib/") {
 		if let Ok(lib) = std::env::var("DEOR_LIB") {
@@ -1380,10 +1513,17 @@ fn load_file(path: String) -> Vec<Token> {
             let mut imp_r_old: ParseResult = scan_import(tok_raw.clone(), pos.clone());
             let mut imp_path: String = "".to_string();
             let mut imp_end: i32 = pos.clone();
+            let mut imp_t_concrete: String = "".to_string();
             if is_new_import {
                 // transpiler-deor/importer/load.deor
                 imp_path = pr_code(imp_r_new.clone());
                 imp_end = pr_pos(imp_r_new.clone());
+                let mut where_r: ParseResult = scan_import_where(tok_raw.clone(), imp_end.clone());
+                imp_t_concrete = pr_code(where_r.clone());
+                if !is_empty(imp_t_concrete.clone()) {
+                    // transpiler-deor/importer/load.deor
+                    imp_end = pr_pos(where_r.clone());
+                }
             } else {
                 // transpiler-deor/importer/load.deor
                 imp_path = pr_code(imp_r_old.clone());
@@ -1401,10 +1541,19 @@ fn load_file(path: String) -> Vec<Token> {
                     println!("{}", err_msg.clone());
                     std::process::exit(1);
                 }
-                let mut is_new: bool = file_is_new(imp_path.clone());
+                let mut dedup_key: String = imp_path.clone();
+                if !is_empty(imp_t_concrete.clone()) {
+                    // transpiler-deor/importer/load.deor
+                    dedup_key = [imp_path.as_str(), "|T=", imp_t_concrete.as_str()].concat();
+                }
+                let mut is_new: bool = file_is_new_keyed(dedup_key.clone());
                 if is_new {
                     // transpiler-deor/importer/load.deor
                     let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
+                    if !is_empty(imp_t_concrete.clone()) {
+                        // transpiler-deor/importer/load.deor
+                        imp_tokens = apply_t_substitution(imp_tokens.clone(), imp_t_concrete.clone());
+                    }
                     let mut imp_len: i32 = (imp_tokens.len() as i32);
                     for imp_index in 0..imp_len {
                         // transpiler-deor/importer/load.deor

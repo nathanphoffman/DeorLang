@@ -125,8 +125,8 @@ fn void main()
 	x as 10
 	y as 20
 
-	kcount as (2*9 + 3)
-	print(kcount)
+	#kcount as (2*9 + 3) +2.0
+	#print(kcount)
 
     z as 120
 	print(z)

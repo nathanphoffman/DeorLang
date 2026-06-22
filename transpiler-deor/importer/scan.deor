@@ -15,6 +15,31 @@ fn ParseResult scan_import_new(tokenList tokens, int pos)
 	string emp = ""
 	return make_result(emp, pos)
 
+# Scans for `where T = ConcreteType` immediately after an import path.
+# pos should be the token position right after the STRING path token.
+# Returns code=concrete_type and new_pos=position of the NEWLINE after the clause.
+# Returns code="" and new_pos=pos if no where clause is present.
+fn ParseResult scan_import_where(tokenList tokens, int pos)
+	int token_count = len(tokens)
+	int where_pos = pos
+	int eq_pos = pos + 2
+	int concrete_pos = pos + 3
+	if concrete_pos < token_count
+		Token where_tok = tokens at where_pos
+		Token eq_tok = tokens at eq_pos
+		Token concrete_tok = tokens at concrete_pos
+		(kind, value) in where_tok
+		bool is_where = kind is "IDENT" and value is "where"
+		if is_where
+			(kind) in eq_tok
+			bool is_eq = kind is "EQUALS"
+			if is_eq
+				(value) in concrete_tok
+				int after_where = concrete_pos + 1
+				return make_result(value, after_where)
+	string emp = ""
+	return make_result(emp, pos)
+
 # Handles `(names) in "path"` — LPAREN is at pos, scans to find the STRING path.
 fn ParseResult scan_import(tokenList tokens, int pos)
 	int token_count = len(tokens)

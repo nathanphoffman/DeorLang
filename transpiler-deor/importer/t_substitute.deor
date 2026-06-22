@@ -1,0 +1,83 @@
+
+# T-substitution pass for parameterised imports (`import "path" where T = ConcreteType`).
+# Applied to all tokens loaded from the imported file before they are merged into the
+# caller's token stream. Three substitution rules:
+#   1. IDENT exactly "T"            -> concrete  (e.g. T -> Employee)
+#   2. IDENT with T word-component  -> T replaced in-place
+#        PascalCase prefix: TSender  -> EmployeeSender
+#        snake _T_ component: t_T_spawn -> t_employee_spawn
+#   3. RUST_BLOCK content           -> word-boundary replace T -> concrete
+
+fn string s_to_lower(string source)
+	rust
+		source.to_lowercase()
+
+# Replaces T as a word-boundary component inside a single identifier name.
+fn string apply_t_in_name(string name, string concrete)
+	if name is "T"
+		return concrete
+	strList name_chars = c_chars(name)
+	int name_len = len(name_chars)
+	if name_len > 1
+		string first = name_chars at 0
+		string second = name_chars at 1
+		bool first_is_t = first is "T"
+		bool second_is_upper = s_upper_char(second)
+		if first_is_t and second_is_upper
+			int t_offset = 1
+			string rest = s_from(name, t_offset)
+			return s_cat(concrete, rest)
+	string t_sep = "_T_"
+	strList mid_parts = s_split(name, t_sep)
+	int mid_count = len(mid_parts)
+	if mid_count > 1
+		string lower = s_to_lower(concrete)
+		string new_sep = s_join(["_", lower, "_"])
+		return s_join_with(mid_parts, new_sep)
+	return name
+
+# Word-boundary replacement of standalone T in raw Rust block content.
+fn string replace_t_in_rust_block(string content, string concrete)
+	rust
+		{
+			let mut result = String::new();
+			let chars: Vec<char> = content.chars().collect();
+			let n = chars.len();
+			let mut i = 0;
+			while i < n {
+				if chars[i] == 'T' {
+					let before_ok = i == 0 || { let c = chars[i-1]; !c.is_alphanumeric() && c != '_' };
+					let after_ok = i + 1 >= n || { let c = chars[i+1]; !c.is_alphanumeric() && c != '_' };
+					if before_ok && after_ok {
+						result.push_str(concrete.as_str());
+					} else {
+						result.push('T');
+					}
+				} else {
+					result.push(chars[i]);
+				}
+				i += 1;
+			}
+			result
+		}
+
+# Walks every token from an imported file and applies T -> concrete substitution.
+fn tokenList apply_t_substitution(tokenList tokens, string concrete)
+	tokenList result = empty
+	int token_count = len(tokens)
+	for index in range(token_count)
+		Token tok = tokens at index
+		(kind, value, line, file) in tok
+		if kind is "IDENT"
+			string new_value = apply_t_in_name(value, concrete)
+			TokenMeta tok_meta as (line, file)
+			Token new_tok = make_token(kind, new_value, tok_meta)
+			result at end = new_tok
+		else if kind is "RUST_BLOCK"
+			string new_content = replace_t_in_rust_block(value, concrete)
+			TokenMeta tok_meta as (line, file)
+			Token new_tok = make_token(kind, new_content, tok_meta)
+			result at end = new_tok
+		else
+			result at end = tok
+	return result

@@ -13,6 +13,12 @@ rust
 			if s.contains(&path) { false } else { s.insert(path); true }
 		})
 	}
+	fn file_is_new_keyed(key: String) -> bool {
+		INCLUDED_FILES.with(|set| {
+			let mut s = set.borrow_mut();
+			if s.contains(&key) { false } else { s.insert(key); true }
+		})
+	}
 	fn resolve_lib_path(path: String) -> String {
 		if path.starts_with("lib/") {
 			if let Ok(lib) = std::env::var("DEOR_LIB") {
@@ -66,9 +72,14 @@ fn tokenList load_file(string path)
 			ParseResult imp_r_old = scan_import(tok_raw, pos)
 			string imp_path = ""
 			int imp_end = pos
+			string imp_t_concrete = ""
 			if is_new_import
 				imp_path = pr_code(imp_r_new)
 				imp_end = pr_pos(imp_r_new)
+				ParseResult where_r = scan_import_where(tok_raw, imp_end)
+				imp_t_concrete = pr_code(where_r)
+				if not is_empty(imp_t_concrete)
+					imp_end = pr_pos(where_r)
 			else
 				imp_path = pr_code(imp_r_old)
 				imp_end = pr_pos(imp_r_old)
@@ -82,9 +93,14 @@ fn tokenList load_file(string path)
 					print(err_msg)
 					rust
 						std::process::exit(1);
-				bool is_new = file_is_new(imp_path)
+				string dedup_key = imp_path
+				if not is_empty(imp_t_concrete)
+					dedup_key = s_join([imp_path, "|T=", imp_t_concrete])
+				bool is_new = file_is_new_keyed(dedup_key)
 				if is_new
 					tokenList imp_tokens = load_file(imp_path)
+					if not is_empty(imp_t_concrete)
+						imp_tokens = apply_t_substitution(imp_tokens, imp_t_concrete)
 					int imp_len = len(imp_tokens)
 					for imp_index in range(imp_len)
 						Token imp_tok = imp_tokens at imp_index
