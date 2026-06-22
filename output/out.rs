@@ -419,6 +419,9 @@ fn word_to_kind(word: String) -> String {
     if word == "block" {
         return "KW_BLOCK".to_string();
     }
+    if word == "const" {
+        return "KW_CONST".to_string();
+    }
     return "IDENT".to_string();
 }
 
@@ -2161,11 +2164,22 @@ fn find_block_end(tokens: Vec<Token>, indent_pos: i32) -> i32 {
 
 fn collect_mut_names(tokens: Vec<Token>, start: i32, end_pos: i32) -> Vec<String> {
     let mut result: Vec<String> = Vec::new();
+    let mut const_names: Vec<String> = Vec::new();
     for raw_i in start..end_pos {
         let mut token: Token = tokens[raw_i as usize].clone();
         let kind = token.kind.clone();
         let value = token.value.clone();
         let line = token.line.clone();
+        if kind == "KW_CONST" {
+            let mut const_name_pos: i32 = raw_i + 2.clone();
+            if const_name_pos < end_pos {
+                let mut const_name_tok: Token = tokens[const_name_pos as usize].clone();
+                let value = const_name_tok.value.clone();
+                if !list_has(const_names.clone(), value.clone()) {
+                    const_names.push(value.clone());
+                }
+            }
+        }
         if kind == "EQUALS" {
             let mut prev_pos: i32 = raw_i - 1.clone();
             if prev_pos >= start {
@@ -2174,7 +2188,9 @@ fn collect_mut_names(tokens: Vec<Token>, start: i32, end_pos: i32) -> Vec<String
                 let value = prev_token.value.clone();
                 if kind == "IDENT" {
                     if !list_has(result.clone(), value.clone()) {
-                        result.push(value.clone());
+                        if !list_has(const_names.clone(), value.clone()) {
+                            result.push(value.clone());
+                        }
                     }
                 }
             }
@@ -3591,6 +3607,10 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut su_blk_pos: i32 = pr_pos(su_block_r.clone());
         let mut su_full: String = s_cat(su_init.clone(), su_blk_code.clone());
         return make_result(su_full, su_blk_pos.clone());
+    }
+    if kind == "KW_CONST" {
+        let mut const_type_pos: i32 = pos + 1.clone();
+        return gen_typed_binding(const_type_pos.clone(), depth.clone(), ctx.clone());
     }
     if kind == "KW_IF" {
         return gen_if(pos.clone(), depth.clone(), ctx.clone());

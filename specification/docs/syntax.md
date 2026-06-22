@@ -98,6 +98,7 @@ Open an indented block when followed by a newline.
 | `avow` | Forced unwrap of a validator type — panics if None |
 | `break` | Exit the innermost loop |
 | `continue` | Skip to the next loop iteration |
+| `const` | Immutable typed binding (function scope only) |
 
 ### Operators and Expression Keywords
 

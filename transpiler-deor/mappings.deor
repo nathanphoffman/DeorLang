@@ -79,6 +79,8 @@ fn string word_to_kind(string word)
 		return "KW_IMPORT"
 	if word is "block"
 		return "KW_BLOCK"
+	if word is "const"
+		return "KW_CONST"
 	return "IDENT"
 
 # === Operator helpers ===

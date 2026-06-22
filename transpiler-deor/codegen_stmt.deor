@@ -32,6 +32,10 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	macro_run stmt_blocks
 	macro_run stmt_structural
 
+	if kind is "KW_CONST"
+		int const_type_pos = pos + 1
+		return gen_typed_binding(const_type_pos, depth, ctx)
+
 	if kind is "KW_IF"
 		return gen_if(pos, depth, ctx)
 

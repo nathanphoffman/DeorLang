@@ -25,9 +25,17 @@ fn int find_block_end(tokenList tokens, int indent_pos)
 # statements, collecting every variable name that is written after its initial binding.
 fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 	strList result = empty
+	strList const_names = empty
 	for raw_i in (start, end_pos)
 		Token token = tokens at raw_i
 		(kind, value, line) in token
+		if kind is "KW_CONST"
+			int const_name_pos = raw_i + 2
+			if const_name_pos < end_pos
+				Token const_name_tok = tokens at const_name_pos
+				(value) in const_name_tok
+				if not list_has(const_names, value)
+					const_names at end = value
 		if kind is "EQUALS"
 			int prev_pos = raw_i - 1
 			if prev_pos >= start
@@ -35,7 +43,8 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 				(kind, value) in prev_token
 				if kind is "IDENT"
 					if not list_has(result, value)
-						result at end = value
+						if not list_has(const_names, value)
+							result at end = value
 		if kind is "KW_USING"
 			int using_var_pos = raw_i + 1
 			if using_var_pos < end_pos
