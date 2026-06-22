@@ -28,17 +28,32 @@ fi
 
 DEFAULT_PROJECT="$(pwd)/hello-deor"
 if [ -t 0 ]; then
-    printf "Where would you like to create your starter project? (default: %s): " "$DEFAULT_PROJECT"
-    read -r PROJECT_DIR
-    [ -z "$PROJECT_DIR" ] && PROJECT_DIR="$DEFAULT_PROJECT"
-    if [ -d "$PROJECT_DIR" ]; then
-        printf "  '%s' already exists. Continue anyway? [y/N]: " "$PROJECT_DIR"
-        read -r CONFIRM
-        case "$CONFIRM" in
-            [yY]*) ;;
-            *) echo "Aborted."; exit 0 ;;
-        esac
-    fi
+    while true; do
+        printf "Where would you like to create your starter project? (default: %s): " "$DEFAULT_PROJECT"
+        read -r PROJECT_DIR
+        [ -z "$PROJECT_DIR" ] && PROJECT_DIR="$DEFAULT_PROJECT"
+
+        if [ -f "$PROJECT_DIR" ]; then
+            echo "  Error: '$PROJECT_DIR' is a file, not a directory. Please choose a different path."
+            continue
+        fi
+
+        PARENT_DIR="$(dirname "$PROJECT_DIR")"
+        if [ ! -d "$PARENT_DIR" ]; then
+            echo "  Error: parent directory '$PARENT_DIR' does not exist. Please choose a different path."
+            continue
+        fi
+
+        if [ -d "$PROJECT_DIR" ]; then
+            printf "  '%s' already exists. Install hello.deor there anyway? [Y/n]: " "$PROJECT_DIR"
+            read -r CONFIRM
+            case "$CONFIRM" in
+                [nN]*) echo "  Aborted."; exit 0 ;;
+            esac
+        fi
+
+        break
+    done
 else
     PROJECT_DIR="$DEFAULT_PROJECT"
     echo "  Starter project will be created at: $PROJECT_DIR"
