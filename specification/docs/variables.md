@@ -20,6 +20,13 @@ let flag = true;
 let rate = 3.14_f64;
 ```
 
+### Const
+Const is used as a function level constant, under the hood these use Rust's default immutability. You define these like the following
+
+```
+const int num = 10
+```
+
 ### List construction
 
 A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope.
