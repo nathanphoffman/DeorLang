@@ -22,6 +22,10 @@ import "transpiler-deor/lexer/number_literal.deor"
 import "transpiler-deor/lexer/word_token.deor"
 import "transpiler-deor/lexer/operators.deor"
 import "transpiler-deor/lexer.deor"
+import "transpiler-deor/importer/scan.deor"
+import "transpiler-deor/importer/decl_bounds.deor"
+import "transpiler-deor/importer/load.deor"
+import "transpiler-deor/importer/dedup.deor"
 import "transpiler-deor/importer.deor"
 
 # macro expander

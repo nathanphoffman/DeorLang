@@ -1,0 +1,39 @@
+
+# Import path scanners. Both return a ParseResult whose code is the resolved file path
+# and whose pos is the token position just after the import statement.
+
+# Handles `import "path"` — KW_IMPORT is at pos, STRING path is at pos+1.
+fn ParseResult scan_import_new(tokenList tokens, int pos)
+	int path_pos = pos + 1
+	int token_count = len(tokens)
+	if path_pos < token_count
+		Token path_tok = tokens at path_pos
+		(kind, value) in path_tok
+		if kind is "STRING"
+			int after_path = path_pos + 1
+			return make_result(value, after_path)
+	string emp = ""
+	return make_result(emp, pos)
+
+# Handles `(names) in "path"` — LPAREN is at pos, scans to find the STRING path.
+fn ParseResult scan_import(tokenList tokens, int pos)
+	int token_count = len(tokens)
+	int scan = pos + 1
+	for if scan < token_count
+		Token scan_tok = tokens at scan
+		(kind) in scan_tok
+		scan = scan + 1
+		if kind is "RPAREN"
+			break
+	int path_pos = scan + 1
+	if path_pos < token_count
+		Token in_tok = tokens at scan
+		(kind) in in_tok
+		bool is_in = kind is "KW_IN"
+		if is_in
+			Token path_tok = tokens at path_pos
+			(value) in path_tok
+			int after_path = path_pos + 1
+			return make_result(value, after_path)
+	string emp = ""
+	return make_result(emp, pos)

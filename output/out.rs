@@ -905,15 +905,6 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     return tokens;
 }
 
-thread_local! {
-	static INCLUDED_FILES: std::cell::RefCell<std::collections::HashSet<String>> = std::cell::RefCell::new(std::collections::HashSet::new());
-}
-fn file_is_new(path: String) -> bool {
-	INCLUDED_FILES.with(|set| {
-		let mut s = set.borrow_mut();
-		if s.contains(&path) { false } else { s.insert(path); true }
-	})
-}
 fn scan_import_new(tokens: Vec<Token>, pos: i32) -> ParseResult {
     let mut path_pos: i32 = pos + 1.clone();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -1008,6 +999,15 @@ fn end_of_shape(tokens: Vec<Token>, pos: i32) -> i32 {
     return cur;
 }
 
+thread_local! {
+	static INCLUDED_FILES: std::cell::RefCell<std::collections::HashSet<String>> = std::cell::RefCell::new(std::collections::HashSet::new());
+}
+fn file_is_new(path: String) -> bool {
+	INCLUDED_FILES.with(|set| {
+		let mut s = set.borrow_mut();
+		if s.contains(&path) { false } else { s.insert(path); true }
+	})
+}
 fn load_file(path: String) -> Vec<Token> {
     let mut source: String = f_read(path.clone());
     let mut tok_raw: Vec<Token> = tokenize(source.clone(), path.clone());

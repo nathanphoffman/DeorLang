@@ -1,0 +1,98 @@
+
+# Removes duplicate declarations from a flat merged token list. First occurrence of each
+# fn/struct/enum/shape/macro/raw/rust-block name wins; subsequent definitions of the same
+# name are silently dropped. Required because multi-file imports can inline the same
+# utility file multiple times via transitive dependencies.
+fn tokenList deduplicate_decls(tokenList tokens)
+	tokenList result = empty
+	strList seen = empty
+	int token_count = len(tokens)
+	int pos = 0
+	for if pos < token_count
+		Token token = tokens at pos
+		(kind) in token
+		if kind is "EOF"
+			result at end = token
+			pos = pos + 1
+			continue
+		if kind is "NEWLINE"
+			result at end = token
+			pos = pos + 1
+			continue
+		bool is_fn = kind is "KW_FN"
+		bool is_struct = kind is "KW_STRUCT"
+		bool is_enum = kind is "KW_ENUM"
+		bool is_shape = kind is "KW_SHAPE"
+		bool is_type = kind is "KW_TYPE"
+		bool is_macro = kind is "KW_MACRO"
+		bool is_raw = kind is "KW_RAW"
+		bool is_rust_blk = kind is "KW_RUST"
+		bool is_block_decl = is_fn or is_struct or is_enum or is_type or is_macro
+		if is_block_decl
+			string decl_name = name_of_decl(tokens, pos, is_fn)
+			bool already_seen = list_has(seen, decl_name)
+			if not already_seen
+				seen at end = decl_name
+			int block_end = end_of_block(tokens, pos)
+			if not already_seen
+				int copy_len = block_end - pos
+				for copy_idx in range(copy_len)
+					int tok_pos = pos + copy_idx
+					Token copy_tok = tokens at tok_pos
+					result at end = copy_tok
+			pos = block_end
+		else if is_shape
+			bool not_fn = false
+			string decl_name = name_of_decl(tokens, pos, not_fn)
+			bool already_seen = list_has(seen, decl_name)
+			if not already_seen
+				seen at end = decl_name
+			int shape_end = end_of_shape(tokens, pos)
+			if not already_seen
+				int copy_len = shape_end - pos
+				for copy_idx in range(copy_len)
+					int tok_pos = pos + copy_idx
+					Token copy_tok = tokens at tok_pos
+					result at end = copy_tok
+			pos = shape_end
+		else if is_raw
+			bool not_fn2 = false
+			string raw_name = name_of_decl(tokens, pos, not_fn2)
+			string raw_pfx = "_raw_"
+			strList raw_key_parts = [raw_pfx, raw_name]
+			string raw_key = s_join(raw_key_parts)
+			bool already_seen = list_has(seen, raw_key)
+			if not already_seen
+				seen at end = raw_key
+			int raw_end = end_of_shape(tokens, pos)
+			if not already_seen
+				int copy_len = raw_end - pos
+				for copy_idx in range(copy_len)
+					int tok_pos = pos + copy_idx
+					Token copy_tok = tokens at tok_pos
+					result at end = copy_tok
+			pos = raw_end
+		else if is_rust_blk
+			int rust_content_pos = pos + 2
+			bool rust_in_range = rust_content_pos < token_count
+			if rust_in_range
+				Token rust_tok = tokens at rust_content_pos
+				(value) in rust_tok
+				string newline = "\n"
+				strList rust_lines = s_split(value, newline)
+				string rust_first = rust_lines at 0
+				string rk_pfx = "_rust_"
+				strList rk_parts = [rk_pfx, rust_first]
+				string rust_key = s_join(rk_parts)
+				bool already_seen = list_has(seen, rust_key)
+				if not already_seen
+					seen at end = rust_key
+					for copy_idx in range(3)
+						int tok_pos = pos + copy_idx
+						Token copy_tok = tokens at tok_pos
+						result at end = copy_tok
+			pos = pos + 3
+		else
+			result at end = token
+			pos = pos + 1
+	return result
