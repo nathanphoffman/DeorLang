@@ -466,9 +466,9 @@ fn word_to_kind(word: String) -> String {
         // transpiler-deor/mappings.deor
         return "KW_FALSE".to_string();
     }
-    if word == "bad" {
+    if word == "valid" {
         // transpiler-deor/mappings.deor
-        return "KW_BAD".to_string();
+        return "KW_VALID".to_string();
     }
     if word == "avow" {
         // transpiler-deor/mappings.deor
@@ -2656,6 +2656,26 @@ fn validate_tokens(tokens: TokensRef) {
                 }
             }
         }
+        if cur_kind == "KW_VALID" {
+            // transpiler-deor/tokens_validation.deor
+            let mut valid_ok: bool = false;
+            if pos > 0 {
+                // transpiler-deor/tokens_validation.deor
+                let mut valid_pos: i32 = pos - 1.clone();
+                let mut prev_valid_tok: Token = tokens[valid_pos as usize].clone();
+                let kind = prev_valid_tok.kind.clone();
+                valid_ok = kind == "KW_IS";
+                if !valid_ok {
+                    // transpiler-deor/tokens_validation.deor
+                    valid_ok = kind == "KW_NOT";
+                }
+            }
+            if !valid_ok {
+                // transpiler-deor/tokens_validation.deor
+                let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
+                errors.push(val_err(tok.clone(), lbl_var.clone(), rule_valid.clone()).clone());
+            }
+        }
         pos = pos + 1;
     }
     handle_errors(errors.clone());
@@ -3460,12 +3480,6 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let mut lit_next: i32 = pos + 1.clone();
         return make_result(lit_false, lit_next.clone());
     }
-    if kind == "KW_BAD" {
-        // transpiler-deor/codegen_expr/primary/literals.deor
-        let mut lit_none: String = "None".to_string();
-        let mut lit_next: i32 = pos + 1.clone();
-        return make_result(lit_none, lit_next.clone());
-    }
     // macro: primary_list_literal (transpiler-deor/codegen_expr/primary/list_literal.deor)
     if kind == "LBRACKET" {
         // transpiler-deor/codegen_expr/primary/list_literal.deor
@@ -3763,6 +3777,13 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     cur_pos = after_op + 1;
                     continue;
                 }
+                if kind == "KW_VALID" {
+                    // transpiler-deor/codegen_expr/expr.deor
+                    let mut iv_sfx: String = ".is_some()".to_string();
+                    left_code = s_cat(left_code, iv_sfx.clone());
+                    cur_pos = after_op + 1;
+                    continue;
+                }
             }
         }
         if operator_str == "is not" {
@@ -3777,6 +3798,15 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                     let mut ine_sfx: String = ".is_empty()".to_string();
                     left_code = s_cat(ine_pfx.clone(), left_code);
                     left_code = s_cat(left_code, ine_sfx.clone());
+                    cur_pos = after_op + 1;
+                    continue;
+                }
+                if kind == "KW_VALID" {
+                    // transpiler-deor/codegen_expr/expr.deor
+                    let mut inv_pfx: String = "!(".to_string();
+                    let mut inv_sfx: String = ".is_some())".to_string();
+                    left_code = s_cat(inv_pfx.clone(), left_code);
+                    left_code = s_cat(left_code, inv_sfx.clone());
                     cur_pos = after_op + 1;
                     continue;
                 }
@@ -4754,7 +4784,7 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut after_empty: i32 = adv_nl_ref(val_next_pos.clone(), tokens.clone());
         if is_validator {
             // transpiler-deor/codegen_stmt/typed_binding.deor
-            let mut err_msg: String = "/* error: use 'bad' not 'empty' for validator types */\n".to_string();
+            let mut err_msg: String = "/* error: empty is not valid for validator types — declare without a value instead */\n".to_string();
             let mut err_code: String = [pad.as_str(), err_msg.as_str()].concat();
             return make_result(err_code, after_empty.clone());
         }
@@ -4894,23 +4924,6 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut lst_code: String = [pad.as_str(), lst_pfx.as_str(), var_name.as_str(), lst_col.as_str(), rust_type.as_str(), lst_eq.as_str(), val_code.as_str(), lst_sc.as_str()].concat();
         let mut lst_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
         return make_result(lst_code, lst_next.clone());
-    }
-    if kind == "KW_BAD" {
-        // transpiler-deor/codegen_stmt/typed_binding.deor
-        let mut bad_is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
-        let mut bad_pos_next: i32 = val_pos + 1.clone();
-        let mut bad_next: i32 = adv_nl_ref(bad_pos_next.clone(), tokens.clone());
-        if bad_is_validator {
-            // transpiler-deor/codegen_stmt/typed_binding.deor
-            let mut non_pfx: String = "let mut ".to_string();
-            let mut non_mid: String = ": Option<".to_string();
-            let mut non_sfx: String = "> = None;\n".to_string();
-            let mut none_code: String = [pad.as_str(), non_pfx.as_str(), var_name.as_str(), non_mid.as_str(), rust_type.as_str(), non_sfx.as_str()].concat();
-            return make_result(none_code, bad_next.clone());
-        }
-        let mut bad_err: String = "/* error: bad is only valid for validator types */\n".to_string();
-        let mut bad_err_code: String = [pad.as_str(), bad_err.as_str()].concat();
-        return make_result(bad_err_code, bad_next.clone());
     }
     let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
     if is_validator {
@@ -5256,6 +5269,20 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                     // transpiler-deor/codegen_stmt.deor
                     return gen_typed_binding(pos.clone(), depth.clone(), ctx.clone());
                 }
+            }
+            let value = next_token.value.clone();
+            let mut bare_var_name: String = value.clone();
+            let mut bare_rust_type: String = resolve_type(ident_name.clone(), shape_reg.clone(), enum_reg.clone());
+            let mut bare_is_validator: bool = reg3_has(type_reg.clone(), ident_name.clone());
+            if bare_is_validator {
+                // transpiler-deor/codegen_stmt.deor
+                let mut bd_let: String = "let mut ".to_string();
+                let mut bd_opt: String = ": Option<".to_string();
+                let mut bd_sfx: String = "> = None;\n".to_string();
+                let mut bd_code: String = [pad.as_str(), bd_let.as_str(), bare_var_name.as_str(), bd_opt.as_str(), bare_rust_type.as_str(), bd_sfx.as_str()].concat();
+                let mut bd_after: i32 = next_pos + 1.clone();
+                let mut bd_next: i32 = adv_nl_ref(bd_after.clone(), tokens.clone());
+                return make_result(bd_code, bd_next.clone());
             }
         }
     }

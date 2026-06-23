@@ -227,8 +227,8 @@ fn void validate_tokens(TokensRef tokens)
 		if cur_kind is "KW_VALID"
 			bool valid_ok = false
 			if pos > 0
-				int vp = pos - 1
-				Token prev_valid_tok = tokens at vp
+				int valid_pos = pos - 1
+				Token prev_valid_tok = tokens at valid_pos
 				(kind) in prev_valid_tok
 				valid_ok = kind is "KW_IS"
 				if not valid_ok
