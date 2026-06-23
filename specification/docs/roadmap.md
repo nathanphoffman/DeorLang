@@ -1,7 +1,6 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 # New Questions
-- Has private been implemented for imports, does it work properly?
 
 - Should we switch mappings to enums?
 

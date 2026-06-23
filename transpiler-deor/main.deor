@@ -33,10 +33,28 @@ fn void main()
 		validate_tokens(tokens_ref)
 		macro_run end_timer
 
-		# lexer
+		# registry
+		string _timer_label = "[timer] registry: "
+		macro_run start_timer
+		strList struct_reg = build_struct_reg(tokens_ref)
+		strList shape_reg = build_shape_reg(tokens_ref)
+		strList enum_reg = build_enum_reg(tokens_ref)
+		strList variant_reg = build_variant_reg(tokens_ref, enum_reg)
+		strList type_reg = build_type_reg(tokens_ref)
+		strList var_type_reg = build_var_type_reg(tokens_ref)
+		macro_run end_timer
+		strList mut_names = empty
+		string using_type = ""
+		string using_var = ""
+		tokenList placeholder = empty
+		TokensRef tokens = tokens_wrap(move placeholder)
+		GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
+		RcCtx ctx = make_rctx(move ctx_raw)
+
+		# codegen
 		string _timer_label = "[timer] total-codegen: "
 		macro_run start_timer
-		string rust_code = generate_rust_from_tokens(tokens_ref)
+		string rust_code = generate_rust_from_tokens(tokens_ref, ctx)
 		macro_run end_timer
 
 		# can we put codegen here in the pipeline rather

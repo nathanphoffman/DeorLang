@@ -1,24 +1,7 @@
-# Top-level code generator. Takes the fully merged and deduplicated token list, builds
-# all six registries (struct, shape, enum, variant, type, var_type), then walks the
-# token stream dispatching each top-level declaration to its gen_* function and
-# concatenating the results into a single Rust source string.
-fn string generate_rust_from_tokens(TokensRef all_ref)
-	string _timer_label = "[timer]   registries: "
-	macro_run start_timer
-	strList struct_reg = build_struct_reg(all_ref)
-	strList shape_reg = build_shape_reg(all_ref)
-	strList enum_reg = build_enum_reg(all_ref)
-	strList variant_reg = build_variant_reg(all_ref, enum_reg)
-	strList type_reg = build_type_reg(all_ref)
-	strList mut_names = empty
-	strList var_type_reg = build_var_type_reg(all_ref)
-	macro_run end_timer
-	string using_type = ""
-	string using_var = ""
-	tokenList tok_placeholder = empty
-	TokensRef tokens = tokens_wrap(move tok_placeholder)
-	GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
-	RcCtx ctx = make_rctx(move ctx_raw)
+# Top-level code generator. Receives the fully merged token list and a pre-built
+# registry context from the main pipeline, then walks the token stream dispatching
+# each top-level declaration to its gen_* function and concatenating the results.
+fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 
 	strList parts = empty
 	int token_count = len(all_ref)
