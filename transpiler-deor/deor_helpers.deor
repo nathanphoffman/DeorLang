@@ -20,20 +20,6 @@ fn ParseResult make_result(string code, int new_pos)
 	result as (code, new_pos)
 	return result
 
-# === Token helpers ===
-
-# Constructs a TokenMeta from a line number and file path. Passed to make_token so the
-# lexer doesn't have to repeat line and file at every token emission site.
-fn TokenMeta make_meta(int line, string file)
-	meta as (line, file)
-	return meta
-
-# Constructs a Token value. Used by the lexer for every token it emits.
-fn Token make_token(string kind, string value, TokenMeta meta)
-	(line, file) in meta
-	token as (kind, value, line, file)
-	return token
-
 # If the token at `pos` is a NEWLINE, returns pos+1; otherwise returns pos unchanged.
 # Called after parsing a statement's value to step past the trailing newline.
 fn int adv_nl(int pos, tokenList tokens)

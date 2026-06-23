@@ -13,6 +13,7 @@ import "transpiler-deor/utils.deor"
 import "transpiler-deor/deor_helpers.deor"
 
 # lexer and importer
+import "transpiler-deor/importer/lexer/token_factory.deor"
 import "transpiler-deor/importer/lexer/indent.deor"
 import "transpiler-deor/importer/lexer/rust_block.deor"
 import "transpiler-deor/importer/lexer/string_literal.deor"
