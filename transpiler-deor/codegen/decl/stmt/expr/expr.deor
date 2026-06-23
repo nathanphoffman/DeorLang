@@ -1,4 +1,52 @@
 
+# Returns true for token kinds that can appear as binary operators in an expression.
+fn bool is_binary_op(string kind)
+	if kind is "PLUS"
+		return true
+	if kind is "MINUS"
+		return true
+	if kind is "STAR"
+		return true
+	if kind is "SLASH"
+		return true
+	if kind is "PERCENT"
+		return true
+	if kind is "GT"
+		return true
+	if kind is "LT"
+		return true
+	if kind is "GTE"
+		return true
+	if kind is "LTE"
+		return true
+	if kind is "KW_IS"
+		return true
+	if kind is "KW_AND"
+		return true
+	if kind is "KW_OR"
+		return true
+	return false
+
+# Translates Deor operators to their Rust equivalents.
+fn string map_op(string operator)
+	if operator is "is"
+		return "=="
+	if operator is "is not"
+		return "!="
+	if operator is "and"
+		return "&&"
+	if operator is "or"
+		return "||"
+	if operator is ">"
+		return ">"
+	if operator is "<"
+		return "<"
+	if operator is ">="
+		return ">="
+	if operator is "<="
+		return "<="
+	return operator
+
 # Parses a full expression using a left-associative loop over binary operators. Calls
 # gen_primary for the left operand, then repeatedly folds in right operands as long as
 # the next token is a binary operator. Handles the two-token `is not` operator and

@@ -409,357 +409,6 @@ fn make_nl_result(code: String, pos: i32, tokens: TokensRef) -> ParseResult {
     return make_result(code, next_pos.clone());
 }
 
-// transpiler-deor/mappings.deor
-fn word_to_kind(word: String) -> String {
-    // transpiler-deor/mappings.deor
-    if word == "fn" {
-        // transpiler-deor/mappings.deor
-        return "KW_FN".to_string();
-    }
-    if word == "as" {
-        // transpiler-deor/mappings.deor
-        return "KW_AS".to_string();
-    }
-    if word == "return" {
-        // transpiler-deor/mappings.deor
-        return "KW_RETURN".to_string();
-    }
-    if word == "if" {
-        // transpiler-deor/mappings.deor
-        return "KW_IF".to_string();
-    }
-    if word == "else" {
-        // transpiler-deor/mappings.deor
-        return "KW_ELSE".to_string();
-    }
-    if word == "for" {
-        // transpiler-deor/mappings.deor
-        return "KW_FOR".to_string();
-    }
-    if word == "in" {
-        // transpiler-deor/mappings.deor
-        return "KW_IN".to_string();
-    }
-    if word == "break" {
-        // transpiler-deor/mappings.deor
-        return "KW_BREAK".to_string();
-    }
-    if word == "continue" {
-        // transpiler-deor/mappings.deor
-        return "KW_CONTINUE".to_string();
-    }
-    if word == "and" {
-        // transpiler-deor/mappings.deor
-        return "KW_AND".to_string();
-    }
-    if word == "or" {
-        // transpiler-deor/mappings.deor
-        return "KW_OR".to_string();
-    }
-    if word == "not" {
-        // transpiler-deor/mappings.deor
-        return "KW_NOT".to_string();
-    }
-    if word == "is" {
-        // transpiler-deor/mappings.deor
-        return "KW_IS".to_string();
-    }
-    if word == "true" {
-        // transpiler-deor/mappings.deor
-        return "KW_TRUE".to_string();
-    }
-    if word == "false" {
-        // transpiler-deor/mappings.deor
-        return "KW_FALSE".to_string();
-    }
-    if word == "valid" {
-        // transpiler-deor/mappings.deor
-        return "KW_VALID".to_string();
-    }
-    if word == "avow" {
-        // transpiler-deor/mappings.deor
-        return "KW_AVOW".to_string();
-    }
-    if word == "empty" {
-        // transpiler-deor/mappings.deor
-        return "KW_EMPTY".to_string();
-    }
-    if word == "type" {
-        // transpiler-deor/mappings.deor
-        return "KW_TYPE".to_string();
-    }
-    if word == "struct" {
-        // transpiler-deor/mappings.deor
-        return "KW_STRUCT".to_string();
-    }
-    if word == "shape" {
-        // transpiler-deor/mappings.deor
-        return "KW_SHAPE".to_string();
-    }
-    if word == "list" {
-        // transpiler-deor/mappings.deor
-        return "KW_LIST".to_string();
-    }
-    if word == "of" {
-        // transpiler-deor/mappings.deor
-        return "KW_OF".to_string();
-    }
-    if word == "enum" {
-        // transpiler-deor/mappings.deor
-        return "KW_ENUM".to_string();
-    }
-    if word == "at" {
-        // transpiler-deor/mappings.deor
-        return "KW_AT".to_string();
-    }
-    if word == "remove" {
-        // transpiler-deor/mappings.deor
-        return "KW_REMOVE".to_string();
-    }
-    if word == "rust" {
-        // transpiler-deor/mappings.deor
-        return "KW_RUST".to_string();
-    }
-    if word == "void" {
-        // transpiler-deor/mappings.deor
-        return "KW_VOID".to_string();
-    }
-    if word == "using" {
-        // transpiler-deor/mappings.deor
-        return "KW_USING".to_string();
-    }
-    if word == "with" {
-        // transpiler-deor/mappings.deor
-        return "KW_WITH".to_string();
-    }
-    if word == "move" {
-        // transpiler-deor/mappings.deor
-        return "KW_GIVEUP".to_string();
-    }
-    if word == "raw" {
-        // transpiler-deor/mappings.deor
-        return "KW_RAW".to_string();
-    }
-    if word == "macro" {
-        // transpiler-deor/mappings.deor
-        return "KW_MACRO".to_string();
-    }
-    if word == "macro_run" {
-        // transpiler-deor/mappings.deor
-        return "KW_MACRO_RUN".to_string();
-    }
-    if word == "import" {
-        // transpiler-deor/mappings.deor
-        return "KW_IMPORT".to_string();
-    }
-    if word == "block" {
-        // transpiler-deor/mappings.deor
-        return "KW_BLOCK".to_string();
-    }
-    if word == "const" {
-        // transpiler-deor/mappings.deor
-        return "KW_CONST".to_string();
-    }
-    return "IDENT".to_string();
-}
-
-fn is_binary_op(kind: String) -> bool {
-    // transpiler-deor/mappings.deor
-    if kind == "PLUS" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "MINUS" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "STAR" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "SLASH" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "PERCENT" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "GT" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "LT" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "GTE" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "LTE" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "KW_IS" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "KW_AND" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    if kind == "KW_OR" {
-        // transpiler-deor/mappings.deor
-        return true;
-    }
-    return false;
-}
-
-fn map_op(operator: String) -> String {
-    // transpiler-deor/mappings.deor
-    if operator == "is" {
-        // transpiler-deor/mappings.deor
-        return "==".to_string();
-    }
-    if operator == "is not" {
-        // transpiler-deor/mappings.deor
-        return "!=".to_string();
-    }
-    if operator == "and" {
-        // transpiler-deor/mappings.deor
-        return "&&".to_string();
-    }
-    if operator == "or" {
-        // transpiler-deor/mappings.deor
-        return "||".to_string();
-    }
-    if operator == ">" {
-        // transpiler-deor/mappings.deor
-        return ">".to_string();
-    }
-    if operator == "<" {
-        // transpiler-deor/mappings.deor
-        return "<".to_string();
-    }
-    if operator == ">=" {
-        // transpiler-deor/mappings.deor
-        return ">=".to_string();
-    }
-    if operator == "<=" {
-        // transpiler-deor/mappings.deor
-        return "<=".to_string();
-    }
-    return operator;
-}
-
-fn render_rust_type(type_name: String) -> String {
-    // transpiler-deor/mappings.deor
-    if type_name == "void" {
-        // transpiler-deor/mappings.deor
-        return "".to_string();
-    }
-    if type_name == "int" {
-        // transpiler-deor/mappings.deor
-        return "i32".to_string();
-    }
-    if type_name == "string" {
-        // transpiler-deor/mappings.deor
-        return "String".to_string();
-    }
-    if type_name == "bool" {
-        // transpiler-deor/mappings.deor
-        return "bool".to_string();
-    }
-    if type_name == "float" {
-        // transpiler-deor/mappings.deor
-        return "f64".to_string();
-    }
-    return s_pascal(type_name.clone());
-}
-
-// transpiler-deor/cursor.deor
-fn cur_at(tokens: Vec<Token>, pos: i32) -> TokenCursor {
-    // transpiler-deor/cursor.deor
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut current: Token = tokens[pos as usize].clone();
-    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
-    return c;
-}
-
-fn cur_next(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
-    // transpiler-deor/cursor.deor
-    let token_count = c.token_count.clone();
-    let mut pos = c.pos.clone();
-    let mut current = c.current.clone();
-    let mut pos: i32 = pos + 1.clone();
-    if pos < token_count {
-        // transpiler-deor/cursor.deor
-        let mut current: Token = tokens[pos as usize].clone();
-        return TokenCursor { token_count, pos, current };
-    }
-    return TokenCursor { token_count, pos, current };
-}
-
-fn c_at_end(c: TokenCursor) -> bool {
-    // transpiler-deor/cursor.deor
-    let token_count = c.token_count.clone();
-    let pos = c.pos.clone();
-    return pos >= token_count;
-}
-
-fn cur_skip_to_body(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
-    // transpiler-deor/cursor.deor
-    let pos = c.pos.clone();
-    let mut body_pos: i32 = adv_nl(pos.clone(), tokens.clone());
-    body_pos = adv_indent(body_pos.clone(), tokens.clone());
-    return cur_at(tokens.clone(), body_pos.clone());
-}
-
-fn cur_peek(c: TokenCursor, tokens: Vec<Token>, offset: i32) -> Token {
-    // transpiler-deor/cursor.deor
-    let pos = c.pos.clone();
-    let mut peek_pos: i32 = pos + offset.clone();
-    return tokens[peek_pos as usize].clone();
-}
-
-fn cur_at_ref(tokens: TokensRef, pos: i32) -> TokenCursor {
-    // transpiler-deor/cursor.deor
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut current: Token = tokens[pos as usize].clone();
-    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
-    return c;
-}
-
-fn cur_next_ref(c: TokenCursor, tokens: TokensRef) -> TokenCursor {
-    // transpiler-deor/cursor.deor
-    let token_count = c.token_count.clone();
-    let mut pos = c.pos.clone();
-    let mut current = c.current.clone();
-    let mut pos: i32 = pos + 1.clone();
-    if pos < token_count {
-        // transpiler-deor/cursor.deor
-        let mut current: Token = tokens[pos as usize].clone();
-        return TokenCursor { token_count, pos, current };
-    }
-    return TokenCursor { token_count, pos, current };
-}
-
-fn cur_skip_to_body_ref(c: TokenCursor, tokens: TokensRef) -> TokenCursor {
-    // transpiler-deor/cursor.deor
-    let pos = c.pos.clone();
-    let mut body_pos: i32 = adv_nl_ref(pos.clone(), tokens.clone());
-    body_pos = adv_indent_ref(body_pos.clone(), tokens.clone());
-    return cur_at_ref(tokens.clone(), body_pos.clone());
-}
-
-fn cur_peek_ref(c: TokenCursor, tokens: TokensRef, offset: i32) -> Token {
-    // transpiler-deor/cursor.deor
-    let pos = c.pos.clone();
-    let mut peek_pos: i32 = pos + offset.clone();
-    return tokens[peek_pos as usize].clone();
-}
-
 // transpiler-deor/importer/lexer/indent.deor
 fn count_tabs(line: String) -> i32 {
     // transpiler-deor/importer/lexer/indent.deor
@@ -910,6 +559,159 @@ fn scan_number(chars: Vec<String>, char_index: i32, char_count: i32) -> ParseRes
 }
 
 // transpiler-deor/importer/lexer/word_token.deor
+fn word_to_kind(word: String) -> String {
+    // transpiler-deor/importer/lexer/word_token.deor
+    if word == "fn" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_FN".to_string();
+    }
+    if word == "as" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_AS".to_string();
+    }
+    if word == "return" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_RETURN".to_string();
+    }
+    if word == "if" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_IF".to_string();
+    }
+    if word == "else" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_ELSE".to_string();
+    }
+    if word == "for" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_FOR".to_string();
+    }
+    if word == "in" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_IN".to_string();
+    }
+    if word == "break" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_BREAK".to_string();
+    }
+    if word == "continue" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_CONTINUE".to_string();
+    }
+    if word == "and" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_AND".to_string();
+    }
+    if word == "or" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_OR".to_string();
+    }
+    if word == "not" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_NOT".to_string();
+    }
+    if word == "is" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_IS".to_string();
+    }
+    if word == "true" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_TRUE".to_string();
+    }
+    if word == "false" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_FALSE".to_string();
+    }
+    if word == "valid" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_VALID".to_string();
+    }
+    if word == "avow" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_AVOW".to_string();
+    }
+    if word == "empty" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_EMPTY".to_string();
+    }
+    if word == "type" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_TYPE".to_string();
+    }
+    if word == "struct" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_STRUCT".to_string();
+    }
+    if word == "shape" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_SHAPE".to_string();
+    }
+    if word == "list" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_LIST".to_string();
+    }
+    if word == "of" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_OF".to_string();
+    }
+    if word == "enum" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_ENUM".to_string();
+    }
+    if word == "at" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_AT".to_string();
+    }
+    if word == "remove" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_REMOVE".to_string();
+    }
+    if word == "rust" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_RUST".to_string();
+    }
+    if word == "void" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_VOID".to_string();
+    }
+    if word == "using" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_USING".to_string();
+    }
+    if word == "with" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_WITH".to_string();
+    }
+    if word == "move" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_GIVEUP".to_string();
+    }
+    if word == "raw" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_RAW".to_string();
+    }
+    if word == "macro" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_MACRO".to_string();
+    }
+    if word == "macro_run" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_MACRO_RUN".to_string();
+    }
+    if word == "import" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_IMPORT".to_string();
+    }
+    if word == "block" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_BLOCK".to_string();
+    }
+    if word == "const" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_CONST".to_string();
+    }
+    return "IDENT".to_string();
+}
+
 fn scan_word(chars: Vec<String>, char_index: i32, char_count: i32) -> ParseResult {
     // transpiler-deor/importer/lexer/word_token.deor
     let mut first_char: String = chars[char_index as usize].clone();
@@ -2687,6 +2489,32 @@ fn validate_tokens(tokens: TokensRef) {
     handle_errors(errors.clone());
 }
 
+// transpiler-deor/codegen/type_map.deor
+fn render_rust_type(type_name: String) -> String {
+    // transpiler-deor/codegen/type_map.deor
+    if type_name == "void" {
+        // transpiler-deor/codegen/type_map.deor
+        return "".to_string();
+    }
+    if type_name == "int" {
+        // transpiler-deor/codegen/type_map.deor
+        return "i32".to_string();
+    }
+    if type_name == "string" {
+        // transpiler-deor/codegen/type_map.deor
+        return "String".to_string();
+    }
+    if type_name == "bool" {
+        // transpiler-deor/codegen/type_map.deor
+        return "bool".to_string();
+    }
+    if type_name == "float" {
+        // transpiler-deor/codegen/type_map.deor
+        return "f64".to_string();
+    }
+    return s_pascal(type_name.clone());
+}
+
 // transpiler-deor/registry/struct.deor
 fn skip_to_block_start(tokens: TokensRef, start: i32) -> ParseResult {
     // transpiler-deor/registry/struct.deor
@@ -3704,6 +3532,96 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+fn is_binary_op(kind: String) -> bool {
+    // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+    if kind == "PLUS" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "MINUS" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "STAR" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "SLASH" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "PERCENT" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "GT" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "LT" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "GTE" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "LTE" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "KW_IS" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "KW_AND" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    if kind == "KW_OR" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return true;
+    }
+    return false;
+}
+
+fn map_op(operator: String) -> String {
+    // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+    if operator == "is" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return "==".to_string();
+    }
+    if operator == "is not" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return "!=".to_string();
+    }
+    if operator == "and" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return "&&".to_string();
+    }
+    if operator == "or" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return "||".to_string();
+    }
+    if operator == ">" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return ">".to_string();
+    }
+    if operator == "<" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return "<".to_string();
+    }
+    if operator == ">=" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return ">=".to_string();
+    }
+    if operator == "<=" {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        return "<=".to_string();
+    }
+    return operator;
+}
+
 fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/expr/expr.deor
     let mut token_count: i32 = (tokens.len() as i32);
@@ -5317,6 +5235,88 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut unhand: String = s_join(unh_parts.clone());
     let mut unhand_next: i32 = pos + 1.clone();
     return make_result(unhand, unhand_next.clone());
+}
+
+// transpiler-deor/codegen/decl/cursor.deor
+fn cur_at(tokens: Vec<Token>, pos: i32) -> TokenCursor {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut current: Token = tokens[pos as usize].clone();
+    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
+    return c;
+}
+
+fn cur_next(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let token_count = c.token_count.clone();
+    let mut pos = c.pos.clone();
+    let mut current = c.current.clone();
+    let mut pos: i32 = pos + 1.clone();
+    if pos < token_count {
+        // transpiler-deor/codegen/decl/cursor.deor
+        let mut current: Token = tokens[pos as usize].clone();
+        return TokenCursor { token_count, pos, current };
+    }
+    return TokenCursor { token_count, pos, current };
+}
+
+fn c_at_end(c: TokenCursor) -> bool {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let token_count = c.token_count.clone();
+    let pos = c.pos.clone();
+    return pos >= token_count;
+}
+
+fn cur_skip_to_body(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let pos = c.pos.clone();
+    let mut body_pos: i32 = adv_nl(pos.clone(), tokens.clone());
+    body_pos = adv_indent(body_pos.clone(), tokens.clone());
+    return cur_at(tokens.clone(), body_pos.clone());
+}
+
+fn cur_peek(c: TokenCursor, tokens: Vec<Token>, offset: i32) -> Token {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let pos = c.pos.clone();
+    let mut peek_pos: i32 = pos + offset.clone();
+    return tokens[peek_pos as usize].clone();
+}
+
+fn cur_at_ref(tokens: TokensRef, pos: i32) -> TokenCursor {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut current: Token = tokens[pos as usize].clone();
+    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
+    return c;
+}
+
+fn cur_next_ref(c: TokenCursor, tokens: TokensRef) -> TokenCursor {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let token_count = c.token_count.clone();
+    let mut pos = c.pos.clone();
+    let mut current = c.current.clone();
+    let mut pos: i32 = pos + 1.clone();
+    if pos < token_count {
+        // transpiler-deor/codegen/decl/cursor.deor
+        let mut current: Token = tokens[pos as usize].clone();
+        return TokenCursor { token_count, pos, current };
+    }
+    return TokenCursor { token_count, pos, current };
+}
+
+fn cur_skip_to_body_ref(c: TokenCursor, tokens: TokensRef) -> TokenCursor {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let pos = c.pos.clone();
+    let mut body_pos: i32 = adv_nl_ref(pos.clone(), tokens.clone());
+    body_pos = adv_indent_ref(body_pos.clone(), tokens.clone());
+    return cur_at_ref(tokens.clone(), body_pos.clone());
+}
+
+fn cur_peek_ref(c: TokenCursor, tokens: TokensRef, offset: i32) -> Token {
+    // transpiler-deor/codegen/decl/cursor.deor
+    let pos = c.pos.clone();
+    let mut peek_pos: i32 = pos + offset.clone();
+    return tokens[peek_pos as usize].clone();
 }
 
 // transpiler-deor/codegen/decl/struct.deor

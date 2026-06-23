@@ -11,8 +11,6 @@ import "transpiler-deor/utils.deor"
 
 # core infrastructure
 import "transpiler-deor/deor_helpers.deor"
-import "transpiler-deor/mappings.deor"
-import "transpiler-deor/cursor.deor"
 
 # lexer and importer
 import "transpiler-deor/importer/lexer/indent.deor"
@@ -52,6 +50,7 @@ import "transpiler-deor/tokens_validator/tokens_validation.deor"
 import "transpiler-deor/utility_macros.deor"
 
 # registry and codegen
+import "transpiler-deor/codegen/type_map.deor"
 import "transpiler-deor/registry/struct.deor"
 import "transpiler-deor/registry/shape.deor"
 import "transpiler-deor/registry/enum.deor"
@@ -88,6 +87,7 @@ import "transpiler-deor/codegen/decl/stmt/call_stmt.deor"
 import "transpiler-deor/codegen/decl/stmt/list_mutation.deor"
 import "transpiler-deor/codegen/decl/stmt/typed_binding.deor"
 import "transpiler-deor/codegen/decl/stmt/stmt.deor"
+import "transpiler-deor/codegen/decl/cursor.deor"
 import "transpiler-deor/codegen/decl/struct.deor"
 import "transpiler-deor/codegen/decl/enum.deor"
 import "transpiler-deor/codegen/decl/shape.deor"
