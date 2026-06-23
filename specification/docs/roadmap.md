@@ -1,7 +1,10 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 # New Questions
-Has private been implemented for imports, does it work properly?
+- Has private been implemented for imports, does it work properly?
+
+- Should we switch mappings to enums?
+
 
 # New Findings
 As should always be implicit ownership, right now the 2nd line below is allowed, it should not be, which makes me wonder how much of this is correct today

@@ -1,0 +1,98 @@
+
+# === Lexer entry point ===
+
+# Full Deor lexer. Converts raw source text into a flat token list, one line at a
+# time. Each line is checked for indentation changes, rust blocks, and then scanned
+# character by character. Emits trailing DEDENTs and a terminal EOF when done.
+fn tokenList tokenize(string source, string path)
+	tokenList tokens = empty
+	string empty_str = ""
+	string kind_newline = "NEWLINE"
+	string kind_dedent = "DEDENT"
+	string kind_eof = "EOF"
+	string newline = "\n"
+	strList lines = s_split(source, newline)
+	int n_lines = len(lines)
+	strList indent_stack = empty
+	string zero_str = "0"
+	indent_stack at end = zero_str
+	int cur_line = 0
+	int skip = 0
+
+	for raw_li in range(n_lines)
+		cur_line = cur_line + 1
+		TokenMeta meta = make_meta(cur_line, path)
+		if skip > 0
+			skip = skip - 1
+			continue
+
+		string raw_line = lines at raw_li
+		string line = s_rtrim(raw_line)
+		string content = s_trim(line)
+
+		if is_empty(content)
+			continue
+
+		int indent = count_tabs(line)
+		macro_run emit_indent_or_dedent
+
+		if content is "rust"
+			macro_run collect_rust_block
+			continue
+
+		strList chars = c_chars(content)
+		int char_count = len(chars)
+		int char_index = 0
+
+		for if char_index < char_count
+			string character = chars at char_index
+
+			if character is " "
+				char_index = char_index + 1
+				continue
+
+			if character is "#"
+				break
+
+			if character is "\""
+				ParseResult str_r = scan_string_literal(chars, char_index, char_count)
+				string kind_string = "STRING"
+				string str_val = pr_code(str_r)
+				tokens at end = make_token(kind_string, str_val, meta)
+				char_index = pr_pos(str_r)
+				continue
+
+			if c_digit(character)
+				ParseResult num_r = scan_number(chars, char_index, char_count)
+				string num_str = pr_code(num_r)
+				char_index = pr_pos(num_r)
+				string dot = "."
+				strList num_parts = s_split(num_str, dot)
+				bool is_float = len(num_parts) > 1
+				if is_float
+					string kind_float = "FLOAT"
+					tokens at end = make_token(kind_float, num_str, meta)
+				else
+					string kind_int = "INT"
+					tokens at end = make_token(kind_int, num_str, meta)
+				continue
+
+			if c_alpha(character)
+				ParseResult word_r = scan_word(chars, char_index, char_count)
+				string word = pr_code(word_r)
+				char_index = pr_pos(word_r)
+				string word_kind = word_to_kind(word)
+				tokens at end = make_token(word_kind, word, meta)
+				continue
+
+			macro_run emit_operator_token
+
+		tokens at end = make_token(kind_newline, empty_str, meta)
+
+	int final_stack_len = len(indent_stack)
+	TokenMeta tail_meta = make_meta(cur_line, path)
+	for in (1, final_stack_len)
+		tokens at end = make_token(kind_dedent, empty_str, tail_meta)
+
+	tokens at end = make_token(kind_eof, empty_str, tail_meta)
+	return tokens

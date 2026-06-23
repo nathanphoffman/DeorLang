@@ -932,9 +932,9 @@ fn scan_word(chars: Vec<String>, char_index: i32, char_count: i32) -> ParseResul
     return make_result(word.clone(), new_pos.clone());
 }
 
-// transpiler-deor/lexer.deor
+// transpiler-deor/lexer/tokenizer.deor
 fn tokenize(source: String, path: String) -> Vec<Token> {
-    // transpiler-deor/lexer.deor
+    // transpiler-deor/lexer/tokenizer.deor
     let mut tokens: Vec<Token> = Vec::new();
     let mut empty_str: String = "".to_string();
     let mut kind_newline: String = "NEWLINE".to_string();
@@ -949,11 +949,11 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     let mut cur_line: i32 = 0;
     let mut skip: i32 = 0;
     for raw_li in 0..n_lines {
-        // transpiler-deor/lexer.deor
+        // transpiler-deor/lexer/tokenizer.deor
         cur_line = cur_line + 1;
         let mut meta: TokenMeta = make_meta(cur_line.clone(), path.clone());
         if skip > 0 {
-            // transpiler-deor/lexer.deor
+            // transpiler-deor/lexer/tokenizer.deor
             skip = skip - 1;
             continue;
         }
@@ -961,7 +961,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
         let mut line: String = s_rtrim(raw_line.clone());
         let mut content: String = s_trim(line.clone());
         if is_empty(content.clone()) {
-            // transpiler-deor/lexer.deor
+            // transpiler-deor/lexer/tokenizer.deor
             continue;
         }
         let mut indent: i32 = count_tabs(line.clone());
@@ -995,7 +995,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 }
             }
         }
-        // transpiler-deor/lexer.deor
+        // transpiler-deor/lexer/tokenizer.deor
         if content == "rust" {
             // macro: collect_rust_block (transpiler-deor/lexer/rust_block.deor)
             let mut rb_kind_kw_rust: String = "KW_RUST".to_string();
@@ -1049,26 +1049,26 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
             }
             let mut block_content: String = s_join_nl(rust_lines.clone());
             tokens.push(make_token(rb_kind_rust_block.clone(), block_content.clone(), meta.clone()).clone());
-            // transpiler-deor/lexer.deor
+            // transpiler-deor/lexer/tokenizer.deor
             continue;
         }
         let mut chars: Vec<String> = c_chars(content.clone());
         let mut char_count: i32 = (chars.len() as i32);
         let mut char_index: i32 = 0;
         while char_index < char_count {
-            // transpiler-deor/lexer.deor
+            // transpiler-deor/lexer/tokenizer.deor
             let mut character: String = chars[char_index as usize].clone();
             if character == " " {
-                // transpiler-deor/lexer.deor
+                // transpiler-deor/lexer/tokenizer.deor
                 char_index = char_index + 1;
                 continue;
             }
             if character == "#" {
-                // transpiler-deor/lexer.deor
+                // transpiler-deor/lexer/tokenizer.deor
                 break;
             }
             if character == "\"" {
-                // transpiler-deor/lexer.deor
+                // transpiler-deor/lexer/tokenizer.deor
                 let mut str_r: ParseResult = scan_string_literal(chars.clone(), char_index.clone(), char_count.clone());
                 let mut kind_string: String = "STRING".to_string();
                 let mut str_val: String = pr_code(str_r.clone());
@@ -1077,7 +1077,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 continue;
             }
             if c_digit(character.clone()) {
-                // transpiler-deor/lexer.deor
+                // transpiler-deor/lexer/tokenizer.deor
                 let mut num_r: ParseResult = scan_number(chars.clone(), char_index.clone(), char_count.clone());
                 let mut num_str: String = pr_code(num_r.clone());
                 char_index = pr_pos(num_r.clone());
@@ -1085,18 +1085,18 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut num_parts: Vec<String> = s_split(num_str.clone(), dot.clone());
                 let mut is_float: bool = (num_parts.len() as i32) > 1;
                 if is_float {
-                    // transpiler-deor/lexer.deor
+                    // transpiler-deor/lexer/tokenizer.deor
                     let mut kind_float: String = "FLOAT".to_string();
                     tokens.push(make_token(kind_float.clone(), num_str.clone(), meta.clone()).clone());
                 } else {
-                    // transpiler-deor/lexer.deor
+                    // transpiler-deor/lexer/tokenizer.deor
                     let mut kind_int: String = "INT".to_string();
                     tokens.push(make_token(kind_int.clone(), num_str.clone(), meta.clone()).clone());
                 }
                 continue;
             }
             if c_alpha(character.clone()) {
-                // transpiler-deor/lexer.deor
+                // transpiler-deor/lexer/tokenizer.deor
                 let mut word_r: ParseResult = scan_word(chars.clone(), char_index.clone(), char_count.clone());
                 let mut word: String = pr_code(word_r.clone());
                 char_index = pr_pos(word_r.clone());
@@ -1200,11 +1200,132 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     let mut final_stack_len: i32 = (indent_stack.len() as i32);
     let mut tail_meta: TokenMeta = make_meta(cur_line.clone(), path.clone());
     for _ in 1..final_stack_len {
-        // transpiler-deor/lexer.deor
+        // transpiler-deor/lexer/tokenizer.deor
         tokens.push(make_token(kind_dedent.clone(), empty_str.clone(), tail_meta.clone()).clone());
     }
     tokens.push(make_token(kind_eof.clone(), empty_str.clone(), tail_meta.clone()).clone());
     return tokens;
+}
+
+// transpiler-deor/lexer.deor
+fn generate_rust_from_tokens(all_ref: TokensRef) -> String {
+    // transpiler-deor/lexer.deor
+    let mut _timer_label: String = "[timer]   registries: ".to_string();
+    let mut struct_reg: Vec<String> = build_struct_reg(all_ref.clone());
+    let mut shape_reg: Vec<String> = build_shape_reg(all_ref.clone());
+    let mut enum_reg: Vec<String> = build_enum_reg(all_ref.clone());
+    let mut variant_reg: Vec<String> = build_variant_reg(all_ref.clone(), enum_reg.clone());
+    let mut type_reg: Vec<String> = build_type_reg(all_ref.clone());
+    let mut mut_names: Vec<String> = Vec::new();
+    let mut var_type_reg: Vec<String> = build_var_type_reg(all_ref.clone());
+    let mut using_type: String = "".to_string();
+    let mut using_var: String = "".to_string();
+    let mut tok_placeholder: Vec<Token> = Vec::new();
+    let mut tokens: TokensRef = tokens_wrap(tok_placeholder);
+/* unhandled(IDENT) */
+    let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
+    let mut ctx: RcCtx = make_rctx(ctx_raw);
+    let mut parts: Vec<String> = Vec::new();
+    let mut token_count: i32 = (all_ref.len() as i32);
+    println!("{}", ["[diag] token_count: ", n_to_str(token_count.clone()).as_str()].concat());
+    let mut pos: i32 = 0;
+    let mut last_file: String = "".to_string();
+    let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
+    while true {
+        // transpiler-deor/lexer.deor
+        if pos >= token_count {
+            // transpiler-deor/lexer.deor
+            break;
+        }
+        let mut token: Token = all_ref[pos as usize].clone();
+        let kind = token.kind.clone();
+        let file = token.file.clone();
+        if kind == "EOF" {
+            // transpiler-deor/lexer.deor
+            break;
+        }
+        if kind == "NEWLINE" {
+            // transpiler-deor/lexer.deor
+            pos = pos + 1;
+            continue;
+        }
+        if file != last_file {
+            // transpiler-deor/lexer.deor
+            let mut fc_slash: String = "// ".to_string();
+            let mut fc_nl: String = "\n".to_string();
+            let mut fc1: String = s_cat(fc_slash.clone(), file.clone());
+            let mut file_comment: String = s_cat(fc1.clone(), fc_nl.clone());
+            parts.push(file_comment.clone());
+            last_file = file;
+        }
+        if kind == "KW_STRUCT" {
+            // transpiler-deor/lexer.deor
+            let mut result: ParseResult = gen_struct_decl(all_ref.clone(), pos.clone());
+            let code = result.code;
+            let new_pos = result.new_pos;
+            parts.push(code.clone());
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_SHAPE" {
+            // transpiler-deor/lexer.deor
+            let mut result: ParseResult = gen_shape_decl(all_ref.clone(), pos.clone());
+            let code = result.code;
+            let new_pos = result.new_pos;
+            parts.push(code.clone());
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_ENUM" {
+            // transpiler-deor/lexer.deor
+            let mut result: ParseResult = gen_enum_decl(all_ref.clone(), pos.clone());
+            let code = result.code;
+            let new_pos = result.new_pos;
+            parts.push(code.clone());
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_TYPE" {
+            // transpiler-deor/lexer.deor
+            let mut result: ParseResult = gen_type_decl(all_ref.clone(), pos.clone(), ctx.clone());
+            let code = result.code;
+            let new_pos = result.new_pos;
+            parts.push(code.clone());
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_FN" {
+            // transpiler-deor/lexer.deor
+            let mut result: ParseResult = gen_fn_decl(all_ref.clone(), pos.clone(), ctx.clone());
+            let code = result.code;
+            let new_pos = result.new_pos;
+            parts.push(code.clone());
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_RAW" {
+            // transpiler-deor/lexer.deor
+            let mut result: ParseResult = gen_raw_decl(all_ref.clone(), pos.clone());
+            let code = result.code;
+            let new_pos = result.new_pos;
+            parts.push(code.clone());
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_RUST" {
+            // transpiler-deor/lexer.deor
+            let mut block_pos: i32 = pos + 2.clone();
+            let mut block_token: Token = all_ref[block_pos as usize].clone();
+            let value = block_token.value.clone();
+            let mut newline: String = "\n".to_string();
+            let mut rust_chunk: String = s_cat(value.clone(), newline.clone());
+            parts.push(rust_chunk.clone());
+            pos = block_pos + 1;
+            continue;
+        }
+        pos = pos + 1;
+    }
+    return s_join(parts.clone());
 }
 
 // transpiler-deor/importer/scan.deor
@@ -5738,144 +5859,6 @@ fn gen_raw_decl(tokens: TokensRef, pos: i32) -> ParseResult {
 }
 
 // transpiler-deor/main.deor
-fn generate_rust_from_tokens(all_ref: TokensRef) -> String {
-    // transpiler-deor/main.deor
-    let mut _timer_label: String = "[timer]   registries: ".to_string();
-    // macro: start_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_start: i32 = now_ms();
-    // transpiler-deor/main.deor
-    let mut struct_reg: Vec<String> = build_struct_reg(all_ref.clone());
-    let mut shape_reg: Vec<String> = build_shape_reg(all_ref.clone());
-    let mut enum_reg: Vec<String> = build_enum_reg(all_ref.clone());
-    let mut variant_reg: Vec<String> = build_variant_reg(all_ref.clone(), enum_reg.clone());
-    let mut type_reg: Vec<String> = build_type_reg(all_ref.clone());
-    let mut mut_names: Vec<String> = Vec::new();
-    let mut var_type_reg: Vec<String> = build_var_type_reg(all_ref.clone());
-    // macro: end_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
-    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-    let mut _timer_sfx: String = "ms".to_string();
-    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-    // transpiler-deor/main.deor
-    let mut using_type: String = "".to_string();
-    let mut using_var: String = "".to_string();
-    let mut tok_placeholder: Vec<Token> = Vec::new();
-    let mut tokens: TokensRef = tokens_wrap(tok_placeholder);
-/* unhandled(IDENT) */
-    let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
-    let mut ctx: RcCtx = make_rctx(ctx_raw);
-    let mut parts: Vec<String> = Vec::new();
-    let mut token_count: i32 = (all_ref.len() as i32);
-    println!("{}", ["[diag] token_count: ", n_to_str(token_count.clone()).as_str()].concat());
-    let mut pos: i32 = 0;
-    let mut last_file: String = "".to_string();
-    let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
-    // macro: start_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_start: i32 = now_ms();
-    // transpiler-deor/main.deor
-    while true {
-        // transpiler-deor/main.deor
-        if pos >= token_count {
-            // transpiler-deor/main.deor
-            break;
-        }
-        let mut token: Token = all_ref[pos as usize].clone();
-        let kind = token.kind.clone();
-        let file = token.file.clone();
-        if kind == "EOF" {
-            // transpiler-deor/main.deor
-            break;
-        }
-        if kind == "NEWLINE" {
-            // transpiler-deor/main.deor
-            pos = pos + 1;
-            continue;
-        }
-        if file != last_file {
-            // transpiler-deor/main.deor
-            let mut fc_slash: String = "// ".to_string();
-            let mut fc_nl: String = "\n".to_string();
-            let mut fc1: String = s_cat(fc_slash.clone(), file.clone());
-            let mut file_comment: String = s_cat(fc1.clone(), fc_nl.clone());
-            parts.push(file_comment.clone());
-            last_file = file;
-        }
-        if kind == "KW_STRUCT" {
-            // transpiler-deor/main.deor
-            let mut result: ParseResult = gen_struct_decl(all_ref.clone(), pos.clone());
-            let code = result.code;
-            let new_pos = result.new_pos;
-            parts.push(code.clone());
-            pos = new_pos;
-            continue;
-        }
-        if kind == "KW_SHAPE" {
-            // transpiler-deor/main.deor
-            let mut result: ParseResult = gen_shape_decl(all_ref.clone(), pos.clone());
-            let code = result.code;
-            let new_pos = result.new_pos;
-            parts.push(code.clone());
-            pos = new_pos;
-            continue;
-        }
-        if kind == "KW_ENUM" {
-            // transpiler-deor/main.deor
-            let mut result: ParseResult = gen_enum_decl(all_ref.clone(), pos.clone());
-            let code = result.code;
-            let new_pos = result.new_pos;
-            parts.push(code.clone());
-            pos = new_pos;
-            continue;
-        }
-        if kind == "KW_TYPE" {
-            // transpiler-deor/main.deor
-            let mut result: ParseResult = gen_type_decl(all_ref.clone(), pos.clone(), ctx.clone());
-            let code = result.code;
-            let new_pos = result.new_pos;
-            parts.push(code.clone());
-            pos = new_pos;
-            continue;
-        }
-        if kind == "KW_FN" {
-            // transpiler-deor/main.deor
-            let mut result: ParseResult = gen_fn_decl(all_ref.clone(), pos.clone(), ctx.clone());
-            let code = result.code;
-            let new_pos = result.new_pos;
-            parts.push(code.clone());
-            pos = new_pos;
-            continue;
-        }
-        if kind == "KW_RAW" {
-            // transpiler-deor/main.deor
-            let mut result: ParseResult = gen_raw_decl(all_ref.clone(), pos.clone());
-            let code = result.code;
-            let new_pos = result.new_pos;
-            parts.push(code.clone());
-            pos = new_pos;
-            continue;
-        }
-        if kind == "KW_RUST" {
-            // transpiler-deor/main.deor
-            let mut block_pos: i32 = pos + 2.clone();
-            let mut block_token: Token = all_ref[block_pos as usize].clone();
-            let value = block_token.value.clone();
-            let mut newline: String = "\n".to_string();
-            let mut rust_chunk: String = s_cat(value.clone(), newline.clone());
-            parts.push(rust_chunk.clone());
-            pos = block_pos + 1;
-            continue;
-        }
-        pos = pos + 1;
-    }
-    // macro: end_timer (transpiler-deor/utility_macros.deor)
-    let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
-    let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-    let mut _timer_sfx: String = "ms".to_string();
-    println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-    // transpiler-deor/main.deor
-    return s_join(parts.clone());
-}
-
 fn main() {
     // transpiler-deor/main.deor
     let mut args: Vec<String> = f_args();
