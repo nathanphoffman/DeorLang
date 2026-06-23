@@ -206,88 +206,65 @@ history remove at (depth - 1)
 
 ## `lib/tasks.deor`
 
-Typed channels over a shared thread pool. Combines `lib/taskpool.deor` (which it imports automatically) with a parameterized channel pair so values of type `T` can be sent between threads safely.
+Pool-bounded parallel map over a typed list. Imports `lib/taskpool.deor` automatically.
 
 ```
-import "lib/tasks.deor" where T = Report
+import "lib/tasks.deor" where T = Score
 ```
 
-After substitution with `T = Report`:
+After substitution with `T = Score`:
 
 | Name | Kind | Description |
 |---|---|---|
-| `ReportSender` | type alias | The sender half of a `Report` channel |
-| `ReportReceiver` | type alias | The receiver half (mutex-wrapped) |
-| `ReportChanPair` | struct | Both halves together |
-| `tReportList` | shape | `list of ReportReceiver` |
-| `reportSenderFunc` | shape | `func of ReportSender to void` |
-| `reportList` | shape | `list of Report` |
-| `reportTransformFunc` | shape | `func of Report to Report` |
-| `task_runner` | macro | Sets up the pool + channel in one step |
+| `scoreList` | shape | `list of Score` |
+| `scoreTransformFunc` | shape | `func of Score to Score` |
 
 | Function (before substitution) | Signature | Description |
 |---|---|---|
-| `t_T_chan_make` | `→ TChanPair` | Create a paired sender/receiver channel |
-| `t_T_chan_send` | `TSender, T → void` | Send a value through the channel |
-| `t_T_chan_recv` | `TReceiver → T` | Block until a value arrives |
-| `t_T_spawn` | `TaskPool, TSender, tSenderFunc → void` | Dispatch a task onto the pool |
 | `t_T_run_all` | `TaskPool, tList, tTransformFunc → tList` | Map a list of T through a worker in parallel, return all results |
 
-### `t_T_run_all` — parallel map
+Pass a list of T and a worker function `T → T`; get back a list of results. All items are dispatched to the pool concurrently; the call blocks until every result is collected. Results are returned in completion order, not input order.
 
-The simplest way to process a list in parallel. Pass a list of T and a worker function that transforms T → T; get back a list of results. All tasks run concurrently on the pool; the call blocks until every result is collected.
-
-```
-import "lib/tasks.deor" where T = Report
-
-fn Report enrich(Report rep)
-    # process rep, return updated Report
-    return rep
-
-fn void main()
-    TaskPool pool = t_pool_make()
-
-    reportList jobs = [...]
-    reportTransformFunc worker = enrich
-    reportList results = t_report_run_all(pool, jobs, worker)
-```
-
-The pool bounds concurrency automatically — dispatching 10 000 items still only runs `available_parallelism()` threads at once. Results are returned in completion order, not input order.
-
----
-
-### `task_runner` macro
-
-The `task_runner` macro sets up a `TaskPool` and a typed channel in one step. After it runs, three bindings are in scope:
-
-| Binding | Type | Description |
-|---|---|---|
-| `pool` | `TaskPool` | The shared thread pool |
-| `snd` | `TSender` | Channel sender — clone and pass to each spawned task |
-| `rcv` | `TReceiver` | Channel receiver — call `t_T_chan_recv` to collect results |
+The pool caps concurrency automatically — dispatching 10 000 items still only runs `available_parallelism()` threads at once.
 
 ### Example
 
 ```
-import "lib/tasks.deor" where T = Report
+import "lib/tasks.deor" where T = Score
 
-shape reportFunc = func of ReportSender to void
+struct Score
+    string label
+    int points
 
-fn void process(ReportSender snd)
-    Report result = (...)
-    t_report_chan_send(snd, result)
+fn Score make_score(string label, int points)
+    Score built = move (label, points)
+    return built
+
+fn Score apply_bonus(Score score)
+    (label, points) in score
+    points = points * 2
+    Score result = move (label, points)
+    return result
 
 fn void main()
-    macro_run task_runner   # injects: pool, snd, rcv
+    TaskPool pool = t_pool_make()
 
-    int job_count = 5
-    for idx in range(job_count)
-        reportFunc worker = process
-        t_report_spawn(pool, snd, worker)
+    string lbl_aaa = "accuracy"
+    int pts_aaa = 10
+    Score aaa = make_score(lbl_aaa, pts_aaa)
 
-    for idx in range(job_count)
-        Report result = t_report_chan_recv(rcv)
-        print(result)
+    scoreList jobs = empty
+    jobs at end = aaa
+
+    scoreTransformFunc worker = apply_bonus
+    scoreList results = t_score_run_all(pool, jobs, worker)
+
+    int count = len(results)
+    for idx in range(count)
+        Score res = results at idx
+        (label, points) in res
+        print(label)
+        print(points)
 ```
 
 ### Primitive types
@@ -300,15 +277,13 @@ import "lib/tasks.deor" where T = int
 import "lib/tasks.deor" where T = string
 ```
 
-Primitives are automatically mapped to their Rust equivalents inside the generated `rust` blocks (`float` → `f64`, `int` → `i32`, `string` → `String`), so the generated channel type is always valid Rust.
+Primitives map to their Rust equivalents in the generated code (`float` → `f64`, `int` → `i32`, `string` → `String`).
 
 ### Importing multiple types
 
-Each `where T = ...` import is independent. If you need channels for two types, import twice with different type names:
+Each `where T = ...` import is independent:
 
 ```
+import "lib/tasks.deor" where T = Request
 import "lib/tasks.deor" where T = Report
-import "lib/tasks.deor" where T = Error
 ```
-
-This produces separate `ReportSender`/`ReportReceiver` and `ErrorSender`/`ErrorReceiver` types with no name collisions.

@@ -1,52 +1,7 @@
 import "lib/taskpool.deor"
 
-raw TSender
-raw TReceiver
-raw TChanPair
-
-shape tReceiverList = list of TReceiver
-shape tSenderFunc = func of TSender to void
 shape tList = list of T
 shape tTransformFunc = func of T to T
-
-# Sets up a thread pool and a typed channel in one shot.
-# After substitution injects: pool (TaskPool), snd (TSender), rcv (TReceiver)
-macro task_runner
-	raw pool = t_pool_make()
-	raw chan = t_T_chan_make()
-	rust
-		let snd = chan.snd.clone();
-		let rcv = chan.rcv;
-
-rust
-	struct TChanPair {
-		snd: Sender<T>,
-		rcv: Arc<Mutex<Receiver<T>>>,
-	}
-	type TSender = Sender<T>;
-	type TReceiver = Arc<Mutex<Receiver<T>>>;
-
-# Creates a paired typed channel.
-fn TChanPair t_T_chan_make()
-	rust
-		let (tx, rx) = mpsc::channel::<T>();
-		TChanPair { snd: tx, rcv: Arc::new(Mutex::new(rx)) }
-
-# Sends a typed value through a channel sender.
-fn void t_T_chan_send(TSender snd, T val)
-	rust
-		snd.send(val).unwrap();
-
-# Blocks until a typed value arrives and returns it.
-fn T t_T_chan_recv(TReceiver rcv)
-	rust
-		rcv.lock().unwrap().recv().unwrap()
-
-# Spawns a task onto the pool. The function receives the sender and pushes
-# its result back so the caller can collect it via t_T_chan_recv.
-fn void t_T_spawn(TaskPool pool, TSender snd, tSenderFunc func)
-	rust
-		pool.sender.send(Box::new(move || func(snd))).unwrap();
 
 # Maps a list of T through a worker function in parallel using the pool.
 # Each item is dispatched as a separate task; all results are collected and returned.
