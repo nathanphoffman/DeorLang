@@ -2,9 +2,14 @@
 # Reads an entire file to a string. Used by the importer to load .deor source files
 # for tokenization. Panics with a clear message on failure so the user knows which path
 # could not be opened rather than getting a cryptic Rust unwrap backtrace.
+fn bool f_exists(string path)
+	rust
+		std::path::Path::new(path.as_str()).exists()
+
 fn string f_read(string path)
 	rust
-		std::fs::read_to_string(path.as_str()).expect("cannot read input file")
+		std::fs::read_to_string(path.as_str())
+			.unwrap_or_else(|e| panic!("cannot read file '{}': {}", path, e))
 
 # Writes `content` to the file at `path`, creating or overwriting it. Used by main to
 # emit the generated Rust source to the output path supplied on the command line.

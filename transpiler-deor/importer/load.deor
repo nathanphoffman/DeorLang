@@ -98,6 +98,13 @@ fn tokenList load_file(string path)
 					dedup_key = s_join([imp_path, "|T=", imp_t_concrete])
 				bool is_new = file_is_new_keyed(dedup_key)
 				if is_new
+					bool exists = f_exists(imp_path)
+					if not exists
+						string err_pre = "[error] cannot find import: "
+						string err_msg = s_cat(err_pre, imp_path)
+						print(err_msg)
+						rust
+							std::process::exit(1);
 					tokenList imp_tokens = load_file(imp_path)
 					if not is_empty(imp_t_concrete)
 						imp_tokens = apply_t_substitution(imp_tokens, imp_t_concrete)

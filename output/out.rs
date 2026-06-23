@@ -162,9 +162,15 @@ fn n_to_str(number: i32) -> String {
 }
 
 // transpiler-deor/lib/file.deor
+fn f_exists(path: String) -> bool {
+    // transpiler-deor/lib/file.deor
+    std::path::Path::new(path.as_str()).exists()
+}
+
 fn f_read(path: String) -> String {
     // transpiler-deor/lib/file.deor
-    std::fs::read_to_string(path.as_str()).expect("cannot read input file")
+    std::fs::read_to_string(path.as_str())
+    	.unwrap_or_else(|e| panic!("cannot read file '{}': {}", path, e))
 }
 
 fn f_write(path: String, content: String) {
@@ -1397,6 +1403,14 @@ fn load_file(path: String) -> Vec<Token> {
                 let mut is_new: bool = file_is_new_keyed(dedup_key.clone());
                 if is_new {
                     // transpiler-deor/importer/load.deor
+                    let mut exists: bool = f_exists(imp_path.clone());
+                    if !exists {
+                        // transpiler-deor/importer/load.deor
+                        let mut err_pre: String = "[error] cannot find import: ".to_string();
+                        let mut err_msg: String = s_cat(err_pre.clone(), imp_path.clone());
+                        println!("{}", err_msg.clone());
+                        std::process::exit(1);
+                    }
                     let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
                     if !is_empty(imp_t_concrete.clone()) {
                         // transpiler-deor/importer/load.deor
