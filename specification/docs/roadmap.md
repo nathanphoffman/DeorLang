@@ -1,5 +1,49 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
+# Validation Audit
+ ---
+  >> 1. Duplicate top-level names
+  Two struct Foo or two fn void foo() declarations. Rust's error ("already defined") is cryptic and points to generated code, not your source.
+
+  >> 2. Struct field naming convention
+  Fields inside a struct body are never checked — they should be snake_case and min 3 chars just like variables, but currently nothing enforces it.
+
+  3. Enum variant naming convention
+  Variant names inside an enum body are also unchecked. They should be PascalCase like the enum name itself.
+
+  4. void used as a variable type
+  void result = foo() compiles to () result = ... in Rust which produces a confusing type error. Should be caught: IDENT (void) IDENT EQUALS.
+
+  5. break / continue outside a for loop
+  Using these at depth 0 or inside an if that isn't nested in a for. Rust catches it, but at the generated-code line, not the Deor source line.
+
+  6. return in a void function with a value
+  fn void foo() → return someVar. Rust rejects it with a type mismatch but the Deor message would be much clearer.
+
+  7. move on a non-identifier
+  move 5 or move "hello" is meaningless — move should only ever precede an IDENT. Currently silently generates bad Rust.
+
+  8. Function parameter type same as parameter name
+  fn void foo(string string) — the type and name are identical. Deor destructures these as pairs so this silently produces string: String in Rust but the variable shadows its own type.
+
+  9. for variable name colliding with outer scope variable
+  int idx = 0 declared before a for idx in range(n) loop — the loop re-declares idx which shadows the outer one. Often unintentional.
+
+  10. Calling print with a non-string
+  print(some_int) — print maps to Rust's println!("{}", ...) which requires Display, but the generated code often coerces wrongly. Could check that the arg to print is a string type or a
+  string-producing call.
+
+# New Findings
+As should always be implicit ownership, right now the 2nd line below is allowed, it should not be, which makes me wonder how much of this is correct today
+
+a as b <------- allowed, ownership
+int a as b <---  not allowed, transpiler validator error
+a as move b <--- not allowed, transpiler validator should direct them to drop the move as "as" is already an implicit move
+int a = b   <---  allowed, not ownership, a rust clone
+int a = move b <--  allowed, ownership
+
+
+
 # New Questions
 
 - Should we switch mappings to enums?

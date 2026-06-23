@@ -35,18 +35,81 @@ fn void validate_tokens(TokensRef tokens)
 	string rule_list_validator = "list shapes cannot be validator base types — validators only wrap primitives"
 	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_USING", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
 
-	# pre-scan: collect all shape names for use in type validator check
+	# pre-scan: collect shape names + all decl names + validate struct fields
 	strList shape_names = empty
+	strList decl_names = empty
+	string rule_dup = "duplicate declaration — this name is already used by another struct, enum, shape, fn, or type"
+	string lbl_decl = "declaration"
+	string lbl_field = "struct field"
 	int pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
 		(kind) in pre_tok
+
+		# collect shape names for the list_validator check
 		if kind is "KW_SHAPE"
 			int sn_pos = pre_i + 1
 			if sn_pos < token_count
 				Token sn_tok = tokens at sn_pos
 				(value) in sn_tok
 				shape_names at end = value
+
+		# duplicate declaration check: struct / enum / shape / type → name at +1
+		bool is_kw_struct = kind is "KW_STRUCT"
+		bool is_kw_enum = kind is "KW_ENUM"
+		bool is_kw_shape = kind is "KW_SHAPE"
+		bool is_kw_type = kind is "KW_TYPE"
+		bool is_named_decl = is_kw_struct or is_kw_enum or is_kw_shape or is_kw_type
+		if is_named_decl
+			int dn_pos = pre_i + 1
+			if dn_pos < token_count
+				Token dn_tok = tokens at dn_pos
+				(kind, value) in dn_tok
+				if kind is "IDENT"
+					if list_has(decl_names, value)
+						errors at end = val_err(dn_tok, lbl_decl, rule_dup)
+					else
+						decl_names at end = value
+
+		# duplicate declaration check: fn → name at +2 (past return type)
+		if kind is "KW_FN"
+			int fn_name_pos = pre_i + 2
+			if fn_name_pos < token_count
+				Token fn_name_tok = tokens at fn_name_pos
+				(kind, value) in fn_name_tok
+				if kind is "IDENT"
+					if list_has(decl_names, value)
+						errors at end = val_err(fn_name_tok, lbl_decl, rule_dup)
+					else
+						decl_names at end = value
+
+		# struct field naming: snake_case + min 3 chars
+		if kind is "KW_STRUCT"
+			int sf_pos = pre_i + 1
+			for if sf_pos < token_count
+				Token sf_tok = tokens at sf_pos
+				(kind) in sf_tok
+				if kind is "INDENT"
+					break
+				sf_pos = sf_pos + 1
+			sf_pos = sf_pos + 1
+			for if sf_pos < token_count
+				Token sf_tok = tokens at sf_pos
+				(kind) in sf_tok
+				if kind is "DEDENT"
+					break
+				if kind is "IDENT"
+					int field_name_pos = sf_pos + 1
+					if field_name_pos < token_count
+						Token field_name_tok = tokens at field_name_pos
+						(kind, value) in field_name_tok
+						if kind is "IDENT"
+							if len(value) < 3
+								errors at end = val_err(field_name_tok, lbl_field, rule_min3)
+							if not is_snake(value)
+								errors at end = val_err(field_name_tok, lbl_field, rule_snake)
+				sf_pos = sf_pos + 1
+
 		pre_i = pre_i + 1
 
 	for if pos < token_count
