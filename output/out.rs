@@ -1985,6 +1985,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut lbl_decl: String = "declaration".to_string();
     let mut lbl_field: String = "struct field".to_string();
     let mut lbl_variant: String = "enum variant".to_string();
+    // macro: define_errors (transpiler-deor/tokens_validator/macros/define_errors.deor)
     let mut rule_min3: String = "name must be at least 3 characters".to_string();
     let mut rule_no_option: String = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types".to_string();
     let mut rule_pascal: String = "name must be PascalCase (start with uppercase letter)".to_string();
@@ -2010,6 +2011,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
     let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
+    // transpiler-deor/tokens_validator/tokens_validation.deor
     let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_USING".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
     let mut shape_names: Vec<String> = Vec::new();
     let mut decl_names: Vec<String> = Vec::new();

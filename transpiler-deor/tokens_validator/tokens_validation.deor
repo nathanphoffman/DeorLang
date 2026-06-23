@@ -1,8 +1,3 @@
-# Libs
-
-# Helper functions
-
-# Macro Imports
 
 shape fnTestRule = func of string to bool
 
@@ -29,38 +24,7 @@ fn void validate_tokens(TokensRef tokens)
 	string lbl_field = "struct field"
 	string lbl_variant = "enum variant"
 
-	# naming rules
-	string rule_min3 = "name must be at least 3 characters"
-	string rule_no_option = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types"
-	string rule_pascal = "name must be PascalCase (start with uppercase letter)"
-	string rule_camel = "name must be camelCase (start lowercase, no underscores)"
-	string rule_snake = "name must be lower_snake_case (no uppercase letters)"
-	string rule_named_arg = "each arg must be a named variable when passing 2 or more args"
-
-	# declaration rules
-	string rule_dup = "duplicate declaration — this name is already used by another struct, enum, shape, fn, or type"
-	string rule_enum_pascal = "enum variant must be PascalCase"
-	string rule_enum_data = "enum variants cannot carry data — use a struct alongside the enum instead"
-	string rule_list_validator = "list shapes cannot be validator base types — validators only wrap primitives"
-
-	# function rules
-	string rule_max_params = "functions may have at most 3 parameters"
-	string rule_param_shadow = "parameter name cannot be the same as its type — choose a descriptive name"
-	string rule_no_ret = "missing return type — use 'fn void name()' for functions that return nothing"
-	string rule_void_return = "void functions must not use return — remove the return statement and let the function fall through"
-	string rule_void_var = "'void' is not a valid variable type — only functions can return void"
-	string rule_crash = "crash takes exactly 1 string argument"
-
-	# statement rules
-	string rule_bad_stmt = "literal cannot follow 'name ident' — capture in a named variable first"
-	string rule_typed_as = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move"
-	string rule_as_move = "`as` already transfers ownership — use `a as b` instead of `a as move b`"
-	string rule_bracket_index = "bracket indexing is not valid in Deor — use 'name at index' instead"
-	string rule_empty_bracket = "use 'empty' to initialize an empty list — [] is only valid with items inside"
-	string rule_move = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid"
-	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
-	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"
-	string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"
+	macro_run define_errors
 
 	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_USING", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
 
