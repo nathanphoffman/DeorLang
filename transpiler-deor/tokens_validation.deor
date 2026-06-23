@@ -224,6 +224,19 @@ fn void validate_tokens(TokensRef tokens)
 				if kind is "LBRACKET"
 					errors at end = val_err(tok, lbl_var, bracket_rule)
 
+		if cur_kind is "KW_VALID"
+			bool valid_ok = false
+			if pos > 0
+				int vp = pos - 1
+				Token prev_valid_tok = tokens at vp
+				(kind) in prev_valid_tok
+				valid_ok = kind is "KW_IS"
+				if not valid_ok
+					valid_ok = kind is "KW_NOT"
+			if not valid_ok
+				string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"
+				errors at end = val_err(tok, lbl_var, rule_valid)
+
 		pos = pos + 1
 
 	handle_errors(errors)

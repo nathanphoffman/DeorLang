@@ -139,4 +139,4 @@ These are not standalone words but reserved prefix forms in import paths.
 |---|---|
 | `rust:` | Raw `.rs` file import |
 
-**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a built-in function and should not be shadowed. `end` is a reserved sentinel — only valid as `list at end = val`.
+**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a for-loop-only construct — it is not a callable function and cannot be used outside a `for` header (e.g. assigned to a variable or passed as an argument). `end` is a reserved sentinel — only valid as `list at end = val`.

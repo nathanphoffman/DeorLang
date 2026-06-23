@@ -64,7 +64,13 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 					left_code = s_cat(move left_code, ie_sfx)
 					cur_pos = after_op + 1
 					continue
-		# "is not empty" → !left.is_empty()
+				# "is valid" → left.is_some()
+				if kind is "KW_VALID"
+					string iv_sfx = ".is_some()"
+					left_code = s_cat(move left_code, iv_sfx)
+					cur_pos = after_op + 1
+					continue
+		# "is not empty" / "is not valid" → !left.is_empty() / !(left.is_some())
 		if operator_str is "is not"
 			if after_op < token_count
 				Token maybe_empty = tokens at after_op
@@ -74,6 +80,13 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 					string ine_sfx = ".is_empty()"
 					left_code = s_cat(ine_pfx, move left_code)
 					left_code = s_cat(move left_code, ine_sfx)
+					cur_pos = after_op + 1
+					continue
+				if kind is "KW_VALID"
+					string inv_pfx = "!("
+					string inv_sfx = ".is_some())"
+					left_code = s_cat(inv_pfx, move left_code)
+					left_code = s_cat(move left_code, inv_sfx)
 					cur_pos = after_op + 1
 					continue
 		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)

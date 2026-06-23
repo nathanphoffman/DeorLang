@@ -104,6 +104,19 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 				(kind) in eq_token
 				if kind is "EQUALS"
 					return gen_typed_binding(pos, depth, ctx)
+			# bare declaration: Type name  (no = → None for validator types)
+			(value) in next_token
+			string bare_var_name = value
+			string bare_rust_type = resolve_type(ident_name, shape_reg, enum_reg)
+			bool bare_is_validator = reg3_has(type_reg, ident_name)
+			if bare_is_validator
+				string bd_let = "let mut "
+				string bd_opt = ": Option<"
+				string bd_sfx = "> = None;\n"
+				string bd_code = s_join([pad, bd_let, bare_var_name, bd_opt, bare_rust_type, bd_sfx])
+				int bd_after = next_pos + 1
+				int bd_next = adv_nl_ref(bd_after, tokens)
+				return make_result(move bd_code, bd_next)
 
 	string unh_pfx = "/* unhandled("
 	string unh_sfx = ") */\n"

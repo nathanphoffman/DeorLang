@@ -1,7 +1,7 @@
 
 # Handles all constant-value token types that map directly to a Rust literal or keyword.
 # INT and FLOAT pass their text through unchanged. STRING gets s_debug() to add quotes
-# and escape characters. TRUE/FALSE/BAD map to their Rust equivalents.
+# and escape characters. TRUE/FALSE map to their Rust equivalents.
 macro primary_literals
 	if kind is "INT"
 		string lit_val = value
@@ -26,7 +26,3 @@ macro primary_literals
 		string lit_false = "false"
 		int lit_next = pos + 1
 		return make_result(move lit_false, lit_next)
-	if kind is "KW_BAD"
-		string lit_none = "None"
-		int lit_next = pos + 1
-		return make_result(move lit_none, lit_next)

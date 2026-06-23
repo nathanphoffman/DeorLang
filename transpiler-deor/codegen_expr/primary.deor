@@ -12,7 +12,7 @@ fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 
 # Dispatches to one of five sub-cases based on the current token kind. Each macro
 # returns immediately if it recognises the token, otherwise falls through to the next.
-#   primary/literals.deor     — INT FLOAT STRING TRUE FALSE BAD
+#   primary/literals.deor     — INT FLOAT STRING TRUE FALSE
 #   primary/list_literal.deor — [items]
 #   primary/paren_expr.deor   — (avow x) unwrap and (f1, f2) struct construction
 #   primary/prefix_ops.deor   — move and not

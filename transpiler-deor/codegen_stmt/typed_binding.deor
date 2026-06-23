@@ -5,7 +5,6 @@
 #   (avow x)    — forced unwrap: .unwrap() for custom types, .unwrap().0 for primitives
 #   (f1, f2)    — positional struct construction: StructType { f1: v1, f2: v2, ... }
 #   [items]     — list literal: let mut varName: RustType = vec![...]
-#   bad         — Option<T> None (validator types only)
 #   validator   — ValidatorType::new(expr) wrapped in Option<ValidatorType>
 #   default     — let [mut] varName: RustType = val[.clone()/.to_string()]
 fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
@@ -33,7 +32,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		int val_next_pos = val_pos + 1
 		int after_empty = adv_nl_ref(val_next_pos, tokens)
 		if is_validator
-			string err_msg = "/* error: use 'bad' not 'empty' for validator types */\n"
+			string err_msg = "/* error: empty is not valid for validator types — declare without a value instead */\n"
 			string err_code = s_join([pad, err_msg])
 			return make_result(move err_code, after_empty)
 		if is_shape
@@ -126,21 +125,6 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		string lst_code = s_join([pad, lst_pfx, var_name, lst_col, rust_type, lst_eq, val_code, lst_sc])
 		int lst_next = adv_nl_ref(val_end, tokens)
 		return make_result(move lst_code, lst_next)
-
-	# bad → Option<T> None (validator types only)
-	if kind is "KW_BAD"
-		bool bad_is_validator = reg3_has(type_reg, var_type)
-		int bad_pos_next = val_pos + 1
-		int bad_next = adv_nl_ref(bad_pos_next, tokens)
-		if bad_is_validator
-			string non_pfx = "let mut "
-			string non_mid = ": Option<"
-			string non_sfx = "> = None;\n"
-			string none_code = s_join([pad, non_pfx, var_name, non_mid, rust_type, non_sfx])
-			return make_result(move none_code, bad_next)
-		string bad_err = "/* error: bad is only valid for validator types */\n"
-		string bad_err_code = s_join([pad, bad_err])
-		return make_result(move bad_err_code, bad_next)
 
 	# validator type → ValidatorType::new(val) wrapped in Option<>
 	bool is_validator = reg3_has(type_reg, var_type)

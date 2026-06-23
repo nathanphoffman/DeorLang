@@ -165,9 +165,9 @@ fn void main()
 	#int actual_sqft = (avow sqft)
 
 	#SquareFeet sqft = 0
-	SquareFeet sqft = bad
-	if sqft is not bad
-		print("sqft is bad")
+	SquareFeet sqft
+	if sqft is not valid
+		print("sqft is not valid")
 
 
 	Test old_test = (hello,world)
