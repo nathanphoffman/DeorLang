@@ -1,26 +1,92 @@
 # Imports
 
-Imports use the `import` keyword followed by a path
+Imports use the `import` keyword followed by a path:
 
 ```
 import "models/customer.deor"
 ```
 
-All imports are pulled in everywhere, there is no way to scope down specific imported items, or privatize them. So naming functions, enums, structs, etc. well is important to preventing collisions.
+Imports must appear at the top of each file, before any declarations. Placing an import after a function, struct, or any other declaration is a hard error.
 
-If you import the same file twice, it just ignores the later imports and imports it once.
+All imports are global — there is no way to scope or privatize specific items. Everything declared at the root level is available everywhere. This encourages good naming practices and descriptive, unambiguous identifiers.
 
-There is no way to make any exposed root level declaration private like structs, functions, etc. so use good naming practices and descriptive naming.  This also enforces good naming conventions and smaller project sizes which is ideal Deor logic.
+If the same file is imported more than once (directly or transitively), the later imports are silently ignored — each file is loaded exactly once, the first time it is encountered.
 
-Although you can put the imports whereever you want (as long as they are at the top of the file), since they are all global anyway, it is easier to create an imports.deor, and just import that one file from main.
+There is no way to make a root-level declaration private. Use descriptive naming to avoid collisions and keep the global namespace clean. This also encourages smaller, focused files — ideal Deor style.
 
-main.deor
+## Import Ordering
+
+The importer resolves imports **depth-first**: when it encounters an import statement it fully loads that file and all of its transitive dependencies before continuing. This means a file's dependencies always appear before that file's own declarations in the merged output.
+
+The order you write imports only directly controls the relative ordering of files that have no dependency relationship with each other (siblings). Transitive dependencies are always resolved first regardless of where you list them.
+
+The ordering of declarations in the generated Rust output does not affect correctness — Rust does not require forward declarations within a module, and the type registry is built from the full merged token stream before code generation begins. Ordering only matters for **collision resolution**: when two files define a declaration with the same name, the first one encountered in the merged stream wins.
+
+## Two Valid Approaches
+
+There are two ways to manage imports in a Deor project. Both are valid.
+
+### Option A: Centralized imports file (recommended)
+
+Create a single `imports.deor` that lists every file in the project, then import only that file from `main.deor`.
+
+`main.deor`
 ```
 import "imports.deor"
+
+fn void main()
+    ...
 ```
 
-imports.deor
+`imports.deor`
+```
+import "lib/types.deor"
+import "models/customer.deor"
+import "utility.deor"
+import "services/billing.deor"
+```
+
+Because the importer is depth-first, you do not need to worry about manually ordering transitive dependencies — a file's imports are always resolved before its declarations reach the merged stream. You only need to think about ordering between sibling files that do not depend on each other and happen to define names that could collide.
+
+| Upsides | Downsides |
+|---|---|
+| One place to see every file in the project | Every new file must be added here manually |
+| Explicit control over sibling ordering | Individual files do not document their own dependencies |
+| Clean `main.deor` with no import noise | Slightly more coordination overhead as the project grows |
+| Easy to audit the full file graph at a glance | |
+
+### Option B: Per-file imports
+
+Each file imports only what it directly needs. The importer's depth-first traversal handles ordering automatically — by the time a file's declarations land in the merged stream, all of its imported dependencies are already there.
+
+`main.deor`
+```
+import "services/billing.deor"
+
+fn void main()
+    ...
+```
+
+`services/billing.deor`
 ```
 import "models/customer.deor"
 import "utility.deor"
+
+fn void process_billing(Customer c)
+    ...
 ```
+
+`models/customer.deor`
+```
+import "lib/types.deor"
+
+struct Customer
+    ...
+```
+
+| Upsides | Downsides |
+|---|---|
+| Each file is self-documenting about its dependencies | The same file may be "imported" in many places (harmless but noisy) |
+| Adding a new file only requires importing it where needed | Sibling ordering (for collision resolution) is implicit — determined by traversal order |
+| Ordering is handled automatically by the traversal | Harder to get a full picture of the project's file graph |
+| Scales naturally as the project grows | |

@@ -760,39 +760,39 @@ fn cur_peek_ref(c: TokenCursor, tokens: TokensRef, offset: i32) -> Token {
     return tokens[peek_pos as usize].clone();
 }
 
-// transpiler-deor/lexer/indent.deor
+// transpiler-deor/importer/lexer/indent.deor
 fn count_tabs(line: String) -> i32 {
-    // transpiler-deor/lexer/indent.deor
+    // transpiler-deor/importer/lexer/indent.deor
     let mut space: String = " ".to_string();
     let mut chars: Vec<String> = c_chars(line.clone());
     let mut char_count: i32 = (chars.len() as i32);
     let mut count: i32 = 0;
     let mut space_run = 0;
     for index in 0..char_count {
-        // transpiler-deor/lexer/indent.deor
+        // transpiler-deor/importer/lexer/indent.deor
         let mut character: String = chars[index as usize].clone();
         if character == "\t" {
-            // transpiler-deor/lexer/indent.deor
+            // transpiler-deor/importer/lexer/indent.deor
             count = count + 1;
         } else if character == space {
-            // transpiler-deor/lexer/indent.deor
+            // transpiler-deor/importer/lexer/indent.deor
             space_run = space_run + 1;
             if space_run == 4 {
-                // transpiler-deor/lexer/indent.deor
+                // transpiler-deor/importer/lexer/indent.deor
                 count = count + 1;
                 space_run = 0;
             }
         } else {
-            // transpiler-deor/lexer/indent.deor
+            // transpiler-deor/importer/lexer/indent.deor
             break;
         }
     }
     return count;
 }
 
-// transpiler-deor/lexer/string_literal.deor
+// transpiler-deor/importer/lexer/string_literal.deor
 fn scan_string_literal(chars: Vec<String>, char_index: i32, char_count: i32) -> ParseResult {
-    // transpiler-deor/lexer/string_literal.deor
+    // transpiler-deor/importer/lexer/string_literal.deor
     let mut val: String = "".to_string();
     let mut escape_next: bool = false;
     let mut str_start: i32 = char_index + 1.clone();
@@ -802,39 +802,39 @@ fn scan_string_literal(chars: Vec<String>, char_index: i32, char_count: i32) -> 
     let mut ch_bs: String = "\\".to_string();
     let mut ch_qt: String = "\"".to_string();
     for string_index in str_start..char_count {
-        // transpiler-deor/lexer/string_literal.deor
+        // transpiler-deor/importer/lexer/string_literal.deor
         let mut string_char: String = chars[string_index as usize].clone();
         if escape_next {
-            // transpiler-deor/lexer/string_literal.deor
+            // transpiler-deor/importer/lexer/string_literal.deor
             if string_char == "n" {
-                // transpiler-deor/lexer/string_literal.deor
+                // transpiler-deor/importer/lexer/string_literal.deor
                 val = s_cat(val.clone(), ch_nl.clone());
             } else if string_char == "t" {
-                // transpiler-deor/lexer/string_literal.deor
+                // transpiler-deor/importer/lexer/string_literal.deor
                 val = s_cat(val.clone(), ch_tab.clone());
             } else if string_char == "\\" {
-                // transpiler-deor/lexer/string_literal.deor
+                // transpiler-deor/importer/lexer/string_literal.deor
                 val = s_cat(val.clone(), ch_bs.clone());
             } else if string_char == "\"" {
-                // transpiler-deor/lexer/string_literal.deor
+                // transpiler-deor/importer/lexer/string_literal.deor
                 val = s_cat(val.clone(), ch_qt.clone());
             } else {
-                // transpiler-deor/lexer/string_literal.deor
+                // transpiler-deor/importer/lexer/string_literal.deor
                 val = s_cat(val.clone(), ch_bs.clone());
                 val = s_cat(val.clone(), string_char.clone());
             }
             escape_next = false;
             new_pos = string_index + 1;
         } else if string_char == ch_bs {
-            // transpiler-deor/lexer/string_literal.deor
+            // transpiler-deor/importer/lexer/string_literal.deor
             escape_next = true;
             new_pos = string_index + 1;
         } else if string_char == ch_qt {
-            // transpiler-deor/lexer/string_literal.deor
+            // transpiler-deor/importer/lexer/string_literal.deor
             new_pos = string_index + 1;
             break;
         } else {
-            // transpiler-deor/lexer/string_literal.deor
+            // transpiler-deor/importer/lexer/string_literal.deor
             val = s_cat(val.clone(), string_char.clone());
             new_pos = string_index + 1;
         }
@@ -842,64 +842,64 @@ fn scan_string_literal(chars: Vec<String>, char_index: i32, char_count: i32) -> 
     return make_result(val.clone(), new_pos.clone());
 }
 
-// transpiler-deor/lexer/number_literal.deor
+// transpiler-deor/importer/lexer/number_literal.deor
 fn scan_number(chars: Vec<String>, char_index: i32, char_count: i32) -> ParseResult {
-    // transpiler-deor/lexer/number_literal.deor
+    // transpiler-deor/importer/lexer/number_literal.deor
     let mut first_char: String = chars[char_index as usize].clone();
     let mut empty_str: String = "".to_string();
     let mut num: String = s_cat(empty_str.clone(), first_char.clone());
     let mut num_start: i32 = char_index + 1.clone();
     let mut new_pos: i32 = char_index + 1.clone();
     for number_index in num_start..char_count {
-        // transpiler-deor/lexer/number_literal.deor
+        // transpiler-deor/importer/lexer/number_literal.deor
         let mut number_char: String = chars[number_index as usize].clone();
         if c_digit(number_char.clone()) {
-            // transpiler-deor/lexer/number_literal.deor
+            // transpiler-deor/importer/lexer/number_literal.deor
             num = s_cat(num.clone(), number_char.clone());
             new_pos = number_index + 1;
         } else if number_char == "_" {
-            // transpiler-deor/lexer/number_literal.deor
+            // transpiler-deor/importer/lexer/number_literal.deor
             let mut peek_idx: i32 = number_index + 1.clone();
             if peek_idx < char_count {
-                // transpiler-deor/lexer/number_literal.deor
+                // transpiler-deor/importer/lexer/number_literal.deor
                 let mut peek_char: String = chars[peek_idx as usize].clone();
                 if c_digit(peek_char.clone()) {
-                    // transpiler-deor/lexer/number_literal.deor
+                    // transpiler-deor/importer/lexer/number_literal.deor
                     new_pos = number_index + 1;
                 } else {
-                    // transpiler-deor/lexer/number_literal.deor
+                    // transpiler-deor/importer/lexer/number_literal.deor
                     break;
                 }
             } else {
-                // transpiler-deor/lexer/number_literal.deor
+                // transpiler-deor/importer/lexer/number_literal.deor
                 break;
             }
         } else {
-            // transpiler-deor/lexer/number_literal.deor
+            // transpiler-deor/importer/lexer/number_literal.deor
             break;
         }
     }
     if new_pos < char_count {
-        // transpiler-deor/lexer/number_literal.deor
+        // transpiler-deor/importer/lexer/number_literal.deor
         let mut dot_char: String = chars[new_pos as usize].clone();
         let mut frac_start: i32 = new_pos + 1.clone();
         if dot_char == "." && frac_start < char_count {
-            // transpiler-deor/lexer/number_literal.deor
+            // transpiler-deor/importer/lexer/number_literal.deor
             let mut frac_first: String = chars[frac_start as usize].clone();
             if c_digit(frac_first.clone()) {
-                // transpiler-deor/lexer/number_literal.deor
+                // transpiler-deor/importer/lexer/number_literal.deor
                 let mut dot_str: String = ".".to_string();
                 num = s_cat(num.clone(), dot_str.clone());
                 new_pos = frac_start;
                 for frac_index in frac_start..char_count {
-                    // transpiler-deor/lexer/number_literal.deor
+                    // transpiler-deor/importer/lexer/number_literal.deor
                     let mut frac_char: String = chars[frac_index as usize].clone();
                     if c_digit(frac_char.clone()) {
-                        // transpiler-deor/lexer/number_literal.deor
+                        // transpiler-deor/importer/lexer/number_literal.deor
                         num = s_cat(num.clone(), frac_char.clone());
                         new_pos = frac_index + 1;
                     } else {
-                        // transpiler-deor/lexer/number_literal.deor
+                        // transpiler-deor/importer/lexer/number_literal.deor
                         break;
                     }
                 }
@@ -909,32 +909,32 @@ fn scan_number(chars: Vec<String>, char_index: i32, char_count: i32) -> ParseRes
     return make_result(num.clone(), new_pos.clone());
 }
 
-// transpiler-deor/lexer/word_token.deor
+// transpiler-deor/importer/lexer/word_token.deor
 fn scan_word(chars: Vec<String>, char_index: i32, char_count: i32) -> ParseResult {
-    // transpiler-deor/lexer/word_token.deor
+    // transpiler-deor/importer/lexer/word_token.deor
     let mut first_char: String = chars[char_index as usize].clone();
     let mut empty_str: String = "".to_string();
     let mut word: String = s_cat(empty_str.clone(), first_char.clone());
     let mut word_start: i32 = char_index + 1.clone();
     let mut new_pos: i32 = char_index + 1.clone();
     for word_index in word_start..char_count {
-        // transpiler-deor/lexer/word_token.deor
+        // transpiler-deor/importer/lexer/word_token.deor
         let mut word_char: String = chars[word_index as usize].clone();
         if c_alnum(word_char.clone()) {
-            // transpiler-deor/lexer/word_token.deor
+            // transpiler-deor/importer/lexer/word_token.deor
             word = s_cat(word.clone(), word_char.clone());
             new_pos = word_index + 1;
         } else {
-            // transpiler-deor/lexer/word_token.deor
+            // transpiler-deor/importer/lexer/word_token.deor
             break;
         }
     }
     return make_result(word.clone(), new_pos.clone());
 }
 
-// transpiler-deor/lexer/tokenizer.deor
+// transpiler-deor/importer/lexer/tokenizer.deor
 fn tokenize(source: String, path: String) -> Vec<Token> {
-    // transpiler-deor/lexer/tokenizer.deor
+    // transpiler-deor/importer/lexer/tokenizer.deor
     let mut tokens: Vec<Token> = Vec::new();
     let mut empty_str: String = "".to_string();
     let mut kind_newline: String = "NEWLINE".to_string();
@@ -949,11 +949,11 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     let mut cur_line: i32 = 0;
     let mut skip: i32 = 0;
     for raw_li in 0..n_lines {
-        // transpiler-deor/lexer/tokenizer.deor
+        // transpiler-deor/importer/lexer/tokenizer.deor
         cur_line = cur_line + 1;
         let mut meta: TokenMeta = make_meta(cur_line.clone(), path.clone());
         if skip > 0 {
-            // transpiler-deor/lexer/tokenizer.deor
+            // transpiler-deor/importer/lexer/tokenizer.deor
             skip = skip - 1;
             continue;
         }
@@ -961,11 +961,11 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
         let mut line: String = s_rtrim(raw_line.clone());
         let mut content: String = s_trim(line.clone());
         if is_empty(content.clone()) {
-            // transpiler-deor/lexer/tokenizer.deor
+            // transpiler-deor/importer/lexer/tokenizer.deor
             continue;
         }
         let mut indent: i32 = count_tabs(line.clone());
-        // macro: emit_indent_or_dedent (transpiler-deor/lexer/indent.deor)
+        // macro: emit_indent_or_dedent (transpiler-deor/importer/lexer/indent.deor)
         let mut iod_kind_indent: String = "INDENT".to_string();
         let mut iod_kind_dedent: String = "DEDENT".to_string();
         let mut iod_empty: String = "".to_string();
@@ -973,31 +973,31 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
         let mut top_idx: i32 = slen - 1.clone();
         let mut top: i32 = n_parse(indent_stack[top_idx as usize].clone());
         if indent > top {
-            // transpiler-deor/lexer/indent.deor
+            // transpiler-deor/importer/lexer/indent.deor
             tokens.push(make_token(iod_kind_indent.clone(), iod_empty.clone(), meta.clone()).clone());
             let mut indent_str: String = n_to_str(indent.clone());
             indent_stack.push(indent_str.clone());
         } else {
-            // transpiler-deor/lexer/indent.deor
+            // transpiler-deor/importer/lexer/indent.deor
             let mut dedenting: bool = indent < top.clone();
             while dedenting {
-                // transpiler-deor/lexer/indent.deor
+                // transpiler-deor/importer/lexer/indent.deor
                 let mut new_slen: i32 = (indent_stack.len() as i32);
                 let mut new_top_idx: i32 = new_slen - 1.clone();
                 let mut cur_top: i32 = n_parse(indent_stack[new_top_idx as usize].clone());
                 if indent < cur_top {
-                    // transpiler-deor/lexer/indent.deor
+                    // transpiler-deor/importer/lexer/indent.deor
                     tokens.push(make_token(iod_kind_dedent.clone(), iod_empty.clone(), meta.clone()).clone());
                     indent_stack.remove(new_top_idx as usize);
                 } else {
-                    // transpiler-deor/lexer/indent.deor
+                    // transpiler-deor/importer/lexer/indent.deor
                     dedenting = false;
                 }
             }
         }
-        // transpiler-deor/lexer/tokenizer.deor
+        // transpiler-deor/importer/lexer/tokenizer.deor
         if content == "rust" {
-            // macro: collect_rust_block (transpiler-deor/lexer/rust_block.deor)
+            // macro: collect_rust_block (transpiler-deor/importer/lexer/rust_block.deor)
             let mut rb_kind_kw_rust: String = "KW_RUST".to_string();
             let mut rb_kw_rust_val: String = "rust".to_string();
             let mut rb_kind_newline: String = "NEWLINE".to_string();
@@ -1009,66 +1009,66 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
             let mut rust_lines: Vec<String> = Vec::new();
             let mut rli_start: i32 = raw_li + 1.clone();
             for rli in rli_start..n_lines {
-                // transpiler-deor/lexer/rust_block.deor
+                // transpiler-deor/importer/lexer/rust_block.deor
                 let mut rust_line: String = lines[rli as usize].clone();
                 let mut rl_indent: i32 = count_tabs(rust_line.clone());
                 let mut rl_stripped: String = s_trim(rust_line.clone());
                 if is_empty(rl_stripped.clone()) {
-                    // transpiler-deor/lexer/rust_block.deor
+                    // transpiler-deor/importer/lexer/rust_block.deor
                     rust_lines.push("".to_string());
                     skip = skip + 1;
                 } else if rl_indent >= rust_base {
-                    // transpiler-deor/lexer/rust_block.deor
+                    // transpiler-deor/importer/lexer/rust_block.deor
                     let mut rl_content: String = s_from(rust_line.clone(), rust_base.clone());
                     rust_lines.push(s_rtrim(rl_content.clone()).clone());
                     skip = skip + 1;
                 } else {
-                    // transpiler-deor/lexer/rust_block.deor
+                    // transpiler-deor/importer/lexer/rust_block.deor
                     break;
                 }
             }
             let mut trimming: bool = true;
             while trimming {
-                // transpiler-deor/lexer/rust_block.deor
+                // transpiler-deor/importer/lexer/rust_block.deor
                 let mut rl_len: i32 = (rust_lines.len() as i32);
                 if rl_len > 0 {
-                    // transpiler-deor/lexer/rust_block.deor
+                    // transpiler-deor/importer/lexer/rust_block.deor
                     let mut last_rl: i32 = rl_len - 1.clone();
                     let mut last_line: String = rust_lines[last_rl as usize].clone();
                     if last_line == "" {
-                        // transpiler-deor/lexer/rust_block.deor
+                        // transpiler-deor/importer/lexer/rust_block.deor
                         rust_lines.remove(last_rl as usize);
                     } else {
-                        // transpiler-deor/lexer/rust_block.deor
+                        // transpiler-deor/importer/lexer/rust_block.deor
                         trimming = false;
                     }
                 } else {
-                    // transpiler-deor/lexer/rust_block.deor
+                    // transpiler-deor/importer/lexer/rust_block.deor
                     trimming = false;
                 }
             }
             let mut block_content: String = s_join_nl(rust_lines.clone());
             tokens.push(make_token(rb_kind_rust_block.clone(), block_content.clone(), meta.clone()).clone());
-            // transpiler-deor/lexer/tokenizer.deor
+            // transpiler-deor/importer/lexer/tokenizer.deor
             continue;
         }
         let mut chars: Vec<String> = c_chars(content.clone());
         let mut char_count: i32 = (chars.len() as i32);
         let mut char_index: i32 = 0;
         while char_index < char_count {
-            // transpiler-deor/lexer/tokenizer.deor
+            // transpiler-deor/importer/lexer/tokenizer.deor
             let mut character: String = chars[char_index as usize].clone();
             if character == " " {
-                // transpiler-deor/lexer/tokenizer.deor
+                // transpiler-deor/importer/lexer/tokenizer.deor
                 char_index = char_index + 1;
                 continue;
             }
             if character == "#" {
-                // transpiler-deor/lexer/tokenizer.deor
+                // transpiler-deor/importer/lexer/tokenizer.deor
                 break;
             }
             if character == "\"" {
-                // transpiler-deor/lexer/tokenizer.deor
+                // transpiler-deor/importer/lexer/tokenizer.deor
                 let mut str_r: ParseResult = scan_string_literal(chars.clone(), char_index.clone(), char_count.clone());
                 let mut kind_string: String = "STRING".to_string();
                 let mut str_val: String = pr_code(str_r.clone());
@@ -1077,7 +1077,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 continue;
             }
             if c_digit(character.clone()) {
-                // transpiler-deor/lexer/tokenizer.deor
+                // transpiler-deor/importer/lexer/tokenizer.deor
                 let mut num_r: ParseResult = scan_number(chars.clone(), char_index.clone(), char_count.clone());
                 let mut num_str: String = pr_code(num_r.clone());
                 char_index = pr_pos(num_r.clone());
@@ -1085,18 +1085,18 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut num_parts: Vec<String> = s_split(num_str.clone(), dot.clone());
                 let mut is_float: bool = (num_parts.len() as i32) > 1;
                 if is_float {
-                    // transpiler-deor/lexer/tokenizer.deor
+                    // transpiler-deor/importer/lexer/tokenizer.deor
                     let mut kind_float: String = "FLOAT".to_string();
                     tokens.push(make_token(kind_float.clone(), num_str.clone(), meta.clone()).clone());
                 } else {
-                    // transpiler-deor/lexer/tokenizer.deor
+                    // transpiler-deor/importer/lexer/tokenizer.deor
                     let mut kind_int: String = "INT".to_string();
                     tokens.push(make_token(kind_int.clone(), num_str.clone(), meta.clone()).clone());
                 }
                 continue;
             }
             if c_alpha(character.clone()) {
-                // transpiler-deor/lexer/tokenizer.deor
+                // transpiler-deor/importer/lexer/tokenizer.deor
                 let mut word_r: ParseResult = scan_word(chars.clone(), char_index.clone(), char_count.clone());
                 let mut word: String = pr_code(word_r.clone());
                 char_index = pr_pos(word_r.clone());
@@ -1104,7 +1104,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 tokens.push(make_token(word_kind.clone(), word.clone(), meta.clone()).clone());
                 continue;
             }
-            // macro: emit_operator_token (transpiler-deor/lexer/operators.deor)
+            // macro: emit_operator_token (transpiler-deor/importer/lexer/operators.deor)
             let mut op_kind_gte: String = "GTE".to_string();
             let mut op_val_gte: String = ">=".to_string();
             let mut op_kind_lte: String = "LTE".to_string();
@@ -1138,59 +1138,59 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
             let mut op_peek_idx: i32 = char_index + 1.clone();
             let mut op_peek: String = "".to_string();
             if op_peek_idx < char_count {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 op_peek = chars[op_peek_idx as usize].clone();
             }
             if character == ">" && op_peek == "=" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_gte.clone(), op_val_gte.clone(), meta.clone()).clone());
                 char_index = char_index + 2;
                 continue;
             }
             if character == "<" && op_peek == "=" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_lte.clone(), op_val_lte.clone(), meta.clone()).clone());
                 char_index = char_index + 2;
                 continue;
             }
             if character == "+" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_plus.clone(), op_val_plus.clone(), meta.clone()).clone());
             } else if character == "-" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_minus.clone(), op_val_minus.clone(), meta.clone()).clone());
             } else if character == "*" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_star.clone(), op_val_star.clone(), meta.clone()).clone());
             } else if character == "/" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_slash.clone(), op_val_slash.clone(), meta.clone()).clone());
             } else if character == "%" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_pct.clone(), op_val_pct.clone(), meta.clone()).clone());
             } else if character == "=" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_eq.clone(), op_val_eq.clone(), meta.clone()).clone());
             } else if character == ">" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_gt.clone(), op_val_gt.clone(), meta.clone()).clone());
             } else if character == "<" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_lt.clone(), op_val_lt.clone(), meta.clone()).clone());
             } else if character == "(" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_lp.clone(), op_val_lp.clone(), meta.clone()).clone());
             } else if character == ")" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_rp.clone(), op_val_rp.clone(), meta.clone()).clone());
             } else if character == "[" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_lb.clone(), op_val_lb.clone(), meta.clone()).clone());
             } else if character == "]" {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_rb.clone(), op_val_rb.clone(), meta.clone()).clone());
             } else if character == "," {
-                // transpiler-deor/lexer/operators.deor
+                // transpiler-deor/importer/lexer/operators.deor
                 tokens.push(make_token(op_kind_cm.clone(), op_val_cm.clone(), meta.clone()).clone());
             }
             char_index = char_index + 1;
@@ -1200,7 +1200,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     let mut final_stack_len: i32 = (indent_stack.len() as i32);
     let mut tail_meta: TokenMeta = make_meta(cur_line.clone(), path.clone());
     for _ in 1..final_stack_len {
-        // transpiler-deor/lexer/tokenizer.deor
+        // transpiler-deor/importer/lexer/tokenizer.deor
         tokens.push(make_token(kind_dedent.clone(), empty_str.clone(), tail_meta.clone()).clone());
     }
     tokens.push(make_token(kind_eof.clone(), empty_str.clone(), tail_meta.clone()).clone());
@@ -1886,9 +1886,9 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
     return result;
 }
 
-// transpiler-deor/importer.deor
+// transpiler-deor/importer/importer.deor
 fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
-    // transpiler-deor/importer.deor
+    // transpiler-deor/importer/importer.deor
     let mut merged: Vec<Token> = load_file(path.clone());
     return deduplicate_decls(merged.clone());
 }

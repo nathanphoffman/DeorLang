@@ -33,7 +33,7 @@ fn void main()
 		validate_tokens(tokens_ref)
 		macro_run end_timer
 
-		# registry
+		# registry - move logic to registry/registry.deor
 		string _timer_label = "[timer] registry: "
 		macro_run start_timer
 		strList struct_reg = build_struct_reg(tokens_ref)
