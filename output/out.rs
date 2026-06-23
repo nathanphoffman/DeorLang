@@ -5034,9 +5034,9 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     return make_nl_result(bind_code, val_end.clone(), tokens.clone());
 }
 
-// transpiler-deor/codegen/decl/stmt.deor
+// transpiler-deor/codegen/decl/stmt/stmt.deor
 fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
-    // transpiler-deor/codegen/decl/stmt.deor
+    // transpiler-deor/codegen/decl/stmt/stmt.deor
     let variant_reg = ctx.variant_reg.clone();
     let shape_reg = ctx.shape_reg.clone();
     let struct_reg = ctx.struct_reg.clone();
@@ -5190,9 +5190,9 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut su_full: String = s_cat(su_init.clone(), su_blk_code.clone());
         return make_result(su_full, su_blk_pos.clone());
     }
-    // transpiler-deor/codegen/decl/stmt.deor
+    // transpiler-deor/codegen/decl/stmt/stmt.deor
     if kind == "KW_RAW" {
-        // transpiler-deor/codegen/decl/stmt.deor
+        // transpiler-deor/codegen/decl/stmt/stmt.deor
         let mut raw_name_pos: i32 = pos + 1.clone();
         let mut raw_name_tok: Token = tokens[raw_name_pos as usize].clone();
         let value = raw_name_tok.value.clone();
@@ -5204,7 +5204,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let new_pos = ge_r.new_pos;
         let val_code = code;
         let val_end = new_pos;
-        // transpiler-deor/codegen/decl/stmt.deor
+        // transpiler-deor/codegen/decl/stmt/stmt.deor
         let mut var_name: String = raw_var_name.clone();
         // macro: mut_guard (transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor)
         let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
@@ -5213,7 +5213,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
             mut_kw = "mut ".to_string();
         }
-        // transpiler-deor/codegen/decl/stmt.deor
+        // transpiler-deor/codegen/decl/stmt/stmt.deor
         let mut raw_let: String = "let ".to_string();
         let mut raw_eq: String = " = ".to_string();
         let mut raw_sc: String = ";\n".to_string();
@@ -5222,47 +5222,47 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         return make_nl_result(raw_code, val_end.clone(), tokens.clone());
     }
     if kind == "KW_CONST" {
-        // transpiler-deor/codegen/decl/stmt.deor
+        // transpiler-deor/codegen/decl/stmt/stmt.deor
         let mut const_type_pos: i32 = pos + 1.clone();
         return gen_typed_binding(const_type_pos.clone(), depth.clone(), ctx.clone());
     }
     if kind == "KW_IF" {
-        // transpiler-deor/codegen/decl/stmt.deor
+        // transpiler-deor/codegen/decl/stmt/stmt.deor
         return gen_if(pos.clone(), depth.clone(), ctx.clone());
     }
     if kind == "KW_FOR" {
-        // transpiler-deor/codegen/decl/stmt.deor
+        // transpiler-deor/codegen/decl/stmt/stmt.deor
         return gen_for(pos.clone(), depth.clone(), ctx.clone());
     }
     if kind == "IDENT" {
-        // transpiler-deor/codegen/decl/stmt.deor
+        // transpiler-deor/codegen/decl/stmt/stmt.deor
         let mut ident_name: String = value.clone();
         let mut next_pos: i32 = pos + 1.clone();
         if next_pos >= token_count {
-            // transpiler-deor/codegen/decl/stmt.deor
+            // transpiler-deor/codegen/decl/stmt/stmt.deor
             let mut eof_code: String = "/* eof */\n".to_string();
             return make_result(eof_code, next_pos.clone());
         }
         let mut next_token: Token = tokens[next_pos as usize].clone();
         let kind = next_token.kind.clone();
         if kind == "KW_AS" {
-            // transpiler-deor/codegen/decl/stmt.deor
+            // transpiler-deor/codegen/decl/stmt/stmt.deor
             return gen_as_binding(pos.clone(), depth.clone(), ctx.clone());
         }
         if kind == "LPAREN" {
-            // transpiler-deor/codegen/decl/stmt.deor
+            // transpiler-deor/codegen/decl/stmt/stmt.deor
             return gen_call_stmt(pos.clone(), depth.clone(), ctx.clone());
         }
         if kind == "KW_AT" {
-            // transpiler-deor/codegen/decl/stmt.deor
+            // transpiler-deor/codegen/decl/stmt/stmt.deor
             return gen_list_mutation_stmt(pos.clone(), depth.clone(), ctx.clone());
         }
         if kind == "KW_REMOVE" {
-            // transpiler-deor/codegen/decl/stmt.deor
+            // transpiler-deor/codegen/decl/stmt/stmt.deor
             return gen_list_mutation_stmt(pos.clone(), depth.clone(), ctx.clone());
         }
         if kind == "EQUALS" {
-            // transpiler-deor/codegen/decl/stmt.deor
+            // transpiler-deor/codegen/decl/stmt/stmt.deor
             let mut val_pos: i32 = next_pos + 1.clone();
             let mut eq_val_token: Token = tokens[val_pos as usize].clone();
             let kind = eq_val_token.kind.clone();
@@ -5272,10 +5272,10 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let new_pos = ge_r.new_pos;
             let val_code = code;
             let val_end = new_pos;
-            // transpiler-deor/codegen/decl/stmt.deor
+            // transpiler-deor/codegen/decl/stmt/stmt.deor
             let mut assign_suffix: String = "".to_string();
             if kind == "STRING" {
-                // transpiler-deor/codegen/decl/stmt.deor
+                // transpiler-deor/codegen/decl/stmt/stmt.deor
                 assign_suffix = ".to_string()".to_string();
             }
             let mut asg_eq: String = " = ".to_string();
@@ -5285,14 +5285,14 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             return make_nl_result(asgn_code, val_end.clone(), tokens.clone());
         }
         if kind == "IDENT" {
-            // transpiler-deor/codegen/decl/stmt.deor
+            // transpiler-deor/codegen/decl/stmt/stmt.deor
             let mut eq_pos: i32 = next_pos + 1.clone();
             if eq_pos < token_count {
-                // transpiler-deor/codegen/decl/stmt.deor
+                // transpiler-deor/codegen/decl/stmt/stmt.deor
                 let mut eq_token: Token = tokens[eq_pos as usize].clone();
                 let kind = eq_token.kind.clone();
                 if kind == "EQUALS" {
-                    // transpiler-deor/codegen/decl/stmt.deor
+                    // transpiler-deor/codegen/decl/stmt/stmt.deor
                     return gen_typed_binding(pos.clone(), depth.clone(), ctx.clone());
                 }
             }
@@ -5301,7 +5301,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut bare_rust_type: String = resolve_type(ident_name.clone(), shape_reg.clone(), enum_reg.clone());
             let mut bare_is_validator: bool = reg3_has(type_reg.clone(), ident_name.clone());
             if bare_is_validator {
-                // transpiler-deor/codegen/decl/stmt.deor
+                // transpiler-deor/codegen/decl/stmt/stmt.deor
                 let mut bd_let: String = "let mut ".to_string();
                 let mut bd_opt: String = ": Option<".to_string();
                 let mut bd_sfx: String = "> = None;\n".to_string();
