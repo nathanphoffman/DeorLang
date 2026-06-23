@@ -14,26 +14,33 @@ fn void main()
 		string input_path = args at 0
 		string output_path = args at 1
 
+		# importer
 		string _timer_label = "[timer] load+dedup: "
 		macro_run start_timer
 		tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
 		macro_run end_timer
 
+		# macro-expansion
 		string _timer_label = "[timer] macro-expand: "
 		macro_run start_timer
 		tokenList tokens = expand_deor_macros(raw_tokens)
 		macro_run end_timer
 		TokensRef tokens_ref = tokens_wrap(move tokens)
 
+		# validator
 		string _timer_label = "[timer] validate: "
 		macro_run start_timer
 		validate_tokens(tokens_ref)
 		macro_run end_timer
 
+		# lexer
 		string _timer_label = "[timer] total-codegen: "
 		macro_run start_timer
 		string rust_code = generate_rust_from_tokens(tokens_ref)
 		macro_run end_timer
+
+		# can we put codegen here in the pipeline rather
+		# then lexer calling it?
 
 		string allow_warnings = "#![allow(warnings)]\n"
 		rust_code = s_cat(allow_warnings, rust_code)
