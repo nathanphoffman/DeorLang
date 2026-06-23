@@ -161,14 +161,15 @@ fn void main()
 
 	print(world)
 
-	#SquareFeet sqft = 4
-	#int actual_sqft = (avow sqft)
+	SquareFeet sqft = 4
+	int actual_sqft = (avow sqft)
 
 	#SquareFeet sqft = 0
-	SquareFeet sqft
+	SquareFeet sqft = 4
 	if sqft is not valid
 		print("sqft is not valid")
-
+	else
+		print("sqft is valid")
 
 	Test old_test = (hello,world)
 	#set_test(old_test)

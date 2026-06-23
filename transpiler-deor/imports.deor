@@ -47,9 +47,7 @@ import "transpiler-deor/tokens_validator/macros/check_var_decl.deor"
 import "transpiler-deor/tokens_validator/macros/check_rust_generic.deor"
 import "transpiler-deor/tokens_validator/macros/check_call_args.deor"
 import "transpiler-deor/tokens_validator/macros/check_bad_stmt.deor"
-import "transpiler-deor/tokens_validation.deor"
-
-
+import "transpiler-deor/tokens_validator/tokens_validation.deor"
 
 # utility macros
 import "transpiler-deor/utility_macros.deor"

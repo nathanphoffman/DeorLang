@@ -2269,11 +2269,11 @@ fn handle_errors(errors: Vec<String>) {
     }
 }
 
-// transpiler-deor/tokens_validation.deor
+// transpiler-deor/tokens_validator/tokens_validation.deor
 type FnTestRule = fn(String) -> bool;
 
 fn validate_tokens(tokens: TokensRef) {
-    // transpiler-deor/tokens_validation.deor
+    // transpiler-deor/tokens_validator/tokens_validation.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut errors: Vec<String> = Vec::new();
     let mut pos: i32 = 0;
@@ -2302,14 +2302,14 @@ fn validate_tokens(tokens: TokensRef) {
     let mut shape_names: Vec<String> = Vec::new();
     let mut pre_i: i32 = 0;
     while pre_i < token_count {
-        // transpiler-deor/tokens_validation.deor
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut pre_tok: Token = tokens[pre_i as usize].clone();
         let kind = pre_tok.kind.clone();
         if kind == "KW_SHAPE" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut sn_pos: i32 = pre_i + 1.clone();
             if sn_pos < token_count {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut sn_tok: Token = tokens[sn_pos as usize].clone();
                 let value = sn_tok.value.clone();
                 shape_names.push(value.clone());
@@ -2318,7 +2318,7 @@ fn validate_tokens(tokens: TokensRef) {
         pre_i = pre_i + 1;
     }
     while pos < token_count {
-        // transpiler-deor/tokens_validation.deor
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut tok: Token = tokens[pos as usize].clone();
         let kind = tok.kind.clone();
         let value = tok.value.clone();
@@ -2329,18 +2329,18 @@ fn validate_tokens(tokens: TokensRef) {
         let mut cur_line: i32 = line.clone();
         let mut cur_file: String = file.clone();
         if cur_kind == "LPAREN" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             paren_depth = paren_depth + 1;
         }
         if cur_kind == "RPAREN" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             paren_depth = paren_depth - 1;
         }
         if paren_depth > 0 {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut is_forbidden: bool = list_has(forbidden_in_parens.clone(), cur_kind.clone());
             if is_forbidden {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 errors.push(val_err(tok.clone(), lbl_var.clone(), rule_kw_in_parens.clone()).clone());
             }
         }
@@ -2363,13 +2363,13 @@ fn validate_tokens(tokens: TokensRef) {
             pos = skip_pos;
             continue;
         }
-        // transpiler-deor/tokens_validation.deor
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         if cur_kind == "KW_NOT" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut next_not: i32 = pos + 1.clone();
             let mut after_not: i32 = pos + 2.clone();
             if after_not < token_count {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut next_not_tok: Token = tokens[next_not as usize].clone();
                 let mut after_not_tok: Token = tokens[after_not as usize].clone();
                 let kind = next_not_tok.kind.clone();
@@ -2379,7 +2379,7 @@ fn validate_tokens(tokens: TokensRef) {
                 let mut next_is_ident: bool = next_not_kind == "IDENT".clone();
                 let mut after_is_is: bool = after_not_kind == "KW_IS".clone();
                 if next_is_ident && after_is_is {
-                    // transpiler-deor/tokens_validation.deor
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
                     let value = next_not_tok.value.clone();
                     errors.push(val_err(next_not_tok.clone(), lbl_var.clone(), rule_not_is.clone()).clone());
                 }
@@ -2416,7 +2416,7 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
-        // transpiler-deor/tokens_validation.deor
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut keyword: String = "KW_ENUM".to_string();
         let mut lbl: String = lbl_enum.clone();
         let mut rule: String = rule_pascal.clone();
@@ -2447,7 +2447,7 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
-        // transpiler-deor/tokens_validation.deor
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut keyword: String = "KW_SHAPE".to_string();
         let mut lbl: String = lbl_shape.clone();
         let mut rule: String = rule_camel.clone();
@@ -2478,7 +2478,7 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
-        // transpiler-deor/tokens_validation.deor
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut keyword: String = "KW_TYPE".to_string();
         let mut lbl: String = lbl_type.clone();
         let mut rule: String = rule_pascal.clone();
@@ -2509,17 +2509,17 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
-        // transpiler-deor/tokens_validation.deor
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         if cur_kind == "KW_TYPE" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut base_type_pos: i32 = pos + 3.clone();
             if base_type_pos < token_count {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut base_type_tok: Token = tokens[base_type_pos as usize].clone();
                 let value = base_type_tok.value.clone();
                 let mut base_is_shape: bool = list_has(shape_names.clone(), value.clone());
                 if base_is_shape {
-                    // transpiler-deor/tokens_validation.deor
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
                     let mut type_name_pos: i32 = pos + 1.clone();
                     let mut type_name_tok: Token = tokens[type_name_pos as usize].clone();
                     errors.push(val_err(type_name_tok.clone(), lbl_type.clone(), rule_list_validator.clone()).clone());
@@ -2527,17 +2527,17 @@ fn validate_tokens(tokens: TokensRef) {
             }
         }
         if cur_kind == "KW_FN" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut lp_pos: i32 = pos + 3.clone();
             if lp_pos < token_count {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut lp_tok: Token = tokens[lp_pos as usize].clone();
                 let kind = lp_tok.kind.clone();
                 if kind == "LPAREN" {
-                    // transpiler-deor/tokens_validation.deor
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
                     let mut param_count: i32 = count_call_args(tokens.clone(), lp_pos.clone());
                     if param_count > 3 {
-                        // transpiler-deor/tokens_validation.deor
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
                         let mut fn_name_pos: i32 = pos + 2.clone();
                         let mut fn_name_tok: Token = tokens[fn_name_pos as usize].clone();
                         errors.push(val_err(fn_name_tok.clone(), lbl_fn.clone(), rule_max_params.clone()).clone());
@@ -2548,16 +2548,16 @@ fn validate_tokens(tokens: TokensRef) {
             let mut ret_pos: i32 = pos + 1.clone();
             let mut lp2_pos: i32 = pos + 2.clone();
             if lp2_pos < token_count {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut ret_tok: Token = tokens[ret_pos as usize].clone();
                 let mut lp2_tok: Token = tokens[lp2_pos as usize].clone();
                 let kind = ret_tok.kind.clone();
                 let mut ret_kind: String = kind.clone();
                 let kind = lp2_tok.kind.clone();
                 if ret_kind == "IDENT" {
-                    // transpiler-deor/tokens_validation.deor
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
                     if kind == "LPAREN" {
-                        // transpiler-deor/tokens_validation.deor
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
                         errors.push(val_err(ret_tok.clone(), lbl_fn.clone(), rule_no_ret.clone()).clone());
                     }
                 }
@@ -2594,23 +2594,23 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
-        // transpiler-deor/tokens_validation.deor
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         if cur_kind == "IDENT" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut is_crash: bool = cur_val == "crash".clone();
             if is_crash {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut crash_lp: i32 = pos + 1.clone();
                 if crash_lp < token_count {
-                    // transpiler-deor/tokens_validation.deor
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
                     let mut crash_lp_tok: Token = tokens[crash_lp as usize].clone();
                     let kind = crash_lp_tok.kind.clone();
                     if kind == "LPAREN" {
-                        // transpiler-deor/tokens_validation.deor
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
                         let mut crash_arg_count: i32 = count_call_args(tokens.clone(), crash_lp.clone());
                         let mut wrong_count: bool = crash_arg_count != 1.clone();
                         if wrong_count {
-                            // transpiler-deor/tokens_validation.deor
+                            // transpiler-deor/tokens_validator/tokens_validation.deor
                             let mut rule_crash: String = "crash takes exactly 1 string argument".to_string();
                             errors.push(val_err(tok.clone(), lbl_call.clone(), rule_crash.clone()).clone());
                         }
@@ -2619,23 +2619,23 @@ fn validate_tokens(tokens: TokensRef) {
             }
         }
         if cur_kind == "LBRACKET" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut next_pos: i32 = pos + 1.clone();
             if next_pos < token_count {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut next_tok: Token = tokens[next_pos as usize].clone();
                 let kind = next_tok.kind.clone();
                 if kind == "RBRACKET" {
-                    // transpiler-deor/tokens_validation.deor
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
                     errors.push(val_err(tok.clone(), lbl_var.clone(), rule_empty_bracket.clone()).clone());
                 }
             }
         }
         if cur_kind == "IDENT" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut is_fn_decl_name: bool = false;
             if pos > 1 {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut prev2_p: i32 = pos - 2.clone();
                 let mut prev2_tok: Token = tokens[prev2_p as usize].clone();
                 let kind = prev2_tok.kind.clone();
@@ -2770,35 +2770,35 @@ fn validate_tokens(tokens: TokensRef) {
                     }
                 }
             }
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut next_pos: i32 = pos + 1.clone();
             if next_pos < token_count {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut next_tok: Token = tokens[next_pos as usize].clone();
                 let kind = next_tok.kind.clone();
                 let mut bracket_rule: String = "bracket indexing is not valid in Deor — use 'name at index' instead".to_string();
                 if kind == "LBRACKET" {
-                    // transpiler-deor/tokens_validation.deor
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
                     errors.push(val_err(tok.clone(), lbl_var.clone(), bracket_rule.clone()).clone());
                 }
             }
         }
         if cur_kind == "KW_VALID" {
-            // transpiler-deor/tokens_validation.deor
+            // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut valid_ok: bool = false;
             if pos > 0 {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut valid_pos: i32 = pos - 1.clone();
                 let mut prev_valid_tok: Token = tokens[valid_pos as usize].clone();
                 let kind = prev_valid_tok.kind.clone();
                 valid_ok = kind == "KW_IS";
                 if !valid_ok {
-                    // transpiler-deor/tokens_validation.deor
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
                     valid_ok = kind == "KW_NOT";
                 }
             }
             if !valid_ok {
-                // transpiler-deor/tokens_validation.deor
+                // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
                 errors.push(val_err(tok.clone(), lbl_var.clone(), rule_valid.clone()).clone());
             }

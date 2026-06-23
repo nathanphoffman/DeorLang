@@ -5,6 +5,9 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 - Should we switch mappings to enums?
 
+- Explain ordering of the imports in the docs, suggest a single import file, but explain how it must be ordered and how imports per file could be preferred in some cases as the import order is then handled by the importer (fact check all of this with the transpiler code).  I am thinking to present both options as equally valid but lean towards centralized importer.  Maybe do an upside downside comparison.
+
+- I would like there to be centralized pipelines called from main, most are there but I want codegen to be its own pipeline.  It would be cool if it could be a pipeline for each codegen but each would need to return its full output before continuing to the next not sure that is possible or performant
 
 # New Findings
 As should always be implicit ownership, right now the 2nd line below is allowed, it should not be, which makes me wonder how much of this is correct today
