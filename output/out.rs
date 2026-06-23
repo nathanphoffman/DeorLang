@@ -1151,7 +1151,13 @@ fn replace_t_in_rust_block(content: String, concrete: String) -> String {
     {
     	fn sub_word(word: &str, concrete: &str) -> String {
     		if word == "T" {
-    			return concrete.to_string();
+    			let rust_type = match concrete {
+    				"int" => "i32",
+    				"float" => "f64",
+    				"string" => "String",
+    				_ => concrete,
+    			};
+    			return rust_type.to_string();
     		}
     		let chars: Vec<char> = word.chars().collect();
     		let n = chars.len();

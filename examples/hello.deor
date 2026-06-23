@@ -1,3 +1,4 @@
+import "lib/tasks.deor" where T = float
 
 struct Test
 	int hello
