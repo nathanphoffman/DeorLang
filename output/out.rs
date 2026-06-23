@@ -3686,12 +3686,51 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
 // transpiler-deor/codegen_expr/expr.deor
 fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen_expr/expr.deor
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut pre_ctx_was: bool = float_ctx_get();
+    let mut expr_has_float: bool = false;
+    let mut pre_scan: i32 = pos.clone();
+    let mut pre_depth: i32 = 0;
+    while pre_scan < token_count {
+        // transpiler-deor/codegen_expr/expr.deor
+        let mut pre_tok: Token = tokens[pre_scan as usize].clone();
+        let kind = pre_tok.kind.clone();
+        if kind == "FLOAT" {
+            // transpiler-deor/codegen_expr/expr.deor
+            expr_has_float = true;
+            break;
+        }
+        if kind == "NEWLINE" {
+            // transpiler-deor/codegen_expr/expr.deor
+            break;
+        }
+        if kind == "EOF" {
+            // transpiler-deor/codegen_expr/expr.deor
+            break;
+        }
+        if kind == "LPAREN" {
+            // transpiler-deor/codegen_expr/expr.deor
+            pre_depth = pre_depth + 1;
+        }
+        if kind == "RPAREN" {
+            // transpiler-deor/codegen_expr/expr.deor
+            if pre_depth == 0 {
+                // transpiler-deor/codegen_expr/expr.deor
+                break;
+            }
+            pre_depth = pre_depth - 1;
+        }
+        pre_scan = pre_scan + 1;
+    }
+    if expr_has_float {
+        // transpiler-deor/codegen_expr/expr.deor
+        float_ctx_enable();
+    }
     let mut primary_r: ParseResult = gen_primary(tokens.clone(), pos.clone(), ctx.clone());
     let code = primary_r.code;
     let new_pos = primary_r.new_pos;
     let mut left_code = code;
     let mut cur_pos = new_pos;
-    let mut token_count: i32 = (tokens.len() as i32);
     let mut first_token: Token = tokens[pos as usize].clone();
     let kind = first_token.kind.clone();
     let mut left_has_str: bool = kind == "STRING".clone();
@@ -3790,6 +3829,13 @@ fn gen_expr(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         left_code = s_cat(left_code, op_sp.clone());
         left_code = s_cat(left_code, rhs_code.clone());
         cur_pos = rhs_pos;
+    }
+    if expr_has_float {
+        // transpiler-deor/codegen_expr/expr.deor
+        if !pre_ctx_was {
+            // transpiler-deor/codegen_expr/expr.deor
+            float_ctx_disable();
+        }
     }
     return make_result(left_code, cur_pos.clone());
 }

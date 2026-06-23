@@ -6,11 +6,39 @@
 # string literal, and appends `.as_str()` when chaining an identifier onto an already
 # promoted String expression.
 fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
+	int token_count = len(tokens)
+
+	# Pre-scan for any FLOAT literal in this expression. If found, enable float context
+	# so all int literals in the expression auto-promote to floats (e.g. 3 → 3.0).
+	# Respects paren depth so nested paren groups are included but outer context is not.
+	bool pre_ctx_was = float_ctx_get()
+	bool expr_has_float = false
+	int pre_scan = pos
+	int pre_depth = 0
+	for if pre_scan < token_count
+		Token pre_tok = tokens at pre_scan
+		(kind) in pre_tok
+		if kind is "FLOAT"
+			expr_has_float = true
+			break
+		if kind is "NEWLINE"
+			break
+		if kind is "EOF"
+			break
+		if kind is "LPAREN"
+			pre_depth = pre_depth + 1
+		if kind is "RPAREN"
+			if pre_depth is 0
+				break
+			pre_depth = pre_depth - 1
+		pre_scan = pre_scan + 1
+	if expr_has_float
+		float_ctx_enable()
+
 	ParseResult primary_r = gen_primary(tokens, pos, ctx)
 	move (code, new_pos) in primary_r
 	left_code as code
 	cur_pos as new_pos
-	int token_count = len(tokens)
 	Token first_token = tokens at pos
 	(kind) in first_token
 	bool left_has_str = kind is "STRING"
@@ -88,5 +116,9 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 		left_code = s_cat(move left_code, op_sp)
 		left_code = s_cat(move left_code, rhs_code)
 		cur_pos = rhs_pos
+
+	if expr_has_float
+		if not pre_ctx_was
+			float_ctx_disable()
 
 	return make_result(move left_code, cur_pos)
