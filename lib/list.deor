@@ -1,0 +1,45 @@
+shape lTList = list of T
+
+fn T l_T_first(lTList list)
+	rust
+		list[0].clone()
+
+fn T l_T_last(lTList list)
+	rust
+		list[list.len() - 1].clone()
+
+fn bool l_T_is_empty(lTList list)
+	rust
+		list.is_empty()
+
+fn lTList l_T_reverse(lTList list)
+	rust
+		list.into_iter().rev().collect()
+
+fn lTList l_T_slice(lTList list, int start, int end)
+	rust
+		list[start as usize..end as usize].to_vec()
+
+fn lTList l_T_concat(lTList a, lTList b)
+	rust
+		{ let mut r = a; r.extend(b); r }
+
+fn lTList l_T_sort(lTList list)
+	rust
+		{ let mut s = list; s.sort(); s }
+
+fn T l_T_sum(lTList list)
+	rust
+		list.iter().copied().sum()
+
+fn T l_T_min(lTList list)
+	rust
+		list.iter().cloned().min().unwrap_or_default()
+
+fn T l_T_max(lTList list)
+	rust
+		list.iter().cloned().max().unwrap_or_default()
+
+fn string l_T_join(lTList list, string sep)
+	rust
+		list.join(sep.as_str())

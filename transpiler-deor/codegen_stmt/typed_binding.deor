@@ -71,22 +71,18 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 					if kind is "COMMA"
 						fend = fend + 1
 						continue
-					ParseResult fv_r = gen_expr(tokens, fend, ctx)
-					move (code, new_pos) in fv_r
-					fv_code as code
+					val_pos as fend
+					macro_run gen_expr_r
 					if fni < fn_count
 						string fname = field_names at fni
 						string sfp_sep = ": "
 						string sfp_cln = ".clone()"
-						field_pairs at end = s_join([fname, sfp_sep, fv_code, sfp_cln])
+						field_pairs at end = s_join([fname, sfp_sep, val_code, sfp_cln])
 						fni = fni + 1
-					fend = new_pos
+					fend = val_end
 				string sep = ", "
 				string fields_code = s_join_with(field_pairs, sep)
-				bool is_mut = list_has(mut_names, var_name)
-				string mut_kw = ""
-				if is_mut
-					mut_kw = "mut "
+				macro_run mut_guard
 				string scc_let = "let "
 				string scc_eq = " = "
 				string scc_ob = " { "
@@ -97,21 +93,20 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		if is_avow_expr
 			# (avow inner) — .unwrap().0 for primitives, .unwrap() for custom types
 			int inner_pos = peek_pos + 1
-			ParseResult inner_r = gen_expr(tokens, inner_pos, ctx)
-			move (code, new_pos) in inner_r
-			inner_code as code
-			after_rparen as new_pos + 1
+			val_pos as inner_pos
+			macro_run gen_expr_r
+			int after_rparen = val_end + 1
 			string suf_unwrap = ".unwrap()"
 			string suf_unwrap0 = ".unwrap().0"
-			string unwrap_expr = s_cat(inner_code, suf_unwrap)
+			string unwrap_expr = s_cat(val_code, suf_unwrap)
 			if var_type is "int"
-				unwrap_expr = s_cat(inner_code, suf_unwrap0)
+				unwrap_expr = s_cat(val_code, suf_unwrap0)
 			if var_type is "string"
-				unwrap_expr = s_cat(inner_code, suf_unwrap0)
+				unwrap_expr = s_cat(val_code, suf_unwrap0)
 			if var_type is "bool"
-				unwrap_expr = s_cat(inner_code, suf_unwrap0)
+				unwrap_expr = s_cat(val_code, suf_unwrap0)
 			if var_type is "float"
-				unwrap_expr = s_cat(inner_code, suf_unwrap0)
+				unwrap_expr = s_cat(val_code, suf_unwrap0)
 			string awc_let = "let "
 			string awc_col = ": "
 			string awc_eq = " = "
@@ -123,10 +118,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 
 	# list literal → always let mut
 	if kind is "LBRACKET"
-		ParseResult val_r = gen_expr(tokens, val_pos, ctx)
-		move (code, new_pos) in val_r
-		val_code as code
-		val_end as new_pos
+		macro_run gen_expr_r
 		string lst_pfx = "let mut "
 		string lst_col = ": "
 		string lst_eq = " = "
@@ -153,14 +145,8 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	# validator type → ValidatorType::new(val) wrapped in Option<>
 	bool is_validator = reg3_has(type_reg, var_type)
 	if is_validator
-		ParseResult val_r = gen_expr(tokens, val_pos, ctx)
-		move (code, new_pos) in val_r
-		val_code as code
-		val_end as new_pos
-		bool is_mut = list_has(mut_names, var_name)
-		string mut_kw = ""
-		if is_mut
-			mut_kw = "mut "
+		macro_run gen_expr_r
+		macro_run mut_guard
 		string vld_let = "let "
 		string vld_opt = ": Option<"
 		string vld_new = "> = "
@@ -180,10 +166,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	move (code, new_pos) in val_r
 	val_code as code
 	val_end as new_pos
-	bool is_mut = list_has(mut_names, var_name)
-	string mut_kw = ""
-	if is_mut
-		mut_kw = "mut "
+	macro_run mut_guard
 	string suffix = ""
 	if kind is "STRING"
 		suffix = ".to_string()"

@@ -1,0 +1,5 @@
+macro mut_guard
+	bool mg_is_mut = list_has(mut_names, var_name)
+	string mut_kw = ""
+	if mg_is_mut
+		mut_kw = "mut "

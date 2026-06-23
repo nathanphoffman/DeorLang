@@ -24,10 +24,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 			(kind, value) in at_next_token
 			if kind is "IDENT" and value is "end"
 				int val_pos = after_at + 2
-				ParseResult val_r = gen_expr(tokens, val_pos, ctx)
-				move (code, new_pos) in val_r
-				val_code as code
-				val_end as new_pos
+				macro_run gen_expr_r
 				Token val_tok = tokens at val_pos
 				(kind) in val_tok
 				string app_val = emit_val(val_code, kind)
@@ -36,15 +33,11 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 				string app_code = s_join([pad, ident_name, app_pfx, app_val, app_sfx])
 				int app_next = adv_nl_ref(val_end, tokens)
 				return make_result(move app_code, app_next)
-			ParseResult idx_r = gen_expr(tokens, after_at, ctx)
-			move (code, new_pos) in idx_r
-			idx_code as code
-			idx_end as new_pos
-			int val_pos = idx_end + 1
-			ParseResult val_r = gen_expr(tokens, val_pos, ctx)
-			move (code, new_pos) in val_r
-			val_code as code
-			val_end as new_pos
+			val_pos as after_at
+			macro_run gen_expr_r
+			string idx_code = val_code
+			int val_pos = val_end + 1
+			macro_run gen_expr_r
 			Token val_tok = tokens at val_pos
 			(kind) in val_tok
 			string idx_val = emit_val(val_code, kind)
@@ -58,14 +51,12 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 	# name remove at idx
 	if kind is "KW_REMOVE"
 		int idx_pos = next_pos + 2
-		ParseResult idx_r = gen_expr(tokens, idx_pos, ctx)
-		move (code, new_pos) in idx_r
-		idx_code as code
-		idx_end as new_pos
+		val_pos as idx_pos
+		macro_run gen_expr_r
 		string rem_pfx = ".remove("
 		string rem_sfx = " as usize);\n"
-		string rem_code = s_join([pad, ident_name, rem_pfx, idx_code, rem_sfx])
-		int rem_next = adv_nl_ref(idx_end, tokens)
+		string rem_code = s_join([pad, ident_name, rem_pfx, val_code, rem_sfx])
+		int rem_next = adv_nl_ref(val_end, tokens)
 		return make_result(move rem_code, rem_next)
 
 	string lm_unh_pfx = "/* unhandled_list_mut("

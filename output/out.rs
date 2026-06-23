@@ -4409,12 +4409,15 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 }
             }
             let mut aas_struct: String = find_struct_for_fields(struct_reg.clone(), aas_fields.clone());
-            let mut aas_is_mut: bool = list_has(mut_names.clone(), ident_name.clone());
-            let mut aas_mut: String = "".to_string();
-            if aas_is_mut {
-                // transpiler-deor/codegen_stmt/as_binding.deor
-                aas_mut = "mut ".to_string();
+            let mut var_name: String = ident_name.clone();
+            // macro: mut_guard (transpiler-deor/codegen_stmt/macros/mut_guard.deor)
+            let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+            let mut mut_kw: String = "".to_string();
+            if mg_is_mut {
+                // transpiler-deor/codegen_stmt/macros/mut_guard.deor
+                mut_kw = "mut ".to_string();
             }
+            // transpiler-deor/codegen_stmt/as_binding.deor
             let mut aas_fcount: i32 = (aas_fields.len() as i32);
             let mut aas_pairs: Vec<String> = Vec::new();
             for aas_fi in 0..aas_fcount {
@@ -4430,7 +4433,7 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut aas_eq: String = " = ".to_string();
             let mut aas_ob: String = " { ".to_string();
             let mut aas_cb: String = " };\n".to_string();
-            let mut aas_code: String = [pad.as_str(), aas_let.as_str(), aas_mut.as_str(), ident_name.as_str(), aas_eq.as_str(), aas_struct.as_str(), aas_ob.as_str(), aas_fields_code.as_str(), aas_cb.as_str()].concat();
+            let mut aas_code: String = [pad.as_str(), aas_let.as_str(), mut_kw.as_str(), ident_name.as_str(), aas_eq.as_str(), aas_struct.as_str(), aas_ob.as_str(), aas_fields_code.as_str(), aas_cb.as_str()].concat();
             let mut aas_next: i32 = adv_nl_ref(aas_fend.clone(), tokens.clone());
             return make_result(aas_code, aas_next.clone());
         }
@@ -4482,36 +4485,45 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 let mut aas_struct_w: String = find_struct_for_field(struct_reg.clone(), aas_first.clone());
                 let mut aas_wsep: String = ", ".to_string();
                 let mut aas_wfields: String = s_join_with(aas_ovr.clone(), aas_wsep.clone());
-                let mut aas_wmut: bool = list_has(mut_names.clone(), ident_name.clone());
-                let mut aas_wmutkw: String = "".to_string();
-                if aas_wmut {
-                    // transpiler-deor/codegen_stmt/as_binding.deor
-                    aas_wmutkw = "mut ".to_string();
+                let mut var_name: String = ident_name.clone();
+                // macro: mut_guard (transpiler-deor/codegen_stmt/macros/mut_guard.deor)
+                let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+                let mut mut_kw: String = "".to_string();
+                if mg_is_mut {
+                    // transpiler-deor/codegen_stmt/macros/mut_guard.deor
+                    mut_kw = "mut ".to_string();
                 }
+                // transpiler-deor/codegen_stmt/as_binding.deor
                 let mut aas_wlet: String = "let ".to_string();
                 let mut aas_weq: String = " = ".to_string();
                 let mut aas_wob: String = " { ".to_string();
                 let mut aas_wsp: String = ", ..".to_string();
                 let mut aas_wcb: String = " };\n".to_string();
-                let mut aas_with_code: String = [pad.as_str(), aas_wlet.as_str(), aas_wmutkw.as_str(), ident_name.as_str(), aas_weq.as_str(), aas_struct_w.as_str(), aas_wob.as_str(), aas_wfields.as_str(), aas_wsp.as_str(), aas_src.as_str(), aas_wcb.as_str()].concat();
+                let mut aas_with_code: String = [pad.as_str(), aas_wlet.as_str(), mut_kw.as_str(), ident_name.as_str(), aas_weq.as_str(), aas_struct_w.as_str(), aas_wob.as_str(), aas_wfields.as_str(), aas_wsp.as_str(), aas_src.as_str(), aas_wcb.as_str()].concat();
                 let mut aas_wnext: i32 = adv_nl_ref(aas_wend.clone(), tokens.clone());
                 return make_result(aas_with_code, aas_wnext.clone());
             }
         }
     }
     let kind = after_as_token.kind.clone();
-    let mut aas_val_r: ParseResult = gen_expr(tokens.clone(), after_as.clone(), ctx.clone());
-    let code = aas_val_r.code;
-    let new_pos = aas_val_r.new_pos;
-    let aas_val_code = code;
-    let aas_val_end = new_pos;
+    let val_pos = after_as;
+    // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+    let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+    let code = ge_r.code;
+    let new_pos = ge_r.new_pos;
+    let val_code = code;
+    let val_end = new_pos;
+    // transpiler-deor/codegen_stmt/as_binding.deor
     let mut aas_is_str: bool = kind == "STRING".clone();
-    let mut aas_is_mut2: bool = list_has(mut_names.clone(), ident_name.clone());
-    let mut aas_mut2: String = "".to_string();
-    if aas_is_mut2 {
-        // transpiler-deor/codegen_stmt/as_binding.deor
-        aas_mut2 = "mut ".to_string();
+    let mut var_name: String = ident_name.clone();
+    // macro: mut_guard (transpiler-deor/codegen_stmt/macros/mut_guard.deor)
+    let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+    let mut mut_kw: String = "".to_string();
+    if mg_is_mut {
+        // transpiler-deor/codegen_stmt/macros/mut_guard.deor
+        mut_kw = "mut ".to_string();
     }
+    // transpiler-deor/codegen_stmt/as_binding.deor
     let mut aas_suffix: String = "".to_string();
     if aas_is_str {
         // transpiler-deor/codegen_stmt/as_binding.deor
@@ -4520,8 +4532,8 @@ fn gen_as_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut aas_let2: String = "let ".to_string();
     let mut aas_eq2: String = " = ".to_string();
     let mut aas_sc2: String = ";\n".to_string();
-    let mut aas_code2: String = [pad.as_str(), aas_let2.as_str(), aas_mut2.as_str(), ident_name.as_str(), aas_eq2.as_str(), aas_val_code.as_str(), aas_suffix.as_str(), aas_sc2.as_str()].concat();
-    let mut aas_next2: i32 = adv_nl_ref(aas_val_end.clone(), tokens.clone());
+    let mut aas_code2: String = [pad.as_str(), aas_let2.as_str(), mut_kw.as_str(), ident_name.as_str(), aas_eq2.as_str(), val_code.as_str(), aas_suffix.as_str(), aas_sc2.as_str()].concat();
+    let mut aas_next2: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
     return make_result(aas_code2, aas_next2.clone());
 }
 
@@ -4642,11 +4654,13 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             if kind == "IDENT" && value == "end" {
                 // transpiler-deor/codegen_stmt/list_mutation.deor
                 let mut val_pos: i32 = after_at + 2.clone();
-                let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-                let code = val_r.code;
-                let new_pos = val_r.new_pos;
+                // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+                let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+                let code = ge_r.code;
+                let new_pos = ge_r.new_pos;
                 let val_code = code;
                 let val_end = new_pos;
+                // transpiler-deor/codegen_stmt/list_mutation.deor
                 let mut val_tok: Token = tokens[val_pos as usize].clone();
                 let kind = val_tok.kind.clone();
                 let mut app_val: String = emit_val(val_code.clone(), kind.clone());
@@ -4656,17 +4670,23 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                 let mut app_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
                 return make_result(app_code, app_next.clone());
             }
-            let mut idx_r: ParseResult = gen_expr(tokens.clone(), after_at.clone(), ctx.clone());
-            let code = idx_r.code;
-            let new_pos = idx_r.new_pos;
-            let idx_code = code;
-            let idx_end = new_pos;
-            let mut val_pos: i32 = idx_end + 1.clone();
-            let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-            let code = val_r.code;
-            let new_pos = val_r.new_pos;
+            let mut val_pos = after_at;
+            // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+            let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+            let code = ge_r.code;
+            let new_pos = ge_r.new_pos;
             let val_code = code;
             let val_end = new_pos;
+            // transpiler-deor/codegen_stmt/list_mutation.deor
+            let mut idx_code: String = val_code.clone();
+            let mut val_pos: i32 = val_end + 1.clone();
+            // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+            let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+            let code = ge_r.code;
+            let new_pos = ge_r.new_pos;
+            let val_code = code;
+            let val_end = new_pos;
+            // transpiler-deor/codegen_stmt/list_mutation.deor
             let mut val_tok: Token = tokens[val_pos as usize].clone();
             let kind = val_tok.kind.clone();
             let mut idx_val: String = emit_val(val_code.clone(), kind.clone());
@@ -4681,15 +4701,18 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     if kind == "KW_REMOVE" {
         // transpiler-deor/codegen_stmt/list_mutation.deor
         let mut idx_pos: i32 = next_pos + 2.clone();
-        let mut idx_r: ParseResult = gen_expr(tokens.clone(), idx_pos.clone(), ctx.clone());
-        let code = idx_r.code;
-        let new_pos = idx_r.new_pos;
-        let idx_code = code;
-        let idx_end = new_pos;
+        let mut val_pos = idx_pos;
+        // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+        let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+        let code = ge_r.code;
+        let new_pos = ge_r.new_pos;
+        let val_code = code;
+        let val_end = new_pos;
+        // transpiler-deor/codegen_stmt/list_mutation.deor
         let mut rem_pfx: String = ".remove(".to_string();
         let mut rem_sfx: String = " as usize);\n".to_string();
-        let mut rem_code: String = [pad.as_str(), ident_name.as_str(), rem_pfx.as_str(), idx_code.as_str(), rem_sfx.as_str()].concat();
-        let mut rem_next: i32 = adv_nl_ref(idx_end.clone(), tokens.clone());
+        let mut rem_code: String = [pad.as_str(), ident_name.as_str(), rem_pfx.as_str(), val_code.as_str(), rem_sfx.as_str()].concat();
+        let mut rem_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
         return make_result(rem_code, rem_next.clone());
     }
     let mut lm_unh_pfx: String = "/* unhandled_list_mut(".to_string();
@@ -4779,28 +4802,34 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
                         fend = fend + 1;
                         continue;
                     }
-                    let mut fv_r: ParseResult = gen_expr(tokens.clone(), fend.clone(), ctx.clone());
-                    let code = fv_r.code;
-                    let new_pos = fv_r.new_pos;
-                    let fv_code = code;
+                    let mut val_pos = fend;
+                    // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+                    let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+                    let code = ge_r.code;
+                    let new_pos = ge_r.new_pos;
+                    let val_code = code;
+                    let val_end = new_pos;
+                    // transpiler-deor/codegen_stmt/typed_binding.deor
                     if fni < fn_count {
                         // transpiler-deor/codegen_stmt/typed_binding.deor
                         let mut fname: String = field_names[fni as usize].clone();
                         let mut sfp_sep: String = ": ".to_string();
                         let mut sfp_cln: String = ".clone()".to_string();
-                        field_pairs.push([fname.as_str(), sfp_sep.as_str(), fv_code.as_str(), sfp_cln.as_str()].concat().clone());
+                        field_pairs.push([fname.as_str(), sfp_sep.as_str(), val_code.as_str(), sfp_cln.as_str()].concat().clone());
                         fni = fni + 1;
                     }
-                    fend = new_pos;
+                    fend = val_end;
                 }
                 let mut sep: String = ", ".to_string();
                 let mut fields_code: String = s_join_with(field_pairs.clone(), sep.clone());
-                let mut is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+                // macro: mut_guard (transpiler-deor/codegen_stmt/macros/mut_guard.deor)
+                let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
                 let mut mut_kw: String = "".to_string();
-                if is_mut {
-                    // transpiler-deor/codegen_stmt/typed_binding.deor
+                if mg_is_mut {
+                    // transpiler-deor/codegen_stmt/macros/mut_guard.deor
                     mut_kw = "mut ".to_string();
                 }
+                // transpiler-deor/codegen_stmt/typed_binding.deor
                 let mut scc_let: String = "let ".to_string();
                 let mut scc_eq: String = " = ".to_string();
                 let mut scc_ob: String = " { ".to_string();
@@ -4813,29 +4842,33 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         if is_avow_expr {
             // transpiler-deor/codegen_stmt/typed_binding.deor
             let mut inner_pos: i32 = peek_pos + 1.clone();
-            let mut inner_r: ParseResult = gen_expr(tokens.clone(), inner_pos.clone(), ctx.clone());
-            let code = inner_r.code;
-            let new_pos = inner_r.new_pos;
-            let inner_code = code;
-            let after_rparen = new_pos + 1;
+            let mut val_pos = inner_pos;
+            // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+            let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+            let code = ge_r.code;
+            let new_pos = ge_r.new_pos;
+            let val_code = code;
+            let val_end = new_pos;
+            // transpiler-deor/codegen_stmt/typed_binding.deor
+            let mut after_rparen: i32 = val_end + 1.clone();
             let mut suf_unwrap: String = ".unwrap()".to_string();
             let mut suf_unwrap0: String = ".unwrap().0".to_string();
-            let mut unwrap_expr: String = s_cat(inner_code.clone(), suf_unwrap.clone());
+            let mut unwrap_expr: String = s_cat(val_code.clone(), suf_unwrap.clone());
             if var_type == "int" {
                 // transpiler-deor/codegen_stmt/typed_binding.deor
-                unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
+                unwrap_expr = s_cat(val_code.clone(), suf_unwrap0.clone());
             }
             if var_type == "string" {
                 // transpiler-deor/codegen_stmt/typed_binding.deor
-                unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
+                unwrap_expr = s_cat(val_code.clone(), suf_unwrap0.clone());
             }
             if var_type == "bool" {
                 // transpiler-deor/codegen_stmt/typed_binding.deor
-                unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
+                unwrap_expr = s_cat(val_code.clone(), suf_unwrap0.clone());
             }
             if var_type == "float" {
                 // transpiler-deor/codegen_stmt/typed_binding.deor
-                unwrap_expr = s_cat(inner_code.clone(), suf_unwrap0.clone());
+                unwrap_expr = s_cat(val_code.clone(), suf_unwrap0.clone());
             }
             let mut awc_let: String = "let ".to_string();
             let mut awc_col: String = ": ".to_string();
@@ -4847,12 +4880,13 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         }
     }
     if kind == "LBRACKET" {
-        // transpiler-deor/codegen_stmt/typed_binding.deor
-        let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-        let code = val_r.code;
-        let new_pos = val_r.new_pos;
+        // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+        let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+        let code = ge_r.code;
+        let new_pos = ge_r.new_pos;
         let val_code = code;
         let val_end = new_pos;
+        // transpiler-deor/codegen_stmt/typed_binding.deor
         let mut lst_pfx: String = "let mut ".to_string();
         let mut lst_col: String = ": ".to_string();
         let mut lst_eq: String = " = ".to_string();
@@ -4880,18 +4914,20 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     }
     let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
     if is_validator {
-        // transpiler-deor/codegen_stmt/typed_binding.deor
-        let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-        let code = val_r.code;
-        let new_pos = val_r.new_pos;
+        // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+        let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+        let code = ge_r.code;
+        let new_pos = ge_r.new_pos;
         let val_code = code;
         let val_end = new_pos;
-        let mut is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+        // macro: mut_guard (transpiler-deor/codegen_stmt/macros/mut_guard.deor)
+        let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
         let mut mut_kw: String = "".to_string();
-        if is_mut {
-            // transpiler-deor/codegen_stmt/typed_binding.deor
+        if mg_is_mut {
+            // transpiler-deor/codegen_stmt/macros/mut_guard.deor
             mut_kw = "mut ".to_string();
         }
+        // transpiler-deor/codegen_stmt/typed_binding.deor
         let mut vld_let: String = "let ".to_string();
         let mut vld_opt: String = ": Option<".to_string();
         let mut vld_new: String = "> = ".to_string();
@@ -4915,12 +4951,14 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let new_pos = val_r.new_pos;
     let val_code = code;
     let val_end = new_pos;
-    let mut is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+    // macro: mut_guard (transpiler-deor/codegen_stmt/macros/mut_guard.deor)
+    let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
     let mut mut_kw: String = "".to_string();
-    if is_mut {
-        // transpiler-deor/codegen_stmt/typed_binding.deor
+    if mg_is_mut {
+        // transpiler-deor/codegen_stmt/macros/mut_guard.deor
         mut_kw = "mut ".to_string();
     }
+    // transpiler-deor/codegen_stmt/typed_binding.deor
     let mut suffix: String = "".to_string();
     if kind == "STRING" {
         // transpiler-deor/codegen_stmt/typed_binding.deor
@@ -5118,22 +5156,29 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut raw_name_tok: Token = tokens[raw_name_pos as usize].clone();
         let value = raw_name_tok.value.clone();
         let mut raw_var_name: String = value.clone();
-        let mut raw_val_pos: i32 = raw_name_pos + 2.clone();
-        let mut raw_val_r: ParseResult = gen_expr(tokens.clone(), raw_val_pos.clone(), ctx.clone());
-        let mut raw_val_code: String = pr_code(raw_val_r.clone());
-        let mut raw_val_end: i32 = pr_pos(raw_val_r.clone());
-        let mut raw_is_mut: bool = list_has(mut_names.clone(), raw_var_name.clone());
-        let mut raw_mut_kw: String = "".to_string();
-        if raw_is_mut {
-            // transpiler-deor/codegen_stmt.deor
-            raw_mut_kw = "mut ".to_string();
+        let mut val_pos: i32 = raw_name_pos + 2.clone();
+        // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+        let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+        let code = ge_r.code;
+        let new_pos = ge_r.new_pos;
+        let val_code = code;
+        let val_end = new_pos;
+        // transpiler-deor/codegen_stmt.deor
+        let mut var_name: String = raw_var_name.clone();
+        // macro: mut_guard (transpiler-deor/codegen_stmt/macros/mut_guard.deor)
+        let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+        let mut mut_kw: String = "".to_string();
+        if mg_is_mut {
+            // transpiler-deor/codegen_stmt/macros/mut_guard.deor
+            mut_kw = "mut ".to_string();
         }
+        // transpiler-deor/codegen_stmt.deor
         let mut raw_let: String = "let ".to_string();
         let mut raw_eq: String = " = ".to_string();
         let mut raw_sc: String = ";\n".to_string();
-        let mut raw_parts: Vec<String> = vec![pad.clone(), raw_let.clone(), raw_mut_kw.clone(), raw_var_name.clone(), raw_eq.clone(), raw_val_code.clone(), raw_sc.clone()];
+        let mut raw_parts: Vec<String> = vec![pad.clone(), raw_let.clone(), mut_kw.clone(), raw_var_name.clone(), raw_eq.clone(), val_code.clone(), raw_sc.clone()];
         let mut raw_code: String = s_join(raw_parts.clone());
-        let mut raw_next: i32 = adv_nl_ref(raw_val_end.clone(), tokens.clone());
+        let mut raw_next: i32 = adv_nl_ref(val_end.clone(), tokens.clone());
         return make_result(raw_code, raw_next.clone());
     }
     if kind == "KW_CONST" {
@@ -5181,9 +5226,13 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut val_pos: i32 = next_pos + 1.clone();
             let mut eq_val_token: Token = tokens[val_pos as usize].clone();
             let kind = eq_val_token.kind.clone();
-            let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-            let mut val_code: String = pr_code(val_r.clone());
-            let mut val_end: i32 = pr_pos(val_r.clone());
+            // macro: gen_expr_r (transpiler-deor/codegen_stmt/macros/gen_expr_r.deor)
+            let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+            let code = ge_r.code;
+            let new_pos = ge_r.new_pos;
+            let val_code = code;
+            let val_end = new_pos;
+            // transpiler-deor/codegen_stmt.deor
             let mut assign_suffix: String = "".to_string();
             if kind == "STRING" {
                 // transpiler-deor/codegen_stmt.deor

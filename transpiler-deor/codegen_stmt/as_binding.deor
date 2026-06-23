@@ -54,10 +54,8 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 					aas_fields at end = value
 					aas_fend = aas_fend + 1
 			string aas_struct = find_struct_for_fields(struct_reg, aas_fields)
-			bool aas_is_mut = list_has(mut_names, ident_name)
-			string aas_mut = ""
-			if aas_is_mut
-				aas_mut = "mut "
+			string var_name = ident_name
+			macro_run mut_guard
 			int aas_fcount = len(aas_fields)
 			strList aas_pairs = empty
 			for aas_fi in range(aas_fcount)
@@ -71,7 +69,7 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 			string aas_eq = " = "
 			string aas_ob = " { "
 			string aas_cb = " };\n"
-			string aas_code = s_join([pad, aas_let, aas_mut, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb])
+			string aas_code = s_join([pad, aas_let, mut_kw, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb])
 			int aas_next = adv_nl_ref(aas_fend, tokens)
 			return make_result(move aas_code, aas_next)
 
@@ -111,36 +109,30 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 				string aas_struct_w = find_struct_for_field(struct_reg, aas_first)
 				string aas_wsep = ", "
 				string aas_wfields = s_join_with(aas_ovr, aas_wsep)
-				bool aas_wmut = list_has(mut_names, ident_name)
-				string aas_wmutkw = ""
-				if aas_wmut
-					aas_wmutkw = "mut "
+				string var_name = ident_name
+				macro_run mut_guard
 				string aas_wlet = "let "
 				string aas_weq = " = "
 				string aas_wob = " { "
 				string aas_wsp = ", .."
 				string aas_wcb = " };\n"
-				string aas_with_code = s_join([pad, aas_wlet, aas_wmutkw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wcb])
+				string aas_with_code = s_join([pad, aas_wlet, mut_kw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wcb])
 				int aas_wnext = adv_nl_ref(aas_wend, tokens)
 				return make_result(move aas_with_code, aas_wnext)
 
 	# regular as-binding: let [mut] name = expr[.to_string()];
 	(kind) in after_as_token
-	ParseResult aas_val_r = gen_expr(tokens, after_as, ctx)
-	move (code, new_pos) in aas_val_r
-	aas_val_code as code
-	aas_val_end as new_pos
+	val_pos as after_as
+	macro_run gen_expr_r
 	bool aas_is_str = kind is "STRING"
-	bool aas_is_mut2 = list_has(mut_names, ident_name)
-	string aas_mut2 = ""
-	if aas_is_mut2
-		aas_mut2 = "mut "
+	string var_name = ident_name
+	macro_run mut_guard
 	string aas_suffix = ""
 	if aas_is_str
 		aas_suffix = ".to_string()"
 	string aas_let2 = "let "
 	string aas_eq2 = " = "
 	string aas_sc2 = ";\n"
-	string aas_code2 = s_join([pad, aas_let2, aas_mut2, ident_name, aas_eq2, aas_val_code, aas_suffix, aas_sc2])
-	int aas_next2 = adv_nl_ref(aas_val_end, tokens)
+	string aas_code2 = s_join([pad, aas_let2, mut_kw, ident_name, aas_eq2, val_code, aas_suffix, aas_sc2])
+	int aas_next2 = adv_nl_ref(val_end, tokens)
 	return make_result(move aas_code2, aas_next2)

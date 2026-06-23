@@ -1,7 +1,6 @@
 
 import "lib/tasks.deor" where T = Report
 
-
 struct Report
 	string title
 	int score

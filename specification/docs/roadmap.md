@@ -3,22 +3,28 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 
 # Bad no longer -> valid comparison only
-Bad should be removed, no user can intentionally assign something bad/none or return it. Instead only comparisons are allowed and rasther than bad it is valid (the inverse of bad) and the bad keyword is dropped.
+Bad should be removed, no user can intentionally assign something bad/none or return it. Instead only comparisons are allowed and rather than bad it is valid (the inverse of bad) and the bad keyword is dropped.
 
 If a user wants to define something null they just do this:
-NatesInt num # number is considered not valid
+NatesInt num 
+^ num is considered not valid (none in Rust)
+
+This code should work for testing if/boolean
 if num is valid  # this is false
 if num is not valid # this is true
 
+explicit assignment should not be allowed:
 num = valid # not allowed
 num = not valid # not allowed
 num = invalid # not even a keyword
 
-So to recap, remove bad, add a valid (opposite of bad) but it should only be allowed in comparisons.
+The reason for this is if a value is ever known for something, it should never be removed, only changed.  And anytime a validator type is changed, it already runs a valid check (sets it to none in Rust if it doesnt pass)
+
+So to recap, remove bad, add a valid in the same idea (but opposite of bad) but it should only be allowed in comparisons.
 
 Additionally, make it so an empty definition is allowed and is not valid by default.
 
-Implementation wise I think what we should do is still use none under the hood, but when the user does a comparison on valid just replace it with not none in rust, and it should work out I think.  So we are just not not none on not valid checks.  I am ok with the redundancy if it makes it easier to implement in rust
+Implementation wise I think what we should do is still use none under the hood, but when the user does a comparison on valid just replace it with not none in rust, and it should work out I think.  So we are just not not none on not valid checks.  I am ok with the not (!) redundancy if it makes it easier to implement in rust
 
 
 Other issues
@@ -57,48 +63,9 @@ In need of extra auditing:
 - Conditionals
 - Enforced Practices
 
-## Transpiler Performance Improvement
-*Large Lift* | *Medium Priority*
-
-The codegen loop in generate_rust_from_tokens builds output like this:
-
-  output = s_cat(output, pr_code(result))
-
-  In Rust, s_cat(a, b) allocates a new String and copies a entirely into it on every call. Since output grows with each declaration processed, by the time
-  you're on the 100th function, you're copying ~50KB just to append a few hundred bytes. Do that for 200 declarations and you've done roughly O(n²) total
-  copying in output size.
-
-  Same pattern appears inside gen_block / gen_stmt — each statement appends to the growing code string by the same mechanism.
-
-  The fix is to accumulate into a Vec<String> and join once at the end, which is already done in some places (e.g. stmts in gen_block) — but the top-level
-  output accumulator and several intermediate builders still use the s_cat pattern. In Rust terms, this is the difference between repeated String::push_str in
-  a loop (O(n²)) and collect::<Vec<_>>().join("") (O(n)).
-
-  Current cost: ~3.1s out of ~3.6s total runtime. It's the last major bottleneck.
-
-
-
 ---
 # Smaller items that are in no hurry
 ---
-
-## Good Candidates for Macro Simplification
-  1. is_mut/mut_kw guard — 4 lines, appears 8 times in codegen_stmt.deor. Closes over mut_names and a target variable name. This is the clear winner.
-  2. gen_expr call + destructure — 3 lines, appears 10+ times throughout codegen. Closes over tokens, val_pos, ctx. Every statement handler does this before
-  emitting code.
-  3. Peek name token — 6 lines, appears 5 times in tokens_validation.deor. This is exactly what you were already trying to do with validate_ident — peek at
-  the token after a keyword and run the naming checks.
-  4. min3 + style check pair — pairs naturally with #3 into a single macro that does the full peek-and-validate in one shot.
-
-
-## Should empty and [] stay?
-*Small Lift* | *Medium Priority*
-Right now both empty and [] exist which violates the core concepts in Deor, there should be a limited number of ways to write code two explicit ways seems odd. Taking the side of empty (which I am now leaning away from):
-- Pro: it reads more like a book -- aligns with core principles
-- Pro: it gets rid of more [] symbols -- aligns with core principles
-- Lean-Con: fn([]) to makes more contextual sense than fn(empty) but if it's more than one param it must be named anyway, giving neither a strong edge -- so this is a pretty specific use case, one param and empty both needed.
-- Con: it is harder to recognize and in code that reads entirely like a book it might be getting too hard to pick out
-- Con: [1,2,3] when filled in is already used for defining literal array data and () is might too cluttered
 
 ## Add Better Onboarding Document
 *Large Lift* | *Low Priority*
@@ -111,14 +78,8 @@ It would be good to start a doc that takes users from 0 to completion of at leas
 - Validator: Do we check for rust keywords like mut? we should have an exception to catch rust-named keywords that are not in rust blocks
   - No but this is a todo
   
-## Add Async Lib Shims If they Don't Exist
-Try to make it more like Go channels if possible
-
 ## Crash has 2 Arguments
 Crash wraps panic! and so likely provides 2 arguments, the second of which is for string iterpolation which is anti-Deorian, so we might want to force it to 1 argument, string only and force s_join or something similar.
-
-## Remove insert (only support end)
-```list at end = value``` is already supported, but we should remove insert which I believe is also in the transpiler. 
 
 ---
 # Quick Notes
