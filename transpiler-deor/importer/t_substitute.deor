@@ -43,27 +43,58 @@ fn string apply_t_in_name(string name, string concrete)
 		return s_join_with(mid_parts, new_sep)
 	return name
 
-# Word-boundary replacement of standalone T in raw Rust block content.
+# Applies the same compound-name substitution rules inside raw Rust block content.
+# Scans word by word so TChanPair, TSender, tStack etc. are handled alongside bare T.
 fn string replace_t_in_rust_block(string content, string concrete)
 	rust
 		{
+			fn sub_word(word: &str, concrete: &str) -> String {
+				if word == "T" {
+					return concrete.to_string();
+				}
+				let chars: Vec<char> = word.chars().collect();
+				let n = chars.len();
+				if n > 1 {
+					if chars[0] == 'T' && chars[1].is_uppercase() {
+						let rest: String = chars[1..].iter().collect();
+						let mut pascal = concrete.to_string();
+						if let Some(c) = pascal.chars().next() {
+							if c.is_lowercase() {
+								let upper: String = c.to_uppercase().to_string();
+								pascal = format!("{}{}", upper, &pascal[c.len_utf8()..]);
+							}
+						}
+						return format!("{}{}", pascal, rest);
+					}
+					if chars[0] == 't' && chars[1].is_uppercase() {
+						let rest: String = chars[1..].iter().collect();
+						let lower = concrete.to_lowercase();
+						return format!("{}{}", lower, rest);
+					}
+				}
+				if word.contains("_T_") {
+					let lower = concrete.to_lowercase();
+					let new_sep = format!("_{}_", lower);
+					return word.replace("_T_", &new_sep);
+				}
+				word.to_string()
+			}
 			let mut result = String::new();
 			let chars: Vec<char> = content.chars().collect();
 			let n = chars.len();
 			let mut i = 0;
 			while i < n {
-				if chars[i] == 'T' {
-					let before_ok = i == 0 || { let c = chars[i-1]; !c.is_alphanumeric() && c != '_' };
-					let after_ok = i + 1 >= n || { let c = chars[i+1]; !c.is_alphanumeric() && c != '_' };
-					if before_ok && after_ok {
-						result.push_str(concrete.as_str());
-					} else {
-						result.push('T');
+				if chars[i].is_alphanumeric() || chars[i] == '_' {
+					let start = i;
+					while i < n && (chars[i].is_alphanumeric() || chars[i] == '_') {
+						i += 1;
 					}
+					let word: String = chars[start..i].iter().collect();
+					result.push_str(&sub_word(&word, concrete.as_str()));
 				} else {
 					result.push(chars[i]);
+					i += 1;
 				}
-				i += 1;
 			}
 			result
 		}

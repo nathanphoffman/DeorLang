@@ -1334,23 +1334,53 @@ fn apply_t_in_name(name: String, concrete: String) -> String {
 fn replace_t_in_rust_block(content: String, concrete: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     {
+    	fn sub_word(word: &str, concrete: &str) -> String {
+    		if word == "T" {
+    			return concrete.to_string();
+    		}
+    		let chars: Vec<char> = word.chars().collect();
+    		let n = chars.len();
+    		if n > 1 {
+    			if chars[0] == 'T' && chars[1].is_uppercase() {
+    				let rest: String = chars[1..].iter().collect();
+    				let mut pascal = concrete.to_string();
+    				if let Some(c) = pascal.chars().next() {
+    					if c.is_lowercase() {
+    						let upper: String = c.to_uppercase().to_string();
+    						pascal = format!("{}{}", upper, &pascal[c.len_utf8()..]);
+    					}
+    				}
+    				return format!("{}{}", pascal, rest);
+    			}
+    			if chars[0] == 't' && chars[1].is_uppercase() {
+    				let rest: String = chars[1..].iter().collect();
+    				let lower = concrete.to_lowercase();
+    				return format!("{}{}", lower, rest);
+    			}
+    		}
+    		if word.contains("_T_") {
+    			let lower = concrete.to_lowercase();
+    			let new_sep = format!("_{}_", lower);
+    			return word.replace("_T_", &new_sep);
+    		}
+    		word.to_string()
+    	}
     	let mut result = String::new();
     	let chars: Vec<char> = content.chars().collect();
     	let n = chars.len();
     	let mut i = 0;
     	while i < n {
-    		if chars[i] == 'T' {
-    			let before_ok = i == 0 || { let c = chars[i-1]; !c.is_alphanumeric() && c != '_' };
-    			let after_ok = i + 1 >= n || { let c = chars[i+1]; !c.is_alphanumeric() && c != '_' };
-    			if before_ok && after_ok {
-    				result.push_str(concrete.as_str());
-    			} else {
-    				result.push('T');
+    		if chars[i].is_alphanumeric() || chars[i] == '_' {
+    			let start = i;
+    			while i < n && (chars[i].is_alphanumeric() || chars[i] == '_') {
+    				i += 1;
     			}
+    			let word: String = chars[start..i].iter().collect();
+    			result.push_str(&sub_word(&word, concrete.as_str()));
     		} else {
     			result.push(chars[i]);
+    			i += 1;
     		}
-    		i += 1;
     	}
     	result
     }
@@ -2475,62 +2505,73 @@ fn validate_tokens(tokens: TokensRef) {
             }
         }
         if cur_kind == "IDENT" {
-            // macro: check_call_args (transpiler-deor/tokens_validator/macros/check_call_args.deor)
-            let mut call_lp: i32 = pos + 1.clone();
-            if call_lp < token_count {
-                // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                let mut call_lp_tok: Token = tokens[call_lp as usize].clone();
-                let kind = call_lp_tok.kind.clone();
-                if kind == "LPAREN" {
+            // transpiler-deor/tokens_validation.deor
+            let mut is_fn_decl_name: bool = false;
+            if pos > 1 {
+                // transpiler-deor/tokens_validation.deor
+                let mut prev2_p: i32 = pos - 2.clone();
+                let mut prev2_tok: Token = tokens[prev2_p as usize].clone();
+                let kind = prev2_tok.kind.clone();
+                is_fn_decl_name = kind == "KW_FN";
+            }
+            if !is_fn_decl_name {
+                // macro: check_call_args (transpiler-deor/tokens_validator/macros/check_call_args.deor)
+                let mut call_lp: i32 = pos + 1.clone();
+                if call_lp < token_count {
                     // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                    let mut arg_count: i32 = count_call_args(tokens.clone(), call_lp.clone());
-                    if arg_count >= 2 {
+                    let mut call_lp_tok: Token = tokens[call_lp as usize].clone();
+                    let kind = call_lp_tok.kind.clone();
+                    if kind == "LPAREN" {
                         // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                        let mut scan_pos: i32 = call_lp + 1.clone();
-                        let mut scan_depth: i32 = 0;
-                        let mut at_arg_start: bool = true;
-                        while scan_pos < token_count {
+                        let mut arg_count: i32 = count_call_args(tokens.clone(), call_lp.clone());
+                        if arg_count >= 2 {
                             // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                            let mut scan_tok: Token = tokens[scan_pos as usize].clone();
-                            let kind = scan_tok.kind.clone();
-                            if kind == "RPAREN" {
+                            let mut scan_pos: i32 = call_lp + 1.clone();
+                            let mut scan_depth: i32 = 0;
+                            let mut at_arg_start: bool = true;
+                            while scan_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                let mut scan_root: bool = scan_depth == 0.clone();
-                                if scan_root {
+                                let mut scan_tok: Token = tokens[scan_pos as usize].clone();
+                                let kind = scan_tok.kind.clone();
+                                if kind == "RPAREN" {
                                     // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                    break;
-                                }
-                                scan_depth = scan_depth - 1;
-                                at_arg_start = false;
-                            } else if kind == "LPAREN" {
-                                // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                scan_depth = scan_depth + 1;
-                                at_arg_start = false;
-                            } else if kind == "LBRACKET" {
-                                // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                scan_depth = scan_depth + 1;
-                                at_arg_start = false;
-                            } else if kind == "RBRACKET" {
-                                // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                scan_depth = scan_depth - 1;
-                                at_arg_start = false;
-                            } else if kind == "COMMA" {
-                                // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                let mut scan_root: bool = scan_depth == 0.clone();
-                                if scan_root {
+                                    let mut scan_root: bool = scan_depth == 0.clone();
+                                    if scan_root {
+                                        // transpiler-deor/tokens_validator/macros/check_call_args.deor
+                                        break;
+                                    }
+                                    scan_depth = scan_depth - 1;
+                                    at_arg_start = false;
+                                } else if kind == "LPAREN" {
                                     // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                    at_arg_start = true;
-                                }
-                            } else if at_arg_start {
-                                // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                let mut named: bool = arg_is_named(tokens.clone(), scan_pos.clone(), kind.clone());
-                                if !named {
+                                    scan_depth = scan_depth + 1;
+                                    at_arg_start = false;
+                                } else if kind == "LBRACKET" {
                                     // transpiler-deor/tokens_validator/macros/check_call_args.deor
-                                    errors.push(val_err(tok.clone(), lbl_call.clone(), rule_named_arg.clone()).clone());
+                                    scan_depth = scan_depth + 1;
+                                    at_arg_start = false;
+                                } else if kind == "RBRACKET" {
+                                    // transpiler-deor/tokens_validator/macros/check_call_args.deor
+                                    scan_depth = scan_depth - 1;
+                                    at_arg_start = false;
+                                } else if kind == "COMMA" {
+                                    // transpiler-deor/tokens_validator/macros/check_call_args.deor
+                                    let mut scan_root: bool = scan_depth == 0.clone();
+                                    if scan_root {
+                                        // transpiler-deor/tokens_validator/macros/check_call_args.deor
+                                        at_arg_start = true;
+                                    }
+                                } else if at_arg_start {
+                                    // transpiler-deor/tokens_validator/macros/check_call_args.deor
+                                    let mut named: bool = arg_is_named(tokens.clone(), scan_pos.clone(), kind.clone());
+                                    if !named {
+                                        // transpiler-deor/tokens_validator/macros/check_call_args.deor
+                                        errors.push(val_err(tok.clone(), lbl_call.clone(), rule_named_arg.clone()).clone());
+                                    }
+                                    at_arg_start = false;
                                 }
-                                at_arg_start = false;
+                                scan_pos = scan_pos + 1;
                             }
-                            scan_pos = scan_pos + 1;
                         }
                     }
                 }

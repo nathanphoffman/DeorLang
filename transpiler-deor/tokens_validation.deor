@@ -203,7 +203,15 @@ fn void validate_tokens(TokensRef tokens)
 		# variable declaration: TYPE_IDENT VAR_NAME EQUALS
 		# struct fields are TYPE_IDENT FIELD_NAME NEWLINE (no EQUALS), so this is safe
 		if cur_kind is "IDENT"
-			macro_run check_call_args
+			# skip call-arg check when this IDENT is a fn declaration name (KW_FN TYPE IDENT)
+			bool is_fn_decl_name = false
+			if pos > 1
+				int prev2_p = pos - 2
+				Token prev2_tok = tokens at prev2_p
+				(kind) in prev2_tok
+				is_fn_decl_name = kind is "KW_FN"
+			if not is_fn_decl_name
+				macro_run check_call_args
 			macro_run check_rust_generic
 			macro_run check_var_decl
 			macro_run check_bad_stmt
