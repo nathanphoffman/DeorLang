@@ -25,6 +25,8 @@
 
 [Imports](docs/imports.md) — local module and `rust:` file imports
 
+[Libs](docs/libs.md) — standard library reference: string, math, random, convert, list, tstack, tasks
+
 [Loops](docs/loops.md) — `for` collection and numeric iteration
 
 [Macros](docs/macros.md) — macros for organizing code, useful for avoiding clone
