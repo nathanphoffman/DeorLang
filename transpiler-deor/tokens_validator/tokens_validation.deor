@@ -183,6 +183,19 @@ fn void validate_tokens(TokensRef tokens)
 				string rule_void_return = "void functions must not use return — remove the return statement and let the function fall through"
 				errors at end = val_err(tok, lbl_fn, rule_void_return)
 
+		# move must precede a variable name or destructure — not a literal
+		if cur_kind is "KW_GIVEUP"
+			int mv_next = pos + 1
+			if mv_next < token_count
+				Token mv_tok = tokens at mv_next
+				(kind) in mv_tok
+				bool mv_ok = kind is "IDENT"
+				bool mv_destruct = kind is "LPAREN"
+				bool mv_valid = mv_ok or mv_destruct
+				if not mv_valid
+					string rule_move = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid"
+					errors at end = val_err(tok, lbl_var, rule_move)
+
 		# flag reserved keywords used as names inside ()
 		if paren_depth > 0
 			bool is_forbidden = list_has(forbidden_in_parens, cur_kind)
@@ -258,7 +271,7 @@ fn void validate_tokens(TokensRef tokens)
 					Token type_name_tok = tokens at type_name_pos
 					errors at end = val_err(type_name_tok, lbl_type, rule_list_validator)
 
-		# Fn param count: max 3 parameters
+		# Fn param count: max 3 parameters; param type != param name
 		# pattern: KW_FN <return_type> <fn_name> LPAREN params RPAREN
 		if cur_kind is "KW_FN"
 			int lp_pos = pos + 3
@@ -271,6 +284,28 @@ fn void validate_tokens(TokensRef tokens)
 						int fn_name_pos = pos + 2
 						Token fn_name_tok = tokens at fn_name_pos
 						errors at end = val_err(fn_name_tok, lbl_fn, rule_max_params)
+					# param type same as param name: scan IDENT IDENT pairs in param list
+					string rule_param_shadow = "parameter name cannot be the same as its type — choose a descriptive name"
+					int ps_pos = lp_pos + 1
+					for if ps_pos < token_count
+						Token ps_tok = tokens at ps_pos
+						(kind, value) in ps_tok
+						if kind is "RPAREN"
+							break
+						if kind is "COMMA"
+							ps_pos = ps_pos + 1
+							continue
+						if kind is "IDENT"
+							string param_type_val = value
+							int pn_pos = ps_pos + 1
+							if pn_pos < token_count
+								Token pn_tok = tokens at pn_pos
+								(kind, value) in pn_tok
+								if kind is "IDENT"
+									if value is param_type_val
+										errors at end = val_err(pn_tok, lbl_fn, rule_param_shadow)
+									ps_pos = pn_pos
+						ps_pos = ps_pos + 1
 
 			# missing return type: KW_FN IDENT LPAREN — no room for both return type and fn name
 			string rule_no_ret = "missing return type — use 'fn void name()' for functions that return nothing"

@@ -2212,6 +2212,23 @@ fn validate_tokens(tokens: TokensRef) {
                 errors.push(val_err(tok.clone(), lbl_fn.clone(), rule_void_return.clone()).clone());
             }
         }
+        if cur_kind == "KW_GIVEUP" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            let mut mv_next: i32 = pos + 1.clone();
+            if mv_next < token_count {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut mv_tok: Token = tokens[mv_next as usize].clone();
+                let kind = mv_tok.kind.clone();
+                let mut mv_ok: bool = kind == "IDENT".clone();
+                let mut mv_destruct: bool = kind == "LPAREN".clone();
+                let mut mv_valid: bool = mv_ok || mv_destruct.clone();
+                if !mv_valid {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    let mut rule_move: String = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid".to_string();
+                    errors.push(val_err(tok.clone(), lbl_var.clone(), rule_move.clone()).clone());
+                }
+            }
+        }
         if paren_depth > 0 {
             // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut is_forbidden: bool = list_has(forbidden_in_parens.clone(), cur_kind.clone());
@@ -2417,6 +2434,43 @@ fn validate_tokens(tokens: TokensRef) {
                         let mut fn_name_pos: i32 = pos + 2.clone();
                         let mut fn_name_tok: Token = tokens[fn_name_pos as usize].clone();
                         errors.push(val_err(fn_name_tok.clone(), lbl_fn.clone(), rule_max_params.clone()).clone());
+                    }
+                    let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
+                    let mut ps_pos: i32 = lp_pos + 1.clone();
+                    while ps_pos < token_count {
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
+                        let mut ps_tok: Token = tokens[ps_pos as usize].clone();
+                        let kind = ps_tok.kind.clone();
+                        let value = ps_tok.value.clone();
+                        if kind == "RPAREN" {
+                            // transpiler-deor/tokens_validator/tokens_validation.deor
+                            break;
+                        }
+                        if kind == "COMMA" {
+                            // transpiler-deor/tokens_validator/tokens_validation.deor
+                            ps_pos = ps_pos + 1;
+                            continue;
+                        }
+                        if kind == "IDENT" {
+                            // transpiler-deor/tokens_validator/tokens_validation.deor
+                            let mut param_type_val: String = value.clone();
+                            let mut pn_pos: i32 = ps_pos + 1.clone();
+                            if pn_pos < token_count {
+                                // transpiler-deor/tokens_validator/tokens_validation.deor
+                                let mut pn_tok: Token = tokens[pn_pos as usize].clone();
+                                let kind = pn_tok.kind.clone();
+                                let value = pn_tok.value.clone();
+                                if kind == "IDENT" {
+                                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                                    if value == param_type_val {
+                                        // transpiler-deor/tokens_validator/tokens_validation.deor
+                                        errors.push(val_err(pn_tok.clone(), lbl_fn.clone(), rule_param_shadow.clone()).clone());
+                                    }
+                                    ps_pos = pn_pos;
+                                }
+                            }
+                        }
+                        ps_pos = ps_pos + 1;
                     }
                 }
             }
