@@ -30,6 +30,8 @@ fn void validate_tokens(TokensRef tokens)
 	string rule_snake = "name must be lower_snake_case (no uppercase letters)"
 	string rule_named_arg = "each arg must be a named variable when passing 2 or more args"
 	string rule_bad_stmt = "literal cannot follow 'name ident' — capture in a named variable first"
+	string rule_typed_as = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move"
+	string rule_as_move = "`as` already transfers ownership — use `a as b` instead of `a as move b`"
 	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
 	string rule_max_params = "functions may have at most 3 parameters"
 	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"

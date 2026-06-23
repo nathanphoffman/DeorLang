@@ -1215,15 +1215,13 @@ fn apply_t_substitution(tokens: Vec<Token>, concrete: String) -> Vec<Token> {
         if kind == "IDENT" {
             // transpiler-deor/importer/t_substitute.deor
             let mut new_value: String = apply_t_in_name(value.clone(), concrete.clone());
-/* unhandled(IDENT) */
-            let tok_meta = TokenMeta { line: line.clone(), file: file.clone() };
+            let mut tok_meta: TokenMeta = TokenMeta { line, file };
             let mut new_tok: Token = make_token(kind.clone(), new_value.clone(), tok_meta.clone());
             result.push(new_tok.clone());
         } else if kind == "RUST_BLOCK" {
             // transpiler-deor/importer/t_substitute.deor
             let mut new_content: String = replace_t_in_rust_block(value.clone(), concrete.clone());
-/* unhandled(IDENT) */
-            let tok_meta = TokenMeta { line: line.clone(), file: file.clone() };
+            let mut tok_meta: TokenMeta = TokenMeta { line, file };
             let mut new_tok: Token = make_token(kind.clone(), new_content.clone(), tok_meta.clone());
             result.push(new_tok.clone());
         } else {
@@ -1991,6 +1989,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters)".to_string();
     let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args".to_string();
     let mut rule_bad_stmt: String = "literal cannot follow 'name ident' — capture in a named variable first".to_string();
+    let mut rule_typed_as: String = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move".to_string();
+    let mut rule_as_move: String = "`as` already transfers ownership — use `a as b` instead of `a as move b`".to_string();
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
@@ -2697,6 +2697,17 @@ fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/check_bad_stmt.deor
                             errors.push(val_err(tok.clone(), lbl_var.clone(), rule_bad_stmt.clone()).clone());
                         }
+                        if two_kind == "KW_AS" {
+                            // transpiler-deor/tokens_validator/macros/check_bad_stmt.deor
+                            errors.push(val_err(tok.clone(), lbl_var.clone(), rule_typed_as.clone()).clone());
+                        }
+                    }
+                    if one_kind == "KW_AS" {
+                        // transpiler-deor/tokens_validator/macros/check_bad_stmt.deor
+                        if two_kind == "KW_GIVEUP" {
+                            // transpiler-deor/tokens_validator/macros/check_bad_stmt.deor
+                            errors.push(val_err(tok.clone(), lbl_var.clone(), rule_as_move.clone()).clone());
+                        }
                     }
                 }
             }
@@ -3320,8 +3331,7 @@ fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     let mut using_var: String = "".to_string();
     let mut placeholder: Vec<Token> = Vec::new();
     let mut tokens: TokensRef = tokens_wrap(placeholder);
-/* unhandled(IDENT) */
-    let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
+    let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens };
     let mut ctx: RcCtx = make_rctx(ctx_raw);
     return ctx;
 }
@@ -4567,8 +4577,7 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut has_start: bool = kind == "COMMA".clone();
         if has_start {
             // transpiler-deor/codegen/decl/stmt/for.deor
-/* unhandled(IDENT) */
-            let first_code = val_code;
+            let mut first_code: String = val_code;
             let mut val_pos: i32 = val_end + 1.clone();
             // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
             let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -4597,8 +4606,7 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let val_code = code;
         let val_end = new_pos;
         // transpiler-deor/codegen/decl/stmt/for.deor
-/* unhandled(IDENT) */
-        let start_code = val_code;
+        let mut start_code: String = val_code;
         let mut val_pos: i32 = val_end + 1.clone();
         // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
         let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -4968,8 +4976,7 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let val_code = code;
             let val_end = new_pos;
             // transpiler-deor/codegen/decl/stmt/list_mutation.deor
-/* unhandled(IDENT) */
-            let idx_code = val_code;
+            let mut idx_code: String = val_code;
             let mut val_pos: i32 = val_end + 1.clone();
             // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
             let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -5266,7 +5273,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let enum_reg = ctx.enum_reg.clone();
     let mut_names = ctx.mut_names.clone();
     let type_reg = ctx.type_reg.clone();
-    let using_type = ctx.using_type.clone();
+    let mut using_type = ctx.using_type.clone();
     let mut using_var = ctx.using_var.clone();
     let var_type_reg = ctx.var_type_reg.clone();
     let tokens = ctx.tokens.clone();
@@ -5397,13 +5404,11 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let value = su_var_tok.value.clone();
         let mut using_var: String = value.clone();
         let mut su_struct_type: String = reg_get(var_type_reg.clone(), using_var.clone());
-/* unhandled(IDENT) */
-        let using_type = su_struct_type;
+        let mut using_type: String = su_struct_type;
         let mut su_init: String = make_destruct_code(using_var.clone(), depth.clone(), ctx.clone());
         let mut su_var_next: i32 = su_var_pos + 1.clone();
         let mut su_body_start: i32 = skip_to_body_ref(tokens.clone(), su_var_next.clone());
-/* unhandled(IDENT) */
-        let su_uctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
+        let mut su_uctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens };
         let mut su_using_ctx: RcCtx = make_rctx(su_uctx_raw);
         let mut su_block_r: ParseResult = gen_block(su_body_start.clone(), depth.clone(), su_using_ctx);
         let code = su_block_r.code;
@@ -6006,8 +6011,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut var_type_reg: Vec<String> = build_var_type_reg(tokens.clone());
     let mut using_type: String = "".to_string();
     let mut using_var: String = "".to_string();
-/* unhandled(IDENT) */
-    let body_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
+    let mut body_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens };
     let mut body_ctx: RcCtx = make_rctx(body_ctx_raw);
     let mut body_pos: i32 = 0;
     let mut body_depth: i32 = 1;

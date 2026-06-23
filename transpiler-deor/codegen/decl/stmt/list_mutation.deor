@@ -34,7 +34,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 				return make_nl_result(move app_code, val_end, tokens)
 			val_pos as after_at
 			macro_run gen_expr_r
-			string idx_code as val_code
+			string idx_code = move val_code
 			int val_pos = val_end + 1
 			macro_run gen_expr_r
 			Token val_tok = tokens at val_pos

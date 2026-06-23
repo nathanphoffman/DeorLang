@@ -56,7 +56,7 @@ fn ParseResult gen_fn_decl(TokensRef fn_tokens, int pos, RcCtx ctx)
 	strList var_type_reg = build_var_type_reg(tokens)
 	string using_type = ""
 	string using_var = ""
-	GenCtx body_ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
+	GenCtx body_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
 	RcCtx body_ctx = make_rctx(move body_ctx_raw)
 	int body_pos = 0
 	int body_depth = 1

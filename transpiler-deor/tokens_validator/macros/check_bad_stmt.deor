@@ -17,3 +17,8 @@ macro check_bad_stmt
 				bool two_is_lit = two_is_str or two_is_int or two_is_flt
 				if two_is_lit
 					errors at end = val_err(tok, lbl_var, rule_bad_stmt)
+				if two_kind is "KW_AS"
+					errors at end = val_err(tok, lbl_var, rule_typed_as)
+			if one_kind is "KW_AS"
+				if two_kind is "KW_GIVEUP"
+					errors at end = val_err(tok, lbl_var, rule_as_move)

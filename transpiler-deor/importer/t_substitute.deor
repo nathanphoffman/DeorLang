@@ -108,12 +108,12 @@ fn tokenList apply_t_substitution(tokenList tokens, string concrete)
 		(kind, value, line, file) in tok
 		if kind is "IDENT"
 			string new_value = apply_t_in_name(value, concrete)
-			TokenMeta tok_meta as (line, file)
+			TokenMeta tok_meta = move (line, file)
 			Token new_tok = make_token(kind, new_value, tok_meta)
 			result at end = new_tok
 		else if kind is "RUST_BLOCK"
 			string new_content = replace_t_in_rust_block(value, concrete)
-			TokenMeta tok_meta as (line, file)
+			TokenMeta tok_meta = move (line, file)
 			Token new_tok = make_token(kind, new_content, tok_meta)
 			result at end = new_tok
 		else

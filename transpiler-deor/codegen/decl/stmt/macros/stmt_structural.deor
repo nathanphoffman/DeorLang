@@ -36,11 +36,11 @@ macro stmt_structural
 		(value) in su_var_tok
 		string using_var = value
 		string su_struct_type = reg_get(var_type_reg, using_var)
-		string using_type as su_struct_type
+		string using_type = move su_struct_type
 		string su_init = make_destruct_code(using_var, depth, ctx)
 		int su_var_next = su_var_pos + 1
 		int su_body_start = skip_to_body_ref(tokens, su_var_next)
-		GenCtx su_uctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
+		GenCtx su_uctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
 		RcCtx su_using_ctx = make_rctx(move su_uctx_raw)
 		ParseResult su_block_r = gen_block(su_body_start, depth, move su_using_ctx)
 		move (code, new_pos) in su_block_r

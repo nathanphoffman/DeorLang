@@ -71,7 +71,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 		(kind) in comma_token
 		bool has_start = kind is "COMMA"
 		if has_start
-			string first_code as val_code
+			string first_code = move val_code
 			int val_pos = val_end + 1
 			macro_run gen_expr_r
 			string rng_dot = ".."
@@ -85,7 +85,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 		int start_pos = iter_pos + 1
 		val_pos as start_pos
 		macro_run gen_expr_r
-		string start_code as val_code
+		string start_code = move val_code
 		int val_pos = val_end + 1
 		macro_run gen_expr_r
 		string rng2_dot = ".."

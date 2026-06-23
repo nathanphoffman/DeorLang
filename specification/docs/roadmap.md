@@ -2,38 +2,11 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 # Validation Audit
  ---
-  >> 1. Duplicate top-level names
-  Two struct Foo or two fn void foo() declarations. Rust's error ("already defined") is cryptic and points to generated code, not your source.
 
-  >> 2. Struct field naming convention
-  Fields inside a struct body are never checked — they should be snake_case and min 3 chars just like variables, but currently nothing enforces it.
+- KW_GIVEUP should probably be used for move
 
-  3. Enum variant naming convention
-  Variant names inside an enum body are also unchecked. They should be PascalCase like the enum name itself.
 
-  4. void used as a variable type
-  void result = foo() compiles to () result = ... in Rust which produces a confusing type error. Should be caught: IDENT (void) IDENT EQUALS.
-
-  5. break / continue outside a for loop
-  Using these at depth 0 or inside an if that isn't nested in a for. Rust catches it, but at the generated-code line, not the Deor source line.
-
-  6. return in a void function with a value
-  fn void foo() → return someVar. Rust rejects it with a type mismatch but the Deor message would be much clearer.
-
-  7. move on a non-identifier
-  move 5 or move "hello" is meaningless — move should only ever precede an IDENT. Currently silently generates bad Rust.
-
-  8. Function parameter type same as parameter name
-  fn void foo(string string) — the type and name are identical. Deor destructures these as pairs so this silently produces string: String in Rust but the variable shadows its own type.
-
-  9. for variable name colliding with outer scope variable
-  int idx = 0 declared before a for idx in range(n) loop — the loop re-declares idx which shadows the outer one. Often unintentional.
-
-  10. Calling print with a non-string
-  print(some_int) — print maps to Rust's println!("{}", ...) which requires Display, but the generated code often coerces wrongly. Could check that the arg to print is a string type or a
-  string-producing call.
-
-# New Findings
+# New Findings -- being worked on
 As should always be implicit ownership, right now the 2nd line below is allowed, it should not be, which makes me wonder how much of this is correct today
 
 a as b <------- allowed, ownership
@@ -47,35 +20,7 @@ int a = move b <--  allowed, ownership
 # New Questions
 
 - Should we switch mappings to enums?
-
-
-
-# Bad no longer -> valid comparison only
-Bad should be removed, no user can intentionally assign something bad/none or return it. Instead only comparisons are allowed and rather than bad it is valid (the inverse of bad) and the bad keyword is dropped.
-
-If a user wants to define something null they just do this:
-NatesInt num 
-^ num is considered not valid (none in Rust)
-
-This code should work for testing if/boolean
-if num is valid  # this is false
-if num is not valid # this is true
-
-explicit assignment should not be allowed:
-num = valid # not allowed
-num = not valid # not allowed
-num = invalid # not even a keyword
-
-The reason for this is if a value is ever known for something, it should never be removed, only changed.  And anytime a validator type is changed, it already runs a valid check (sets it to none in Rust if it doesnt pass)
-
-So to recap, remove bad, add a valid in the same idea (but opposite of bad) but it should only be allowed in comparisons.
-
-Additionally, make it so an empty definition is allowed and is not valid by default.
-
-Implementation wise I think what we should do is still use none under the hood, but when the user does a comparison on valid just replace it with not none in rust, and it should work out I think.  So we are just not not none on not valid checks.  I am ok with the not (!) redundancy if it makes it easier to implement in rust
-
-Other issues
-  - for move loop form — experimental.md shows it without parentheses; transpiler requires
+  - ask ai what this means: for move loop form — experimental.md shows it without parentheses; transpiler requires
   them
 
 # New audit June 21st
