@@ -36,6 +36,22 @@ Restart your terminal. The binary is added to your user PATH automatically.
 
 ---
 
+## Update
+
+Pull the latest transpiler and standard library into an existing project:
+
+```sh
+curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/update.sh | sh
+```
+
+Run this from inside your project directory and it will recompile `~/.deor/bin/deor` and refresh the `lib/` files in place. To target a specific project path instead:
+
+```sh
+curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/update.sh | sh -s -- /path/to/your/project
+```
+
+---
+
 ## Quick start
 
 During install you'll be prompted for a folder to create your starter project in:
