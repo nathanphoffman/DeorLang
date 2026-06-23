@@ -1,0 +1,7 @@
+
+# Entry point for the macro pipeline step. Validates all macro_run references against
+# defined macro names, then expands macros inline. Returns the expanded token list
+# ready for validation and codegen.
+fn tokenList build_macros(tokenList raw_tokens)
+	tokenList validated = validate_macros(raw_tokens)
+	return expand_deor_macros(validated)

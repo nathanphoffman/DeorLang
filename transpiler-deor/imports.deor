@@ -33,13 +33,17 @@ import "transpiler-deor/importer/macros/find_shape_end.deor"
 import "transpiler-deor/importer/dedup.deor"
 import "transpiler-deor/importer/importer.deor"
 
-# macro expander
-import "transpiler-deor/macro_expander.deor"
-
 # validators
 import "transpiler-deor/tokens_validator/casing.deor"
 import "transpiler-deor/tokens_validator/arg_helpers.deor"
 import "transpiler-deor/tokens_validator/error_handling.deor"
+
+# macro builder (validate + expand; depends on error_handling for error reporting)
+import "transpiler-deor/macro_builder/macro_expander.deor"
+import "transpiler-deor/macro_builder/macro_validation.deor"
+import "transpiler-deor/macro_builder/macro_builder.deor"
+
+# token validators (continued)
 import "transpiler-deor/tokens_validator/macros/define_errors.deor"
 import "transpiler-deor/tokens_validator/macros/validate_ident.deor"
 import "transpiler-deor/tokens_validator/macros/skip_rust_block.deor"

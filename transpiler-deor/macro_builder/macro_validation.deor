@@ -1,0 +1,43 @@
+
+# Pre-expansion validator for macro definitions and uses. Runs on the raw merged
+# token list before expand_deor_macros consumes the KW_MACRO/KW_MACRO_RUN tokens.
+# Reports any macro_run that references a name not defined by a macro anywhere in
+# the merged token stream, then returns the token list unchanged.
+fn tokenList validate_macros(tokenList raw_tokens)
+	int token_count = len(raw_tokens)
+	strList errors = empty
+
+	# pass 1: collect every defined macro name
+	strList macro_names = empty
+	int pdx = 0
+	for if pdx < token_count
+		Token tok = raw_tokens at pdx
+		(kind) in tok
+		if kind is "KW_MACRO"
+			int nm_pos = pdx + 1
+			if nm_pos < token_count
+				Token nm_tok = raw_tokens at nm_pos
+				(kind, value) in nm_tok
+				if kind is "IDENT"
+					macro_names at end = value
+		pdx = pdx + 1
+
+	# pass 2: verify every macro_run references a collected name
+	string lbl_macro = "macro_run"
+	string rule_macro_run = "macro is not defined — check the name or add a 'macro <name>' definition"
+	int mdx = 0
+	for if mdx < token_count
+		Token tok = raw_tokens at mdx
+		(kind) in tok
+		if kind is "KW_MACRO_RUN"
+			int nm_pos = mdx + 1
+			if nm_pos < token_count
+				Token nm_tok = raw_tokens at nm_pos
+				(kind, value) in nm_tok
+				if kind is "IDENT"
+					if not list_has(macro_names, value)
+						errors at end = val_err(nm_tok, lbl_macro, rule_macro_run)
+		mdx = mdx + 1
+
+	handle_errors(errors)
+	return raw_tokens

@@ -20,10 +20,12 @@ fn void main()
 		tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
 		macro_run end_timer
 
-		# macro-expansion
-		string _timer_label = "[timer] macro-expand: "
+		# macro builder (validate + expand)
+		# validation of the macro needs to happen before full validation
+		# - because the full validation needs the tokens macro builds
+		string _timer_label = "[timer] macro-build: "
 		macro_run start_timer
-		tokenList tokens = expand_deor_macros(raw_tokens)
+		tokenList tokens = build_macros(raw_tokens)
 		macro_run end_timer
 		TokensRef tokens_ref = tokens_wrap(move tokens)
 

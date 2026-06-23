@@ -1708,78 +1708,6 @@ fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
     return deduplicate_decls(merged.clone());
 }
 
-// transpiler-deor/macro_expander.deor
-fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
-    // transpiler-deor/macro_expander.deor
-    let mut macros: std::collections::HashMap<String, (Vec<Token>, i32)> = std::collections::HashMap::new();
-    let mut result: Vec<Token> = vec![];
-    let mut i: usize = 0;
-    let mut scope_depth: i32 = 0;
-    while i < tokens.len() {
-    	let kind = tokens[i].kind.as_str();
-
-    	// track scope depth for macro privacy
-    	if kind == "INDENT" { scope_depth += 1; }
-    	if kind == "DEDENT" {
-    		scope_depth -= 1;
-    		// remove any macros defined at the depth we are leaving
-    		macros.retain(|_, (_, def_depth)| *def_depth <= scope_depth);
-    	}
-
-    	// collect macro definition
-    	if kind == "KW_MACRO" {
-    		let mut j = i + 1;
-    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
-    		j += 1;
-    		// skip NEWLINE then INDENT
-    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		while j < tokens.len() && tokens[j].kind == "INDENT" { j += 1; }
-    		// collect body tokens, excluding the outer INDENT/DEDENT pair
-    		let mut body: Vec<Token> = vec![];
-    		let mut depth: i32 = 1;
-    		while j < tokens.len() {
-    			if tokens[j].kind == "INDENT" {
-    				depth += 1;
-    				body.push(tokens[j].clone());
-    			} else if tokens[j].kind == "DEDENT" {
-    				depth -= 1;
-    				if depth == 0 { j += 1; break; }
-    				body.push(tokens[j].clone());
-    			} else {
-    				body.push(tokens[j].clone());
-    			}
-    			j += 1;
-    		}
-    		if !name.is_empty() { macros.insert(name, (body, scope_depth)); }
-    		// skip trailing NEWLINE after the definition block
-    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		i = j;
-    		continue;
-    	}
-
-    	// expand macro_run call site
-    	if kind == "KW_MACRO_RUN" {
-    		let mut j = i + 1;
-    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
-    		j += 1;
-    		// skip trailing NEWLINE after the call
-    		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		// splice body tokens inline, preceded by a marker carrying the macro name
-    		if let Some((body, _)) = macros.get(&name) {
-    			let marker_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
-    			result.push(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
-    			for tok in body { result.push(tok.clone()); }
-    		}
-    		i = j;
-    		continue;
-    	}
-
-    	result.push(tokens[i].clone());
-    	i += 1;
-    }
-    result
-}
-
 // transpiler-deor/tokens_validator/casing.deor
 fn is_pascal(name: String) -> bool {
     // transpiler-deor/tokens_validator/casing.deor
@@ -1961,6 +1889,142 @@ fn handle_errors(errors: Vec<String>) {
         }
         std::process::exit(1);
     }
+}
+
+// transpiler-deor/macro_builder/macro_expander.deor
+fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
+    // transpiler-deor/macro_builder/macro_expander.deor
+    let mut macros: std::collections::HashMap<String, (Vec<Token>, i32)> = std::collections::HashMap::new();
+    let mut result: Vec<Token> = vec![];
+    let mut i: usize = 0;
+    let mut scope_depth: i32 = 0;
+    while i < tokens.len() {
+    	let kind = tokens[i].kind.as_str();
+
+    	// track scope depth for macro privacy
+    	if kind == "INDENT" { scope_depth += 1; }
+    	if kind == "DEDENT" {
+    		scope_depth -= 1;
+    		// remove any macros defined at the depth we are leaving
+    		macros.retain(|_, (_, def_depth)| *def_depth <= scope_depth);
+    	}
+
+    	// collect macro definition
+    	if kind == "KW_MACRO" {
+    		let mut j = i + 1;
+    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
+    		j += 1;
+    		// skip NEWLINE then INDENT
+    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		while j < tokens.len() && tokens[j].kind == "INDENT" { j += 1; }
+    		// collect body tokens, excluding the outer INDENT/DEDENT pair
+    		let mut body: Vec<Token> = vec![];
+    		let mut depth: i32 = 1;
+    		while j < tokens.len() {
+    			if tokens[j].kind == "INDENT" {
+    				depth += 1;
+    				body.push(tokens[j].clone());
+    			} else if tokens[j].kind == "DEDENT" {
+    				depth -= 1;
+    				if depth == 0 { j += 1; break; }
+    				body.push(tokens[j].clone());
+    			} else {
+    				body.push(tokens[j].clone());
+    			}
+    			j += 1;
+    		}
+    		if !name.is_empty() { macros.insert(name, (body, scope_depth)); }
+    		// skip trailing NEWLINE after the definition block
+    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		i = j;
+    		continue;
+    	}
+
+    	// expand macro_run call site
+    	if kind == "KW_MACRO_RUN" {
+    		let mut j = i + 1;
+    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
+    		j += 1;
+    		// skip trailing NEWLINE after the call
+    		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
+    		// splice body tokens inline, preceded by a marker carrying the macro name
+    		if let Some((body, _)) = macros.get(&name) {
+    			let marker_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
+    			result.push(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
+    			for tok in body { result.push(tok.clone()); }
+    		}
+    		i = j;
+    		continue;
+    	}
+
+    	result.push(tokens[i].clone());
+    	i += 1;
+    }
+    result
+}
+
+// transpiler-deor/macro_builder/macro_validation.deor
+fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
+    // transpiler-deor/macro_builder/macro_validation.deor
+    let mut token_count: i32 = (raw_tokens.len() as i32);
+    let mut errors: Vec<String> = Vec::new();
+    let mut macro_names: Vec<String> = Vec::new();
+    let mut pdx: i32 = 0;
+    while pdx < token_count {
+        // transpiler-deor/macro_builder/macro_validation.deor
+        let mut tok: Token = raw_tokens[pdx as usize].clone();
+        let kind = tok.kind.clone();
+        if kind == "KW_MACRO" {
+            // transpiler-deor/macro_builder/macro_validation.deor
+            let mut nm_pos: i32 = pdx + 1.clone();
+            if nm_pos < token_count {
+                // transpiler-deor/macro_builder/macro_validation.deor
+                let mut nm_tok: Token = raw_tokens[nm_pos as usize].clone();
+                let kind = nm_tok.kind.clone();
+                let value = nm_tok.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/macro_builder/macro_validation.deor
+                    macro_names.push(value.clone());
+                }
+            }
+        }
+        pdx = pdx + 1;
+    }
+    let mut lbl_macro: String = "macro_run".to_string();
+    let mut rule_macro_run: String = "macro is not defined — check the name or add a 'macro <name>' definition".to_string();
+    let mut mdx: i32 = 0;
+    while mdx < token_count {
+        // transpiler-deor/macro_builder/macro_validation.deor
+        let mut tok: Token = raw_tokens[mdx as usize].clone();
+        let kind = tok.kind.clone();
+        if kind == "KW_MACRO_RUN" {
+            // transpiler-deor/macro_builder/macro_validation.deor
+            let mut nm_pos: i32 = mdx + 1.clone();
+            if nm_pos < token_count {
+                // transpiler-deor/macro_builder/macro_validation.deor
+                let mut nm_tok: Token = raw_tokens[nm_pos as usize].clone();
+                let kind = nm_tok.kind.clone();
+                let value = nm_tok.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/macro_builder/macro_validation.deor
+                    if !list_has(macro_names.clone(), value.clone()) {
+                        // transpiler-deor/macro_builder/macro_validation.deor
+                        errors.push(val_err(nm_tok.clone(), lbl_macro.clone(), rule_macro_run.clone()).clone());
+                    }
+                }
+            }
+        }
+        mdx = mdx + 1;
+    }
+    handle_errors(errors.clone());
+    return raw_tokens;
+}
+
+// transpiler-deor/macro_builder/macro_builder.deor
+fn build_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
+    // transpiler-deor/macro_builder/macro_builder.deor
+    let mut validated: Vec<Token> = validate_macros(raw_tokens.clone());
+    return expand_deor_macros(validated.clone());
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
@@ -6202,11 +6266,11 @@ fn main() {
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
         // transpiler-deor/main.deor
-        let mut _timer_label: String = "[timer] macro-expand: ".to_string();
+        let mut _timer_label: String = "[timer] macro-build: ".to_string();
         // macro: start_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_start: i32 = now_ms();
         // transpiler-deor/main.deor
-        let mut tokens: Vec<Token> = expand_deor_macros(raw_tokens.clone());
+        let mut tokens: Vec<Token> = build_macros(raw_tokens.clone());
         // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
