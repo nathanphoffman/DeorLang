@@ -1,0 +1,11 @@
+macro for_build_fields
+	for field_index in range(field_count)
+		string field = fields at field_index
+		bool is_mut = list_has(mut_names, field)
+		string mut_kw = ""
+		if is_mut
+			mut_kw = "mut "
+		string dst_let = "let "
+		string dst_eq = " = "
+		string dst_dot = "."
+		dest_lines at end = s_join([pad, dst_let, mut_kw, field, dst_eq, val_code, dst_dot, field, field_suffix])

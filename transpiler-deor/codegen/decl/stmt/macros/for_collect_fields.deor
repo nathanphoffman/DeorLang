@@ -1,0 +1,13 @@
+macro for_collect_fields_into_fields_list
+	# collects fields names of the struct destructure into fields
+	for if cur < token_count
+		Token field_token = tokens at cur
+		(kind, value) in field_token
+		if kind is "RPAREN"
+			cur = cur + 1
+			break
+		else if kind is "COMMA"
+			cur = cur + 1
+		else if kind is "IDENT"
+			fields at end = value
+			cur = cur + 1
