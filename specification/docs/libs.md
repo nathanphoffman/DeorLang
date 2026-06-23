@@ -221,6 +221,8 @@ After substitution with `T = Report`:
 | `ReportChanPair` | struct | Both halves together |
 | `tReportList` | shape | `list of ReportReceiver` |
 | `reportSenderFunc` | shape | `func of ReportSender to void` |
+| `reportList` | shape | `list of Report` |
+| `reportTransformFunc` | shape | `func of Report to Report` |
 | `task_runner` | macro | Sets up the pool + channel in one step |
 
 | Function (before substitution) | Signature | Description |
@@ -229,6 +231,30 @@ After substitution with `T = Report`:
 | `t_T_chan_send` | `TSender, T → void` | Send a value through the channel |
 | `t_T_chan_recv` | `TReceiver → T` | Block until a value arrives |
 | `t_T_spawn` | `TaskPool, TSender, tSenderFunc → void` | Dispatch a task onto the pool |
+| `t_T_run_all` | `TaskPool, tList, tTransformFunc → tList` | Map a list of T through a worker in parallel, return all results |
+
+### `t_T_run_all` — parallel map
+
+The simplest way to process a list in parallel. Pass a list of T and a worker function that transforms T → T; get back a list of results. All tasks run concurrently on the pool; the call blocks until every result is collected.
+
+```
+import "lib/tasks.deor" where T = Report
+
+fn Report enrich(Report rep)
+    # process rep, return updated Report
+    return rep
+
+fn void main()
+    TaskPool pool = t_pool_make()
+
+    reportList jobs = [...]
+    reportTransformFunc worker = enrich
+    reportList results = t_report_run_all(pool, jobs, worker)
+```
+
+The pool bounds concurrency automatically — dispatching 10 000 items still only runs `available_parallelism()` threads at once. Results are returned in completion order, not input order.
+
+---
 
 ### `task_runner` macro
 

@@ -6,6 +6,8 @@ raw TChanPair
 
 shape tReceiverList = list of TReceiver
 shape tSenderFunc = func of TSender to void
+shape tList = list of T
+shape tTransformFunc = func of T to T
 
 # Sets up a thread pool and a typed channel in one shot.
 # After substitution injects: pool (TaskPool), snd (TSender), rcv (TReceiver)
@@ -45,3 +47,18 @@ fn T t_T_chan_recv(TReceiver rcv)
 fn void t_T_spawn(TaskPool pool, TSender snd, tSenderFunc func)
 	rust
 		pool.sender.send(Box::new(move || func(snd))).unwrap();
+
+# Maps a list of T through a worker function in parallel using the pool.
+# Each item is dispatched as a separate task; all results are collected and returned.
+fn tList t_T_run_all(TaskPool pool, tList items, tTransformFunc func)
+	rust
+		let item_count = items.len();
+		let (tx, rx) = mpsc::channel::<T>();
+		for item in items.into_iter() {
+			let tx = tx.clone();
+			pool.sender.send(Box::new(move || {
+				let result = func(item);
+				tx.send(result).unwrap();
+			})).unwrap();
+		}
+		(0..item_count).map(|_| rx.recv().unwrap()).collect()

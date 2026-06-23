@@ -1,0 +1,46 @@
+
+import "lib/tasks.deor" where T = Score
+
+struct Score
+	string label
+	int points
+
+fn Score make_score(string label, int points)
+	Score built = move (label, points)
+	return built
+
+fn Score apply_bonus(Score score)
+	(label, points) in score
+	points = points * 2
+	Score result = move (label, points)
+	return result
+
+fn void main()
+	TaskPool pool = t_pool_make()
+
+	string lbl_aaa = "accuracy"
+	int pts_aaa = 10
+	Score aaa = make_score(lbl_aaa, pts_aaa)
+
+	string lbl_bbb = "speed"
+	int pts_bbb = 25
+	Score bbb = make_score(lbl_bbb, pts_bbb)
+
+	string lbl_ccc = "style"
+	int pts_ccc = 7
+	Score ccc = make_score(lbl_ccc, pts_ccc)
+
+	scoreList jobs = empty
+	jobs at end = aaa
+	jobs at end = bbb
+	jobs at end = ccc
+
+	scoreTransformFunc worker = apply_bonus
+	scoreList results = t_score_run_all(pool, jobs, worker)
+
+	int count = len(results)
+	for idx in range(count)
+		Score res = results at idx
+		(label, points) in res
+		print(label)
+		print(points)
