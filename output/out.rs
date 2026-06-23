@@ -1974,6 +1974,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut errors: Vec<String> = Vec::new();
     let mut pos: i32 = 0;
     let mut paren_depth: i32 = 0;
+    let mut block_depth: i32 = 0;
+    let mut in_void_fn: bool = false;
     let mut lbl_struct: String = "struct".to_string();
     let mut lbl_enum: String = "enum".to_string();
     let mut lbl_shape: String = "shape".to_string();
@@ -1998,8 +2000,11 @@ fn validate_tokens(tokens: TokensRef) {
     let mut shape_names: Vec<String> = Vec::new();
     let mut decl_names: Vec<String> = Vec::new();
     let mut rule_dup: String = "duplicate declaration — this name is already used by another struct, enum, shape, fn, or type".to_string();
+    let mut rule_enum_pascal: String = "enum variant must be PascalCase".to_string();
+    let mut rule_enum_data: String = "enum variants cannot carry data — use a struct alongside the enum instead".to_string();
     let mut lbl_decl: String = "declaration".to_string();
     let mut lbl_field: String = "struct field".to_string();
+    let mut lbl_variant: String = "enum variant".to_string();
     let mut pre_i: i32 = 0;
     while pre_i < token_count {
         // transpiler-deor/tokens_validator/tokens_validation.deor
@@ -2106,6 +2111,53 @@ fn validate_tokens(tokens: TokensRef) {
                 sf_pos = sf_pos + 1;
             }
         }
+        if kind == "KW_ENUM" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            let mut ev_pos: i32 = pre_i + 1.clone();
+            while ev_pos < token_count {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut ev_tok: Token = tokens[ev_pos as usize].clone();
+                let kind = ev_tok.kind.clone();
+                if kind == "INDENT" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    break;
+                }
+                ev_pos = ev_pos + 1;
+            }
+            ev_pos = ev_pos + 1;
+            while ev_pos < token_count {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut ev_tok: Token = tokens[ev_pos as usize].clone();
+                let kind = ev_tok.kind.clone();
+                if kind == "DEDENT" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    break;
+                }
+                if kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    let value = ev_tok.value.clone();
+                    if (value.len() as i32) < 3 {
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
+                        errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_min3.clone()).clone());
+                    }
+                    if !is_pascal(value.clone()) {
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
+                        errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_enum_pascal.clone()).clone());
+                    }
+                    let mut after_variant: i32 = ev_pos + 1.clone();
+                    if after_variant < token_count {
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
+                        let mut after_tok: Token = tokens[after_variant as usize].clone();
+                        let kind = after_tok.kind.clone();
+                        if kind == "LPAREN" {
+                            // transpiler-deor/tokens_validator/tokens_validation.deor
+                            errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_enum_data.clone()).clone());
+                        }
+                    }
+                }
+                ev_pos = ev_pos + 1;
+            }
+        }
         pre_i = pre_i + 1;
     }
     while pos < token_count {
@@ -2126,6 +2178,39 @@ fn validate_tokens(tokens: TokensRef) {
         if cur_kind == "RPAREN" {
             // transpiler-deor/tokens_validator/tokens_validation.deor
             paren_depth = paren_depth - 1;
+        }
+        if cur_kind == "INDENT" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            block_depth = block_depth + 1;
+        }
+        if cur_kind == "DEDENT" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            block_depth = block_depth - 1;
+            if block_depth == 0 {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                in_void_fn = false;
+            }
+        }
+        if cur_kind == "KW_FN" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            let mut void_check: i32 = pos + 1.clone();
+            if void_check < token_count {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut void_tok: Token = tokens[void_check as usize].clone();
+                let kind = void_tok.kind.clone();
+                if kind == "KW_VOID" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    in_void_fn = true;
+                }
+            }
+        }
+        if cur_kind == "KW_RETURN" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            if in_void_fn {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut rule_void_return: String = "void functions must not use return — remove the return statement and let the function fall through".to_string();
+                errors.push(val_err(tok.clone(), lbl_fn.clone(), rule_void_return.clone()).clone());
+            }
         }
         if paren_depth > 0 {
             // transpiler-deor/tokens_validator/tokens_validation.deor
@@ -2571,6 +2656,38 @@ fn validate_tokens(tokens: TokensRef) {
                 if kind == "LBRACKET" {
                     // transpiler-deor/tokens_validator/tokens_validation.deor
                     errors.push(val_err(tok.clone(), lbl_var.clone(), bracket_rule.clone()).clone());
+                }
+            }
+        }
+        if cur_kind == "KW_VOID" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            let mut preceded_by_fn: bool = false;
+            if pos > 0 {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut prev_void: i32 = pos - 1.clone();
+                let mut prev_void_tok: Token = tokens[prev_void as usize].clone();
+                let kind = prev_void_tok.kind.clone();
+                preceded_by_fn = kind == "KW_FN";
+            }
+            if !preceded_by_fn {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut void_name_pos: i32 = pos + 1.clone();
+                let mut void_eq_pos: i32 = pos + 2.clone();
+                if void_eq_pos < token_count {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    let mut void_name_tok: Token = tokens[void_name_pos as usize].clone();
+                    let mut void_eq_tok: Token = tokens[void_eq_pos as usize].clone();
+                    let kind = void_name_tok.kind.clone();
+                    let mut void_name_kind: String = kind.clone();
+                    let kind = void_eq_tok.kind.clone();
+                    if void_name_kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
+                        if kind == "EQUALS" {
+                            // transpiler-deor/tokens_validator/tokens_validation.deor
+                            let mut rule_void_var: String = "'void' is not a valid variable type — only functions can return void".to_string();
+                            errors.push(val_err(tok.clone(), lbl_var.clone(), rule_void_var.clone()).clone());
+                        }
+                    }
                 }
             }
         }

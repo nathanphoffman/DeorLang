@@ -13,6 +13,8 @@ fn void validate_tokens(TokensRef tokens)
 	strList errors = empty
 	int pos = 0
 	int paren_depth = 0
+	int block_depth = 0
+	bool in_void_fn = false
 	string lbl_struct = "struct"
 	string lbl_enum = "enum"
 	string lbl_shape = "shape"
@@ -39,8 +41,11 @@ fn void validate_tokens(TokensRef tokens)
 	strList shape_names = empty
 	strList decl_names = empty
 	string rule_dup = "duplicate declaration — this name is already used by another struct, enum, shape, fn, or type"
+	string rule_enum_pascal = "enum variant must be PascalCase"
+	string rule_enum_data = "enum variants cannot carry data — use a struct alongside the enum instead"
 	string lbl_decl = "declaration"
 	string lbl_field = "struct field"
+	string lbl_variant = "enum variant"
 	int pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
@@ -110,6 +115,35 @@ fn void validate_tokens(TokensRef tokens)
 								errors at end = val_err(field_name_tok, lbl_field, rule_snake)
 				sf_pos = sf_pos + 1
 
+		# enum variant naming: PascalCase + min 3 chars, no data payloads
+		if kind is "KW_ENUM"
+			int ev_pos = pre_i + 1
+			for if ev_pos < token_count
+				Token ev_tok = tokens at ev_pos
+				(kind) in ev_tok
+				if kind is "INDENT"
+					break
+				ev_pos = ev_pos + 1
+			ev_pos = ev_pos + 1
+			for if ev_pos < token_count
+				Token ev_tok = tokens at ev_pos
+				(kind) in ev_tok
+				if kind is "DEDENT"
+					break
+				if kind is "IDENT"
+					(value) in ev_tok
+					if len(value) < 3
+						errors at end = val_err(ev_tok, lbl_variant, rule_min3)
+					if not is_pascal(value)
+						errors at end = val_err(ev_tok, lbl_variant, rule_enum_pascal)
+					int after_variant = ev_pos + 1
+					if after_variant < token_count
+						Token after_tok = tokens at after_variant
+						(kind) in after_tok
+						if kind is "LPAREN"
+							errors at end = val_err(ev_tok, lbl_variant, rule_enum_data)
+				ev_pos = ev_pos + 1
+
 		pre_i = pre_i + 1
 
 	for if pos < token_count
@@ -125,6 +159,29 @@ fn void validate_tokens(TokensRef tokens)
 			paren_depth = paren_depth + 1
 		if cur_kind is "RPAREN"
 			paren_depth = paren_depth - 1
+
+		# track block depth to detect when void fn body ends
+		if cur_kind is "INDENT"
+			block_depth = block_depth + 1
+		if cur_kind is "DEDENT"
+			block_depth = block_depth - 1
+			if block_depth is 0
+				in_void_fn = false
+
+		# detect entry into a void function body
+		if cur_kind is "KW_FN"
+			int void_check = pos + 1
+			if void_check < token_count
+				Token void_tok = tokens at void_check
+				(kind) in void_tok
+				if kind is "KW_VOID"
+					in_void_fn = true
+
+		# return is never allowed inside a void function
+		if cur_kind is "KW_RETURN"
+			if in_void_fn
+				string rule_void_return = "void functions must not use return — remove the return statement and let the function fall through"
+				errors at end = val_err(tok, lbl_fn, rule_void_return)
 
 		# flag reserved keywords used as names inside ()
 		if paren_depth > 0
@@ -286,6 +343,28 @@ fn void validate_tokens(TokensRef tokens)
 				string bracket_rule = "bracket indexing is not valid in Deor — use 'name at index' instead"
 				if kind is "LBRACKET"
 					errors at end = val_err(tok, lbl_var, bracket_rule)
+
+		# void used as a variable type: KW_VOID IDENT EQUALS (not preceded by KW_FN)
+		if cur_kind is "KW_VOID"
+			bool preceded_by_fn = false
+			if pos > 0
+				int prev_void = pos - 1
+				Token prev_void_tok = tokens at prev_void
+				(kind) in prev_void_tok
+				preceded_by_fn = kind is "KW_FN"
+			if not preceded_by_fn
+				int void_name_pos = pos + 1
+				int void_eq_pos = pos + 2
+				if void_eq_pos < token_count
+					Token void_name_tok = tokens at void_name_pos
+					Token void_eq_tok = tokens at void_eq_pos
+					(kind) in void_name_tok
+					string void_name_kind = kind
+					(kind) in void_eq_tok
+					if void_name_kind is "IDENT"
+						if kind is "EQUALS"
+							string rule_void_var = "'void' is not a valid variable type — only functions can return void"
+							errors at end = val_err(tok, lbl_var, rule_void_var)
 
 		if cur_kind is "KW_VALID"
 			bool valid_ok = false
