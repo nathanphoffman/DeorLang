@@ -3026,6 +3026,26 @@ fn collect_mut_names(tokens: Vec<Token>, start: i32, end_pos: i32) -> Vec<String
     return result;
 }
 
+// transpiler-deor/registry/registry.deor
+fn build_registry(tokens_ref: TokensRef) -> RcCtx {
+    // transpiler-deor/registry/registry.deor
+    let mut struct_reg: Vec<String> = build_struct_reg(tokens_ref.clone());
+    let mut shape_reg: Vec<String> = build_shape_reg(tokens_ref.clone());
+    let mut enum_reg: Vec<String> = build_enum_reg(tokens_ref.clone());
+    let mut variant_reg: Vec<String> = build_variant_reg(tokens_ref.clone(), enum_reg.clone());
+    let mut type_reg: Vec<String> = build_type_reg(tokens_ref.clone());
+    let mut var_type_reg: Vec<String> = build_var_type_reg(tokens_ref.clone());
+    let mut mut_names: Vec<String> = Vec::new();
+    let mut using_type: String = "".to_string();
+    let mut using_var: String = "".to_string();
+    let mut placeholder: Vec<Token> = Vec::new();
+    let mut tokens: TokensRef = tokens_wrap(placeholder);
+/* unhandled(IDENT) */
+    let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
+    let mut ctx: RcCtx = make_rctx(ctx_raw);
+    return ctx;
+}
+
 // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
 fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
@@ -5907,26 +5927,13 @@ fn main() {
         // macro: start_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_start: i32 = now_ms();
         // transpiler-deor/main.deor
-        let mut struct_reg: Vec<String> = build_struct_reg(tokens_ref.clone());
-        let mut shape_reg: Vec<String> = build_shape_reg(tokens_ref.clone());
-        let mut enum_reg: Vec<String> = build_enum_reg(tokens_ref.clone());
-        let mut variant_reg: Vec<String> = build_variant_reg(tokens_ref.clone(), enum_reg.clone());
-        let mut type_reg: Vec<String> = build_type_reg(tokens_ref.clone());
-        let mut var_type_reg: Vec<String> = build_var_type_reg(tokens_ref.clone());
+        let ctx = build_registry(tokens_ref.clone());
         // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
         // transpiler-deor/main.deor
-        let mut mut_names: Vec<String> = Vec::new();
-        let mut using_type: String = "".to_string();
-        let mut using_var: String = "".to_string();
-        let mut placeholder: Vec<Token> = Vec::new();
-        let mut tokens: TokensRef = tokens_wrap(placeholder);
-/* unhandled(IDENT) */
-        let ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), using_type: using_type.clone(), using_var: using_var.clone(), var_type_reg: var_type_reg.clone(), tokens: tokens.clone() };
-        let mut ctx: RcCtx = make_rctx(ctx_raw);
         let mut _timer_label: String = "[timer] total-codegen: ".to_string();
         // macro: start_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_start: i32 = now_ms();

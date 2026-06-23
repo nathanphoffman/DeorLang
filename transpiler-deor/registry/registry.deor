@@ -1,0 +1,31 @@
+
+# === Registry builders ===
+#
+# Each concern has its own file under registry/:
+#
+#   registry/struct.deor         — skip_to_block_start, collect_struct_fields, build_struct_reg
+#   registry/shape.deor          — build_shape_reg
+#   registry/enum.deor           — build_enum_reg, build_variant_reg
+#   registry/validator_type.deor — build_type_reg
+#   registry/var_type.deor       — build_var_type_reg
+#   registry/type_resolve.deor   — resolve_type
+#   registry/mut_scan.deor       — find_block_end, collect_mut_names
+
+# to avoid a struct
+fn RcCtx build_registry(TokensRef tokens_ref)
+    strList struct_reg = build_struct_reg(tokens_ref)
+	strList shape_reg = build_shape_reg(tokens_ref)
+	strList enum_reg = build_enum_reg(tokens_ref)
+	strList variant_reg = build_variant_reg(tokens_ref, enum_reg)
+	strList type_reg = build_type_reg(tokens_ref)
+	strList var_type_reg = build_var_type_reg(tokens_ref)
+
+	strList mut_names = empty
+	string using_type = ""
+	string using_var = ""
+	tokenList placeholder = empty
+	TokensRef tokens = tokens_wrap(move placeholder)
+	GenCtx ctx_raw as (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
+	RcCtx ctx = make_rctx(move ctx_raw)
+
+    return ctx
