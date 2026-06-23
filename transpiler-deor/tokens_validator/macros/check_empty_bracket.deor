@@ -1,0 +1,9 @@
+
+macro check_empty_bracket
+	if cur_kind is "LBRACKET"
+		int next_pos = pos + 1
+		if next_pos < token_count
+			Token next_tok = tokens at next_pos
+			(kind) in next_tok
+			if kind is "RBRACKET"
+				errors at end = val_err(tok, lbl_var, rule_empty_bracket)

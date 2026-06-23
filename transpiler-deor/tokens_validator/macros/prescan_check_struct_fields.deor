@@ -1,0 +1,27 @@
+
+macro prescan_check_struct_fields
+	if kind is "KW_STRUCT"
+		int sf_pos = pre_i + 1
+		for if sf_pos < token_count
+			Token sf_tok = tokens at sf_pos
+			(kind) in sf_tok
+			if kind is "INDENT"
+				break
+			sf_pos = sf_pos + 1
+		sf_pos = sf_pos + 1
+		for if sf_pos < token_count
+			Token sf_tok = tokens at sf_pos
+			(kind) in sf_tok
+			if kind is "DEDENT"
+				break
+			if kind is "IDENT"
+				int field_name_pos = sf_pos + 1
+				if field_name_pos < token_count
+					Token field_name_tok = tokens at field_name_pos
+					(kind, value) in field_name_tok
+					if kind is "IDENT"
+						if len(value) < 3
+							errors at end = val_err(field_name_tok, lbl_field, rule_min3)
+						if not is_snake(value)
+							errors at end = val_err(field_name_tok, lbl_field, rule_snake)
+			sf_pos = sf_pos + 1

@@ -1,0 +1,13 @@
+
+macro check_valid_placement
+	if cur_kind is "KW_VALID"
+		bool valid_ok = false
+		if pos > 0
+			int valid_pos = pos - 1
+			Token prev_valid_tok = tokens at valid_pos
+			(kind) in prev_valid_tok
+			valid_ok = kind is "KW_IS"
+			if not valid_ok
+				valid_ok = kind is "KW_NOT"
+		if not valid_ok
+			errors at end = val_err(tok, lbl_var, rule_valid)

@@ -1,0 +1,17 @@
+
+macro check_not_is_order
+	if cur_kind is "KW_NOT"
+		int next_not = pos + 1
+		int after_not = pos + 2
+		if after_not < token_count
+			Token next_not_tok = tokens at next_not
+			Token after_not_tok = tokens at after_not
+			(kind) in next_not_tok
+			string next_not_kind = kind
+			(kind) in after_not_tok
+			string after_not_kind = kind
+			bool next_is_ident = next_not_kind is "IDENT"
+			bool after_is_is = after_not_kind is "KW_IS"
+			if next_is_ident and after_is_is
+				(value) in next_not_tok
+				errors at end = val_err(next_not_tok, lbl_var, rule_not_is)

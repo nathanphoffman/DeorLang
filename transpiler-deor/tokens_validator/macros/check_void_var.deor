@@ -1,0 +1,21 @@
+
+macro check_void_var
+	if cur_kind is "KW_VOID"
+		bool preceded_by_fn = false
+		if pos > 0
+			int prev_void = pos - 1
+			Token prev_void_tok = tokens at prev_void
+			(kind) in prev_void_tok
+			preceded_by_fn = kind is "KW_FN"
+		if not preceded_by_fn
+			int void_name_pos = pos + 1
+			int void_eq_pos = pos + 2
+			if void_eq_pos < token_count
+				Token void_name_tok = tokens at void_name_pos
+				Token void_eq_tok = tokens at void_eq_pos
+				(kind) in void_name_tok
+				string void_name_kind = kind
+				(kind) in void_eq_tok
+				if void_name_kind is "IDENT"
+					if kind is "EQUALS"
+						errors at end = val_err(tok, lbl_var, rule_void_var)

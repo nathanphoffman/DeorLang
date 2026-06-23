@@ -1,0 +1,6 @@
+
+macro track_paren_depth
+	if cur_kind is "LPAREN"
+		paren_depth = paren_depth + 1
+	if cur_kind is "RPAREN"
+		paren_depth = paren_depth - 1

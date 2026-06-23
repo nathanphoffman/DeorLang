@@ -1,0 +1,12 @@
+
+macro skip_rust_block
+	if cur_kind is "KW_RUST"
+		int skip_pos = pos + 1
+		for if skip_pos < token_count
+			Token skip_tok = tokens at skip_pos
+			(kind) in skip_tok
+			skip_pos = skip_pos + 1
+			if kind is "RUST_BLOCK"
+				break
+		pos = skip_pos
+		continue

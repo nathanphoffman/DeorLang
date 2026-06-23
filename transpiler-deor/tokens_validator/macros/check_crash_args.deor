@@ -1,0 +1,14 @@
+
+macro check_crash_args
+	if cur_kind is "IDENT"
+		bool is_crash = cur_val is "crash"
+		if is_crash
+			int crash_lp = pos + 1
+			if crash_lp < token_count
+				Token crash_lp_tok = tokens at crash_lp
+				(kind) in crash_lp_tok
+				if kind is "LPAREN"
+					int crash_arg_count = count_call_args(tokens, crash_lp)
+					bool wrong_count = crash_arg_count is not 1
+					if wrong_count
+						errors at end = val_err(tok, lbl_call, rule_crash)

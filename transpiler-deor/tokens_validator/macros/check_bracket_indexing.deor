@@ -1,0 +1,8 @@
+
+macro check_bracket_indexing
+	int next_pos = pos + 1
+	if next_pos < token_count
+		Token next_tok = tokens at next_pos
+		(kind) in next_tok
+		if kind is "LBRACKET"
+			errors at end = val_err(tok, lbl_var, rule_bracket_index)

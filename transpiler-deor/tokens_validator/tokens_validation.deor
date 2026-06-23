@@ -15,6 +15,8 @@ fn void validate_tokens(TokensRef tokens)
 	int paren_depth = 0
 	int block_depth = 0
 	bool in_void_fn = false
+
+	# labels
 	string lbl_struct = "struct"
 	string lbl_enum = "enum"
 	string lbl_shape = "shape"
@@ -23,129 +25,56 @@ fn void validate_tokens(TokensRef tokens)
 	string lbl_var = "variable"
 	string lbl_call = "call to"
 	string lbl_rust = "identifier"
+	string lbl_decl = "declaration"
+	string lbl_field = "struct field"
+	string lbl_variant = "enum variant"
+
+	# naming rules
 	string rule_min3 = "name must be at least 3 characters"
 	string rule_no_option = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types"
 	string rule_pascal = "name must be PascalCase (start with uppercase letter)"
 	string rule_camel = "name must be camelCase (start lowercase, no underscores)"
 	string rule_snake = "name must be lower_snake_case (no uppercase letters)"
 	string rule_named_arg = "each arg must be a named variable when passing 2 or more args"
-	string rule_bad_stmt = "literal cannot follow 'name ident' — capture in a named variable first"
-	string rule_typed_as = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move"
-	string rule_as_move = "`as` already transfers ownership — use `a as b` instead of `a as move b`"
-	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
-	string rule_max_params = "functions may have at most 3 parameters"
-	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"
-	string rule_empty_bracket = "use 'empty' to initialize an empty list — [] is only valid with items inside"
-	string rule_list_validator = "list shapes cannot be validator base types — validators only wrap primitives"
-	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_USING", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
 
-	# pre-scan: collect shape names + all decl names + validate struct fields
-	strList shape_names = empty
-	strList decl_names = empty
+	# declaration rules
 	string rule_dup = "duplicate declaration — this name is already used by another struct, enum, shape, fn, or type"
 	string rule_enum_pascal = "enum variant must be PascalCase"
 	string rule_enum_data = "enum variants cannot carry data — use a struct alongside the enum instead"
-	string lbl_decl = "declaration"
-	string lbl_field = "struct field"
-	string lbl_variant = "enum variant"
+	string rule_list_validator = "list shapes cannot be validator base types — validators only wrap primitives"
+
+	# function rules
+	string rule_max_params = "functions may have at most 3 parameters"
+	string rule_param_shadow = "parameter name cannot be the same as its type — choose a descriptive name"
+	string rule_no_ret = "missing return type — use 'fn void name()' for functions that return nothing"
+	string rule_void_return = "void functions must not use return — remove the return statement and let the function fall through"
+	string rule_void_var = "'void' is not a valid variable type — only functions can return void"
+	string rule_crash = "crash takes exactly 1 string argument"
+
+	# statement rules
+	string rule_bad_stmt = "literal cannot follow 'name ident' — capture in a named variable first"
+	string rule_typed_as = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move"
+	string rule_as_move = "`as` already transfers ownership — use `a as b` instead of `a as move b`"
+	string rule_bracket_index = "bracket indexing is not valid in Deor — use 'name at index' instead"
+	string rule_empty_bracket = "use 'empty' to initialize an empty list — [] is only valid with items inside"
+	string rule_move = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid"
+	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
+	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"
+	string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"
+
+	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_USING", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
+
+	# pre-scan: collect shape names + all decl names + validate struct/enum members
+	strList shape_names = empty
+	strList decl_names = empty
 	int pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
 		(kind) in pre_tok
-
-		# collect shape names for the list_validator check
-		if kind is "KW_SHAPE"
-			int sn_pos = pre_i + 1
-			if sn_pos < token_count
-				Token sn_tok = tokens at sn_pos
-				(value) in sn_tok
-				shape_names at end = value
-
-		# duplicate declaration check: struct / enum / shape / type → name at +1
-		bool is_kw_struct = kind is "KW_STRUCT"
-		bool is_kw_enum = kind is "KW_ENUM"
-		bool is_kw_shape = kind is "KW_SHAPE"
-		bool is_kw_type = kind is "KW_TYPE"
-		bool is_named_decl = is_kw_struct or is_kw_enum or is_kw_shape or is_kw_type
-		if is_named_decl
-			int dn_pos = pre_i + 1
-			if dn_pos < token_count
-				Token dn_tok = tokens at dn_pos
-				(kind, value) in dn_tok
-				if kind is "IDENT"
-					if list_has(decl_names, value)
-						errors at end = val_err(dn_tok, lbl_decl, rule_dup)
-					else
-						decl_names at end = value
-
-		# duplicate declaration check: fn → name at +2 (past return type)
-		if kind is "KW_FN"
-			int fn_name_pos = pre_i + 2
-			if fn_name_pos < token_count
-				Token fn_name_tok = tokens at fn_name_pos
-				(kind, value) in fn_name_tok
-				if kind is "IDENT"
-					if list_has(decl_names, value)
-						errors at end = val_err(fn_name_tok, lbl_decl, rule_dup)
-					else
-						decl_names at end = value
-
-		# struct field naming: snake_case + min 3 chars
-		if kind is "KW_STRUCT"
-			int sf_pos = pre_i + 1
-			for if sf_pos < token_count
-				Token sf_tok = tokens at sf_pos
-				(kind) in sf_tok
-				if kind is "INDENT"
-					break
-				sf_pos = sf_pos + 1
-			sf_pos = sf_pos + 1
-			for if sf_pos < token_count
-				Token sf_tok = tokens at sf_pos
-				(kind) in sf_tok
-				if kind is "DEDENT"
-					break
-				if kind is "IDENT"
-					int field_name_pos = sf_pos + 1
-					if field_name_pos < token_count
-						Token field_name_tok = tokens at field_name_pos
-						(kind, value) in field_name_tok
-						if kind is "IDENT"
-							if len(value) < 3
-								errors at end = val_err(field_name_tok, lbl_field, rule_min3)
-							if not is_snake(value)
-								errors at end = val_err(field_name_tok, lbl_field, rule_snake)
-				sf_pos = sf_pos + 1
-
-		# enum variant naming: PascalCase + min 3 chars, no data payloads
-		if kind is "KW_ENUM"
-			int ev_pos = pre_i + 1
-			for if ev_pos < token_count
-				Token ev_tok = tokens at ev_pos
-				(kind) in ev_tok
-				if kind is "INDENT"
-					break
-				ev_pos = ev_pos + 1
-			ev_pos = ev_pos + 1
-			for if ev_pos < token_count
-				Token ev_tok = tokens at ev_pos
-				(kind) in ev_tok
-				if kind is "DEDENT"
-					break
-				if kind is "IDENT"
-					(value) in ev_tok
-					if len(value) < 3
-						errors at end = val_err(ev_tok, lbl_variant, rule_min3)
-					if not is_pascal(value)
-						errors at end = val_err(ev_tok, lbl_variant, rule_enum_pascal)
-					int after_variant = ev_pos + 1
-					if after_variant < token_count
-						Token after_tok = tokens at after_variant
-						(kind) in after_tok
-						if kind is "LPAREN"
-							errors at end = val_err(ev_tok, lbl_variant, rule_enum_data)
-				ev_pos = ev_pos + 1
-
+		macro_run prescan_collect_shapes
+		macro_run prescan_check_duplicate_decls
+		macro_run prescan_check_struct_fields
+		macro_run prescan_check_enum_variants
 		pre_i = pre_i + 1
 
 	for if pos < token_count
@@ -156,211 +85,59 @@ fn void validate_tokens(TokensRef tokens)
 		int cur_line = line
 		string cur_file = file
 
-		# track paren depth for keyword-as-name detection
-		if cur_kind is "LPAREN"
-			paren_depth = paren_depth + 1
-		if cur_kind is "RPAREN"
-			paren_depth = paren_depth - 1
+		macro_run track_paren_depth
+		macro_run track_block_scope
+		macro_run check_void_return
+		macro_run check_move_target
+		macro_run check_keyword_in_parens
+		macro_run skip_rust_block
+		macro_run check_not_is_order
 
-		# track block depth to detect when void fn body ends
-		if cur_kind is "INDENT"
-			block_depth = block_depth + 1
-		if cur_kind is "DEDENT"
-			block_depth = block_depth - 1
-			if block_depth is 0
-				in_void_fn = false
-
-		# detect entry into a void function body
-		if cur_kind is "KW_FN"
-			int void_check = pos + 1
-			if void_check < token_count
-				Token void_tok = tokens at void_check
-				(kind) in void_tok
-				if kind is "KW_VOID"
-					in_void_fn = true
-
-		# return is never allowed inside a void function
-		if cur_kind is "KW_RETURN"
-			if in_void_fn
-				string rule_void_return = "void functions must not use return — remove the return statement and let the function fall through"
-				errors at end = val_err(tok, lbl_fn, rule_void_return)
-
-		# move must precede a variable name or destructure — not a literal
-		if cur_kind is "KW_GIVEUP"
-			int mv_next = pos + 1
-			if mv_next < token_count
-				Token mv_tok = tokens at mv_next
-				(kind) in mv_tok
-				bool mv_ok = kind is "IDENT"
-				bool mv_destruct = kind is "LPAREN"
-				bool mv_valid = mv_ok or mv_destruct
-				if not mv_valid
-					string rule_move = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid"
-					errors at end = val_err(tok, lbl_var, rule_move)
-
-		# flag reserved keywords used as names inside ()
-		if paren_depth > 0
-			bool is_forbidden = list_has(forbidden_in_parens, cur_kind)
-			if is_forbidden
-				errors at end = val_err(tok, lbl_var, rule_kw_in_parens)
-
-		# skip rust blocks entirely — their content is raw Rust and not subject to Deor rules
-		string cur_indicator = "KW_RUST"
-		string next_indicator = "RUST_BLOCK"
-		macro_run skip_if_match
-
-		# forces "not is" rather than not X is
-		if cur_kind is "KW_NOT"
-			int next_not = pos + 1
-			int after_not = pos + 2
-			
-			if after_not < token_count
-				Token next_not_tok = tokens at next_not
-				Token after_not_tok = tokens at after_not
-
-				(kind) in next_not_tok
-				string next_not_kind = kind
-				(kind) in after_not_tok
-				string after_not_kind = kind
-
-				bool next_is_ident = next_not_kind is "IDENT"
-				bool after_is_is = after_not_kind is "KW_IS"
-
-				if next_is_ident and after_is_is
-					(value) in next_not_tok
-					errors at end = val_err(next_not_tok, lbl_var, rule_not_is)
-
-		###########################  These are validators for each type #####################
-		
 		validate_indent_offset as 1
-	
-		# Struct Validator
+
+		# struct name: PascalCase, min 3
 		string keyword = "KW_STRUCT"
 		string lbl = lbl_struct
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
 		macro_run validate_ident
 
-		# Enum Validator
+		# enum name: PascalCase, min 3
 		string keyword = "KW_ENUM"
 		string lbl = lbl_enum
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
 		macro_run validate_ident
 
-		# Shape Validator
+		# shape name: camelCase, min 3
 		string keyword = "KW_SHAPE"
 		string lbl = lbl_shape
 		string rule = rule_camel
 		fnTestRule test_rule = is_camel
 		macro_run validate_ident
 
-		# Type Validator → PascalCase, min 3; also ban list shapes as base types
+		# type name: PascalCase, min 3
 		string keyword = "KW_TYPE"
 		string lbl = lbl_type
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
 		macro_run validate_ident
 
-		if cur_kind is "KW_TYPE"
-			int base_type_pos = pos + 3
-			if base_type_pos < token_count
-				Token base_type_tok = tokens at base_type_pos
-				(value) in base_type_tok
-				bool base_is_shape = list_has(shape_names, value)
-				if base_is_shape
-					int type_name_pos = pos + 1
-					Token type_name_tok = tokens at type_name_pos
-					errors at end = val_err(type_name_tok, lbl_type, rule_list_validator)
+		macro_run check_type_base_not_shape
+		macro_run check_fn_declaration
 
-		# Fn param count: max 3 parameters; param type != param name
-		# pattern: KW_FN <return_type> <fn_name> LPAREN params RPAREN
-		if cur_kind is "KW_FN"
-			int lp_pos = pos + 3
-			if lp_pos < token_count
-				Token lp_tok = tokens at lp_pos
-				(kind) in lp_tok
-				if kind is "LPAREN"
-					int param_count = count_call_args(tokens, lp_pos)
-					if param_count > 3
-						int fn_name_pos = pos + 2
-						Token fn_name_tok = tokens at fn_name_pos
-						errors at end = val_err(fn_name_tok, lbl_fn, rule_max_params)
-					# param type same as param name: scan IDENT IDENT pairs in param list
-					string rule_param_shadow = "parameter name cannot be the same as its type — choose a descriptive name"
-					int ps_pos = lp_pos + 1
-					for if ps_pos < token_count
-						Token ps_tok = tokens at ps_pos
-						(kind, value) in ps_tok
-						if kind is "RPAREN"
-							break
-						if kind is "COMMA"
-							ps_pos = ps_pos + 1
-							continue
-						if kind is "IDENT"
-							string param_type_val = value
-							int pn_pos = ps_pos + 1
-							if pn_pos < token_count
-								Token pn_tok = tokens at pn_pos
-								(kind, value) in pn_tok
-								if kind is "IDENT"
-									if value is param_type_val
-										errors at end = val_err(pn_tok, lbl_fn, rule_param_shadow)
-									ps_pos = pn_pos
-						ps_pos = ps_pos + 1
-
-			# missing return type: KW_FN IDENT LPAREN — no room for both return type and fn name
-			string rule_no_ret = "missing return type — use 'fn void name()' for functions that return nothing"
-			int ret_pos = pos + 1
-			int lp2_pos = pos + 2
-			if lp2_pos < token_count
-				Token ret_tok = tokens at ret_pos
-				Token lp2_tok = tokens at lp2_pos
-				(kind) in ret_tok
-				string ret_kind = kind
-				(kind) in lp2_tok
-				if ret_kind is "IDENT"
-					if kind is "LPAREN"
-						errors at end = val_err(ret_tok, lbl_fn, rule_no_ret)
-
-		# Fn Validator → lower_snake_case, min 3
-		# pattern: KW_FN <return_type> <fn_name> LPAREN
+		# fn name: snake_case, min 3
 		string keyword = "KW_FN"
 		string lbl = lbl_fn
 		string rule = rule_snake
 		fnTestRule test_rule = is_snake
-		# unlike other validators, we skip ahead to skip over type to reach ident
 		int validate_indent_offset = 2
 		macro_run validate_ident
 
-		# crash must take exactly 1 string argument
-		if cur_kind is "IDENT"
-			bool is_crash = cur_val is "crash"
-			if is_crash
-				int crash_lp = pos + 1
-				if crash_lp < token_count
-					Token crash_lp_tok = tokens at crash_lp
-					(kind) in crash_lp_tok
-					if kind is "LPAREN"
-						int crash_arg_count = count_call_args(tokens, crash_lp)
-						bool wrong_count = crash_arg_count is not 1
-						if wrong_count
-							string rule_crash = "crash takes exactly 1 string argument"
-							errors at end = val_err(tok, lbl_call, rule_crash)
+		macro_run check_crash_args
+		macro_run check_empty_bracket
 
-		# [] with nothing inside is always an empty list init — must use empty instead
-		if cur_kind is "LBRACKET"
-			int next_pos = pos + 1
-			if next_pos < token_count
-				Token next_tok = tokens at next_pos
-				(kind) in next_tok
-				if kind is "RBRACKET"
-					errors at end = val_err(tok, lbl_var, rule_empty_bracket)
-
-		# variable declaration: TYPE_IDENT VAR_NAME EQUALS
-		# struct fields are TYPE_IDENT FIELD_NAME NEWLINE (no EQUALS), so this is safe
 		if cur_kind is "IDENT"
-			# skip call-arg check when this IDENT is a fn declaration name (KW_FN TYPE IDENT)
 			bool is_fn_decl_name = false
 			if pos > 1
 				int prev2_p = pos - 2
@@ -372,49 +149,10 @@ fn void validate_tokens(TokensRef tokens)
 			macro_run check_rust_generic
 			macro_run check_var_decl
 			macro_run check_bad_stmt
+			macro_run check_bracket_indexing
 
-			int next_pos = pos + 1
-			if next_pos < token_count
-				Token next_tok = tokens at next_pos
-				(kind) in next_tok
-				string bracket_rule = "bracket indexing is not valid in Deor — use 'name at index' instead"
-				if kind is "LBRACKET"
-					errors at end = val_err(tok, lbl_var, bracket_rule)
-
-		# void used as a variable type: KW_VOID IDENT EQUALS (not preceded by KW_FN)
-		if cur_kind is "KW_VOID"
-			bool preceded_by_fn = false
-			if pos > 0
-				int prev_void = pos - 1
-				Token prev_void_tok = tokens at prev_void
-				(kind) in prev_void_tok
-				preceded_by_fn = kind is "KW_FN"
-			if not preceded_by_fn
-				int void_name_pos = pos + 1
-				int void_eq_pos = pos + 2
-				if void_eq_pos < token_count
-					Token void_name_tok = tokens at void_name_pos
-					Token void_eq_tok = tokens at void_eq_pos
-					(kind) in void_name_tok
-					string void_name_kind = kind
-					(kind) in void_eq_tok
-					if void_name_kind is "IDENT"
-						if kind is "EQUALS"
-							string rule_void_var = "'void' is not a valid variable type — only functions can return void"
-							errors at end = val_err(tok, lbl_var, rule_void_var)
-
-		if cur_kind is "KW_VALID"
-			bool valid_ok = false
-			if pos > 0
-				int valid_pos = pos - 1
-				Token prev_valid_tok = tokens at valid_pos
-				(kind) in prev_valid_tok
-				valid_ok = kind is "KW_IS"
-				if not valid_ok
-					valid_ok = kind is "KW_NOT"
-			if not valid_ok
-				string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"
-				errors at end = val_err(tok, lbl_var, rule_valid)
+		macro_run check_void_var
+		macro_run check_valid_placement
 
 		pos = pos + 1
 

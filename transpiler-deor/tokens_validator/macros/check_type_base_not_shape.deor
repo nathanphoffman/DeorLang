@@ -1,0 +1,12 @@
+
+macro check_type_base_not_shape
+	if cur_kind is "KW_TYPE"
+		int base_type_pos = pos + 3
+		if base_type_pos < token_count
+			Token base_type_tok = tokens at base_type_pos
+			(value) in base_type_tok
+			bool base_is_shape = list_has(shape_names, value)
+			if base_is_shape
+				int type_name_pos = pos + 1
+				Token type_name_tok = tokens at type_name_pos
+				errors at end = val_err(type_name_tok, lbl_type, rule_list_validator)

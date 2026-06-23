@@ -1,0 +1,6 @@
+
+macro check_keyword_in_parens
+	if paren_depth > 0
+		bool is_forbidden = list_has(forbidden_in_parens, cur_kind)
+		if is_forbidden
+			errors at end = val_err(tok, lbl_var, rule_kw_in_parens)

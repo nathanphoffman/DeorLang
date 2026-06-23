@@ -1,0 +1,44 @@
+
+macro check_fn_declaration
+	if cur_kind is "KW_FN"
+		int lp_pos = pos + 3
+		if lp_pos < token_count
+			Token lp_tok = tokens at lp_pos
+			(kind) in lp_tok
+			if kind is "LPAREN"
+				int param_count = count_call_args(tokens, lp_pos)
+				if param_count > 3
+					int fn_name_pos = pos + 2
+					Token fn_name_tok = tokens at fn_name_pos
+					errors at end = val_err(fn_name_tok, lbl_fn, rule_max_params)
+				int ps_pos = lp_pos + 1
+				for if ps_pos < token_count
+					Token ps_tok = tokens at ps_pos
+					(kind, value) in ps_tok
+					if kind is "RPAREN"
+						break
+					if kind is "COMMA"
+						ps_pos = ps_pos + 1
+						continue
+					if kind is "IDENT"
+						string param_type_val = value
+						int pn_pos = ps_pos + 1
+						if pn_pos < token_count
+							Token pn_tok = tokens at pn_pos
+							(kind, value) in pn_tok
+							if kind is "IDENT"
+								if value is param_type_val
+									errors at end = val_err(pn_tok, lbl_fn, rule_param_shadow)
+								ps_pos = pn_pos
+					ps_pos = ps_pos + 1
+		int ret_pos = pos + 1
+		int lp2_pos = pos + 2
+		if lp2_pos < token_count
+			Token ret_tok = tokens at ret_pos
+			Token lp2_tok = tokens at lp2_pos
+			(kind) in ret_tok
+			string ret_kind = kind
+			(kind) in lp2_tok
+			if ret_kind is "IDENT"
+				if kind is "LPAREN"
+					errors at end = val_err(ret_tok, lbl_fn, rule_no_ret)

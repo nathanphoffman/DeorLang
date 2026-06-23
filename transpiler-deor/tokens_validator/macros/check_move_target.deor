@@ -1,0 +1,12 @@
+
+macro check_move_target
+	if cur_kind is "KW_GIVEUP"
+		int mv_next = pos + 1
+		if mv_next < token_count
+			Token mv_tok = tokens at mv_next
+			(kind) in mv_tok
+			bool mv_ok = kind is "IDENT"
+			bool mv_destruct = kind is "LPAREN"
+			bool mv_valid = mv_ok or mv_destruct
+			if not mv_valid
+				errors at end = val_err(tok, lbl_var, rule_move)

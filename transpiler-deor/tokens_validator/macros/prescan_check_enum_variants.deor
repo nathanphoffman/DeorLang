@@ -1,0 +1,29 @@
+
+macro prescan_check_enum_variants
+	if kind is "KW_ENUM"
+		int ev_pos = pre_i + 1
+		for if ev_pos < token_count
+			Token ev_tok = tokens at ev_pos
+			(kind) in ev_tok
+			if kind is "INDENT"
+				break
+			ev_pos = ev_pos + 1
+		ev_pos = ev_pos + 1
+		for if ev_pos < token_count
+			Token ev_tok = tokens at ev_pos
+			(kind) in ev_tok
+			if kind is "DEDENT"
+				break
+			if kind is "IDENT"
+				(value) in ev_tok
+				if len(value) < 3
+					errors at end = val_err(ev_tok, lbl_variant, rule_min3)
+				if not is_pascal(value)
+					errors at end = val_err(ev_tok, lbl_variant, rule_enum_pascal)
+				int after_variant = ev_pos + 1
+				if after_variant < token_count
+					Token after_tok = tokens at after_variant
+					(kind) in after_tok
+					if kind is "LPAREN"
+						errors at end = val_err(ev_tok, lbl_variant, rule_enum_data)
+			ev_pos = ev_pos + 1

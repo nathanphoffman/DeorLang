@@ -1,0 +1,27 @@
+
+macro prescan_check_duplicate_decls
+	bool is_kw_struct = kind is "KW_STRUCT"
+	bool is_kw_enum = kind is "KW_ENUM"
+	bool is_kw_shape = kind is "KW_SHAPE"
+	bool is_kw_type = kind is "KW_TYPE"
+	bool is_named_decl = is_kw_struct or is_kw_enum or is_kw_shape or is_kw_type
+	if is_named_decl
+		int dn_pos = pre_i + 1
+		if dn_pos < token_count
+			Token dn_tok = tokens at dn_pos
+			(kind, value) in dn_tok
+			if kind is "IDENT"
+				if list_has(decl_names, value)
+					errors at end = val_err(dn_tok, lbl_decl, rule_dup)
+				else
+					decl_names at end = value
+	if kind is "KW_FN"
+		int fn_name_pos = pre_i + 2
+		if fn_name_pos < token_count
+			Token fn_name_tok = tokens at fn_name_pos
+			(kind, value) in fn_name_tok
+			if kind is "IDENT"
+				if list_has(decl_names, value)
+					errors at end = val_err(fn_name_tok, lbl_decl, rule_dup)
+				else
+					decl_names at end = value

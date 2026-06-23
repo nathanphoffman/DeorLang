@@ -1,0 +1,15 @@
+
+macro track_block_scope
+	if cur_kind is "INDENT"
+		block_depth = block_depth + 1
+	if cur_kind is "DEDENT"
+		block_depth = block_depth - 1
+		if block_depth is 0
+			in_void_fn = false
+	if cur_kind is "KW_FN"
+		int void_check = pos + 1
+		if void_check < token_count
+			Token void_tok = tokens at void_check
+			(kind) in void_tok
+			if kind is "KW_VOID"
+				in_void_fn = true

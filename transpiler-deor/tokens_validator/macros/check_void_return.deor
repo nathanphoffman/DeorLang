@@ -1,0 +1,5 @@
+
+macro check_void_return
+	if cur_kind is "KW_RETURN"
+		if in_void_fn
+			errors at end = val_err(tok, lbl_fn, rule_void_return)

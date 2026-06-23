@@ -1,0 +1,8 @@
+
+macro prescan_collect_shapes
+	if kind is "KW_SHAPE"
+		int sn_pos = pre_i + 1
+		if sn_pos < token_count
+			Token sn_tok = tokens at sn_pos
+			(value) in sn_tok
+			shape_names at end = value
