@@ -51,8 +51,7 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 			shim_code = s_join([pad, using_var, shm2_eq, ident_name, shm2_op, using_var, shm2_cl])
 		string re_destruct = make_destruct_code(using_var, depth, ctx)
 		shim_code = s_cat(shim_code, re_destruct)
-		int shm_next = adv_nl_ref(after_with, tokens)
-		return make_result(move shim_code, shm_next)
+		return make_nl_result(move shim_code, after_with, tokens)
 	ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 	move (code, new_pos) in args_r
 	args_code as code
@@ -71,5 +70,4 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 		string cal_op = "("
 		string cal_sfx = ");\n"
 		call_code = s_join([pad, ident_name, cal_op, args_code, cal_sfx])
-	int call_next = adv_nl_ref(after_paren, tokens)
-	return make_result(move call_code, call_next)
+	return make_nl_result(move call_code, after_paren, tokens)

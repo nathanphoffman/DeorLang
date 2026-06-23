@@ -39,8 +39,7 @@ fn ParseResult gen_shape_decl(TokensRef tokens, int pos)
 		string rust_elem = render_rust_type(elem_type)
 		string decl = gen_list_shape_code(rust_name, rust_elem)
 		int after = elem_pos + 1
-		int shape_next = adv_nl_ref(after, tokens)
-		return make_result(move decl, shape_next)
+		return make_nl_result(move decl, after, tokens)
 	int t4_pos = pos + 4
 	Token t4_token = tokens at t4_pos
 	(kind, value) in t4_token
@@ -75,5 +74,4 @@ fn ParseResult gen_shape_decl(TokensRef tokens, int pos)
 	string rust_out = render_rust_type(out_type)
 	string decl = gen_func_shape_code(rust_name, rust_in, rust_out)
 	int after = func_end + 1
-	int fn_shape_next = adv_nl_ref(after, tokens)
-	return make_result(move decl, fn_shape_next)
+	return make_nl_result(move decl, after, tokens)

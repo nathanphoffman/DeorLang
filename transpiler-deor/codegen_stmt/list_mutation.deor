@@ -31,11 +31,10 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 				string app_pfx = ".push("
 				string app_sfx = ");\n"
 				string app_code = s_join([pad, ident_name, app_pfx, app_val, app_sfx])
-				int app_next = adv_nl_ref(val_end, tokens)
-				return make_result(move app_code, app_next)
+				return make_nl_result(move app_code, val_end, tokens)
 			val_pos as after_at
 			macro_run gen_expr_r
-			string idx_code = val_code
+			string idx_code as val_code
 			int val_pos = val_end + 1
 			macro_run gen_expr_r
 			Token val_tok = tokens at val_pos
@@ -45,8 +44,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 			string idw_mid = " as usize] = "
 			string idw_sfx = ";\n"
 			string idw_code = s_join([pad, ident_name, idw_op, idx_code, idw_mid, idx_val, idw_sfx])
-			int idw_next = adv_nl_ref(val_end, tokens)
-			return make_result(move idw_code, idw_next)
+			return make_nl_result(move idw_code, val_end, tokens)
 
 	# name remove at idx
 	if kind is "KW_REMOVE"
@@ -56,8 +54,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 		string rem_pfx = ".remove("
 		string rem_sfx = " as usize);\n"
 		string rem_code = s_join([pad, ident_name, rem_pfx, val_code, rem_sfx])
-		int rem_next = adv_nl_ref(val_end, tokens)
-		return make_result(move rem_code, rem_next)
+		return make_nl_result(move rem_code, val_end, tokens)
 
 	string lm_unh_pfx = "/* unhandled_list_mut("
 	string lm_unh_sfx = ") */\n"

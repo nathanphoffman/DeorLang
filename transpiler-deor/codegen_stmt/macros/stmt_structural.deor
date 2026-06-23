@@ -28,8 +28,7 @@ macro stmt_structural
 				su_after_rp as new_pos + 1
 				string su_avw_sfx = ".unwrap();\n"
 				string su_avow_code = s_join([pad, su_expr_code, su_avw_sfx])
-				int su_avow_next = adv_nl_ref(su_after_rp, tokens)
-				return make_result(move su_avow_code, su_avow_next)
+				return make_nl_result(move su_avow_code, su_after_rp, tokens)
 		return gen_destructure(pos, depth, ctx)
 	if kind is "KW_USING"
 		int su_var_pos = pos + 1
@@ -37,7 +36,7 @@ macro stmt_structural
 		(value) in su_var_tok
 		string using_var = value
 		string su_struct_type = reg_get(var_type_reg, using_var)
-		string using_type = su_struct_type
+		string using_type as su_struct_type
 		string su_init = make_destruct_code(using_var, depth, ctx)
 		int su_var_next = su_var_pos + 1
 		int su_body_start = skip_to_body_ref(tokens, su_var_next)

@@ -116,8 +116,7 @@ fn bool any_match(roomList items, matchFunc predicate)
     for item in items
         if predicate(item)
             return true
-        else
-            return false
+    return false
 ```
 
 ---

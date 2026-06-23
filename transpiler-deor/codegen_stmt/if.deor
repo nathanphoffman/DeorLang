@@ -5,17 +5,13 @@ fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 	(tokens) in ctx
 	ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
 	move (code, new_pos) in cond_r
-	cond_end as new_pos
-	int body_start = skip_to_body_ref(tokens, cond_end)
-	int body_depth = depth + 1
-	ParseResult body_r = gen_block(body_start, body_depth, ctx)
 	cond_code as code
-	move (code, new_pos) in body_r
-	body_code as code
+	cond_end as new_pos
+	int blk_start = skip_to_body_ref(tokens, cond_end)
+	macro_run gen_block_r
 	string brc_open = " {\n"
-	string combined = s_join([cond_code, brc_open, body_code])
-	branch_end as new_pos
-	return make_result(move combined, branch_end)
+	string combined = s_join([cond_code, brc_open, blk_code])
+	return make_result(move combined, blk_end)
 
 # Generates a complete Rust `if / else if / else` chain. Calls gen_if_branch for the
 # initial `if`, then loops consuming `else` tokens to append `else if` or `else` arms.
@@ -60,18 +56,15 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 			result_code = s_cat(move result_code, eli_cl)
 			cur = new_pos
 		else
-			int else_body_start = skip_to_body_ref(tokens, after_else)
-			int else_depth = depth + 1
-			ParseResult else_r = gen_block(else_body_start, else_depth, ctx)
-			move (code, new_pos) in else_r
-			else_code as code
+			int blk_start = skip_to_body_ref(tokens, after_else)
+			macro_run gen_block_r
 			string els_kw = " else {\n"
 			string els_cl = "}"
 			result_code = s_cat(move result_code, els_kw)
-			result_code = s_cat(move result_code, else_code)
+			result_code = s_cat(move result_code, blk_code)
 			result_code = s_cat(move result_code, pad)
 			result_code = s_cat(move result_code, els_cl)
-			cur = new_pos
+			cur = blk_end
 			break
 	string if_newline = "\n"
 	result_code = s_cat(move result_code, if_newline)

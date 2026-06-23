@@ -70,8 +70,7 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 			string aas_ob = " { "
 			string aas_cb = " };\n"
 			string aas_code = s_join([pad, aas_let, mut_kw, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb])
-			int aas_next = adv_nl_ref(aas_fend, tokens)
-			return make_result(move aas_code, aas_next)
+			return make_nl_result(move aas_code, aas_fend, tokens)
 
 	# empty → empty list: let mut name = Vec::new();
 	if kind is "KW_EMPTY"
@@ -79,8 +78,7 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 		string aas_emp_sfx = " = Vec::new();\n"
 		string aas_empty_code = s_join([pad, aas_emp_pfx, ident_name, aas_emp_sfx])
 		int aas_after_empty = after_as + 1
-		int aas_empty_next = adv_nl_ref(aas_after_empty, tokens)
-		return make_result(move aas_empty_code, aas_empty_next)
+		return make_nl_result(move aas_empty_code, aas_after_empty, tokens)
 
 	# record update: name as source with (f1, f2, ...)
 	if kind is "IDENT"
@@ -117,8 +115,7 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 				string aas_wsp = ", .."
 				string aas_wcb = " };\n"
 				string aas_with_code = s_join([pad, aas_wlet, mut_kw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wcb])
-				int aas_wnext = adv_nl_ref(aas_wend, tokens)
-				return make_result(move aas_with_code, aas_wnext)
+				return make_nl_result(move aas_with_code, aas_wend, tokens)
 
 	# regular as-binding: let [mut] name = expr[.to_string()];
 	(kind) in after_as_token
@@ -134,5 +131,4 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	string aas_eq2 = " = "
 	string aas_sc2 = ";\n"
 	string aas_code2 = s_join([pad, aas_let2, mut_kw, ident_name, aas_eq2, val_code, aas_suffix, aas_sc2])
-	int aas_next2 = adv_nl_ref(val_end, tokens)
-	return make_result(move aas_code2, aas_next2)
+	return make_nl_result(move aas_code2, val_end, tokens)

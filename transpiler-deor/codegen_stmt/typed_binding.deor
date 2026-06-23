@@ -87,8 +87,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 				string scc_ob = " { "
 				string scc_cb = " };\n"
 				string sc_code = s_join([pad, scc_let, mut_kw, var_name, scc_eq, var_type, scc_ob, fields_code, scc_cb])
-				int sc_next = adv_nl_ref(fend, tokens)
-				return make_result(move sc_code, sc_next)
+				return make_nl_result(move sc_code, fend, tokens)
 		if is_avow_expr
 			# (avow inner) — .unwrap().0 for primitives, .unwrap() for custom types
 			int inner_pos = peek_pos + 1
@@ -111,8 +110,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 			string awc_eq = " = "
 			string awc_sc = ";\n"
 			string aw_code = s_join([pad, awc_let, var_name, awc_col, rust_type, awc_eq, unwrap_expr, awc_sc])
-			int aw_next = adv_nl_ref(after_rparen, tokens)
-			return make_result(move aw_code, aw_next)
+			return make_nl_result(move aw_code, after_rparen, tokens)
 		# LPAREN but not avow and not a struct type: grouped expression — fall through to default
 
 	# list literal → always let mut
@@ -123,8 +121,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		string lst_eq = " = "
 		string lst_sc = ";\n"
 		string lst_code = s_join([pad, lst_pfx, var_name, lst_col, rust_type, lst_eq, val_code, lst_sc])
-		int lst_next = adv_nl_ref(val_end, tokens)
-		return make_result(move lst_code, lst_next)
+		return make_nl_result(move lst_code, val_end, tokens)
 
 	# validator type → ValidatorType::new(val) wrapped in Option<>
 	bool is_validator = reg3_has(type_reg, var_type)
@@ -137,8 +134,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		string vld_nop = "::new("
 		string vld_sc = ");\n"
 		string vld_code = s_join([pad, vld_let, mut_kw, var_name, vld_opt, var_type, vld_new, var_type, vld_nop, val_code, vld_sc])
-		int vld_next = adv_nl_ref(val_end, tokens)
-		return make_result(move vld_code, vld_next)
+		return make_nl_result(move vld_code, val_end, tokens)
 
 	# default: let [mut] varName: RustType = val[.clone()/.to_string()];
 	bool tb_is_float = var_type is "float"
@@ -169,5 +165,4 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	string bnd_eq = " = "
 	string bnd_sc = ";\n"
 	string bind_code = s_join([pad, bnd_let, mut_kw, var_name, bnd_col, rust_type, bnd_eq, val_code, suffix, bnd_sc])
-	int bind_next = adv_nl_ref(val_end, tokens)
-	return make_result(move bind_code, bind_next)
+	return make_nl_result(move bind_code, val_end, tokens)

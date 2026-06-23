@@ -32,7 +32,7 @@ fn roomList occupied_rooms(roomList rooms)
     for room in rooms
         occupied in room
         if occupied
-            result insert room
+            result at end = room
     return result
 
 # random is a shim — copy from shims.md

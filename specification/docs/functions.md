@@ -39,36 +39,30 @@ fn void main()
     # program starts here
 ```
 
-Void functions **cannot contain `return` statements**.
-
-Early exit is a transpiler error — all conditional paths must be expressed with `if/else` block structure:
+Void functions may use `return` with no value for early exit:
 
 ```
 shape itemList = list of Item
 
-# Correct — use if/else to express all paths
 fn void process(itemList items, bool skip_invalid)
     for item in items
         valid in item
         if skip_invalid and not valid
-            # skip — continue to next iteration
-        else
-            handle(item)
-```
-
-```
-shape itemList = list of Item
-
-# Transpiler error — early return not allowed in void functions
-fn void process(itemList items, bool skip_invalid)
-    for item in items
-        valid in item
-        if skip_invalid and not valid
-            return    # not allowed
+            return
         handle(item)
 ```
 
-This is intentional: early returns in void functions are usually a sign the logic should be restructured. Use `if/else` or `continue` inside loops instead.
+```rust
+fn process(items: Vec<Item>, skip_invalid: bool) {
+    for item in &items {
+        let valid = item.valid;
+        if skip_invalid && !valid {
+            return;
+        }
+        handle(item.clone());
+    }
+}
+```
 
 ### Multiple return values
 

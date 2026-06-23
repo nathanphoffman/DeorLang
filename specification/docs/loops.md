@@ -5,7 +5,9 @@
 for room in rooms
     (window) in room
     (size) in window
-    print(s_join["Window size is ", size])
+    parts as ["Window size is ", size]
+    string msg = s_join(parts)
+    print(msg)
 ```
 
 ---

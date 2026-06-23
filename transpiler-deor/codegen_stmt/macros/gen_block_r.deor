@@ -1,0 +1,6 @@
+macro gen_block_r
+	int blk_depth = depth + 1
+	ParseResult blk_r = gen_block(blk_start, blk_depth, ctx)
+	move (code, new_pos) in blk_r
+	blk_code as code
+	blk_end as new_pos

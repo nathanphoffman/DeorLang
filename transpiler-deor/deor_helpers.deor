@@ -88,3 +88,7 @@ fn int skip_to_body_ref(TokensRef tokens, int pos)
 	cur = adv_indent_ref(cur, tokens)
 	return cur
 
+fn ParseResult make_nl_result(string code, int pos, TokensRef tokens)
+	int next_pos = adv_nl_ref(pos, tokens)
+	return make_result(move code, next_pos)
+

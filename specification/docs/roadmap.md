@@ -1,5 +1,16 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
+# New Questions
+Has private been implemented for imports, does it work properly?
+
+# New Findings
+As should always be implicit ownership, right now the 2nd line below is allowed, it should not be, which makes me wonder how much of this is correct today
+
+a as b <------- allowed, ownership
+int a as b <---  not allowed, transpiler validator error
+a as move b <--- not allowed, transpiler validator should direct them to drop the move as "as" is already an implicit move
+int a = b   <---  allowed, not ownership, a rust clone
+int a = move b <--  allowed, ownership
 
 
 # Bad no longer -> valid comparison only
@@ -26,13 +37,9 @@ Additionally, make it so an empty definition is allowed and is not valid by defa
 
 Implementation wise I think what we should do is still use none under the hood, but when the user does a comparison on valid just replace it with not none in rust, and it should work out I think.  So we are just not not none on not valid checks.  I am ok with the not (!) redundancy if it makes it easier to implement in rust
 
-
 Other issues
   - for move loop form — experimental.md shows it without parentheses; transpiler requires
   them
-
-# this line should be an as in for.deor
-		range_expr = src_code
 
 # New audit June 21st
 
@@ -46,9 +53,6 @@ Other issues
  
   - func, to, end keywords — spec lists them as reserved; transpiler detects them by
   string-matching plain IDENTs (fragile)
-
-
- 
 
 
 
@@ -84,6 +88,11 @@ Crash wraps panic! and so likely provides 2 arguments, the second of which is fo
 ---
 # Quick Notes
 ---
+
+### Macros have been organized but maybe too organized
+
+### Bad has been changed to valid
+Bad has been changed to valid, flipping the logic upside down and now not defining a value makes the value not valid.
 
 ### For using rust modules this is really easy
 There is an example project created that demonstrates json, basically a deor wrapped rust block is all you need you just use cargo to build it and the standard cargo file simple.  Deor will support no native external importing other than copy and paste libs.

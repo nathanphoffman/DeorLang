@@ -18,17 +18,14 @@ macro stmt_flow
 		string sf_ret_kw = "return "
 		string sf_ret_sc = ";\n"
 		string sf_ret_code = s_join([pad, sf_ret_kw, sf_val_code, sf_suffix, sf_ret_sc])
-		int sf_ret_next = adv_nl_ref(sf_val_end, tokens)
-		return make_result(move sf_ret_code, sf_ret_next)
+		return make_nl_result(move sf_ret_code, sf_val_end, tokens)
 	if kind is "KW_BREAK"
 		string sf_brk_kw = "break;\n"
 		string sf_brk_code = s_join([pad, sf_brk_kw])
 		int sf_brk_n = pos + 1
-		int sf_brk_next = adv_nl_ref(sf_brk_n, tokens)
-		return make_result(move sf_brk_code, sf_brk_next)
+		return make_nl_result(move sf_brk_code, sf_brk_n, tokens)
 	if kind is "KW_CONTINUE"
 		string sf_cnt_kw = "continue;\n"
 		string sf_cnt_code = s_join([pad, sf_cnt_kw])
 		int sf_cnt_n = pos + 1
-		int sf_cnt_next = adv_nl_ref(sf_cnt_n, tokens)
-		return make_result(move sf_cnt_code, sf_cnt_next)
+		return make_nl_result(move sf_cnt_code, sf_cnt_n, tokens)

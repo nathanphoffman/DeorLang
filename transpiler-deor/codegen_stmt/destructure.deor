@@ -12,7 +12,7 @@ macro for_collect_fields_into_fields_list
 			fields at end = value
 			cur = cur + 1
 
-macro for_build_fields_into_mut_clones
+macro for_build_fields
 	for field_index in range(field_count)
 		string field = fields at field_index
 		bool is_mut = list_has(mut_names, field)
@@ -22,8 +22,7 @@ macro for_build_fields_into_mut_clones
 		string dst_let = "let "
 		string dst_eq = " = "
 		string dst_dot = "."
-		string dst_cln = ".clone();"
-		dest_lines at end = s_join([pad, dst_let, mut_kw, field, dst_eq, src_code, dst_dot, field, dst_cln])
+		dest_lines at end = s_join([pad, dst_let, mut_kw, field, dst_eq, val_code, dst_dot, field, field_suffix])
 
 
 macro initialize_gen_destructure
@@ -40,14 +39,8 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 	macro_run initialize_gen_destructure
 	macro_run for_collect_fields_into_fields_list
 
-	# src is what we call right of in
-	int src_pos = cur + 1
-
-	# could be a complex like fn() returning to the in, so figure that out:
-	ParseResult src_r = gen_expr(tokens, src_pos, ctx)
-	move (code, new_pos) in src_r
-	src_code as code
-	src_end as new_pos
+	int val_pos = cur + 1
+	macro_run gen_expr_r
 
 	strList dest_lines = empty
 	int field_count = len(fields)
@@ -55,30 +48,15 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 	string indent = "    "
 	string pad = s_repeat(indent, depth)
 
-	macro_run for_build_fields_into_mut_clones
+	string field_suffix = ".clone();"
+	macro_run for_build_fields
 
-	# hands off final code and sets up the next loop
-	int after = adv_nl_ref(src_end, tokens)
+	int after = adv_nl_ref(val_end, tokens)
 	string dest_code = s_join_nl(dest_lines)
 	string newline = "\n"
 	dest_code = s_cat(dest_code, newline)
 
 	return make_result(move dest_code, after)
-
-macro for_build_fields_into_moves
-	for field_index in range(field_count)
-    	string field = fields at field_index
-    	bool is_mut = list_has(mut_names, field)
-    	string mut_kw = ""
-
-    	if is_mut
-    		mut_kw = "mut "
-
-    	string dst_let = "let "
-    	string dst_eq = " = "
-    	string dst_dot = "."
-    	string dst_sc = ";"
-    	dest_lines at end = s_join([pad, dst_let, mut_kw, field, dst_eq, src_code, dst_dot, field, dst_sc])
 
 # Generates code for a `move (f1, f2) in source` destructuring statement. Each named
 # field becomes a separate `let [mut] field = source.field;` line — moves instead of
@@ -86,20 +64,21 @@ macro for_build_fields_into_moves
 fn ParseResult gen_move_destructure(int pos, int depth, RcCtx ctx)
 
 	macro_run initialize_gen_destructure
-    macro_run for_collect_fields_into_fields_list
+	macro_run for_collect_fields_into_fields_list
 
-    int src_pos = cur + 1
-    ParseResult src_r = gen_expr(tokens, src_pos, ctx)
-    move (code, new_pos) in src_r
-    src_code as code
-    src_end as new_pos
-    strList dest_lines = empty
-    int field_count = len(fields)
-    string indent = "    "
-    string pad = s_repeat(indent, depth)
-    macro_run for_build_fields_into_moves
-    int after = adv_nl_ref(src_end, tokens)
-    string dest_code = s_join_nl(dest_lines)
-    string newline = "\n"
-    dest_code = s_cat(dest_code, newline)
-    return make_result(move dest_code, after)
+	int val_pos = cur + 1
+	macro_run gen_expr_r
+
+	strList dest_lines = empty
+	int field_count = len(fields)
+	string indent = "    "
+	string pad = s_repeat(indent, depth)
+
+	string field_suffix = ";"
+	macro_run for_build_fields
+
+	int after = adv_nl_ref(val_end, tokens)
+	string dest_code = s_join_nl(dest_lines)
+	string newline = "\n"
+	dest_code = s_cat(dest_code, newline)
+	return make_result(move dest_code, after)

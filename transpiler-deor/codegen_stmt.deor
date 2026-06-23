@@ -46,8 +46,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		string raw_sc = ";\n"
 		strList raw_parts = [pad, raw_let, mut_kw, raw_var_name, raw_eq, val_code, raw_sc]
 		string raw_code = s_join(raw_parts)
-		int raw_next = adv_nl_ref(val_end, tokens)
-		return make_result(move raw_code, raw_next)
+		return make_nl_result(move raw_code, val_end, tokens)
 
 	if kind is "KW_CONST"
 		int const_type_pos = pos + 1
@@ -93,8 +92,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			string asg_sc = ";\n"
 			strList asg_parts = [pad, ident_name, asg_eq, val_code, assign_suffix, asg_sc]
 			string asgn_code = s_join(asg_parts)
-			int asgn_next = adv_nl_ref(val_end, tokens)
-			return make_result(move asgn_code, asgn_next)
+			return make_nl_result(move asgn_code, val_end, tokens)
 
 		# Type name = expr  (typed binding)
 		if kind is "IDENT"
@@ -115,8 +113,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 				string bd_sfx = "> = None;\n"
 				string bd_code = s_join([pad, bd_let, bare_var_name, bd_opt, bare_rust_type, bd_sfx])
 				int bd_after = next_pos + 1
-				int bd_next = adv_nl_ref(bd_after, tokens)
-				return make_result(move bd_code, bd_next)
+				return make_nl_result(move bd_code, bd_after, tokens)
 
 	string unh_pfx = "/* unhandled("
 	string unh_sfx = ") */\n"

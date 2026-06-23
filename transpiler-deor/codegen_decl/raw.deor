@@ -7,5 +7,4 @@ fn ParseResult gen_raw_decl(TokensRef tokens, int pos)
 	int name_pos = pos + 1
 	int after = name_pos + 1
 	string emp = ""
-	int raw_next = adv_nl_ref(after, tokens)
-	return make_result(move emp, raw_next)
+	return make_nl_result(move emp, after, tokens)
