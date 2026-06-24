@@ -82,15 +82,12 @@ fn tokenList load_file(string path)
 				ParseResult where_r = scan_import_where(tok_raw, imp_end)
 				imp_t_code as pr_code(where_r)
 
-				# this unwinds the Thing1 = Thing2 replacement as Thing1|Thing2
-				const pipe as "|"
-				list_code as s_split(imp_t_code, pipe)
-
-				imp_t_placeholder = list_code at 0
-				imp_t_concrete = list_code at 1
-
-				if not is_empty(imp_t_concrete)
+				if not is_empty(imp_t_code)
 					imp_end = pr_pos(where_r)
+					const string pipe = "|"
+					list_code as s_split(imp_t_code, pipe)
+					imp_t_placeholder = list_code at 0
+					imp_t_concrete = list_code at 1
 			else
 				imp_path = pr_code(imp_r_old)
 				imp_end = pr_pos(imp_r_old)

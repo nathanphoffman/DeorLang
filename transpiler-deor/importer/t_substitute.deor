@@ -1,12 +1,12 @@
 
-# T-substitution pass for parameterised imports (`import "path" where T = ConcreteType`).
+# Substitution pass for parameterised imports (`import "path" where Placeholder = ConcreteType`).
 # Applied to all tokens loaded from the imported file before they are merged into the
 # caller's token stream. Three substitution rules:
-#   1. IDENT exactly "T"            -> concrete  (e.g. T -> Employee)
-#   2. IDENT with T word-component  -> T replaced in-place
-#        PascalCase prefix: TSender  -> EmployeeSender
-#        snake _T_ component: t_T_spawn -> t_employee_spawn
-#   3. RUST_BLOCK content           -> word-boundary replace T -> concrete
+#   1. IDENT exactly "Placeholder"        -> concrete  (e.g. T -> Employee, Thing -> PiChunk)
+#   2. IDENT with Placeholder prefix      -> prefix replaced, casing adapted
+#        PascalCase prefix: TSender       -> EmployeeSender
+#        camelCase prefix: thingList      -> piChunkList
+#   3. RUST_BLOCK content                 -> word-boundary replace using same rules
 
 fn string s_to_lower(string source)
 	rust
@@ -20,44 +20,69 @@ fn string s_camel(string source)
 			Some(c) => c.to_lowercase().to_string() + chars.as_str(),
 		}
 
-# Replaces T as a word-boundary component inside a single identifier name.
+fn bool s_contains(string source, string needle)
+	rust
+		source.contains(needle.as_str())
+
+fn string s_replace(string source, string from, string output)
+	rust
+		source.replace(from.as_str(), output.as_str())
+
+# Replaces placeholder as a word-boundary component inside a single identifier name.
 fn string apply_t_in_name(string name, string placeholder, string concrete)
-	if name is "T"
+	if name is placeholder
 		return concrete
-	strList name_chars = c_chars(name)
-	int name_len = len(name_chars)
-	if name_len > 1
-		string first = name_chars at 0
-		string second = name_chars at 1
-		bool second_is_upper = s_upper_char(second)
-		bool first_is_upper_t = first is "T"
-		bool first_is_lower_t = first is "t"
-		if first_is_upper_t and second_is_upper
-			int t_offset = 1
-			string rest = s_from(name, t_offset)
-			string pascal_concrete = s_pascal(concrete)
-			return s_cat(pascal_concrete, rest)
-		if first_is_lower_t and second_is_upper
-			int t_offset = 1
-			string rest = s_from(name, t_offset)
-			string lower_concrete = s_camel(concrete)
-			return s_cat(lower_concrete, rest)
-	string t_sep = "_T_"
-	strList mid_parts = s_split(name, t_sep)
-	int mid_count = len(mid_parts)
-	if mid_count > 1
-		string lower = s_camel(concrete)
-		string new_sep = s_join(["_", lower, "_"])
-		return s_join_with(mid_parts, new_sep)
+	string pascal_ph = s_pascal(placeholder)
+	string camel_ph = s_camel(placeholder)
+	int ph_len = len(placeholder)
+	int name_len = len(name)
+	if name_len > ph_len
+		string after_ph = s_from(name, ph_len)
+		strList after_chars = c_chars(after_ph)
+		if len(after_chars) > 0
+			string next_char = after_chars at 0
+			bool next_is_upper = s_upper_char(next_char)
+			bool starts_pascal = s_starts_with(name, pascal_ph)
+			if starts_pascal and next_is_upper
+				string pascal_concrete = s_pascal(concrete)
+				return s_cat(pascal_concrete, after_ph)
+			bool starts_camel = s_starts_with(name, camel_ph)
+			if starts_camel and next_is_upper
+				string camel_concrete = s_camel(concrete)
+				return s_cat(camel_concrete, after_ph)
+	string pascal_sep = s_join(["_", pascal_ph, "_"])
+	string camel_sep = s_join(["_", camel_ph, "_"])
+	string camel_concrete = s_camel(concrete)
+	string new_sep = s_join(["_", camel_concrete, "_"])
+	bool has_pascal_sep = s_contains(name, pascal_sep)
+	if has_pascal_sep
+		return s_replace(name, pascal_sep, new_sep)
+	bool has_camel_sep = s_contains(name, camel_sep)
+	if has_camel_sep
+		return s_replace(name, camel_sep, new_sep)
 	return name
 
 # Applies the same compound-name substitution rules inside raw Rust block content.
-# Scans word by word so TChanPair, TSender, tStack etc. are handled alongside bare T.
+# Scans word by word so TChanPair, TSender, tStack etc. are handled alongside bare placeholder.
 fn string replace_t_in_rust_block(string content, string placeholder, string concrete)
 	rust
 		{
-			fn sub_word(word: &str, concrete: &str) -> String {
-				if word == "T" {
+			fn pascal_str(s: &str) -> String {
+				let mut c = s.chars();
+				match c.next() {
+					None => String::new(),
+					Some(f) => f.to_uppercase().to_string() + c.as_str(),
+				}
+			}
+			fn camel_str(s: &str) -> String {
+				let mut c = s.chars();
+				match c.next() {
+					None => String::new(),
+					Some(f) => f.to_lowercase().to_string() + c.as_str(),
+				}
+			}
+			fn sub_word(word: &str, placeholder: &str, concrete: &str) -> String {
+				if word == placeholder {
 					let rust_type = match concrete {
 						"int" => "i32",
 						"float" => "f64",
@@ -66,42 +91,33 @@ fn string replace_t_in_rust_block(string content, string placeholder, string con
 					};
 					return rust_type.to_string();
 				}
-				let chars: Vec<char> = word.chars().collect();
-				let n = chars.len();
-				if n > 1 {
-					if chars[0] == 'T' && chars[1].is_uppercase() {
-						let rest: String = chars[1..].iter().collect();
-						let mut pascal = concrete.to_string();
-						if let Some(c) = pascal.chars().next() {
-							if c.is_lowercase() {
-								let upper: String = c.to_uppercase().to_string();
-								pascal = format!("{}{}", upper, &pascal[c.len_utf8()..]);
-							}
+				let pascal_ph = pascal_str(placeholder);
+				let camel_ph = camel_str(placeholder);
+				let pascal_c = pascal_str(concrete);
+				let camel_c = camel_str(concrete);
+				let ph_len = placeholder.len();
+				if word.len() > ph_len {
+					if word.starts_with(&pascal_ph) {
+						let rest = &word[ph_len..];
+						if rest.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+							return format!("{}{}", pascal_c, rest);
 						}
-						return format!("{}{}", pascal, rest);
 					}
-					if chars[0] == 't' && chars[1].is_uppercase() {
-						let rest: String = chars[1..].iter().collect();
-						let camel: String = {
-							let mut c = concrete.chars();
-							match c.next() {
-								None => String::new(),
-								Some(f) => f.to_lowercase().to_string() + c.as_str(),
-							}
-						};
-						return format!("{}{}", camel, rest);
+					if word.starts_with(&camel_ph) {
+						let rest = &word[ph_len..];
+						if rest.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+							return format!("{}{}", camel_c, rest);
+						}
 					}
 				}
-				if word.contains("_T_") {
-					let camel: String = {
-						let mut c = concrete.chars();
-						match c.next() {
-							None => String::new(),
-							Some(f) => f.to_lowercase().to_string() + c.as_str(),
-						}
-					};
-					let new_sep = format!("_{}_", camel);
-					return word.replace("_T_", &new_sep);
+				let pascal_sep = format!("_{}_", pascal_ph);
+				let camel_sep = format!("_{}_", camel_ph);
+				let new_sep = format!("_{}_", camel_c);
+				if word.contains(&pascal_sep) {
+					return word.replace(&pascal_sep, &new_sep);
+				}
+				if word.contains(&camel_sep) {
+					return word.replace(&camel_sep, &new_sep);
 				}
 				word.to_string()
 			}
@@ -116,7 +132,7 @@ fn string replace_t_in_rust_block(string content, string placeholder, string con
 						i += 1;
 					}
 					let word: String = chars[start..i].iter().collect();
-					result.push_str(&sub_word(&word, concrete.as_str()));
+					result.push_str(&sub_word(&word, placeholder.as_str(), concrete.as_str()));
 				} else {
 					result.push(chars[i]);
 					i += 1;
@@ -125,7 +141,7 @@ fn string replace_t_in_rust_block(string content, string placeholder, string con
 			result
 		}
 
-# Walks every token from an imported file and applies T -> concrete substitution.
+# Walks every token from an imported file and applies placeholder -> concrete substitution.
 fn tokenList apply_t_substitution(tokenList tokens, string placeholder, string concrete)
 	tokenList result = empty
 	int token_count = len(tokens)

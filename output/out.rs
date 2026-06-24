@@ -1037,6 +1037,7 @@ fn scan_import_where(tokens: Vec<Token>, pos: i32) -> ParseResult {
     // transpiler-deor/importer/scan.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut where_pos: i32 = pos.clone();
+    let mut replacement_pos: i32 = pos + 1.clone();
     let mut eq_pos: i32 = pos + 2.clone();
     let mut concrete_pos: i32 = pos + 3.clone();
     if concrete_pos < token_count {
@@ -1049,13 +1050,17 @@ fn scan_import_where(tokens: Vec<Token>, pos: i32) -> ParseResult {
             // transpiler-deor/importer/scan.deor
             let mut eq_tok: Token = tokens[eq_pos as usize].clone();
             let mut concrete_tok: Token = tokens[concrete_pos as usize].clone();
+            let mut replacement_tok: Token = tokens[replacement_pos as usize].clone();
             let kind = eq_tok.kind.clone();
             let mut is_eq: bool = kind == "EQUALS".clone();
             if is_eq {
                 // transpiler-deor/importer/scan.deor
+                let value = replacement_tok.value.clone();
+                let replacement_value = value;
                 let value = concrete_tok.value.clone();
                 let mut after_where: i32 = concrete_pos + 1.clone();
-                return make_result(value.clone(), after_where.clone());
+                let replace_with = replacement_value + "|" + value.as_str();
+                return make_result(replace_with.clone(), after_where.clone());
             }
         }
     }
@@ -1110,53 +1115,84 @@ fn s_camel(source: String) -> String {
     }
 }
 
-fn apply_t_in_name(name: String, concrete: String) -> String {
+fn s_contains(source: String, needle: String) -> bool {
     // transpiler-deor/importer/t_substitute.deor
-    if name == "T" {
+    source.contains(needle.as_str())
+}
+
+fn s_replace(source: String, from: String, output: String) -> String {
+    // transpiler-deor/importer/t_substitute.deor
+    source.replace(from.as_str(), output.as_str())
+}
+
+fn apply_t_in_name(name: String, placeholder: String, concrete: String) -> String {
+    // transpiler-deor/importer/t_substitute.deor
+    if name == placeholder {
         // transpiler-deor/importer/t_substitute.deor
         return concrete;
     }
-    let mut name_chars: Vec<String> = c_chars(name.clone());
-    let mut name_len: i32 = (name_chars.len() as i32);
-    if name_len > 1 {
+    let mut pascal_ph: String = s_pascal(placeholder.clone());
+    let mut camel_ph: String = s_camel(placeholder.clone());
+    let mut ph_len: i32 = (placeholder.len() as i32);
+    let mut name_len: i32 = (name.len() as i32);
+    if name_len > ph_len {
         // transpiler-deor/importer/t_substitute.deor
-        let mut first: String = name_chars[0 as usize].clone();
-        let mut second: String = name_chars[1 as usize].clone();
-        let mut second_is_upper: bool = s_upper_char(second.clone());
-        let mut first_is_upper_t: bool = first == "T".clone();
-        let mut first_is_lower_t: bool = first == "t".clone();
-        if first_is_upper_t && second_is_upper {
+        let mut after_ph: String = s_from(name.clone(), ph_len.clone());
+        let mut after_chars: Vec<String> = c_chars(after_ph.clone());
+        if (after_chars.len() as i32) > 0 {
             // transpiler-deor/importer/t_substitute.deor
-            let mut t_offset: i32 = 1;
-            let mut rest: String = s_from(name.clone(), t_offset.clone());
-            let mut pascal_concrete: String = s_pascal(concrete.clone());
-            return s_cat(pascal_concrete.clone(), rest.clone());
-        }
-        if first_is_lower_t && second_is_upper {
-            // transpiler-deor/importer/t_substitute.deor
-            let mut t_offset: i32 = 1;
-            let mut rest: String = s_from(name.clone(), t_offset.clone());
-            let mut lower_concrete: String = s_camel(concrete.clone());
-            return s_cat(lower_concrete.clone(), rest.clone());
+            let mut next_char: String = after_chars[0 as usize].clone();
+            let mut next_is_upper: bool = s_upper_char(next_char.clone());
+            let mut starts_pascal: bool = s_starts_with(name.clone(), pascal_ph.clone());
+            if starts_pascal && next_is_upper {
+                // transpiler-deor/importer/t_substitute.deor
+                let mut pascal_concrete: String = s_pascal(concrete.clone());
+                return s_cat(pascal_concrete.clone(), after_ph.clone());
+            }
+            let mut starts_camel: bool = s_starts_with(name.clone(), camel_ph.clone());
+            if starts_camel && next_is_upper {
+                // transpiler-deor/importer/t_substitute.deor
+                let mut camel_concrete: String = s_camel(concrete.clone());
+                return s_cat(camel_concrete.clone(), after_ph.clone());
+            }
         }
     }
-    let mut t_sep: String = "_T_".to_string();
-    let mut mid_parts: Vec<String> = s_split(name.clone(), t_sep.clone());
-    let mut mid_count: i32 = (mid_parts.len() as i32);
-    if mid_count > 1 {
+    let mut pascal_sep: String = ["_", pascal_ph.as_str(), "_"].concat();
+    let mut camel_sep: String = ["_", camel_ph.as_str(), "_"].concat();
+    let mut camel_concrete: String = s_camel(concrete.clone());
+    let mut new_sep: String = ["_", camel_concrete.as_str(), "_"].concat();
+    let mut has_pascal_sep: bool = s_contains(name.clone(), pascal_sep.clone());
+    if has_pascal_sep {
         // transpiler-deor/importer/t_substitute.deor
-        let mut lower: String = s_camel(concrete.clone());
-        let mut new_sep: String = ["_", lower.as_str(), "_"].concat();
-        return s_join_with(mid_parts.clone(), new_sep.clone());
+        return s_replace(name.clone(), pascal_sep.clone(), new_sep.clone());
+    }
+    let mut has_camel_sep: bool = s_contains(name.clone(), camel_sep.clone());
+    if has_camel_sep {
+        // transpiler-deor/importer/t_substitute.deor
+        return s_replace(name.clone(), camel_sep.clone(), new_sep.clone());
     }
     return name;
 }
 
-fn replace_t_in_rust_block(content: String, concrete: String) -> String {
+fn replace_t_in_rust_block(content: String, placeholder: String, concrete: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     {
-    	fn sub_word(word: &str, concrete: &str) -> String {
-    		if word == "T" {
+    	fn pascal_str(s: &str) -> String {
+    		let mut c = s.chars();
+    		match c.next() {
+    			None => String::new(),
+    			Some(f) => f.to_uppercase().to_string() + c.as_str(),
+    		}
+    	}
+    	fn camel_str(s: &str) -> String {
+    		let mut c = s.chars();
+    		match c.next() {
+    			None => String::new(),
+    			Some(f) => f.to_lowercase().to_string() + c.as_str(),
+    		}
+    	}
+    	fn sub_word(word: &str, placeholder: &str, concrete: &str) -> String {
+    		if word == placeholder {
     			let rust_type = match concrete {
     				"int" => "i32",
     				"float" => "f64",
@@ -1165,42 +1201,33 @@ fn replace_t_in_rust_block(content: String, concrete: String) -> String {
     			};
     			return rust_type.to_string();
     		}
-    		let chars: Vec<char> = word.chars().collect();
-    		let n = chars.len();
-    		if n > 1 {
-    			if chars[0] == 'T' && chars[1].is_uppercase() {
-    				let rest: String = chars[1..].iter().collect();
-    				let mut pascal = concrete.to_string();
-    				if let Some(c) = pascal.chars().next() {
-    					if c.is_lowercase() {
-    						let upper: String = c.to_uppercase().to_string();
-    						pascal = format!("{}{}", upper, &pascal[c.len_utf8()..]);
-    					}
+    		let pascal_ph = pascal_str(placeholder);
+    		let camel_ph = camel_str(placeholder);
+    		let pascal_c = pascal_str(concrete);
+    		let camel_c = camel_str(concrete);
+    		let ph_len = placeholder.len();
+    		if word.len() > ph_len {
+    			if word.starts_with(&pascal_ph) {
+    				let rest = &word[ph_len..];
+    				if rest.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+    					return format!("{}{}", pascal_c, rest);
     				}
-    				return format!("{}{}", pascal, rest);
     			}
-    			if chars[0] == 't' && chars[1].is_uppercase() {
-    				let rest: String = chars[1..].iter().collect();
-    				let camel: String = {
-    					let mut c = concrete.chars();
-    					match c.next() {
-    						None => String::new(),
-    						Some(f) => f.to_lowercase().to_string() + c.as_str(),
-    					}
-    				};
-    				return format!("{}{}", camel, rest);
+    			if word.starts_with(&camel_ph) {
+    				let rest = &word[ph_len..];
+    				if rest.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
+    					return format!("{}{}", camel_c, rest);
+    				}
     			}
     		}
-    		if word.contains("_T_") {
-    			let camel: String = {
-    				let mut c = concrete.chars();
-    				match c.next() {
-    					None => String::new(),
-    					Some(f) => f.to_lowercase().to_string() + c.as_str(),
-    				}
-    			};
-    			let new_sep = format!("_{}_", camel);
-    			return word.replace("_T_", &new_sep);
+    		let pascal_sep = format!("_{}_", pascal_ph);
+    		let camel_sep = format!("_{}_", camel_ph);
+    		let new_sep = format!("_{}_", camel_c);
+    		if word.contains(&pascal_sep) {
+    			return word.replace(&pascal_sep, &new_sep);
+    		}
+    		if word.contains(&camel_sep) {
+    			return word.replace(&camel_sep, &new_sep);
     		}
     		word.to_string()
     	}
@@ -1215,7 +1242,7 @@ fn replace_t_in_rust_block(content: String, concrete: String) -> String {
     				i += 1;
     			}
     			let word: String = chars[start..i].iter().collect();
-    			result.push_str(&sub_word(&word, concrete.as_str()));
+    			result.push_str(&sub_word(&word, placeholder.as_str(), concrete.as_str()));
     		} else {
     			result.push(chars[i]);
     			i += 1;
@@ -1225,7 +1252,7 @@ fn replace_t_in_rust_block(content: String, concrete: String) -> String {
     }
 }
 
-fn apply_t_substitution(tokens: Vec<Token>, concrete: String) -> Vec<Token> {
+fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: String) -> Vec<Token> {
     // transpiler-deor/importer/t_substitute.deor
     let mut result: Vec<Token> = Vec::new();
     let mut token_count: i32 = (tokens.len() as i32);
@@ -1238,13 +1265,13 @@ fn apply_t_substitution(tokens: Vec<Token>, concrete: String) -> Vec<Token> {
         let file = tok.file.clone();
         if kind == "IDENT" {
             // transpiler-deor/importer/t_substitute.deor
-            let mut new_value: String = apply_t_in_name(value.clone(), concrete.clone());
+            let mut new_value: String = apply_t_in_name(value.clone(), placeholder.clone(), concrete.clone());
             let mut tok_meta: TokenMeta = TokenMeta { line, file };
             let mut new_tok: Token = make_token(kind.clone(), new_value.clone(), tok_meta.clone());
             result.push(new_tok.clone());
         } else if kind == "RUST_BLOCK" {
             // transpiler-deor/importer/t_substitute.deor
-            let mut new_content: String = replace_t_in_rust_block(value.clone(), concrete.clone());
+            let mut new_content: String = replace_t_in_rust_block(value.clone(), placeholder.clone(), concrete.clone());
             let mut tok_meta: TokenMeta = TokenMeta { line, file };
             let mut new_tok: Token = make_token(kind.clone(), new_content.clone(), tok_meta.clone());
             result.push(new_tok.clone());
@@ -1390,15 +1417,20 @@ fn load_file(path: String) -> Vec<Token> {
             let mut imp_path: String = "".to_string();
             let mut imp_end: i32 = pos.clone();
             let mut imp_t_concrete: String = "".to_string();
+            let mut imp_t_placeholder: String = "".to_string();
             if is_new_import {
                 // transpiler-deor/importer/load.deor
                 imp_path = pr_code(imp_r_new.clone());
                 imp_end = pr_pos(imp_r_new.clone());
                 let mut where_r: ParseResult = scan_import_where(tok_raw.clone(), imp_end.clone());
-                imp_t_concrete = pr_code(where_r.clone());
-                if !is_empty(imp_t_concrete.clone()) {
+                let imp_t_code = pr_code(where_r.clone());
+                if !is_empty(imp_t_code.clone()) {
                     // transpiler-deor/importer/load.deor
                     imp_end = pr_pos(where_r.clone());
+                    let pipe: String = "|".to_string();
+                    let list_code = s_split(imp_t_code.clone(), pipe.clone());
+                    imp_t_placeholder = list_code[0 as usize].clone();
+                    imp_t_concrete = list_code[1 as usize].clone();
                 }
             } else {
                 // transpiler-deor/importer/load.deor
@@ -1420,7 +1452,7 @@ fn load_file(path: String) -> Vec<Token> {
                 let mut dedup_key: String = imp_path.clone();
                 if !is_empty(imp_t_concrete.clone()) {
                     // transpiler-deor/importer/load.deor
-                    dedup_key = [imp_path.as_str(), "|T=", imp_t_concrete.as_str()].concat();
+                    dedup_key = [imp_path.as_str(), "|", imp_t_placeholder.as_str(), "=", imp_t_concrete.as_str()].concat();
                 }
                 let mut is_new: bool = file_is_new_keyed(dedup_key.clone());
                 if is_new {
@@ -1436,7 +1468,7 @@ fn load_file(path: String) -> Vec<Token> {
                     let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
                     if !is_empty(imp_t_concrete.clone()) {
                         // transpiler-deor/importer/load.deor
-                        imp_tokens = apply_t_substitution(imp_tokens.clone(), imp_t_concrete.clone());
+                        imp_tokens = apply_t_substitution(imp_tokens.clone(), imp_t_placeholder.clone(), imp_t_concrete.clone());
                     }
                     let mut imp_len: i32 = (imp_tokens.len() as i32);
                     for imp_index in 0..imp_len {

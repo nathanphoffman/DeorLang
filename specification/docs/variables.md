@@ -184,6 +184,32 @@ area = raw            # valid or not valid — predicate runs at runtime
 
 ---
 
+## `const` — Immutable Typed Bindings
+
+`const` declares a typed binding that is explicitly immutable. The transpiler will never emit `let mut` for a `const` variable, even if the surrounding code would otherwise infer mutability.
+
+```
+const string pipe = "|"
+const int max_retries = 3
+```
+
+```rust
+let pipe: String = "|".to_string();
+let max_retries: i32 = 3;
+```
+
+**`const` vs plain typed binding:** a plain `string pipe = "|"` is also immutable if never reassigned, but `const` makes the intent explicit and guarantees it at the transpiler level. Use `const` for values that should never change.
+
+**`const` vs `as`:** both produce immutable bindings. `const` requires an explicit type; `as` infers the type from the literal. Use `const` when the type must be stated, `as` for simple literals where inference is unambiguous.
+
+```
+const string label = "hello"   # explicit type, immutable
+label as "hello"               # inferred type, immutable — equivalent here
+int count as 0                 # transpiler error — as never takes a type prefix
+```
+
+---
+
 ## Explicit Typing — Runtime Values
 
 Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
