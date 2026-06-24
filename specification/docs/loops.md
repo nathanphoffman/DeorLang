@@ -3,11 +3,10 @@
 ## Collection Iteration
 ```
 for room in rooms
-    (window) in room
-    (size) in window
-    parts as ["Window size is ", size]
-    string msg = s_join(parts)
-    print(msg)
+    (name) in room
+    (occupied) in room
+    if occupied
+        print(name)
 ```
 
 ---

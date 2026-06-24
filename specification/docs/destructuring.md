@@ -57,7 +57,7 @@ If a name being extracted already exists in scope, the new binding silently shad
 
 ```
 world as 2
-(world) in t    # world now refers to t.world — the 2 is gone
+(world) in tab    # world now refers to tab.world — the 2 is gone
 ```
 
 Use this deliberately to "update" a name after processing, or avoid it by choosing distinct names.

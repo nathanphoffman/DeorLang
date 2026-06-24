@@ -5,19 +5,19 @@
 Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `shape`, `enum`, or `rust`. No colon is written.
 
 ```
-fn int abs(int x)
-    if x < 0
-        -x
+fn int abs(int val)
+    if val < 0
+        -val
     else
-        x
+        val
 ```
 
 ```rust
-fn abs(x: i32) -> i32 {
-    if x < 0 {
-        -x
+fn abs(val: i32) -> i32 {
+    if val < 0 {
+        -val
     } else {
-        x
+        val
     }
 }
 ```

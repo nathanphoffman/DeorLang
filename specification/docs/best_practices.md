@@ -27,7 +27,7 @@ fn int sum_rolls(rollResultList rolls)
     # belongs together as it is all part of the loop
     sum as 0
     for roll in rolls
-        value in roll
+        (value) in roll
         val as 0
         if value valid
             val = (avow value)
@@ -64,7 +64,7 @@ fn RollResult roll_die(Die die)
     (sides, label) in die
 
     min as 1
-    int raw = random(min, sides)
+    int raw = m_rand_int(min, sides)
 
     Roll value = raw
     string source = label
@@ -75,8 +75,8 @@ fn RollResult roll_die(Die die)
 ## Naming External Libs
 Because deor does not support any third party importing, the standard convention is just to copy and paste deor files into the lib folder. Because of this, it is highly recommended the following pattern be used.
 
-Rust Wrappers lead all functions with **x_func** so a string join would be ```s_join```.  These should closely if not exactly mirror existing rust code in the std library.
+Standard library wrappers use the **`s_`** prefix — e.g. `s_join`, `s_trim`. These mirror existing Rust std functions closely.
 
-Cargo crate wrappers written in rust needed for imports should be of the form **cx_fn** so a cargo serde json tool might be ```cs_json_parse()```.  Note that these are for wrappers, just because something calls cargo does not make it a wrapper, a third party .deor file that relies on some cargo packages does not mean it gets the ```cx_``` prefix.
+Cargo crate wrappers use the **`cx_`** prefix — e.g. `cx_json_parse`. Note that this prefix is only for thin wrappers around a crate call; a third-party `.deor` file that happens to use cargo internally does not get the `cx_` prefix.
 
-Finally, a personal third party item you created distributed by a blog, git, or copy paste should use the convention **ex_fn** or external.  So en_do_cool_things() might be the nate library of cool deor tricks.  These might import rust code, use rust blocks, or use cargo, but they are at least doing some logic with deor, if not all logic.
+Personal or third-party Deor libs use the **`ex_`** prefix — e.g. `ex_do_cool_thing`. These might use rust blocks, cargo, or pure Deor, but they represent external logic distributed by blog, git, or copy-paste.

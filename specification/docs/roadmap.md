@@ -3,6 +3,10 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 # Validation Audit
  ---
 
+- find out what type the tasks defines through the t/T replacement logic
+
+- Give better examples of naming for cx and ex
+
 - KW_GIVEUP should probably be used for move
 
 - there is a ton of code like the following that is repetitive, we should consider making the tokens they use like ": "  curly braces, the indent, all in one lookup like file for rustisms.

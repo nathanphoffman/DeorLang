@@ -16,7 +16,7 @@
 
 ### Safety
 - **Explicit over Generic** - explicit types are more clear (although ``shapes`` allow some minimal forms)
-- **Validatior Types** - ``type`` exposes a boolean return signature, which validates data (ie. Positive > 0)
+- **Validator Types** - ``type`` exposes a boolean return signature, which validates data (ie. Positive > 0)
 - **1st-Class not Only-Class** - 1st class functions exist but are highly limited, and no lambdas are allowed
 - **No OOP** - structs are data, and ``with``/``in`` exposes easy (de)(con)struction
 - **Explicit Typing** - types are required, shapes are explicit generics and functions, and enums are available
@@ -32,4 +32,4 @@
 ### Rust Power
 - **Rust Wrappers** - provides wrapped-Rust libs for advanced built-ins, no need to reinvent the wheel or learn Rust
 - **Rust Blocks** - the ``rust`` block exposes raw Rust power, for when performance (or dict / bytes) matter
-- **Rust Libs** - since everything builds to Rust, cargo can be pulled in and rust functions wrapped. see: [Libs and Shims](docs/shims.md)
+- **Rust Libs** - since everything builds to Rust, cargo can be pulled in and rust functions wrapped. see: [Libs](docs/libs.md)

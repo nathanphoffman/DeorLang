@@ -58,7 +58,7 @@ Imports must be first — only enforced rule. Recommended order after: Enums →
 - Max 3 parameters — bundle extras into a struct
 - No lambdas, closures, or nested functions
 - Recursion allowed
-- Validator return type: return `bad` when no valid value; never `return empty`
+- Validator return type: declare without a value and return it — or assign a value that fails the predicate; `return bad` and `return empty` are transpiler errors
 - Multi-return: declare a named struct, return `(field1, field2)` in return position only
 - Entry point: `fn void main()`
 
@@ -112,7 +112,7 @@ Imports must be first — only enforced rule. Recommended order after: Enums →
 ## Standard Library
 All imported with `import "lib/name.deor"`. Functions must be called with named variables (2+ args).
 
-- **lib/string.deor** — `s_trim`, `s_to_upper`, `s_to_lower`, `s_contains`, `s_starts_with`, `s_ends_with`, `s_split`
+- **lib/string.deor** — `s_trim`, `s_trim_start`, `s_trim_end`, `s_to_upper`, `s_to_lower`, `s_contains`, `s_starts_with`, `s_ends_with`, `s_split`, `s_join` (no sep), `s_join_with` (with sep), `s_replace`, `s_index_of`, `s_char_at`, `s_substring`, `s_repeat`
 - **lib/math.deor** — `m_abs`, `m_sign`, `m_min`, `m_max`, `m_clamp`, `m_pow`, `m_sqrt`, `m_floor`, `m_ceil`, `m_round`, `m_log`, `m_log2`, `m_log10`; float variants: `m_absf`, `m_minf`, `m_maxf`, `m_clampf`, `m_powf`
 - **lib/random.deor** — `m_rand_int(min, max)`, `m_rand_float()`, `m_rand_bool()`
 - **lib/convert.deor** — `c_int_to_float`, `c_float_to_int`, `c_int_to_string`, `c_float_to_string`, `c_bool_to_string`, `c_string_to_int`, `c_string_to_float`, `c_string_to_bool`

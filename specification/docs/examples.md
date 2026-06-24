@@ -3,6 +3,8 @@
 ## Source
 
 ```
+import "lib/random.deor"
+
 shape roomList = list of Room
 
 type Squarefeet(int val)
@@ -20,7 +22,7 @@ struct House
 fn int total_area(roomList rooms)
     sum as 0
     for room in rooms
-        area in room
+        (area) in room
         int sqm as 0
         if area valid
             sqm = (avow area)
@@ -30,7 +32,7 @@ fn int total_area(roomList rooms)
 fn roomList occupied_rooms(roomList rooms)
     roomList result = empty
     for room in rooms
-        occupied in room
+        (occupied) in room
         if occupied
             result at end = room
     return result
@@ -39,7 +41,7 @@ fn string random_room_name(roomList rooms)
     int count = len(rooms)
     int last = count - 1
     start as 0
-    int idx = random(start, last)
+    int idx = m_rand_int(start, last)
     Room picked = rooms at idx
     (name) in picked
     return name
@@ -70,7 +72,7 @@ fn void main()
 
     roomList occ = occupied_rooms(rooms)
     for room in occ
-        name in room
+        (name) in room
         print(name)
 
     area = 25

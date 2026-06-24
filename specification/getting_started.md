@@ -11,16 +11,16 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ## Pull Latest Deor From GitHub
 ```
-git pull https://github.com/nathanphoffman/DeorLang/setup
+git clone https://github.com/nathanphoffman/DeorLang
 ```
 
 For manual instructions:
 
 1. Pull down or open up ```https://github.com/nathanphoffman/DeorLang```
 2. Copy out the setup folder (the rest you don't need) into a new project folder of your choosing
-3. Run ```cargo install``` in this folder (using a command line)
+3. Run ```cargo build``` in this folder (using a command line)
 4. Run ```just run```
-4. You should see hello world, you are ready to begin!
+5. You should see hello world, you are ready to begin!
 
 ## Important things to note
 - Most importantly **deor is in extreme early revision** do not build production apps with it.

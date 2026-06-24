@@ -1,0 +1,15 @@
+fn int ti_now()
+	rust
+		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i32).unwrap_or(0)
+
+fn float ti_now_ms()
+	rust
+		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as f64).unwrap_or(0.0)
+
+fn int ti_elapsed(int start)
+	rust
+		(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i32).unwrap_or(0)) - start
+
+fn float ti_elapsed_ms(float start)
+	rust
+		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as f64).unwrap_or(0.0) - start

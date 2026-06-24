@@ -97,16 +97,16 @@ struct DivResult
     int quotient
     int remainder
 
-fn DivResult divmod(int a, int b)
-    int quotient = a / b
-    int remainder = a % b
+fn DivResult divmod(int lft, int rgt)
+    int quotient = lft / rgt
+    int remainder = lft % rgt
     return (quotient, remainder)
 ```
 
 ```rust
-fn divmod(a: i32, b: i32) -> DivResult {
-    let quotient = a / b;
-    let remainder = a % b;
+fn divmod(lft: i32, rgt: i32) -> DivResult {
+    let quotient = lft / rgt;
+    let remainder = lft % rgt;
     return DivResult { quotient, remainder };
 }
 ```
@@ -189,18 +189,18 @@ area = raw            # valid or not valid — predicate runs at runtime
 Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
 
 ```
-int val = random(min, max)
+int val = m_rand_int(min, max)
 string pick = random_room_name(rooms)
 roomList result = empty
 ```
 
 ```rust
-let val: i32 = random(min, max);
+let val: i32 = m_rand_int(min, max);
 let pick: String = random_room_name(&rooms);
 let mut result: Vec<i32> = Vec::new();
 ```
 
-**Conversion notes:** a list binding that's later `insert`ed into must be emitted as `let mut` — the transpiler infers `mut` from usage.
+**Conversion notes:** a list binding that's later appended to must be emitted as `let mut` — the transpiler infers `mut` from usage.
 
 ---
 

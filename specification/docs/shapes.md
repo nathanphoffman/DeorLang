@@ -172,9 +172,9 @@ camelCase distinguishes shapes from every other identifier category:
 - Primitives and keywords: lowercase (`int`, `list`, `func`, `of`)
 - User-defined types: PascalCase (`Room`, `Roll`)
 - Variables, functions, fields: snake_case (`room_list`, `filter_func`)
-- Enums: camelCase (`colorTag`, `statusTag`) — like shapes, but instantiable values
+- Enums: PascalCase (`ColorTag`, `StatusTag`) — like structs and validator types
 
-Seeing a camelCase identifier means: this is a shape or an enum.
+Seeing a camelCase identifier means: this is a shape.
 
 ---
 
@@ -215,7 +215,7 @@ fn roomList filter(roomList items, filterFunc predicate)
 
 ```
 # main.deor
-(roomList, filterFunc, filter) in rooms
+import "rooms.deor"
 ```
 
 ---

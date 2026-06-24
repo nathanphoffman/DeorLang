@@ -1,0 +1,39 @@
+raw StringMap
+
+shape stringList = list of string
+
+rust
+	#[derive(Clone)]
+	struct StringMap(std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, String>>>);
+
+fn StringMap mp_make()
+	rust
+		StringMap(std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new())))
+
+fn StringMap mp_set(StringMap map, string key, string val)
+	rust
+		{ map.0.lock().unwrap().insert(key, val); map }
+
+fn string mp_get(StringMap map, string key)
+	rust
+		map.0.lock().unwrap().get(&key).cloned().unwrap_or_default()
+
+fn bool mp_has(StringMap map, string key)
+	rust
+		map.0.lock().unwrap().contains_key(&key)
+
+fn StringMap mp_remove(StringMap map, string key)
+	rust
+		{ map.0.lock().unwrap().remove(&key); map }
+
+fn int mp_size(StringMap map)
+	rust
+		map.0.lock().unwrap().len() as i32
+
+fn stringList mp_keys(StringMap map)
+	rust
+		map.0.lock().unwrap().keys().cloned().collect()
+
+fn stringList mp_values(StringMap map)
+	rust
+		map.0.lock().unwrap().values().cloned().collect()

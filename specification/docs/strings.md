@@ -1,9 +1,9 @@
 # Strings
 
-String utility functions live in `lib/string.deor`. Import what you need:
+String utility functions live in `lib/string.deor`. Import the whole file:
 
 ```
-(s_trim, s_split, s_contains) in "lib/string"
+import "lib/string.deor"
 ```
 
 All functions in `lib/string.deor` follow the `s_` prefix convention. They are regular user-defined functions, so arguments must be named variables — literals are not valid arguments. See [Enforced Practices](enforced_practices.md#named-arguments--user-defined-functions-only).
@@ -72,7 +72,7 @@ string msg = "count: " + int_to_str(count)
 ## Examples
 
 ```
-(s_trim, s_to_lower, s_contains, s_split, s_starts_with, s_ends_with, stringList) in "lib/string"
+import "lib/string.deor"
 
 string raw = "  Hello, World!  "
 string clean = s_trim(raw)
@@ -123,3 +123,12 @@ bool is_pdf = s_ends_with(filename, ext)
 | `s_to_upper(str)` | `str.to_uppercase()` |
 | `s_to_lower(str)` | `str.to_lowercase()` |
 | `s_split(str, delimiter)` | `str.split(delimiter.as_str()).map(\|s\| s.to_string()).collect()` |
+| `s_join(parts)` | `parts.join("")` |
+| `s_join_with(parts, sep)` | `parts.join(sep.as_str())` |
+| `s_trim_start(str)` | `str.trim_start().to_string()` |
+| `s_trim_end(str)` | `str.trim_end().to_string()` |
+| `s_replace(str, from, to)` | `str.replace(from.as_str(), to.as_str())` |
+| `s_index_of(str, needle)` | `str.find(needle.as_str()).map(\|i\| i as i32).unwrap_or(-1)` |
+| `s_char_at(str, idx)` | `str.chars().nth(idx as usize).map(\|c\| c.to_string()).unwrap_or_default()` |
+| `s_substring(str, start, end)` | `str.chars().skip(start).take(end - start).collect()` |
+| `s_repeat(str, n)` | `str.repeat(n as usize)` |

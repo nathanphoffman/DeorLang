@@ -32,7 +32,7 @@ There are no exceptions. All runtime identifiers — variables, parameters, fiel
 
 ---
 ## Ordering
-Imports are required to be at the top of a file, however there are no other restrictions, but there are suggestions for [best practices](docs/best_practices.md).
+Imports are required to be at the top of a file, however there are no other restrictions, but there are suggestions for [best practices](best_practices.md).
 
 
 ---

@@ -46,7 +46,7 @@ shape itemList = list of Item
 
 fn void process(itemList items, bool skip_invalid)
     for item in items
-        valid in item
+        (valid) in item
         if skip_invalid and not valid
             return
         handle(item)

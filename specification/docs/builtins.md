@@ -1,7 +1,7 @@
 # Built-in Functions
 These functions are wired directly into the transpiler — no import, no wrapper needed.
 
-Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Libs](docs/libs.md) for the standard library and custom wrapper patterns.
+Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Libs](libs.md) for the standard library and custom wrapper patterns.
 
 ---
 
@@ -55,7 +55,7 @@ for idx in range(3, 7)
     print(idx)
 ```
 
-`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned. See [Loops](docs/loops.md) for full usage.
+`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned. See [Loops](loops.md) for full usage.
 
 ---
 
@@ -65,8 +65,10 @@ Causes a hard exit / crash from the program, takes a string
 Deor
 ```
 message as "An unknown server problem occurred"
-Error err = (message)
 crash(message)
 ```
 
-Rust: nearly identical to ```panic!("{}",message)```
+Rust:
+```rust
+panic!("{}", message);
+```

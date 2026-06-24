@@ -18,12 +18,21 @@ String utilities beyond the built-in `+` concatenation.
 | Function | Signature | Description |
 |---|---|---|
 | `s_trim` | `string → string` | Strip leading and trailing whitespace |
+| `s_trim_start` | `string → string` | Strip leading whitespace only |
+| `s_trim_end` | `string → string` | Strip trailing whitespace only |
 | `s_to_upper` | `string → string` | Uppercase |
 | `s_to_lower` | `string → string` | Lowercase |
 | `s_contains` | `string, string → bool` | True if the string contains the needle |
 | `s_starts_with` | `string, string → bool` | True if the string starts with the prefix |
 | `s_ends_with` | `string, string → bool` | True if the string ends with the suffix |
+| `s_index_of` | `string, string → int` | Position of needle, or `-1` if not found |
+| `s_replace` | `string, string, string → string` | Replace all occurrences of `from` with `to` |
+| `s_substring` | `string, int, int → string` | Characters from `start` (inclusive) to `end` (exclusive) |
+| `s_char_at` | `string, int → string` | Single character at index as a string |
+| `s_repeat` | `string, int → string` | Repeat the string `n` times |
 | `s_split` | `string, string → stringList` | Split on delimiter, returns a `stringList` |
+| `s_join` | `stringList → string` | Join a list of strings with no separator |
+| `s_join_with` | `stringList, string → string` | Join a list of strings with a separator |
 
 ```
 import "lib/string.deor"
@@ -32,6 +41,9 @@ string sentence = "  hello world  "
 string trimmed = s_trim(sentence)
 bool found = s_contains(trimmed, "world")
 stringList words = s_split(trimmed, " ")
+string upper = s_to_upper(trimmed)
+string replaced = s_replace(trimmed, "world", "Deor")
+int pos = s_index_of(trimmed, "hello")
 ```
 
 ---
@@ -159,6 +171,13 @@ After substitution with `T = int`, the shape is named `lIntList` and functions a
 | `l_T_min` | `lTList → T` | Minimum element |
 | `l_T_max` | `lTList → T` | Maximum element |
 | `l_T_join` | `lTList, string → string` | Join elements with a separator string |
+| `l_T_contains` | `lTList, T → bool` | True if the list contains the item |
+| `l_T_index_of` | `lTList, T → int` | Index of item, or `-1` if not found |
+| `l_T_unique` | `lTList → lTList` | Copy with duplicates removed, preserving order |
+| `l_T_take` | `lTList, int → lTList` | First `n` elements |
+| `l_T_drop` | `lTList, int → lTList` | All elements after the first `n` |
+| `l_T_push` | `lTList, T → lTList` | New list with item appended to the end |
+| `l_T_pop` | `lTList → lTList` | New list with the last element removed |
 
 ```
 import "lib/list.deor" where T = int
@@ -167,39 +186,87 @@ lIntList scores = [10, 20, 30]
 int total = l_int_sum(scores)
 int best = l_int_max(scores)
 lIntList top = l_int_slice(scores, 0, 2)
+bool has_ten = l_int_contains(scores, 10)
+lIntList first_two = l_int_take(scores, 2)
+lIntList grown = l_int_push(scores, 40)
+lIntList shrunk = l_int_pop(scores)
 ```
 
-`l_T_sort`, `l_T_sum`, `l_T_min`, and `l_T_max` require the element type to implement `Ord` / `Copy` in the generated Rust. They work naturally for `int`, `float`, and `string`. For custom structs, use a `rust` block instead.
+`l_T_sort`, `l_T_sum`, `l_T_min`, `l_T_max`, `l_T_contains`, `l_T_index_of`, and `l_T_unique` require the element type to implement `Ord` / `Hash` / `Clone` in the generated Rust. They work naturally for `int`, `float`, and `string`. For custom structs, use a `rust` block instead.
 
 ---
 
-## `lib/tstack.deor`
+## `lib/map.deor`
 
-Parameterized stack (last-in, first-out). Import once per element type.
+String-to-string hash map backed by `Arc<Mutex<HashMap>>`. The `StringMap` is a `raw` type — pass it around freely, mutations are in-place through the shared reference.
 
-```
-import "lib/tstack.deor" where T = string
-```
-
-After substitution with `T = string`, the shape is named `tStringStack` and functions are prefixed `t_string_`:
-
-| Function (before substitution) | Signature | Description |
+| Function | Signature | Description |
 |---|---|---|
-| `t_T_make` | `→ tTStack` | Create an empty stack |
-| `t_T_size` | `tTStack → int` | Number of elements |
-| `t_T_get` | `tTStack, int → T` | Element at index (zero-based) |
-
-Push and pop use the standard list operations `at end =` and `remove at`:
+| `mp_make` | `→ StringMap` | Create an empty map |
+| `mp_set` | `StringMap, string, string → StringMap` | Insert or update a key |
+| `mp_get` | `StringMap, string → string` | Value for key, or `""` if absent |
+| `mp_has` | `StringMap, string → bool` | True if the key exists |
+| `mp_remove` | `StringMap, string → StringMap` | Remove a key |
+| `mp_size` | `StringMap → int` | Number of entries |
+| `mp_keys` | `StringMap → stringList` | All keys |
+| `mp_values` | `StringMap → stringList` | All values |
 
 ```
-import "lib/tstack.deor" where T = string
+import "lib/map.deor"
 
-tStringStack history = t_string_make()
-history at end = "first"
-history at end = "second"
-int depth = t_string_size(history)
-string top = history at (depth - 1)
-history remove at (depth - 1)
+StringMap config = mp_make()
+config = mp_set(config, "host", "localhost")
+config = mp_set(config, "port", "8080")
+bool has_host = mp_has(config, "host")
+string host = mp_get(config, "host")
+int count = mp_size(config)
+```
+
+---
+
+## `lib/file.deor`
+
+File system operations. All paths are strings. Functions that can fail return `bool` indicating success.
+
+| Function | Signature | Description |
+|---|---|---|
+| `f_read` | `string → string` | Read entire file as a string, or `""` on failure |
+| `f_write` | `string, string → bool` | Write content to file (creates or overwrites), returns success |
+| `f_append` | `string, string → bool` | Append content to file (creates if absent), returns success |
+| `f_exists` | `string → bool` | True if the path exists |
+| `f_lines` | `string → stringList` | Read file as a list of lines |
+| `f_delete` | `string → bool` | Delete a file, returns success |
+
+```
+import "lib/file.deor"
+
+bool ok = f_write("log.txt", "starting up\n")
+bool appended = f_append("log.txt", "step two\n")
+string contents = f_read("log.txt")
+stringList lines = f_lines("log.txt")
+bool gone = f_delete("log.txt")
+```
+
+---
+
+## `lib/time.deor`
+
+Timestamps and elapsed time. `ti_now` returns Unix seconds as `int` (valid until 2038); use `ti_now_ms` for millisecond precision as `float`.
+
+| Function | Signature | Description |
+|---|---|---|
+| `ti_now` | `→ int` | Current Unix timestamp in whole seconds |
+| `ti_now_ms` | `→ float` | Current Unix timestamp in milliseconds |
+| `ti_elapsed` | `int → int` | Seconds elapsed since the given `ti_now` snapshot |
+| `ti_elapsed_ms` | `float → float` | Milliseconds elapsed since the given `ti_now_ms` snapshot |
+
+```
+import "lib/time.deor"
+
+float start = ti_now_ms()
+# ... do work ...
+float ms = ti_elapsed_ms(start)
+print(c_float_to_string(ms))
 ```
 
 ---
@@ -300,9 +367,23 @@ See [Rust Interop](interop.md) for full `rust` block rules.
 
 Follow the same prefix convention as the standard library to keep the global namespace readable:
 
+Standard library prefixes (reserved):
+
+| Prefix | Module |
+|---|---|
+| `s_` | `lib/string.deor` |
+| `m_` | `lib/math.deor`, `lib/random.deor` |
+| `l_` | `lib/list.deor` |
+| `c_` | `lib/convert.deor` |
+| `mp_` | `lib/map.deor` |
+| `f_` | `lib/file.deor` |
+| `ti_` | `lib/time.deor` |
+| `t_` | `lib/tasks.deor`, `lib/taskpool.deor` |
+
+For custom wrappers, use a distinct prefix to avoid collisions:
+
 | Prefix | Use |
 |---|---|
-| `s_` | Std Rust wrapper (`s_join`, `s_trim`) |
 | `cx_` | Cargo crate wrapper (`cx_json_parse`) |
 | `ex_` | Personal/third-party Deor lib (`ex_do_cool_thing`) |
 
@@ -341,24 +422,6 @@ if parsed valid
 ```
 
 The same pattern works for `ParsedFloat` — swap `i32` for `f64`.
-
-### String Extras
-
-Operations not in `lib/string.deor`:
-
-```
-fn string s_replace(string src, string from, string too)
-    rust
-        src.replace(from.as_str(), too.as_str())
-
-fn int s_index_of(string src, string needle)
-    rust
-        src.find(needle.as_str()).map(|idx| idx as i32).unwrap_or(-1)
-
-fn string s_repeat(string src, int times)
-    rust
-        src.repeat(times as usize)
-```
 
 ### Cargo Crates
 

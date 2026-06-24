@@ -12,7 +12,7 @@
 
 ## Equality
 
-`==` is **always structural** — Deor derives `PartialEq` on all structs, so equality compares field values, not identity.
+`is` is **always structural** — Deor derives `PartialEq` on all structs, so equality compares field values, not identity. In the generated Rust, `is` maps to `==`.
 
 ---
 
@@ -20,16 +20,16 @@
 
 `with` produces a new struct with one or more fields overridden. The original is unchanged. Each field name must already exist as a variable in scope — the same rule as struct literals.
 
-- Single field: `newRoom as room with (area)` — parens always required
-- Multiple fields: `newRoom as room with (area, name)`
+- Single field: `new_room as room with (area)` — parens always required
+- Multiple fields: `new_room as room with (area, name)`
 
 ```
 Squarefeet area = 2
-newRoom as room with (area)
+new_room as room with (area)
 
 area = 20
 name as "Bigger Office"
-biggerOffice as office with (area, name)
+bigger_office as office with (area, name)
 ```
 
 ```rust

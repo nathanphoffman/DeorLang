@@ -13,7 +13,7 @@ Deor's built-in primitive types and their Rust equivalents:
 
 For raw binary data (HTTP bodies, files, crypto, pixel buffers) use a `raw` variable and handle it entirely inside `rust` blocks. See [`raw` Variables](#raw-variables) below.
 
-For integers seperators are allowed such as
+For integers separators are allowed such as
 ```
 int val = 1_000_000
 ```
@@ -30,7 +30,7 @@ raw index = rust
         .collect::<std::collections::HashMap<String, String>>()
 ```
 
-See [Rust Interop — The `raw` Type](interop.md#the-raw-type) for full documentation, rules, and the build-once pattern.
+See [Rust Interop](interop.md) for full documentation, rules, and the build-once pattern.
 
 ---
 
@@ -112,10 +112,10 @@ This is Deor's only concept of null. Every validator type defines exactly what m
 if len(my_list) > 0    # correct — explicit non-empty check
 if my_list             # transpiler error — list has no truthiness
 
-if my_int != 0         # correct
+if my_int is not 0     # correct
 if my_int              # transpiler error
 
-if my_string != ""     # correct
+if my_string is not "" # correct
 if my_string           # transpiler error
 ```
 

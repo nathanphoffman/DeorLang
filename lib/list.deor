@@ -43,3 +43,31 @@ fn T l_T_max(lTList list)
 fn string l_T_join(lTList list, string sep)
 	rust
 		list.join(sep.as_str())
+
+fn bool l_T_contains(lTList list, T item)
+	rust
+		list.contains(&item)
+
+fn int l_T_index_of(lTList list, T item)
+	rust
+		list.iter().position(|x| x == &item).map(|i| i as i32).unwrap_or(-1)
+
+fn lTList l_T_unique(lTList list)
+	rust
+		{ let mut seen = std::collections::HashSet::new(); list.into_iter().filter(|x| seen.insert(x.clone())).collect() }
+
+fn lTList l_T_take(lTList list, int n)
+	rust
+		list.into_iter().take(n as usize).collect()
+
+fn lTList l_T_drop(lTList list, int n)
+	rust
+		list.into_iter().skip(n as usize).collect()
+
+fn lTList l_T_push(lTList list, T item)
+	rust
+		{ let mut r = list; r.push(item); r }
+
+fn lTList l_T_pop(lTList list)
+	rust
+		{ let mut r = list; r.pop(); r }
