@@ -54,18 +54,20 @@ type Positive(int val)
 ---
 ## `empty` at Declaration Only
 
-`= empty` is only valid at the point of first declaration for a validator type or list shape variable. Assigning `empty` to a variable after it has been declared is a transpiler error.
+`= empty` is only valid at the point of first declaration for a list shape variable. It is not valid for validator types — declare a validator type variable without a value instead.
 
 **Correct:**
 ```
-Roll best = empty
-roomList rooms = empty
+roomList rooms = empty    # list shape — use empty
+Roll best                 # validator type — no value, starts not valid
 ```
 
 **Incorrect — transpiler errors:**
 ```
-Roll best = roll_die(d20)
-best = empty
+roomList rooms = [kitchen]
+rooms = empty             # cannot reassign empty after declaration
+
+Roll best = empty         # empty not valid for validator types
 ```
 
 ---

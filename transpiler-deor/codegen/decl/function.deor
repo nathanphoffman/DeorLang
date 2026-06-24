@@ -2,48 +2,50 @@
 # Generates a complete Rust function from a Deor `fn RetType name(params)` declaration.
 # Key responsibilities: resolves parameter and return types through the registries;
 # pre-scans the body token slice to build a per-function mut_names list (variables that
-# get re-assigned need `let mut` in Rust); builds a per-function var_type_reg for
-# `using` statement support; delegates body generation to gen_block. Uses l_slice to
-# work on just the body tokens so recursive registry scans stay cheap — this token-slice
-# optimization cut self-compile time from 11s to 1.3s.
+# get re-assigned need `let mut` in Rust); delegates body generation to gen_block. Uses
+# l_slice to work on just the body tokens so recursive registry scans stay cheap — this
+# token-slice optimization cut self-compile time from 11s to 1.3s.
 fn ParseResult gen_fn_decl(TokensRef fn_tokens, int pos, RcCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg) in ctx
 	# KW_FN RetType name LPAREN params RPAREN NEWLINE INDENT body DEDENT
 	int start_pos = pos + 1
 	TokenCursor cur = cur_at_ref(fn_tokens, start_pos)
-	using cur
-		(value) in current
-		string ret_type = resolve_type(value, shape_reg, enum_reg)
-		cur_next_ref() with fn_tokens
-		(value) in current
-		string fn_name = value
-		cur_next_ref() with fn_tokens
-		cur_next_ref() with fn_tokens   # skip LPAREN
-		strList param_strs = empty
-		for if not c_at_end(cur)
+	(current) in cur
+	(value) in current
+	string ret_type = resolve_type(value, shape_reg, enum_reg)
+	cur = cur_next_ref(cur, fn_tokens)
+	(current) in cur
+	(value) in current
+	string fn_name = value
+	cur = cur_next_ref(cur, fn_tokens)
+	cur = cur_next_ref(cur, fn_tokens)   # skip LPAREN
+	strList param_strs = empty
+	for if not c_at_end(cur)
+		(current) in cur
+		(kind, value) in current
+		if kind is "RPAREN"
+			cur = cur_next_ref(cur, fn_tokens)
+			break
+		else if kind is "COMMA"
+			cur = cur_next_ref(cur, fn_tokens)
+		else if kind is "IDENT"
+			string param_type = value
+			cur = cur_next_ref(cur, fn_tokens)
 			(current) in cur
-			(kind, value) in current
-			if kind is "RPAREN"
-				cur_next_ref() with fn_tokens
-				break
-			else if kind is "COMMA"
-				cur_next_ref() with fn_tokens
-			else if kind is "IDENT"
-				string param_type = value
-				cur_next_ref() with fn_tokens
-				(value) in current
-				string param_name = value
-				string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
-				string prm_sep = ": "
-				param_strs at end = s_join([param_name, prm_sep, rust_param_type])
-				cur_next_ref() with fn_tokens
-			else
-				cur_next_ref() with fn_tokens
-		# pos now at NEWLINE after RPAREN
-		(pos) in cur
-		int indent_pos = pos + 1
-		cur_skip_to_body_ref() with fn_tokens
-		# pos now at first body token
+			(value) in current
+			string param_name = value
+			string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
+			string prm_sep = ": "
+			param_strs at end = s_join([param_name, prm_sep, rust_param_type])
+			cur = cur_next_ref(cur, fn_tokens)
+		else
+			cur = cur_next_ref(cur, fn_tokens)
+	# pos now at NEWLINE after RPAREN
+	(pos) in cur
+	int indent_pos = pos + 1
+	cur = cur_skip_to_body_ref(cur, fn_tokens)
+	# pos now at first body token
+	(pos) in cur
 	int body_end_pos = find_block_end_ref(fn_tokens, indent_pos)
 	int body_start = pos
 	int body_slice_end = body_end_pos + 1

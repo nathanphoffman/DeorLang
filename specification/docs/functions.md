@@ -145,32 +145,30 @@ fn abs(val: i32) -> i32 {
 
 ## Validator Type Returns
 
-A function whose return type is a validator type returns either a named typed variable or `bad`. `bad` explicitly signals that the function could not produce a valid value — for example, a `get_positive` function passed `-1` should return `bad`. `empty` and `none` are both transpiler errors in return position: `empty` represents a temporary list state and has no meaning as a return value; `none` is not a Deor keyword.
+A function returning a validator type returns a variable that may or may not be valid. To return a not-valid result, declare the variable without a value and return it unassigned, or assign a value that fails the predicate. `empty` and `none` are both transpiler errors in return position.
 
 ```
 shape rollList = list of Roll
 
 fn Roll find_best(rollList rolls)
-    Roll best = bad
+    Roll best
 
     for roll in rolls
-        if roll is not bad
+        if roll valid
             best = roll
 
-    return best    # bad if rolls is empty or all bad
+    return best    # not valid if rolls is empty or all not valid
 ```
 
-When a function can fail, return `bad` directly:
+When the result depends entirely on the predicate, just assign and return:
 
 ```
 fn Positive get_positive(int num)
-    if num < 1
-        return bad
-    Positive result = num
+    Positive result = num    # not valid if num fails the predicate
     return result
 ```
 
-Primitive return types (`fn int`, `fn bool`, etc.) can never be `bad`.
+Primitive return types (`fn int`, `fn bool`, etc.) are never valid/not valid — they always have a value.
 
 ---
 
@@ -249,48 +247,3 @@ fn main() {
 
 Only one `fn void main()` may exist per project. Naming any other function `main` is a transpiler error if a `main` already exists.
 
----
-
-## `using` Blocks — Subject-Scoped Calls
-
-A `using varname` block names a variable as the implicit subject of every zero-argument call inside the block. Any call of the form `fn_name()` inside the block is shimmed to `varname = fn_name(varname.clone())`.
-
-This is designed for types that follow the "pass and return the same value" convention — for example, a cursor or builder that is threaded through a chain of single-argument transformations.
-
-```
-TokenCursor c = cur_at(tokens, pos)
-using c
-    cur_next()
-    cur_skip_to_body()
-    cur_next()
-```
-
-```rust
-let mut c = cur_at(tokens, pos);
-c = cur_next(c.clone());
-c = cur_skip_to_body(c.clone());
-c = cur_next(c.clone());
-```
-
-### Passing an Extra Argument — `with`
-
-A call inside a `using` block can pass one extra named argument using `with`:
-
-```
-using c
-    advance() with step
-```
-
-```rust
-c = advance(c.clone(), step.clone());
-```
-
-The extra argument is always cloned. The function signature must accept the subject type as its first parameter and the extra argument as its second.
-
-### Rules
-
-- The variable named after `using` must already be in scope.
-- Only zero-argument call-statement forms (`fn_name()`) are shimmed. Any call with explicit arguments is passed through unchanged.
-- `using` only affects call statements, not call expressions used as sub-expressions.
-- The shimmed variable must be in `mut_names` — the transpiler's pre-scan detects `using` and automatically marks the variable as mutable.
-- Nesting `using` blocks is not supported; the inner `using` replaces the outer subject for its scope.

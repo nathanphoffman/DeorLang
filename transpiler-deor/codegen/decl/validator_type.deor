@@ -6,34 +6,35 @@
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	int start_pos = pos + 1
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
-	using cur
-		(value) in current
-		string type_name = value
-		cur_next_ref() with tokens   # LPAREN
-		cur_next_ref() with tokens   # param_type
-		(value) in current
-		string param_type = value
-		string rust_param_type = render_rust_type(param_type)
-		cur_next_ref() with tokens   # param_name
-		(value) in current
-		string param_name = value
-		cur_next_ref() with tokens   # RPAREN
-		cur_next_ref() with tokens   # NEWLINE
-		cur_skip_to_body_ref() with tokens
-		(pos) in cur
+	(current) in cur
+	(value) in current
+	string type_name = value
+	cur = cur_next_ref(cur, tokens)   # LPAREN
+	cur = cur_next_ref(cur, tokens)   # param_type
+	(current) in cur
+	(value) in current
+	string param_type = value
+	string rust_param_type = render_rust_type(param_type)
+	cur = cur_next_ref(cur, tokens)   # param_name
+	(current) in cur
+	(value) in current
+	string param_name = value
+	cur = cur_next_ref(cur, tokens)   # RPAREN
+	cur = cur_next_ref(cur, tokens)   # NEWLINE
+	cur = cur_skip_to_body_ref(cur, tokens)
+	(pos) in cur
 	ParseResult pred_r = gen_expr(tokens, pos, ctx)
 	move (code, new_pos) in pred_r
 	pred_code as code
 	pred_end as new_pos
 	TokenCursor cur2 = cur_at_ref(tokens, pred_end)
-	using cur2
-		for if not c_at_end(cur2)
-			(current) in cur2
-			(kind) in current
-			cur_next_ref() with tokens
-			if kind is "DEDENT"
-				break
-		(pos) in cur2
+	for if not c_at_end(cur2)
+		(current) in cur2
+		(kind) in current
+		cur2 = cur_next_ref(cur2, tokens)
+		if kind is "DEDENT"
+			break
+	(pos) in cur2
 	string tsc_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
 	string tsc_op = "("
 	string tsc_sfx = ");\n\n"

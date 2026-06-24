@@ -17,15 +17,15 @@
 
 [Examples](docs/examples.md) — full worked example with Rust translation
 
-[Experimental](docs/examples.md) — features that are currently in testing
+[Experimental](docs/experimental.md) — features currently in testing
 
-[Functions](docs/functions.md) — `fn`, return rules, void, recursion, `using` blocks
+[Move](docs/move.md) — `move` keyword, ownership transfer without cloning
+
+[Functions](docs/functions.md) — `fn`, return rules, void, recursion
 
 [Immutability](docs/immutability.md) — immutability rules, record update (`with`)
 
-[Imports](docs/imports.md) — local module and `rust:` file imports
-
-[Libs](docs/libs.md) — standard library reference: string, math, random, convert, list, tstack, tasks
+[Imports](docs/imports.md) — local module imports
 
 [Loops](docs/loops.md) — `for` collection and numeric iteration
 
@@ -35,11 +35,11 @@
 
 [Roadmap](docs/roadmap.md) — deferred features
 
-[Rust Interop](docs/interop.md) — `rust` blocks, `raw` variables, `rust:` imports
+[Rust Interop](docs/interop.md) — `rust` blocks, `raw` variables, external `.rs` files
 
 [Shapes](docs/shapes.md) — `shape`, list shapes, func shapes, naming, file ordering
 
-[Shims](docs/shims.md) — copy-paste Rust wrappers for math, random, parsing, and more
+[Libs](docs/libs.md) — standard library and custom wrapper patterns
 
 [Strings](docs/strings.md) — concatenation, escape sequences, string built-ins
 

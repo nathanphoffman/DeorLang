@@ -5892,20 +5892,11 @@ fn gen_struct_decl(tokens: TokensRef, pos: i32) -> ParseResult {
     // transpiler-deor/codegen/decl/struct.deor
     let mut start_pos: i32 = pos + 1.clone();
     let mut cur: TokenCursor = cur_at_ref(tokens.clone(), start_pos.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
     let current = cur.current.clone();
-    // transpiler-deor/codegen/decl/struct.deor
     let value = current.value.clone();
     let mut struct_name: String = value.clone();
     cur = cur_next_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     cur = cur_skip_to_body_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     let mut field_lines: Vec<String> = Vec::new();
     while !c_at_end(cur.clone()) {
         // transpiler-deor/codegen/decl/struct.deor
@@ -5915,22 +5906,14 @@ fn gen_struct_decl(tokens: TokensRef, pos: i32) -> ParseResult {
         if kind == "DEDENT" {
             // transpiler-deor/codegen/decl/struct.deor
             cur = cur_next_ref(cur.clone(), tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
-            let current = cur.current.clone();
             break;
         } else if kind == "NEWLINE" {
             // transpiler-deor/codegen/decl/struct.deor
             cur = cur_next_ref(cur.clone(), tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
-            let current = cur.current.clone();
         } else if kind == "IDENT" {
             // transpiler-deor/codegen/decl/struct.deor
             let mut field_type: String = value.clone();
             cur = cur_next_ref(cur.clone(), tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
             let current = cur.current.clone();
             let value = current.value.clone();
             let mut field_name: String = value.clone();
@@ -5940,9 +5923,6 @@ fn gen_struct_decl(tokens: TokensRef, pos: i32) -> ParseResult {
             let mut fln_com: String = ",".to_string();
             field_lines.push([fln_ind.as_str(), field_name.as_str(), fln_sep.as_str(), rust_type.as_str(), fln_com.as_str()].concat().clone());
             cur = cur_next_ref(cur.clone(), tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
-            let current = cur.current.clone();
         }
     }
     let mut fields_code: String = s_join_nl(field_lines.clone());
@@ -5959,21 +5939,12 @@ fn gen_enum_decl(tokens: TokensRef, pos: i32) -> ParseResult {
     // transpiler-deor/codegen/decl/enum.deor
     let mut start_pos: i32 = pos + 1.clone();
     let mut cur: TokenCursor = cur_at_ref(tokens.clone(), start_pos.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
     let current = cur.current.clone();
-    // transpiler-deor/codegen/decl/enum.deor
     let value = current.value.clone();
     let mut enum_name: String = value.clone();
     let mut rust_name: String = s_pascal(enum_name.clone());
     cur = cur_next_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     cur = cur_skip_to_body_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     let mut variant_lines: Vec<String> = Vec::new();
     while !c_at_end(cur.clone()) {
         // transpiler-deor/codegen/decl/enum.deor
@@ -5981,9 +5952,6 @@ fn gen_enum_decl(tokens: TokensRef, pos: i32) -> ParseResult {
         let kind = current.kind.clone();
         let value = current.value.clone();
         cur = cur_next_ref(cur.clone(), tokens.clone());
-        let token_count = cur.token_count.clone();
-        let pos = cur.pos.clone();
-        let current = cur.current.clone();
         if kind == "DEDENT" {
             // transpiler-deor/codegen/decl/enum.deor
             break;
@@ -6098,41 +6066,22 @@ fn gen_type_decl(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/validator_type.deor
     let mut start_pos: i32 = pos + 1.clone();
     let mut cur: TokenCursor = cur_at_ref(tokens.clone(), start_pos.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
     let current = cur.current.clone();
-    // transpiler-deor/codegen/decl/validator_type.deor
     let value = current.value.clone();
     let mut type_name: String = value.clone();
     cur = cur_next_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     cur = cur_next_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
     let current = cur.current.clone();
     let value = current.value.clone();
     let mut param_type: String = value.clone();
     let mut rust_param_type: String = render_rust_type(param_type.clone());
     cur = cur_next_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
     let current = cur.current.clone();
     let value = current.value.clone();
     let mut param_name: String = value.clone();
     cur = cur_next_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     cur = cur_next_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     cur = cur_skip_to_body_ref(cur.clone(), tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     let pos = cur.pos.clone();
     let mut pred_r: ParseResult = gen_expr(tokens.clone(), pos.clone(), ctx.clone());
     let code = pred_r.code;
@@ -6140,18 +6089,11 @@ fn gen_type_decl(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let pred_code = code;
     let pred_end = new_pos;
     let mut cur2: TokenCursor = cur_at_ref(tokens.clone(), pred_end.clone());
-    let token_count = cur2.token_count.clone();
-    let pos = cur2.pos.clone();
-    let current = cur2.current.clone();
-    // transpiler-deor/codegen/decl/validator_type.deor
     while !c_at_end(cur2.clone()) {
         // transpiler-deor/codegen/decl/validator_type.deor
         let current = cur2.current.clone();
         let kind = current.kind.clone();
         cur2 = cur_next_ref(cur2.clone(), tokens.clone());
-        let token_count = cur2.token_count.clone();
-        let pos = cur2.pos.clone();
-        let current = cur2.current.clone();
         if kind == "DEDENT" {
             // transpiler-deor/codegen/decl/validator_type.deor
             break;
@@ -6188,26 +6130,15 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut var_type_reg = ctx.var_type_reg.clone();
     let mut start_pos: i32 = pos + 1.clone();
     let mut cur: TokenCursor = cur_at_ref(fn_tokens.clone(), start_pos.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
     let current = cur.current.clone();
-    // transpiler-deor/codegen/decl/function.deor
     let value = current.value.clone();
     let mut ret_type: String = resolve_type(value.clone(), shape_reg.clone(), enum_reg.clone());
     cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
     let current = cur.current.clone();
     let value = current.value.clone();
     let mut fn_name: String = value.clone();
     cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-    let token_count = cur.token_count.clone();
-    let pos = cur.pos.clone();
-    let current = cur.current.clone();
     let mut param_strs: Vec<String> = Vec::new();
     while !c_at_end(cur.clone()) {
         // transpiler-deor/codegen/decl/function.deor
@@ -6217,22 +6148,14 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         if kind == "RPAREN" {
             // transpiler-deor/codegen/decl/function.deor
             cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
-            let current = cur.current.clone();
             break;
         } else if kind == "COMMA" {
             // transpiler-deor/codegen/decl/function.deor
             cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
-            let current = cur.current.clone();
         } else if kind == "IDENT" {
             // transpiler-deor/codegen/decl/function.deor
             let mut param_type: String = value.clone();
             cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
             let current = cur.current.clone();
             let value = current.value.clone();
             let mut param_name: String = value.clone();
@@ -6240,23 +6163,15 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
             let mut prm_sep: String = ": ".to_string();
             param_strs.push([param_name.as_str(), prm_sep.as_str(), rust_param_type.as_str()].concat().clone());
             cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
-            let current = cur.current.clone();
         } else {
             // transpiler-deor/codegen/decl/function.deor
             cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-            let token_count = cur.token_count.clone();
-            let pos = cur.pos.clone();
-            let current = cur.current.clone();
         }
     }
     let pos = cur.pos.clone();
     let mut indent_pos: i32 = pos + 1.clone();
     cur = cur_skip_to_body_ref(cur.clone(), fn_tokens.clone());
-    let token_count = cur.token_count.clone();
     let pos = cur.pos.clone();
-    let current = cur.current.clone();
     let mut body_end_pos: i32 = find_block_end_ref(fn_tokens.clone(), indent_pos.clone());
     let mut body_start: i32 = pos.clone();
     let mut body_slice_end: i32 = body_end_pos + 1.clone();

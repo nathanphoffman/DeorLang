@@ -180,22 +180,20 @@ Seeing a camelCase identifier means: this is a shape or an enum.
 
 ## File Ordering
 
-Shapes must appear after imports and before structs. Enforced by the transpiler — see [Enforced Practices](enforced_practices.md#file-declaration-order).
+Imports must come first — that is the only ordering the transpiler enforces. Everything else is recommended style. See [Best Practices](best_practices.md#order-of-declaration) for the suggested order.
 
 ```
-# 1. Imports
-(random) in shims
+# imports first — required
+import "lib/string.deor"
 
-# 2. Shapes
+# recommended order below (not enforced)
 shape roomList = list of Room
 shape filterFunc = func of Room to bool
 
-# 3. Structs
 struct House
     string address
     roomList rooms
 
-# 4. Functions
 fn roomList filter(roomList items, filterFunc predicate)
     ...
 ```

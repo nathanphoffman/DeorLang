@@ -2,7 +2,7 @@
 
 ## Block Structure (No Colons)
 
-Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `shape`, `enum`, `rust`, or `using`. No colon is written.
+Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `shape`, `enum`, or `rust`. No colon is written.
 
 ```
 fn int abs(int x)
@@ -87,7 +87,6 @@ Open an indented block when followed by a newline.
 | `shape` | Shape declaration (`shape name = list of T` / `func of T to O`) |
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
-| `using` | Subject-scoped block — names a variable as the implicit subject for zero-arg calls in the block |
 | `block` | Adds a block scope, all variables inside are non-polluting, similar to rust {}, very useful paired with macros you don't want bleeding into scope |
 
 ### Statement Keywords
@@ -100,6 +99,7 @@ Open an indented block when followed by a newline.
 | `break` | Exit the innermost loop |
 | `continue` | Skip to the next loop iteration |
 | `const` | Immutable typed binding (function scope only) |
+| `move` | Transfer ownership instead of cloning — argument, loop, or assignment |
 
 ### Operators and Expression Keywords
 
@@ -111,7 +111,7 @@ Open an indented block when followed by a newline.
 | `is` | Structural equality (`is`) and inequality (`is not`) |
 | `in` | Destructuring / import / loop iteration source |
 | `as` | Shape-derived binding |
-| `with` | Record update (inside `as` binding); extra-argument pass in `using` blocks (`fn_name() with arg`) |
+| `with` | Record update (inside `as` binding) |
 | `at` | Index access and write (`list at idx`, `list at idx = val`, `list at end = val`) |
 | `end` | Reserved sentinel — "end of list" in `list at end = val` |
 | `of` | Element type connector in shape declarations (`list of Room`) |
@@ -131,12 +131,5 @@ Open an indented block when followed by a newline.
 |---|---|
 | `list` | Parameterized list — always used inside a `shape` declaration |
 | `func` | Parameterized function type — always used inside a `shape` declaration |
-
-### Import Prefixes
-These are not standalone words but reserved prefix forms in import paths.
-
-| Prefix | Use |
-|---|---|
-| `rust:` | Raw `.rs` file import |
 
 **Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a for-loop-only construct — it is not a callable function and cannot be used outside a `for` header (e.g. assigned to a variable or passed as an argument). `end` is a reserved sentinel — only valid as `list at end = val`.

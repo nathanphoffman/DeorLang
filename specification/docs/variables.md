@@ -20,13 +20,6 @@ let flag = true;
 let rate = 3.14_f64;
 ```
 
-### Const
-Const is used as a function level constant, under the hood these use Rust's default immutability. You define these like the following
-
-```
-const int num = 10
-```
-
 ### List construction
 
 A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope.
@@ -50,13 +43,6 @@ roomList result = []     # transpiler error — use empty instead
 ---
 
 **What `as` is not for:**
-
-**Struct construction** — `(fields)` alone does not identify which struct is being built. Use explicit `Type name = (fields)` instead — see [Struct Construction](#struct-construction) below.
-
-```
-room as (area, name)      # transpiler error — which struct?
-Room room = (area, name)  # correct
-```
 
 **Validator type bindings** — `as` has no way to know whether you want a plain `int` (no predicate, stored directly) or a `Squarefeet` validator type (predicate runs, result is `Option<T>`). Without an explicit type the transpiler cannot decide which behaviour you intend, so it errors. Use explicit `ValidatorType name = value` — see [Validator Type Bindings](#validator-type-bindings) below.
 
@@ -84,7 +70,7 @@ Record update (`with`) uses `as` — the type is known from the source struct. S
 
 ## Struct Construction
 
-The primary form of struct construction is `Type name = (fields)`. The type name is mandatory in assignment position — there is no `as (fields)` anonymous struct construction. Every field must already be a variable in scope matching the field name exactly. No `{}`, no `field: value` pairs.
+Structs can be constructed with an explicit type (`Type name = (fields)`) or inferred via `as` (`name as (fields)`). The transpiler matches field names to determine the struct type. Every field must already be a variable in scope matching the field name exactly. No `{}`, no `field: value` pairs.
 
 ```
 Squarefeet area = 9
@@ -135,12 +121,7 @@ fn DivResult divmod(int a, int b)
     return result
 ```
 
-`(fields)` as a bare expression is only valid in return position. Assigning with `as` still requires an explicit type:
-
-```
-room as (area, name)      # transpiler error — which struct?
-Room room = (area, name)  # correct
-```
+`(fields)` as a bare expression is also valid in return position — the function's declared return type resolves the struct.
 
 If you need a field name that differs from the variable you have, rename it first:
 
@@ -154,33 +135,33 @@ Entry entry = (label)
 
 ## Validator Type Bindings
 
-Declaring a variable with a validator type runs the predicate at assignment. The variable is `Option<T>` under the hood — truthy (`Some`) if the predicate passes, falsy (`None`) if it fails.
+Declaring a variable with a validator type runs the predicate at assignment. The variable is `Option<T>` under the hood — valid (`Some`) if the predicate passes, not valid (`None`) if it fails.
 
 ```
-Squarefeet area = 9            # Some(Squarefeet(9)) — predicate passes
-Squarefeet bad = -1            # transpiler error — literal fails predicate at compile time
-Roll roll = random(min, max)   # Some or None depending on the value
+Squarefeet area = 9            # valid — predicate passes
+Squarefeet area = -1           # transpiler error — literal fails predicate at compile time
+Roll roll = random(min, max)   # valid or not valid depending on the predicate
 ```
 
 ```rust
 let area: Option<Squarefeet> = Squarefeet::new(9);
-let bad: Option<Squarefeet> = Squarefeet::new(-1);
+let area: Option<Squarefeet> = Squarefeet::new(-1);
 let roll: Option<Roll> = Roll::new(random(min, max));
 ```
 
-### Initializing to Empty
+### Declaring Without a Value
 
-A validator type variable can be declared as `empty` to start explicitly absent. `empty` is also the only valid way to initialize an empty list shape — `[]` is a transpiler error. See [Enforced Practices — empty at Declaration Only](enforced_practices.md#empty-at-declaration-only) for the assignment restriction.
+A validator type variable can be declared without an initial value to start as not valid. It becomes valid once assigned a value that passes the predicate.
 
 ```
-Roll best = empty
+Roll best
 ```
 
 ```rust
 let mut best: Option<Roll> = None;
 ```
 
-List shapes:
+List shapes use `empty` to initialize — `[]` is a transpiler error:
 
 ```
 roomList rooms = empty
@@ -192,13 +173,13 @@ let mut rooms: Vec<Room> = Vec::new();
 
 ### Reassignment
 
-Reassigning a validator type re-runs the predicate. The variable may transition between `Some` and `None`.
+Reassigning a validator type re-runs the predicate. The variable may transition between valid and not valid.
 
 ```
-Squarefeet area = 9   # Some(Squarefeet(9))
-area = 16             # Some(Squarefeet(16))
+Squarefeet area = 9   # valid
+area = 16             # valid
 int raw = get_user_input()
-area = raw            # Some or None — predicate runs at runtime
+area = raw            # valid or not valid — predicate runs at runtime
 ```
 
 ---
@@ -237,7 +218,7 @@ total = total + 1;
 
 ## Constants
 
-`const` declares an immutable typed binding inside a function. The transpiler prevents reassignment — any attempt to write to a `const` name will fail to compile in Rust.
+`const` declares a typed binding that omits `mut` in the generated Rust — any reassignment is a Rust compile error. Function scope only.
 
 ```
 const int max_retries = 3

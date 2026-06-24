@@ -6,27 +6,27 @@
 fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 	int start_pos = pos + 1
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
-	using cur
-		(value) in current
-		string enum_name = value
-		string rust_name = s_pascal(enum_name)
-		cur_next_ref() with tokens
-		cur_skip_to_body_ref() with tokens
-		strList variant_lines = empty
-		for if not c_at_end(cur)
-			(current) in cur
-			(kind, value) in current
-			cur_next_ref() with tokens
-			if kind is "DEDENT"
-				break
-			if kind is "IDENT"
-				string vln_ind = "    "
-				string vln_com = ","
-				variant_lines at end = s_join([vln_ind, value, vln_com])
-		string variants_code = s_join_nl(variant_lines)
-		string enm_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum "
-		string enm_ob = " {\n"
-		string enm_cb = "\n}\n\n"
-		string decl = s_join([enm_pfx, rust_name, enm_ob, variants_code, enm_cb])
-		(pos) in cur
-		return make_result(move decl, pos)
+	(current) in cur
+	(value) in current
+	string enum_name = value
+	string rust_name = s_pascal(enum_name)
+	cur = cur_next_ref(cur, tokens)
+	cur = cur_skip_to_body_ref(cur, tokens)
+	strList variant_lines = empty
+	for if not c_at_end(cur)
+		(current) in cur
+		(kind, value) in current
+		cur = cur_next_ref(cur, tokens)
+		if kind is "DEDENT"
+			break
+		if kind is "IDENT"
+			string vln_ind = "    "
+			string vln_com = ","
+			variant_lines at end = s_join([vln_ind, value, vln_com])
+	string variants_code = s_join_nl(variant_lines)
+	string enm_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum "
+	string enm_ob = " {\n"
+	string enm_cb = "\n}\n\n"
+	string decl = s_join([enm_pfx, rust_name, enm_ob, variants_code, enm_cb])
+	(pos) in cur
+	return make_result(move decl, pos)

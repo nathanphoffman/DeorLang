@@ -36,8 +36,6 @@ See [Rust Interop — The `raw` Type](interop.md#the-raw-type) for full document
 
 ## Validator Types (`type`)
 
-A Validator type uses bad over none as of June 18
-
 A `type` definition wraps a base primitive with a predicate. **The predicate body is mandatory** — the transpiler errors on a `type` with an empty body. A validator type without a constraint adds no meaning over its base primitive; use the base type directly instead.
 
 The body evaluates to a `bool`. Simple predicates are a single boolean expression; predicates that need intermediate values may declare bindings before the final bool expression, following the same rules as a function body.
@@ -73,50 +71,42 @@ impl Squarefeet {
 ```
 
 ```
-Squarefeet area = 9     # Some(Squarefeet(9))
-Squarefeet bad = -1     # transpiler error — literal value fails predicate at compile time
+Squarefeet area = 9     # valid — predicate passes
+Squarefeet area = -1    # transpiler error — literal value fails predicate at compile time
 ```
 
 ```rust
 let area: Option<Squarefeet> = Squarefeet::new(9);
-let bad: Option<Squarefeet> = Squarefeet::new(-1);
+let area: Option<Squarefeet> = Squarefeet::new(-1);
 ```
 
 ---
 
 
 
-### Validator Types / Bad / "Null"
-A validator type is assigned ```bad``` when its response for its boolean return is falsy. You can do comparisons on whether the value is bad or not, and then avow it if you know it is good to extract the value (avowing a bad result will cause a ```crash``` -- a panic! equivalent in rust)
+### Validator Types / valid / not valid
+
+A validator type variable is either **valid** (`Some` under the hood — predicate passed) or **not valid** (`None` under the hood — predicate failed or no value assigned). There is no keyword to force an invalid state. A variable becomes not valid in exactly two ways:
+
+- Declared without a value: `Squarefeet sqft` — not valid until assigned
+- Assigned a value that fails the predicate: `Squarefeet sqft = -10` — predicate fails, not valid
+
+Check with `valid` / `not valid`:
 
 ```
-Squarefeet area = 9
-if area is not bad
-    int val = (avow area)
-if area is bad
+Squarefeet sqft = 9
+if sqft valid
+    int val = (avow sqft)
+if sqft not valid
     print("no value")
 ```
 
-A validator type is considered bad if it is invalid, but it is the only concept in the language for null.  This was a bit of Deors human-language philosophy. A number being null makes no sense in the real world as it explains no reason as to why it is null, how could a pure mathematical number ever not be a value? However, a customer_id, that makes more sense, as the context tells us that a customer_id could be bad.
-
-This means that for these values you must define a validator type to explain what would make that id bad, for a customer_id it is probably anything below 1.  In almost all cases something that is non-primitive will have a constraint.
-
-If for some reason a validator type never has a constraint of any kind you could simply return ```true``` from the validator type and assign bad like a null value, however this is considered bad practice as almost all types conceptually different than primitives should be narrowerer than their base types and thus definable as where they are "bad"
-```
-type BadableInt
-    true
-
-# bad practice, but allowed for the odd edge cases where you would need this
-BadableInt num = bad
-
-```
+This is Deor's only concept of null. Every validator type defines exactly what makes a value invalid — a `customer_id` below 1, a `Squarefeet` that isn't a perfect square. Almost all types conceptually different from their base primitive have a natural constraint; the predicate makes that constraint explicit and enforced.
 
 
-### Truthy / Falsy
+### Truthiness
 
-
-
-**Only `bool` has truthiness.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — they have no presence/absence concept. Use explicit comparisons instead:
+**Only `bool` and validator types have a presence check.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — use explicit comparisons:
 
 ```
 if len(my_list) > 0    # correct — explicit non-empty check
@@ -129,31 +119,46 @@ if my_string != ""     # correct
 if my_string           # transpiler error
 ```
 
+Validator types use `valid` / `not valid` — not bare truthiness:
 
+```
+if sqft valid           # correct
+if sqft not valid       # correct
+if sqft                 # transpiler error — use valid/not valid
+```
 
 ```rust
 if area.is_some() {
     let val: i32 = area.unwrap().0;
 }
 if area.is_none() {
-    print("no value");
+    // not valid
 }
 ```
 
 ---
 
-### Initializing to Empty
-A validator type variable can be explicitly initialized to `empty` to start absent. List shapes also use `empty` to start with no elements — `[]` is a transpiler error. See [Enforced Practices — empty at Declaration Only](enforced_practices.md#empty-at-declaration-only) for the assignment restriction.
+### Declaring Without a Value
+
+A validator type variable declared without an initial value starts as not valid. Assign a value later to make it valid.
 
 ```
-Roll best = empty
-Squarefeet area = empty
-roomList rooms = empty
+Roll best
+Squarefeet area
 ```
 
 ```rust
 let mut best: Option<Roll> = None;
 let mut area: Option<Squarefeet> = None;
+```
+
+List shapes still use `empty` to initialize — `[]` is a transpiler error:
+
+```
+roomList rooms = empty
+```
+
+```rust
 let mut rooms: Vec<Room> = Vec::new();
 ```
 
@@ -171,13 +176,13 @@ The parentheses are always required — this is intentional. Without them, `avow
 
 ```
 Roll roll = roll_die(d20)
-if roll is not bad
+if roll valid
     int val = (avow roll)          # need the raw int — use avow
     bool crit = is_critical(roll)  # function takes Roll — pass directly, no avow
 ```
 
 ```rust
-if roll != None {
+if roll.is_some() {
     let val: i32 = roll.unwrap().0;
     let crit: bool = is_critical(roll);
 }
@@ -196,7 +201,7 @@ let sum: i32 = value.unwrap().0 + 2;
 ---
 ### Validator Types in Structs
 
-Struct fields typed as a validator type are `Option<T>` under the hood. Extracting them with `in` preserves the Option — the extracted variable is still truthy/falsy and must be checked before use.
+Struct fields typed as a validator type are `Option<T>` under the hood. Extracting them with `in` preserves the Option — the extracted variable must be checked with `valid` / `not valid` before use.
 
 ```
 struct Room
@@ -206,28 +211,29 @@ struct Room
 
 ```
 (area, max_capacity) in room
-if max_capacity is not bad
+if max_capacity valid
     int cap = (avow max_capacity)
 ```
 
 ```rust
 let (area, max_capacity) = (room.area, room.max_capacity);
-if max_capacity != None {
+if max_capacity.is_some() {
     let cap: i32 = max_capacity.unwrap().0;
 }
 ```
 
 ---
 ### Functions Returning Validator Types
-A function whose return type is a validator type can return either a named typed variable or `bad`. Use `bad` when the function genuinely cannot produce a valid value — for example, a function that wraps a negative number into a `Positive` type should return `bad` when given `-1`.
 
-`return empty` is a transpiler error — `empty` represents a temporary uninitialized list state and has no meaning as a return value. `return none` is also a transpiler error — `none` is not a Deor keyword.
+A function returning a validator type returns a variable that may or may not be valid. To return a not-valid result, either declare the variable without a value and return it unassigned, or assign a value that fails the predicate.
+
+`return empty` and `return none` are both transpiler errors — neither is a Deor keyword in return position.
 
 ```
 shape rollResultList = list of RollResult
 
 fn Roll find_crit(rollResultList rolls)
-    Roll found = bad
+    Roll found
 
     for roll in rolls
         value in roll
@@ -250,11 +256,11 @@ fn find_crit(rolls: &Vec<RollResult>) -> Option<Roll> {
 }
 ```
 
-The caller uses `if` to handle the result:
+The caller checks with `valid`:
 
 ```
 Roll crit = find_crit(rolls)
-if crit is not bad
+if crit valid
     int bonus = (avow crit)
 ```
 
@@ -262,11 +268,11 @@ if crit is not bad
 
 **Conversion notes:**
 - Constructor becomes `fn new(n: T) -> Option<Self>` — never panics, returns `None` on predicate failure.
-- Truthy/falsy maps to `.is_some()` / `.is_none()`.
+- `valid` → `.is_some()`, `not valid` → `.is_none()`.
 - `(avow val)` → `.unwrap().0`.
 - Equality (`is` / `is not`) transpiles to `==` / `!=` in Rust and falls through to `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
 - `and` / `or` / `not` map to `&&` / `||` / `!`.
-- Literal predicate failures (`Squarefeet bad = -1`) are caught at transpile time.
+- Literal predicate failures (`Squarefeet area = -1`) are caught at transpile time.
 
 ---
 

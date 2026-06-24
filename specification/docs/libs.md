@@ -287,3 +287,86 @@ Each `where T = ...` import is independent:
 import "lib/tasks.deor" where T = Request
 import "lib/tasks.deor" where T = Report
 ```
+
+---
+
+## Writing Custom Wrappers
+
+When you need functionality not in the standard library, wrap a Rust function in a small Deor function using a `rust` block. The Deor function owns the signature and naming; the `rust` block handles the implementation. Keep blocks small — one thing per block.
+
+See [Rust Interop](interop.md) for full `rust` block rules.
+
+### Naming Convention
+
+Follow the same prefix convention as the standard library to keep the global namespace readable:
+
+| Prefix | Use |
+|---|---|
+| `s_` | Std Rust wrapper (`s_join`, `s_trim`) |
+| `cx_` | Cargo crate wrapper (`cx_json_parse`) |
+| `ex_` | Personal/third-party Deor lib (`ex_do_cool_thing`) |
+
+### I/O
+
+```
+fn string read_line()
+    rust
+        let mut line = String::new();
+        std::io::stdin().read_line(&mut line).unwrap();
+        line.trim_end_matches('\n').to_string()
+```
+
+### Parsing
+
+Wrap parse results in a validator type so the caller can check success:
+
+```
+type ParsedInt(int val)
+    true
+
+fn ParsedInt parse_int(string src)
+    ParsedInt result
+    rust
+        if let Ok(num) = src.parse::<i32>() {
+            result = Some(ParsedInt(num));
+        }
+    return result
+```
+
+```
+ParsedInt parsed = parse_int(user_input)
+if parsed valid
+    int val = (avow parsed)
+    print(val)
+```
+
+The same pattern works for `ParsedFloat` — swap `i32` for `f64`.
+
+### String Extras
+
+Operations not in `lib/string.deor`:
+
+```
+fn string s_replace(string src, string from, string too)
+    rust
+        src.replace(from.as_str(), too.as_str())
+
+fn int s_index_of(string src, string needle)
+    rust
+        src.find(needle.as_str()).map(|idx| idx as i32).unwrap_or(-1)
+
+fn string s_repeat(string src, int times)
+    rust
+        src.repeat(times as usize)
+```
+
+### Cargo Crates
+
+For anything requiring an external crate, add it to `Cargo.toml` manually and wrap it the same way:
+
+```
+fn int cx_rand_int(int min, int max)
+    rust
+        use rand::Rng;
+        rand::thread_rng().gen_range(min..=max)
+```

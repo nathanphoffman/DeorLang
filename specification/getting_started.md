@@ -27,8 +27,5 @@ For manual instructions:
 - The /lib folder contains deor-language wrappers of useful rust functions
 - The rust compiler output suppresses warnings (as deor does overly-safe cloning to keep it pure) if you run it manually without the flag provided by just, you will see warnings, this is normal.
 - You can find a vscode extension in the folder that can be installed to give better language highlighting but no syntax-checking and support is early with it.
-- As a general rule of thumb:
-    - For optimal performance use ```Rust``` blocks
-    - For decent performance use Deor but without ```using```
-    - For slower performance (but convenience) use Deor with ```using``` 
+- As a general rule of thumb: for optimal performance use `rust` blocks; otherwise write standard Deor
 

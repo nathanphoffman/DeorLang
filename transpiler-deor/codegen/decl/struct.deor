@@ -6,35 +6,36 @@
 fn ParseResult gen_struct_decl(TokensRef tokens, int pos)
 	int start_pos = pos + 1
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
-	using cur
-		(value) in current
-		string struct_name = value
-		cur_next_ref() with tokens
-		cur_skip_to_body_ref() with tokens
-		strList field_lines = empty
-		for if not c_at_end(cur)
+	(current) in cur
+	(value) in current
+	string struct_name = value
+	cur = cur_next_ref(cur, tokens)
+	cur = cur_skip_to_body_ref(cur, tokens)
+	strList field_lines = empty
+	for if not c_at_end(cur)
+		(current) in cur
+		(kind, value) in current
+		if kind is "DEDENT"
+			cur = cur_next_ref(cur, tokens)
+			break
+		else if kind is "NEWLINE"
+			cur = cur_next_ref(cur, tokens)
+		else if kind is "IDENT"
+			string field_type = value
+			cur = cur_next_ref(cur, tokens)
 			(current) in cur
-			(kind, value) in current
-			if kind is "DEDENT"
-				cur_next_ref() with tokens
-				break
-			else if kind is "NEWLINE"
-				cur_next_ref() with tokens
-			else if kind is "IDENT"
-				string field_type = value
-				cur_next_ref() with tokens
-				(value) in current
-				string field_name = value
-				string rust_type = render_rust_type(field_type)
-				string fln_ind = "    "
-				string fln_sep = ": "
-				string fln_com = ","
-				field_lines at end = s_join([fln_ind, field_name, fln_sep, rust_type, fln_com])
-				cur_next_ref() with tokens
-		string fields_code = s_join_nl(field_lines)
-		string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
-		string sdcl_ob = " {\n"
-		string sdcl_cb = "\n}\n\n"
-		string decl = s_join([sdcl_pfx, struct_name, sdcl_ob, fields_code, sdcl_cb])
-		(pos) in cur
-		return make_result(move decl, pos)
+			(value) in current
+			string field_name = value
+			string rust_type = render_rust_type(field_type)
+			string fln_ind = "    "
+			string fln_sep = ": "
+			string fln_com = ","
+			field_lines at end = s_join([fln_ind, field_name, fln_sep, rust_type, fln_com])
+			cur = cur_next_ref(cur, tokens)
+	string fields_code = s_join_nl(field_lines)
+	string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
+	string sdcl_ob = " {\n"
+	string sdcl_cb = "\n}\n\n"
+	string decl = s_join([sdcl_pfx, struct_name, sdcl_ob, fields_code, sdcl_cb])
+	(pos) in cur
+	return make_result(move decl, pos)

@@ -18,7 +18,7 @@
 - **Explicit over Generic** - explicit types are more clear (although ``shapes`` allow some minimal forms)
 - **Validatior Types** - ``type`` exposes a boolean return signature, which validates data (ie. Positive > 0)
 - **1st-Class not Only-Class** - 1st class functions exist but are highly limited, and no lambdas are allowed
-- **No OOP** - structs are data, but `using` exposes piping and ``with``/``in`` exposes easy (de)(con)struction
+- **No OOP** - structs are data, and ``with``/``in`` exposes easy (de)(con)struction
 - **Explicit Typing** - types are required, shapes are explicit generics and functions, and enums are available
 - **Fns are Always In/Out** - all functions are pure, all data is cloned
 
