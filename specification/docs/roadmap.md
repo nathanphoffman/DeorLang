@@ -6,17 +6,6 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 - KW_GIVEUP should probably be used for move
 
 
-# New Findings -- being worked on
-As should always be implicit ownership, right now the 2nd line below is allowed, it should not be, which makes me wonder how much of this is correct today
-
-a as b <------- allowed, ownership
-int a as b <---  not allowed, transpiler validator error
-a as move b <--- not allowed, transpiler validator should direct them to drop the move as "as" is already an implicit move
-int a = b   <---  allowed, not ownership, a rust clone
-int a = move b <--  allowed, ownership
-
-
-
 # New Questions
 
 - Should we switch mappings to enums?

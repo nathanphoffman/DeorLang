@@ -82,6 +82,9 @@ fn void main()
 	#     string result = t_chan_recv(move rcv)
 	#     print(result)
 
+	aaa as 2
+	int val_as = move aaa
+
 	handle_message("hello jupiter!")
 	
 	string str = "hello"
