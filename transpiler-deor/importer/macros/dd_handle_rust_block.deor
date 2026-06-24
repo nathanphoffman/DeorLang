@@ -1,0 +1,29 @@
+
+# Deduplicates a raw rust block: keys on the first line of the block content using a "_rust_" prefix,
+# skips if already seen, otherwise copies the 3-token block (KW_RUST + NEWLINE + RUST_BLOCK) to result.
+macro dd_handle_rust_block
+	int rust_content_pos = pos + 2
+	bool rust_in_range = rust_content_pos < token_count
+	if rust_in_range
+		Token rust_tok = tokens at rust_content_pos
+		(value) in rust_tok
+		string newline = "\n"
+		strList rust_lines = s_split(value, newline)
+		string rust_first = rust_lines at 0
+		string rk_pfx = "_rust_"
+		strList rk_parts = [rk_pfx, rust_first]
+		string decl_name = s_join(rk_parts)
+		bool already_seen = false
+		int cs_len = len(seen)
+		for cs_i in range(cs_len)
+			string cs_val = seen at cs_i
+			if cs_val is decl_name
+				already_seen = true
+				break
+		if not already_seen
+			seen at end = decl_name
+			for copy_idx in range(3)
+				int tok_pos = pos + copy_idx
+				Token copy_tok = tokens at tok_pos
+				result at end = copy_tok
+	pos = pos + 3

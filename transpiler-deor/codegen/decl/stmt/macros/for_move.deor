@@ -1,0 +1,28 @@
+
+# Handles `for move var in expr`: generates `for var in expr { ... }` consuming ownership.
+macro for_move
+	int lparen_pos = next_pos + 1
+	int var_pos = lparen_pos + 1
+	Token var_tok = tokens at var_pos
+	(value) in var_tok
+	string giveup_var = value
+	int in_pos = var_pos + 1
+	int iter_pos = in_pos + 1
+	val_pos as iter_pos
+	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in ge_r
+	val_code as code
+	val_end as new_pos
+	int iter_next = val_end + 1
+	int blk_start = skip_to_body_ref(tokens, iter_next)
+	int blk_depth = depth + 1
+	ParseResult blk_r = gen_block(blk_start, blk_depth, ctx)
+	move (code, new_pos) in blk_r
+	blk_code as code
+	blk_end as new_pos
+	string gfr_kw = "for "
+	string gfr_in = " in "
+	string gfr_ob = " {\n"
+	string gfr_cb = "}\n"
+	string for_code = s_join([pad, gfr_kw, giveup_var, gfr_in, val_code, gfr_ob, blk_code, pad, gfr_cb])
+	return make_result(move for_code, blk_end)

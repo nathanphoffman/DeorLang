@@ -1,0 +1,36 @@
+
+# Default typed binding: emits `let [mut] name: RustType = val[suffix]` where suffix is
+# `.to_string()` for string literals, `.clone()` for plain identifiers, and empty otherwise.
+macro tb_default
+	bool tb_is_float = var_type is "float"
+	if tb_is_float
+		float_ctx_enable()
+	ParseResult val_r = gen_expr(tokens, val_pos, ctx)
+	if tb_is_float
+		float_ctx_disable()
+	move (code, new_pos) in val_r
+	val_code as code
+	val_end as new_pos
+	bool mg_is_mut = list_has(mut_names, var_name)
+	string mut_kw = ""
+	if mg_is_mut
+		mut_kw = "mut "
+	string suffix = ""
+	if kind is "STRING"
+		suffix = ".to_string()"
+	else if kind is "IDENT"
+		int val_next_idx = val_pos + 1
+		if val_next_idx < token_count
+			Token next_val_tok = tokens at val_next_idx
+			(kind) in next_val_tok
+			bool val_is_call = kind is "LPAREN"
+			bool val_is_idx = kind is "KW_AT"
+			if not val_is_call
+				if not val_is_idx
+					suffix = ".clone()"
+	string bnd_let = "let "
+	string bnd_col = ": "
+	string bnd_eq = " = "
+	string bnd_sc = ";\n"
+	string bind_code = s_join([pad, bnd_let, mut_kw, var_name, bnd_col, rust_type, bnd_eq, val_code, suffix, bnd_sc])
+	return make_nl_result(move bind_code, val_end, tokens)

@@ -172,13 +172,7 @@ Room room = (name, area)      # also correct — order doesn't matter for struct
 Room room = ("Office", area)  # literal not allowed — name must be a variable
 ```
 
-For tuple capture with `in`, your chosen names are positional but not required to match the function's declared return names:
-```
-fn (int quotient, int remainder) divmod(int left, int right)
-    ...
-
-(quo, rem) in divmod(num, div)    # quo = quotient, rem = remainder — names are yours
-```
+For struct destructuring with `in`, field names drive the binding — order does not matter and any subset is valid.
 
 ---
 ## Named Arguments — User-Defined Functions Only

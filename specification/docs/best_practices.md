@@ -5,10 +5,10 @@ Style recommendations for idiomatic recommendations, they are not enforced by th
 ## Order of Declaration
 1. Imports - Everything else could use it, relies on nothing else in the file
 2. Enums - Relies likely on nothing else in the file
-3. Consts - They could rely on enums and are important to see (at top)
+3. `const` declarations - They could rely on enums and are important to see (at top)
 4. Types - Type validators being types must be defined early
-5. Structs - Reliant on most everything above but still structural (so above functions)
-6. Shapes - Shapes can reference almost anything above, including structs
+5. Shapes - Shapes can reference almost anything above
+6. Structs - Reliant on most everything above but still structural (so above functions)
 7. Functions - Reliant on everything above
 
 ---
@@ -22,14 +22,14 @@ shape rollResultList = list of RollResult
 fn int sum_rolls(rollResultList rolls)
     # is its own thing, just printing new line after these 2 lines
     roll_notice as "Going to roll"
-    print(roll_notice);
+    print(roll_notice)
 
     # belongs together as it is all part of the loop
     sum as 0
     for roll in rolls
         value in roll
-        int val as 0
-        if value is not bad
+        val as 0
+        if value valid
             val = (avow value)
         sum = sum + val
 

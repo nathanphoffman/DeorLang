@@ -1,0 +1,8 @@
+
+# Handles `name as empty`: emits `let mut name = Vec::new()`.
+macro aas_empty
+	string aas_emp_pfx = "let mut "
+	string aas_emp_sfx = " = Vec::new();\n"
+	string aas_empty_code = s_join([pad, aas_emp_pfx, ident_name, aas_emp_sfx])
+	int aas_after_empty = after_as + 1
+	return make_nl_result(move aas_empty_code, aas_after_empty, tokens)

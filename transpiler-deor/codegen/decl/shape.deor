@@ -19,10 +19,8 @@ fn string gen_func_shape_code(string rust_name, string rust_in, string rust_out)
 	return s_join([fns_pfx, rust_name, fns_mid, rust_in, fns_rp, out_suffix, fns_sfx])
 
 # Generates a Rust type alias from a Deor `shape` declaration. Dispatches to
-# gen_list_shape_code for `list of T` forms and gen_func_shape_code for `func of T to U`
-# forms. Deor uses shapes to name parameterized types Rust requires explicit aliases for.
+# shape_list for `list of T` forms and shape_func for `func of T to U` forms.
 fn ParseResult gen_shape_decl(TokensRef tokens, int pos)
-	int token_count = len(tokens)
 	int name_pos = pos + 1
 	int form_pos = pos + 3
 	Token name_token = tokens at name_pos
@@ -31,47 +29,5 @@ fn ParseResult gen_shape_decl(TokensRef tokens, int pos)
 	string shape_name = value
 	(kind) in form_token
 	string rust_name = s_pascal(shape_name)
-	if kind is "KW_LIST"
-		int elem_pos = pos + 5
-		Token elem_token = tokens at elem_pos
-		(value) in elem_token
-		string elem_type = value
-		string rust_elem = render_rust_type(elem_type)
-		string decl = gen_list_shape_code(rust_name, rust_elem)
-		int after = elem_pos + 1
-		return make_nl_result(move decl, after, tokens)
-	int t4_pos = pos + 4
-	Token t4_token = tokens at t4_pos
-	(kind, value) in t4_token
-	bool t4_is_of = kind is "KW_OF"
-	bool t4_is_to = value is "to"
-	string in_type = ""
-	string out_type = ""
-	int func_end = t4_pos
-	if t4_is_of
-		int t5_pos = pos + 5
-		Token t5_token = tokens at t5_pos
-		(value) in t5_token
-		in_type = value
-		int t6_pos = pos + 6
-		Token t6_token = tokens at t6_pos
-		(value) in t6_token
-		bool t6_is_to = value is "to"
-		func_end = t6_pos
-		if t6_is_to
-			int t7_pos = pos + 7
-			Token t7_token = tokens at t7_pos
-			(value) in t7_token
-			out_type = value
-			func_end = t7_pos
-	else if t4_is_to
-		int t5_pos = pos + 5
-		Token t5_token = tokens at t5_pos
-		(value) in t5_token
-		out_type = value
-		func_end = t5_pos
-	string rust_in = render_rust_type(in_type)
-	string rust_out = render_rust_type(out_type)
-	string decl = gen_func_shape_code(rust_name, rust_in, rust_out)
-	int after = func_end + 1
-	return make_nl_result(move decl, after, tokens)
+	macro_run shape_list
+	macro_run shape_func

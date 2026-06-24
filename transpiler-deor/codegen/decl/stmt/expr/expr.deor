@@ -56,32 +56,7 @@ fn string map_op(string operator)
 fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	int token_count = len(tokens)
 
-	# Pre-scan for any FLOAT literal in this expression. If found, enable float context
-	# so all int literals in the expression auto-promote to floats (e.g. 3 → 3.0).
-	# Respects paren depth so nested paren groups are included but outer context is not.
-	bool pre_ctx_was = float_ctx_get()
-	bool expr_has_float = false
-	int pre_scan = pos
-	int pre_depth = 0
-	for if pre_scan < token_count
-		Token pre_tok = tokens at pre_scan
-		(kind) in pre_tok
-		if kind is "FLOAT"
-			expr_has_float = true
-			break
-		if kind is "NEWLINE"
-			break
-		if kind is "EOF"
-			break
-		if kind is "LPAREN"
-			pre_depth = pre_depth + 1
-		if kind is "RPAREN"
-			if pre_depth is 0
-				break
-			pre_depth = pre_depth - 1
-		pre_scan = pre_scan + 1
-	if expr_has_float
-		float_ctx_enable()
+	macro_run expr_float_prescan
 
 	ParseResult primary_r = gen_primary(tokens, pos, ctx)
 	move (code, new_pos) in primary_r
@@ -96,81 +71,15 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 		(kind, value) in operator_token
 		if not is_binary_op(kind)
 			break
-		# handle "is not" as two-token operator
 		string operator_str = value
 		int after_op = cur_pos + 1
-		if kind is "KW_IS"
-			if after_op < token_count
-				Token maybe_not = tokens at after_op
-				(kind) in maybe_not
-				if kind is "KW_NOT"
-					operator_str = "is not"
-					after_op = after_op + 1
-				# "is empty" → left.is_empty()
-				if kind is "KW_EMPTY"
-					string ie_sfx = ".is_empty()"
-					left_code = s_cat(move left_code, ie_sfx)
-					cur_pos = after_op + 1
-					continue
-				# "is valid" → left.is_some()
-				if kind is "KW_VALID"
-					string iv_sfx = ".is_some()"
-					left_code = s_cat(move left_code, iv_sfx)
-					cur_pos = after_op + 1
-					continue
-		# "is not empty" / "is not valid" → !left.is_empty() / !(left.is_some())
-		if operator_str is "is not"
-			if after_op < token_count
-				Token maybe_empty = tokens at after_op
-				(kind) in maybe_empty
-				if kind is "KW_EMPTY"
-					string ine_pfx = "!"
-					string ine_sfx = ".is_empty()"
-					left_code = s_cat(ine_pfx, move left_code)
-					left_code = s_cat(move left_code, ine_sfx)
-					cur_pos = after_op + 1
-					continue
-				if kind is "KW_VALID"
-					string inv_pfx = "!("
-					string inv_sfx = ".is_some())"
-					left_code = s_cat(inv_pfx, move left_code)
-					left_code = s_cat(move left_code, inv_sfx)
-					cur_pos = after_op + 1
-					continue
+		macro_run expr_is_special
 		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
 		move (code, new_pos) in rhs_r
 		rhs_code as code
 		rhs_pos as new_pos
 		string rust_op = map_op(operator_str)
-		# string concat handling
-		if operator_str is "+"
-			Token left_token = tokens at pos
-			(kind) in left_token
-			bool left_is_str = kind is "STRING"
-			Token rhs_token = tokens at after_op
-			(kind) in rhs_token
-			bool rhs_is_str = kind is "STRING"
-			bool rhs_is_ident = kind is "IDENT"
-			# left is a STRING literal: emit format!
-			if left_is_str
-				string fmt_pfx = "format!(\"{}{}\", "
-				string fmt_mid = ", "
-				string fmt_sfx = ")"
-				left_code = s_cat(fmt_pfx, move left_code)
-				left_code = s_cat(move left_code, fmt_mid)
-				left_code = s_cat(move left_code, rhs_code)
-				left_code = s_cat(move left_code, fmt_sfx)
-				left_has_str = true
-				cur_pos = rhs_pos
-				continue
-			# left is a String expr from prior concat: rhs identifier needs .as_str()
-			if left_has_str
-				if rhs_is_ident
-					string astr_sfx = ".as_str()"
-					rhs_code = s_cat(move rhs_code, astr_sfx)
-			# rhs is a string literal → left will now be a String expr
-			if rhs_is_str
-				left_has_str = true
+		macro_run expr_string_concat
 		string op_sp = " "
 		left_code = s_cat(move left_code, op_sp)
 		left_code = s_cat(move left_code, rust_op)

@@ -1,0 +1,57 @@
+
+# Determines `range_expr` and `body_tok_pos` for the shared for-loop emit path. Three cases:
+#   range(n) or range(start, end) → `0..n` or `start..end`
+#   (start, end)                  → `start..end`
+#   collection                    → `&collection`
+macro for_iter_expr
+	if kind is "IDENT" and value is "range"
+		int lparen = iter_pos + 1
+		int first_pos = lparen + 1
+		val_pos as first_pos
+		ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+		move (code, new_pos) in ge_r
+		val_code as code
+		val_end as new_pos
+		Token comma_token = tokens at val_end
+		(kind) in comma_token
+		bool has_start = kind is "COMMA"
+		if has_start
+			string first_code = move val_code
+			int val_pos = val_end + 1
+			ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+			move (code, new_pos) in ge_r
+			val_code as code
+			val_end as new_pos
+			string rng_dot = ".."
+			range_expr = s_join([first_code, rng_dot, val_code])
+			body_tok_pos = val_end + 1
+		else
+			string rng0_pfx = "0.."
+			range_expr = s_join([rng0_pfx, val_code])
+			body_tok_pos = val_end + 1
+	else if kind is "LPAREN"
+		int start_pos = iter_pos + 1
+		val_pos as start_pos
+		ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+		move (code, new_pos) in ge_r
+		val_code as code
+		val_end as new_pos
+		string start_code = move val_code
+		int val_pos = val_end + 1
+		ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+		move (code, new_pos) in ge_r
+		val_code as code
+		val_end as new_pos
+		string rng2_dot = ".."
+		range_expr = s_join([start_code, rng2_dot, val_code])
+		body_tok_pos = val_end + 1
+	else
+		val_pos as iter_pos
+		ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+		move (code, new_pos) in ge_r
+		val_code as code
+		val_end as new_pos
+		string amp = "&"
+		string collection_ref = s_cat(amp, val_code)
+		range_expr = collection_ref
+		body_tok_pos = val_end

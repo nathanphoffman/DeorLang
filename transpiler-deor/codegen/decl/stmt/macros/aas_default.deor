@@ -1,0 +1,24 @@
+
+# Default as-binding: emits `let [mut] name = expr[.to_string()]` for any `name as expr` form
+# not handled by the other aas macros.
+macro aas_default
+	(kind) in after_as_token
+	val_pos as after_as
+	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in ge_r
+	val_code as code
+	val_end as new_pos
+	bool aas_is_str = kind is "STRING"
+	string var_name = ident_name
+	bool mg_is_mut = list_has(mut_names, var_name)
+	string mut_kw = ""
+	if mg_is_mut
+		mut_kw = "mut "
+	string aas_suffix = ""
+	if aas_is_str
+		aas_suffix = ".to_string()"
+	string aas_let2 = "let "
+	string aas_eq2 = " = "
+	string aas_sc2 = ";\n"
+	string aas_code2 = s_join([pad, aas_let2, mut_kw, ident_name, aas_eq2, val_code, aas_suffix, aas_sc2])
+	return make_nl_result(move aas_code2, val_end, tokens)

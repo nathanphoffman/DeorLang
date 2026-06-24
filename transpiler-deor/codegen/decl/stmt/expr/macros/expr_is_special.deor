@@ -1,0 +1,44 @@
+
+# Inside the binary-op loop: handles special `is` and `is not` forms that fold directly into
+# the left operand rather than emitting a binary expression.
+#   is empty     → left.is_empty()       (continue)
+#   is valid     → left.is_some()        (continue)
+#   is not       → sets operator_str and advances after_op; falls through
+#   is not empty → !left.is_empty()      (continue)
+#   is not valid → !(left.is_some())     (continue)
+macro expr_is_special
+	if kind is "KW_IS"
+		if after_op < token_count
+			Token maybe_not = tokens at after_op
+			(kind) in maybe_not
+			if kind is "KW_NOT"
+				operator_str = "is not"
+				after_op = after_op + 1
+			if kind is "KW_EMPTY"
+				string ie_sfx = ".is_empty()"
+				left_code = s_cat(move left_code, ie_sfx)
+				cur_pos = after_op + 1
+				continue
+			if kind is "KW_VALID"
+				string iv_sfx = ".is_some()"
+				left_code = s_cat(move left_code, iv_sfx)
+				cur_pos = after_op + 1
+				continue
+	if operator_str is "is not"
+		if after_op < token_count
+			Token maybe_empty = tokens at after_op
+			(kind) in maybe_empty
+			if kind is "KW_EMPTY"
+				string ine_pfx = "!"
+				string ine_sfx = ".is_empty()"
+				left_code = s_cat(ine_pfx, move left_code)
+				left_code = s_cat(move left_code, ine_sfx)
+				cur_pos = after_op + 1
+				continue
+			if kind is "KW_VALID"
+				string inv_pfx = "!("
+				string inv_sfx = ".is_some())"
+				left_code = s_cat(inv_pfx, move left_code)
+				left_code = s_cat(move left_code, inv_sfx)
+				cur_pos = after_op + 1
+				continue

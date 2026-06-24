@@ -1,0 +1,29 @@
+
+# Pre-scans the expression for any FLOAT literal. If found, enables float context so all
+# int literals in the expression auto-promote (e.g. 3 → 3.0). Stops at NEWLINE, EOF, or
+# an unmatched RPAREN. Records the prior float context in `pre_ctx_was` so the caller can
+# restore it after the expression is generated.
+macro expr_float_prescan
+	bool pre_ctx_was = float_ctx_get()
+	bool expr_has_float = false
+	int pre_scan = pos
+	int pre_depth = 0
+	for if pre_scan < token_count
+		Token pre_tok = tokens at pre_scan
+		(kind) in pre_tok
+		if kind is "FLOAT"
+			expr_has_float = true
+			break
+		if kind is "NEWLINE"
+			break
+		if kind is "EOF"
+			break
+		if kind is "LPAREN"
+			pre_depth = pre_depth + 1
+		if kind is "RPAREN"
+			if pre_depth is 0
+				break
+			pre_depth = pre_depth - 1
+		pre_scan = pre_scan + 1
+	if expr_has_float
+		float_ctx_enable()

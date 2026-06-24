@@ -95,7 +95,7 @@ Open an indented block when followed by a newline.
 |---|---|
 | `return` | Return a value from a function |
 | `crash` | Unrecoverable hard stop (`panic!`) |
-| `avow` | Forced unwrap of a validator type — panics if None |
+| `avow` | Forced unwrap of a validator type — panics if not valid |
 | `break` | Exit the innermost loop |
 | `continue` | Skip to the next loop iteration |
 | `const` | Immutable typed binding (function scope only) |
@@ -123,7 +123,7 @@ Open an indented block when followed by a newline.
 |---|---|
 | `true` | Boolean true |
 | `false` | Boolean false |
-| `empty` | Absent/empty initial value — `None` for validator types, `Vec::new()` for list shapes (declaration only) |
+| `empty` | Empty initial value for list shapes — `Vec::new()` (declaration only) |
 
 ### Built-in Type Keywords
 

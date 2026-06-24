@@ -43,15 +43,15 @@ The body evaluates to a `bool`. Simple predicates are a single boolean expressio
 A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.
 
 ```
-# to_float, sqrt_f, floor_f are shims — see shims.md
+# import lib/math.deor and lib/convert.deor for these functions
 type Squarefeet(int val)
-    float flt = to_float(val)
-    float root = sqrt_f(flt)
-    int root_i = floor_f(root)
+    float flt = c_int_to_float(val)
+    float root = m_sqrt(flt)
+    int root_i = m_floor(root)
     return root_i * root_i is val
 ```
 
-`to_float`, `sqrt_f`, and `floor_f` are user-defined shims — copy them from [Shims — Math](shims.md#math). Each intermediate result is stored before being passed to the next call. A negative `val` makes `sqrt_f` return NaN; `floor_f(NaN)` gives `0`; `0 * 0 is val` fails — no separate guard needed.
+`c_int_to_float`, `m_sqrt`, and `m_floor` are from `lib/convert.deor` and `lib/math.deor` — see [Libs](libs.md). Each intermediate result is stored before being passed to the next call. A negative `val` makes `m_sqrt` return NaN; `m_floor(NaN)` gives `0`; `0 * 0 is val` fails — no separate guard needed.
 
 ```rust
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -166,7 +166,7 @@ let mut rooms: Vec<Room> = Vec::new();
 
 ### Forced Unwrap — `avow`
 
-`(avow val)` is Deor's equivalent of Rust's `.unwrap()` — it asserts the value is `Some` and extracts the underlying primitive. Panics at runtime if `None`. Use only when you are certain the value is present — typically inside an `if val` block. Using `avow` on a non-validator-type variable is a transpiler error.
+`(avow val)` is Deor's equivalent of Rust's `.unwrap()` — it asserts the value is `Some` and extracts the underlying primitive. Panics at runtime if not valid. Use only when you are certain the value is valid — typically inside an `if val valid` block. Using `avow` on a non-validator-type variable is a transpiler error.
 
 The parentheses are always required — this is intentional. Without them, `avow val + 2` would be ambiguous: does `avow` bind to `val` or to `val + 2`? The parens make the boundary explicit, which matters most when `avow` is used inline inside a larger expression like `(avow value) + 2`. Writing `avow val` on its own line would be unambiguous, but the rule is uniform: parens always.
 

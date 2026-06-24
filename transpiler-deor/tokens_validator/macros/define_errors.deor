@@ -1,3 +1,4 @@
+# Declares all validation error message strings used across the token validator macros.
 macro define_errors
 
 	# naming rules

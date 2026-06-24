@@ -1,4 +1,5 @@
 
+# Skips over raw `rust { ... }` blocks during validation so their contents are not checked as Deor tokens.
 macro skip_rust_block
 	if cur_kind is "KW_RUST"
 		int skip_pos = pos + 1

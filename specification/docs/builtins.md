@@ -1,7 +1,7 @@
 # Built-in Functions
 These functions are wired directly into the transpiler — no import, no wrapper needed.
 
-Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Lib and Shims](docs/shims.md) for copy-paste wrappers and more information about the included lib.
+Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Libs](docs/libs.md) for the standard library and custom wrapper patterns.
 
 ---
 

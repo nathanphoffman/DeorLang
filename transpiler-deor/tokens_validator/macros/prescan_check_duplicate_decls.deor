@@ -1,4 +1,5 @@
 
+# Prescan pass: flags duplicate top-level declaration names across struct, enum, shape, type, and fn declarations.
 macro prescan_check_duplicate_decls
 	bool is_kw_struct = kind is "KW_STRUCT"
 	bool is_kw_enum = kind is "KW_ENUM"

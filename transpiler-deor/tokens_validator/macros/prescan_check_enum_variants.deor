@@ -1,4 +1,5 @@
 
+# Prescan pass: walks each enum body and validates that all variants are PascalCase, at least 3 chars, and carry no data.
 macro prescan_check_enum_variants
 	if kind is "KW_ENUM"
 		int ev_pos = pre_i + 1

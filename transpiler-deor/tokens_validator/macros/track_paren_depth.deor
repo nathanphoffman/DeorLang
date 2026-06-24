@@ -1,4 +1,5 @@
 
+# Tracks LPAREN/RPAREN nesting depth so other macros can distinguish top-level tokens from those inside expressions.
 macro track_paren_depth
 	if cur_kind is "LPAREN"
 		paren_depth = paren_depth + 1

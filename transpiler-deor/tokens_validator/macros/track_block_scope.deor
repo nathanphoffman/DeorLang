@@ -1,4 +1,6 @@
 
+# Tracks INDENT/DEDENT nesting depth and sets `in_void_fn` when entering a void function body,
+# clearing it when the function's block closes — used to enforce the no-return rule in void fns.
 macro track_block_scope
 	if cur_kind is "INDENT"
 		block_depth = block_depth + 1

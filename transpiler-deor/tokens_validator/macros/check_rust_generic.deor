@@ -1,4 +1,5 @@
 
+# Flags direct use of Rust generic types (Option, Vec, Box, Rc, Arc, Result) as IDENT tokens — use Deor shapes or validator types instead.
 macro check_rust_generic
 	bool is_option = cur_val is "Option"
 	bool is_vec = cur_val is "Vec"

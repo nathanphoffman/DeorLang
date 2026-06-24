@@ -1,4 +1,5 @@
 
+# Validates variable names in typed declarations (`Type name = ...`) and as-bindings: enforces min 3 chars and snake_case.
 macro check_var_decl
 	int next1 = pos + 1
 	int next2 = pos + 2

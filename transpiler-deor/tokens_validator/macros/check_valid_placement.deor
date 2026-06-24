@@ -1,4 +1,5 @@
 
+# Ensures `valid` only appears after `is` or `is not` — it cannot be assigned or used as a standalone expression.
 macro check_valid_placement
 	if cur_kind is "KW_VALID"
 		bool valid_ok = false

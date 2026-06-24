@@ -1,0 +1,41 @@
+
+# Walks the cursor through `RetType name(params)`, setting ret_type, fn_name,
+# param_strs, indent_pos, and body_start. Expects: fn_tokens, start_pos,
+# shape_reg, enum_reg in scope from gen_fn_decl.
+macro fn_parse_signature
+	TokenCursor cur = cur_at_ref(fn_tokens, start_pos)
+	(current) in cur
+	(value) in current
+	string ret_type = resolve_type(value, shape_reg, enum_reg)
+	cur = cur_next_ref(cur, fn_tokens)
+	(current) in cur
+	(value) in current
+	string fn_name = value
+	cur = cur_next_ref(cur, fn_tokens)
+	cur = cur_next_ref(cur, fn_tokens)   # skip LPAREN
+	strList param_strs = empty
+	for if not c_at_end(cur)
+		(current) in cur
+		(kind, value) in current
+		if kind is "RPAREN"
+			cur = cur_next_ref(cur, fn_tokens)
+			break
+		else if kind is "COMMA"
+			cur = cur_next_ref(cur, fn_tokens)
+		else if kind is "IDENT"
+			string param_type = value
+			cur = cur_next_ref(cur, fn_tokens)
+			(current) in cur
+			(value) in current
+			string param_name = value
+			string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
+			string prm_sep = ": "
+			param_strs at end = s_join([param_name, prm_sep, rust_param_type])
+			cur = cur_next_ref(cur, fn_tokens)
+		else
+			cur = cur_next_ref(cur, fn_tokens)
+	(pos) in cur
+	int indent_pos = pos + 1
+	cur = cur_skip_to_body_ref(cur, fn_tokens)
+	(pos) in cur
+	int body_start = pos

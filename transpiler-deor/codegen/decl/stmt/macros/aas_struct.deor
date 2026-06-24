@@ -1,0 +1,54 @@
+
+# Handles `name as (f1, f2, ...)`: peeks inside the parens to confirm all tokens are IDENTs/COMMAes,
+# then emits struct construction. Falls through (no return) for plain grouped expressions.
+macro aas_struct
+	bool aas_is_struct = true
+	int aas_peek = after_as + 1
+	for if aas_peek < token_count
+		Token aas_peek_tok = tokens at aas_peek
+		(kind) in aas_peek_tok
+		if kind is "RPAREN"
+			break
+		if kind is "IDENT"
+			aas_peek = aas_peek + 1
+			continue
+		if kind is "COMMA"
+			aas_peek = aas_peek + 1
+			continue
+		aas_is_struct = false
+		break
+	if aas_is_struct
+		strList aas_fields = empty
+		int aas_fend = after_as + 1
+		for if aas_fend < token_count
+			Token aas_field_tok = tokens at aas_fend
+			(kind, value) in aas_field_tok
+			if kind is "RPAREN"
+				aas_fend = aas_fend + 1
+				break
+			else if kind is "COMMA"
+				aas_fend = aas_fend + 1
+			else if kind is "IDENT"
+				aas_fields at end = value
+				aas_fend = aas_fend + 1
+		string aas_struct = find_struct_for_fields(struct_reg, aas_fields)
+		string var_name = ident_name
+		bool mg_is_mut = list_has(mut_names, var_name)
+		string mut_kw = ""
+		if mg_is_mut
+			mut_kw = "mut "
+		int aas_fcount = len(aas_fields)
+		strList aas_pairs = empty
+		for aas_fi in range(aas_fcount)
+			string aas_fname = aas_fields at aas_fi
+			string aas_fp_sep = ": "
+			string aas_fp_cln = ".clone()"
+			aas_pairs at end = s_join([aas_fname, aas_fp_sep, aas_fname, aas_fp_cln])
+		string aas_fld_sep = ", "
+		string aas_fields_code = s_join_with(aas_pairs, aas_fld_sep)
+		string aas_let = "let "
+		string aas_eq = " = "
+		string aas_ob = " { "
+		string aas_cb = " };\n"
+		string aas_code = s_join([pad, aas_let, mut_kw, ident_name, aas_eq, aas_struct, aas_ob, aas_fields_code, aas_cb])
+		return make_nl_result(move aas_code, aas_fend, tokens)

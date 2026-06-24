@@ -1,0 +1,13 @@
+
+# Handles `shape Foo = list of T` → `type Foo = Vec<T>;`
+# Expects: kind, pos, tokens, rust_name in scope from gen_shape_decl.
+macro shape_list
+	if kind is "KW_LIST"
+		int elem_pos = pos + 5
+		Token elem_token = tokens at elem_pos
+		(value) in elem_token
+		string elem_type = value
+		string rust_elem = render_rust_type(elem_type)
+		string decl = gen_list_shape_code(rust_name, rust_elem)
+		int after = elem_pos + 1
+		return make_nl_result(move decl, after, tokens)

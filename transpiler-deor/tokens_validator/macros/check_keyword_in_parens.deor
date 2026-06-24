@@ -1,4 +1,5 @@
 
+# Flags reserved keywords used inside parentheses where a variable name is expected.
 macro check_keyword_in_parens
 	if paren_depth > 0
 		bool is_forbidden = list_has(forbidden_in_parens, cur_kind)

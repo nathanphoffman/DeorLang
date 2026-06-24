@@ -1,4 +1,5 @@
 
+# Enforces that crash() is called with exactly one argument.
 macro check_crash_args
 	if cur_kind is "IDENT"
 		bool is_crash = cur_val is "crash"

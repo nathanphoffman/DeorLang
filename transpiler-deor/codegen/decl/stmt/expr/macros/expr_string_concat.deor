@@ -1,0 +1,31 @@
+
+# Inside the binary-op loop: handles `+` string concatenation. When the left side is a
+# string literal emits `format!("{}{}", left, rhs)` and continues. When the left is already
+# a promoted String expression, appends `.as_str()` to an rhs identifier. Tracks
+# `left_has_str` so subsequent segments chain correctly.
+macro expr_string_concat
+	if operator_str is "+"
+		Token left_token = tokens at pos
+		(kind) in left_token
+		bool left_is_str = kind is "STRING"
+		Token rhs_token = tokens at after_op
+		(kind) in rhs_token
+		bool rhs_is_str = kind is "STRING"
+		bool rhs_is_ident = kind is "IDENT"
+		if left_is_str
+			string fmt_pfx = "format!(\"{}{}\", "
+			string fmt_mid = ", "
+			string fmt_sfx = ")"
+			left_code = s_cat(fmt_pfx, move left_code)
+			left_code = s_cat(move left_code, fmt_mid)
+			left_code = s_cat(move left_code, rhs_code)
+			left_code = s_cat(move left_code, fmt_sfx)
+			left_has_str = true
+			cur_pos = rhs_pos
+			continue
+		if left_has_str
+			if rhs_is_ident
+				string astr_sfx = ".as_str()"
+				rhs_code = s_cat(move rhs_code, astr_sfx)
+		if rhs_is_str
+			left_has_str = true

@@ -1,4 +1,6 @@
 
+# Validates fn declarations: enforces max 3 params, no param name shadowing its type, snake_case and min-3-char
+# param names, and that a return type is present (catches `fn name()` missing the return type token).
 macro check_fn_declaration
 	if cur_kind is "KW_FN"
 		int lp_pos = pos + 3

@@ -22,7 +22,7 @@ fn int total_area(roomList rooms)
     for room in rooms
         area in room
         int sqm as 0
-        if area is not bad
+        if area valid
             sqm = (avow area)
         sum = sum + sqm
     return sum
@@ -35,7 +35,6 @@ fn roomList occupied_rooms(roomList rooms)
             result at end = room
     return result
 
-# random is a shim — copy from shims.md
 fn string random_room_name(roomList rooms)
     int count = len(rooms)
     int last = count - 1
@@ -45,7 +44,7 @@ fn string random_room_name(roomList rooms)
     (name) in picked
     return name
 
-fn main()
+fn void main()
     Squarefeet area = 9
     name as "Kitchen"
     occupied as true
@@ -145,7 +144,7 @@ fn random_room_name(rooms: &Vec<Room>) -> String {
     return name;
 }
 
-fn main() {
+fn main() -> () {
     let mut area: Option<Squarefeet> = Squarefeet::new(9);
     let mut name: String = "Kitchen".to_string();
     let mut occupied: bool = true;
@@ -191,6 +190,6 @@ fn main() {
 - `House` contains a `roomList rooms` field (`Vec<Room>`). Structs in Deor are plain value types — the transpiler emits a standard Rust struct with `#[derive(Clone, PartialEq, Debug)]`.
 - `area`, `name`, and `occupied` are declared once with `as` then reassigned with `=` to build multiple rooms. The transpiler emits them as `let mut` because they are reassigned after first declaration.
 - `Room` contains a `String` field so it can never be `Copy` — only `Clone`. Every place a `Room` is duplicated needs an explicit `.clone()` in Rust, even though source never writes it.
-- `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` checks `if area is not bad` and uses `(avow area)` to safely extract the inner `i32` with a default of `0`.
+- `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` checks `if area valid` and uses `(avow area)` to safely extract the inner `i32` with a default of `0`.
 - `rooms[idx]` requires an `as usize` cast — the transpiler inserts this on every list-index operation.
 - `print(...)` → `println!("{}", ...)`.

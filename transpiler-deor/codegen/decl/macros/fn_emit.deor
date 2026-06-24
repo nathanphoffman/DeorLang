@@ -1,0 +1,23 @@
+
+# Generates the function body, assembles the full Rust fn string, and returns.
+# Expects: body_ctx, body_start, param_strs, ret_type, fn_name in scope from gen_fn_decl.
+macro fn_emit
+	int body_pos = 0
+	int body_depth = 1
+	ParseResult body_r = gen_block(body_pos, body_depth, move body_ctx)
+	move (code, new_pos) in body_r
+	body_code as code
+	body_end as body_start + new_pos
+	string sep = ", "
+	string params_code = s_join_with(param_strs, sep)
+	string ret_suffix = ""
+	if not is_empty(ret_type)
+		string rts_pfx = " -> "
+		ret_suffix = s_join([rts_pfx, ret_type])
+	string fnc_kw = "fn "
+	string fnc_op = "("
+	string fnc_rp = ")"
+	string fnc_ob = " {\n"
+	string fnc_cb = "}\n\n"
+	string fn_code = s_join([fnc_kw, fn_name, fnc_op, params_code, fnc_rp, ret_suffix, fnc_ob, body_code, fnc_cb])
+	return make_result(move fn_code, body_end)

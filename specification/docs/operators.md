@@ -18,11 +18,11 @@ int quo = 5 / 2       # 2 — truncated
 float flt = 5.0 / 2   # 2.5
 ```
 
-Deor has no `**` operator. For exponentiation, use the `pow_i` shim from [Shims — Math](shims.md#math):
+Deor has no `**` operator. For exponentiation, use `m_pow` from `lib/math.deor` — see [Libs](libs.md):
 ```
 base as 2
 exp as 10
-int val = pow_i(base, exp)    # 1024
+int val = m_pow(base, exp)    # 1024
 ```
 
 ---
@@ -62,7 +62,7 @@ if !names.is_empty() { ... }
 Forced unwrap of a validator type uses the separate `avow` keyword — it is not part of the `is` operator:
 
 ```
-(avow val)    # forced unwrap — panics if None (validator types only)
+(avow val)    # forced unwrap — panics if not valid (validator types only)
 ```
 
 See [Types — Forced Unwrap](types.md#forced-unwrap--avow) for full details.

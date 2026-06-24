@@ -1,0 +1,13 @@
+
+# Handles `Type name = [...]`: always emits `let mut name: RustType = vec![...]`.
+macro tb_list_literal
+	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in ge_r
+	val_code as code
+	val_end as new_pos
+	string lst_pfx = "let mut "
+	string lst_col = ": "
+	string lst_eq = " = "
+	string lst_sc = ";\n"
+	string lst_code = s_join([pad, lst_pfx, var_name, lst_col, rust_type, lst_eq, val_code, lst_sc])
+	return make_nl_result(move lst_code, val_end, tokens)

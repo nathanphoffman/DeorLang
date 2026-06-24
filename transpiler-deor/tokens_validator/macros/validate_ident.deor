@@ -1,4 +1,6 @@
 
+# Generic identifier validator: checks the name token at `validate_indent_offset` from the current keyword token
+# for min-3-char length and a caller-supplied naming rule (snake, pascal, etc.). Advances past the keyword on match.
 macro validate_ident
 	if cur_kind is keyword
 		int name_pos = pos + validate_indent_offset

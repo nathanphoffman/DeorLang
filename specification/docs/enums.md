@@ -100,7 +100,7 @@ fn string describe(ColorTag color)
     else 
         return other
 
-fn main()
+fn void main()
     name as "Ocean"
     ColorTag background = Blue
     ColorTag foreground = White

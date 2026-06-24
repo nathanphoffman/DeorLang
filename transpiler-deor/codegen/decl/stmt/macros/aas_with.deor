@@ -1,0 +1,41 @@
+
+# Handles `name as source with (f1, f2, ...)`: emits a record-update spread `StructName { f1, f2, ..source }`.
+# Falls through (no return) if the token after the source ident is not `with`.
+macro aas_with
+	int aas_with_pos = after_as + 1
+	if aas_with_pos < token_count
+		Token aas_with_tok = tokens at aas_with_pos
+		(kind) in aas_with_tok
+		if kind is "KW_WITH"
+			string aas_src = after_as_value
+			int aas_lp = aas_with_pos + 1
+			strList aas_ovr = empty
+			int aas_wend = aas_lp + 1
+			for if aas_wend < token_count
+				Token aas_wtok = tokens at aas_wend
+				(kind, value) in aas_wtok
+				if kind is "RPAREN"
+					aas_wend = aas_wend + 1
+					break
+				if kind is "COMMA"
+					aas_wend = aas_wend + 1
+					continue
+				if kind is "IDENT"
+					aas_ovr at end = value
+					aas_wend = aas_wend + 1
+			string aas_first = aas_ovr at 0
+			string aas_struct_w = find_struct_for_field(struct_reg, aas_first)
+			string aas_wsep = ", "
+			string aas_wfields = s_join_with(aas_ovr, aas_wsep)
+			string var_name = ident_name
+			bool mg_is_mut = list_has(mut_names, var_name)
+			string mut_kw = ""
+			if mg_is_mut
+				mut_kw = "mut "
+			string aas_wlet = "let "
+			string aas_weq = " = "
+			string aas_wob = " { "
+			string aas_wsp = ", .."
+			string aas_wcb = " };\n"
+			string aas_with_code = s_join([pad, aas_wlet, mut_kw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wcb])
+			return make_nl_result(move aas_with_code, aas_wend, tokens)

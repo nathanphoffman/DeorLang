@@ -1,4 +1,6 @@
 
+# Flags invalid statement patterns starting with an IDENT: `name ident literal` (literal should be in a variable),
+# `name as Type` (typed as-bindings are unsupported), and `name as move` (`as` already transfers ownership).
 macro check_bad_stmt
 	if paren_depth is 0
 		int next1 = pos + 1

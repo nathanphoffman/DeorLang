@@ -1,0 +1,76 @@
+
+# Handles `Type name = (...)`: emits struct construction if the type is a known struct,
+# or an unwrap expression for `(avow x)`. Falls through for plain grouped expressions.
+macro tb_paren
+	int peek_pos = val_pos + 1
+	Token peek_token = tokens at peek_pos
+	(kind) in peek_token
+	bool is_avow_expr = kind is "KW_AVOW"
+	bool is_struct_type = reg_has(struct_reg, var_type)
+	if not is_avow_expr
+		if is_struct_type
+			string struct_fields_str = reg_get(struct_reg, var_type)
+			string comma = ","
+			strList field_names = s_split(struct_fields_str, comma)
+			strList field_pairs = empty
+			int fend = val_pos + 1
+			int fni = 0
+			int fn_count = len(field_names)
+			for if fend < token_count
+				Token field_tok = tokens at fend
+				(kind) in field_tok
+				if kind is "RPAREN"
+					fend = fend + 1
+					break
+				if kind is "COMMA"
+					fend = fend + 1
+					continue
+				val_pos as fend
+				ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+				move (code, new_pos) in ge_r
+				val_code as code
+				val_end as new_pos
+				if fni < fn_count
+					string fname = field_names at fni
+					string sfp_sep = ": "
+					string sfp_cln = ".clone()"
+					field_pairs at end = s_join([fname, sfp_sep, val_code, sfp_cln])
+					fni = fni + 1
+				fend = val_end
+			string sep = ", "
+			string fields_code = s_join_with(field_pairs, sep)
+			bool mg_is_mut = list_has(mut_names, var_name)
+			string mut_kw = ""
+			if mg_is_mut
+				mut_kw = "mut "
+			string scc_let = "let "
+			string scc_eq = " = "
+			string scc_ob = " { "
+			string scc_cb = " };\n"
+			string sc_code = s_join([pad, scc_let, mut_kw, var_name, scc_eq, var_type, scc_ob, fields_code, scc_cb])
+			return make_nl_result(move sc_code, fend, tokens)
+	if is_avow_expr
+		int inner_pos = peek_pos + 1
+		val_pos as inner_pos
+		ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+		move (code, new_pos) in ge_r
+		val_code as code
+		val_end as new_pos
+		int after_rparen = val_end + 1
+		string suf_unwrap = ".unwrap()"
+		string suf_unwrap0 = ".unwrap().0"
+		string unwrap_expr = s_cat(val_code, suf_unwrap)
+		if var_type is "int"
+			unwrap_expr = s_cat(val_code, suf_unwrap0)
+		if var_type is "string"
+			unwrap_expr = s_cat(val_code, suf_unwrap0)
+		if var_type is "bool"
+			unwrap_expr = s_cat(val_code, suf_unwrap0)
+		if var_type is "float"
+			unwrap_expr = s_cat(val_code, suf_unwrap0)
+		string awc_let = "let "
+		string awc_col = ": "
+		string awc_eq = " = "
+		string awc_sc = ";\n"
+		string aw_code = s_join([pad, awc_let, var_name, awc_col, rust_type, awc_eq, unwrap_expr, awc_sc])
+		return make_nl_result(move aw_code, after_rparen, tokens)

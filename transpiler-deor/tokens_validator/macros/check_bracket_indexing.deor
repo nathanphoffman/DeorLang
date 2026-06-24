@@ -1,4 +1,5 @@
 
+# Flags `name[index]` bracket indexing, which is not valid in Deor — use `name at index` instead.
 macro check_bracket_indexing
 	int next_pos = pos + 1
 	if next_pos < token_count

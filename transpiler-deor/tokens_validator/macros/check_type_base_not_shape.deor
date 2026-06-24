@@ -1,4 +1,5 @@
 
+# Flags `type Name(shapeType ...)` where the base type is a list shape — validators can only wrap primitives, not list shapes.
 macro check_type_base_not_shape
 	if cur_kind is "KW_TYPE"
 		int base_type_pos = pos + 3

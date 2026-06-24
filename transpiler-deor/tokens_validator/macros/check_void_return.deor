@@ -1,4 +1,5 @@
 
+# Flags `return` inside a void function — void functions must fall through rather than use an explicit return.
 macro check_void_return
 	if cur_kind is "KW_RETURN"
 		if in_void_fn

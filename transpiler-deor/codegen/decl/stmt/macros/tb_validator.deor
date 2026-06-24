@@ -1,0 +1,18 @@
+
+# Handles `ValidatorType name = expr`: emits `let [mut] name: Option<ValidatorType> = ValidatorType::new(val)`.
+macro tb_validator
+	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in ge_r
+	val_code as code
+	val_end as new_pos
+	bool mg_is_mut = list_has(mut_names, var_name)
+	string mut_kw = ""
+	if mg_is_mut
+		mut_kw = "mut "
+	string vld_let = "let "
+	string vld_opt = ": Option<"
+	string vld_new = "> = "
+	string vld_nop = "::new("
+	string vld_sc = ");\n"
+	string vld_code = s_join([pad, vld_let, mut_kw, var_name, vld_opt, var_type, vld_new, var_type, vld_nop, val_code, vld_sc])
+	return make_nl_result(move vld_code, val_end, tokens)

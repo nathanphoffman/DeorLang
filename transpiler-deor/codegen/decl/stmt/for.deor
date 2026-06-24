@@ -15,36 +15,10 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	(kind) in next_token
 
 	if kind is "KW_IF"
-		int cond_pos = next_pos + 1
-		val_pos as cond_pos
-		macro_run gen_expr_r
-		int blk_start = skip_to_body_ref(tokens, val_end)
-		macro_run gen_block_r
-		string whl_kw = "while "
-		string whl_ob = " {\n"
-		string whl_cb = "}\n"
-		string while_code = s_join([pad, whl_kw, val_code, whl_ob, blk_code, pad, whl_cb])
-		return make_result(move while_code, blk_end)
+		macro_run for_while
 
 	if kind is "KW_GIVEUP"
-		int lparen_pos = next_pos + 1
-		int var_pos = lparen_pos + 1
-		Token var_tok = tokens at var_pos
-		(value) in var_tok
-		string giveup_var = value
-		int in_pos = var_pos + 1
-		int iter_pos = in_pos + 1
-		val_pos as iter_pos
-		macro_run gen_expr_r
-		int iter_next = val_end + 1
-		int blk_start = skip_to_body_ref(tokens, iter_next)
-		macro_run gen_block_r
-		string gfr_kw = "for "
-		string gfr_in = " in "
-		string gfr_ob = " {\n"
-		string gfr_cb = "}\n"
-		string for_code = s_join([pad, gfr_kw, giveup_var, gfr_in, val_code, gfr_ob, blk_code, pad, gfr_cb])
-		return make_result(move for_code, blk_end)
+		macro_run for_move
 
 	string var_name = "_"
 	int iter_pos = 0
@@ -62,42 +36,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	string range_expr = ""
 	int body_tok_pos = 0
 
-	if kind is "IDENT" and value is "range"
-		int lparen = iter_pos + 1
-		int first_pos = lparen + 1
-		val_pos as first_pos
-		macro_run gen_expr_r
-		Token comma_token = tokens at val_end
-		(kind) in comma_token
-		bool has_start = kind is "COMMA"
-		if has_start
-			string first_code = move val_code
-			int val_pos = val_end + 1
-			macro_run gen_expr_r
-			string rng_dot = ".."
-			range_expr = s_join([first_code, rng_dot, val_code])
-			body_tok_pos = val_end + 1
-		else
-			string rng0_pfx = "0.."
-			range_expr = s_join([rng0_pfx, val_code])
-			body_tok_pos = val_end + 1
-	else if kind is "LPAREN"
-		int start_pos = iter_pos + 1
-		val_pos as start_pos
-		macro_run gen_expr_r
-		string start_code = move val_code
-		int val_pos = val_end + 1
-		macro_run gen_expr_r
-		string rng2_dot = ".."
-		range_expr = s_join([start_code, rng2_dot, val_code])
-		body_tok_pos = val_end + 1
-	else
-		val_pos as iter_pos
-		macro_run gen_expr_r
-		string amp = "&"
-		string collection_ref = s_cat(amp, val_code)
-		range_expr = collection_ref
-		body_tok_pos = val_end
+	macro_run for_iter_expr
 
 	int blk_start = skip_to_body_ref(tokens, body_tok_pos)
 	macro_run gen_block_r

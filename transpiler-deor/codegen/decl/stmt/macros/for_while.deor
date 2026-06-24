@@ -1,0 +1,20 @@
+
+# Handles `for if cond`: generates `while cond { ... }`.
+macro for_while
+	int cond_pos = next_pos + 1
+	val_pos as cond_pos
+	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in ge_r
+	val_code as code
+	val_end as new_pos
+	int blk_start = skip_to_body_ref(tokens, val_end)
+	int blk_depth = depth + 1
+	ParseResult blk_r = gen_block(blk_start, blk_depth, ctx)
+	move (code, new_pos) in blk_r
+	blk_code as code
+	blk_end as new_pos
+	string whl_kw = "while "
+	string whl_ob = " {\n"
+	string whl_cb = "}\n"
+	string while_code = s_join([pad, whl_kw, val_code, whl_ob, blk_code, pad, whl_cb])
+	return make_result(move while_code, blk_end)

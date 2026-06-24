@@ -5,7 +5,7 @@ Deor transpiles to Rust. Indentation-based blocks, no `{}` `;` `<>`. Human-reada
 ---
 
 ## File Order
-Imports must be first — only enforced rule. Recommended order after: Enums → Consts → Types → Structs → Shapes → Functions
+Imports must be first — only enforced rule. Recommended order after: Enums → `const` → Types → Shapes → Structs → Functions
 
 ## Naming
 - PascalCase: structs, validator types, enums
@@ -127,6 +127,7 @@ All imported with `import "lib/name.deor"`. Functions must be called with named 
 ## `move` Keyword
 Deor clones everything by default. `move` transfers ownership instead — original variable inaccessible after.
 - Function arg: `do_something(move big_list)`
+- Struct construction: `Score built = move (label, points)` — fields consumed
 - Loop: `for move (item in collection)` — collection consumed after
 - Assignment: `string new_var = move prev_var`
 

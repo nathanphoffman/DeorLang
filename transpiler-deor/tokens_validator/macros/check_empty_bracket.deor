@@ -1,4 +1,5 @@
 
+# Flags `[]` empty bracket literals — use `empty` to initialize an empty list instead.
 macro check_empty_bracket
 	if cur_kind is "LBRACKET"
 		int next_pos = pos + 1

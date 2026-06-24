@@ -1,4 +1,5 @@
 
+# Ensures `move` is followed by an IDENT or LPAREN — flags `move 5`, `move "hello"`, etc.
 macro check_move_target
 	if cur_kind is "KW_GIVEUP"
 		int mv_next = pos + 1

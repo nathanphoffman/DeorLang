@@ -5,12 +5,15 @@
 # otherwise returns None. This is Deor's mechanism for validated/constrained scalar types.
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	int start_pos = pos + 1
+	
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
 	(current) in cur
 	(value) in current
 	string type_name = value
+
 	cur = cur_next_ref(cur, tokens)   # LPAREN
 	cur = cur_next_ref(cur, tokens)   # param_type
+
 	(current) in cur
 	(value) in current
 	string param_type = value
@@ -19,14 +22,17 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	(current) in cur
 	(value) in current
 	string param_name = value
+
 	cur = cur_next_ref(cur, tokens)   # RPAREN
 	cur = cur_next_ref(cur, tokens)   # NEWLINE
 	cur = cur_skip_to_body_ref(cur, tokens)
+
 	(pos) in cur
 	ParseResult pred_r = gen_expr(tokens, pos, ctx)
 	move (code, new_pos) in pred_r
 	pred_code as code
 	pred_end as new_pos
+
 	TokenCursor cur2 = cur_at_ref(tokens, pred_end)
 	for if not c_at_end(cur2)
 		(current) in cur2
@@ -34,7 +40,9 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 		cur2 = cur_next_ref(cur2, tokens)
 		if kind is "DEDENT"
 			break
+
 	(pos) in cur2
+
 	string tsc_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
 	string tsc_op = "("
 	string tsc_sfx = ");\n\n"
@@ -48,4 +56,5 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	string imp_sfx = "))\n        } else {\n            None\n        }\n    }\n}\n\n"
 	string impl_code = s_join([imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx])
 	string type_code = s_cat(move struct_code, move impl_code)
+
 	return make_result(move type_code, pos)

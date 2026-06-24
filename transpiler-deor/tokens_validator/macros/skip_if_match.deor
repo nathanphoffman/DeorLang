@@ -1,4 +1,6 @@
 
+# Generic delimiter skipper: when the current token matches `cur_indicator`, advances past tokens until `next_indicator`
+# is found, then continues the outer loop. Used to skip over paired delimiters during validation passes.
 macro skip_if_match
 	if cur_kind is cur_indicator
 		int skip_pos = pos + 1

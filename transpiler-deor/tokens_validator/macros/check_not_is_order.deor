@@ -1,4 +1,5 @@
 
+# Flags `not x is y` — the correct form is `x is not y` since `not` binds before `is` resolves.
 macro check_not_is_order
 	if cur_kind is "KW_NOT"
 		int next_not = pos + 1

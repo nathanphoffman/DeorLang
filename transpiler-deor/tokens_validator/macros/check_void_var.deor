@@ -1,4 +1,5 @@
 
+# Flags `void name = ...` — void is not a valid variable type, only a function return type.
 macro check_void_var
 	if cur_kind is "KW_VOID"
 		bool preceded_by_fn = false

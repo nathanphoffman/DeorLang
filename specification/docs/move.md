@@ -40,6 +40,22 @@ The collection itself is consumed — it cannot be used after the loop.
 
 ---
 
+## Struct Construction
+
+Build a struct from fields without cloning them:
+
+```
+Score built = move (label, points)
+```
+
+```rust
+let built = Score { label, points };
+```
+
+Fields are moved into the struct rather than cloned. Each source variable is consumed and cannot be used after the construction.
+
+---
+
 ## Variable Assignment
 
 Transfer ownership into a new binding:

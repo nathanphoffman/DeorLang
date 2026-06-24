@@ -1,4 +1,6 @@
 
+# Prescan pass: validates struct field names (min 3 chars, snake_case) and registers each struct's field list
+# into struct_field_reg so check_struct_construction can verify construction sites.
 macro prescan_check_struct_fields
 	if kind is "KW_STRUCT"
 		# capture struct name
