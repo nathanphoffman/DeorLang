@@ -72,12 +72,23 @@ fn tokenList load_file(string path)
 			ParseResult imp_r_old = scan_import(tok_raw, pos)
 			string imp_path = ""
 			int imp_end = pos
+
 			string imp_t_concrete = ""
+			string imp_t_placeholder = ""
+
 			if is_new_import
 				imp_path = pr_code(imp_r_new)
 				imp_end = pr_pos(imp_r_new)
 				ParseResult where_r = scan_import_where(tok_raw, imp_end)
-				imp_t_concrete = pr_code(where_r)
+				imp_t_code as pr_code(where_r)
+
+				# this unwinds the Thing1 = Thing2 replacement as Thing1|Thing2
+				const pipe as "|"
+				list_code as s_split(imp_t_code, pipe)
+
+				imp_t_placeholder = list_code at 0
+				imp_t_concrete = list_code at 1
+
 				if not is_empty(imp_t_concrete)
 					imp_end = pr_pos(where_r)
 			else
@@ -95,7 +106,7 @@ fn tokenList load_file(string path)
 						std::process::exit(1);
 				string dedup_key = imp_path
 				if not is_empty(imp_t_concrete)
-					dedup_key = s_join([imp_path, "|T=", imp_t_concrete])
+					dedup_key = s_join([imp_path, "|", imp_t_placeholder, "=", imp_t_concrete])
 				bool is_new = file_is_new_keyed(dedup_key)
 				if is_new
 					bool exists = f_exists(imp_path)
@@ -107,7 +118,7 @@ fn tokenList load_file(string path)
 							std::process::exit(1);
 					tokenList imp_tokens = load_file(imp_path)
 					if not is_empty(imp_t_concrete)
-						imp_tokens = apply_t_substitution(imp_tokens, imp_t_concrete)
+						imp_tokens = apply_t_substitution(imp_tokens, imp_t_placeholder, imp_t_concrete)
 					int imp_len = len(imp_tokens)
 					for imp_index in range(imp_len)
 						Token imp_tok = imp_tokens at imp_index
