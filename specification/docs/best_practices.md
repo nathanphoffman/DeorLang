@@ -1,5 +1,5 @@
 # Best Practices
-Style recommendations for idiomatic recommendations, they are not enforced by the transpiler.
+Style recommendations not enforced by the transpiler.
 
 ---
 ## Order of Declaration
@@ -72,8 +72,9 @@ fn RollResult roll_die(Die die)
 
     return result
 ```
+---
 ## Naming External Libs
-Because deor does not support any third party importing, the standard convention is just to copy and paste deor files into the lib folder. Because of this, it is highly recommended the following pattern be used.
+Because Deor does not support third-party importing, the standard convention is to copy Deor files into the `lib/` folder. The following prefix pattern is recommended.
 
 Standard library wrappers use the **`s_`** prefix — e.g. `s_join`, `s_trim`. These mirror existing Rust std functions closely.
 

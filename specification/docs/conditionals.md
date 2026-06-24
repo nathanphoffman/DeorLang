@@ -39,7 +39,7 @@ Any number of `else if` chains are allowed. `else` is always last and optional.
 
 Deor has no `match` keyword and no pattern matching syntax. This is intentional.
 
-Dispatching on union types uses `if`/`else if` chains with `is` comparisons — the same operator used for equality everywhere else in Deor:
+Dispatching on enum variants uses `if`/`else if` chains with `is` comparisons — the same operator used for equality everywhere else in Deor:
 
 ```
 if color is Red

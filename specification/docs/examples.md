@@ -23,7 +23,7 @@ fn int total_area(roomList rooms)
     sum as 0
     for room in rooms
         (area) in room
-        int sqm as 0
+        sqm as 0
         if area valid
             sqm = (avow area)
         sum = sum + sqm

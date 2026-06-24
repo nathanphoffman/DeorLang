@@ -60,9 +60,9 @@ for idx in range(3, 7)
 ---
 
 ## `crash`
-Causes a hard exit / crash from the program, takes a string
+Terminates the program immediately with a message. Accepts a `string`.
 
-Deor
+Deor:
 ```
 message as "An unknown server problem occurred"
 crash(message)

@@ -1097,6 +1097,15 @@ fn s_to_lower(source: String) -> String {
     source.to_lowercase()
 }
 
+fn s_camel(source: String) -> String {
+    // transpiler-deor/importer/t_substitute.deor
+    let mut chars = source.chars();
+    match chars.next() {
+    	None => String::new(),
+    	Some(c) => c.to_lowercase().to_string() + chars.as_str(),
+    }
+}
+
 fn apply_t_in_name(name: String, concrete: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     if name == "T" {
@@ -1123,7 +1132,7 @@ fn apply_t_in_name(name: String, concrete: String) -> String {
             // transpiler-deor/importer/t_substitute.deor
             let mut t_offset: i32 = 1;
             let mut rest: String = s_from(name.clone(), t_offset.clone());
-            let mut lower_concrete: String = s_to_lower(concrete.clone());
+            let mut lower_concrete: String = s_camel(concrete.clone());
             return s_cat(lower_concrete.clone(), rest.clone());
         }
     }
@@ -1132,7 +1141,7 @@ fn apply_t_in_name(name: String, concrete: String) -> String {
     let mut mid_count: i32 = (mid_parts.len() as i32);
     if mid_count > 1 {
         // transpiler-deor/importer/t_substitute.deor
-        let mut lower: String = s_to_lower(concrete.clone());
+        let mut lower: String = s_camel(concrete.clone());
         let mut new_sep: String = ["_", lower.as_str(), "_"].concat();
         return s_join_with(mid_parts.clone(), new_sep.clone());
     }
@@ -1168,13 +1177,25 @@ fn replace_t_in_rust_block(content: String, concrete: String) -> String {
     			}
     			if chars[0] == 't' && chars[1].is_uppercase() {
     				let rest: String = chars[1..].iter().collect();
-    				let lower = concrete.to_lowercase();
-    				return format!("{}{}", lower, rest);
+    				let camel: String = {
+    					let mut c = concrete.chars();
+    					match c.next() {
+    						None => String::new(),
+    						Some(f) => f.to_lowercase().to_string() + c.as_str(),
+    					}
+    				};
+    				return format!("{}{}", camel, rest);
     			}
     		}
     		if word.contains("_T_") {
-    			let lower = concrete.to_lowercase();
-    			let new_sep = format!("_{}_", lower);
+    			let camel: String = {
+    				let mut c = concrete.chars();
+    				match c.next() {
+    					None => String::new(),
+    					Some(f) => f.to_lowercase().to_string() + c.as_str(),
+    				}
+    			};
+    			let new_sep = format!("_{}_", camel);
     			return word.replace("_T_", &new_sep);
     		}
     		word.to_string()

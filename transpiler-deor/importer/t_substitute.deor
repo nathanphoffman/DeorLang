@@ -12,6 +12,14 @@ fn string s_to_lower(string source)
 	rust
 		source.to_lowercase()
 
+fn string s_camel(string source)
+	rust
+		let mut chars = source.chars();
+		match chars.next() {
+			None => String::new(),
+			Some(c) => c.to_lowercase().to_string() + chars.as_str(),
+		}
+
 # Replaces T as a word-boundary component inside a single identifier name.
 fn string apply_t_in_name(string name, string concrete)
 	if name is "T"
@@ -32,13 +40,13 @@ fn string apply_t_in_name(string name, string concrete)
 		if first_is_lower_t and second_is_upper
 			int t_offset = 1
 			string rest = s_from(name, t_offset)
-			string lower_concrete = s_to_lower(concrete)
+			string lower_concrete = s_camel(concrete)
 			return s_cat(lower_concrete, rest)
 	string t_sep = "_T_"
 	strList mid_parts = s_split(name, t_sep)
 	int mid_count = len(mid_parts)
 	if mid_count > 1
-		string lower = s_to_lower(concrete)
+		string lower = s_camel(concrete)
 		string new_sep = s_join(["_", lower, "_"])
 		return s_join_with(mid_parts, new_sep)
 	return name
@@ -74,13 +82,25 @@ fn string replace_t_in_rust_block(string content, string concrete)
 					}
 					if chars[0] == 't' && chars[1].is_uppercase() {
 						let rest: String = chars[1..].iter().collect();
-						let lower = concrete.to_lowercase();
-						return format!("{}{}", lower, rest);
+						let camel: String = {
+							let mut c = concrete.chars();
+							match c.next() {
+								None => String::new(),
+								Some(f) => f.to_lowercase().to_string() + c.as_str(),
+							}
+						};
+						return format!("{}{}", camel, rest);
 					}
 				}
 				if word.contains("_T_") {
-					let lower = concrete.to_lowercase();
-					let new_sep = format!("_{}_", lower);
+					let camel: String = {
+						let mut c = concrete.chars();
+						match c.next() {
+							None => String::new(),
+							Some(f) => f.to_lowercase().to_string() + c.as_str(),
+						}
+					};
+					let new_sep = format!("_{}_", camel);
 					return word.replace("_T_", &new_sep);
 				}
 				word.to_string()

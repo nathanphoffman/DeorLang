@@ -13,7 +13,7 @@ Deor's built-in primitive types and their Rust equivalents:
 
 For raw binary data (HTTP bodies, files, crypto, pixel buffers) use a `raw` variable and handle it entirely inside `rust` blocks. See [`raw` Variables](#raw-variables) below.
 
-For integers separators are allowed such as
+Integer literals may contain underscores as visual separators:
 ```
 int val = 1_000_000
 ```
@@ -172,7 +172,7 @@ The parentheses are always required — this is intentional. Without them, `avow
 
 `avow` gives you the raw primitive beneath the validator type — `int` from a `Roll`, `float` from a `Squarefeet`. When you need to pass a validator type value to a function that accepts that validator type, pass the variable directly — no `avow` needed. Only reach for `avow` when you specifically need the underlying primitive.
 
-**Note:** Avow must be captured by a variable declaration you can not try passing it around directly as a function argument, this is intentional, and matches the rust output / compiler limitations.
+**Note:** `avow` must be captured into a variable — you cannot pass it directly as a function argument. This is intentional and matches the generated Rust output.
 
 ```
 Roll roll = roll_die(d20)

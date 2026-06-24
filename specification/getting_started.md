@@ -2,7 +2,7 @@
 To get started with Deor you will need to install cargo/rust, then pull the latest version from the git repo.
 
 ## Install Cargo (if you don't have it)
-It is worth [visiting this link](https://rust-lang.org/tools/install/) for the latest cargo instructions, below is the latest linux/macOS install for cargo (as of June 18th, 2026).  If you are on windows try one of the [stalone installers](https://forge.rust-lang.org/infra/other-installation-methods.html#standalone).
+It is worth [visiting this link](https://rust-lang.org/tools/install/) for the latest cargo instructions, below is the latest linux/macOS install for cargo (as of June 18th, 2026).  If you are on windows try one of the [standalone installers](https://forge.rust-lang.org/infra/other-installation-methods.html#standalone).
 
 ### Linux Cargo Install
 ```

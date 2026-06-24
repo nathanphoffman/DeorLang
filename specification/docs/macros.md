@@ -1,13 +1,12 @@
+# Macros
 
----
-### Macros
-Macros allow you to insert raw code into lines as part of the transpile pipeline (meaning they act as if you had copy and pasted the raw code within the macro to lines that call it)
+A macro is a named block of code that is inlined at every `macro_run` call site — equivalent to copy-pasting the macro body at that point in the source.
 
-They are useful in deor because it eliminates an enormous amount of deor's cloning that can happen by avoiding separate functions which clone and avoiding the move keyword which steals, yet it still allows you to organize the code. This can become necessary for performance in large loops where passing off to several functions for readability is not ideal. It also is much more human readable than rust macros and more flexible as it doesn't have to declare parameters or have the same level of safety (yet still benefits from the rust compile-time checks).
+Macros are useful because they avoid the clone overhead of function calls while still letting you organize repetitive logic. This matters most inside tight loops where calling helper functions repeatedly introduces unnecessary cloning. Unlike Rust macros, Deor macros need no parameter declarations and require no special syntax — they benefit from Rust's compile-time checks because the inlined code goes through the same transpile and compile pipeline.
 
-Importantly, because macros are literally copy and pasted, their variables will pollute the scope you are executing them in, however, you can always use the ```block``` keyword within your macro to avoid this.
+Because macro bodies are inlined, any variables they declare pollute the caller's scope. Use the `block` keyword inside a macro body to contain variables that should not escape.
 
-Macros are top-level declarations — they are available in any file that imports the file they are defined in, exactly like functions and structs. No special import syntax needed.
+Macros are top-level declarations available in any file that imports the file they are defined in — no special import syntax needed.
 
 ```
 macro say_hello

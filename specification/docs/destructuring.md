@@ -43,15 +43,6 @@ struct Room
 
 ---
 
-## Extraction Order
-Fields can be extracted in any order — the names drive the binding, not the position. Any subset of a struct's fields is valid.
-
-```
-(area, name) in room    # valid
-(name, area) in room    # also valid — same result
-```
----
-
 ## Shadowing
 If a name being extracted already exists in scope, the new binding silently shadows it. This is standard Rust `let` rebinding and is intentional in Deor.
 

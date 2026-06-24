@@ -122,7 +122,7 @@ val is 0 or num > 5      # (val is 0) or (num > 5) — comparisons before logica
 val is not 0 and num > 0  # (val is not 0) and (num > 0)
 ```
 
-When in doubt, use parentheses. Deor has no operator precedence surprises beyond the standard math rules.
+When in doubt, use parentheses to make the intended grouping explicit.
 
 ---
 

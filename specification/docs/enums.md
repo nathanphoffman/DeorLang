@@ -52,7 +52,7 @@ let foreground: ColorTag = ColorTag::White;
 
 Use `if` / `else if` with `is`. No pattern matching — the same `is` operator used for all equality in Deor.
 
-```deor
+```
 if background is Blue
     msg as "blue background"
     print(msg)
@@ -82,7 +82,7 @@ Exhaustiveness is not enforced — write an `else` branch as a catch-all when ne
 
 Enums work as struct fields, function parameters, and return types — the same as any other type.
 
-```deor
+```
 struct Theme
     string name
     ColorTag background
@@ -93,11 +93,11 @@ fn string describe(ColorTag color)
     red as "red"
     green as "green"
 
-    if color is Red    
+    if color is Red
         return red
     else if color is Green
         return green
-    else 
+    else
         return other
 
 fn void main()

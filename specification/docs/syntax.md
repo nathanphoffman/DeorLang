@@ -87,7 +87,7 @@ Open an indented block when followed by a newline.
 | `shape` | Shape declaration (`shape name = list of T` / `func of T to O`) |
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
-| `block` | Adds a block scope, all variables inside are non-polluting, similar to rust {}, very useful paired with macros you don't want bleeding into scope |
+| `block` | Scoped block — variables declared inside do not escape into the surrounding scope |
 
 ### Statement Keywords
 
@@ -98,7 +98,6 @@ Open an indented block when followed by a newline.
 | `avow` | Forced unwrap of a validator type — panics if not valid |
 | `break` | Exit the innermost loop |
 | `continue` | Skip to the next loop iteration |
-| `const` | Immutable typed binding (function scope only) |
 | `move` | Transfer ownership instead of cloning — argument, loop, or assignment |
 
 ### Operators and Expression Keywords

@@ -216,29 +216,6 @@ total = total + 1;
 
 ---
 
-## Constants
-
-`const` declares a typed binding that omits `mut` in the generated Rust — any reassignment is a Rust compile error. Function scope only.
-
-```
-const int max_retries = 3
-const float threshold = 0.75
-const bool verbose = false
-const string label = "score"
-```
-
-```rust
-let max_retries: i32 = 3;
-let threshold: f64 = 0.75;
-let verbose: bool = false;
-let label: String = "score".to_string();
-```
-
-- Function scope only — `const` at top level is a transpiler error
-- All four primitive types are valid: `int`, `float`, `bool`, `string`
-
----
-
 ## Numeric Literals
 
 Underscores may appear anywhere in a numeric literal as a visual separator. They are stripped by the transpiler and have no effect on the value.

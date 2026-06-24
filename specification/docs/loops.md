@@ -13,15 +13,13 @@ for room in rooms
 ## Numeric Iteration
 `range(count)` produces values from `0` to `count - 1`. `range(a_start_num, an_end_num)` produces values from `a_start_num` up to but not including `an_end_num`. `range` is a built-in, so literals are valid directly.
 
-**Note:** you cannot pass more than one magic-data argument into a function due to deors-readable-first transpiler enforcement, you must capture the variable first and then pass it through range, additionally end is reserved for collection which may make this process seem frustrating, but that was by design: nothing should be called ``start`` and ``end``.  If it is a hardcoded number do ``one`` and ``ten``. If it is going from the first member in IT to the last member in IT call it first_tech_member, last_tech_member.
-
 ```
 for idx in range(count)
     ...
 
-one as 1
-eleven as 11
-for idx in range(one, eleven)
+start as 1
+stop as 11
+for idx in range(start, stop)
     print(idx)    # prints 1 through 10
 ```
 
@@ -33,6 +31,8 @@ for idx in 1..11 {
     println!("{}", idx);
 }
 ```
+
+**Note:** `range` with two bounds requires both to be named variables — the same rule as any multi-argument call. `end` is a reserved keyword; the conventional names for range bounds are `start` and `stop`.
 
 `range(count)` is shorthand for `range(0, count)`.
 
@@ -72,9 +72,9 @@ When the loop index is not needed, write `for in range(n)` — the variable name
 for in range(10)
     do_something()
 
-one as 1
-eleven as 11
-for in range(one, eleven)
+start as 1
+stop as 11
+for in range(start, stop)
     do_something()
 ```
 

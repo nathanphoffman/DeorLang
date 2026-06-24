@@ -245,5 +245,5 @@ fn main() {
 }
 ```
 
-Only one `fn void main()` may exist per project. Naming any other function `main` is a transpiler error if a `main` already exists.
+Only one `fn void main()` may exist per project.
 

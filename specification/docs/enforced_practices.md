@@ -203,12 +203,15 @@ int result = add(5, 3)               # 2 args — literals not allowed
 int result = add(num + 1, amt)       # 2 args — expression not allowed
 ```
 
-**Built-in functions** accept literals and expressions directly regardless of argument count — no named variable required:
+**Built-in functions** accept a single literal or expression directly. For built-ins called with 2 or more arguments, the named-variable rule still applies:
 
 ```
-print("Hello, world!")
-int cnt = len(rooms)
-for idx in range(0, 10)
+print("Hello, world!")    # 1 arg — literal fine
+int cnt = len(rooms)      # 1 arg — variable fine
+
+start as 0
+stop as 10
+for idx in range(start, stop)    # 2 args — named variables required
     ...
 ```
 

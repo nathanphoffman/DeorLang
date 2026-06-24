@@ -1,12 +1,12 @@
 # Collections
-List operations assume a list shape has already been declared — see [Shapes](docs/shapes.md) for how to declare one and use it in function signatures and struct fields.
+List operations assume a list shape has already been declared — see [Shapes](shapes.md) for how to declare one and use it in function signatures and struct fields.
 
 ---
 ## Empty List
 To define an empty list use the `empty` keyword. `[]` is never valid for initializing an empty list — `[` and `]` are only used for list literals with items.
 
 ```
-listString list_names = empty
+stringList list_names = empty
 if list_names is empty
     print("list is empty")
 
@@ -135,7 +135,7 @@ Room new_room = old_room with (area)
 rooms at idx = new_room
 ```
 
-Note how in rust the new_area variable does not need to match by name, but it does in Deor (it is how it is bound)
+In Rust the update variable name does not need to match the field name, but in Deor it must — field binding is by name.
 ```rust
 let old_room: Room = rooms[idx as usize].clone();
 let new_area: Option<Squarefeet> = Squarefeet::new(25);
