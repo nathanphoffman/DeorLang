@@ -24,7 +24,7 @@ fn int total_area(roomList rooms)
     for room in rooms
         (area) in room
         sqm as 0
-        if area valid
+        if area is valid
             sqm = (avow area)
         sum = sum + sqm
     return sum
@@ -192,6 +192,6 @@ fn main() -> () {
 - `House` contains a `roomList rooms` field (`Vec<Room>`). Structs in Deor are plain value types — the transpiler emits a standard Rust struct with `#[derive(Clone, PartialEq, Debug)]`.
 - `area`, `name`, and `occupied` are declared once with `as` then reassigned with `=` to build multiple rooms. The transpiler emits them as `let mut` because they are reassigned after first declaration.
 - `Room` contains a `String` field so it can never be `Copy` — only `Clone`. Every place a `Room` is duplicated needs an explicit `.clone()` in Rust, even though source never writes it.
-- `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` checks `if area valid` and uses `(avow area)` to safely extract the inner `i32` with a default of `0`.
+- `Squarefeet` is a validator type, so `room.area` is `Option<Squarefeet>`. `total_area` checks `if area is valid` and uses `(avow area)` to safely extract the inner `i32` with a default of `0`.
 - `rooms[idx]` requires an `as usize` cast — the transpiler inserts this on every list-index operation.
 - `print(...)` → `println!("{}", ...)`.

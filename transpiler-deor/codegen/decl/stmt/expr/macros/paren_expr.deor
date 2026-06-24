@@ -1,6 +1,6 @@
 
 # Handles parenthesised expressions. Three cases share the `(` open token:
-#   (avow expr)  — forced unwrap: generates `expr.unwrap()`
+#   (avow expr)  — forced unwrap: generates `expr.unwrap().0`
 #   (f1, f2)     — struct construction: looks up the struct by its field set and
 #                  generates `StructName { f1, f2 }`
 #   (expr)       — grouped arithmetic/logic: generates `(expr)`
@@ -16,7 +16,7 @@ macro primary_paren_expr
 				move (code, new_pos) in pe_expr_r
 				pe_expr_code as code
 				pe_after as new_pos + 1
-				string pe_unw = ".unwrap()"
+				string pe_unw = ".unwrap().0"
 				string pe_unwrap_code = s_join([pe_expr_code, pe_unw])
 				return make_result(move pe_unwrap_code, pe_after)
 

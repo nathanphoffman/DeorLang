@@ -112,7 +112,7 @@ Open an indented block when followed by a newline.
 | `as` | Shape-derived binding |
 | `with` | Record update (inside `as` binding) |
 | `at` | Index access and write (`list at idx`, `list at idx = val`, `list at end = val`) |
-| `end` | Reserved sentinel — "end of list" in `list at end = val` |
+| `end` | Reserved keyword — "end of list" in `list at end = val`, cannot be used as a variable name |
 | `of` | Element type connector in shape declarations (`list of Room`) |
 | `to` | Return type connector in func shapes (`func of Room to bool`) |
 
@@ -131,4 +131,4 @@ Open an indented block when followed by a newline.
 | `list` | Parameterized list — always used inside a `shape` declaration |
 | `func` | Parameterized function type — always used inside a `shape` declaration |
 
-**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a for-loop-only construct — it is not a callable function and cannot be used outside a `for` header (e.g. assigned to a variable or passed as an argument). `end` is a reserved sentinel — only valid as `list at end = val`.
+**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a for-loop-only construct — it is not a callable function and cannot be used outside a `for` header (e.g. assigned to a variable or passed as an argument). `end` is a reserved keyword — only valid as `list at end = val`, and cannot be used as a variable name. `valid` is a reserved keyword — only valid after `is` or `is not`.

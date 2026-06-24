@@ -416,7 +416,7 @@ fn ParsedInt parse_int(string src)
 
 ```
 ParsedInt parsed = parse_int(user_input)
-if parsed valid
+if parsed is valid
     int val = (avow parsed)
     print(val)
 ```

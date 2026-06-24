@@ -39,25 +39,25 @@ fn void main()
     # program starts here
 ```
 
-Void functions may use `return` with no value for early exit:
+Void functions fall through to the end — `return` is not valid inside a void function. For loop control, use `continue` to skip to the next iteration or `break` to exit the loop early:
 
 ```
 shape itemList = list of Item
 
 fn void process(itemList items, bool skip_invalid)
     for item in items
-        (valid) in item
-        if skip_invalid and not valid
-            return
+        (active) in item
+        if skip_invalid and not active
+            continue
         handle(item)
 ```
 
 ```rust
 fn process(items: Vec<Item>, skip_invalid: bool) {
     for item in &items {
-        let valid = item.valid;
-        if skip_invalid && !valid {
-            return;
+        let active = item.active;
+        if skip_invalid && !active {
+            continue;
         }
         handle(item.clone());
     }
@@ -154,7 +154,7 @@ fn Roll find_best(rollList rolls)
     Roll best
 
     for roll in rolls
-        if roll valid
+        if roll is valid
             best = roll
 
     return best    # not valid if rolls is empty or all not valid

@@ -77,6 +77,8 @@ fn string word_to_kind(string word)
 		return "KW_BLOCK"
 	if word is "const"
 		return "KW_CONST"
+	if word is "end"
+		return "KW_END"
 	return "IDENT"
 
 fn ParseResult scan_word(strList chars, int char_index, int char_count)

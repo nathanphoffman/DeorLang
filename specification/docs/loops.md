@@ -154,16 +154,16 @@ while true {
 
 ```
 for item in items
-    valid in item
-    if not valid
+    (active) in item
+    if not active
         continue
     process(item)
 ```
 
 ```rust
 for item in &items {
-    let valid = item.valid;
-    if !valid {
+    let active = item.active;
+    if !active {
         continue;
     }
     process(item);

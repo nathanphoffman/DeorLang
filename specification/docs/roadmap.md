@@ -3,6 +3,21 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 # Validation Audit
  ---
 
+- should name order matter?
+#2 — Struct construction order
+                                 
+  The docs say field order doesn't matter for Type name = (fields) — matched by name. That's wrong. The codegen is positional: it pairs the first variable in your (...) with the first field
+  in the struct definition, second with second, etc.
+
+  The as form (name as (fields)) actually IS name-matched — that one works as documented. Only the typed form Type name = (...) is positional.
+
+  So right now, Room room = (name, area) when the struct defines area first silently generates Room { area: name.clone(), name: area.clone() } — wrong values in wrong fields, no error. Two
+  options:
+
+  1. Fix the codegen — make the typed form do name-matching the same way as does
+  2. Fix the docs — document that Type name = (fields) is positional and field order must match the struct declaration
+
+
 - find out what type the tasks defines through the t/T replacement logic
 
 - Give better examples of naming for cx and ex
@@ -20,6 +35,44 @@ string fln_ind = "    "
 		string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
 		string sdcl_ob = " {\n"
 		string sdcl_cb = "\n}\n\n"
+
+# New audit findings june 24th
+ 6. Banned Rust type names — Option, Vec, Box, Rc, Arc, Result as identifiers are explicitly rejected with a validator error. Not mentioned anywhere in the docs.
+
+  7. not x is y order is banned — must write x is not y. Validator enforces this with a specific error message. Docs never mention this restriction.
+
+  8. Parameter name cannot match its type name — fn void process(Room room) is a transpiler error. Not in the docs at all.
+
+  9. as move form is rejected — a as move b produces a specific error: "as already transfers ownership." Not documented.
+
+  10. move ident in multi-arg calls counts as a named variable — do_something(move big_list, other) is valid. Docs don't mention this.
+
+  11. Old import form (names) in "path" — still parsed by the importer alongside the new import "path" form. Undocumented.
+
+  12. Parameterized imports (where T = Type) are a general language feature — only documented as a library-specific thing in libs.md. The importer supports it for any file.
+
+  13. Macros can be defined inside function bodies — they're locally scoped and disappear when the block closes. Docs say macros are "top-level declarations" only.
+
+  14. Duplicate top-level names are a hard error — docs imply it's silent first-wins (collision resolution). It's actually a transpiler error.
+
+  15. Validator type cannot use a list shape as its base type — type Foo(intList val) is banned. Not in the docs.
+
+  ---
+  Documented But Not Enforced
+
+  16. empty reassignment ban — rooms = empty after initial declaration is supposed to be an error but is not caught.
+
+  17. avow on non-validator variables — docs say transpiler error, but the transpiler just emits .unwrap() on anything.
+
+  ---
+  Minor / Already Noted
+
+  18. const — still fully live in lexer and codegen despite being "abandoned." Removing it from the docs (as done in the last session) is correct, but it still works if someone uses it.
+
+  19. is_snake casing — accepts single lowercase words with no underscores (e.g. myfunc). Both is_camel and is_snake accept a bare lowercase word.
+
+
+
 
 # New Questions
 

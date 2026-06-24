@@ -22,7 +22,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 		if after_at < token_count
 			Token at_next_token = tokens at after_at
 			(kind, value) in at_next_token
-			if kind is "IDENT" and value is "end"
+			if kind is "KW_END"
 				int val_pos = after_at + 2
 				macro_run gen_expr_r
 				Token val_tok = tokens at val_pos

@@ -709,6 +709,10 @@ fn word_to_kind(word: String) -> String {
         // transpiler-deor/importer/lexer/word_token.deor
         return "KW_CONST".to_string();
     }
+    if word == "end" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_END".to_string();
+    }
     return "IDENT".to_string();
 }
 
@@ -1038,13 +1042,13 @@ fn scan_import_where(tokens: Vec<Token>, pos: i32) -> ParseResult {
     if concrete_pos < token_count {
         // transpiler-deor/importer/scan.deor
         let mut where_tok: Token = tokens[where_pos as usize].clone();
-        let mut eq_tok: Token = tokens[eq_pos as usize].clone();
-        let mut concrete_tok: Token = tokens[concrete_pos as usize].clone();
         let kind = where_tok.kind.clone();
         let value = where_tok.value.clone();
         let mut is_where: bool = kind == "IDENT" && value == "where".clone();
         if is_where {
             // transpiler-deor/importer/scan.deor
+            let mut eq_tok: Token = tokens[eq_pos as usize].clone();
+            let mut concrete_tok: Token = tokens[concrete_pos as usize].clone();
             let kind = eq_tok.kind.clone();
             let mut is_eq: bool = kind == "EQUALS".clone();
             if is_eq {
@@ -3846,7 +3850,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
                 let new_pos = pe_expr_r.new_pos;
                 let pe_expr_code = code;
                 let pe_after = new_pos + 1;
-                let mut pe_unw: String = ".unwrap()".to_string();
+                let mut pe_unw: String = ".unwrap().0".to_string();
                 let mut pe_unwrap_code: String = [pe_expr_code.as_str(), pe_unw.as_str()].concat();
                 return make_result(pe_unwrap_code, pe_after.clone());
             }
@@ -5030,7 +5034,7 @@ fn gen_list_mutation_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut at_next_token: Token = tokens[after_at as usize].clone();
             let kind = at_next_token.kind.clone();
             let value = at_next_token.value.clone();
-            if kind == "IDENT" && value == "end" {
+            if kind == "KW_END" {
                 // transpiler-deor/codegen/decl/stmt/list_mutation.deor
                 let mut val_pos: i32 = after_at + 2.clone();
                 // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)

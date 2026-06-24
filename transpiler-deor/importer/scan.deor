@@ -22,7 +22,6 @@ fn ParseResult scan_import_new(tokenList tokens, int pos)
 fn ParseResult scan_import_where(tokenList tokens, int pos)
 	int token_count = len(tokens)
 	int where_pos = pos
-	int replacement_pos = pos + 1
 	int eq_pos = pos + 2
 	int concrete_pos = pos + 3
 	if concrete_pos < token_count
@@ -32,18 +31,12 @@ fn ParseResult scan_import_where(tokenList tokens, int pos)
 		if is_where
 			Token eq_tok = tokens at eq_pos
 			Token concrete_tok = tokens at concrete_pos
-			Token replacement_tok = tokens at replacement_pos
 			(kind) in eq_tok
 			bool is_eq = kind is "EQUALS"
 			if is_eq
-				(value) in replacement_tok
-				replacement_value as value
-
 				(value) in concrete_tok
 				int after_where = concrete_pos + 1
-
-				replace_with = replacement + "|" + value
-				return make_result(replace_with, after_where)
+				return make_result(value, after_where)
 	string emp = ""
 	return make_result(emp, pos)
 

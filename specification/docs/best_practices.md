@@ -29,7 +29,7 @@ fn int sum_rolls(rollResultList rolls)
     for roll in rolls
         (value) in roll
         val as 0
-        if value valid
+        if value is valid
             val = (avow value)
         sum = sum + val
 
@@ -72,6 +72,26 @@ fn RollResult roll_die(Die die)
 
     return result
 ```
+---
+## avow
+
+Always capture `avow` into its own binding — do not use `(avow val)` inline inside a larger expression.
+
+**Recommended:**
+```
+if result is valid
+    int val = (avow result)
+    total = total + val
+```
+
+**Avoid:**
+```
+if result is valid
+    total = total + (avow result)
+```
+
+Also always guard `avow` with an `is valid` check immediately above it, or add a comment explaining why the value is guaranteed valid at that point.
+
 ---
 ## Naming External Libs
 Because Deor does not support third-party importing, the standard convention is to copy Deor files into the `lib/` folder. The following prefix pattern is recommended.

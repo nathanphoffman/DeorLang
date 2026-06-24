@@ -84,20 +84,20 @@ let area: Option<Squarefeet> = Squarefeet::new(-1);
 
 
 
-### Validator Types / valid / not valid
+### `is valid` / `is not valid`
 
 A validator type variable is either **valid** (`Some` under the hood — predicate passed) or **not valid** (`None` under the hood — predicate failed or no value assigned). There is no keyword to force an invalid state. A variable becomes not valid in exactly two ways:
 
 - Declared without a value: `Squarefeet sqft` — not valid until assigned
 - Assigned a value that fails the predicate: `Squarefeet sqft = -10` — predicate fails, not valid
 
-Check with `valid` / `not valid`:
+Check with `is valid` / `is not valid`:
 
 ```
 Squarefeet sqft = 9
-if sqft valid
+if sqft is valid
     int val = (avow sqft)
-if sqft not valid
+if sqft is not valid
     print("no value")
 ```
 
@@ -119,12 +119,12 @@ if my_string is not "" # correct
 if my_string           # transpiler error
 ```
 
-Validator types use `valid` / `not valid` — not bare truthiness:
+Validator types use `is valid` / `is not valid` — not bare truthiness:
 
 ```
-if sqft valid           # correct
-if sqft not valid       # correct
-if sqft                 # transpiler error — use valid/not valid
+if sqft is valid        # correct
+if sqft is not valid    # correct
+if sqft                 # transpiler error — use is valid/is not valid
 ```
 
 ```rust
@@ -166,7 +166,7 @@ let mut rooms: Vec<Room> = Vec::new();
 
 ### Forced Unwrap — `avow`
 
-`(avow val)` is Deor's equivalent of Rust's `.unwrap()` — it asserts the value is `Some` and extracts the underlying primitive. Panics at runtime if not valid. Use only when you are certain the value is valid — typically inside an `if val valid` block. Using `avow` on a non-validator-type variable is a transpiler error.
+`(avow val)` is Deor's equivalent of Rust's `.unwrap()` — it asserts the value is `Some` and extracts the underlying primitive. Panics at runtime if not valid. Use only when you are certain the value is valid — typically inside an `if val is valid` block. Using `avow` on a non-validator-type variable is a transpiler error.
 
 The parentheses are always required — this is intentional. Without them, `avow val + 2` would be ambiguous: does `avow` bind to `val` or to `val + 2`? The parens make the boundary explicit, which matters most when `avow` is used inline inside a larger expression like `(avow value) + 2`. Writing `avow val` on its own line would be unambiguous, but the rule is uniform: parens always.
 
@@ -176,7 +176,7 @@ The parentheses are always required — this is intentional. Without them, `avow
 
 ```
 Roll roll = roll_die(d20)
-if roll valid
+if roll is valid
     int val = (avow roll)          # need the raw int — use avow
     bool crit = is_critical(roll)  # function takes Roll — pass directly, no avow
 ```
@@ -201,7 +201,7 @@ let sum: i32 = value.unwrap().0 + 2;
 ---
 ### Validator Types in Structs
 
-Struct fields typed as a validator type are `Option<T>` under the hood. Extracting them with `in` preserves the Option — the extracted variable must be checked with `valid` / `not valid` before use.
+Struct fields typed as a validator type are `Option<T>` under the hood. Extracting them with `in` preserves the Option — the extracted variable must be checked with `is valid` / `is not valid` before use.
 
 ```
 struct Room
@@ -211,7 +211,7 @@ struct Room
 
 ```
 (area, max_capacity) in room
-if max_capacity valid
+if max_capacity is valid
     int cap = (avow max_capacity)
 ```
 
@@ -256,11 +256,11 @@ fn find_crit(rolls: &Vec<RollResult>) -> Option<Roll> {
 }
 ```
 
-The caller checks with `valid`:
+The caller checks with `is valid`:
 
 ```
 Roll crit = find_crit(rolls)
-if crit valid
+if crit is valid
     int bonus = (avow crit)
 ```
 
@@ -268,7 +268,7 @@ if crit valid
 
 **Conversion notes:**
 - Constructor becomes `fn new(n: T) -> Option<Self>` — never panics, returns `None` on predicate failure.
-- `valid` → `.is_some()`, `not valid` → `.is_none()`.
+- `is valid` → `.is_some()`, `is not valid` → `.is_none()`.
 - `(avow val)` → `.unwrap().0`.
 - Equality (`is` / `is not`) transpiles to `==` / `!=` in Rust and falls through to `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
 - `and` / `or` / `not` map to `&&` / `||` / `!`.
