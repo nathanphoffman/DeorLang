@@ -1,0 +1,63 @@
+
+# Validates `Type var = move (field1, field2, ...)` struct construction.
+# Fires when the current IDENT token is a known struct type and the following
+# tokens form a move-construction pattern. Checks that the provided variable
+# names match the struct's declared fields exactly.
+macro check_struct_construction
+	if paren_depth is 0
+		int cc1 = pos + 1
+		int cc2 = pos + 2
+		int cc3 = pos + 3
+		int cc4 = pos + 4
+		if cc4 < token_count
+			Token cc_t1 = tokens at cc1
+			Token cc_t2 = tokens at cc2
+			Token cc_t3 = tokens at cc3
+			Token cc_t4 = tokens at cc4
+			(kind) in cc_t1
+			string cc_k1 = kind
+			(kind) in cc_t2
+			string cc_k2 = kind
+			(kind) in cc_t3
+			string cc_k3 = kind
+			(kind) in cc_t4
+			string cc_k4 = kind
+			bool cc_is_var = cc_k1 is "IDENT"
+			bool cc_is_eq = cc_k2 is "EQUALS"
+			bool cc_is_mv = cc_k3 is "KW_GIVEUP"
+			bool cc_is_lp = cc_k4 is "LPAREN"
+			bool cc_match = cc_is_var and cc_is_eq
+			cc_match = cc_match and cc_is_mv
+			cc_match = cc_match and cc_is_lp
+			if cc_match
+				string cc_sep = ","
+				string cc_fields_str = find_struct_field_str(struct_field_reg, cur_val)
+				bool cc_is_struct = cc_fields_str is not ""
+				if cc_is_struct
+					strList cc_expected = s_split(cc_fields_str, cc_sep)
+					int cc_exp_count = len(cc_expected)
+					strList cc_provided = empty
+					int cc_scan = cc4 + 1
+					bool cc_scanning = true
+					for if cc_scanning
+						if cc_scan >= token_count
+							cc_scanning = false
+						else
+							Token cc_stok = tokens at cc_scan
+							(kind, value) in cc_stok
+							if kind is "RPAREN"
+								cc_scanning = false
+							else if kind is "IDENT"
+								cc_provided at end = value
+							cc_scan = cc_scan + 1
+					int cc_prov_count = len(cc_provided)
+					bool cc_wrong_count = cc_prov_count is not cc_exp_count
+					if cc_wrong_count
+						errors at end = val_err(tok, lbl_struct, rule_struct_field_count)
+					else
+						int cc_fi = 0
+						for if cc_fi < cc_prov_count
+							string cc_field = cc_provided at cc_fi
+							if not list_has(cc_expected, cc_field)
+								errors at end = val_err(tok, lbl_struct, rule_struct_field_name)
+							cc_fi = cc_fi + 1

@@ -1,6 +1,16 @@
 
 macro prescan_check_struct_fields
 	if kind is "KW_STRUCT"
+		# capture struct name
+		string sf_struct_name = ""
+		int sf_name_p = pre_i + 1
+		if sf_name_p < token_count
+			Token sf_nm = tokens at sf_name_p
+			(kind, value) in sf_nm
+			if kind is "IDENT"
+				sf_struct_name = value
+
+		# advance past struct name to INDENT
 		int sf_pos = pre_i + 1
 		for if sf_pos < token_count
 			Token sf_tok = tokens at sf_pos
@@ -9,6 +19,9 @@ macro prescan_check_struct_fields
 				break
 			sf_pos = sf_pos + 1
 		sf_pos = sf_pos + 1
+
+		# walk struct body: validate naming and collect field names
+		strList sf_fields = empty
 		for if sf_pos < token_count
 			Token sf_tok = tokens at sf_pos
 			(kind) in sf_tok
@@ -24,4 +37,13 @@ macro prescan_check_struct_fields
 							errors at end = val_err(field_name_tok, lbl_field, rule_min3)
 						if not is_snake(value)
 							errors at end = val_err(field_name_tok, lbl_field, rule_snake)
+						sf_fields at end = value
 			sf_pos = sf_pos + 1
+
+		# register struct → field list for construction validation
+		bool sf_has_name = sf_struct_name is not ""
+		if sf_has_name
+			string sf_sep = ","
+			string sf_fields_str = s_join_with(sf_fields, sf_sep)
+			struct_field_reg at end = sf_struct_name
+			struct_field_reg at end = sf_fields_str

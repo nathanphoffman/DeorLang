@@ -32,3 +32,7 @@ macro define_errors
 	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
 	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"
 	string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"
+
+	# struct construction rules
+	string rule_struct_field_count = "wrong number of fields in struct construction — all fields must be provided"
+	string rule_struct_field_name = "unknown field name in struct construction — variable name does not match any field in this struct"

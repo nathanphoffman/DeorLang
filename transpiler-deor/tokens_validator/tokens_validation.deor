@@ -31,6 +31,7 @@ fn void validate_tokens(TokensRef tokens)
 	# pre-scan: collect shape names + all decl names + validate struct/enum members
 	strList shape_names = empty
 	strList decl_names = empty
+	strList struct_field_reg = empty
 	int pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
@@ -114,6 +115,7 @@ fn void validate_tokens(TokensRef tokens)
 			macro_run check_var_decl
 			macro_run check_bad_stmt
 			macro_run check_bracket_indexing
+			macro_run check_struct_construction
 
 		macro_run check_void_var
 		macro_run check_valid_placement

@@ -94,7 +94,9 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	else
 		val_pos as iter_pos
 		macro_run gen_expr_r
-		range_expr as val_code
+		string amp = "&"
+		string collection_ref = s_cat(amp, val_code)
+		range_expr = collection_ref
 		body_tok_pos = val_end
 
 	int blk_start = skip_to_body_ref(tokens, body_tok_pos)

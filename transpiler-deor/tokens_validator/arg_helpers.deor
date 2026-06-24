@@ -1,4 +1,19 @@
 
+# Looks up a struct name in the alternating [name, "field1,field2"] registry.
+# Returns the comma-separated field string, or "" if the name is not found.
+fn string find_struct_field_str(strList reg, string name)
+	int reg_count = len(reg)
+	int rdx = 0
+	for if rdx < reg_count
+		string entry = reg at rdx
+		if entry is name
+			int val_pos = rdx + 1
+			if val_pos < reg_count
+				string fields = reg at val_pos
+				return fields
+		rdx = rdx + 2
+	return ""
+
 fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 	int token_count = len(tokens)
 	int check_pos = scan_pos

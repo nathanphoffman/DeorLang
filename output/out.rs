@@ -1771,6 +1771,27 @@ fn is_snake(name: String) -> bool {
 }
 
 // transpiler-deor/tokens_validator/arg_helpers.deor
+fn find_struct_field_str(reg: Vec<String>, name: String) -> String {
+    // transpiler-deor/tokens_validator/arg_helpers.deor
+    let mut reg_count: i32 = (reg.len() as i32);
+    let mut rdx: i32 = 0;
+    while rdx < reg_count {
+        // transpiler-deor/tokens_validator/arg_helpers.deor
+        let mut entry: String = reg[rdx as usize].clone();
+        if entry == name {
+            // transpiler-deor/tokens_validator/arg_helpers.deor
+            let mut val_pos: i32 = rdx + 1.clone();
+            if val_pos < reg_count {
+                // transpiler-deor/tokens_validator/arg_helpers.deor
+                let mut fields: String = reg[val_pos as usize].clone();
+                return fields;
+            }
+        }
+        rdx = rdx + 2;
+    }
+    return "".to_string();
+}
+
 fn arg_is_named(tokens: TokensRef, scan_pos: i32, kind: String) -> bool {
     // transpiler-deor/tokens_validator/arg_helpers.deor
     let mut token_count: i32 = (tokens.len() as i32);
@@ -2081,10 +2102,13 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
     let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
+    let mut rule_struct_field_count: String = "wrong number of fields in struct construction — all fields must be provided".to_string();
+    let mut rule_struct_field_name: String = "unknown field name in struct construction — variable name does not match any field in this struct".to_string();
     // transpiler-deor/tokens_validator/tokens_validation.deor
     let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_USING".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
     let mut shape_names: Vec<String> = Vec::new();
     let mut decl_names: Vec<String> = Vec::new();
+    let mut struct_field_reg: Vec<String> = Vec::new();
     let mut pre_i: i32 = 0;
     while pre_i < token_count {
         // transpiler-deor/tokens_validator/tokens_validation.deor
@@ -2150,6 +2174,18 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: prescan_check_struct_fields (transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor)
         if kind == "KW_STRUCT" {
             // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+            let mut sf_struct_name: String = "".to_string();
+            let mut sf_name_p: i32 = pre_i + 1.clone();
+            if sf_name_p < token_count {
+                // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                let mut sf_nm: Token = tokens[sf_name_p as usize].clone();
+                let kind = sf_nm.kind.clone();
+                let value = sf_nm.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                    sf_struct_name = value;
+                }
+            }
             let mut sf_pos: i32 = pre_i + 1.clone();
             while sf_pos < token_count {
                 // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
@@ -2162,6 +2198,7 @@ fn validate_tokens(tokens: TokensRef) {
                 sf_pos = sf_pos + 1;
             }
             sf_pos = sf_pos + 1;
+            let mut sf_fields: Vec<String> = Vec::new();
             while sf_pos < token_count {
                 // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
                 let mut sf_tok: Token = tokens[sf_pos as usize].clone();
@@ -2188,10 +2225,19 @@ fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
                                 errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_snake.clone()).clone());
                             }
+                            sf_fields.push(value.clone());
                         }
                     }
                 }
                 sf_pos = sf_pos + 1;
+            }
+            let mut sf_has_name: bool = sf_struct_name != "".clone();
+            if sf_has_name {
+                // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                let mut sf_sep: String = ",".to_string();
+                let mut sf_fields_str: String = s_join_with(sf_fields.clone(), sf_sep.clone());
+                struct_field_reg.push(sf_struct_name.clone());
+                struct_field_reg.push(sf_fields_str.clone());
             }
         }
         // macro: prescan_check_enum_variants (transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor)
@@ -2808,6 +2854,88 @@ fn validate_tokens(tokens: TokensRef) {
                 if kind == "LBRACKET" {
                     // transpiler-deor/tokens_validator/macros/check_bracket_indexing.deor
                     errors.push(val_err(tok.clone(), lbl_var.clone(), rule_bracket_index.clone()).clone());
+                }
+            }
+            // macro: check_struct_construction (transpiler-deor/tokens_validator/macros/check_struct_construction.deor)
+            if paren_depth == 0 {
+                // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                let mut cc1: i32 = pos + 1.clone();
+                let mut cc2: i32 = pos + 2.clone();
+                let mut cc3: i32 = pos + 3.clone();
+                let mut cc4: i32 = pos + 4.clone();
+                if cc4 < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                    let mut cc_t1: Token = tokens[cc1 as usize].clone();
+                    let mut cc_t2: Token = tokens[cc2 as usize].clone();
+                    let mut cc_t3: Token = tokens[cc3 as usize].clone();
+                    let mut cc_t4: Token = tokens[cc4 as usize].clone();
+                    let kind = cc_t1.kind.clone();
+                    let mut cc_k1: String = kind.clone();
+                    let kind = cc_t2.kind.clone();
+                    let mut cc_k2: String = kind.clone();
+                    let kind = cc_t3.kind.clone();
+                    let mut cc_k3: String = kind.clone();
+                    let kind = cc_t4.kind.clone();
+                    let mut cc_k4: String = kind.clone();
+                    let mut cc_is_var: bool = cc_k1 == "IDENT".clone();
+                    let mut cc_is_eq: bool = cc_k2 == "EQUALS".clone();
+                    let mut cc_is_mv: bool = cc_k3 == "KW_GIVEUP".clone();
+                    let mut cc_is_lp: bool = cc_k4 == "LPAREN".clone();
+                    let mut cc_match: bool = cc_is_var && cc_is_eq.clone();
+                    cc_match = cc_match && cc_is_mv;
+                    cc_match = cc_match && cc_is_lp;
+                    if cc_match {
+                        // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                        let mut cc_sep: String = ",".to_string();
+                        let mut cc_fields_str: String = find_struct_field_str(struct_field_reg.clone(), cur_val.clone());
+                        let mut cc_is_struct: bool = cc_fields_str != "".clone();
+                        if cc_is_struct {
+                            // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                            let mut cc_expected: Vec<String> = s_split(cc_fields_str.clone(), cc_sep.clone());
+                            let mut cc_exp_count: i32 = (cc_expected.len() as i32);
+                            let mut cc_provided: Vec<String> = Vec::new();
+                            let mut cc_scan: i32 = cc4 + 1.clone();
+                            let mut cc_scanning: bool = true;
+                            while cc_scanning {
+                                // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                if cc_scan >= token_count {
+                                    // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                    cc_scanning = false;
+                                } else {
+                                    // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                    let mut cc_stok: Token = tokens[cc_scan as usize].clone();
+                                    let kind = cc_stok.kind.clone();
+                                    let value = cc_stok.value.clone();
+                                    if kind == "RPAREN" {
+                                        // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                        cc_scanning = false;
+                                    } else if kind == "IDENT" {
+                                        // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                        cc_provided.push(value.clone());
+                                    }
+                                    cc_scan = cc_scan + 1;
+                                }
+                            }
+                            let mut cc_prov_count: i32 = (cc_provided.len() as i32);
+                            let mut cc_wrong_count: bool = cc_prov_count != cc_exp_count.clone();
+                            if cc_wrong_count {
+                                // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                errors.push(val_err(tok.clone(), lbl_struct.clone(), rule_struct_field_count.clone()).clone());
+                            } else {
+                                // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                let mut cc_fi: i32 = 0;
+                                while cc_fi < cc_prov_count {
+                                    // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                    let mut cc_field: String = cc_provided[cc_fi as usize].clone();
+                                    if !list_has(cc_expected.clone(), cc_field.clone()) {
+                                        // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                        errors.push(val_err(tok.clone(), lbl_struct.clone(), rule_struct_field_name.clone()).clone());
+                                    }
+                                    cc_fi = cc_fi + 1;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -4716,7 +4844,9 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let val_code = code;
         let val_end = new_pos;
         // transpiler-deor/codegen/decl/stmt/for.deor
-        let mut range_expr = val_code;
+        let mut amp: String = "&".to_string();
+        let mut collection_ref: String = s_cat(amp.clone(), val_code.clone());
+        range_expr = collection_ref;
         body_tok_pos = val_end;
     }
     let mut blk_start: i32 = skip_to_body_ref(tokens.clone(), body_tok_pos.clone());
