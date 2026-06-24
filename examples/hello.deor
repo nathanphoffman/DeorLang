@@ -126,34 +126,34 @@ fn void main()
 	label as "HOYO"
 	macro_run log_check
 	
-	x as 10
-	y as 20
+	xyy as 10
+	yyy as 20
 
 	kcount as (2.0 *9 + 3) + 2.0
 	print(kcount)
 
-    z as 120
-	print(z)
+    zzz as 120
+	print(zzz)
 
 	print("test")
 
-	int sum = x + y
+	int sum = xyy + yyy
 
 	if sum > 40
-		print(y)
+		print(yyy)
 	else if sum > 25
 		print(sum)
 	else
-		print(x)
+		print(xyy)
 
 	two as 2
 	twelve as 12
-	for i in range(two,twelve)
-		print(i)
+	for idx in range(two,twelve)
+		print(idx)
 
 	hello as 1
 	world as 2
-	t as (hello,world)
+	ttt as (hello,world)
 
 	#block
 	print("block works")
@@ -161,7 +161,7 @@ fn void main()
 
 	print(inner_block)
 
-	(world) in t
+	(world) in ttt
 
 	print(world)
 

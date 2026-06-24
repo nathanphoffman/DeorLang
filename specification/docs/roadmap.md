@@ -5,10 +5,22 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 - KW_GIVEUP should probably be used for move
 
+- there is a ton of code like the following that is repetitive, we should consider making the tokens they use like ": "  curly braces, the indent, all in one lookup like file for rustisms.
+
+string fln_ind = "    "
+				string fln_sep = ": "
+				string fln_com = ","
+				field_lines at end = s_join([fln_ind, field_name, fln_sep, rust_type, fln_com])
+				cur_next_ref() with tokens
+		string fields_code = s_join_nl(field_lines)
+		string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
+		string sdcl_ob = " {\n"
+		string sdcl_cb = "\n}\n\n"
 
 # New Questions
 
 - Should we switch mappings to enums?
+
   - ask ai what this means: for move loop form — experimental.md shows it without parentheses; transpiler requires
   them
 
@@ -24,7 +36,6 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
  
   - func, to, end keywords — spec lists them as reserved; transpiler detects them by
   string-matching plain IDENTs (fragile)
-
 
 
 ## Audit Documentation

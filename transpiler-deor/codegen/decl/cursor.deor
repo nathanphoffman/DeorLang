@@ -4,14 +4,14 @@
 fn TokenCursor cur_at(tokenList tokens, int pos)
 	int token_count = len(tokens)
 	Token current = tokens at pos
-	c as (token_count, pos, current)
-	return c
+	cur as (token_count, pos, current)
+	return cur
 
 # Advances the cursor by one position and updates `current` to the new token.
 # Returns the same cursor value unchanged if already at the end of the stream.
-# Called inside `using c` blocks to step through tokens one at a time.
-fn TokenCursor cur_next(TokenCursor c, tokenList tokens)
-	(token_count, pos, current) in c
+# Called inside `using cur` blocks to step through tokens one at a time.
+fn TokenCursor cur_next(TokenCursor cur, tokenList tokens)
+	(token_count, pos, current) in cur
 	int pos = pos + 1
 	if pos < token_count
 		Token current = tokens at pos
@@ -19,47 +19,47 @@ fn TokenCursor cur_next(TokenCursor c, tokenList tokens)
 	return (token_count, pos, current)
 
 # Returns true when the cursor has consumed all tokens. Guards loop conditions
-# in `using c` blocks to prevent out-of-bounds reads.
-fn bool c_at_end(TokenCursor c)
-	(token_count, pos) in c
+# in `using cur` blocks to prevent out-of-bounds reads.
+fn bool c_at_end(TokenCursor cur)
+	(token_count, pos) in cur
 	return pos >= token_count
 
 # Advances the cursor past the NEWLINE and INDENT that follow a declaration header,
 # positioning it at the first statement token inside the block body.
-fn TokenCursor cur_skip_to_body(TokenCursor c, tokenList tokens)
-	(pos) in c
+fn TokenCursor cur_skip_to_body(TokenCursor cur, tokenList tokens)
+	(pos) in cur
 	int body_pos = adv_nl(pos, tokens)
 	body_pos = adv_indent(body_pos, tokens)
 	return cur_at(tokens, body_pos)
 
 # Returns the token at current_pos + `offset` without advancing the cursor.
 # Allows one-token (or multi-token) look-ahead during parsing without mutating state.
-fn Token cur_peek(TokenCursor c, tokenList tokens, int offset)
-	(pos) in c
+fn Token cur_peek(TokenCursor cur, tokenList tokens, int offset)
+	(pos) in cur
 	int peek_pos = pos + offset
 	return tokens at peek_pos
 
 fn TokenCursor cur_at_ref(TokensRef tokens, int pos)
 	int token_count = len(tokens)
 	Token current = tokens at pos
-	c as (token_count, pos, current)
-	return c
+	cur as (token_count, pos, current)
+	return cur
 
-fn TokenCursor cur_next_ref(TokenCursor c, TokensRef tokens)
-	(token_count, pos, current) in c
+fn TokenCursor cur_next_ref(TokenCursor cur, TokensRef tokens)
+	(token_count, pos, current) in cur
 	int pos = pos + 1
 	if pos < token_count
 		Token current = tokens at pos
 		return (token_count, pos, current)
 	return (token_count, pos, current)
 
-fn TokenCursor cur_skip_to_body_ref(TokenCursor c, TokensRef tokens)
-	(pos) in c
+fn TokenCursor cur_skip_to_body_ref(TokenCursor cur, TokensRef tokens)
+	(pos) in cur
 	int body_pos = adv_nl_ref(pos, tokens)
 	body_pos = adv_indent_ref(body_pos, tokens)
 	return cur_at_ref(tokens, body_pos)
 
-fn Token cur_peek_ref(TokenCursor c, TokensRef tokens, int offset)
-	(pos) in c
+fn Token cur_peek_ref(TokenCursor cur, TokensRef tokens, int offset)
+	(pos) in cur
 	int peek_pos = pos + offset
 	return tokens at peek_pos

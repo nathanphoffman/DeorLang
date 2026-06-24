@@ -74,14 +74,14 @@ fn c_alnum(character: String) -> bool {
 }
 
 // transpiler-deor/lib/string.deor
-fn s_upper_char(ch: String) -> bool {
+fn s_upper_char(chr: String) -> bool {
     // transpiler-deor/lib/string.deor
-    ch.chars().next().map(|c| c.is_uppercase()).unwrap_or(false)
+    chr.chars().next().map(|c| c.is_uppercase()).unwrap_or(false)
 }
 
-fn s_lower_char(ch: String) -> bool {
+fn s_lower_char(chr: String) -> bool {
     // transpiler-deor/lib/string.deor
-    ch.chars().next().map(|c| c.is_lowercase()).unwrap_or(false)
+    chr.chars().next().map(|c| c.is_lowercase()).unwrap_or(false)
 }
 
 fn s_cat(left: String, right: String) -> String {
@@ -2599,6 +2599,14 @@ fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor
                                         errors.push(val_err(pn_tok.clone(), lbl_fn.clone(), rule_param_shadow.clone()).clone());
                                     }
+                                    if (value.len() as i32) < 3 {
+                                        // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor
+                                        errors.push(val_err(pn_tok.clone(), lbl_fn.clone(), rule_min3.clone()).clone());
+                                    }
+                                    if !is_snake(value.clone()) {
+                                        // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor
+                                        errors.push(val_err(pn_tok.clone(), lbl_fn.clone(), rule_snake.clone()).clone());
+                                    }
                                     ps_pos = pn_pos;
                                 }
                             }
@@ -2695,6 +2703,27 @@ fn validate_tokens(tokens: TokensRef) {
             }
         }
         // transpiler-deor/tokens_validator/tokens_validation.deor
+        if cur_kind == "KW_FOR" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            let mut fv_pos: i32 = pos + 1.clone();
+            if fv_pos < token_count {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut fv_tok: Token = tokens[fv_pos as usize].clone();
+                let kind = fv_tok.kind.clone();
+                let value = fv_tok.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    if (value.len() as i32) < 3 {
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
+                        errors.push(val_err(fv_tok.clone(), lbl_var.clone(), rule_min3.clone()).clone());
+                    }
+                    if !is_snake(value.clone()) {
+                        // transpiler-deor/tokens_validator/tokens_validation.deor
+                        errors.push(val_err(fv_tok.clone(), lbl_var.clone(), rule_snake.clone()).clone());
+                    }
+                }
+            }
+        }
         if cur_kind == "IDENT" {
             // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut is_fn_decl_name: bool = false;
@@ -2805,6 +2834,17 @@ fn validate_tokens(tokens: TokensRef) {
                     if !is_snake(var_name.clone()) {
                         // transpiler-deor/tokens_validator/macros/check_var_decl.deor
                         errors.push(val_err(tok_one.clone(), lbl_var.clone(), rule_snake.clone()).clone());
+                    }
+                }
+                if one_kind == "KW_AS" {
+                    // transpiler-deor/tokens_validator/macros/check_var_decl.deor
+                    if (cur_val.len() as i32) < 3 {
+                        // transpiler-deor/tokens_validator/macros/check_var_decl.deor
+                        errors.push(val_err(tok.clone(), lbl_var.clone(), rule_min3.clone()).clone());
+                    }
+                    if !is_snake(cur_val.clone()) {
+                        // transpiler-deor/tokens_validator/macros/check_var_decl.deor
+                        errors.push(val_err(tok.clone(), lbl_var.clone(), rule_snake.clone()).clone());
                     }
                 }
             }
@@ -3570,9 +3610,9 @@ fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> Strin
             if reg_count_f == input_count {
                 // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
                 let mut all_match: bool = true;
-                for fi in 0..input_count {
+                for fidx in 0..input_count {
                     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
-                    let mut field: String = fields[fi as usize].clone();
+                    let mut field: String = fields[fidx as usize].clone();
                     let mut found: bool = list_has(reg_fields.clone(), field.clone());
                     if !found {
                         // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
@@ -4354,9 +4394,9 @@ fn make_destruct_code(var_name: String, depth: i32, ctx: RcCtx) -> String {
     let mut fields: Vec<String> = s_split(fields_str.clone(), comma.clone());
     let mut field_count: i32 = (fields.len() as i32);
     let mut lines: Vec<String> = Vec::new();
-    for i in 0..field_count {
+    for idx in 0..field_count {
         // transpiler-deor/codegen/decl/stmt/helpers.deor
-        let mut field: String = fields[i as usize].clone();
+        let mut field: String = fields[idx as usize].clone();
         let mut is_mut: bool = list_has(mut_names.clone(), field.clone());
         let mut mut_kw: String = "".to_string();
         if is_mut {
@@ -5770,15 +5810,15 @@ fn cur_at(tokens: Vec<Token>, pos: i32) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut current: Token = tokens[pos as usize].clone();
-    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
-    return c;
+    let cur = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
+    return cur;
 }
 
-fn cur_next(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
+fn cur_next(cur: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
-    let token_count = c.token_count.clone();
-    let mut pos = c.pos.clone();
-    let mut current = c.current.clone();
+    let token_count = cur.token_count.clone();
+    let mut pos = cur.pos.clone();
+    let mut current = cur.current.clone();
     let mut pos: i32 = pos + 1.clone();
     if pos < token_count {
         // transpiler-deor/codegen/decl/cursor.deor
@@ -5788,24 +5828,24 @@ fn cur_next(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
     return TokenCursor { token_count, pos, current };
 }
 
-fn c_at_end(c: TokenCursor) -> bool {
+fn c_at_end(cur: TokenCursor) -> bool {
     // transpiler-deor/codegen/decl/cursor.deor
-    let token_count = c.token_count.clone();
-    let pos = c.pos.clone();
+    let token_count = cur.token_count.clone();
+    let pos = cur.pos.clone();
     return pos >= token_count;
 }
 
-fn cur_skip_to_body(c: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
+fn cur_skip_to_body(cur: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
-    let pos = c.pos.clone();
+    let pos = cur.pos.clone();
     let mut body_pos: i32 = adv_nl(pos.clone(), tokens.clone());
     body_pos = adv_indent(body_pos.clone(), tokens.clone());
     return cur_at(tokens.clone(), body_pos.clone());
 }
 
-fn cur_peek(c: TokenCursor, tokens: Vec<Token>, offset: i32) -> Token {
+fn cur_peek(cur: TokenCursor, tokens: Vec<Token>, offset: i32) -> Token {
     // transpiler-deor/codegen/decl/cursor.deor
-    let pos = c.pos.clone();
+    let pos = cur.pos.clone();
     let mut peek_pos: i32 = pos + offset.clone();
     return tokens[peek_pos as usize].clone();
 }
@@ -5814,15 +5854,15 @@ fn cur_at_ref(tokens: TokensRef, pos: i32) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
     let mut token_count: i32 = (tokens.len() as i32);
     let mut current: Token = tokens[pos as usize].clone();
-    let c = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
-    return c;
+    let cur = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
+    return cur;
 }
 
-fn cur_next_ref(c: TokenCursor, tokens: TokensRef) -> TokenCursor {
+fn cur_next_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
-    let token_count = c.token_count.clone();
-    let mut pos = c.pos.clone();
-    let mut current = c.current.clone();
+    let token_count = cur.token_count.clone();
+    let mut pos = cur.pos.clone();
+    let mut current = cur.current.clone();
     let mut pos: i32 = pos + 1.clone();
     if pos < token_count {
         // transpiler-deor/codegen/decl/cursor.deor
@@ -5832,17 +5872,17 @@ fn cur_next_ref(c: TokenCursor, tokens: TokensRef) -> TokenCursor {
     return TokenCursor { token_count, pos, current };
 }
 
-fn cur_skip_to_body_ref(c: TokenCursor, tokens: TokensRef) -> TokenCursor {
+fn cur_skip_to_body_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
-    let pos = c.pos.clone();
+    let pos = cur.pos.clone();
     let mut body_pos: i32 = adv_nl_ref(pos.clone(), tokens.clone());
     body_pos = adv_indent_ref(body_pos.clone(), tokens.clone());
     return cur_at_ref(tokens.clone(), body_pos.clone());
 }
 
-fn cur_peek_ref(c: TokenCursor, tokens: TokensRef, offset: i32) -> Token {
+fn cur_peek_ref(cur: TokenCursor, tokens: TokensRef, offset: i32) -> Token {
     // transpiler-deor/codegen/decl/cursor.deor
-    let pos = c.pos.clone();
+    let pos = cur.pos.clone();
     let mut peek_pos: i32 = pos + offset.clone();
     return tokens[peek_pos as usize].clone();
 }

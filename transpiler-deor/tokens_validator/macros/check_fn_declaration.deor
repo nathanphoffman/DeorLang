@@ -29,6 +29,10 @@ macro check_fn_declaration
 							if kind is "IDENT"
 								if value is param_type_val
 									errors at end = val_err(pn_tok, lbl_fn, rule_param_shadow)
+								if len(value) < 3
+									errors at end = val_err(pn_tok, lbl_fn, rule_min3)
+								if not is_snake(value)
+									errors at end = val_err(pn_tok, lbl_fn, rule_snake)
 								ps_pos = pn_pos
 					ps_pos = ps_pos + 1
 		int ret_pos = pos + 1

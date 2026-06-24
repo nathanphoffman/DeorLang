@@ -102,6 +102,17 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run check_crash_args
 		macro_run check_empty_bracket
 
+		if cur_kind is "KW_FOR"
+			int fv_pos = pos + 1
+			if fv_pos < token_count
+				Token fv_tok = tokens at fv_pos
+				(kind, value) in fv_tok
+				if kind is "IDENT"
+					if len(value) < 3
+						errors at end = val_err(fv_tok, lbl_var, rule_min3)
+					if not is_snake(value)
+						errors at end = val_err(fv_tok, lbl_var, rule_snake)
+
 		if cur_kind is "IDENT"
 			bool is_fn_decl_name = false
 			if pos > 1

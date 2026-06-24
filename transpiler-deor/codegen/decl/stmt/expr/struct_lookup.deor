@@ -15,8 +15,8 @@ fn string find_struct_for_fields(strList struct_reg, strList fields)
 			int reg_count_f = len(reg_fields)
 			if reg_count_f is input_count
 				bool all_match = true
-				for fi in range(input_count)
-					string field = fields at fi
+				for fidx in range(input_count)
+					string field = fields at fidx
 					bool found = list_has(reg_fields, field)
 					if not found
 						all_match = false

@@ -18,3 +18,8 @@ macro check_var_decl
 				errors at end = val_err(tok_one, lbl_var, rule_min3)
 			if not is_snake(var_name)
 				errors at end = val_err(tok_one, lbl_var, rule_snake)
+		if one_kind is "KW_AS"
+			if len(cur_val) < 3
+				errors at end = val_err(tok, lbl_var, rule_min3)
+			if not is_snake(cur_val)
+				errors at end = val_err(tok, lbl_var, rule_snake)

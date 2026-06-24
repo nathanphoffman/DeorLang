@@ -26,8 +26,8 @@ fn string make_destruct_code(string var_name, int depth, RcCtx ctx)
 	strList fields = s_split(fields_str, comma)
 	int field_count = len(fields)
 	strList lines = empty
-	for i in range(field_count)
-		string field = fields at i
+	for idx in range(field_count)
+		string field = fields at idx
 		bool is_mut = list_has(mut_names, field)
 		string mut_kw = ""
 		if is_mut
