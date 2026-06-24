@@ -1115,6 +1115,22 @@ fn s_camel(source: String) -> String {
     }
 }
 
+fn s_to_snake(source: String) -> String {
+    // transpiler-deor/importer/t_substitute.deor
+    {
+    	let mut result = String::new();
+    	for (i, c) in source.chars().enumerate() {
+    		if c.is_uppercase() && i > 0 {
+    			result.push('_');
+    			result.push(c.to_lowercase().next().unwrap());
+    		} else {
+    			result.push(c.to_lowercase().next().unwrap());
+    		}
+    	}
+    	result
+    }
+}
+
 fn s_contains(source: String, needle: String) -> bool {
     // transpiler-deor/importer/t_substitute.deor
     source.contains(needle.as_str())
@@ -1159,8 +1175,8 @@ fn apply_t_in_name(name: String, placeholder: String, concrete: String) -> Strin
     }
     let mut pascal_sep: String = ["_", pascal_ph.as_str(), "_"].concat();
     let mut camel_sep: String = ["_", camel_ph.as_str(), "_"].concat();
-    let mut camel_concrete: String = s_camel(concrete.clone());
-    let mut new_sep: String = ["_", camel_concrete.as_str(), "_"].concat();
+    let mut snake_concrete: String = s_to_snake(concrete.clone());
+    let mut new_sep: String = ["_", snake_concrete.as_str(), "_"].concat();
     let mut has_pascal_sep: bool = s_contains(name.clone(), pascal_sep.clone());
     if has_pascal_sep {
         // transpiler-deor/importer/t_substitute.deor
@@ -1222,7 +1238,15 @@ fn replace_t_in_rust_block(content: String, placeholder: String, concrete: Strin
     		}
     		let pascal_sep = format!("_{}_", pascal_ph);
     		let camel_sep = format!("_{}_", camel_ph);
-    		let new_sep = format!("_{}_", camel_c);
+    		let snake_c: String = {
+    			let mut s = String::new();
+    			for (i, c) in concrete.chars().enumerate() {
+    				if c.is_uppercase() && i > 0 { s.push('_'); }
+    				s.push(c.to_lowercase().next().unwrap());
+    			}
+    			s
+    		};
+    		let new_sep = format!("_{}_", snake_c);
     		if word.contains(&pascal_sep) {
     			return word.replace(&pascal_sep, &new_sep);
     		}

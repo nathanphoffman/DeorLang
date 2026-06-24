@@ -20,6 +20,21 @@ fn string s_camel(string source)
 			Some(c) => c.to_lowercase().to_string() + chars.as_str(),
 		}
 
+fn string s_to_snake(string source)
+	rust
+		{
+			let mut result = String::new();
+			for (i, c) in source.chars().enumerate() {
+				if c.is_uppercase() && i > 0 {
+					result.push('_');
+					result.push(c.to_lowercase().next().unwrap());
+				} else {
+					result.push(c.to_lowercase().next().unwrap());
+				}
+			}
+			result
+		}
+
 fn bool s_contains(string source, string needle)
 	rust
 		source.contains(needle.as_str())
@@ -52,8 +67,8 @@ fn string apply_t_in_name(string name, string placeholder, string concrete)
 				return s_cat(camel_concrete, after_ph)
 	string pascal_sep = s_join(["_", pascal_ph, "_"])
 	string camel_sep = s_join(["_", camel_ph, "_"])
-	string camel_concrete = s_camel(concrete)
-	string new_sep = s_join(["_", camel_concrete, "_"])
+	string snake_concrete = s_to_snake(concrete)
+	string new_sep = s_join(["_", snake_concrete, "_"])
 	bool has_pascal_sep = s_contains(name, pascal_sep)
 	if has_pascal_sep
 		return s_replace(name, pascal_sep, new_sep)
@@ -112,7 +127,15 @@ fn string replace_t_in_rust_block(string content, string placeholder, string con
 				}
 				let pascal_sep = format!("_{}_", pascal_ph);
 				let camel_sep = format!("_{}_", camel_ph);
-				let new_sep = format!("_{}_", camel_c);
+				let snake_c: String = {
+					let mut s = String::new();
+					for (i, c) in concrete.chars().enumerate() {
+						if c.is_uppercase() && i > 0 { s.push('_'); }
+						s.push(c.to_lowercase().next().unwrap());
+					}
+					s
+				};
+				let new_sep = format!("_{}_", snake_c);
 				if word.contains(&pascal_sep) {
 					return word.replace(&pascal_sep, &new_sep);
 				}
