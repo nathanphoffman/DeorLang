@@ -152,9 +152,9 @@ Wrap Rust functions in a Deor function using a `rust` block. One thing per block
 - `ex_fn` — personal/third-party Deor lib (e.g. `ex_do_cool_thing`)
 
 ## Key Constraints
-- All `()` args must be named variables when calling with 2+ args; 1-arg calls allow literals
-- Built-ins accept literals regardless of arg count
 - `empty` only valid at declaration for list shapes; not valid for validator types
 - `avow` parens always required and result must be captured to a variable
+- All `()` args must be named variables when calling with 2+ args; 1-arg calls allow literals
+- Built-ins accept literals regardless of arg count
 - `raw` variables: rust block in, rust block out only
 - `as` never takes a type prefix and never rebinds from a plain variable

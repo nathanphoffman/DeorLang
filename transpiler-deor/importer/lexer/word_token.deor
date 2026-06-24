@@ -61,8 +61,6 @@ fn string word_to_kind(string word)
 		return "KW_RUST"
 	if word is "void"
 		return "KW_VOID"
-	if word is "using"
-		return "KW_USING"
 	if word is "with"
 		return "KW_WITH"
 	if word is "move"

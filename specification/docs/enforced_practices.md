@@ -167,10 +167,9 @@ Room room = (area, name)      # correct
 Room room = (name, area)      # also correct — order doesn't matter for structs
 ```
 
-**Incorrect — transpiler errors:**
+**Incorrect — transpiler error:**
 ```
 Room room = ("Office", area)  # literal not allowed — name must be a variable
-room as (area, name)          # no anonymous struct construction — type required
 ```
 
 For tuple capture with `in`, your chosen names are positional but not required to match the function's declared return names:
@@ -204,17 +203,9 @@ fn int double(int val)
 int result = double(5)        # 1 arg — literal allowed
 ```
 
-```
-message as "Parse failed"
-body as input
-Error err = (message, body)
-error_handler(err)            # 1 arg — named, but not required
-```
-
 **Incorrect — transpiler errors:**
 ```
 int result = add(5, 3)               # 2 args — literals not allowed
-error_handler((message, body))       # inline struct construction not allowed (multi-arg context)
 int result = add(num + 1, amt)       # 2 args — expression not allowed
 ```
 
@@ -225,11 +216,7 @@ print("Hello, world!")
 int cnt = len(rooms)
 for idx in range(0, 10)
     ...
-for range(5)
-    ...
 ```
-
-The rationale: named variables make call sites self-documenting for user-defined functions with multiple parameters, where readers need anchors to understand what each value represents. A single-argument call is self-evident from context — requiring a named wrapper adds ceremony with no clarity benefit. Built-ins like `print`, `len`, and `range` are part of the language and universally understood — the same exemption applies. This same logic applies to system constructs: `if` conditions and `for` headers accept expressions freely.
 
 ---
 ## No Nested Functions

@@ -183,20 +183,6 @@ fn void main()
 	# Error err = (message, code)
 	# handle_message(message)
 
-	using old_test
-		increment()
-		print("hello1")
-		print(world)
-		increment()
-		print("hello2")
-		print(world)
-		increment()
-		print("hello3")
-		print(world)
-
-		new_hello as 1
-		set() with new_hello
-
 macro validate_ident(_symbol, _case)
 	if _symbol is KW_ENUM
 		print("got an enum yall!")

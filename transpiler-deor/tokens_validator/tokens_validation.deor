@@ -26,7 +26,7 @@ fn void validate_tokens(TokensRef tokens)
 
 	macro_run define_errors
 
-	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_USING", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
+	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
 
 	# pre-scan: collect shape names + all decl names + validate struct/enum members
 	strList shape_names = empty

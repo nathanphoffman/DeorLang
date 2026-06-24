@@ -7,7 +7,7 @@ They are useful in deor because it eliminates an enormous amount of deor's cloni
 
 Importantly, because macros are literally copy and pasted, their variables will pollute the scope you are executing them in, however, you can always use the ```block``` keyword within your macro to avoid this.
 
-Macros can be defined and imported in files like all other root level declarations in deor, which allows for ease of organization.
+Macros are top-level declarations — they are available in any file that imports the file they are defined in, exactly like functions and structs. No special import syntax needed.
 
 ```
 macro say_hello

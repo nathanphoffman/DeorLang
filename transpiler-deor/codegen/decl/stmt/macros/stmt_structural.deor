@@ -2,10 +2,8 @@
 
 # Handles structural statement forms — those that reshape or unpack data.
 #   move (f1, f2) in src  → move destructuring: delegates to gen_move_destructure
-
-#   (avow expr)       → statement-level forced unwrap: `expr.unwrap();`
-#   (f1, f2) in src  → destructuring: delegates to gen_destructure
-#   using varName     → unpacks a struct into locals, runs body with re-binding shims
+#   (avow expr)           → statement-level forced unwrap: `expr.unwrap();`
+#   (f1, f2) in src       → destructuring: delegates to gen_destructure
 macro stmt_structural
 
     if kind is "KW_GIVEUP"
@@ -30,21 +28,3 @@ macro stmt_structural
 				string su_avow_code = s_join([pad, su_expr_code, su_avw_sfx])
 				return make_nl_result(move su_avow_code, su_after_rp, tokens)
 		return gen_destructure(pos, depth, ctx)
-	if kind is "KW_USING"
-		int su_var_pos = pos + 1
-		Token su_var_tok = tokens at su_var_pos
-		(value) in su_var_tok
-		string using_var = value
-		string su_struct_type = reg_get(var_type_reg, using_var)
-		string using_type = move su_struct_type
-		string su_init = make_destruct_code(using_var, depth, ctx)
-		int su_var_next = su_var_pos + 1
-		int su_body_start = skip_to_body_ref(tokens, su_var_next)
-		GenCtx su_uctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens)
-		RcCtx su_using_ctx = make_rctx(move su_uctx_raw)
-		ParseResult su_block_r = gen_block(su_body_start, depth, move su_using_ctx)
-		move (code, new_pos) in su_block_r
-		su_blk_code as code
-		su_blk_pos as new_pos
-		string su_full = s_cat(su_init, su_blk_code)
-		return make_result(move su_full, su_blk_pos)

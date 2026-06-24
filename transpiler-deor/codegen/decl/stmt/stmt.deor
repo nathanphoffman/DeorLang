@@ -3,16 +3,16 @@
 #
 # Each statement concern has its own file:
 #
-#   codegen_stmt/helpers.deor         — emit_val, make_destruct_code
+#   codegen_stmt/helpers.deor         — emit_val
 #   codegen_stmt/destructure.deor     — gen_destructure: (f1, f2) in source
 #   codegen_stmt/block.deor           — gen_block: indented statement sequence
 #   codegen_stmt/if.deor              — gen_if_branch, gen_if
 #   codegen_stmt/for.deor             — gen_for: while/for-in/for-range
 #   codegen_stmt/macros/stmt_flow.deor     — stmt_flow: return/break/continue
 #   codegen_stmt/macros/stmt_blocks.deor   — stmt_blocks: block/rust
-#   codegen_stmt/macros/stmt_structural.deor — stmt_structural: (avow)/destructure/using
+#   codegen_stmt/macros/stmt_structural.deor — stmt_structural: (avow)/destructure
 #   codegen_stmt/as_binding.deor      — gen_as_binding: name as ...
-#   codegen_stmt/call_stmt.deor       — gen_call_stmt: name(args), using shims
+#   codegen_stmt/call_stmt.deor       — gen_call_stmt: name(args)
 #   codegen_stmt/list_mutation.deor   — gen_list_mutation_stmt: at/remove
 #   codegen_stmt/typed_binding.deor   — gen_typed_binding: Type name = expr
 
@@ -20,7 +20,7 @@
 # appropriate function or macro. The IDENT branch dispatches to sub-functions for
 # each identifier-led form so this function stays a clean dispatch table.
 fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, using_type, using_var, var_type_reg, tokens) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
@@ -38,9 +38,11 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		(value) in raw_name_tok
 		string raw_var_name = value
 		int val_pos = raw_name_pos + 2
+		
 		macro_run gen_expr_r
 		string var_name = raw_var_name
 		macro_run mut_guard
+
 		string raw_let = "let "
 		string raw_eq = " = "
 		string raw_sc = ";\n"

@@ -1,13 +1,9 @@
 
 # Generates code for a function-call statement: `name(args)`. pos points to the
-# function name identifier. Has two paths:
-#   using mode + zero args  — emits a shim that passes the using-struct as a mut ref:
-#                             `using_var = name(using_var.clone()[, extra_arg.clone()]);`
-#                             followed by re-destructuring the updated struct fields.
-#   normal call             — emits `name(args);` with special casing for `print`
-#                             (→ println!) and `crash` (→ panic!).
+# function name identifier. Emits `name(args);` with special casing for `print`
+# (→ println!) and `crash` (→ panic!).
 fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
-	(tokens, using_var, using_type, mut_names) in ctx
+	(tokens, mut_names) in ctx
 	int token_count = len(tokens)
 	string indent = "    "
 	string pad = s_repeat(indent, depth)
@@ -16,42 +12,6 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	string ident_name = value
 	int next_pos = pos + 1
 	int args_pos = next_pos + 1
-	Token peek_rparen = tokens at args_pos
-	(kind) in peek_rparen
-	bool is_zero_arg = kind is "RPAREN"
-	bool has_using = not is_empty(using_var)
-	if is_zero_arg and has_using
-		int after_rparen = args_pos + 1
-		bool has_with_arg = false
-		string extra_arg = ""
-		int after_with = after_rparen
-		if after_rparen < token_count
-			Token with_token = tokens at after_rparen
-			(kind) in with_token
-			if kind is "KW_WITH"
-				int extra_pos = after_rparen + 1
-				if extra_pos < token_count
-					Token extra_token = tokens at extra_pos
-					(kind, value) in extra_token
-					if kind is "IDENT"
-						has_with_arg = true
-						extra_arg = value
-						after_with = extra_pos + 1
-		string shim_code = ""
-		if has_with_arg
-			string shm_eq = " = "
-			string shm_op = "("
-			string shm_cl = ".clone(), "
-			string shm_ea = ".clone());\n"
-			shim_code = s_join([pad, using_var, shm_eq, ident_name, shm_op, using_var, shm_cl, extra_arg, shm_ea])
-		else
-			string shm2_eq = " = "
-			string shm2_op = "("
-			string shm2_cl = ".clone());\n"
-			shim_code = s_join([pad, using_var, shm2_eq, ident_name, shm2_op, using_var, shm2_cl])
-		string re_destruct = make_destruct_code(using_var, depth, ctx)
-		shim_code = s_cat(shim_code, re_destruct)
-		return make_nl_result(move shim_code, after_with, tokens)
 	ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 	move (code, new_pos) in args_r
 	args_code as code

@@ -18,8 +18,7 @@ struct ParseResult
 
 # Code-generation context threaded through all gen_* functions. Holds every pre-built
 # registry so generators can look up struct fields, enum variants, shape aliases,
-# validator types, mutable variable names, and the active `using` binding without
-# re-scanning the token stream on each call.
+# and validator types without re-scanning the token stream on each call.
 struct TokenMeta
 	int line
 	string file
@@ -31,9 +30,6 @@ struct GenCtx
 	strList enum_reg
 	strList mut_names
 	strList type_reg
-	string using_type
-	string using_var
-	strList var_type_reg
 	TokensRef tokens
 
 # Cursor-style view into a token list. Used inside `using c` blocks during declaration

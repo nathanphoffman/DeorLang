@@ -9,7 +9,6 @@ fn TokenCursor cur_at(tokenList tokens, int pos)
 
 # Advances the cursor by one position and updates `current` to the new token.
 # Returns the same cursor value unchanged if already at the end of the stream.
-# Called inside `using cur` blocks to step through tokens one at a time.
 fn TokenCursor cur_next(TokenCursor cur, tokenList tokens)
 	(token_count, pos, current) in cur
 	int pos = pos + 1
@@ -18,8 +17,7 @@ fn TokenCursor cur_next(TokenCursor cur, tokenList tokens)
 		return (token_count, pos, current)
 	return (token_count, pos, current)
 
-# Returns true when the cursor has consumed all tokens. Guards loop conditions
-# in `using cur` blocks to prevent out-of-bounds reads.
+# Returns true when the cursor has consumed all tokens.
 fn bool c_at_end(TokenCursor cur)
 	(token_count, pos) in cur
 	return pos >= token_count
