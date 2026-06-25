@@ -127,24 +127,32 @@ string label = c_int_to_string(score)
 
 ## Parameterized Imports
 
-Three library files are **parameterized** — they define generic data structures and operations that are specialized for a concrete type at import time using `where T = Type`. The transpiler performs a textual substitution of `T` throughout the file before merging it into the token stream.
-
-All Deor primitive types work as the concrete type: `int`, `float`, `string`, and `bool`.
+`where Placeholder = Value` is a general language feature — it works on any `.deor` file, not only standard library files. The transpiler performs a textual substitution of the placeholder identifier throughout the imported file before merging it into the token stream.
 
 ```
-import "lib/list.deor" where T = int
-import "lib/list.deor" where T = float
+import "lib/list.deor" where T = int          # standard library file
 import "lib/list.deor" where T = Report
+import "workers/pipeline.deor" where Job = Report   # your own file
 ```
 
-### Naming rules after substitution
+The placeholder can be any valid identifier. `T` is the convention used throughout the standard library, but you are free to choose a name that reads clearly in context.
 
-| Pattern in source | Example with `T = Report` | Example with `T = float` |
-|---|---|---|
-| `T` (bare type) | `Report` | `float` / `f64` in rust blocks |
-| `TSender` (PascalCase prefix) | `ReportSender` | `FloatSender` |
-| `tSenderFunc` (lowercase t prefix) | `reportSenderFunc` | `floatSenderFunc` |
-| `t_T_spawn` (snake `_T_` segment) | `t_report_spawn` | `t_float_spawn` |
+All Deor primitive types work as the concrete value: `int`, `float`, `string`, and `bool`.
+
+Three standard library files (`lib/list.deor`, `lib/map.deor`, `lib/tasks.deor`) are parameterized this way. See their sections below for details.
+
+### Substitution rules
+
+The substitution applies to all IDENT tokens in the imported file and to the content of any `rust` blocks. Four patterns are recognised, shown here with placeholder `T` and concrete type `Report`:
+
+| Pattern in source | After substitution |
+|---|---|
+| `T` — exact match | `Report` |
+| `TSender` — PascalCase prefix | `ReportSender` |
+| `tSenderFunc` — camelCase prefix | `reportSenderFunc` |
+| `t_T_spawn` — snake `_T_` segment | `t_report_spawn` |
+
+Anything that does not match one of these four patterns is left unchanged.
 
 ---
 

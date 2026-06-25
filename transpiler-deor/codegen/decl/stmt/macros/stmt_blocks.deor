@@ -22,7 +22,7 @@ macro stmt_blocks
 		Token sb_block_tok = tokens at sb_block_pos
 		(value) in sb_block_tok
 		string sb_content = value
-		strList sb_rust_lines = s_split(sb_content, newline)
+		strList sb_rust_lines = s_split(sb_content, rs_nl)
 		strList sb_padded = empty
 		int sb_line_count = len(sb_rust_lines)
 		for sb_ri in range(sb_line_count)
@@ -33,6 +33,6 @@ macro stmt_blocks
 			else
 				sb_padded at end = s_join([pad, sb_rust_line])
 		string sb_block_code = s_join_nl(sb_padded)
-		sb_block_code = s_cat(sb_block_code, newline)
+		sb_block_code = s_cat(sb_block_code, rs_nl)
 		int sb_block_next = sb_block_pos + 1
 		return make_result(move sb_block_code, sb_block_next)

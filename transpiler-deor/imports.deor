@@ -81,6 +81,7 @@ import "transpiler-deor/utility_macros.deor"
 import "transpiler-deor/macros/timer.deor"
 
 # registry and codegen
+import "transpiler-deor/codegen/rust_strings.deor"
 import "transpiler-deor/codegen/type_map.deor"
 import "transpiler-deor/registry/struct.deor"
 import "transpiler-deor/registry/shape.deor"

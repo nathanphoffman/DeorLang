@@ -24,9 +24,8 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
-	string indent = "    "
-	string pad = s_repeat(indent, depth)
-	string newline = "\n"
+	macro_run rust_strings
+	string pad = s_repeat(rs_ind, depth)
 
 	macro_run stmt_flow
 	macro_run stmt_blocks
@@ -43,10 +42,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		string var_name = raw_var_name
 		macro_run mut_guard
 
-		string raw_let = "let "
-		string raw_eq = " = "
-		string raw_sc = ";\n"
-		strList raw_parts = [pad, raw_let, mut_kw, raw_var_name, raw_eq, val_code, raw_sc]
+		strList raw_parts = [pad, rs_let, mut_kw, raw_var_name, rs_eq, val_code, rs_sc]
 		string raw_code = s_join(raw_parts)
 		return make_nl_result(move raw_code, val_end, tokens)
 
@@ -90,9 +86,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			string assign_suffix = ""
 			if kind is "STRING"
 				assign_suffix = ".to_string()"
-			string asg_eq = " = "
-			string asg_sc = ";\n"
-			strList asg_parts = [pad, ident_name, asg_eq, val_code, assign_suffix, asg_sc]
+			strList asg_parts = [pad, ident_name, rs_eq, val_code, assign_suffix, rs_sc]
 			string asgn_code = s_join(asg_parts)
 			return make_nl_result(move asgn_code, val_end, tokens)
 
@@ -110,10 +104,8 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			string bare_rust_type = resolve_type(ident_name, shape_reg, enum_reg)
 			bool bare_is_validator = reg3_has(type_reg, ident_name)
 			if bare_is_validator
-				string bd_let = "let mut "
-				string bd_opt = ": Option<"
 				string bd_sfx = "> = None;\n"
-				string bd_code = s_join([pad, bd_let, bare_var_name, bd_opt, bare_rust_type, bd_sfx])
+				string bd_code = s_join([pad, rs_letm, bare_var_name, rs_col, "Option<", bare_rust_type, bd_sfx])
 				int bd_after = next_pos + 1
 				return make_nl_result(move bd_code, bd_after, tokens)
 

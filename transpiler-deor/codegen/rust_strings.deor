@@ -1,0 +1,28 @@
+
+# Canonical Rust syntax string constants for codegen.
+# Use `macro_run rust_strings` at the top of any codegen function or macro that
+# assembles Rust source — eliminates one-off local declarations like
+# `string indent = "    "` scattered across every file.
+
+macro rust_strings
+	const string rs_ind    = "    "
+	const string rs_nl     = "\n"
+	const string rs_sc     = ";\n"
+	const string rs_ob     = " {\n"
+	const string rs_cb     = "}\n"
+	const string rs_cb2    = "\n}\n\n"
+	const string rs_fnc_cb = "}\n\n"
+	const string rs_eq     = " = "
+	const string rs_let    = "let "
+	const string rs_letm   = "let mut "
+	const string rs_col    = ": "
+	const string rs_com    = ","
+	const string rs_csep   = ", "
+	const string rs_lp     = "("
+	const string rs_rp     = ")"
+	const string rs_rp_sc  = ");\n"
+	const string rs_arr    = " -> "
+	const string rs_ob_sp  = " { "
+	const string rs_cb_sc  = " };\n"
+	const string rs_cln    = ".clone()"
+	const string rs_tos    = ".to_string()"

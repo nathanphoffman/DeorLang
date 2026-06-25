@@ -10,8 +10,8 @@
 fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	(tokens, struct_reg, shape_reg, type_reg, mut_names, variant_reg) in ctx
 	int token_count = len(tokens)
-	string indent = "    "
-	string pad = s_repeat(indent, depth)
+	macro_run rust_strings
+	string pad = s_repeat(rs_ind, depth)
 	Token type_token = tokens at pos
 	(value) in type_token
 	string var_type = value

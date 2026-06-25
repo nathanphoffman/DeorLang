@@ -52,22 +52,20 @@ type Positive(int val)
 ```
 
 ---
-## `empty` at Declaration Only
+## `empty` and List Initialization
 
-`= empty` is only valid at the point of first declaration for a list shape variable. It is not valid for validator types — declare a validator type variable without a value instead.
+List shape variables can be initialized with either `empty` or a list literal:
 
-**Correct:**
 ```
-roomList rooms = empty    # list shape — use empty
-Roll best                 # validator type — no value, starts not valid
+roomList rooms = empty              # starts empty
+roomList rooms = [kitchen, office]  # starts with items
 ```
 
-**Incorrect — transpiler errors:**
-```
-roomList rooms = [kitchen]
-rooms = empty             # cannot reassign empty after declaration
+`empty` is not valid for validator types — declare a validator type variable without a value to start it as not valid:
 
-Roll best = empty         # empty not valid for validator types
+```
+Roll best                 # correct — starts not valid
+Roll best = empty         # transpiler error — empty not valid for validator types
 ```
 
 ---
@@ -88,6 +86,27 @@ int count = 0       # correct
 ```
 copy as original    # transpiler error — use Type name = original
 ```
+
+---
+## Duplicate Top-Level Names
+
+Declaring two top-level items with the same name is a hard transpiler error. This applies across all declaration forms — `struct`, `enum`, `shape`, `type`, and `fn`. The names are checked in a single prescan pass before any other validation.
+
+```
+struct Room
+    string name
+
+struct Room    # transpiler error — duplicate name
+    float area
+
+fn void process(Room item)
+    ...
+
+fn void process(string label)    # transpiler error — duplicate name
+    ...
+```
+
+The names are checked across declaration kinds, so a `struct Foo` and a `fn Foo` in the same file are also an error. Variable shadowing within function bodies is separate and is allowed — see below.
 
 ---
 ## Variable Shadowing

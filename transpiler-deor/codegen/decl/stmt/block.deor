@@ -8,8 +8,8 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 	int cur = pos
 	int token_count = len(tokens)
 	string last_file = ""
-	string indent = "    "
-	string pad = s_repeat(indent, depth)
+	macro_run rust_strings
+	string pad = s_repeat(rs_ind, depth)
 	for if true
 		if cur >= token_count
 			break
@@ -26,23 +26,21 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 			string mc_prefix = "// macro: "
 			string mc_open = " ("
 			string mc_close = ")"
-			string mc_nl = "\n"
 			string mc1 = s_cat(pad, mc_prefix)
 			string mc2 = s_cat(mc1, value)
 			string mc3 = s_cat(mc2, mc_open)
 			string mc4 = s_cat(mc3, file)
 			string mc5 = s_cat(mc4, mc_close)
-			string macro_comment = s_cat(mc5, mc_nl)
+			string macro_comment = s_cat(mc5, rs_nl)
 			stmts at end = macro_comment
 			last_file = file
 			cur = cur + 1
 			continue
 		if file is not last_file
 			string fc_slash = "// "
-			string fc_nl = "\n"
 			string fc1 = s_cat(pad, fc_slash)
 			string fc2 = s_cat(fc1, file)
-			string file_comment = s_cat(fc2, fc_nl)
+			string file_comment = s_cat(fc2, rs_nl)
 			stmts at end = file_comment
 			last_file = file
 

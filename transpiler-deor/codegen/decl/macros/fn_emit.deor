@@ -8,16 +8,10 @@ macro fn_emit
 	move (code, new_pos) in body_r
 	body_code as code
 	body_end as body_start + new_pos
-	string sep = ", "
-	string params_code = s_join_with(param_strs, sep)
+	string params_code = s_join_with(param_strs, rs_csep)
 	string ret_suffix = ""
 	if not is_empty(ret_type)
-		string rts_pfx = " -> "
-		ret_suffix = s_join([rts_pfx, ret_type])
+		ret_suffix = s_join([rs_arr, ret_type])
 	string fnc_kw = "fn "
-	string fnc_op = "("
-	string fnc_rp = ")"
-	string fnc_ob = " {\n"
-	string fnc_cb = "}\n\n"
-	string fn_code = s_join([fnc_kw, fn_name, fnc_op, params_code, fnc_rp, ret_suffix, fnc_ob, body_code, fnc_cb])
+	string fn_code = s_join([fnc_kw, fn_name, rs_lp, params_code, rs_rp, ret_suffix, rs_ob, body_code, rs_fnc_cb])
 	return make_result(move fn_code, body_end)

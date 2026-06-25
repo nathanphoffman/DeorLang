@@ -7,8 +7,8 @@
 fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 	(tokens) in ctx
 	int token_count = len(tokens)
-	string indent = "    "
-	string pad = s_repeat(indent, depth)
+	macro_run rust_strings
+	string pad = s_repeat(rs_ind, depth)
 	Token name_token = tokens at pos
 	(value) in name_token
 	string ident_name = value
@@ -29,8 +29,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 				(kind) in val_tok
 				string app_val = emit_val(val_code, kind)
 				string app_pfx = ".push("
-				string app_sfx = ");\n"
-				string app_code = s_join([pad, ident_name, app_pfx, app_val, app_sfx])
+				string app_code = s_join([pad, ident_name, app_pfx, app_val, rs_rp_sc])
 				return make_nl_result(move app_code, val_end, tokens)
 			val_pos as after_at
 			macro_run gen_expr_r

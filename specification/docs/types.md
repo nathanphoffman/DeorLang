@@ -38,6 +38,13 @@ See [Rust Interop](interop.md) for full documentation, rules, and the build-once
 
 A `type` definition wraps a base primitive with a predicate. **The predicate body is mandatory** — the transpiler errors on a `type` with an empty body. A validator type without a constraint adds no meaning over its base primitive; use the base type directly instead.
 
+The base type must be a primitive (`int`, `float`, `string`, `bool`) or a struct — list shapes are not valid as a validator base type and are a transpiler error:
+
+```
+type Foo(int val)       # correct — primitive base type
+type Foo(intList val)   # transpiler error — list shapes cannot be validator base types
+```
+
 The body evaluates to a `bool`. Simple predicates are a single boolean expression; predicates that need intermediate values may declare bindings before the final bool expression, following the same rules as a function body.
 
 A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.

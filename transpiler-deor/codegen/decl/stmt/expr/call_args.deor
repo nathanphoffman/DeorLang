@@ -6,6 +6,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 	strList arg_codes = empty
 	int cur = pos
 	int token_count = len(tokens)
+	macro_run rust_strings
 	for if true
 		if cur >= token_count
 			break
@@ -27,8 +28,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		Token start_token = tokens at cur
 		(kind) in start_token
 		if kind is "STRING"
-			string str_suf = ".to_string()"
-			arg_code = s_join([arg_code, str_suf])
+			arg_code = s_join([arg_code, rs_tos])
 		else if kind is "IDENT"
 			int next_cur = cur + 1
 			bool peek_is_call = false
@@ -40,10 +40,8 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 				peek_is_idx = kind is "KW_AT"
 			if not peek_is_call
 				if not peek_is_idx
-					string cln_suf = ".clone()"
-					arg_code = s_join([arg_code, cln_suf])
+					arg_code = s_join([arg_code, rs_cln])
 		arg_codes at end = arg_code
 		cur = arg_pos
-	string sep = ", "
-	string args_str = s_join_with(arg_codes, sep)
+	string args_str = s_join_with(arg_codes, rs_csep)
 	return make_result(move args_str, cur)
