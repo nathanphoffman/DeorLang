@@ -105,6 +105,57 @@ fn string preprocess_source(string source)
 				}
 			}
 
+			fn expand_macro_block_lines(lines: &[String], depth: u32) -> Vec<String> {
+				if depth > 20 {
+					eprintln!("error: macro_block nesting too deep — possible circular macro_block reference");
+					std::process::exit(1);
+				}
+				let n = lines.len();
+				let mut result: Vec<String> = Vec::new();
+				let mut i = 0;
+				while i < n {
+					let line = &lines[i];
+					let trimmed = line.trim();
+					if trimmed.starts_with("macro_block_open ") || trimmed.starts_with("macro_block_close ") {
+						eprintln!("error: macro_block_open/macro_block_close definitions cannot appear inside a macro_block body");
+						std::process::exit(1);
+					}
+					if trimmed.starts_with("macro_block ") {
+						let name = trimmed["macro_block ".len()..].trim().to_string();
+						let call_indent = get_indent(line);
+						let open_body = mb_get_open(&name);
+						let close_body = mb_get_close(&name);
+						let raw_mode = is_raw_mode(&open_body);
+						for l in adjust_body(&open_body, call_indent) { result.push(l); }
+						i += 1;
+						let mut content_lines: Vec<String> = Vec::new();
+						while i < n {
+							let cl = &lines[i];
+							if cl.trim().is_empty() {
+								content_lines.push(String::new());
+								i += 1;
+							} else if get_indent(cl) > call_indent {
+								if raw_mode {
+									content_lines.push(cl.clone());
+								} else {
+									let stripped = if cl.starts_with('\t') { cl[1..].to_string() } else { cl.clone() };
+									content_lines.push(stripped);
+								}
+								i += 1;
+							} else {
+								break;
+							}
+						}
+						for l in expand_macro_block_lines(&content_lines, depth + 1) { result.push(l); }
+						for l in adjust_body(&close_body, call_indent) { result.push(l); }
+						continue;
+					}
+					result.push(line.clone());
+					i += 1;
+				}
+				result
+			}
+
 			// Pre-scan direct imports and collect any macro_block definitions they contain
 			for line in &lines {
 				let t = line.trim();
@@ -143,50 +194,11 @@ fn string preprocess_source(string source)
 
 			let should_skip = |idx: usize| skip_ranges.iter().any(|&(s, e)| idx >= s && idx < e);
 
-			// Expand macro_block usages
-			let mut result: Vec<String> = Vec::new();
-			let mut i = 0;
-			while i < n {
-				if should_skip(i) { i += 1; continue; }
-
-				let line = &lines[i];
-				let trimmed = line.trim();
-
-				if trimmed.starts_with("macro_block ") {
-					let name = trimmed["macro_block ".len()..].trim().to_string();
-					let call_indent = get_indent(line);
-					let open_body = mb_get_open(&name);
-					let close_body = mb_get_close(&name);
-					let raw_mode = is_raw_mode(&open_body);
-
-					for l in adjust_body(&open_body, call_indent) { result.push(l); }
-
-					i += 1;
-					while i < n {
-						let cl = &lines[i];
-						if cl.trim().is_empty() {
-							result.push(String::new());
-							i += 1;
-						} else if get_indent(cl) > call_indent {
-							if raw_mode {
-								result.push(cl.clone());
-							} else {
-								let stripped = if cl.starts_with('\t') { cl[1..].to_string() } else { cl.clone() };
-								result.push(stripped);
-							}
-							i += 1;
-						} else {
-							break;
-						}
-					}
-
-					for l in adjust_body(&close_body, call_indent) { result.push(l); }
-					continue;
-				}
-
-				result.push(line.clone());
-				i += 1;
-			}
-
+			// Strip definition lines then expand macro_block usages recursively
+			let filtered: Vec<String> = (0..n)
+				.filter(|&idx| !should_skip(idx))
+				.map(|idx| lines[idx].clone())
+				.collect();
+			let result = expand_macro_block_lines(&filtered, 0);
 			result.join("\n")
 		}

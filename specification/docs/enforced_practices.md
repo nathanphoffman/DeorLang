@@ -12,6 +12,8 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 - variable and function names must be snake_case
   - think runtime items = snake_case
   - the logic behind this is that these are very important to be readable as readability > boldness
+- `const` variable names must be SCREAMING_SNAKE_CASE
+  - `const` signals a fixed, never-reassigned value — the casing makes constants instantly recognizable and matches their intent
 ---
 ## Minimum Name Length — 3 Characters
 All identifiers must be at least 3 characters long. This applies to every named thing in Deor source: variables, function parameters, function names, struct names, validator type names, struct field names, and list names.
@@ -67,6 +69,18 @@ roomList rooms = [kitchen, office]  # starts with items
 Roll best                 # correct — starts not valid
 Roll best = empty         # transpiler error — empty not valid for validator types
 ```
+
+---
+## `const` — No Reassignment
+
+`const` variables cannot be reassigned. Attempting to assign a new value to a `const` variable after its declaration is a transpiler error.
+
+```
+const string PIPE = "|"
+PIPE = "/"              # transpiler error — cannot reassign a const variable
+```
+
+Use a plain typed binding (`string pipe = "|"`) if you need a variable that may change.
 
 ---
 ## `as` — No Type Annotation, No Variable Rebinding

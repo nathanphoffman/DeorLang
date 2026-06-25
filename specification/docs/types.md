@@ -45,6 +45,14 @@ type Foo(int val)       # correct — primitive base type
 type Foo(intList val)   # transpiler error — list shapes cannot be validator base types
 ```
 
+The parameter name cannot shadow the type name or its own base type — both are transpiler errors:
+
+```
+type Roll(int Roll)    # transpiler error — parameter name shadows the type name
+type Roll(int int)     # transpiler error — parameter name shadows its base type
+type Roll(int val)     # correct
+```
+
 The body evaluates to a `bool`. Simple predicates are a single boolean expression; predicates that need intermediate values may declare bindings before the final bool expression, following the same rules as a function body.
 
 A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.

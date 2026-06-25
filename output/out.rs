@@ -1397,6 +1397,57 @@ fn preprocess_source(source: String) -> String {
     		}
     	}
 
+    	fn expand_macro_block_lines(lines: &[String], depth: u32) -> Vec<String> {
+    		if depth > 20 {
+    			eprintln!("error: macro_block nesting too deep — possible circular macro_block reference");
+    			std::process::exit(1);
+    		}
+    		let n = lines.len();
+    		let mut result: Vec<String> = Vec::new();
+    		let mut i = 0;
+    		while i < n {
+    			let line = &lines[i];
+    			let trimmed = line.trim();
+    			if trimmed.starts_with("macro_block_open ") || trimmed.starts_with("macro_block_close ") {
+    				eprintln!("error: macro_block_open/macro_block_close definitions cannot appear inside a macro_block body");
+    				std::process::exit(1);
+    			}
+    			if trimmed.starts_with("macro_block ") {
+    				let name = trimmed["macro_block ".len()..].trim().to_string();
+    				let call_indent = get_indent(line);
+    				let open_body = mb_get_open(&name);
+    				let close_body = mb_get_close(&name);
+    				let raw_mode = is_raw_mode(&open_body);
+    				for l in adjust_body(&open_body, call_indent) { result.push(l); }
+    				i += 1;
+    				let mut content_lines: Vec<String> = Vec::new();
+    				while i < n {
+    					let cl = &lines[i];
+    					if cl.trim().is_empty() {
+    						content_lines.push(String::new());
+    						i += 1;
+    					} else if get_indent(cl) > call_indent {
+    						if raw_mode {
+    							content_lines.push(cl.clone());
+    						} else {
+    							let stripped = if cl.starts_with('\t') { cl[1..].to_string() } else { cl.clone() };
+    							content_lines.push(stripped);
+    						}
+    						i += 1;
+    					} else {
+    						break;
+    					}
+    				}
+    				for l in expand_macro_block_lines(&content_lines, depth + 1) { result.push(l); }
+    				for l in adjust_body(&close_body, call_indent) { result.push(l); }
+    				continue;
+    			}
+    			result.push(line.clone());
+    			i += 1;
+    		}
+    		result
+    	}
+
     	// Pre-scan direct imports and collect any macro_block definitions they contain
     	for line in &lines {
     		let t = line.trim();
@@ -1435,51 +1486,12 @@ fn preprocess_source(source: String) -> String {
 
     	let should_skip = |idx: usize| skip_ranges.iter().any(|&(s, e)| idx >= s && idx < e);
 
-    	// Expand macro_block usages
-    	let mut result: Vec<String> = Vec::new();
-    	let mut i = 0;
-    	while i < n {
-    		if should_skip(i) { i += 1; continue; }
-
-    		let line = &lines[i];
-    		let trimmed = line.trim();
-
-    		if trimmed.starts_with("macro_block ") {
-    			let name = trimmed["macro_block ".len()..].trim().to_string();
-    			let call_indent = get_indent(line);
-    			let open_body = mb_get_open(&name);
-    			let close_body = mb_get_close(&name);
-    			let raw_mode = is_raw_mode(&open_body);
-
-    			for l in adjust_body(&open_body, call_indent) { result.push(l); }
-
-    			i += 1;
-    			while i < n {
-    				let cl = &lines[i];
-    				if cl.trim().is_empty() {
-    					result.push(String::new());
-    					i += 1;
-    				} else if get_indent(cl) > call_indent {
-    					if raw_mode {
-    						result.push(cl.clone());
-    					} else {
-    						let stripped = if cl.starts_with('\t') { cl[1..].to_string() } else { cl.clone() };
-    						result.push(stripped);
-    					}
-    					i += 1;
-    				} else {
-    					break;
-    				}
-    			}
-
-    			for l in adjust_body(&close_body, call_indent) { result.push(l); }
-    			continue;
-    		}
-
-    		result.push(line.clone());
-    		i += 1;
-    	}
-
+    	// Strip definition lines then expand macro_block usages recursively
+    	let filtered: Vec<String> = (0..n)
+    		.filter(|&idx| !should_skip(idx))
+    		.map(|idx| lines[idx].clone())
+    		.collect();
+    	let result = expand_macro_block_lines(&filtered, 0);
     	result.join("\n")
     }
 }
@@ -2165,10 +2177,10 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     // transpiler-deor/macro_builder/macro_expander.deor
     let mut macros: std::collections::HashMap<String, (Vec<Token>, i32)> = std::collections::HashMap::new();
     let mut result: Vec<Token> = vec![];
-    let mut i: usize = 0;
+    let mut queue: std::collections::VecDeque<Token> = tokens.into_iter().collect();
     let mut scope_depth: i32 = 0;
-    while i < tokens.len() {
-    	let kind = tokens[i].kind.as_str();
+    while let Some(cur) = queue.pop_front() {
+    	let kind = cur.kind.as_str();
 
     	// track scope depth for macro privacy
     	if kind == "INDENT" { scope_depth += 1; }
@@ -2180,54 +2192,54 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
 
     	// collect macro definition
     	if kind == "KW_MACRO" {
-    		let mut j = i + 1;
-    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
-    		j += 1;
+    		let name = if let Some(t) = queue.pop_front() { t.value } else { String::new() };
     		// skip NEWLINE then INDENT
-    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		while j < tokens.len() && tokens[j].kind == "INDENT" { j += 1; }
+    		while queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
+    		while queue.front().map(|t| t.kind == "INDENT").unwrap_or(false) { queue.pop_front(); }
     		// collect body tokens, excluding the outer INDENT/DEDENT pair
     		let mut body: Vec<Token> = vec![];
     		let mut depth: i32 = 1;
-    		while j < tokens.len() {
-    			if tokens[j].kind == "INDENT" {
-    				depth += 1;
-    				body.push(tokens[j].clone());
-    			} else if tokens[j].kind == "DEDENT" {
-    				depth -= 1;
-    				if depth == 0 { j += 1; break; }
-    				body.push(tokens[j].clone());
-    			} else {
-    				body.push(tokens[j].clone());
+    		loop {
+    			match queue.pop_front() {
+    				None => break,
+    				Some(t) => {
+    					if t.kind == "KW_MACRO" {
+    						let name_tok = queue.pop_front().unwrap_or(t.clone());
+    						handle_errors(vec![val_err(name_tok, "macro".to_string(), "cannot be defined inside another macro body — use macro_run to call an existing macro".to_string())]);
+    					} else if t.kind == "INDENT" {
+    						depth += 1;
+    						body.push(t);
+    					} else if t.kind == "DEDENT" {
+    						depth -= 1;
+    						if depth == 0 { break; }
+    						body.push(t);
+    					} else {
+    						body.push(t);
+    					}
+    				}
     			}
-    			j += 1;
     		}
     		if !name.is_empty() { macros.insert(name, (body, scope_depth)); }
     		// skip trailing NEWLINE after the definition block
-    		while j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		i = j;
+    		while queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
     		continue;
     	}
 
-    	// expand macro_run call site
+    	// expand macro_run call site — prepend body to queue for recursive expansion
     	if kind == "KW_MACRO_RUN" {
-    		let mut j = i + 1;
-    		let name = if j < tokens.len() { tokens[j].value.clone() } else { String::new() };
-    		j += 1;
+    		let name = if let Some(t) = queue.pop_front() { t.value } else { String::new() };
     		// skip trailing NEWLINE after the call
-    		if j < tokens.len() && tokens[j].kind == "NEWLINE" { j += 1; }
-    		// splice body tokens inline, preceded by a marker carrying the macro name
+    		if queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
+    		// prepend body tokens to front of queue so they are processed next
     		if let Some((body, _)) = macros.get(&name) {
     			let marker_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
-    			result.push(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
-    			for tok in body { result.push(tok.clone()); }
+    			for tok in body.iter().rev() { queue.push_front(tok.clone()); }
+    			queue.push_front(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
     		}
-    		i = j;
     		continue;
     	}
 
-    	result.push(tokens[i].clone());
-    	i += 1;
+    	result.push(cur);
     }
     result
 }
