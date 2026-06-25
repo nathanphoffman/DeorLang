@@ -1307,6 +1307,150 @@ fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: Strin
     return result;
 }
 
+// transpiler-deor/importer/preprocess.deor
+fn preprocess_source(source: String) -> String {
+    // transpiler-deor/importer/preprocess.deor
+    {
+    	use std::collections::HashMap;
+
+    	let lines: Vec<String> = source.lines().map(|l| l.to_string()).collect();
+    	let n = lines.len();
+
+    	fn get_indent(line: &str) -> usize {
+    		line.chars().take_while(|&c| c == '\t').count()
+    	}
+
+    	fn collect_body(lines: &[String], start: usize, base_indent: usize) -> (Vec<String>, usize) {
+    		let mut body: Vec<String> = Vec::new();
+    		let mut i = start;
+    		while i < lines.len() {
+    			let line = &lines[i];
+    			if line.trim().is_empty() {
+    				body.push(String::new());
+    				i += 1;
+    			} else if get_indent(line) > base_indent {
+    				body.push(line.clone());
+    				i += 1;
+    			} else {
+    				break;
+    			}
+    		}
+    		while body.last().map(|l| l.trim().is_empty()).unwrap_or(false) {
+    			body.pop();
+    		}
+    		(body, i)
+    	}
+
+    	// Place body lines at call_indent. Definition body starts at indent 1.
+    	fn adjust_body(body: &[String], call_indent: usize) -> Vec<String> {
+    		body.iter().map(|line| {
+    			if line.trim().is_empty() {
+    				return String::new();
+    			}
+    			if call_indent == 0 {
+    				if line.starts_with('\t') { line[1..].to_string() } else { line.to_string() }
+    			} else {
+    				let extra = "\t".repeat(call_indent - 1);
+    				format!("{}{}", extra, line)
+    			}
+    		}).collect()
+    	}
+
+    	// If open body ends with `{`, content stays inside the rust block (raw passthrough).
+    	// Otherwise content is dedented by one tab to be parsed as normal Deor.
+    	fn is_raw_mode(open_body: &[String]) -> bool {
+    		open_body.iter().rev()
+    			.find(|l| !l.trim().is_empty())
+    			.map(|l| l.trim_end().ends_with('{'))
+    			.unwrap_or(false)
+    	}
+
+    	let mut opens: HashMap<String, Vec<String>> = HashMap::new();
+    	let mut closes: HashMap<String, Vec<String>> = HashMap::new();
+    	let mut skip_ranges: Vec<(usize, usize)> = Vec::new();
+
+    	let mut i = 0;
+    	while i < n {
+    		let trimmed = lines[i].trim();
+    		let base = get_indent(&lines[i]);
+    		if trimmed.starts_with("macro_block_open ") {
+    			let name = trimmed["macro_block_open ".len()..].trim().to_string();
+    			let (body, end) = collect_body(&lines, i + 1, base);
+    			opens.insert(name, body);
+    			skip_ranges.push((i, end));
+    			i = end;
+    		} else if trimmed.starts_with("macro_block_close ") {
+    			let name = trimmed["macro_block_close ".len()..].trim().to_string();
+    			let (body, end) = collect_body(&lines, i + 1, base);
+    			closes.insert(name, body);
+    			skip_ranges.push((i, end));
+    			i = end;
+    		} else {
+    			i += 1;
+    		}
+    	}
+
+    	let should_skip = |idx: usize| -> bool {
+    		skip_ranges.iter().any(|&(s, e)| idx >= s && idx < e)
+    	};
+
+    	let mut result: Vec<String> = Vec::new();
+    	let mut i = 0;
+
+    	while i < n {
+    		if should_skip(i) { i += 1; continue; }
+
+    		let line = &lines[i];
+    		let trimmed = line.trim();
+
+    		if trimmed.starts_with("macro_block ") {
+    			let name = trimmed["macro_block ".len()..].trim().to_string();
+    			let call_indent = get_indent(line);
+
+    			let empty: Vec<String> = Vec::new();
+    			let open_body = opens.get(&name).unwrap_or(&empty);
+    			let close_body = closes.get(&name).unwrap_or(&empty);
+    			let raw_mode = is_raw_mode(open_body);
+
+    			for l in adjust_body(open_body, call_indent) {
+    				result.push(l);
+    			}
+
+    			i += 1;
+
+    			while i < n {
+    				let cl = &lines[i];
+    				if cl.trim().is_empty() {
+    					result.push(String::new());
+    					i += 1;
+    				} else if get_indent(cl) > call_indent {
+    					if raw_mode {
+    						result.push(cl.clone());
+    					} else {
+    						let stripped = if cl.starts_with('\t') { cl[1..].to_string() } else { cl.clone() };
+    						result.push(stripped);
+    					}
+    					i += 1;
+    				} else {
+    					break;
+    				}
+    			}
+
+    			for l in adjust_body(close_body, call_indent) {
+    				result.push(l);
+    			}
+
+    			continue;
+    		}
+
+    		result.push(line.clone());
+    		i += 1;
+    	}
+
+    	result.join("\n")
+    }
+}
+
 // transpiler-deor/importer/decl_bounds.deor
 fn name_of_decl(tokens: Vec<Token>, pos: i32, is_fn: bool) -> String {
     // transpiler-deor/importer/decl_bounds.deor
@@ -1397,7 +1541,8 @@ fn resolve_lib_path(path: String) -> String {
 fn load_file(path: String) -> Vec<Token> {
     // transpiler-deor/importer/load.deor
     let mut source: String = f_read(path.clone());
-    let mut tok_raw: Vec<Token> = tokenize(source.clone(), path.clone());
+    let mut processed: String = preprocess_source(source.clone());
+    let mut tok_raw: Vec<Token> = tokenize(processed.clone(), path.clone());
     let mut result: Vec<Token> = Vec::new();
     let mut token_count: i32 = (tok_raw.len() as i32);
     let mut pos: i32 = 0;
