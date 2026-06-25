@@ -222,6 +222,12 @@ int result = add(5, 3)               # 2 args — literals not allowed
 int result = add(num + 1, amt)       # 2 args — expression not allowed
 ```
 
+`move var` counts as a named argument — passing ownership of a variable still satisfies the rule:
+
+```
+do_something(move big_list, other)    # valid — move var is a named argument
+```
+
 **Built-in functions** accept a single literal or expression directly. For built-ins called with 2 or more arguments, the named-variable rule still applies:
 
 ```

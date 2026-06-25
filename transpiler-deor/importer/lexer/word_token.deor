@@ -79,6 +79,20 @@ fn string word_to_kind(string word)
 		return "KW_CONST"
 	if word is "end"
 		return "KW_END"
+
+	# Shape connector — active keyword in func shape declarations:
+	# shape myShape = func of Room to bool
+	if word is "func"
+		return "KW_FUNC"
+
+	# Anti-keywords: reserved to prevent identifier use and produce clear errors.
+	# to   — shape return-type connector; also only 2 chars so min-3 would block it
+	#         as an identifier anyway — documented here as the user-facing rationale
+	# none — not a Deor concept; blocked so `return none` produces a clear error
+	if word is "to"
+		return "KW_TO"
+	if word is "none"
+		return "KW_NONE"
 	return "IDENT"
 
 fn ParseResult scan_word(strList chars, int char_index, int char_count)

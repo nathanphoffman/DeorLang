@@ -1,0 +1,13 @@
+
+# Flags `return empty` and `return none` — neither is valid in Deor.
+# For not-valid validator results, declare the variable without a value and return it.
+macro check_return_invalid
+	if cur_kind is "KW_RETURN"
+		int ri_next = pos + 1
+		if ri_next < token_count
+			Token ri_tok = tokens at ri_next
+			(kind) in ri_tok
+			if kind is "KW_EMPTY"
+				errors at end = val_err(ri_tok, lbl_fn, rule_return_empty)
+			if kind is "KW_NONE"
+				errors at end = val_err(ri_tok, lbl_fn, rule_return_none)

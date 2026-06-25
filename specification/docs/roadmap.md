@@ -1,24 +1,35 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
-# More
-- Tell me about 10
-- Still confused on this "Roll best = empty for validator types", what is your suggestion?
+# validation gaps flagged by ai
+  Gaps worth fixing:
+  1. return empty / return none — docs say transpiler error; no check exists. return empty is KW_RETURN KW_EMPTY, easy to catch.
+    ^^ validation being added -- should be fixed validate
 
-# Should const be uppercase?
-- We should consider making function consts SCREAMING_SNAKE
+  2. Func shapes as struct fields — prescan_check_struct_fields validates field names but not field types; a filterFunc shape field would pass through.
+    ^^ add validation
 
-## Add additional validation
+  3. raw rules — "raw must come from a rust block", "raw can't be used in a Deor expression", "raw can't be a struct field" — none of these are validated.
+    ^^ sounds good, add validation
 
-- We should ask claude about any validation gaps, also:
-- Validator: We should not allow any & | ^ < > { } unless it is in string data
-  
+  4. Type validator parameter shadowing its type — type Roll(int Roll) — check_fn_declaration catches this for functions but validator type declarations aren't checked the same way.
+    ^^ add validation, fix
+
+  5. const reassignment — const variables can technically be reassigned; the transpiler infers let vs let mut from usage but doesn't catch const val = reassigned_value as an error.
+    ^^ add check if it isnt too hard
+
+
+
 # Documentation
  ---
 
-- Give better examples of naming for cx and ex
+- Give better examples of naming for cx and ex in the docs around naming custom libs
 -- x here represents their lib first-letter like s in string
 -- so a nate external 3rd party lib would be en,  e for external, n for nates_lib.deor
 -- c i honestly forget the intention of but similarly we should give useful examples
+
+
+# Should const be uppercase?
+- We should consider making function consts SCREAMING_SNAKE
 
 ---
 

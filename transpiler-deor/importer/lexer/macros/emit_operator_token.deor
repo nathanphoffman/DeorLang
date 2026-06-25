@@ -74,4 +74,19 @@ macro emit_operator_token
 		tokens at end = make_token(op_kind_rb, op_val_rb, meta)
 	else if character is ","
 		tokens at end = make_token(op_kind_cm, op_val_cm, meta)
+	else if character is "&"
+		string op_kind_inv = "INVALID"
+		tokens at end = make_token(op_kind_inv, character, meta)
+	else if character is "|"
+		string op_kind_inv = "INVALID"
+		tokens at end = make_token(op_kind_inv, character, meta)
+	else if character is "^"
+		string op_kind_inv = "INVALID"
+		tokens at end = make_token(op_kind_inv, character, meta)
+	else if character is "{"
+		string op_kind_inv = "INVALID"
+		tokens at end = make_token(op_kind_inv, character, meta)
+	else if character is "}"
+		string op_kind_inv = "INVALID"
+		tokens at end = make_token(op_kind_inv, character, meta)
 	char_index = char_index + 1

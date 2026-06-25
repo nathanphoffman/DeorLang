@@ -56,6 +56,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run track_paren_depth
 		macro_run track_block_scope
 		macro_run check_void_return
+		macro_run check_return_invalid
 		macro_run check_move_target
 		macro_run check_keyword_in_parens
 		macro_run skip_rust_block
@@ -102,9 +103,11 @@ fn void validate_tokens(TokensRef tokens)
 		int validate_indent_offset = 2
 		macro_run validate_ident
 
+		macro_run check_invalid_char
 		macro_run track_validator_vars
 		macro_run check_crash_args
 		macro_run check_avow_target
+		macro_run check_validator_empty
 		macro_run check_empty_bracket
 
 		if cur_kind is "KW_FOR"

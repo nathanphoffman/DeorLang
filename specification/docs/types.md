@@ -159,7 +159,14 @@ let mut best: Option<Roll> = None;
 let mut area: Option<Squarefeet> = None;
 ```
 
-List shapes still use `empty` to initialize — `[]` is a transpiler error:
+`empty` is not valid for validator types — using it is a transpiler error. There is no "empty" state for a validator type; not valid is expressed by declaring without a value:
+
+```
+Roll best = empty    # transpiler error — empty is not valid for validator types
+Roll best            # correct — starts as not valid
+```
+
+List shapes use `empty` to initialize — `[]` is a transpiler error:
 
 ```
 roomList rooms = empty

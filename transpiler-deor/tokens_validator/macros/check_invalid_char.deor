@@ -1,0 +1,6 @@
+
+# Flags characters that are never valid in Deor source outside of string literals.
+# These are emitted as INVALID tokens by the lexer when encountered.
+macro check_invalid_char
+	if cur_kind is "INVALID"
+		errors at end = val_err(tok, lbl_rust, rule_invalid_char)

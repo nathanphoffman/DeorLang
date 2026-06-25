@@ -1,7 +1,7 @@
 
 # Generates Rust loop code from a Deor `for` statement. Four dispatch paths:
 #   `for if cond`            → `while cond { ... }`
-#   `for move var in expr`   → `for var in expr { ... }` (consuming ownership)
+#   `for move (var in expr)` → `for var in expr { ... }` (consuming ownership)
 #   `for var in range(n)`    → `for var in 0..n { ... }` (or start..end)
 #   `for in (start, end)`    → `for _ in start..end { ... }` (bare range)
 #   `for var in collection`  → `for var in collection { ... }`

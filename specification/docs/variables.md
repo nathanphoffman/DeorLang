@@ -1,7 +1,7 @@
 # Variables
 
 ## `as` — Type-Inferred Bindings
-`as` creates a binding whose type is derived from the right-hand side at compile time. It has two valid forms:
+`as` creates a binding whose type is derived from the right-hand side at compile time. It has three valid forms:
 
 ### Scalar literals
 The type is inferred from the literal value.
@@ -40,6 +40,20 @@ result as []             # transpiler error — element type unknown
 roomList result = []     # transpiler error — use empty instead
 ```
 
+### Struct construction
+
+A parenthesised field list `(f1, f2, ...)` constructs a struct. All items must be named variables already in scope whose names match the target struct's fields. The struct type is inferred by matching field names against all known structs — no type annotation needed.
+
+```
+score as (label, points)    # struct type inferred from field names
+```
+
+```rust
+let score = Score { label: label.clone(), points: points.clone() };
+```
+
+See [Struct Construction](#struct-construction) below for full details and the equivalent explicit-type form.
+
 ---
 
 **What `as` is not for:**
@@ -58,7 +72,7 @@ int count as 0      # transpiler error
 int count = 0       # correct
 ```
 
-**Variable copying** — `as` requires a literal or `[items]` on the right:
+**Variable copying** — `as` requires a literal, `[items]`, or `(fields)` on the right:
 
 ```
 copy as original    # transpiler error — use Room copy = original

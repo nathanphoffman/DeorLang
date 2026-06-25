@@ -713,6 +713,18 @@ fn word_to_kind(word: String) -> String {
         // transpiler-deor/importer/lexer/word_token.deor
         return "KW_END".to_string();
     }
+    if word == "func" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_FUNC".to_string();
+    }
+    if word == "to" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_TO".to_string();
+    }
+    if word == "none" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_NONE".to_string();
+    }
     return "IDENT".to_string();
 }
 
@@ -998,6 +1010,26 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
             } else if character == "," {
                 // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
                 tokens.push(make_token(op_kind_cm.clone(), op_val_cm.clone(), meta.clone()).clone());
+            } else if character == "&" {
+                // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
+                let mut op_kind_inv: String = "INVALID".to_string();
+                tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
+            } else if character == "|" {
+                // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
+                let mut op_kind_inv: String = "INVALID".to_string();
+                tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
+            } else if character == "^" {
+                // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
+                let mut op_kind_inv: String = "INVALID".to_string();
+                tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
+            } else if character == "{" {
+                // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
+                let mut op_kind_inv: String = "INVALID".to_string();
+                tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
+            } else if character == "}" {
+                // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
+                let mut op_kind_inv: String = "INVALID".to_string();
+                tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
             }
             char_index = char_index + 1;
         }
@@ -2248,7 +2280,7 @@ fn build_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
-type FnTestRule = fn(String) -> bool;
+type FnTestRule = fn(String);
 
 fn validate_tokens(tokens: TokensRef) {
     // transpiler-deor/tokens_validator/tokens_validation.deor
@@ -2284,9 +2316,13 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
     let mut rule_no_ret: String = "missing return type — use 'fn void name()' for functions that return nothing".to_string();
     let mut rule_void_return: String = "void functions must not use return — remove the return statement and let the function fall through".to_string();
+    let mut rule_return_empty: String = "cannot return 'empty' — declare a validator type variable without a value and return it to signal not-valid".to_string();
+    let mut rule_return_none: String = "none is not a Deor keyword — declare a validator type variable without a value and return it to signal not-valid".to_string();
     let mut rule_void_var: String = "'void' is not a valid variable type — only functions can return void".to_string();
     let mut rule_crash: String = "crash takes exactly 1 string argument".to_string();
     let mut rule_avow: String = "avow can only be used on a validator type variable".to_string();
+    let mut rule_invalid_char: String = "character is not valid in Deor — use Deor operators and keywords; raw Rust syntax belongs inside a 'rust' block".to_string();
+    let mut rule_validator_empty: String = "empty is not valid for validator types — declare without a value to start as not valid: 'Roll best'".to_string();
     let mut rule_bad_stmt: String = "literal cannot follow 'name ident' — capture in a named variable first".to_string();
     let mut rule_typed_as: String = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move".to_string();
     let mut rule_as_move: String = "`as` already transfers ownership — use `a as b` instead of `a as move b`".to_string();
@@ -2554,6 +2590,24 @@ fn validate_tokens(tokens: TokensRef) {
             if in_void_fn {
                 // transpiler-deor/tokens_validator/macros/check_void_return.deor
                 errors.push(val_err(tok.clone(), lbl_fn.clone(), rule_void_return.clone()).clone());
+            }
+        }
+        // macro: check_return_invalid (transpiler-deor/tokens_validator/macros/check_return_invalid.deor)
+        if cur_kind == "KW_RETURN" {
+            // transpiler-deor/tokens_validator/macros/check_return_invalid.deor
+            let mut ri_next: i32 = pos + 1.clone();
+            if ri_next < token_count {
+                // transpiler-deor/tokens_validator/macros/check_return_invalid.deor
+                let mut ri_tok: Token = tokens[ri_next as usize].clone();
+                let kind = ri_tok.kind.clone();
+                if kind == "KW_EMPTY" {
+                    // transpiler-deor/tokens_validator/macros/check_return_invalid.deor
+                    errors.push(val_err(ri_tok.clone(), lbl_fn.clone(), rule_return_empty.clone()).clone());
+                }
+                if kind == "KW_NONE" {
+                    // transpiler-deor/tokens_validator/macros/check_return_invalid.deor
+                    errors.push(val_err(ri_tok.clone(), lbl_fn.clone(), rule_return_none.clone()).clone());
+                }
             }
         }
         // macro: check_move_target (transpiler-deor/tokens_validator/macros/check_move_target.deor)
@@ -2876,6 +2930,11 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
+        // macro: check_invalid_char (transpiler-deor/tokens_validator/macros/check_invalid_char.deor)
+        if cur_kind == "INVALID" {
+            // transpiler-deor/tokens_validator/macros/check_invalid_char.deor
+            errors.push(val_err(tok.clone(), lbl_rust.clone(), rule_invalid_char.clone()).clone());
+        }
         // macro: track_validator_vars (transpiler-deor/tokens_validator/macros/track_validator_vars.deor)
         if cur_kind == "IDENT" {
             // transpiler-deor/tokens_validator/macros/track_validator_vars.deor
@@ -2933,6 +2992,25 @@ fn validate_tokens(tokens: TokensRef) {
                     if !avow_is_valid {
                         // transpiler-deor/tokens_validator/macros/check_avow_target.deor
                         errors.push(val_err(avow_target.clone(), lbl_var.clone(), rule_avow.clone()).clone());
+                    }
+                }
+            }
+        }
+        // macro: check_validator_empty (transpiler-deor/tokens_validator/macros/check_validator_empty.deor)
+        if cur_kind == "KW_EMPTY" {
+            // transpiler-deor/tokens_validator/macros/check_validator_empty.deor
+            if pos > 2 {
+                // transpiler-deor/tokens_validator/macros/check_validator_empty.deor
+                let mut ve_type_pos: i32 = pos - 3.clone();
+                let mut ve_type_tok: Token = tokens[ve_type_pos as usize].clone();
+                let kind = ve_type_tok.kind.clone();
+                let value = ve_type_tok.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/macros/check_validator_empty.deor
+                    let mut ve_is_validator: bool = list_has(validator_type_names.clone(), value.clone());
+                    if ve_is_validator {
+                        // transpiler-deor/tokens_validator/macros/check_validator_empty.deor
+                        errors.push(val_err(tok.clone(), lbl_var.clone(), rule_validator_empty.clone()).clone());
                     }
                 }
             }
@@ -3441,7 +3519,7 @@ fn build_shape_reg(tokens: TokensRef) -> Vec<String> {
                     let kind = t4_token.kind.clone();
                     let value = t4_token.value.clone();
                     let mut t4_is_of: bool = kind == "KW_OF".clone();
-                    let mut t4_is_to: bool = value == "to".clone();
+                    let mut t4_is_to: bool = kind == "KW_TO".clone();
                     let mut in_type: String = "".to_string();
                     let mut out_type: String = "".to_string();
                     if t4_is_of {
@@ -3457,8 +3535,9 @@ fn build_shape_reg(tokens: TokensRef) -> Vec<String> {
                         if t6_pos < token_count {
                             // transpiler-deor/registry/shape.deor
                             let mut t6_token: Token = tokens[t6_pos as usize].clone();
+                            let kind = t6_token.kind.clone();
                             let value = t6_token.value.clone();
-                            let mut t6_is_to: bool = value == "to".clone();
+                            let mut t6_is_to: bool = kind == "KW_TO".clone();
                             if t6_is_to {
                                 // transpiler-deor/registry/shape.deor
                                 let mut t7_pos: i32 = index + 7.clone();
@@ -5659,16 +5738,9 @@ fn gen_typed_binding(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let kind = val_token.kind.clone();
     if kind == "KW_EMPTY" {
         // macro: tb_empty (transpiler-deor/codegen/decl/stmt/macros/tb_empty.deor)
-        let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
         let mut is_shape: bool = reg_has(shape_reg.clone(), var_type.clone());
         let mut val_next_pos: i32 = val_pos + 1.clone();
         let mut after_empty: i32 = adv_nl_ref(val_next_pos.clone(), tokens.clone());
-        if is_validator {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_empty.deor
-            let mut err_msg: String = "/* error: empty is not valid for validator types — declare without a value instead */\n".to_string();
-            let mut err_code: String = [pad.as_str(), err_msg.as_str()].concat();
-            return make_result(err_code, after_empty.clone());
-        }
         if is_shape {
             // transpiler-deor/codegen/decl/stmt/macros/tb_empty.deor
             let mut sh_pfx: String = "let mut ".to_string();
@@ -6389,7 +6461,7 @@ fn gen_shape_decl(tokens: TokensRef, pos: i32) -> ParseResult {
     let kind = t4_token.kind.clone();
     let value = t4_token.value.clone();
     let mut t4_is_of: bool = kind == "KW_OF".clone();
-    let mut t4_is_to: bool = value == "to".clone();
+    let mut t4_is_to: bool = kind == "KW_TO".clone();
     let mut in_type: String = "".to_string();
     let mut out_type: String = "".to_string();
     let mut func_end: i32 = t4_pos.clone();
@@ -6402,7 +6474,7 @@ fn gen_shape_decl(tokens: TokensRef, pos: i32) -> ParseResult {
         let mut t6_pos: i32 = pos + 6.clone();
         let mut t6_token: Token = tokens[t6_pos as usize].clone();
         let value = t6_token.value.clone();
-        let mut t6_is_to: bool = value == "to".clone();
+        let mut t6_is_to: bool = kind == "KW_TO".clone();
         func_end = t6_pos;
         if t6_is_to {
             // transpiler-deor/codegen/decl/macros/shape_func.deor

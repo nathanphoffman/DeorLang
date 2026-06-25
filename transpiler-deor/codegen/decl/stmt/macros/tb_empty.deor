@@ -2,14 +2,9 @@
 # Handles `Type name = empty`: emits Vec::new() for list shapes, an error comment for validator
 # types (empty is not valid there), and an error comment for any other type.
 macro tb_empty
-	bool is_validator = reg3_has(type_reg, var_type)
 	bool is_shape = reg_has(shape_reg, var_type)
 	int val_next_pos = val_pos + 1
 	int after_empty = adv_nl_ref(val_next_pos, tokens)
-	if is_validator
-		string err_msg = "/* error: empty is not valid for validator types — declare without a value instead */\n"
-		string err_code = s_join([pad, err_msg])
-		return make_result(move err_code, after_empty)
 	if is_shape
 		string sh_pfx = "let mut "
 		string sh_mid = ": "

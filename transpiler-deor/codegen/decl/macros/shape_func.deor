@@ -6,7 +6,7 @@ macro shape_func
 	Token t4_token = tokens at t4_pos
 	(kind, value) in t4_token
 	bool t4_is_of = kind is "KW_OF"
-	bool t4_is_to = value is "to"
+	bool t4_is_to = kind is "KW_TO"
 	string in_type = ""
 	string out_type = ""
 	int func_end = t4_pos
@@ -19,7 +19,7 @@ macro shape_func
 		int t6_pos = pos + 6
 		Token t6_token = tokens at t6_pos
 		(value) in t6_token
-		bool t6_is_to = value is "to"
+		bool t6_is_to = kind is "KW_TO"
 		func_end = t6_pos
 		if t6_is_to
 			int t7_pos = pos + 7

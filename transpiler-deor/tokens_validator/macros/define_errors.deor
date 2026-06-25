@@ -20,11 +20,15 @@ macro define_errors
 	string rule_param_shadow = "parameter name cannot be the same as its type — choose a descriptive name"
 	string rule_no_ret = "missing return type — use 'fn void name()' for functions that return nothing"
 	string rule_void_return = "void functions must not use return — remove the return statement and let the function fall through"
+	string rule_return_empty = "cannot return 'empty' — declare a validator type variable without a value and return it to signal not-valid"
+	string rule_return_none = "none is not a Deor keyword — declare a validator type variable without a value and return it to signal not-valid"
 	string rule_void_var = "'void' is not a valid variable type — only functions can return void"
 	string rule_crash = "crash takes exactly 1 string argument"
 
 	# statement rules
 	string rule_avow = "avow can only be used on a validator type variable"
+	string rule_invalid_char = "character is not valid in Deor — use Deor operators and keywords; raw Rust syntax belongs inside a 'rust' block"
+	string rule_validator_empty = "empty is not valid for validator types — declare without a value to start as not valid: 'Roll best'"
 	string rule_bad_stmt = "literal cannot follow 'name ident' — capture in a named variable first"
 	string rule_typed_as = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move"
 	string rule_as_move = "`as` already transfers ownership — use `a as b` instead of `a as move b`"

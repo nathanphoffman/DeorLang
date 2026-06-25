@@ -1,0 +1,13 @@
+
+# Flags `ValidatorType name = empty` — empty is not valid for validator types.
+# Declare without a value instead: `Roll best` starts as not valid.
+macro check_validator_empty
+	if cur_kind is "KW_EMPTY"
+		if pos > 2
+			int ve_type_pos = pos - 3
+			Token ve_type_tok = tokens at ve_type_pos
+			(kind, value) in ve_type_tok
+			if kind is "IDENT"
+				bool ve_is_validator = list_has(validator_type_names, value)
+				if ve_is_validator
+					errors at end = val_err(tok, lbl_var, rule_validator_empty)
