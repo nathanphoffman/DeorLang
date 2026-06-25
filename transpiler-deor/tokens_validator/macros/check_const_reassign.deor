@@ -1,0 +1,19 @@
+
+# Fires when a const variable name is followed by EQUALS without a preceding type IDENT —
+# i.e., a bare reassignment `pipe = "new"` rather than the const declaration itself.
+macro check_const_reassign
+	bool ccr_is_const = list_has(const_var_names, cur_val)
+	if ccr_is_const
+		int ccr_eq_pos = pos + 1
+		if ccr_eq_pos < token_count
+			Token ccr_eq_tok = tokens at ccr_eq_pos
+			(kind) in ccr_eq_tok
+			if kind is "EQUALS"
+				bool ccr_is_decl = false
+				if pos > 0
+					int ccr_prev_pos = pos - 1
+					Token ccr_prev_tok = tokens at ccr_prev_pos
+					(kind) in ccr_prev_tok
+					ccr_is_decl = kind is "IDENT"
+				if not ccr_is_decl
+					errors at end = val_err(tok, lbl_var, rule_const_reassign)

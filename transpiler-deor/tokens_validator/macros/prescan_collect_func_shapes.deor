@@ -1,0 +1,17 @@
+
+# Prescan pass: collects names of func shapes (shape Foo = func ...) into
+# func_shape_names so prescan_check_struct_fields can reject them as field types.
+# Must run in a dedicated first pass before the main prescan loop.
+macro prescan_collect_func_shapes
+	if kind is "KW_SHAPE"
+		int cfs_form_pos = pre_i + 3
+		if cfs_form_pos < token_count
+			Token cfs_form_tok = tokens at cfs_form_pos
+			(kind) in cfs_form_tok
+			if kind is "KW_FUNC"
+				int cfs_name_pos = pre_i + 1
+				if cfs_name_pos < token_count
+					Token cfs_name_tok = tokens at cfs_name_pos
+					(kind, value) in cfs_name_tok
+					if kind is "IDENT"
+						func_shape_names at end = value

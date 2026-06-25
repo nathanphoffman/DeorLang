@@ -29,7 +29,16 @@ macro prescan_check_struct_fields
 			(kind) in sf_tok
 			if kind is "DEDENT"
 				break
+			if kind is "KW_RAW"
+				int sf_raw_name_pos = sf_pos + 1
+				if sf_raw_name_pos < token_count
+					Token sf_raw_name_tok = tokens at sf_raw_name_pos
+					(kind, value) in sf_raw_name_tok
+					if kind is "IDENT"
+						errors at end = val_err(sf_raw_name_tok, lbl_field, rule_no_raw_field)
 			if kind is "IDENT"
+				(value) in sf_tok
+				string sf_field_type = value
 				int field_name_pos = sf_pos + 1
 				if field_name_pos < token_count
 					Token field_name_tok = tokens at field_name_pos
@@ -39,6 +48,9 @@ macro prescan_check_struct_fields
 							errors at end = val_err(field_name_tok, lbl_field, rule_min3)
 						if not is_snake(value)
 							errors at end = val_err(field_name_tok, lbl_field, rule_snake)
+						bool sf_is_func = list_has(func_shape_names, sf_field_type)
+						if sf_is_func
+							errors at end = val_err(field_name_tok, lbl_field, rule_no_func_field)
 						sf_fields at end = value
 			sf_pos = sf_pos + 1
 

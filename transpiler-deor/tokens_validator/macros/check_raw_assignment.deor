@@ -1,0 +1,21 @@
+
+# Validates `raw name = rust ...` — the only valid form of a raw declaration.
+# Also tracks the variable name into raw_var_names for use by check_raw_in_binding.
+macro check_raw_assignment
+	if cur_kind is "KW_RAW"
+		int ra_eq_pos = pos + 2
+		if ra_eq_pos < token_count
+			Token ra_eq_tok = tokens at ra_eq_pos
+			(kind) in ra_eq_tok
+			if kind is "EQUALS"
+				Token ra_name_tok = tokens at pos + 1
+				(kind, value) in ra_name_tok
+				if kind is "IDENT"
+					raw_var_names at end = value
+					int ra_rust_pos = pos + 3
+					if ra_rust_pos < token_count
+						Token ra_rust_tok = tokens at ra_rust_pos
+						(kind) in ra_rust_tok
+						bool ra_is_rust = kind is "KW_RUST"
+						if not ra_is_rust
+							errors at end = val_err(ra_rust_tok, lbl_var, rule_raw_assignment)

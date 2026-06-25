@@ -2314,6 +2314,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_list_validator: String = "list shapes cannot be validator base types — validators only wrap primitives".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
+    let mut rule_type_param_shadow: String = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num'".to_string();
     let mut rule_no_ret: String = "missing return type — use 'fn void name()' for functions that return nothing".to_string();
     let mut rule_void_return: String = "void functions must not use return — remove the return statement and let the function fall through".to_string();
     let mut rule_return_empty: String = "cannot return 'empty' — declare a validator type variable without a value and return it to signal not-valid".to_string();
@@ -2332,29 +2333,43 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
     let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
+    let mut rule_raw_assignment: String = "raw variables must be assigned from a rust block — use 'raw name = rust ...'".to_string();
+    let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor expressions — consume them inside a rust block".to_string();
+    let mut rule_no_func_field: String = "func shapes cannot be struct fields — pass the func shape as a function parameter instead".to_string();
+    let mut rule_no_raw_field: String = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs".to_string();
     let mut rule_struct_field_count: String = "wrong number of fields in struct construction — all fields must be provided".to_string();
     let mut rule_struct_field_name: String = "unknown field name in struct construction — variable name does not match any field in this struct".to_string();
     // transpiler-deor/tokens_validator/tokens_validation.deor
     let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
-    let mut shape_names: Vec<String> = Vec::new();
-    let mut decl_names: Vec<String> = Vec::new();
-    let mut struct_field_reg: Vec<String> = Vec::new();
+    let mut func_shape_names: Vec<String> = Vec::new();
     let mut validator_type_names: Vec<String> = Vec::new();
-    let mut validator_vars: Vec<String> = Vec::new();
     let mut pre_i: i32 = 0;
     while pre_i < token_count {
         // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut pre_tok: Token = tokens[pre_i as usize].clone();
         let kind = pre_tok.kind.clone();
-        // macro: prescan_collect_shapes (transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor)
+        // macro: prescan_collect_func_shapes (transpiler-deor/tokens_validator/macros/prescan_collect_func_shapes.deor)
         if kind == "KW_SHAPE" {
-            // transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor
-            let mut sn_pos: i32 = pre_i + 1.clone();
-            if sn_pos < token_count {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor
-                let mut sn_tok: Token = tokens[sn_pos as usize].clone();
-                let value = sn_tok.value.clone();
-                shape_names.push(value.clone());
+            // transpiler-deor/tokens_validator/macros/prescan_collect_func_shapes.deor
+            let mut cfs_form_pos: i32 = pre_i + 3.clone();
+            if cfs_form_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_func_shapes.deor
+                let mut cfs_form_tok: Token = tokens[cfs_form_pos as usize].clone();
+                let kind = cfs_form_tok.kind.clone();
+                if kind == "KW_FUNC" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_func_shapes.deor
+                    let mut cfs_name_pos: i32 = pre_i + 1.clone();
+                    if cfs_name_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_func_shapes.deor
+                        let mut cfs_name_tok: Token = tokens[cfs_name_pos as usize].clone();
+                        let kind = cfs_name_tok.kind.clone();
+                        let value = cfs_name_tok.value.clone();
+                        if kind == "IDENT" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_func_shapes.deor
+                            func_shape_names.push(value.clone());
+                        }
+                    }
+                }
             }
         }
         // macro: prescan_collect_validator_types (transpiler-deor/tokens_validator/macros/prescan_collect_validator_types.deor)
@@ -2370,6 +2385,30 @@ fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/prescan_collect_validator_types.deor
                     validator_type_names.push(value.clone());
                 }
+            }
+        }
+        // transpiler-deor/tokens_validator/tokens_validation.deor
+        pre_i = pre_i + 1;
+    }
+    let mut shape_names: Vec<String> = Vec::new();
+    let mut decl_names: Vec<String> = Vec::new();
+    let mut struct_field_reg: Vec<String> = Vec::new();
+    let mut validator_vars: Vec<String> = Vec::new();
+    let mut raw_var_names: Vec<String> = Vec::new();
+    pre_i = 0;
+    while pre_i < token_count {
+        // transpiler-deor/tokens_validator/tokens_validation.deor
+        let mut pre_tok: Token = tokens[pre_i as usize].clone();
+        let kind = pre_tok.kind.clone();
+        // macro: prescan_collect_shapes (transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor)
+        if kind == "KW_SHAPE" {
+            // transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor
+            let mut sn_pos: i32 = pre_i + 1.clone();
+            if sn_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor
+                let mut sn_tok: Token = tokens[sn_pos as usize].clone();
+                let value = sn_tok.value.clone();
+                shape_names.push(value.clone());
             }
         }
         // macro: prescan_check_duplicate_decls (transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor)
@@ -2454,8 +2493,24 @@ fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
                     break;
                 }
+                if kind == "KW_RAW" {
+                    // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                    let mut sf_raw_name_pos: i32 = sf_pos + 1.clone();
+                    if sf_raw_name_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                        let mut sf_raw_name_tok: Token = tokens[sf_raw_name_pos as usize].clone();
+                        let kind = sf_raw_name_tok.kind.clone();
+                        let value = sf_raw_name_tok.value.clone();
+                        if kind == "IDENT" {
+                            // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                            errors.push(val_err(sf_raw_name_tok.clone(), lbl_field.clone(), rule_no_raw_field.clone()).clone());
+                        }
+                    }
+                }
                 if kind == "IDENT" {
                     // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                    let value = sf_tok.value.clone();
+                    let mut sf_field_type: String = value.clone();
                     let mut field_name_pos: i32 = sf_pos + 1.clone();
                     if field_name_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
@@ -2471,6 +2526,11 @@ fn validate_tokens(tokens: TokensRef) {
                             if !is_snake(value.clone()) {
                                 // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
                                 errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_snake.clone()).clone());
+                            }
+                            let mut sf_is_func: bool = list_has(func_shape_names.clone(), sf_field_type.clone());
+                            if sf_is_func {
+                                // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                                errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_no_func_field.clone()).clone());
                             }
                             sf_fields.push(value.clone());
                         }
@@ -2898,6 +2958,43 @@ fn validate_tokens(tokens: TokensRef) {
                 }
             }
         }
+        // macro: check_validator_declaration (transpiler-deor/tokens_validator/macros/check_validator_declaration.deor)
+        if cur_kind == "KW_TYPE" {
+            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+            let mut vd_name_pos: i32 = pos + 1.clone();
+            let mut vd_lp_pos: i32 = pos + 2.clone();
+            let mut vd_ptype_pos: i32 = pos + 3.clone();
+            let mut vd_pname_pos: i32 = pos + 4.clone();
+            if vd_pname_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                let mut vd_name_tok: Token = tokens[vd_name_pos as usize].clone();
+                let mut vd_lp_tok: Token = tokens[vd_lp_pos as usize].clone();
+                let mut vd_ptype_tok: Token = tokens[vd_ptype_pos as usize].clone();
+                let mut vd_pname_tok: Token = tokens[vd_pname_pos as usize].clone();
+                let kind = vd_name_tok.kind.clone();
+                let value = vd_name_tok.value.clone();
+                let mut vd_type_name: String = value.clone();
+                let kind = vd_lp_tok.kind.clone();
+                if kind == "LPAREN" {
+                    // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                    let value = vd_ptype_tok.value.clone();
+                    let mut vd_param_type: String = value.clone();
+                    let kind = vd_pname_tok.kind.clone();
+                    let value = vd_pname_tok.value.clone();
+                    if kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                        if value == vd_type_name {
+                            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                            errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_type_param_shadow.clone()).clone());
+                        }
+                        if value == vd_param_type {
+                            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                            errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_param_shadow.clone()).clone());
+                        }
+                    }
+                }
+            }
+        }
         // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut keyword: String = "KW_FN".to_string();
         let mut lbl: String = lbl_fn.clone();
@@ -2934,6 +3031,31 @@ fn validate_tokens(tokens: TokensRef) {
         if cur_kind == "INVALID" {
             // transpiler-deor/tokens_validator/macros/check_invalid_char.deor
             errors.push(val_err(tok.clone(), lbl_rust.clone(), rule_invalid_char.clone()).clone());
+        }
+        // macro: check_raw_assignment (transpiler-deor/tokens_validator/macros/check_raw_assignment.deor)
+        if cur_kind == "KW_RAW" {
+            let mut ra_eq_pos: i32 = pos + 2;
+            if ra_eq_pos < token_count {
+                let mut ra_eq_tok: Token = tokens[ra_eq_pos as usize].clone();
+                let kind = ra_eq_tok.kind.clone();
+                if kind == "EQUALS" {
+                    let mut ra_name_tok: Token = tokens[(pos + 1) as usize].clone();
+                    let kind = ra_name_tok.kind.clone();
+                    let value = ra_name_tok.value.clone();
+                    if kind == "IDENT" {
+                        raw_var_names.push(value.clone());
+                        let mut ra_rust_pos: i32 = pos + 3;
+                        if ra_rust_pos < token_count {
+                            let mut ra_rust_tok: Token = tokens[ra_rust_pos as usize].clone();
+                            let kind = ra_rust_tok.kind.clone();
+                            let mut ra_is_rust: bool = kind == "KW_RUST";
+                            if !ra_is_rust {
+                                errors.push(val_err(ra_rust_tok.clone(), lbl_var.clone(), rule_raw_assignment.clone()).clone());
+                            }
+                        }
+                    }
+                }
+            }
         }
         // macro: track_validator_vars (transpiler-deor/tokens_validator/macros/track_validator_vars.deor)
         if cur_kind == "IDENT" {
@@ -3134,6 +3256,36 @@ fn validate_tokens(tokens: TokensRef) {
             if is_rust_generic {
                 // transpiler-deor/tokens_validator/macros/check_rust_generic.deor
                 errors.push(val_err(tok.clone(), lbl_rust.clone(), rule_no_option.clone()).clone());
+            }
+            // macro: check_raw_in_binding (transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor)
+            if cur_kind == "IDENT" {
+                // transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor
+                let mut rib_name_pos: i32 = pos + 1.clone();
+                let mut rib_eq_pos: i32 = pos + 2.clone();
+                let mut rib_val_pos: i32 = pos + 3.clone();
+                if rib_val_pos < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor
+                    let mut rib_name_tok: Token = tokens[rib_name_pos as usize].clone();
+                    let mut rib_eq_tok: Token = tokens[rib_eq_pos as usize].clone();
+                    let mut rib_val_tok: Token = tokens[rib_val_pos as usize].clone();
+                    let kind = rib_name_tok.kind.clone();
+                    let mut rib_name_kind: String = kind.clone();
+                    let kind = rib_eq_tok.kind.clone();
+                    let mut rib_eq_kind: String = kind.clone();
+                    let kind = rib_val_tok.kind.clone();
+                    let value = rib_val_tok.value.clone();
+                    let mut rib_is_binding: bool = rib_name_kind == "IDENT".clone();
+                    rib_is_binding = rib_is_binding && rib_eq_kind == "EQUALS";
+                    let mut rib_val_is_ident: bool = kind == "IDENT".clone();
+                    if rib_is_binding && rib_val_is_ident {
+                        // transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor
+                        let mut rib_is_raw: bool = list_has(raw_var_names.clone(), value.clone());
+                        if rib_is_raw {
+                            // transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor
+                            errors.push(val_err(rib_val_tok.clone(), lbl_var.clone(), rule_raw_in_expr.clone()).clone());
+                        }
+                    }
+                }
             }
             // macro: check_var_decl (transpiler-deor/tokens_validator/macros/check_var_decl.deor)
             let mut next1: i32 = pos + 1.clone();

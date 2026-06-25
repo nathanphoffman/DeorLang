@@ -62,3 +62,66 @@ macro_run compute_area    # safe — block variables do not leak between calls
 Without `block`, the second `macro_run` would fail to compile because `length`, `width`, and `area` would already be declared in scope.
 
 If the macro only reads variables from the caller's scope without declaring any of its own, `block` is not needed.
+
+---
+
+## `macro_block` — Wrap a Body With Open and Close Code
+
+`macro_block` is a pre-processor construct that runs before tokenization. It lets you define reusable open/close code snippets that wrap an indented body at each call site.
+
+Three keywords form the system:
+
+- `macro_block_open name` — code injected before the body
+- `macro_block_close name` — code injected after the body
+- `macro_block name` — the call site; its indented body is sandwiched between open and close
+
+**Definition:**
+
+```
+macro_block_open timer
+    int _timer_start = now_ms()
+
+macro_block_close timer
+    int _timer_elapsed = elapsed_ms(_timer_start)
+    string _timer_str = n_to_str(_timer_elapsed)
+    string _timer_sfx = "ms"
+    print(s_join([_timer_label, _timer_str, _timer_sfx]))
+```
+
+**Usage:**
+
+```
+string _timer_label = "[timer] load: "
+macro_block timer
+    tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
+```
+
+The indented body under `macro_block timer` is the content being wrapped. After expansion this becomes:
+
+```
+string _timer_label = "[timer] load: "
+int _timer_start = now_ms()
+tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
+int _timer_elapsed = elapsed_ms(_timer_start)
+string _timer_str = n_to_str(_timer_elapsed)
+string _timer_sfx = "ms"
+print(s_join([_timer_label, _timer_str, _timer_sfx]))
+```
+
+The close body can freely read variables declared in the open body (`_timer_start`) and variables the caller placed in scope before the call (`_timer_label`).
+
+**Indentation in definitions**
+
+The body of `macro_block_open` and `macro_block_close` follows standard Deor indentation. If the close needs nested code, write it with the natural extra indentation levels:
+
+```
+macro_block_close checked
+    if error_count > 0
+        print("failed")
+```
+
+The preprocessor preserves relative indentation when expanding at any call site depth.
+
+**Definitions are picked up from imported files (one level deep).** You can define `macro_block_open` / `macro_block_close` in a separate file, import that file, and then use `macro_block name` anywhere in the importing file.
+
+`macro_block` differs from `macro` / `macro_run` in two ways: it operates on raw source text before the lexer runs, and it wraps a variable body of caller-provided code rather than inlining a fixed snippet.

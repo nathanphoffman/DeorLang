@@ -1,0 +1,26 @@
+
+# Validates type declarations: catches param name shadowing the type name (type Roll(int Roll))
+# and param name shadowing its own base type (type Roll(int int)).
+macro check_validator_declaration
+	if cur_kind is "KW_TYPE"
+		int vd_name_pos = pos + 1
+		int vd_lp_pos = pos + 2
+		int vd_ptype_pos = pos + 3
+		int vd_pname_pos = pos + 4
+		if vd_pname_pos < token_count
+			Token vd_name_tok = tokens at vd_name_pos
+			Token vd_lp_tok = tokens at vd_lp_pos
+			Token vd_ptype_tok = tokens at vd_ptype_pos
+			Token vd_pname_tok = tokens at vd_pname_pos
+			(kind, value) in vd_name_tok
+			string vd_type_name = value
+			(kind) in vd_lp_tok
+			if kind is "LPAREN"
+				(value) in vd_ptype_tok
+				string vd_param_type = value
+				(kind, value) in vd_pname_tok
+				if kind is "IDENT"
+					if value is vd_type_name
+						errors at end = val_err(vd_pname_tok, lbl_type, rule_type_param_shadow)
+					if value is vd_param_type
+						errors at end = val_err(vd_pname_tok, lbl_type, rule_param_shadow)

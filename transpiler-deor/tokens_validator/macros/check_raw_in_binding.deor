@@ -1,0 +1,24 @@
+
+# Flags raw variables used as the RHS of a typed binding: `string val = raw_index`.
+# Fires when the current token is in a type position and the value token is a raw var.
+macro check_raw_in_binding
+	if cur_kind is "IDENT"
+		int rib_name_pos = pos + 1
+		int rib_eq_pos = pos + 2
+		int rib_val_pos = pos + 3
+		if rib_val_pos < token_count
+			Token rib_name_tok = tokens at rib_name_pos
+			Token rib_eq_tok = tokens at rib_eq_pos
+			Token rib_val_tok = tokens at rib_val_pos
+			(kind) in rib_name_tok
+			string rib_name_kind = kind
+			(kind) in rib_eq_tok
+			string rib_eq_kind = kind
+			(kind, value) in rib_val_tok
+			bool rib_is_binding = rib_name_kind is "IDENT"
+			rib_is_binding = rib_is_binding and rib_eq_kind is "EQUALS"
+			bool rib_val_is_ident = kind is "IDENT"
+			if rib_is_binding and rib_val_is_ident
+				bool rib_is_raw = list_has(raw_var_names, value)
+				if rib_is_raw
+					errors at end = val_err(rib_val_tok, lbl_var, rule_raw_in_expr)

@@ -28,18 +28,30 @@ fn void validate_tokens(TokensRef tokens)
 
 	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
 
-	# pre-scan: collect shape names + all decl names + validate struct/enum members
-	strList shape_names = empty
-	strList decl_names = empty
-	strList struct_field_reg = empty
+	# first pre-scan: collect names that later prescan passes depend on
+	strList func_shape_names = empty
 	strList validator_type_names = empty
-	strList validator_vars = empty
 	int pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
 		(kind) in pre_tok
-		macro_run prescan_collect_shapes
+		macro_run prescan_collect_func_shapes
 		macro_run prescan_collect_validator_types
+		pre_i = pre_i + 1
+
+	# second pre-scan: collect remaining names + validate members
+	strList shape_names = empty
+	strList decl_names = empty
+	strList struct_field_reg = empty
+	strList validator_vars = empty
+	strList raw_var_names = empty
+	strList const_var_names = empty
+	pre_i = 0
+	for if pre_i < token_count
+		Token pre_tok = tokens at pre_i
+		(kind) in pre_tok
+		macro_run prescan_collect_shapes
+		macro_run prescan_collect_const_names
 		macro_run prescan_check_duplicate_decls
 		macro_run prescan_check_struct_fields
 		macro_run prescan_check_enum_variants
@@ -94,6 +106,7 @@ fn void validate_tokens(TokensRef tokens)
 
 		macro_run check_type_base_not_shape
 		macro_run check_fn_declaration
+		macro_run check_validator_declaration
 
 		# fn name: snake_case, min 3
 		string keyword = "KW_FN"
@@ -104,6 +117,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run validate_ident
 
 		macro_run check_invalid_char
+		macro_run check_raw_assignment
 		macro_run track_validator_vars
 		macro_run check_crash_args
 		macro_run check_avow_target
@@ -131,6 +145,8 @@ fn void validate_tokens(TokensRef tokens)
 			if not is_fn_decl_name
 				macro_run check_call_args
 			macro_run check_rust_generic
+			macro_run check_raw_in_binding
+			macro_run check_const_reassign
 			macro_run check_var_decl
 			macro_run check_bad_stmt
 			macro_run check_bracket_indexing

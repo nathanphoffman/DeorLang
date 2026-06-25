@@ -18,6 +18,7 @@ macro define_errors
 	# function rules
 	string rule_max_params = "functions may have at most 3 parameters"
 	string rule_param_shadow = "parameter name cannot be the same as its type — choose a descriptive name"
+	string rule_type_param_shadow = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num'"
 	string rule_no_ret = "missing return type — use 'fn void name()' for functions that return nothing"
 	string rule_void_return = "void functions must not use return — remove the return statement and let the function fall through"
 	string rule_return_empty = "cannot return 'empty' — declare a validator type variable without a value and return it to signal not-valid"
@@ -38,6 +39,17 @@ macro define_errors
 	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
 	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"
 	string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"
+
+	# const rules
+	string rule_const_reassign = "cannot reassign a const variable — const bindings are immutable"
+
+	# raw rules
+	string rule_raw_assignment = "raw variables must be assigned from a rust block — use 'raw name = rust ...'"
+	string rule_raw_in_expr = "raw variables cannot be used in Deor expressions — consume them inside a rust block"
+
+	# struct field rules
+	string rule_no_func_field = "func shapes cannot be struct fields — pass the func shape as a function parameter instead"
+	string rule_no_raw_field = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs"
 
 	# struct construction rules
 	string rule_struct_field_count = "wrong number of fields in struct construction — all fields must be provided"
