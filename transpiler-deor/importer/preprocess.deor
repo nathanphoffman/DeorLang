@@ -16,22 +16,24 @@
 
 rust
 	// macro_block global definition store
+	// Each entry is (body_lines, optional_param_name) where param_name is the identifier
+	// after $ in the definition header, e.g. `macro_block_open foo $name` → param = Some("name").
 	thread_local! {
-		static MB_OPENS: std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
+		static MB_OPENS: std::cell::RefCell<std::collections::HashMap<String, (Vec<String>, Option<String>)>> =
 			std::cell::RefCell::new(std::collections::HashMap::new());
-		static MB_CLOSES: std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
+		static MB_CLOSES: std::cell::RefCell<std::collections::HashMap<String, (Vec<String>, Option<String>)>> =
 			std::cell::RefCell::new(std::collections::HashMap::new());
 	}
-	fn mb_store_open(name: String, body: Vec<String>) {
-		MB_OPENS.with(|m| { m.borrow_mut().insert(name, body); });
+	fn mb_store_open(name: String, body: Vec<String>, param: Option<String>) {
+		MB_OPENS.with(|m| { m.borrow_mut().insert(name, (body, param)); });
 	}
-	fn mb_store_close(name: String, body: Vec<String>) {
-		MB_CLOSES.with(|m| { m.borrow_mut().insert(name, body); });
+	fn mb_store_close(name: String, body: Vec<String>, param: Option<String>) {
+		MB_CLOSES.with(|m| { m.borrow_mut().insert(name, (body, param)); });
 	}
-	fn mb_get_open(name: &str) -> Vec<String> {
+	fn mb_get_open(name: &str) -> (Vec<String>, Option<String>) {
 		MB_OPENS.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
 	}
-	fn mb_get_close(name: &str) -> Vec<String> {
+	fn mb_get_close(name: &str) -> (Vec<String>, Option<String>) {
 		MB_CLOSES.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
 	}
 
@@ -84,25 +86,40 @@ fn string preprocess_source(string source)
 					.unwrap_or(false)
 			}
 
+			fn parse_name_and_param(rest: &str) -> (String, Option<String>) {
+				if let Some(dollar) = rest.find('$') {
+					let name = rest[..dollar].trim().to_string();
+					let param = rest[dollar + 1..].trim().to_string();
+					(name, if param.is_empty() { None } else { Some(param) })
+				} else {
+					(rest.trim().to_string(), None)
+				}
+			}
+
 			fn collect_defs_from_lines(imp_lines: &[String]) {
 				let mut j = 0;
 				while j < imp_lines.len() {
 					let t = imp_lines[j].trim();
 					let ib = get_indent(&imp_lines[j]);
 					if t.starts_with("macro_block_open ") {
-						let name = t["macro_block_open ".len()..].trim().to_string();
+						let (name, param) = parse_name_and_param(&t["macro_block_open ".len()..]);
 						let (body, end) = collect_body(imp_lines, j + 1, ib);
-						mb_store_open(name, body);
+						mb_store_open(name, body, param);
 						j = end;
 					} else if t.starts_with("macro_block_close ") {
-						let name = t["macro_block_close ".len()..].trim().to_string();
+						let (name, param) = parse_name_and_param(&t["macro_block_close ".len()..]);
 						let (body, end) = collect_body(imp_lines, j + 1, ib);
-						mb_store_close(name, body);
+						mb_store_close(name, body, param);
 						j = end;
 					} else {
 						j += 1;
 					}
 				}
+			}
+
+			fn substitute(lines: &[String], param: &str, arg: &str) -> Vec<String> {
+				let placeholder = format!("${}", param);
+				lines.iter().map(|l| l.replace(&placeholder, arg)).collect()
 			}
 
 			fn expand_macro_block_lines(lines: &[String], depth: u32) -> Vec<String> {
@@ -121,10 +138,23 @@ fn string preprocess_source(string source)
 						std::process::exit(1);
 					}
 					if trimmed.starts_with("macro_block ") {
-						let name = trimmed["macro_block ".len()..].trim().to_string();
+						let rest = trimmed["macro_block ".len()..].trim();
+						let (name, arg) = if let Some(sp) = rest.find(' ') {
+							(rest[..sp].to_string(), Some(rest[sp + 1..].trim().to_string()))
+						} else {
+							(rest.to_string(), None)
+						};
 						let call_indent = get_indent(line);
-						let open_body = mb_get_open(&name);
-						let close_body = mb_get_close(&name);
+						let (open_body, open_param) = mb_get_open(&name);
+						let (close_body, close_param) = mb_get_close(&name);
+						let open_body = match (open_param.as_deref(), arg.as_deref()) {
+							(Some(p), Some(a)) => substitute(&open_body, p, a),
+							_ => open_body,
+						};
+						let close_body = match (close_param.as_deref(), arg.as_deref()) {
+							(Some(p), Some(a)) => substitute(&close_body, p, a),
+							_ => close_body,
+						};
 						let raw_mode = is_raw_mode(&open_body);
 						for l in adjust_body(&open_body, call_indent) { result.push(l); }
 						i += 1;
