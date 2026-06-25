@@ -42,9 +42,10 @@ fn int square(int val)
     val * val
 ```
 ---
-## Destructuring
+## Construction and Destructuring
 
-Field order does not matter in destructuring — fields are matched by name. Any subset in any order is valid.
+Field order does not matter — all construction and destructuring forms are name-matched. Any subset in any order is valid for destructuring; fields in construction are matched by variable name to struct field name.
+
 ```
 struct Employee
     int employee_id
@@ -52,8 +53,11 @@ struct Employee
     string last_name
 
 (employee_id, first_name, last_name) in employee
+Employee emp = (employee_id, first_name, last_name)
+emp as (employee_id, first_name, last_name)
 ```
 
+Even though order is not enforced, write fields in the same order they appear in the struct declaration. It makes construction and destructuring sites easier to scan and keeps things consistent across the codebase.
 
 Additionally, all `in` extractions should appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
 

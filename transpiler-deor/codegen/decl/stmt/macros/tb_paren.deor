@@ -9,34 +9,28 @@ macro tb_paren
 	bool is_struct_type = reg_has(struct_reg, var_type)
 	if not is_avow_expr
 		if is_struct_type
-			string struct_fields_str = reg_get(struct_reg, var_type)
-			string comma = ","
-			strList field_names = s_split(struct_fields_str, comma)
-			strList field_pairs = empty
-			int fend = val_pos + 1
-			int fni = 0
-			int fn_count = len(field_names)
-			for if fend < token_count
-				Token field_tok = tokens at fend
-				(kind) in field_tok
+			strList tb_fields = empty
+			int tb_fend = val_pos + 1
+			for if tb_fend < token_count
+				Token tb_field_tok = tokens at tb_fend
+				(kind, value) in tb_field_tok
 				if kind is "RPAREN"
-					fend = fend + 1
+					tb_fend = tb_fend + 1
 					break
-				if kind is "COMMA"
-					fend = fend + 1
-					continue
-				val_pos as fend
-				ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
-				move (code, new_pos) in ge_r
-				val_code as code
-				val_end as new_pos
-				if fni < fn_count
-					string fname = field_names at fni
-					string sfp_sep = ": "
-					string sfp_cln = ".clone()"
-					field_pairs at end = s_join([fname, sfp_sep, val_code, sfp_cln])
-					fni = fni + 1
-				fend = val_end
+				else if kind is "COMMA"
+					tb_fend = tb_fend + 1
+				else if kind is "IDENT"
+					tb_fields at end = value
+					tb_fend = tb_fend + 1
+				else
+					tb_fend = tb_fend + 1
+			strList field_pairs = empty
+			int tb_fcount = len(tb_fields)
+			for tb_fi in range(tb_fcount)
+				string tb_fname = tb_fields at tb_fi
+				string sfp_sep = ": "
+				string sfp_cln = ".clone()"
+				field_pairs at end = s_join([tb_fname, sfp_sep, tb_fname, sfp_cln])
 			string sep = ", "
 			string fields_code = s_join_with(field_pairs, sep)
 			bool mg_is_mut = list_has(mut_names, var_name)
@@ -48,7 +42,7 @@ macro tb_paren
 			string scc_ob = " { "
 			string scc_cb = " };\n"
 			string sc_code = s_join([pad, scc_let, mut_kw, var_name, scc_eq, var_type, scc_ob, fields_code, scc_cb])
-			return make_nl_result(move sc_code, fend, tokens)
+			return make_nl_result(move sc_code, tb_fend, tokens)
 	if is_avow_expr
 		int inner_pos = peek_pos + 1
 		val_pos as inner_pos
