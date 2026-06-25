@@ -6,32 +6,38 @@
 #   macro_block_close NAME  — defines the text inserted after the content
 #   macro_block       NAME  — expands: open body + content + close body
 #
+# Definitions are stored in thread-local globals so they can be picked up from
+# imported files (one level deep — the pre-scanner reads direct imports only).
+#
 # Content indentation:
-#   If the open body's last non-empty line ends with `{`, content is treated as raw
-#   passthrough (stays inside the open rust block). Otherwise content is dedented by
-#   one tab so it is parsed as normal Deor code outside the rust blocks.
-#
-# Example (RSX — raw passthrough):
-#   macro_block_open rsx
-#       rust
-#           dioxus_ssr::render_element(rsx! {
-#   macro_block_close rsx
-#       rust
-#           })
-#
-# Example (timer — Deor content):
-#   macro_block_open timer
-#       rust
-#           let __timer_start = std::time::Instant::now();
-#   macro_block_close timer
-#       rust
-#           println!("[timer] {:.2?}", __timer_start.elapsed());
+#   If the open body's last non-empty line ends with `{`, content is raw passthrough
+#   (stays inside the open rust block). Otherwise content is dedented by one tab so
+#   it is parsed as normal Deor code outside the rust blocks.
+
+rust
+	// macro_block global definition store
+	thread_local! {
+		static MB_OPENS: std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
+			std::cell::RefCell::new(std::collections::HashMap::new());
+		static MB_CLOSES: std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
+			std::cell::RefCell::new(std::collections::HashMap::new());
+	}
+	fn mb_store_open(name: String, body: Vec<String>) {
+		MB_OPENS.with(|m| { m.borrow_mut().insert(name, body); });
+	}
+	fn mb_store_close(name: String, body: Vec<String>) {
+		MB_CLOSES.with(|m| { m.borrow_mut().insert(name, body); });
+	}
+	fn mb_get_open(name: &str) -> Vec<String> {
+		MB_OPENS.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
+	}
+	fn mb_get_close(name: &str) -> Vec<String> {
+		MB_CLOSES.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
+	}
 
 fn string preprocess_source(string source)
 	rust
 		{
-			use std::collections::HashMap;
-
 			let lines: Vec<String> = source.lines().map(|l| l.to_string()).collect();
 			let n = lines.len();
 
@@ -60,23 +66,17 @@ fn string preprocess_source(string source)
 				(body, i)
 			}
 
-			// Place body lines at call_indent. Definition body starts at indent 1.
 			fn adjust_body(body: &[String], call_indent: usize) -> Vec<String> {
 				body.iter().map(|line| {
-					if line.trim().is_empty() {
-						return String::new();
-					}
+					if line.trim().is_empty() { return String::new(); }
 					if call_indent == 0 {
 						if line.starts_with('\t') { line[1..].to_string() } else { line.to_string() }
 					} else {
-						let extra = "\t".repeat(call_indent - 1);
-						format!("{}{}", extra, line)
+						format!("{}{}", "\t".repeat(call_indent - 1), line)
 					}
 				}).collect()
 			}
 
-			// If open body ends with `{`, content stays inside the rust block (raw passthrough).
-			// Otherwise content is dedented by one tab to be parsed as normal Deor.
 			fn is_raw_mode(open_body: &[String]) -> bool {
 				open_body.iter().rev()
 					.find(|l| !l.trim().is_empty())
@@ -84,24 +84,56 @@ fn string preprocess_source(string source)
 					.unwrap_or(false)
 			}
 
-			let mut opens: HashMap<String, Vec<String>> = HashMap::new();
-			let mut closes: HashMap<String, Vec<String>> = HashMap::new();
-			let mut skip_ranges: Vec<(usize, usize)> = Vec::new();
+			fn collect_defs_from_lines(imp_lines: &[String]) {
+				let mut j = 0;
+				while j < imp_lines.len() {
+					let t = imp_lines[j].trim();
+					let ib = get_indent(&imp_lines[j]);
+					if t.starts_with("macro_block_open ") {
+						let name = t["macro_block_open ".len()..].trim().to_string();
+						let (body, end) = collect_body(imp_lines, j + 1, ib);
+						mb_store_open(name, body);
+						j = end;
+					} else if t.starts_with("macro_block_close ") {
+						let name = t["macro_block_close ".len()..].trim().to_string();
+						let (body, end) = collect_body(imp_lines, j + 1, ib);
+						mb_store_close(name, body);
+						j = end;
+					} else {
+						j += 1;
+					}
+				}
+			}
 
+			// Pre-scan direct imports and collect any macro_block definitions they contain
+			for line in &lines {
+				let t = line.trim();
+				if t.starts_with("import \"") {
+					let rest = &t["import \"".len()..];
+					if let Some(close) = rest.find('"') {
+						let path = &rest[..close];
+						let resolved = if path.starts_with("lib/") {
+							if let Ok(lib) = std::env::var("DEOR_LIB") {
+								format!("{}/{}", lib.trim_end_matches('/'), &path[4..])
+							} else { path.to_string() }
+						} else { path.to_string() };
+						if let Ok(imp_source) = std::fs::read_to_string(&resolved) {
+							let imp_lines: Vec<String> = imp_source.lines().map(|l| l.to_string()).collect();
+							collect_defs_from_lines(&imp_lines);
+						}
+					}
+				}
+			}
+
+			// Collect definitions from this file into globals and mark their lines for removal
+			let mut skip_ranges: Vec<(usize, usize)> = Vec::new();
+			collect_defs_from_lines(&lines);
 			let mut i = 0;
 			while i < n {
-				let trimmed = lines[i].trim();
+				let t = lines[i].trim();
 				let base = get_indent(&lines[i]);
-				if trimmed.starts_with("macro_block_open ") {
-					let name = trimmed["macro_block_open ".len()..].trim().to_string();
-					let (body, end) = collect_body(&lines, i + 1, base);
-					opens.insert(name, body);
-					skip_ranges.push((i, end));
-					i = end;
-				} else if trimmed.starts_with("macro_block_close ") {
-					let name = trimmed["macro_block_close ".len()..].trim().to_string();
-					let (body, end) = collect_body(&lines, i + 1, base);
-					closes.insert(name, body);
+				if t.starts_with("macro_block_open ") || t.starts_with("macro_block_close ") {
+					let (_, end) = collect_body(&lines, i + 1, base);
 					skip_ranges.push((i, end));
 					i = end;
 				} else {
@@ -109,13 +141,11 @@ fn string preprocess_source(string source)
 				}
 			}
 
-			let should_skip = |idx: usize| -> bool {
-				skip_ranges.iter().any(|&(s, e)| idx >= s && idx < e)
-			};
+			let should_skip = |idx: usize| skip_ranges.iter().any(|&(s, e)| idx >= s && idx < e);
 
+			// Expand macro_block usages
 			let mut result: Vec<String> = Vec::new();
 			let mut i = 0;
-
 			while i < n {
 				if should_skip(i) { i += 1; continue; }
 
@@ -125,18 +155,13 @@ fn string preprocess_source(string source)
 				if trimmed.starts_with("macro_block ") {
 					let name = trimmed["macro_block ".len()..].trim().to_string();
 					let call_indent = get_indent(line);
+					let open_body = mb_get_open(&name);
+					let close_body = mb_get_close(&name);
+					let raw_mode = is_raw_mode(&open_body);
 
-					let empty: Vec<String> = Vec::new();
-					let open_body = opens.get(&name).unwrap_or(&empty);
-					let close_body = closes.get(&name).unwrap_or(&empty);
-					let raw_mode = is_raw_mode(open_body);
-
-					for l in adjust_body(open_body, call_indent) {
-						result.push(l);
-					}
+					for l in adjust_body(&open_body, call_indent) { result.push(l); }
 
 					i += 1;
-
 					while i < n {
 						let cl = &lines[i];
 						if cl.trim().is_empty() {
@@ -155,10 +180,7 @@ fn string preprocess_source(string source)
 						}
 					}
 
-					for l in adjust_body(close_body, call_indent) {
-						result.push(l);
-					}
-
+					for l in adjust_body(&close_body, call_indent) { result.push(l); }
 					continue;
 				}
 

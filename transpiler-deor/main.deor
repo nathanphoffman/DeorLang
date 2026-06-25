@@ -1,4 +1,5 @@
 import "transpiler-deor/imports.deor"
+import "transpiler-deor/macros/timer.deor"
 
 # Entry point. Reads input and output paths from command-line arguments, calls
 # collect_all_tokens_with_all_imports to load and resolve all imports, calls generate
@@ -14,38 +15,26 @@ fn void main()
 		string input_path = args at 0
 		string output_path = args at 1
 
-		# importer
 		string _timer_label = "[timer] load+dedup: "
-		macro_run start_timer
-		tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
-		macro_run end_timer
+		macro_block timer
+			tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
 
-		# macro builder (validate + expand)
-		# validation of the macro needs to happen before full validation
-		# - because the full validation needs the tokens macro builds
-		string _timer_label = "[timer] macro-build: "
-		macro_run start_timer
-		tokenList tokens = build_macros(raw_tokens)
-		macro_run end_timer
+		_timer_label = "[timer] macro-build: "
+		macro_block timer
+			tokenList tokens = build_macros(raw_tokens)
 		TokensRef tokens_ref = tokens_wrap(move tokens)
 
-		# validator
-		string _timer_label = "[timer] validate: "
-		macro_run start_timer
-		validate_tokens(tokens_ref)
-		macro_run end_timer
+		_timer_label = "[timer] validate: "
+		macro_block timer
+			validate_tokens(tokens_ref)
 
-		# registry
-		string _timer_label = "[timer] registry: "
-		macro_run start_timer
-		ctx as build_registry(tokens_ref)
-		macro_run end_timer
+		_timer_label = "[timer] registry: "
+		macro_block timer
+			ctx as build_registry(tokens_ref)
 
-		# codegen and lexer <--- lots of work done here
-		string _timer_label = "[timer] total-codegen: "
-		macro_run start_timer
-		string rust_code = generate_rust_from_tokens(tokens_ref, ctx)
-		macro_run end_timer
+		_timer_label = "[timer] total-codegen: "
+		macro_block timer
+			string rust_code = generate_rust_from_tokens(tokens_ref, ctx)
 
 		string allow_warnings = "#![allow(warnings)]\n"
 		rust_code = s_cat(allow_warnings, rust_code)

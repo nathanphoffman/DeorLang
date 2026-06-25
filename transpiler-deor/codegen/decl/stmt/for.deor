@@ -17,7 +17,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	if kind is "KW_IF"
 		macro_run for_while
 
-	if kind is "KW_GIVEUP"
+	if kind is "KW_MOVE"
 		macro_run for_move
 
 	string var_name = "_"

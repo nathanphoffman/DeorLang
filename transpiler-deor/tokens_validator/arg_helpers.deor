@@ -18,11 +18,11 @@ fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 	int token_count = len(tokens)
 	int check_pos = scan_pos
 	string chk_kind = kind
-	if kind is "KW_GIVEUP"
+	if kind is "KW_MOVE"
 		check_pos = scan_pos + 1
 		if check_pos < token_count
-			Token giveup_tok = tokens at check_pos
-			(kind) in giveup_tok
+			Token move_tok = tokens at check_pos
+			(kind) in move_tok
 			chk_kind = kind
 	if chk_kind is not "IDENT"
 		return false

@@ -45,6 +45,13 @@ val is 5        # equality — val == 5
 val is not 5    # inequality — val != 5
 ```
 
+`not` negates a boolean — it is not a modifier for `is`. Writing `not x is y` is a transpiler error; the required order is `x is not y`:
+
+```
+if val is not 5    # correct
+if not val is 5    # transpiler error
+```
+
 `is empty` and `is not empty` test whether a list has zero elements:
 
 ```

@@ -64,6 +64,12 @@ int count = 0       # correct
 copy as original    # transpiler error — use Room copy = original
 ```
 
+**Move transfer** — `as` already produces an owned binding; combining it with `move` is a transpiler error:
+
+```
+a as move b    # transpiler error — as already transfers ownership
+```
+
 Record update (`with`) uses `as` — the type is known from the source struct. See [Immutability](immutability.md).
 
 ---

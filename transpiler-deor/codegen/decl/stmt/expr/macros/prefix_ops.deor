@@ -4,7 +4,7 @@
 #                no Rust code difference needed since Deor values are already moved by default)
 #   not expr   — logical negation: prepends `!` to the inner expression code
 macro primary_prefix_ops
-	if kind is "KW_GIVEUP"
+	if kind is "KW_MOVE"
 		int po_inner = pos + 1
 		ParseResult po_r = gen_primary(tokens, po_inner, ctx)
 		return po_r

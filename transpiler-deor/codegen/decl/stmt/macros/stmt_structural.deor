@@ -6,7 +6,7 @@
 #   (f1, f2) in src       → destructuring: delegates to gen_destructure
 macro stmt_structural
 
-    if kind is "KW_GIVEUP"
+    if kind is "KW_MOVE"
     	int smd_next = pos + 1
     	Token smd_next_tok = tokens at smd_next
     	(kind) in smd_next_tok

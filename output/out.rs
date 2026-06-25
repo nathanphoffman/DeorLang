@@ -683,7 +683,7 @@ fn word_to_kind(word: String) -> String {
     }
     if word == "move" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return "KW_GIVEUP".to_string();
+        return "KW_MOVE".to_string();
     }
     if word == "raw" {
         // transpiler-deor/importer/lexer/word_token.deor
@@ -1308,11 +1308,28 @@ fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: Strin
 }
 
 // transpiler-deor/importer/preprocess.deor
+// macro_block global definition store
+thread_local! {
+	static MB_OPENS: std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
+		std::cell::RefCell::new(std::collections::HashMap::new());
+	static MB_CLOSES: std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
+		std::cell::RefCell::new(std::collections::HashMap::new());
+}
+fn mb_store_open(name: String, body: Vec<String>) {
+	MB_OPENS.with(|m| { m.borrow_mut().insert(name, body); });
+}
+fn mb_store_close(name: String, body: Vec<String>) {
+	MB_CLOSES.with(|m| { m.borrow_mut().insert(name, body); });
+}
+fn mb_get_open(name: &str) -> Vec<String> {
+	MB_OPENS.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
+}
+fn mb_get_close(name: &str) -> Vec<String> {
+	MB_CLOSES.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
+}
 fn preprocess_source(source: String) -> String {
     // transpiler-deor/importer/preprocess.deor
     {
-    	use std::collections::HashMap;
-
     	let lines: Vec<String> = source.lines().map(|l| l.to_string()).collect();
     	let n = lines.len();
 
@@ -1341,23 +1358,17 @@ fn preprocess_source(source: String) -> String {
     		(body, i)
     	}
 
-    	// Place body lines at call_indent. Definition body starts at indent 1.
     	fn adjust_body(body: &[String], call_indent: usize) -> Vec<String> {
     		body.iter().map(|line| {
-    			if line.trim().is_empty() {
-    				return String::new();
-    			}
+    			if line.trim().is_empty() { return String::new(); }
     			if call_indent == 0 {
     				if line.starts_with('\t') { line[1..].to_string() } else { line.to_string() }
     			} else {
-    				let extra = "\t".repeat(call_indent - 1);
-    				format!("{}{}", extra, line)
+    				format!("{}{}", "\t".repeat(call_indent - 1), line)
     			}
     		}).collect()
     	}
 
-    	// If open body ends with `{`, content stays inside the rust block (raw passthrough).
-    	// Otherwise content is dedented by one tab to be parsed as normal Deor.
     	fn is_raw_mode(open_body: &[String]) -> bool {
     		open_body.iter().rev()
     			.find(|l| !l.trim().is_empty())
@@ -1365,24 +1376,56 @@ fn preprocess_source(source: String) -> String {
     			.unwrap_or(false)
     	}
 
-    	let mut opens: HashMap<String, Vec<String>> = HashMap::new();
-    	let mut closes: HashMap<String, Vec<String>> = HashMap::new();
-    	let mut skip_ranges: Vec<(usize, usize)> = Vec::new();
+    	fn collect_defs_from_lines(imp_lines: &[String]) {
+    		let mut j = 0;
+    		while j < imp_lines.len() {
+    			let t = imp_lines[j].trim();
+    			let ib = get_indent(&imp_lines[j]);
+    			if t.starts_with("macro_block_open ") {
+    				let name = t["macro_block_open ".len()..].trim().to_string();
+    				let (body, end) = collect_body(imp_lines, j + 1, ib);
+    				mb_store_open(name, body);
+    				j = end;
+    			} else if t.starts_with("macro_block_close ") {
+    				let name = t["macro_block_close ".len()..].trim().to_string();
+    				let (body, end) = collect_body(imp_lines, j + 1, ib);
+    				mb_store_close(name, body);
+    				j = end;
+    			} else {
+    				j += 1;
+    			}
+    		}
+    	}
 
+    	// Pre-scan direct imports and collect any macro_block definitions they contain
+    	for line in &lines {
+    		let t = line.trim();
+    		if t.starts_with("import \"") {
+    			let rest = &t["import \"".len()..];
+    			if let Some(close) = rest.find('"') {
+    				let path = &rest[..close];
+    				let resolved = if path.starts_with("lib/") {
+    					if let Ok(lib) = std::env::var("DEOR_LIB") {
+    						format!("{}/{}", lib.trim_end_matches('/'), &path[4..])
+    					} else { path.to_string() }
+    				} else { path.to_string() };
+    				if let Ok(imp_source) = std::fs::read_to_string(&resolved) {
+    					let imp_lines: Vec<String> = imp_source.lines().map(|l| l.to_string()).collect();
+    					collect_defs_from_lines(&imp_lines);
+    				}
+    			}
+    		}
+    	}
+
+    	// Collect definitions from this file into globals and mark their lines for removal
+    	let mut skip_ranges: Vec<(usize, usize)> = Vec::new();
+    	collect_defs_from_lines(&lines);
     	let mut i = 0;
     	while i < n {
-    		let trimmed = lines[i].trim();
+    		let t = lines[i].trim();
     		let base = get_indent(&lines[i]);
-    		if trimmed.starts_with("macro_block_open ") {
-    			let name = trimmed["macro_block_open ".len()..].trim().to_string();
-    			let (body, end) = collect_body(&lines, i + 1, base);
-    			opens.insert(name, body);
-    			skip_ranges.push((i, end));
-    			i = end;
-    		} else if trimmed.starts_with("macro_block_close ") {
-    			let name = trimmed["macro_block_close ".len()..].trim().to_string();
-    			let (body, end) = collect_body(&lines, i + 1, base);
-    			closes.insert(name, body);
+    		if t.starts_with("macro_block_open ") || t.starts_with("macro_block_close ") {
+    			let (_, end) = collect_body(&lines, i + 1, base);
     			skip_ranges.push((i, end));
     			i = end;
     		} else {
@@ -1390,13 +1433,11 @@ fn preprocess_source(source: String) -> String {
     		}
     	}
 
-    	let should_skip = |idx: usize| -> bool {
-    		skip_ranges.iter().any(|&(s, e)| idx >= s && idx < e)
-    	};
+    	let should_skip = |idx: usize| skip_ranges.iter().any(|&(s, e)| idx >= s && idx < e);
 
+    	// Expand macro_block usages
     	let mut result: Vec<String> = Vec::new();
     	let mut i = 0;
-
     	while i < n {
     		if should_skip(i) { i += 1; continue; }
 
@@ -1406,18 +1447,13 @@ fn preprocess_source(source: String) -> String {
     		if trimmed.starts_with("macro_block ") {
     			let name = trimmed["macro_block ".len()..].trim().to_string();
     			let call_indent = get_indent(line);
+    			let open_body = mb_get_open(&name);
+    			let close_body = mb_get_close(&name);
+    			let raw_mode = is_raw_mode(&open_body);
 
-    			let empty: Vec<String> = Vec::new();
-    			let open_body = opens.get(&name).unwrap_or(&empty);
-    			let close_body = closes.get(&name).unwrap_or(&empty);
-    			let raw_mode = is_raw_mode(open_body);
-
-    			for l in adjust_body(open_body, call_indent) {
-    				result.push(l);
-    			}
+    			for l in adjust_body(&open_body, call_indent) { result.push(l); }
 
     			i += 1;
-
     			while i < n {
     				let cl = &lines[i];
     				if cl.trim().is_empty() {
@@ -1436,10 +1472,7 @@ fn preprocess_source(source: String) -> String {
     				}
     			}
 
-    			for l in adjust_body(close_body, call_indent) {
-    				result.push(l);
-    			}
-
+    			for l in adjust_body(&close_body, call_indent) { result.push(l); }
     			continue;
     		}
 
@@ -2001,13 +2034,13 @@ fn arg_is_named(tokens: TokensRef, scan_pos: i32, kind: String) -> bool {
     let mut token_count: i32 = (tokens.len() as i32);
     let mut check_pos: i32 = scan_pos.clone();
     let mut chk_kind: String = kind.clone();
-    if kind == "KW_GIVEUP" {
+    if kind == "KW_MOVE" {
         // transpiler-deor/tokens_validator/arg_helpers.deor
         check_pos = scan_pos + 1;
         if check_pos < token_count {
             // transpiler-deor/tokens_validator/arg_helpers.deor
-            let mut giveup_tok: Token = tokens[check_pos as usize].clone();
-            let kind = giveup_tok.kind.clone();
+            let mut move_tok: Token = tokens[check_pos as usize].clone();
+            let kind = move_tok.kind.clone();
             chk_kind = kind;
         }
     }
@@ -2550,7 +2583,7 @@ fn validate_tokens(tokens: TokensRef) {
             }
         }
         // macro: check_move_target (transpiler-deor/tokens_validator/macros/check_move_target.deor)
-        if cur_kind == "KW_GIVEUP" {
+        if cur_kind == "KW_MOVE" {
             // transpiler-deor/tokens_validator/macros/check_move_target.deor
             let mut mv_next: i32 = pos + 1.clone();
             if mv_next < token_count {
@@ -3082,7 +3115,7 @@ fn validate_tokens(tokens: TokensRef) {
                     }
                     if one_kind == "KW_AS" {
                         // transpiler-deor/tokens_validator/macros/check_bad_stmt.deor
-                        if two_kind == "KW_GIVEUP" {
+                        if two_kind == "KW_MOVE" {
                             // transpiler-deor/tokens_validator/macros/check_bad_stmt.deor
                             errors.push(val_err(tok.clone(), lbl_var.clone(), rule_as_move.clone()).clone());
                         }
@@ -3123,7 +3156,7 @@ fn validate_tokens(tokens: TokensRef) {
                     let mut cc_k4: String = kind.clone();
                     let mut cc_is_var: bool = cc_k1 == "IDENT".clone();
                     let mut cc_is_eq: bool = cc_k2 == "EQUALS".clone();
-                    let mut cc_is_mv: bool = cc_k3 == "KW_GIVEUP".clone();
+                    let mut cc_is_mv: bool = cc_k3 == "KW_MOVE".clone();
                     let mut cc_is_lp: bool = cc_k4 == "LPAREN".clone();
                     let mut cc_match: bool = cc_is_var && cc_is_eq.clone();
                     cc_match = cc_match && cc_is_mv;
@@ -4123,7 +4156,7 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         }
     }
     // macro: primary_prefix_ops (transpiler-deor/codegen/decl/stmt/expr/macros/prefix_ops.deor)
-    if kind == "KW_GIVEUP" {
+    if kind == "KW_MOVE" {
         // transpiler-deor/codegen/decl/stmt/expr/macros/prefix_ops.deor
         let mut po_inner: i32 = pos + 1.clone();
         let mut po_r: ParseResult = gen_primary(tokens.clone(), po_inner.clone(), ctx.clone());
@@ -4863,13 +4896,13 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut while_code: String = [pad.as_str(), whl_kw.as_str(), val_code.as_str(), whl_ob.as_str(), blk_code.as_str(), pad.as_str(), whl_cb.as_str()].concat();
         return make_result(while_code, blk_end.clone());
     }
-    if kind == "KW_GIVEUP" {
+    if kind == "KW_MOVE" {
         // macro: for_move (transpiler-deor/codegen/decl/stmt/macros/for_move.deor)
         let mut lparen_pos: i32 = next_pos + 1.clone();
         let mut var_pos: i32 = lparen_pos + 1.clone();
         let mut var_tok: Token = tokens[var_pos as usize].clone();
         let value = var_tok.value.clone();
-        let mut giveup_var: String = value.clone();
+        let mut move_var: String = value.clone();
         let mut in_pos: i32 = var_pos + 1.clone();
         let mut iter_pos: i32 = in_pos + 1.clone();
         let mut val_pos = iter_pos;
@@ -4890,7 +4923,7 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let mut gfr_in: String = " in ".to_string();
         let mut gfr_ob: String = " {\n".to_string();
         let mut gfr_cb: String = "}\n".to_string();
-        let mut for_code: String = [pad.as_str(), gfr_kw.as_str(), giveup_var.as_str(), gfr_in.as_str(), val_code.as_str(), gfr_ob.as_str(), blk_code.as_str(), pad.as_str(), gfr_cb.as_str()].concat();
+        let mut for_code: String = [pad.as_str(), gfr_kw.as_str(), move_var.as_str(), gfr_in.as_str(), val_code.as_str(), gfr_ob.as_str(), blk_code.as_str(), pad.as_str(), gfr_cb.as_str()].concat();
         return make_result(for_code, blk_end.clone());
     }
     let mut var_name: String = "_".to_string();
@@ -5632,7 +5665,7 @@ fn gen_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         return make_result(sb_block_code, sb_block_next.clone());
     }
     // macro: stmt_structural (transpiler-deor/codegen/decl/stmt/macros/stmt_structural.deor)
-    if kind == "KW_GIVEUP" {
+    if kind == "KW_MOVE" {
         // transpiler-deor/codegen/decl/stmt/macros/stmt_structural.deor
         let mut smd_next: i32 = pos + 1.clone();
         let mut smd_next_tok: Token = tokens[smd_next as usize].clone();
@@ -6214,9 +6247,7 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     let mut pos: i32 = 0;
     let mut last_file: String = "".to_string();
     let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
-    // macro: start_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_start: i32 = now_ms();
-    // transpiler-deor/codegen/codegen.deor
     while true {
         // transpiler-deor/codegen/codegen.deor
         if pos >= token_count {
@@ -6311,12 +6342,10 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
         }
         pos = pos + 1;
     }
-    // macro: end_timer (transpiler-deor/utility_macros.deor)
     let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
     let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
     let mut _timer_sfx: String = "ms".to_string();
     println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-    // transpiler-deor/codegen/codegen.deor
     return s_join(parts.clone());
 }
 
@@ -6333,61 +6362,41 @@ fn main() {
         let mut input_path: String = args[0 as usize].clone();
         let mut output_path: String = args[1 as usize].clone();
         let mut _timer_label: String = "[timer] load+dedup: ".to_string();
-        // macro: start_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_start: i32 = now_ms();
-        // transpiler-deor/main.deor
         let mut raw_tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
-        // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-        // transpiler-deor/main.deor
-        let mut _timer_label: String = "[timer] macro-build: ".to_string();
-        // macro: start_timer (transpiler-deor/utility_macros.deor)
+        _timer_label = "[timer] macro-build: ".to_string();
         let mut _timer_start: i32 = now_ms();
-        // transpiler-deor/main.deor
         let mut tokens: Vec<Token> = build_macros(raw_tokens.clone());
-        // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-        // transpiler-deor/main.deor
         let mut tokens_ref: TokensRef = tokens_wrap(tokens);
-        let mut _timer_label: String = "[timer] validate: ".to_string();
-        // macro: start_timer (transpiler-deor/utility_macros.deor)
+        _timer_label = "[timer] validate: ".to_string();
         let mut _timer_start: i32 = now_ms();
-        // transpiler-deor/main.deor
         validate_tokens(tokens_ref.clone());
-        // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-        // transpiler-deor/main.deor
-        let mut _timer_label: String = "[timer] registry: ".to_string();
-        // macro: start_timer (transpiler-deor/utility_macros.deor)
+        _timer_label = "[timer] registry: ".to_string();
         let mut _timer_start: i32 = now_ms();
-        // transpiler-deor/main.deor
         let ctx = build_registry(tokens_ref.clone());
-        // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-        // transpiler-deor/main.deor
-        let mut _timer_label: String = "[timer] total-codegen: ".to_string();
-        // macro: start_timer (transpiler-deor/utility_macros.deor)
+        _timer_label = "[timer] total-codegen: ".to_string();
         let mut _timer_start: i32 = now_ms();
-        // transpiler-deor/main.deor
         let mut rust_code: String = generate_rust_from_tokens(tokens_ref.clone(), ctx.clone());
-        // macro: end_timer (transpiler-deor/utility_macros.deor)
         let mut _timer_elapsed: i32 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
-        // transpiler-deor/main.deor
         let mut allow_warnings: String = "#![allow(warnings)]\n".to_string();
         rust_code = s_cat(allow_warnings.clone(), rust_code.clone());
         f_write(output_path.clone(), rust_code.clone());

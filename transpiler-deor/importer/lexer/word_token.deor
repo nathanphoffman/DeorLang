@@ -64,7 +64,7 @@ fn string word_to_kind(string word)
 	if word is "with"
 		return "KW_WITH"
 	if word is "move"
-		return "KW_GIVEUP"
+		return "KW_MOVE"
 	if word is "raw"
 		return "KW_RAW"
 	if word is "macro"

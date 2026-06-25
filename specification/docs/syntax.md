@@ -132,3 +132,11 @@ Open an indented block when followed by a newline.
 | `func` | Parameterized function type — always used inside a `shape` declaration |
 
 **Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a for-loop-only construct — it is not a callable function and cannot be used outside a `for` header (e.g. assigned to a variable or passed as an argument). `end` is a reserved keyword — only valid as `list at end = val`, and cannot be used as a variable name. `valid` is a reserved keyword — only valid after `is` or `is not`.
+
+### Banned Rust Type Names
+
+The following Rust type names are rejected as identifiers — using them as a variable, parameter, struct, or type name is a transpiler error:
+
+`Option`, `Vec`, `Box`, `Rc`, `Arc`, `Result`
+
+These collide with Rust types that the transpiler emits internally. They are banned even where no actual naming conflict would occur.

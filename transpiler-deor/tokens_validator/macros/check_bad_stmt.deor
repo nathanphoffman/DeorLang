@@ -22,5 +22,5 @@ macro check_bad_stmt
 				if two_kind is "KW_AS"
 					errors at end = val_err(tok, lbl_var, rule_typed_as)
 			if one_kind is "KW_AS"
-				if two_kind is "KW_GIVEUP"
+				if two_kind is "KW_MOVE"
 					errors at end = val_err(tok, lbl_var, rule_as_move)

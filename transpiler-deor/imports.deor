@@ -78,6 +78,7 @@ import "transpiler-deor/tokens_validator/tokens_validation.deor"
 
 # utility macros
 import "transpiler-deor/utility_macros.deor"
+import "transpiler-deor/macros/timer.deor"
 
 # registry and codegen
 import "transpiler-deor/codegen/type_map.deor"

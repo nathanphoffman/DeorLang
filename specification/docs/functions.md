@@ -219,6 +219,15 @@ fn roomList filter(roomList items, string query, filterFunc predicate)
 
 Parameters follow `Type name` order. All types — including shape names — are written as a prefix. `func` shape parameters are regular parameters: no special keyword, no annotation, just a typed name.
 
+A parameter's name cannot be identical to its type name — the transpiler rejects the exact same string appearing in both positions:
+
+```
+fn void process(Room Room)    # transpiler error — name identical to type
+fn void process(Room item)    # correct
+```
+
+In practice this is rarely an issue since type names are PascalCase and parameter names are snake_case, but the transpiler enforces it explicitly.
+
 ```
 shape filterFunc = func of Room to bool
 

@@ -24,7 +24,7 @@ macro check_struct_construction
 			string cc_k4 = kind
 			bool cc_is_var = cc_k1 is "IDENT"
 			bool cc_is_eq = cc_k2 is "EQUALS"
-			bool cc_is_mv = cc_k3 is "KW_GIVEUP"
+			bool cc_is_mv = cc_k3 is "KW_MOVE"
 			bool cc_is_lp = cc_k4 is "LPAREN"
 			bool cc_match = cc_is_var and cc_is_eq
 			cc_match = cc_match and cc_is_mv

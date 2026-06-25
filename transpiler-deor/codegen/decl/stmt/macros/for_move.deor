@@ -5,7 +5,7 @@ macro for_move
 	int var_pos = lparen_pos + 1
 	Token var_tok = tokens at var_pos
 	(value) in var_tok
-	string giveup_var = value
+	string move_var = value
 	int in_pos = var_pos + 1
 	int iter_pos = in_pos + 1
 	val_pos as iter_pos
@@ -24,5 +24,5 @@ macro for_move
 	string gfr_in = " in "
 	string gfr_ob = " {\n"
 	string gfr_cb = "}\n"
-	string for_code = s_join([pad, gfr_kw, giveup_var, gfr_in, val_code, gfr_ob, blk_code, pad, gfr_cb])
+	string for_code = s_join([pad, gfr_kw, move_var, gfr_in, val_code, gfr_ob, blk_code, pad, gfr_cb])
 	return make_result(move for_code, blk_end)
