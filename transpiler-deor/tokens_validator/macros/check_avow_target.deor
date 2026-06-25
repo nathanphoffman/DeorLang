@@ -1,0 +1,13 @@
+
+# Enforces that avow is only used on a validator type variable.
+# avow appears inside parens: (avow x) — the token after KW_AVOW is the target.
+macro check_avow_target
+	if cur_kind is "KW_AVOW"
+		int avow_next = pos + 1
+		if avow_next < token_count
+			Token avow_target = tokens at avow_next
+			(kind, value) in avow_target
+			if kind is "IDENT"
+				bool avow_is_valid = list_has(validator_vars, value)
+				if not avow_is_valid
+					errors at end = val_err(avow_target, lbl_var, rule_avow)

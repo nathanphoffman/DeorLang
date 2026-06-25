@@ -60,7 +60,7 @@ for idx in range(3, 7)
 ---
 
 ## `crash`
-Terminates the program immediately with a message. Accepts a `string`.
+Terminates the program immediately with a message. A `string` is recommended — it produces the clearest panic output. The transpiler accepts exactly one argument and does not enforce the type.
 
 Deor:
 ```
@@ -72,3 +72,14 @@ Rust:
 ```rust
 panic!("{}", message);
 ```
+
+The generated `panic!("{}", x)` uses Rust's `Display` trait to format the argument. How other types behave:
+
+| Deor type | Display output |
+|---|---|
+| `string` | the string value — recommended |
+| `int` | decimal integer, e.g. `42` |
+| `float` | decimal with fractional part, e.g. `3.14` |
+| `bool` | `true` or `false` |
+
+Structs, list shapes, and validator types do not implement `Display` by default and will cause a Rust compile error if passed to `crash`. If you need to crash with a struct or list value, extract a field or build a descriptive string first.

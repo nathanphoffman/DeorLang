@@ -32,11 +32,14 @@ fn void validate_tokens(TokensRef tokens)
 	strList shape_names = empty
 	strList decl_names = empty
 	strList struct_field_reg = empty
+	strList validator_type_names = empty
+	strList validator_vars = empty
 	int pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
 		(kind) in pre_tok
 		macro_run prescan_collect_shapes
+		macro_run prescan_collect_validator_types
 		macro_run prescan_check_duplicate_decls
 		macro_run prescan_check_struct_fields
 		macro_run prescan_check_enum_variants
@@ -99,7 +102,9 @@ fn void validate_tokens(TokensRef tokens)
 		int validate_indent_offset = 2
 		macro_run validate_ident
 
+		macro_run track_validator_vars
 		macro_run check_crash_args
+		macro_run check_avow_target
 		macro_run check_empty_bracket
 
 		if cur_kind is "KW_FOR"

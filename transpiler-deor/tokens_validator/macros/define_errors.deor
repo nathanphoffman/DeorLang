@@ -24,6 +24,7 @@ macro define_errors
 	string rule_crash = "crash takes exactly 1 string argument"
 
 	# statement rules
+	string rule_avow = "avow can only be used on a validator type variable"
 	string rule_bad_stmt = "literal cannot follow 'name ident' — capture in a named variable first"
 	string rule_typed_as = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move"
 	string rule_as_move = "`as` already transfers ownership — use `a as b` instead of `a as move b`"

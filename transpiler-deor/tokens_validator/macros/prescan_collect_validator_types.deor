@@ -1,0 +1,11 @@
+
+# Prescan pass: collects all validator type names into validator_type_names so
+# track_validator_vars can identify which variables are validator-typed.
+macro prescan_collect_validator_types
+	if kind is "KW_TYPE"
+		int pvt_name_p = pre_i + 1
+		if pvt_name_p < token_count
+			Token pvt_tok = tokens at pvt_name_p
+			(kind, value) in pvt_tok
+			if kind is "IDENT"
+				validator_type_names at end = value

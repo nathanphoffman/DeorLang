@@ -1,0 +1,17 @@
+
+# Tracks every IDENT that is declared with a validator type so check_avow_target
+# can verify avow targets. Fires whenever a validator type name is followed by an
+# IDENT: covers variable declarations (Roll best, Roll best = expr), function
+# parameters (fn T name(Roll param)), and struct fields.
+# Note: function return-type positions also match (fn Roll func_name(...)) but
+# those additions are harmless — function names are never avow targets.
+macro track_validator_vars
+	if cur_kind is "IDENT"
+		bool tvv_is_vtype = list_has(validator_type_names, cur_val)
+		if tvv_is_vtype
+			int tvv_next = pos + 1
+			if tvv_next < token_count
+				Token tvv_tok = tokens at tvv_next
+				(kind, value) in tvv_tok
+				if kind is "IDENT"
+					validator_vars at end = value

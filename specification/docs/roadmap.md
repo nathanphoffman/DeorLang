@@ -1,6 +1,16 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 
 
+# Fixes
+- Fix "for move" Comment
+- Clarify any confusing docs for this: name as (f1, f2) struct construction
+- Prevent keyword use: func, to, end
+
+# More
+- Tell me about 10
+- Still confused on this "Roll best = empty for validator types", what is your suggestion?
+
+
 # Should const be uppercase?
 - We should consider making function consts SCREAMING_SNAKE
 

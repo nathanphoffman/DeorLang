@@ -2286,6 +2286,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_void_return: String = "void functions must not use return — remove the return statement and let the function fall through".to_string();
     let mut rule_void_var: String = "'void' is not a valid variable type — only functions can return void".to_string();
     let mut rule_crash: String = "crash takes exactly 1 string argument".to_string();
+    let mut rule_avow: String = "avow can only be used on a validator type variable".to_string();
     let mut rule_bad_stmt: String = "literal cannot follow 'name ident' — capture in a named variable first".to_string();
     let mut rule_typed_as: String = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move".to_string();
     let mut rule_as_move: String = "`as` already transfers ownership — use `a as b` instead of `a as move b`".to_string();
@@ -2302,6 +2303,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut shape_names: Vec<String> = Vec::new();
     let mut decl_names: Vec<String> = Vec::new();
     let mut struct_field_reg: Vec<String> = Vec::new();
+    let mut validator_type_names: Vec<String> = Vec::new();
+    let mut validator_vars: Vec<String> = Vec::new();
     let mut pre_i: i32 = 0;
     while pre_i < token_count {
         // transpiler-deor/tokens_validator/tokens_validation.deor
@@ -2316,6 +2319,21 @@ fn validate_tokens(tokens: TokensRef) {
                 let mut sn_tok: Token = tokens[sn_pos as usize].clone();
                 let value = sn_tok.value.clone();
                 shape_names.push(value.clone());
+            }
+        }
+        // macro: prescan_collect_validator_types (transpiler-deor/tokens_validator/macros/prescan_collect_validator_types.deor)
+        if kind == "KW_TYPE" {
+            // transpiler-deor/tokens_validator/macros/prescan_collect_validator_types.deor
+            let mut pvt_name_p: i32 = pre_i + 1.clone();
+            if pvt_name_p < token_count {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_validator_types.deor
+                let mut pvt_tok: Token = tokens[pvt_name_p as usize].clone();
+                let kind = pvt_tok.kind.clone();
+                let value = pvt_tok.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_validator_types.deor
+                    validator_type_names.push(value.clone());
+                }
             }
         }
         // macro: prescan_check_duplicate_decls (transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor)
@@ -2858,6 +2876,25 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
+        // macro: track_validator_vars (transpiler-deor/tokens_validator/macros/track_validator_vars.deor)
+        if cur_kind == "IDENT" {
+            // transpiler-deor/tokens_validator/macros/track_validator_vars.deor
+            let mut tvv_is_vtype: bool = list_has(validator_type_names.clone(), cur_val.clone());
+            if tvv_is_vtype {
+                // transpiler-deor/tokens_validator/macros/track_validator_vars.deor
+                let mut tvv_next: i32 = pos + 1.clone();
+                if tvv_next < token_count {
+                    // transpiler-deor/tokens_validator/macros/track_validator_vars.deor
+                    let mut tvv_tok: Token = tokens[tvv_next as usize].clone();
+                    let kind = tvv_tok.kind.clone();
+                    let value = tvv_tok.value.clone();
+                    if kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/macros/track_validator_vars.deor
+                        validator_vars.push(value.clone());
+                    }
+                }
+            }
+        }
         // macro: check_crash_args (transpiler-deor/tokens_validator/macros/check_crash_args.deor)
         if cur_kind == "IDENT" {
             // transpiler-deor/tokens_validator/macros/check_crash_args.deor
@@ -2877,6 +2914,25 @@ fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/check_crash_args.deor
                             errors.push(val_err(tok.clone(), lbl_call.clone(), rule_crash.clone()).clone());
                         }
+                    }
+                }
+            }
+        }
+        // macro: check_avow_target (transpiler-deor/tokens_validator/macros/check_avow_target.deor)
+        if cur_kind == "KW_AVOW" {
+            // transpiler-deor/tokens_validator/macros/check_avow_target.deor
+            let mut avow_next: i32 = pos + 1.clone();
+            if avow_next < token_count {
+                // transpiler-deor/tokens_validator/macros/check_avow_target.deor
+                let mut avow_target: Token = tokens[avow_next as usize].clone();
+                let kind = avow_target.kind.clone();
+                let value = avow_target.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/macros/check_avow_target.deor
+                    let mut avow_is_valid: bool = list_has(validator_vars.clone(), value.clone());
+                    if !avow_is_valid {
+                        // transpiler-deor/tokens_validator/macros/check_avow_target.deor
+                        errors.push(val_err(avow_target.clone(), lbl_var.clone(), rule_avow.clone()).clone());
                     }
                 }
             }
