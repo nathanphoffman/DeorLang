@@ -165,6 +165,8 @@ fn void main()
 
 	print(inner_block)
 
+	const string UOOO_HOOO = "eh"
+
 	(world) in ttt
 
 	print(world)

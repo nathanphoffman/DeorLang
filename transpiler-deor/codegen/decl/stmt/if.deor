@@ -10,7 +10,7 @@ fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 	int blk_start = skip_to_body_ref(tokens, cond_end)
 	macro_run gen_block_r
 	macro_run rust_strings
-	string combined = s_join([cond_code, rs_ob, blk_code])
+	string combined = s_join([cond_code, RS_OB, blk_code])
 	return make_result(move combined, blk_end)
 
 # Generates a complete Rust `if / else if / else` chain. Calls gen_if_branch for the
@@ -19,7 +19,7 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 	(tokens) in ctx
 	int token_count = len(tokens)
 	macro_run rust_strings
-	string pad = s_repeat(rs_ind, depth)
+	string pad = s_repeat(RS_IND, depth)
 	int if_cond_pos = pos + 1
 	ParseResult then_r = gen_if_branch(if_cond_pos, depth, ctx)
 	move (code, new_pos) in then_r
@@ -66,5 +66,5 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 			result_code = s_cat(move result_code, els_cl)
 			cur = blk_end
 			break
-	result_code = s_cat(move result_code, rs_nl)
+	result_code = s_cat(move result_code, RS_NL)
 	return make_result(move result_code, cur)

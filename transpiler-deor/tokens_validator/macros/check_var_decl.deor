@@ -17,8 +17,18 @@ macro check_var_decl
 			string var_file = file
 			if len(var_name) < 3
 				errors at end = val_err(tok_one, lbl_var, rule_min3)
-			if not is_snake(var_name)
-				errors at end = val_err(tok_one, lbl_var, rule_snake)
+			bool cvd_is_const = false
+			if pos > 0
+				int cvd_prev = pos - 1
+				Token cvd_prev_tok = tokens at cvd_prev
+				(kind) in cvd_prev_tok
+				cvd_is_const = kind is "KW_CONST"
+			if cvd_is_const
+				if not is_screaming_snake(var_name)
+					errors at end = val_err(tok_one, lbl_var, rule_screaming)
+			if not cvd_is_const
+				if not is_snake(var_name)
+					errors at end = val_err(tok_one, lbl_var, rule_snake)
 		if one_kind is "KW_AS"
 			if len(cur_val) < 3
 				errors at end = val_err(tok, lbl_var, rule_min3)

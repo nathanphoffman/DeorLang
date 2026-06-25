@@ -24,12 +24,12 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 		Token start_token = tokens at cur
 		(kind) in start_token
 		if kind is "STRING"
-			item_code = s_join([item_code, rs_tos])
+			item_code = s_join([item_code, RS_TOS])
 		else
-			item_code = s_join([item_code, rs_cln])
+			item_code = s_join([item_code, RS_CLN])
 		item_codes at end = item_code
 		cur = item_pos
-	string items_str = s_join_with(item_codes, rs_csep)
+	string items_str = s_join_with(item_codes, RS_CSEP)
 	return make_result(move items_str, cur)
 
 # Like gen_list_items but generates `.as_str()` per item for use in [].concat() joins.
@@ -60,5 +60,5 @@ fn ParseResult gen_join_items(TokensRef tokens, int pos, RcCtx ctx)
 			item_code = s_cat(move item_code, ias_suf)
 		item_codes at end = item_code
 		cur = item_pos
-	string items_str = s_join_with(item_codes, rs_csep)
+	string items_str = s_join_with(item_codes, RS_CSEP)
 	return make_result(move items_str, cur)

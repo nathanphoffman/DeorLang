@@ -6,7 +6,7 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	(tokens, mut_names) in ctx
 	int token_count = len(tokens)
 	macro_run rust_strings
-	string pad = s_repeat(rs_ind, depth)
+	string pad = s_repeat(RS_IND, depth)
 	Token name_token = tokens at pos
 	(value) in name_token
 	string ident_name = value
@@ -20,10 +20,10 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	string call_code = ""
 	if ident_name is "print"
 		string prt_pfx = "println!(\"{}\", "
-		call_code = s_join([pad, prt_pfx, args_code, rs_rp_sc])
+		call_code = s_join([pad, prt_pfx, args_code, RS_RP_SC])
 	else if ident_name is "crash"
 		string crsh_pfx = "panic!(\"{}\", "
-		call_code = s_join([pad, crsh_pfx, args_code, rs_rp_sc])
+		call_code = s_join([pad, crsh_pfx, args_code, RS_RP_SC])
 	else
-		call_code = s_join([pad, ident_name, rs_lp, args_code, rs_rp_sc])
+		call_code = s_join([pad, ident_name, RS_LP, args_code, RS_RP_SC])
 	return make_nl_result(move call_code, after_paren, tokens)

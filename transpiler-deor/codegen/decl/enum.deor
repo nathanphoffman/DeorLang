@@ -21,9 +21,9 @@ fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 		if kind is "DEDENT"
 			break
 		if kind is "IDENT"
-			variant_lines at end = s_join([rs_ind, value, rs_com])
+			variant_lines at end = s_join([RS_IND, value, RS_COM])
 	string variants_code = s_join_nl(variant_lines)
 	string enm_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum "
-	string decl = s_join([enm_pfx, rust_name, rs_ob, variants_code, rs_cb2])
+	string decl = s_join([enm_pfx, rust_name, RS_OB, variants_code, RS_CB2])
 	(pos) in cur
 	return make_result(move decl, pos)

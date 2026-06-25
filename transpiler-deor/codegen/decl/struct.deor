@@ -28,10 +28,10 @@ fn ParseResult gen_struct_decl(TokensRef tokens, int pos)
 			(value) in current
 			string field_name = value
 			string rust_type = render_rust_type(field_type)
-			field_lines at end = s_join([rs_ind, field_name, rs_col, rust_type, rs_com])
+			field_lines at end = s_join([RS_IND, field_name, RS_COL, rust_type, RS_COM])
 			cur = cur_next_ref(cur, tokens)
 	string fields_code = s_join_nl(field_lines)
 	string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
-	string decl = s_join([sdcl_pfx, struct_name, rs_ob, fields_code, rs_cb2])
+	string decl = s_join([sdcl_pfx, struct_name, RS_OB, fields_code, RS_CB2])
 	(pos) in cur
 	return make_result(move decl, pos)

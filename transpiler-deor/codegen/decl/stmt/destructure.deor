@@ -13,14 +13,14 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 	int field_count = len(fields)
 
 	macro_run rust_strings
-	string pad = s_repeat(rs_ind, depth)
+	string pad = s_repeat(RS_IND, depth)
 
 	string field_suffix = ".clone();"
 	macro_run for_build_fields
 
 	int after = adv_nl_ref(val_end, tokens)
 	string dest_code = s_join_nl(dest_lines)
-	dest_code = s_cat(dest_code, rs_nl)
+	dest_code = s_cat(dest_code, RS_NL)
 
 	return make_result(move dest_code, after)
 
@@ -38,12 +38,12 @@ fn ParseResult gen_move_destructure(int pos, int depth, RcCtx ctx)
 	strList dest_lines = empty
 	int field_count = len(fields)
 	macro_run rust_strings
-	string pad = s_repeat(rs_ind, depth)
+	string pad = s_repeat(RS_IND, depth)
 
 	string field_suffix = ";"
 	macro_run for_build_fields
 
 	int after = adv_nl_ref(val_end, tokens)
 	string dest_code = s_join_nl(dest_lines)
-	dest_code = s_cat(dest_code, rs_nl)
+	dest_code = s_cat(dest_code, RS_NL)
 	return make_result(move dest_code, after)

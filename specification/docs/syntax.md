@@ -99,7 +99,7 @@ Open an indented block when followed by a newline.
 | `break` | Exit the innermost loop |
 | `continue` | Skip to the next loop iteration |
 | `move` | Transfer ownership instead of cloning — argument, loop, or assignment |
-| `const` | Explicitly non-mutable typed binding — emits `let` instead of `let mut` |
+| `const` | Explicitly non-mutable typed binding — emits `let` instead of `let mut`; name must be `SCREAMING_SNAKE_CASE` |
 
 ### Operators and Expression Keywords
 

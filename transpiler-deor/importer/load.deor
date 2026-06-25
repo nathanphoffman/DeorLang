@@ -79,8 +79,8 @@ fn tokenList load_file(string path)
 
 			if not is_empty(imp_t_code)
 				imp_end = pr_pos(where_r)
-				const string pipe = "|"
-				list_code as s_split(imp_t_code, pipe)
+				const string PIPE = "|"
+				list_code as s_split(imp_t_code, PIPE)
 				imp_t_placeholder = list_code at 0
 				imp_t_concrete = list_code at 1
 

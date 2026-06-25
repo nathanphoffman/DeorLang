@@ -12,10 +12,10 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
     ^^ sounds good, add validation -- should be fixed, validate
 
   4. Type validator parameter shadowing its type — type Roll(int Roll) — check_fn_declaration catches this for functions but validator type declarations aren't checked the same way.
-    ^^ add validation, fix
+    ^^ add validation, fix -- should be fixed, validate
 
   5. const reassignment — const variables can technically be reassigned; the transpiler infers let vs let mut from usage but doesn't catch const val = reassigned_value as an error.
-    ^^ add check if it isnt too hard
+    ^^ add check if it isnt too hard -- should be fixed validate
 
 
 

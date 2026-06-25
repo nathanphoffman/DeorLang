@@ -14,5 +14,5 @@ macro for_while
 	blk_code as code
 	blk_end as new_pos
 	string whl_kw = "while "
-	string while_code = s_join([pad, whl_kw, val_code, rs_ob, blk_code, pad, rs_cb])
+	string while_code = s_join([pad, whl_kw, val_code, RS_OB, blk_code, pad, RS_CB])
 	return make_result(move while_code, blk_end)

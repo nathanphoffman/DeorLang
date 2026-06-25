@@ -28,7 +28,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		Token start_token = tokens at cur
 		(kind) in start_token
 		if kind is "STRING"
-			arg_code = s_join([arg_code, rs_tos])
+			arg_code = s_join([arg_code, RS_TOS])
 		else if kind is "IDENT"
 			int next_cur = cur + 1
 			bool peek_is_call = false
@@ -40,8 +40,8 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 				peek_is_idx = kind is "KW_AT"
 			if not peek_is_call
 				if not peek_is_idx
-					arg_code = s_join([arg_code, rs_cln])
+					arg_code = s_join([arg_code, RS_CLN])
 		arg_codes at end = arg_code
 		cur = arg_pos
-	string args_str = s_join_with(arg_codes, rs_csep)
+	string args_str = s_join_with(arg_codes, RS_CSEP)
 	return make_result(move args_str, cur)

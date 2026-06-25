@@ -8,7 +8,8 @@ macro check_raw_assignment
 			Token ra_eq_tok = tokens at ra_eq_pos
 			(kind) in ra_eq_tok
 			if kind is "EQUALS"
-				Token ra_name_tok = tokens at pos + 1
+				int ra_name_pos = pos + 1
+				Token ra_name_tok = tokens at ra_name_pos
 				(kind, value) in ra_name_tok
 				if kind is "IDENT"
 					raw_var_names at end = value

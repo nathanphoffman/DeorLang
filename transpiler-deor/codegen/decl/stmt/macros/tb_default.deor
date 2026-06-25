@@ -28,5 +28,5 @@ macro tb_default
 			if not val_is_call
 				if not val_is_idx
 					suffix = ".clone()"
-	string bind_code = s_join([pad, rs_let, mut_kw, var_name, rs_col, rust_type, rs_eq, val_code, suffix, rs_sc])
+	string bind_code = s_join([pad, RS_LET, mut_kw, var_name, RS_COL, rust_type, RS_EQ, val_code, suffix, RS_SC])
 	return make_nl_result(move bind_code, val_end, tokens)

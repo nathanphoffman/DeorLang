@@ -25,7 +25,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	Token token = tokens at pos
 	(kind, value, line) in token
 	macro_run rust_strings
-	string pad = s_repeat(rs_ind, depth)
+	string pad = s_repeat(RS_IND, depth)
 
 	macro_run stmt_flow
 	macro_run stmt_blocks
@@ -42,7 +42,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		string var_name = raw_var_name
 		macro_run mut_guard
 
-		strList raw_parts = [pad, rs_let, mut_kw, raw_var_name, rs_eq, val_code, rs_sc]
+		strList raw_parts = [pad, RS_LET, mut_kw, raw_var_name, RS_EQ, val_code, RS_SC]
 		string raw_code = s_join(raw_parts)
 		return make_nl_result(move raw_code, val_end, tokens)
 
@@ -86,7 +86,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			string assign_suffix = ""
 			if kind is "STRING"
 				assign_suffix = ".to_string()"
-			strList asg_parts = [pad, ident_name, rs_eq, val_code, assign_suffix, rs_sc]
+			strList asg_parts = [pad, ident_name, RS_EQ, val_code, assign_suffix, RS_SC]
 			string asgn_code = s_join(asg_parts)
 			return make_nl_result(move asgn_code, val_end, tokens)
 
@@ -105,7 +105,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			bool bare_is_validator = reg3_has(type_reg, ident_name)
 			if bare_is_validator
 				string bd_sfx = "> = None;\n"
-				string bd_code = s_join([pad, rs_letm, bare_var_name, rs_col, "Option<", bare_rust_type, bd_sfx])
+				string bd_code = s_join([pad, RS_LETM, bare_var_name, RS_COL, "Option<", bare_rust_type, bd_sfx])
 				int bd_after = next_pos + 1
 				return make_nl_result(move bd_code, bd_after, tokens)
 

@@ -22,5 +22,5 @@ macro for_move
 	blk_end as new_pos
 	string gfr_kw = "for "
 	string gfr_in = " in "
-	string for_code = s_join([pad, gfr_kw, move_var, gfr_in, val_code, rs_ob, blk_code, pad, rs_cb])
+	string for_code = s_join([pad, gfr_kw, move_var, gfr_in, val_code, RS_OB, blk_code, pad, RS_CB])
 	return make_result(move for_code, blk_end)

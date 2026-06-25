@@ -9,7 +9,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	(tokens) in ctx
 	int token_count = len(tokens)
 	macro_run rust_strings
-	string pad = s_repeat(rs_ind, depth)
+	string pad = s_repeat(RS_IND, depth)
 	int next_pos = pos + 1
 	Token next_token = tokens at next_pos
 	(kind) in next_token
@@ -43,5 +43,5 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 
 	string frc_kw = "for "
 	string frc_in = " in "
-	string for_code = s_join([pad, frc_kw, var_name, frc_in, range_expr, rs_ob, blk_code, pad, rs_cb])
+	string for_code = s_join([pad, frc_kw, var_name, frc_in, range_expr, RS_OB, blk_code, pad, RS_CB])
 	return make_result(move for_code, blk_end)
