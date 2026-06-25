@@ -1,4 +1,4 @@
 [build]
   base    = "site"
   command = "bunx @tailwindcss/cli -i ./src/input.css -o ./public/styles.css"
-  publish = "site/public"
+  publish = "public"
