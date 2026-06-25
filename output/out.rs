@@ -1936,11 +1936,8 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 // transpiler-deor/importer/macros/dd_handle_rust_block.deor
                 let mut rust_tok: Token = tokens[rust_content_pos as usize].clone();
                 let value = rust_tok.value.clone();
-                let mut newline: String = "\n".to_string();
-                let mut rust_lines: Vec<String> = s_split(value.clone(), newline.clone());
-                let mut rust_first: String = rust_lines[0 as usize].clone();
                 let mut rk_pfx: String = "_rust_".to_string();
-                let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), rust_first.clone()];
+                let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), value.clone()];
                 let mut decl_name: String = s_join(rk_parts.clone());
                 let mut already_seen: bool = false;
                 let mut cs_len: i32 = (seen.len() as i32);
