@@ -88,6 +88,7 @@ fn void main()
 	int val_as = move aaa
 	#test as (avow val_as)
 
+	#lst as get_empty()
 
 	handle_message("hello jupiter!")
 	
@@ -166,7 +167,7 @@ fn void main()
 	print(inner_block)
 
 	const string UOOO_HOOO = "eh"
-	UOOO_HOOO = "hi"
+	#UOOO_HOOO = "hi"
 
 	(world) in ttt
 
