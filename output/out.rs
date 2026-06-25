@@ -1068,38 +1068,6 @@ fn scan_import_where(tokens: Vec<Token>, pos: i32) -> ParseResult {
     return make_result(emp.clone(), pos.clone());
 }
 
-fn scan_import(tokens: Vec<Token>, pos: i32) -> ParseResult {
-    // transpiler-deor/importer/scan.deor
-    let mut token_count: i32 = (tokens.len() as i32);
-    let mut scan: i32 = pos + 1.clone();
-    while scan < token_count {
-        // transpiler-deor/importer/scan.deor
-        let mut scan_tok: Token = tokens[scan as usize].clone();
-        let kind = scan_tok.kind.clone();
-        scan = scan + 1;
-        if kind == "RPAREN" {
-            // transpiler-deor/importer/scan.deor
-            break;
-        }
-    }
-    let mut path_pos: i32 = scan + 1.clone();
-    if path_pos < token_count {
-        // transpiler-deor/importer/scan.deor
-        let mut in_tok: Token = tokens[scan as usize].clone();
-        let kind = in_tok.kind.clone();
-        let mut is_in: bool = kind == "KW_IN".clone();
-        if is_in {
-            // transpiler-deor/importer/scan.deor
-            let mut path_tok: Token = tokens[path_pos as usize].clone();
-            let value = path_tok.value.clone();
-            let mut after_path: i32 = path_pos + 1.clone();
-            return make_result(value.clone(), after_path.clone());
-        }
-    }
-    let mut emp: String = "".to_string();
-    return make_result(emp.clone(), pos.clone());
-}
-
 // transpiler-deor/importer/t_substitute.deor
 fn s_to_lower(source: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
@@ -1610,34 +1578,22 @@ fn load_file(path: String) -> Vec<Token> {
         }
         let mut at_root_depth: bool = depth == 0.clone();
         let mut is_new_import: bool = kind == "KW_IMPORT" && at_root_depth.clone();
-        let mut is_old_import: bool = kind == "LPAREN" && at_root_depth.clone();
-        let mut is_any_import: bool = is_new_import || is_old_import.clone();
-        if is_any_import {
+        if is_new_import {
             // transpiler-deor/importer/load.deor
-            let mut imp_r_new: ParseResult = scan_import_new(tok_raw.clone(), pos.clone());
-            let mut imp_r_old: ParseResult = scan_import(tok_raw.clone(), pos.clone());
-            let mut imp_path: String = "".to_string();
-            let mut imp_end: i32 = pos.clone();
+            let mut imp_r: ParseResult = scan_import_new(tok_raw.clone(), pos.clone());
+            let mut imp_path: String = pr_code(imp_r.clone());
+            let mut imp_end: i32 = pr_pos(imp_r.clone());
             let mut imp_t_concrete: String = "".to_string();
             let mut imp_t_placeholder: String = "".to_string();
-            if is_new_import {
+            let mut where_r: ParseResult = scan_import_where(tok_raw.clone(), imp_end.clone());
+            let imp_t_code = pr_code(where_r.clone());
+            if !is_empty(imp_t_code.clone()) {
                 // transpiler-deor/importer/load.deor
-                imp_path = pr_code(imp_r_new.clone());
-                imp_end = pr_pos(imp_r_new.clone());
-                let mut where_r: ParseResult = scan_import_where(tok_raw.clone(), imp_end.clone());
-                let imp_t_code = pr_code(where_r.clone());
-                if !is_empty(imp_t_code.clone()) {
-                    // transpiler-deor/importer/load.deor
-                    imp_end = pr_pos(where_r.clone());
-                    let pipe: String = "|".to_string();
-                    let list_code = s_split(imp_t_code.clone(), pipe.clone());
-                    imp_t_placeholder = list_code[0 as usize].clone();
-                    imp_t_concrete = list_code[1 as usize].clone();
-                }
-            } else {
-                // transpiler-deor/importer/load.deor
-                imp_path = pr_code(imp_r_old.clone());
-                imp_end = pr_pos(imp_r_old.clone());
+                imp_end = pr_pos(where_r.clone());
+                let pipe: String = "|".to_string();
+                let list_code = s_split(imp_t_code.clone(), pipe.clone());
+                imp_t_placeholder = list_code[0 as usize].clone();
+                imp_t_concrete = list_code[1 as usize].clone();
             }
             imp_path = resolve_lib_path(imp_path.clone());
             if !is_empty(imp_path.clone()) {

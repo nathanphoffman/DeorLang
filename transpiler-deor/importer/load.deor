@@ -65,33 +65,25 @@ fn tokenList load_file(string path)
 		bool at_root_depth = depth is 0
 
 		bool is_new_import = kind is "KW_IMPORT" and at_root_depth
-		bool is_old_import = kind is "LPAREN" and at_root_depth
-		bool is_any_import = is_new_import or is_old_import
 
-		if is_any_import
-			ParseResult imp_r_new = scan_import_new(tok_raw, pos)
-			ParseResult imp_r_old = scan_import(tok_raw, pos)
-			string imp_path = ""
-			int imp_end = pos
+		if is_new_import
+			ParseResult imp_r = scan_import_new(tok_raw, pos)
+			string imp_path = pr_code(imp_r)
+			int imp_end = pr_pos(imp_r)
 
 			string imp_t_concrete = ""
 			string imp_t_placeholder = ""
 
-			if is_new_import
-				imp_path = pr_code(imp_r_new)
-				imp_end = pr_pos(imp_r_new)
-				ParseResult where_r = scan_import_where(tok_raw, imp_end)
-				imp_t_code as pr_code(where_r)
+			ParseResult where_r = scan_import_where(tok_raw, imp_end)
+			imp_t_code as pr_code(where_r)
 
-				if not is_empty(imp_t_code)
-					imp_end = pr_pos(where_r)
-					const string pipe = "|"
-					list_code as s_split(imp_t_code, pipe)
-					imp_t_placeholder = list_code at 0
-					imp_t_concrete = list_code at 1
-			else
-				imp_path = pr_code(imp_r_old)
-				imp_end = pr_pos(imp_r_old)
+			if not is_empty(imp_t_code)
+				imp_end = pr_pos(where_r)
+				const string pipe = "|"
+				list_code as s_split(imp_t_code, pipe)
+				imp_t_placeholder = list_code at 0
+				imp_t_concrete = list_code at 1
+
 			imp_path = resolve_lib_path(imp_path)
 			if not is_empty(imp_path)
 				if seen_decl

@@ -3,7 +3,7 @@
 #
 # Each concern has its own file under importer/:
 #
-#   importer/scan.deor        — scan_import_new, scan_import
+#   importer/scan.deor        — scan_import_new, scan_import_where
 #   importer/decl_bounds.deor — name_of_decl, end_of_block, end_of_shape
 #   importer/load.deor        — file_is_new (rust shim), load_file
 #   importer/dedup.deor       — deduplicate_decls
