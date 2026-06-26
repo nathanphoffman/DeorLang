@@ -8,17 +8,18 @@ Because macro bodies are inlined, any variables they declare pollute the caller'
 
 Macros can be declared at the top level or inside a function body. A top-level macro is available to any file that imports the file it is defined in — no special import syntax needed. A macro declared inside a function body is locally scoped: it exists only within that block and is not visible outside it.
 
-Macros cannot be nested inside other macro bodies — the expander is single-pass, so a `macro` definition inside another macro's body will not be recognized and will produce unexpected output.
+You can call other macros with `macro_run` from inside a macro body — nesting calls is fully supported. However, defining a `macro` inside another macro body is a compile error. Define all macros at the appropriate scope and call them with `macro_run`.
 
 ```
 macro say_hello
     print(hello)
 
-hello as "Hi There"
-macro_run say_hello
+fn void greet()
+    hello as "Hi There"
+    macro_run say_hello
 
-hello as "Hi There Again"
-macro_run say_hello
+    hello as "Hi There Again"
+    macro_run say_hello
 
 # output is "Hi There"
 # and "Hi There Again"
@@ -40,8 +41,9 @@ macro compute_area
         area as length * width
         print(area)
 
-macro_run compute_area
-macro_run compute_area    # safe — block variables do not leak between calls
+fn void run()
+    macro_run compute_area
+    macro_run compute_area    # safe — block variables do not leak between calls
 ```
 
 ```rust
@@ -74,6 +76,8 @@ Three keywords form the system:
 - `macro_block_open name` — code injected before the body
 - `macro_block_close name` — code injected after the body
 - `macro_block name` — the call site; its indented body is sandwiched between open and close
+
+The content between open and close is always Deor. It is dedented one level and handed to the tokenizer as normal Deor source — you can use any Deor syntax there, including nested `macro_block` calls and `macro_run` calls. If you need raw Rust inside the body, use a `rust` block as you would anywhere else in Deor.
 
 **Definition:**
 
@@ -122,6 +126,6 @@ macro_block_close checked
 
 The preprocessor preserves relative indentation when expanding at any call site depth.
 
-**Definitions are picked up from imported files (one level deep).** You can define `macro_block_open` / `macro_block_close` in a separate file, import that file, and then use `macro_block name` anywhere in the importing file.
+**Definitions are picked up from directly imported files.** You can define `macro_block_open` / `macro_block_close` in a library file, import it, and use `macro_block name` anywhere in the importing file. Only the immediate imports of the current file are scanned — definitions in transitively imported files are not visible.
 
-`macro_block` differs from `macro` / `macro_run` in two ways: it operates on raw source text before the lexer runs, and it wraps a variable body of caller-provided code rather than inlining a fixed snippet.
+`macro_block` differs from `macro` / `macro_run` in two ways: it operates on raw source text before the lexer runs, and it wraps a variable body of caller-supplied code rather than inlining a fixed snippet.

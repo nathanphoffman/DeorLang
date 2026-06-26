@@ -1,0 +1,27 @@
+
+# Test: plain macro_block_open/close with Deor content
+
+macro_block_open greeting
+	rust
+		println!("--- begin greeting ---");
+
+macro_block_close greeting
+	rust
+		println!("--- end greeting ---");
+
+macro_block_open section_a
+	rust
+		// section A open
+
+macro_block_close section_a
+	rust
+		// section A close
+
+fn void main()
+	macro_block greeting
+		rust
+			println!("Hello from inside a macro_block!");
+	macro_block section_a
+		macro_block greeting
+			rust
+				println!("Nested greeting inside section_a");

@@ -4,9 +4,6 @@
 # tokens from the output, and splices the body tokens back into the front of the
 # processing queue so that any macro_run calls within a macro body are expanded in
 # the same pass. macro definitions inside another macro body are a validation error.
-#
-# `with (vars)` at the call site is purely documentary — it names which outer variables
-# the macro body touches but has no effect on expansion.
 fn tokenList expand_deor_macros(tokenList tokens)
 	rust
 		let mut macros: std::collections::HashMap<String, (Vec<Token>, i32)> = std::collections::HashMap::new();
