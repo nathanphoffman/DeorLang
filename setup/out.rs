@@ -1309,18 +1309,18 @@ fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: Strin
 
 // transpiler-deor/importer/preprocess.deor
 thread_local! {
-	static MB_OPENS:  std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
+	static MB_OPENS:  std::cell::RefCell<std::collections::HashMap<String, (Vec<String>, bool)>> =
 		std::cell::RefCell::new(std::collections::HashMap::new());
 	static MB_CLOSES: std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
 		std::cell::RefCell::new(std::collections::HashMap::new());
 }
-fn mb_store_open(name: String, body: Vec<String>) {
-	MB_OPENS.with(|m| { m.borrow_mut().insert(name, body); });
+fn mb_store_open(name: String, body: Vec<String>, is_raw: bool) {
+	MB_OPENS.with(|m| { m.borrow_mut().insert(name, (body, is_raw)); });
 }
 fn mb_store_close(name: String, body: Vec<String>) {
 	MB_CLOSES.with(|m| { m.borrow_mut().insert(name, body); });
 }
-fn mb_get_open(name: &str) -> Vec<String> {
+fn mb_get_open(name: &str) -> (Vec<String>, bool) {
 	MB_OPENS.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
 }
 fn mb_get_close(name: &str) -> Vec<String> {
@@ -1379,15 +1379,24 @@ fn preprocess_source(source: String) -> String {
     		(body, i)
     	}
 
-    	fn adjust_body(body: &[String], call_indent: usize) -> Vec<String> {
+    	// Emits body lines at absolute depth `target`. Body lines are stored with
+    	// one leading tab from their definition indentation.
+    	fn adjust_body(body: &[String], target: usize) -> Vec<String> {
     		body.iter().map(|line| {
     			if line.trim().is_empty() { return String::new(); }
-    			if call_indent == 0 {
+    			if target == 0 {
     				strip_one_indent(line)
     			} else {
-    				format!("{}{}", "\t".repeat(call_indent - 1), line)
+    				format!("{}{}", "\t".repeat(target - 1), line)
     			}
     		}).collect()
+    	}
+
+    	fn is_def_keyword(t: &str) -> bool {
+    		t.starts_with("raw macro_block_open ")
+    			|| t.starts_with("raw macro_block_close ")
+    			|| t.starts_with("macro_block_open ")
+    			|| t.starts_with("macro_block_close ")
     	}
 
     	fn collect_defs_from_lines(imp_lines: &[String]) {
@@ -1395,10 +1404,21 @@ fn preprocess_source(source: String) -> String {
     		while j < imp_lines.len() {
     			let t = imp_lines[j].trim();
     			let ib = get_indent(&imp_lines[j]);
-    			if t.starts_with("macro_block_open ") {
+    			// raw variants must be checked before plain to avoid prefix collision
+    			if t.starts_with("raw macro_block_open ") {
+    				let name = t["raw macro_block_open ".len()..].trim().to_string();
+    				let (body, end) = collect_body(imp_lines, j + 1, ib);
+    				mb_store_open(name, body, true);
+    				j = end;
+    			} else if t.starts_with("raw macro_block_close ") {
+    				let name = t["raw macro_block_close ".len()..].trim().to_string();
+    				let (body, end) = collect_body(imp_lines, j + 1, ib);
+    				mb_store_close(name, body);
+    				j = end;
+    			} else if t.starts_with("macro_block_open ") {
     				let name = t["macro_block_open ".len()..].trim().to_string();
     				let (body, end) = collect_body(imp_lines, j + 1, ib);
-    				mb_store_open(name, body);
+    				mb_store_open(name, body, false);
     				j = end;
     			} else if t.starts_with("macro_block_close ") {
     				let name = t["macro_block_close ".len()..].trim().to_string();
@@ -1411,7 +1431,7 @@ fn preprocess_source(source: String) -> String {
     		}
     	}
 
-    	fn expand_macro_block_lines(lines: &[String], depth: u32) -> Vec<String> {
+    	fn expand_macro_block_lines(lines: &[String], depth: u32, in_raw: bool) -> Vec<String> {
     		if depth > 20 {
     			eprintln!("error: macro_block nesting too deep — possible circular reference");
     			std::process::exit(1);
@@ -1422,14 +1442,14 @@ fn preprocess_source(source: String) -> String {
     		while i < n {
     			let line = &lines[i];
     			let trimmed = line.trim();
-    			if trimmed.starts_with("macro_block_open ") || trimmed.starts_with("macro_block_close ") {
+    			if is_def_keyword(trimmed) {
     				eprintln!("error: macro_block definitions cannot appear inside a macro_block body");
     				std::process::exit(1);
     			}
     			if trimmed.starts_with("macro_block ") {
     				let name = trimmed["macro_block ".len()..].trim().to_string();
     				let call_indent = get_indent(line);
-    				let open_body  = mb_get_open(&name);
+    				let (open_body, is_raw) = mb_get_open(&name);
     				let close_body = mb_get_close(&name);
     				i += 1;
     				let mut content_lines: Vec<String> = Vec::new();
@@ -1439,15 +1459,40 @@ fn preprocess_source(source: String) -> String {
     						content_lines.push(String::new());
     						i += 1;
     					} else if get_indent(cl) > call_indent {
-    						content_lines.push(strip_one_indent(cl));
+    						if is_raw {
+    							// Raw: preserve absolute depth so Rust indentation
+    							// lands correctly inside the emitted rust block.
+    							content_lines.push(cl.clone());
+    						} else {
+    							content_lines.push(strip_one_indent(cl));
+    						}
     						i += 1;
     					} else {
     						break;
     					}
     				}
-    				for l in adjust_body(&open_body, call_indent)  { result.push(l); }
-    				for l in expand_macro_block_lines(&content_lines, depth + 1) { result.push(l); }
-    				for l in adjust_body(&close_body, call_indent) { result.push(l); }
+    				let expanded = expand_macro_block_lines(
+    					&content_lines, depth + 1, in_raw || is_raw
+    				);
+    				if is_raw && !in_raw {
+    					// Outermost raw: emit implicit rust wrapper. Open and close
+    					// bodies go at call_indent+1 (inside the rust block).
+    					result.push(format!("{}rust", "\t".repeat(call_indent)));
+    					for l in adjust_body(&open_body,  call_indent + 1) { result.push(l); }
+    					for l in expanded                                   { result.push(l); }
+    					for l in adjust_body(&close_body, call_indent + 1) { result.push(l); }
+    				} else if is_raw {
+    					// Nested raw inside an outer raw block: no extra rust wrapper.
+    					// Open/close bodies go at call_indent (same level as call site).
+    					for l in adjust_body(&open_body,  call_indent) { result.push(l); }
+    					for l in expanded                               { result.push(l); }
+    					for l in adjust_body(&close_body, call_indent) { result.push(l); }
+    				} else {
+    					// Plain Deor macro_block: content already dedented, bodies at call_indent.
+    					for l in adjust_body(&open_body,  call_indent) { result.push(l); }
+    					for l in expanded                               { result.push(l); }
+    					for l in adjust_body(&close_body, call_indent) { result.push(l); }
+    				}
     				continue;
     			}
     			result.push(line.clone());
@@ -1476,14 +1521,14 @@ fn preprocess_source(source: String) -> String {
     		}
     	}
 
-    	// Collect definitions from this file and mark for removal
+    	// Collect definitions from this file and mark their lines for removal
     	let mut skip_ranges: Vec<(usize, usize)> = Vec::new();
     	collect_defs_from_lines(&lines);
     	let mut i = 0;
     	while i < n {
     		let t = lines[i].trim();
     		let base = get_indent(&lines[i]);
-    		if t.starts_with("macro_block_open ") || t.starts_with("macro_block_close ") {
+    		if is_def_keyword(t) {
     			let (_, end) = collect_body(&lines, i + 1, base);
     			skip_ranges.push((i, end));
     			i = end;
@@ -1497,7 +1542,7 @@ fn preprocess_source(source: String) -> String {
     		.filter(|&idx| !should_skip(idx))
     		.map(|idx| lines[idx].clone())
     		.collect();
-    	let result = expand_macro_block_lines(&filtered, 0);
+    	let result = expand_macro_block_lines(&filtered, 0, false);
     	result.join("\n")
     }
 }

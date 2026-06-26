@@ -69,15 +69,19 @@ If the macro only reads variables from the caller's scope without declaring any 
 
 ## `macro_block` — Wrap a Body With Open and Close Code
 
-`macro_block` is a pre-processor construct that runs before tokenization. It lets you define reusable open/close code snippets that wrap an indented body at each call site.
+`macro_block` is a pre-processor construct that runs before tokenization. It lets you define reusable open/close code snippets that wrap an indented body at each call site. There are two variants: plain and raw.
 
-Three keywords form the system:
+---
 
-- `macro_block_open name` — code injected before the body
-- `macro_block_close name` — code injected after the body
+### Plain `macro_block`
+
+The plain variant treats the body as Deor source. The body is dedented one level and handed to the tokenizer normally — you can use any Deor syntax there, including nested `macro_block` calls and `macro_run` calls. Use a `rust` block inside the body if you need raw Rust.
+
+Five keywords form the plain system:
+
+- `macro_block_open name` — Deor code injected before the body
+- `macro_block_close name` — Deor code injected after the body
 - `macro_block name` — the call site; its indented body is sandwiched between open and close
-
-The content between open and close is always Deor. It is dedented one level and handed to the tokenizer as normal Deor source — you can use any Deor syntax there, including nested `macro_block` calls and `macro_run` calls. If you need raw Rust inside the body, use a `rust` block as you would anywhere else in Deor.
 
 **Definition:**
 
@@ -100,7 +104,7 @@ macro_block timer
     tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
 ```
 
-The indented body under `macro_block timer` is the content being wrapped. After expansion this becomes:
+After expansion:
 
 ```
 string _timer_label = "[timer] load: "
@@ -114,9 +118,7 @@ print(s_join([_timer_label, _timer_str, _timer_sfx]))
 
 The close body can freely read variables declared in the open body (`_timer_start`) and variables the caller placed in scope before the call (`_timer_label`).
 
-**Indentation in definitions**
-
-The body of `macro_block_open` and `macro_block_close` follows standard Deor indentation. If the close needs nested code, write it with the natural extra indentation levels:
+The body of `macro_block_open` and `macro_block_close` follows standard Deor indentation. If the close needs nested code, write it with the natural extra levels:
 
 ```
 macro_block_close checked
@@ -124,8 +126,69 @@ macro_block_close checked
         print("failed")
 ```
 
-The preprocessor preserves relative indentation when expanding at any call site depth.
+---
 
-**Definitions are picked up from directly imported files.** You can define `macro_block_open` / `macro_block_close` in a library file, import it, and use `macro_block name` anywhere in the importing file. Only the immediate imports of the current file are scanned — definitions in transitively imported files are not visible.
+### Raw `macro_block`
 
-`macro_block` differs from `macro` / `macro_run` in two ways: it operates on raw source text before the lexer runs, and it wraps a variable body of caller-supplied code rather than inlining a fixed snippet.
+The raw variant is for pure Rust. The definition bodies and the call-site content are all raw Rust — the preprocessor wraps everything in a single implicit `rust` block at expansion time, so you never write `rust` yourself. Because the expansion is opaque Rust, the open and close bodies can split across a Rust scope boundary (e.g. opening a function in the open body and closing it in the close body).
+
+- `raw macro_block_open name` — raw Rust injected before the body
+- `raw macro_block_close name` — raw Rust injected after the body
+- `macro_block name` — same call syntax as the plain variant
+
+**Definition:**
+
+```
+raw macro_block_open component
+    #[component]
+    pub fn MyComponent() -> impl IntoView {
+
+raw macro_block_close component
+    }
+
+raw macro_block_open view_block
+    view! {
+
+raw macro_block_close view_block
+    }
+```
+
+**Usage:**
+
+```
+macro_block component
+    let count = RwSignal::new(0);
+    macro_block view_block
+        <div>
+            <p>{count}</p>
+        </div>
+```
+
+The preprocessor emits a single `rust` block containing the open body, all content, and the close body. The equivalent expanded output (shown here as Rust for clarity) is:
+
+```rust
+#[component]
+pub fn MyComponent() -> impl IntoView {
+    let count = RwSignal::new(0);
+    view! {
+        <div>
+            <p>{count}</p>
+        </div>
+    }
+}
+```
+
+**Nesting raw macro_blocks**: when a `raw macro_block` appears inside another `raw macro_block`'s body, no extra `rust` wrapper is emitted for the inner one — it injects its open/close text directly into the enclosing rust block. This is how `macro_block view_block` works inside `macro_block component` in the example above.
+
+**Raw macro_blocks are top-level constructs.** Because the content is pure Rust and the open/close bodies typically define Rust items (functions, impls), you call `macro_block` at the top level of your Deor file, not inside a Deor `fn` body.
+
+---
+
+### Shared rules
+
+Both variants share these rules:
+
+- `macro_block` definitions cannot appear inside a `macro_block` body — the preprocessor will error.
+- Definitions are picked up from **directly imported files**. Define `macro_block_open` / `macro_block_close` in a library file, import it, and use `macro_block name` anywhere in the importing file. Only immediate imports are scanned — transitive imports are not visible.
+- Both plain and raw use the same `macro_block name` call syntax. The preprocessor looks up the name to determine which variant applies.
+- `macro_block` differs from `macro` / `macro_run` in two ways: it operates on raw source text before the lexer runs, and it wraps a variable body of caller-supplied code rather than inlining a fixed snippet.
