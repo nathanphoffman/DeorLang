@@ -1331,11 +1331,35 @@ fn mb_get_close(name: &str) -> (Vec<String>, Option<String>, bool) {
 fn preprocess_source(source: String) -> String {
     // transpiler-deor/importer/preprocess.deor
     {
-    	let lines: Vec<String> = source.lines().map(|l| l.to_string()).collect();
+    	// Normalize 4-space indentation to tabs so all downstream processing
+    	// (preprocessor and lexer) can assume tabs only.
+    	fn normalize_indent(line: &str) -> String {
+    		let mut result = String::new();
+    		let mut rest = line;
+    		loop {
+    			if rest.starts_with('\t') {
+    				result.push('\t');
+    				rest = &rest[1..];
+    			} else if rest.starts_with("    ") {
+    				result.push('\t');
+    				rest = &rest[4..];
+    			} else {
+    				break;
+    			}
+    		}
+    		result.push_str(rest);
+    		result
+    	}
+
+    	let lines: Vec<String> = source.lines().map(|l| normalize_indent(l)).collect();
     	let n = lines.len();
 
     	fn get_indent(line: &str) -> usize {
     		line.chars().take_while(|&c| c == '\t').count()
+    	}
+
+    	fn strip_one_indent(line: &str) -> String {
+    		if line.starts_with('\t') { line[1..].to_string() } else { line.to_string() }
     	}
 
     	fn collect_body(lines: &[String], start: usize, base_indent: usize) -> (Vec<String>, usize) {
@@ -1366,7 +1390,7 @@ fn preprocess_source(source: String) -> String {
     		body.iter().map(|line| {
     			if line.trim().is_empty() { return String::new(); }
     			if call_indent == 0 {
-    				if line.starts_with('\t') { line[1..].to_string() } else { line.to_string() }
+    				strip_one_indent(line)
     			} else {
     				format!("{}{}", "\t".repeat(call_indent - 1), line)
     			}
@@ -1473,8 +1497,7 @@ fn preprocess_source(source: String) -> String {
     						if is_raw {
     							content_lines.push(cl.clone());
     						} else {
-    							let stripped = if cl.starts_with('\t') { cl[1..].to_string() } else { cl.clone() };
-    							content_lines.push(stripped);
+    							content_lines.push(strip_one_indent(cl));
     						}
     						i += 1;
     					} else {
