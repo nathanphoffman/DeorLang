@@ -22,6 +22,7 @@ fn void main()
 		_timer_label = "[timer] macro-build: "
 		macro_block timer
 			tokenList tokens = build_macros(raw_tokens)
+			
 		TokensRef tokens_ref = tokens_wrap(move tokens)
 
 		_timer_label = "[timer] validate: "

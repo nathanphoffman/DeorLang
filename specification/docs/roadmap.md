@@ -3,6 +3,11 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 # Road Map
 Upcoming features, mostly an internal markdown file used by the creator Nathan Hoffman.
 
+##
+---
+macro_blocks are to remain just open/close no boundary splitting mid-function, no auto-rust insertion, etc.  It limits their power but makes things much more maintainable anything beyond like a simple timer maro block compounds into massive scale issues.
+
+
 ---
 ## Test Latest Fixes
 
