@@ -1309,24 +1309,23 @@ fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: Strin
 
 // transpiler-deor/importer/preprocess.deor
 // macro_block global definition store
-// Each entry is (body_lines, optional_param_name) where param_name is the identifier
-// after $ in the definition header, e.g. `macro_block_open foo $name` → param = Some("name").
+// Each entry is (body_lines, optional_param_name, is_raw).
 thread_local! {
-	static MB_OPENS: std::cell::RefCell<std::collections::HashMap<String, (Vec<String>, Option<String>)>> =
+	static MB_OPENS: std::cell::RefCell<std::collections::HashMap<String, (Vec<String>, Option<String>, bool)>> =
 		std::cell::RefCell::new(std::collections::HashMap::new());
-	static MB_CLOSES: std::cell::RefCell<std::collections::HashMap<String, (Vec<String>, Option<String>)>> =
+	static MB_CLOSES: std::cell::RefCell<std::collections::HashMap<String, (Vec<String>, Option<String>, bool)>> =
 		std::cell::RefCell::new(std::collections::HashMap::new());
 }
-fn mb_store_open(name: String, body: Vec<String>, param: Option<String>) {
-	MB_OPENS.with(|m| { m.borrow_mut().insert(name, (body, param)); });
+fn mb_store_open(name: String, body: Vec<String>, param: Option<String>, is_raw: bool) {
+	MB_OPENS.with(|m| { m.borrow_mut().insert(name, (body, param, is_raw)); });
 }
-fn mb_store_close(name: String, body: Vec<String>, param: Option<String>) {
-	MB_CLOSES.with(|m| { m.borrow_mut().insert(name, (body, param)); });
+fn mb_store_close(name: String, body: Vec<String>, param: Option<String>, is_raw: bool) {
+	MB_CLOSES.with(|m| { m.borrow_mut().insert(name, (body, param, is_raw)); });
 }
-fn mb_get_open(name: &str) -> (Vec<String>, Option<String>) {
+fn mb_get_open(name: &str) -> (Vec<String>, Option<String>, bool) {
 	MB_OPENS.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
 }
-fn mb_get_close(name: &str) -> (Vec<String>, Option<String>) {
+fn mb_get_close(name: &str) -> (Vec<String>, Option<String>, bool) {
 	MB_CLOSES.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
 }
 fn preprocess_source(source: String) -> String {
@@ -1360,6 +1359,9 @@ fn preprocess_source(source: String) -> String {
     		(body, i)
     	}
 
+    	// Adjusts body lines from their definition indentation to the call site indentation.
+    	// For non-raw blocks (call_indent=0 strips 1 tab; call_indent>0 prepends call_indent-1 tabs).
+    	// For raw blocks call with call_indent+1 so bodies land inside the implicit rust wrapper.
     	fn adjust_body(body: &[String], call_indent: usize) -> Vec<String> {
     		body.iter().map(|line| {
     			if line.trim().is_empty() { return String::new(); }
@@ -1369,13 +1371,6 @@ fn preprocess_source(source: String) -> String {
     				format!("{}{}", "\t".repeat(call_indent - 1), line)
     			}
     		}).collect()
-    	}
-
-    	fn is_raw_mode(open_body: &[String]) -> bool {
-    		open_body.iter().rev()
-    			.find(|l| !l.trim().is_empty())
-    			.map(|l| l.trim_end().ends_with('{'))
-    			.unwrap_or(false)
     	}
 
     	fn parse_name_and_param(rest: &str) -> (String, Option<String>) {
@@ -1388,20 +1383,37 @@ fn preprocess_source(source: String) -> String {
     		}
     	}
 
+    	fn is_def_keyword(t: &str) -> bool {
+    		t.starts_with("macro_block_open ")
+    			|| t.starts_with("macro_block_close ")
+    			|| t.starts_with("raw macro_block_open ")
+    			|| t.starts_with("raw macro_block_close ")
+    	}
+
     	fn collect_defs_from_lines(imp_lines: &[String]) {
     		let mut j = 0;
     		while j < imp_lines.len() {
     			let t = imp_lines[j].trim();
     			let ib = get_indent(&imp_lines[j]);
-    			if t.starts_with("macro_block_open ") {
+    			if t.starts_with("raw macro_block_open ") {
+    				let (name, param) = parse_name_and_param(&t["raw macro_block_open ".len()..]);
+    				let (body, end) = collect_body(imp_lines, j + 1, ib);
+    				mb_store_open(name, body, param, true);
+    				j = end;
+    			} else if t.starts_with("raw macro_block_close ") {
+    				let (name, param) = parse_name_and_param(&t["raw macro_block_close ".len()..]);
+    				let (body, end) = collect_body(imp_lines, j + 1, ib);
+    				mb_store_close(name, body, param, true);
+    				j = end;
+    			} else if t.starts_with("macro_block_open ") {
     				let (name, param) = parse_name_and_param(&t["macro_block_open ".len()..]);
     				let (body, end) = collect_body(imp_lines, j + 1, ib);
-    				mb_store_open(name, body, param);
+    				mb_store_open(name, body, param, false);
     				j = end;
     			} else if t.starts_with("macro_block_close ") {
     				let (name, param) = parse_name_and_param(&t["macro_block_close ".len()..]);
     				let (body, end) = collect_body(imp_lines, j + 1, ib);
-    				mb_store_close(name, body, param);
+    				mb_store_close(name, body, param, false);
     				j = end;
     			} else {
     				j += 1;
@@ -1414,7 +1426,10 @@ fn preprocess_source(source: String) -> String {
     		lines.iter().map(|l| l.replace(&placeholder, arg)).collect()
     	}
 
-    	fn expand_macro_block_lines(lines: &[String], depth: u32) -> Vec<String> {
+    	// in_raw: true when already inside a raw macro's rust block. Nested raw
+    	// macros skip the implicit rust wrapper in that case — the outer block
+    	// already owns the rust scope.
+    	fn expand_macro_block_lines(lines: &[String], depth: u32, in_raw: bool) -> Vec<String> {
     		if depth > 20 {
     			eprintln!("error: macro_block nesting too deep — possible circular macro_block reference");
     			std::process::exit(1);
@@ -1425,8 +1440,8 @@ fn preprocess_source(source: String) -> String {
     		while i < n {
     			let line = &lines[i];
     			let trimmed = line.trim();
-    			if trimmed.starts_with("macro_block_open ") || trimmed.starts_with("macro_block_close ") {
-    				eprintln!("error: macro_block_open/macro_block_close definitions cannot appear inside a macro_block body");
+    			if is_def_keyword(trimmed) {
+    				eprintln!("error: macro_block definitions cannot appear inside a macro_block body");
     				std::process::exit(1);
     			}
     			if trimmed.starts_with("macro_block ") {
@@ -1437,8 +1452,8 @@ fn preprocess_source(source: String) -> String {
     					(rest.to_string(), None)
     				};
     				let call_indent = get_indent(line);
-    				let (open_body, open_param) = mb_get_open(&name);
-    				let (close_body, close_param) = mb_get_close(&name);
+    				let (open_body, open_param, is_raw) = mb_get_open(&name);
+    				let (close_body, close_param, _) = mb_get_close(&name);
     				let open_body = match (open_param.as_deref(), arg.as_deref()) {
     					(Some(p), Some(a)) => substitute(&open_body, p, a),
     					_ => open_body,
@@ -1447,8 +1462,6 @@ fn preprocess_source(source: String) -> String {
     					(Some(p), Some(a)) => substitute(&close_body, p, a),
     					_ => close_body,
     				};
-    				let raw_mode = is_raw_mode(&open_body);
-    				for l in adjust_body(&open_body, call_indent) { result.push(l); }
     				i += 1;
     				let mut content_lines: Vec<String> = Vec::new();
     				while i < n {
@@ -1457,7 +1470,7 @@ fn preprocess_source(source: String) -> String {
     						content_lines.push(String::new());
     						i += 1;
     					} else if get_indent(cl) > call_indent {
-    						if raw_mode {
+    						if is_raw {
     							content_lines.push(cl.clone());
     						} else {
     							let stripped = if cl.starts_with('\t') { cl[1..].to_string() } else { cl.clone() };
@@ -1468,8 +1481,25 @@ fn preprocess_source(source: String) -> String {
     						break;
     					}
     				}
-    				for l in expand_macro_block_lines(&content_lines, depth + 1) { result.push(l); }
-    				for l in adjust_body(&close_body, call_indent) { result.push(l); }
+    				let expanded_content = expand_macro_block_lines(&content_lines, depth + 1, is_raw);
+    				if is_raw && !in_raw {
+    					// Outermost raw context: emit one implicit rust block wrapping
+    					// open + content + close as a single RUST_BLOCK token.
+    					result.push(format!("{}rust", "\t".repeat(call_indent)));
+    					for l in adjust_body(&open_body, call_indent + 1) { result.push(l); }
+    					for l in expanded_content { result.push(l); }
+    					for l in adjust_body(&close_body, call_indent + 1) { result.push(l); }
+    				} else if is_raw && in_raw {
+    					// Nested raw inside an existing rust block: inject open + content
+    					// + close directly at call_indent+1 — no extra rust wrapper.
+    					for l in adjust_body(&open_body, call_indent + 1) { result.push(l); }
+    					for l in expanded_content { result.push(l); }
+    					for l in adjust_body(&close_body, call_indent + 1) { result.push(l); }
+    				} else {
+    					for l in adjust_body(&open_body, call_indent) { result.push(l); }
+    					for l in expanded_content { result.push(l); }
+    					for l in adjust_body(&close_body, call_indent) { result.push(l); }
+    				}
     				continue;
     			}
     			result.push(line.clone());
@@ -1505,7 +1535,7 @@ fn preprocess_source(source: String) -> String {
     	while i < n {
     		let t = lines[i].trim();
     		let base = get_indent(&lines[i]);
-    		if t.starts_with("macro_block_open ") || t.starts_with("macro_block_close ") {
+    		if is_def_keyword(t) {
     			let (_, end) = collect_body(&lines, i + 1, base);
     			skip_ranges.push((i, end));
     			i = end;
@@ -1521,7 +1551,7 @@ fn preprocess_source(source: String) -> String {
     		.filter(|&idx| !should_skip(idx))
     		.map(|idx| lines[idx].clone())
     		.collect();
-    	let result = expand_macro_block_lines(&filtered, 0);
+    	let result = expand_macro_block_lines(&filtered, 0, false);
     	result.join("\n")
     }
 }
