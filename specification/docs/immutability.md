@@ -23,6 +23,7 @@
 - Single field: `new_room as room with (area)` — parens always required
 - Multiple fields: `new_room as room with (area, name)`
 
+Deor:
 ```
 Squarefeet area = 2
 new_room as room with (area)
@@ -32,6 +33,7 @@ name as "Bigger Office"
 bigger_office as office with (area, name)
 ```
 
+Rust:
 ```rust
 let mut area: Option<Squarefeet> = Squarefeet::new(2);
 let new_room = Room { area, ..room };

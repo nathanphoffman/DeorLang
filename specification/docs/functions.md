@@ -4,11 +4,13 @@
 
 Return type is written as a prefix before the function name. Parameters follow `Type name` order.
 
+Deor:
 ```
 fn int add(int left, int right)
     left + right
 ```
 
+Rust:
 ```rust
 fn add(left: i32, right: i32) -> i32 {
     left + right
@@ -21,11 +23,13 @@ fn add(left: i32, right: i32) -> i32 {
 
 `void` is the explicit return type for functions that return nothing. It is mandatory — omitting the return type is a transpiler error.
 
+Deor:
 ```
 fn void greet(string name)
     print(name)
 ```
 
+Rust:
 ```rust
 fn greet(name: String) {
     println!("{}", name);
@@ -34,6 +38,7 @@ fn greet(name: String) {
 
 The entry point follows this same rule:
 
+Deor:
 ```
 fn void main()
     # program starts here
@@ -41,6 +46,7 @@ fn void main()
 
 Void functions fall through to the end — `return` is not valid inside a void function. For loop control, use `continue` to skip to the next iteration or `break` to exit the loop early:
 
+Deor:
 ```
 shape itemList = list of Item
 
@@ -52,6 +58,7 @@ fn void process(itemList items, bool skip_invalid)
         handle(item)
 ```
 
+Rust:
 ```rust
 fn process(items: Vec<Item>, skip_invalid: bool) {
     for item in &items {
@@ -68,6 +75,7 @@ fn process(items: Vec<Item>, skip_invalid: bool) {
 
 There are no anonymous tuple return types. A function returning multiple values must declare a named struct for the return type. The struct is then constructed and destructured using the existing `as`/`in` syntax — no new keywords.
 
+Deor:
 ```
 struct DivResult
     int quotient
@@ -79,6 +87,7 @@ fn DivResult divmod(int left, int right)
     return (quotient, remainder)
 ```
 
+Rust:
 ```rust
 struct DivResult { quotient: i32, remainder: i32 }
 
@@ -91,12 +100,14 @@ fn divmod(left: i32, right: i32) -> DivResult {
 
 Capturing the result uses standard struct destructuring:
 
+Deor:
 ```
 (quotient, remainder) in divmod(num, div)
 print(quotient)
 print(remainder)
 ```
 
+Rust:
 ```rust
 let result = divmod(num, div);
 let (quotient, remainder) = (result.quotient, result.remainder);
@@ -112,17 +123,20 @@ A function body that is a **single expression** — one line, nothing else — i
 
 Any function body with **more than one statement** requires explicit `return` at every exit point.
 
+Deor:
 ```
 fn int square(int val)
     val * val    # single expression — return implicit
 ```
 
+Rust:
 ```rust
 fn square(val: i32) -> i32 {
     val * val
 }
 ```
 
+Deor:
 ```
 fn int abs(int val)
     if val < 0       # multiple statements — return required everywhere
@@ -130,6 +144,7 @@ fn int abs(int val)
     return val
 ```
 
+Rust:
 ```rust
 fn abs(val: i32) -> i32 {
     if val < 0 {
@@ -147,6 +162,7 @@ fn abs(val: i32) -> i32 {
 
 A function returning a validator type returns a variable that may or may not be valid. To return a not-valid result, declare the variable without a value and return it unassigned, or assign a value that fails the predicate. `empty` and `none` are both transpiler errors in return position.
 
+Deor:
 ```
 shape rollList = list of Roll
 
@@ -162,6 +178,7 @@ fn Roll find_best(rollList rolls)
 
 When the result depends entirely on the predicate, just assign and return:
 
+Deor:
 ```
 fn Positive get_positive(int num)
     Positive result = num    # not valid if num fails the predicate
@@ -184,6 +201,7 @@ To pass behavior as a value, declare a `func` shape and accept it as a typed par
 
 Functions may call themselves. Recursion follows the same rules as any other function call — arguments must be named variables in scope, and the return type must match.
 
+Deor:
 ```
 fn int factorial(int val)
     if val <= 1
@@ -193,6 +211,7 @@ fn int factorial(int val)
     return val * sub
 ```
 
+Rust:
 ```rust
 fn factorial(val: i32) -> i32 {
     if val <= 1 {
@@ -212,6 +231,7 @@ No tail-call optimization is guaranteed — deep recursion can stack-overflow ju
 
 Functions accept at most **3 parameters**. If more context is needed, bundle values into a struct first. This is enforced by the transpiler.
 
+Deor:
 ```
 fn roomList filter(roomList items, string query, filterFunc predicate)
     # 3 params: list, data, behavior — the natural ceiling
@@ -228,7 +248,9 @@ fn void process(Room item)    # correct
 
 In practice this is rarely an issue since type names are PascalCase and parameter names are snake_case, but the transpiler enforces it explicitly.
 
+Deor:
 ```
+shape roomList = list of Room
 shape filterFunc = func of Room to bool
 
 fn roomList filter(roomList items, filterFunc predicate)
@@ -243,11 +265,13 @@ fn roomList filter(roomList items, filterFunc predicate)
 
 The function named `main` is always the program entry point. It must be declared `fn void main()`.
 
+Deor:
 ```
 fn void main()
     # program starts here
 ```
 
+Rust:
 ```rust
 fn main() {
     // program starts here

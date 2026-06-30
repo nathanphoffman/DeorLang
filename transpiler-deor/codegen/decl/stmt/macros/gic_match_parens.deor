@@ -1,0 +1,17 @@
+
+# Checks that the token at gic_lp is LPAREN and the one after is RPAREN,
+# confirming the trailing `()` of input() or args().
+# On success sets gic_matched=true.
+# Reads: gic_lp, tokens, token_count.
+# Writes: gic_matched (must be declared false in outer scope before call).
+macro gic_match_parens
+	if gic_lp < token_count
+		Token gic_lp_tok = tokens at gic_lp
+		(kind) in gic_lp_tok
+		if kind is "LPAREN"
+			int gic_rp = gic_lp + 1
+			if gic_rp < token_count
+				Token gic_rp_tok = tokens at gic_rp
+				(kind) in gic_rp_tok
+				if kind is "RPAREN"
+					gic_matched = true

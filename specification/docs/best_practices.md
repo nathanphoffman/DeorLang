@@ -97,6 +97,67 @@ if result is valid
 Also always guard `avow` with an `is valid` check immediately above it, or add a comment explaining why the value is guaranteed valid at that point.
 
 ---
+## Avoid Deep Nesting
+
+Limit nesting to two or three levels. Deeply nested code is hard to read and usually signals that logic should be extracted into a helper function. Prefer early returns and guard clauses over deep `if/else` trees.
+
+**Preferred — early return flattens nesting:**
+```
+fn string classify(int val)
+    if val < 0
+        return "negative"
+    if val is 0
+        return "zero"
+    return "positive"
+```
+
+**Avoid — deep nesting:**
+```
+fn string classify(int val)
+    if val < 0
+        return "negative"
+    else
+        if val is 0
+            return "zero"
+        else
+            return "positive"
+```
+
+---
+## Keep Functions Small
+
+A function should do one thing. If a function body is growing long or handles multiple distinct concerns, extract the inner logic into named helper functions. The 3-parameter limit already encourages this — if you need more context, you should already be reaching for a struct.
+
+---
+## Functions vs. Macros — Performance in Loops
+
+Prefer functions for reusable logic that is called outside loops. Inside a loop body, prefer macros when the operation is simple and call overhead matters — macros expand inline, whereas function calls add a frame per iteration.
+
+**Use a function — called once or outside a loop:**
+```
+fn int square(int val)
+    val * val
+
+int area = square(side)
+```
+
+**Use a macro — called inside a loop:**
+```
+macro sq(val)
+    val * val
+
+for item in items
+    int area = sq(val)
+```
+
+If the logic is non-trivial, extract it into a function regardless — readability wins over minor call overhead for complex operations.
+
+---
+## File Length
+
+Keep files to a reasonable length. There is no hard limit, but when a file starts to feel long, consider splitting it. A natural split point is when the file contains multiple distinct concerns — for example, separate structs and their associated functions into their own files.
+
+---
 ## Naming External Libs
 Because Deor does not support third-party importing, the standard convention is to copy Deor files into the `lib/` folder. The following prefix pattern is recommended.
 

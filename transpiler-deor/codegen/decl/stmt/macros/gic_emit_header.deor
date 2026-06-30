@@ -1,0 +1,21 @@
+
+# Emits the Rust preamble lines that produce the _deor_args Vec.
+#   args()  → collects argv[1..] directly
+#   input() → reads one stdin line then splits on whitespace
+# Appends lines to gic_out.
+# Reads: gic_is_args, gic_pad, RS_NL, gic_out.
+macro gic_emit_header
+	if gic_is_args
+		string gic_hdr = "let _deor_args: Vec<String> = std::env::args().skip(1).collect();"
+		string gic_hdr_line = s_join([gic_pad, gic_hdr, RS_NL])
+		gic_out at end = gic_hdr_line
+	else
+		string gic_raw_decl = "let mut _deor_raw: String = String::new();"
+		string gic_raw_line = s_join([gic_pad, gic_raw_decl, RS_NL])
+		gic_out at end = gic_raw_line
+		string gic_read = "std::io::stdin().read_line(&mut _deor_raw).unwrap_or_default();"
+		string gic_read_line = s_join([gic_pad, gic_read, RS_NL])
+		gic_out at end = gic_read_line
+		string gic_split = "let _deor_args: Vec<String> = _deor_raw.split_whitespace().map(|s| s.to_string()).collect();"
+		string gic_split_line = s_join([gic_pad, gic_split, RS_NL])
+		gic_out at end = gic_split_line

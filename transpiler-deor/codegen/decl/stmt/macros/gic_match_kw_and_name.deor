@@ -1,0 +1,22 @@
+
+# Checks that `tokens at cur` is KW_IN followed by an IDENT named "input" or "args".
+# On success sets gic_nm_ok=true, gic_lp to the position of the expected LPAREN,
+# and gic_is_args=true when the source is args().
+# Reads: cur, tokens, token_count (all from outer scope).
+# Writes: gic_nm_ok, gic_lp, gic_is_args (must be declared in outer scope before call).
+macro gic_match_kw_and_name
+	Token gic_in_tok = tokens at cur
+	(kind) in gic_in_tok
+	if kind is "KW_IN"
+		int gic_nm_pos = cur + 1
+		if gic_nm_pos < token_count
+			Token gic_nm_tok = tokens at gic_nm_pos
+			(kind, value) in gic_nm_tok
+			if kind is "IDENT"
+				if value is "input"
+					gic_nm_ok = true
+				else if value is "args"
+					gic_nm_ok = true
+					gic_is_args = true
+				if gic_nm_ok
+					gic_lp = gic_nm_pos + 1

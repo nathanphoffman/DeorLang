@@ -4,6 +4,7 @@ An `enum` declares a named set of variants. Each variant is a distinct value of 
 
 ## Declaration
 
+Deor:
 ```
 enum ColorTag
     Red
@@ -16,6 +17,7 @@ enum ColorTag
     Black
 ```
 
+Rust:
 ```rust
 #[derive(Clone, Copy, PartialEq, Debug)]
 enum ColorTag {
@@ -36,11 +38,13 @@ Any number of variants. Each is a plain name — no associated data.
 
 ## Assignment
 
+Deor:
 ```
 ColorTag background = Blue
 ColorTag foreground = White
 ```
 
+Rust:
 ```rust
 let background: ColorTag = ColorTag::Blue;
 let foreground: ColorTag = ColorTag::White;
@@ -52,6 +56,7 @@ let foreground: ColorTag = ColorTag::White;
 
 Use `if` / `else if` with `is`. No pattern matching — the same `is` operator used for all equality in Deor.
 
+Deor:
 ```
 if background is Blue
     msg as "blue background"
@@ -64,6 +69,7 @@ else
     print(msg)
 ```
 
+Rust:
 ```rust
 if background == ColorTag::Blue {
     println!("{}", "blue background");
@@ -82,6 +88,7 @@ Exhaustiveness is not enforced — write an `else` branch as a catch-all when ne
 
 Enums work as struct fields, function parameters, and return types — the same as any other type.
 
+Deor:
 ```
 struct Theme
     string name
@@ -109,6 +116,7 @@ fn void main()
     print(label)
 ```
 
+Rust:
 ```rust
 struct Theme {
     name: String,

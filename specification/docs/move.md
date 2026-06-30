@@ -8,11 +8,13 @@ By default Deor clones every value — function arguments, loop elements, and as
 
 Pass a value into a function without cloning:
 
+Deor:
 ```
 do_something(move big_list)
 # big_list cannot be used after this point
 ```
 
+Rust:
 ```rust
 do_something(big_list);
 ```
@@ -25,11 +27,13 @@ Use this when the function takes the last or only use of a large list or struct 
 
 Iterate a collection consuming each element rather than cloning:
 
+Deor:
 ```
 for move (item in collection)
     process(item)
 ```
 
+Rust:
 ```rust
 for item in collection {
     process(item);
@@ -44,10 +48,12 @@ The collection itself is consumed — it cannot be used after the loop.
 
 Build a struct from fields without cloning them:
 
+Deor:
 ```
 Score built = move (label, points)
 ```
 
+Rust:
 ```rust
 let built = Score { label, points };
 ```
@@ -60,11 +66,13 @@ Fields are moved into the struct rather than cloned. Each source variable is con
 
 Transfer ownership into a new binding:
 
+Deor:
 ```
 string new_var = move prev_var
 # prev_var is not accessible here and below
 ```
 
+Rust:
 ```rust
 let new_var: String = prev_var;
 ```

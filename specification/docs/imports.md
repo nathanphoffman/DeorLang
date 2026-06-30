@@ -22,6 +22,26 @@ The order you write imports only directly controls the relative ordering of file
 
 The ordering of declarations in the generated Rust output does not affect correctness — Rust does not require forward declarations within a module, and the type registry is built from the full merged token stream before code generation begins. Ordering only matters for **collision resolution**: when two files define a declaration with the same name, the first one encountered in the merged stream wins.
 
+### When ordering causes errors
+
+Order matters when a file uses a type or function defined in another file but does **not** import that file itself — relying on the caller to have already loaded it. If the dependency arrives later in the merge stream than the file that needs it, the transpiler will error because the name was not yet declared when it was referenced.
+
+**Causes an error:**
+```
+# imports.deor — wrong order
+import "services/billing.deor"   # uses Customer — not declared yet
+import "models/customer.deor"    # defines Customer — too late
+```
+
+**Correct:**
+```
+# imports.deor — dependency first
+import "models/customer.deor"    # defines Customer
+import "services/billing.deor"   # uses Customer — now in scope
+```
+
+If `billing.deor` imported `models/customer.deor` itself, order would not matter — the depth-first traversal would pull `customer.deor` in before `billing.deor`'s own declarations regardless of where it appears in the list. The error only occurs when a file relies on an implicit dependency (one it does not import directly).
+
 ## Two Valid Approaches
 
 There are two ways to manage imports in a Deor project. Both are valid.

@@ -24,6 +24,25 @@ thinking of (first,second) in input()
 - functions: again clearly tag deor and rust sections.  Also functions seems to agree there are no tuple returns, so check to see what is true about tuples, as other code says we do support tuples.
 - functions: the shapes-func shapes is not defined
 - immutability: clearly label deor vs rust blocks
+---
+- imports: we may want to be more explicit about how order actually matters with examples, I have seen for example that incorrect import ordering does cause error messages.
+libs: make sure these are up to date with the current /libs folder.  I think lib/list.deor does a poor job explaining the substitution, it can be anything not just T (confirm this is the case), and also the example doesn't look like it is properly subbing out the Ts for everything?  maybe we should hgave a Function (after substitution) column.  All libs should also lead with a single letter not mp or ti.  Choose a single letter that does not conflict with existing lib letters.
+---
+- loops: I don't love this example 
+
+found as false
+for item in items
+    matching in item
+    if matching
+        found = true
+        break
+
+What is matching in item?  first off if it is a prop it should be (matching) in item (i think that is required?)  secondly what the heck is matching supposed to be in this example?
+
+- macros: if there are rust blocks here, label clearly which ones are Deor and which ones are Rust
+- move: if there are rust blocks here, label clearly which ones are deor and which ones are rust
+
+---
 
 
 

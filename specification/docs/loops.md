@@ -91,20 +91,22 @@ for _ in 1..11 {
 ## `break` — Exit a Loop Early
 `break` exits the innermost loop immediately. Execution continues after the loop body.
 
+Deor:
 ```
 found as false
-for item in items
-    matching in item
-    if matching
+for room in rooms
+    (occupied) in room
+    if occupied
         found = true
         break
 ```
 
+Rust:
 ```rust
 let mut found = false;
-for item in &items {
-    let matching = item.matching;
-    if matching {
+for room in &rooms {
+    let occupied = room.occupied;
+    if occupied {
         found = true;
         break;
     }

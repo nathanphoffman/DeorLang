@@ -47,8 +47,8 @@ struct Room
 If a name being extracted already exists in scope, the new binding silently shadows it. This is standard Rust `let` rebinding and is intentional in Deor.
 
 ```
-world as 2
-(world) in tab    # world now refers to tab.world — the 2 is gone
+name as "Alice"
+(name) in employee    # name now refers to employee.name — "Alice" is gone
 ```
 
 Use this deliberately to "update" a name after processing, or avoid it by choosing distinct names.

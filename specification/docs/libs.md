@@ -7,7 +7,7 @@ import "lib/string.deor"
 import "lib/math.deor"
 ```
 
-Three of the library files are **parameterized** — they use `where T = Type` to produce a concrete, type-safe version of the module. See [Parameterized Imports](#parameterized-imports) below.
+Three of the library files are **parameterized** — they use `where Placeholder = Type` to produce a concrete, type-safe version of the module. `T` is the conventional placeholder name but any valid identifier works. See [Parameterized Imports](#parameterized-imports) below.
 
 ---
 
@@ -135,7 +135,7 @@ import "lib/list.deor" where T = Report
 import "workers/pipeline.deor" where Job = Report   # your own file
 ```
 
-The placeholder can be any valid identifier. `T` is the convention used throughout the standard library, but you are free to choose a name that reads clearly in context.
+The placeholder can be any valid identifier — `T` is the convention in the standard library but `Item`, `Job`, `Row`, or any other name works equally well. Whatever name you choose, the substitution rules apply using that name as the placeholder.
 
 All Deor primitive types work as the concrete value: `int`, `float`, `string`, and `bool`.
 
@@ -158,34 +158,59 @@ Anything that does not match one of these four patterns is left unchanged.
 
 ## `lib/list.deor`
 
-Parameterized list operations for any element type. Import once per type you need.
+Parameterized list operations for any element type. Import once per type you need. The placeholder can be any valid identifier — `T` is the standard library convention but `Item`, `Row`, or any other name works.
 
 ```
 import "lib/list.deor" where T = int
+import "lib/list.deor" where T = Report     # any type works
+import "lib/list.deor" where Item = Report  # any placeholder name works
 ```
 
-After substitution with `T = int`, the shape is named `lIntList` and functions are prefixed `l_int_`:
+After substitution the shape becomes `lIntList` (or `lReportList`, etc.) and all function names replace `T` with the lowercase concrete type. The table below shows both the template form and the result for `T = int`:
 
-| Function (before substitution) | Signature | Description |
+| Template | After `T = int` | Description |
 |---|---|---|
-| `l_T_first` | `lTList → T` | First element (panics if empty) |
-| `l_T_last` | `lTList → T` | Last element (panics if empty) |
-| `l_T_is_empty` | `lTList → bool` | True if the list has no elements |
-| `l_T_reverse` | `lTList → lTList` | Reversed copy |
-| `l_T_slice` | `lTList, int, int → lTList` | Sub-list from `start` (inclusive) to `end` (exclusive) |
-| `l_T_concat` | `lTList, lTList → lTList` | Concatenate two lists |
-| `l_T_sort` | `lTList → lTList` | Sorted copy (requires element type to implement `Ord`) |
-| `l_T_sum` | `lTList → T` | Sum of all elements |
-| `l_T_min` | `lTList → T` | Minimum element |
-| `l_T_max` | `lTList → T` | Maximum element |
-| `l_T_join` | `lTList, string → string` | Join elements with a separator string |
-| `l_T_contains` | `lTList, T → bool` | True if the list contains the item |
-| `l_T_index_of` | `lTList, T → int` | Index of item, or `-1` if not found |
-| `l_T_unique` | `lTList → lTList` | Copy with duplicates removed, preserving order |
-| `l_T_take` | `lTList, int → lTList` | First `n` elements |
-| `l_T_drop` | `lTList, int → lTList` | All elements after the first `n` |
-| `l_T_push` | `lTList, T → lTList` | New list with item appended to the end |
-| `l_T_pop` | `lTList → lTList` | New list with the last element removed |
+| `l_T_first` | `l_int_first` | First element (panics if empty) |
+| `l_T_last` | `l_int_last` | Last element (panics if empty) |
+| `l_T_is_empty` | `l_int_is_empty` | True if the list has no elements |
+| `l_T_reverse` | `l_int_reverse` | Reversed copy |
+| `l_T_slice` | `l_int_slice` | Sub-list from `start` (inclusive) to `end` (exclusive) |
+| `l_T_concat` | `l_int_concat` | Concatenate two lists |
+| `l_T_sort` | `l_int_sort` | Sorted copy (requires element type to implement `Ord`) |
+| `l_T_sum` | `l_int_sum` | Sum of all elements |
+| `l_T_min` | `l_int_min` | Minimum element |
+| `l_T_max` | `l_int_max` | Maximum element |
+| `l_T_join` | `l_int_join` | Join elements with a separator string |
+| `l_T_contains` | `l_int_contains` | True if the list contains the item |
+| `l_T_index_of` | `l_int_index_of` | Index of item, or `-1` if not found |
+| `l_T_unique` | `l_int_unique` | Copy with duplicates removed, preserving order |
+| `l_T_take` | `l_int_take` | First `n` elements |
+| `l_T_drop` | `l_int_drop` | All elements after the first `n` |
+| `l_T_push` | `l_int_push` | New list with item appended to the end |
+| `l_T_pop` | `l_int_pop` | New list with the last element removed |
+
+Signatures use `lTList` for the list type and `T` for the element — after substitution these become `lIntList` and `int` respectively:
+
+| Template | Signature (template) | Signature after `T = int` |
+|---|---|---|
+| `l_T_first` | `lTList → T` | `lIntList → int` |
+| `l_T_last` | `lTList → T` | `lIntList → int` |
+| `l_T_is_empty` | `lTList → bool` | `lIntList → bool` |
+| `l_T_reverse` | `lTList → lTList` | `lIntList → lIntList` |
+| `l_T_slice` | `lTList, int, int → lTList` | `lIntList, int, int → lIntList` |
+| `l_T_concat` | `lTList, lTList → lTList` | `lIntList, lIntList → lIntList` |
+| `l_T_sort` | `lTList → lTList` | `lIntList → lIntList` |
+| `l_T_sum` | `lTList → T` | `lIntList → int` |
+| `l_T_min` | `lTList → T` | `lIntList → int` |
+| `l_T_max` | `lTList → T` | `lIntList → int` |
+| `l_T_join` | `lTList, string → string` | `lIntList, string → string` |
+| `l_T_contains` | `lTList, T → bool` | `lIntList, int → bool` |
+| `l_T_index_of` | `lTList, T → int` | `lIntList, int → int` |
+| `l_T_unique` | `lTList → lTList` | `lIntList → lIntList` |
+| `l_T_take` | `lTList, int → lTList` | `lIntList, int → lIntList` |
+| `l_T_drop` | `lTList, int → lTList` | `lIntList, int → lIntList` |
+| `l_T_push` | `lTList, T → lTList` | `lIntList, int → lIntList` |
+| `l_T_pop` | `lTList → lTList` | `lIntList → lIntList` |
 
 ```
 import "lib/list.deor" where T = int
@@ -210,24 +235,24 @@ String-to-string hash map backed by `Arc<Mutex<HashMap>>`. The `StringMap` is a 
 
 | Function | Signature | Description |
 |---|---|---|
-| `mp_make` | `→ StringMap` | Create an empty map |
-| `mp_set` | `StringMap, string, string → StringMap` | Insert or update a key |
-| `mp_get` | `StringMap, string → string` | Value for key, or `""` if absent |
-| `mp_has` | `StringMap, string → bool` | True if the key exists |
-| `mp_remove` | `StringMap, string → StringMap` | Remove a key |
-| `mp_size` | `StringMap → int` | Number of entries |
-| `mp_keys` | `StringMap → stringList` | All keys |
-| `mp_values` | `StringMap → stringList` | All values |
+| `h_make` | `→ StringMap` | Create an empty map |
+| `h_set` | `StringMap, string, string → StringMap` | Insert or update a key |
+| `h_get` | `StringMap, string → string` | Value for key, or `""` if absent |
+| `h_has` | `StringMap, string → bool` | True if the key exists |
+| `h_remove` | `StringMap, string → StringMap` | Remove a key |
+| `h_size` | `StringMap → int` | Number of entries |
+| `h_keys` | `StringMap → stringList` | All keys |
+| `h_values` | `StringMap → stringList` | All values |
 
 ```
 import "lib/map.deor"
 
-StringMap config = mp_make()
-config = mp_set(config, "host", "localhost")
-config = mp_set(config, "port", "8080")
-bool has_host = mp_has(config, "host")
-string host = mp_get(config, "host")
-int count = mp_size(config)
+StringMap config = h_make()
+config = h_set(config, "host", "localhost")
+config = h_set(config, "port", "8080")
+bool has_host = h_has(config, "host")
+string host = h_get(config, "host")
+int count = h_size(config)
 ```
 
 ---
@@ -259,21 +284,21 @@ bool gone = f_delete("log.txt")
 
 ## `lib/time.deor`
 
-Timestamps and elapsed time. `ti_now` returns Unix seconds as `int` (valid until 2038); use `ti_now_ms` for millisecond precision as `float`.
+Timestamps and elapsed time. `n_now` returns Unix seconds as `int` (valid until 2038); use `n_now_ms` for millisecond precision as `float`.
 
 | Function | Signature | Description |
 |---|---|---|
-| `ti_now` | `→ int` | Current Unix timestamp in whole seconds |
-| `ti_now_ms` | `→ float` | Current Unix timestamp in milliseconds |
-| `ti_elapsed` | `int → int` | Seconds elapsed since the given `ti_now` snapshot |
-| `ti_elapsed_ms` | `float → float` | Milliseconds elapsed since the given `ti_now_ms` snapshot |
+| `n_now` | `→ int` | Current Unix timestamp in whole seconds |
+| `n_now_ms` | `→ float` | Current Unix timestamp in milliseconds |
+| `n_elapsed` | `int → int` | Seconds elapsed since the given `n_now` snapshot |
+| `n_elapsed_ms` | `float → float` | Milliseconds elapsed since the given `n_now_ms` snapshot |
 
 ```
 import "lib/time.deor"
 
-float start = ti_now_ms()
+float start = n_now_ms()
 # ... do work ...
-float ms = ti_elapsed_ms(start)
+float ms = n_elapsed_ms(start)
 print(c_float_to_string(ms))
 ```
 
@@ -383,9 +408,9 @@ Standard library prefixes (reserved):
 | `m_` | `lib/math.deor`, `lib/random.deor` |
 | `l_` | `lib/list.deor` |
 | `c_` | `lib/convert.deor` |
-| `mp_` | `lib/map.deor` |
+| `h_` | `lib/map.deor` |
 | `f_` | `lib/file.deor` |
-| `ti_` | `lib/time.deor` |
+| `n_` | `lib/time.deor` |
 | `t_` | `lib/tasks.deor`, `lib/taskpool.deor` |
 
 For custom wrappers, use a distinct prefix to avoid collisions:

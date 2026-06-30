@@ -184,9 +184,11 @@ Everything placed inside `()` must be a named variable already in scope. This ru
 |---|---|
 | Function call | `add(value1, value2)` |
 | Struct construction | `Room room = (area, name, occupied)` |
-| Tuple return | `return (quotient, remainder)` |
+| Struct return | `return (quotient, remainder)` |
 
-Order does not matter for struct construction — fields are matched by name. Order does matter for function calls and tuple returns, since those are positional.
+Order does not matter for struct construction or struct return — fields are matched by name. Order does matter for function calls, since those are positional.
+
+There are no anonymous tuple types in Deor. `return (quotient, remainder)` constructs the function's declared return struct — both `quotient` and `remainder` must be variables in scope that match field names on that struct. See [Functions — Multiple return values](functions.md#multiple-return-values) for the full pattern.
 
 **Correct:**
 ```

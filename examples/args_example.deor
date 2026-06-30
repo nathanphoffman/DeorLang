@@ -1,0 +1,11 @@
+fn void main()
+	(first, second, third) in args()
+	if first is ""
+		print("usage: args_example <name> <age> <city>")
+	else
+		print("Name:")
+		print(first)
+		print("Age:")
+		print(second)
+		print("City:")
+		print(third)

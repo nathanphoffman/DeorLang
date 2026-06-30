@@ -1,0 +1,24 @@
+
+# Loops over the collected field names and emits a `let` binding for each.
+# Valid names: first, second, third, input_string, input_list.
+# Silently skips any unrecognised name (gic_bind stays "").
+# Appends lines to gic_out.
+# Reads: fields, gic_pad, RS_NL, gic_out.
+macro gic_emit_bindings
+	int gic_fc = len(fields)
+	for gic_i in range(gic_fc)
+		string gic_fname = fields at gic_i
+		string gic_bind = ""
+		if gic_fname is "first"
+			gic_bind = "let first: String = _deor_args.get(0).cloned().unwrap_or_default();"
+		else if gic_fname is "second"
+			gic_bind = "let second: String = _deor_args.get(1).cloned().unwrap_or_default();"
+		else if gic_fname is "third"
+			gic_bind = "let third: String = _deor_args.get(2).cloned().unwrap_or_default();"
+		else if gic_fname is "input_string"
+			gic_bind = "let input_string: String = _deor_args.join(\" \");"
+		else if gic_fname is "input_list"
+			gic_bind = "let input_list: Vec<String> = _deor_args.clone();"
+		if not is_empty(gic_bind)
+			string gic_line = s_join([gic_pad, gic_bind, RS_NL])
+			gic_out at end = gic_line

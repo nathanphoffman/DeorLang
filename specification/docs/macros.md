@@ -33,6 +33,7 @@ Because a macro body is copy-pasted at the call site, any variables it declares 
 
 Use `block` inside the macro body to create an isolated scope. Variables declared inside `block` do not escape:
 
+Deor:
 ```
 macro compute_area
     block
@@ -46,6 +47,7 @@ fn void run()
     macro_run compute_area    # safe — block variables do not leak between calls
 ```
 
+Rust:
 ```rust
 {
     let length = 10;

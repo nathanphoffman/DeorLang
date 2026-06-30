@@ -47,6 +47,7 @@ Produces an integer sequence for use in `for` loops. Two forms:
 | `range(count)` | `0` through `count - 1` |
 | `range(start, end)` | `start` through `end - 1` (exclusive upper bound) |
 
+Deor:
 ```
 for idx in range(10)
     print(idx)
@@ -55,7 +56,45 @@ for idx in range(3, 7)
     print(idx)
 ```
 
-`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned. See [Loops](loops.md) for full usage.
+Rust:
+```rust
+for idx in 0..10 {
+    println!("{}", idx);
+}
+for idx in 3..7 {
+    println!("{}", idx);
+}
+```
+
+`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned.
+
+---
+
+## Iterating Over a List
+
+To loop over every element in a list, write the list name directly after `in`. No `range` needed — this is a separate form.
+
+Deor:
+```
+shape roomList = list of Room
+
+fn void print_names(roomList rooms)
+    for room in rooms
+        (name) in room
+        print(name)
+```
+
+Rust:
+```rust
+fn print_names(rooms: &Vec<Room>) {
+    for room in rooms {
+        let name = room.name.clone();
+        println!("{}", name);
+    }
+}
+```
+
+Use `range` when you need the index. Use `for item in list` when you only need the values. See [Loops](loops.md) for the full set of loop forms.
 
 ---
 

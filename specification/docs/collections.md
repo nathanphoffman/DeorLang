@@ -5,6 +5,7 @@ List operations assume a list shape has already been declared — see [Shapes](s
 ## Empty List
 To define an empty list use the `empty` keyword. `[]` is never valid for initializing an empty list — `[` and `]` are only used for list literals with items.
 
+Deor:
 ```
 stringList list_names = empty
 if list_names is empty
@@ -14,6 +15,7 @@ if list_names is not empty
     print("list is not empty")
 ```
 
+Rust:
 ```rust
 let mut list_names: Vec<String> = Vec::new();
 if list_names.is_empty() {
@@ -28,12 +30,14 @@ if !list_names.is_empty() {
 ## Index Read
 Elements are read by index using `at`. Zero-indexed, matching Rust's behavior.
 
+Deor:
 ```
 intList scores = [10, 20, 30, 40]
 int first = scores at 0    # 10
 int last = scores at 3     # 40
 ```
 
+Rust:
 ```rust
 let scores: Vec<i32> = vec![10, 20, 30, 40];
 let first: i32 = scores[0];
@@ -42,6 +46,7 @@ let last: i32 = scores[3];
 
 Dynamic computed indices are fine:
 
+Deor:
 ```
 int idx = 2
 int mid = scores at idx    # 30
@@ -53,11 +58,13 @@ Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts
 ## Index Write
 Elements are replaced by index using `at` on the left side of an assignment. The right-hand side must be a named variable of the list's element type.
 
+Deor:
 ```
 rooms at idx = new_room
 scores at idx = updated_score
 ```
 
+Rust:
 ```rust
 rooms[idx as usize] = new_room;
 scores[idx as usize] = updated_score;
@@ -69,11 +76,13 @@ Out-of-bounds assignment is a runtime panic.
 ## Append
 `at end` appends a new element to the end of the list. `end` is a reserved keyword meaning "the position after the last element" — it is only valid in this position.
 
+Deor:
 ```
 result at end = item
 rooms at end = new_room
 ```
 
+Rust:
 ```rust
 result.push(item);
 rooms.push(new_room.clone());
@@ -83,22 +92,26 @@ rooms.push(new_room.clone());
 ## Remove
 `remove at` removes the element at a given index, shifting subsequent elements left.
 
+Deor:
 ```
 result remove at 2
 ```
 
+Rust:
 ```rust
 result.remove(2);
 ```
 
 For removing multiple elements, remove from highest index to lowest to avoid index-shifting errors:
 
+Deor:
 ```
 result remove at 5
 result remove at 2
 result remove at 1
 ```
 
+Rust:
 ```rust
 result.remove(5);
 result.remove(2);
@@ -109,6 +122,7 @@ result.remove(1);
 ## No Membership Test
 Deor has no built-in membership operator. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
 
+Deor:
 ```
 shape matchFunc = func of Room to bool
 
@@ -123,6 +137,7 @@ fn bool any_match(roomList items, matchFunc predicate)
 ## Updating a Struct Inside a List
 Deor does not allow in-place field mutation — `rooms at 0` followed by field assignment is a transpiler error. Struct values inside a list are replaced, not mutated. Extract the struct, build an updated copy with `with`, write it back.
 
+Deor:
 ```
 # 1. Read the existing struct
 Room old_room = rooms at idx
@@ -136,6 +151,8 @@ rooms at idx = new_room
 ```
 
 In Rust the update variable name does not need to match the field name, but in Deor it must — field binding is by name.
+
+Rust:
 ```rust
 let old_room: Room = rooms[idx as usize].clone();
 let new_area: Option<Squarefeet> = Squarefeet::new(25);
