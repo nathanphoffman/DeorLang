@@ -1,0 +1,29 @@
+
+# Shared detector for "bare reassignment of a tracked name" — used by both
+# check_const_reassign (const bindings) and check_validator_reassign (validator
+# type variables). Fires when cur_val is a tracked name, the next token is
+# EQUALS (or, when rar_allow_as, KW_AS), and the previous token is not an
+# IDENT — i.e. this isn't the original typed declaration, it's a later bare
+# `name = expr` / `name as expr` that skips re-running the real declaration form.
+# Parameterized via rar_names, rar_allow_as, rar_rule — set these immediately
+# before `macro_run check_bare_reassign`.
+macro check_bare_reassign
+	bool rar_is_tracked = list_has(rar_names, cur_val)
+	if rar_is_tracked
+		int rar_next_pos = pos + 1
+		if rar_next_pos < token_count
+			Token rar_next_tok = tokens at rar_next_pos
+			(kind) in rar_next_tok
+			bool rar_is_eq = kind is "EQUALS"
+			bool rar_is_as = false
+			if rar_allow_as
+				rar_is_as = kind is "KW_AS"
+			if rar_is_eq or rar_is_as
+				bool rar_is_decl = false
+				if pos > 0
+					int rar_prev_pos = pos - 1
+					Token rar_prev_tok = tokens at rar_prev_pos
+					(kind) in rar_prev_tok
+					rar_is_decl = kind is "IDENT"
+				if not rar_is_decl
+					errors at end = val_err(tok, lbl_var, rar_rule)

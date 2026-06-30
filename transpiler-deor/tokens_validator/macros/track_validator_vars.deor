@@ -1,10 +1,12 @@
 
 # Tracks every IDENT that is declared with a validator type so check_avow_target
-# can verify avow targets. Fires whenever a validator type name is followed by an
-# IDENT: covers variable declarations (Roll best, Roll best = expr), function
-# parameters (fn T name(Roll param)), and struct fields.
+# and check_validator_reassign can verify their targets. Fires whenever a
+# validator type name is followed by an IDENT: covers variable declarations
+# (Roll best, Roll best = expr), function parameters (fn T name(Roll param)),
+# and struct fields.
 # Note: function return-type positions also match (fn Roll func_name(...)) but
-# those additions are harmless — function names are never avow targets.
+# those additions are harmless — function names are never avow/reassign targets.
+# The list itself is reset per-function by track_block_scope (see there for why).
 macro track_validator_vars
 	if cur_kind is "IDENT"
 		bool tvv_is_vtype = list_has(validator_type_names, cur_val)

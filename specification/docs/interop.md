@@ -16,6 +16,8 @@ fn string read_env(string key)
 
 Deor parameters are available inside the block by their Deor names. The last expression is the return value and must match the Deor function's return type.
 
+Deor does not check this — a `rust` block is spliced into the generated file verbatim, with no awareness of what type the block actually produces. If the last expression doesn't match the declared return type, Deor will transpile it without complaint and the mismatch only surfaces as a `rustc` error against the generated `.rs` file, not against your `.deor` source. Anyone writing a `rust` block is expected to know the Rust they're writing well enough to get this right.
+
 ---
 
 ## When to Use a `rust` Block

@@ -1,0 +1,10 @@
+
+# Fires when a validator-typed variable name is followed by EQUALS or KW_AS
+# without a preceding type IDENT — a bare `threads = expr` or `threads as expr`
+# that skips ValidatorType::new()'s predicate check entirely, instead of the
+# real re-validation form `ValidatorType threads = expr`.
+macro check_validator_reassign
+	strList rar_names = validator_vars
+	bool rar_allow_as = true
+	string rar_rule = rule_validator_reassign
+	macro_run check_bare_reassign

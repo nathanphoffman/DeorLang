@@ -46,6 +46,9 @@ macro define_errors
 	# const rules
 	string rule_const_reassign = "cannot reassign a const variable — const bindings are immutable"
 
+	# validator type rules
+	string rule_validator_reassign = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate"
+
 	# raw rules
 	string rule_raw_assignment = "raw variables must be assigned from a rust block — use 'raw name = rust ...'"
 	string rule_raw_in_expr = "raw variables cannot be used in Deor expressions — consume them inside a rust block"

@@ -3,9 +3,17 @@
 # `type Name(baseType paramName)` declaration. The constructor returns Option<Self>,
 # evaluating the user's predicate: if it passes, wraps the value in Some(TypeName(val));
 # otherwise returns None. This is Deor's mechanism for validated/constrained scalar types.
+#
+# Predicate bodies come in two shapes:
+#   single expression  — `return val > 0` — handled inline via gen_expr, no block needed.
+#   multi-statement     — intermediate bindings before a final `return` — parsed with the
+#                          same gen_block used for function bodies, then wrapped in an
+#                          immediately-invoked closure `(|| -> bool { ... })()` so the
+#                          predicate's `return` exits the closure, not the constructor.
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
+	(variant_reg, shape_reg, struct_reg, enum_reg, type_reg, typed_enum_reg, typed_variant_reg) in ctx
 	int start_pos = pos + 1
-	
+
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
 	(current) in cur
 	(value) in current
@@ -25,23 +33,69 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 	cur = cur_next_ref(cur, tokens)   # RPAREN
 	cur = cur_next_ref(cur, tokens)   # NEWLINE
+	(pos) in cur
+	int td_indent_pos = pos + 1
 	cur = cur_skip_to_body_ref(cur, tokens)
 
 	(pos) in cur
-	ParseResult pred_r = gen_expr(tokens, pos, ctx)
+	int body_start = pos
+
+	ParseResult pred_r = gen_expr(tokens, body_start, ctx)
 	move (code, new_pos) in pred_r
 	pred_code as code
 	pred_end as new_pos
 
-	TokenCursor cur2 = cur_at_ref(tokens, pred_end)
-	for if not c_at_end(cur2)
-		(current) in cur2
+	# Peek past the parsed expression: if a (possibly absent) DEDENT follows
+	# immediately, the predicate was a single line and pred_code is already correct.
+	TokenCursor td_peek = cur_at_ref(tokens, pred_end)
+	for if not c_at_end(td_peek)
+		(current) in td_peek
 		(kind) in current
-		cur2 = cur_next_ref(cur2, tokens)
-		if kind is "DEDENT"
-			break
+		if kind is "NEWLINE"
+			td_peek = cur_next_ref(td_peek, tokens)
+			continue
+		break
 
-	(pos) in cur2
+	bool td_is_single = true
+	if not c_at_end(td_peek)
+		(current) in td_peek
+		(kind) in current
+		td_is_single = kind is "DEDENT"
+
+	string final_pred_code = pred_code
+	int final_pos = 0
+
+	if td_is_single
+		TokenCursor td_scan = cur_at_ref(tokens, pred_end)
+		for if not c_at_end(td_scan)
+			(current) in td_scan
+			(kind) in current
+			td_scan = cur_next_ref(td_scan, tokens)
+			if kind is "DEDENT"
+				break
+		(pos) in td_scan
+		final_pos = pos
+	else
+		int body_end_pos = find_block_end_ref(tokens, td_indent_pos)
+		int body_slice_end = body_end_pos + 1
+		tokenList td_body_tokens = l_slice_ref(tokens, body_start, body_slice_end)
+		int td_zero = 0
+		int td_last = len(td_body_tokens) - 1
+		strList mut_names = collect_mut_names(td_body_tokens, td_zero, td_last)
+		TokensRef tokens = tokens_wrap(move td_body_tokens)
+		GenCtx td_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg)
+		RcCtx td_pred_ctx = make_rctx(move td_ctx_raw)
+
+		int td_depth = 2
+		ParseResult td_block_r = gen_block(td_zero, td_depth, td_pred_ctx)
+		move (code, new_pos) in td_block_r
+		td_block_code as code
+		td_block_new_pos as new_pos
+
+		string td_clo_open = "(|| -> bool {\n"
+		string td_clo_close = "        })()"
+		final_pred_code = s_join([td_clo_open, td_block_code, td_clo_close])
+		final_pos = body_start + td_block_new_pos
 
 	string tsc_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
 	string tsc_op = "("
@@ -54,7 +108,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	string imp_som = " {\n            Some("
 	string imp_inn = "("
 	string imp_sfx = "))\n        } else {\n            None\n        }\n    }\n}\n\n"
-	string impl_code = s_join([imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx])
+	string impl_code = s_join([imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, final_pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx])
 	string type_code = s_cat(move struct_code, move impl_code)
 
-	return make_result(move type_code, pos)
+	return make_result(move type_code, final_pos)

@@ -116,6 +116,8 @@ Type conversions between Deor primitives.
 | `c_string_to_float` | `string → float` | Parse float, returns `0.0` on failure |
 | `c_string_to_bool` | `string → bool` | `"true"` → `true`, anything else → `false` |
 
+The `string → int`/`float` conversions never crash — unparseable input silently becomes `0`/`0.0`, the same convention as C's `atoi`. This means a failed parse and a legitimate `"0"` are indistinguishable from the return value alone. That's fine for the overwhelming majority of cases (numeric input is rarely intentionally `0`), but if `0` is a meaningful, distinct input for your use case, check the raw string before converting (`if raw is "0"`) rather than relying on the converted value.
+
 ```
 import "lib/convert.deor"
 

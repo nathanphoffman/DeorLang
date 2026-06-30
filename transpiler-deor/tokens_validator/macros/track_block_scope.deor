@@ -1,6 +1,10 @@
 
 # Tracks INDENT/DEDENT nesting depth and sets `in_void_fn` when entering a void function body,
 # clearing it when the function's block closes — used to enforce the no-return rule in void fns.
+# Also clears validator_vars at the start of each top-level fn, so a validator-typed local
+# tracked in one function doesn't leak into matching an unrelated same-named local in the next.
+# This must run before the "fn name" validate_ident check later in the loop, since that check
+# `continue`s past the KW_FN token on a match — anything scheduled after it never sees it.
 macro track_block_scope
 	if cur_kind is "INDENT"
 		block_depth = block_depth + 1
@@ -9,6 +13,9 @@ macro track_block_scope
 		if block_depth is 0
 			in_void_fn = false
 	if cur_kind is "KW_FN"
+		if block_depth is 0
+			rust
+				validator_vars.clear();
 		int void_check = pos + 1
 		if void_check < token_count
 			Token void_tok = tokens at void_check
