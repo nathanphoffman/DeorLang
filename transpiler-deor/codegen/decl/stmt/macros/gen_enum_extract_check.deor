@@ -1,0 +1,51 @@
+
+# Intercepts `(Fields) in TypedEnumName` destructuring when TypedEnumName is a
+# typed enum (declared as `enum string/int/float/bool Name`). Emits a `let` binding
+# for each field using its pre-registered literal value. Returns early on match.
+#
+# Examples:
+#   (Red, Blue) in Color      →  let Red: String = "Red".to_string();
+#                                 let Blue: String = "Blue".to_string();
+#
+#   (Active) in Status        →  let Active: i32 = 1;
+#
+# Requires in scope: cur, tokens, token_count, fields, field_count, mut_names, depth, ctx.
+macro gen_enum_extract_check
+	(typed_enum_reg, typed_variant_reg) in ctx
+	bool geec_matched = false
+	if cur < token_count
+		Token geec_in_tok = tokens at cur
+		(kind) in geec_in_tok
+		if kind is "KW_IN"
+			int geec_name_pos = cur + 1
+			if geec_name_pos < token_count
+				Token geec_name_tok = tokens at geec_name_pos
+				(kind, value) in geec_name_tok
+				if kind is "IDENT"
+					string geec_val_type = reg_get(typed_enum_reg, value)
+					if not is_empty(geec_val_type)
+						geec_matched = true
+						string geec_enum = value
+						macro_run rust_strings
+						string geec_pad = s_repeat(RS_IND, depth)
+						strList geec_out = empty
+						for geec_fi in range(field_count)
+							string geec_field = fields at geec_fi
+							string geec_dot = "."
+							string geec_key = s_join([geec_enum, geec_dot, geec_field])
+							string geec_lit = reg_get(typed_variant_reg, geec_key)
+							bool geec_is_mut = list_has(mut_names, geec_field)
+							string geec_mut = ""
+							if geec_is_mut
+								geec_mut = "mut "
+							string geec_line = ""
+							if geec_val_type is "string"
+								string geec_debug = s_debug(geec_lit)
+								geec_line = s_join([geec_pad, "let ", geec_mut, geec_field, ": String = ", geec_debug, ".to_string();"])
+							else
+								string geec_rust_t = render_rust_type(geec_val_type)
+								geec_line = s_join([geec_pad, "let ", geec_mut, geec_field, ": ", geec_rust_t, " = ", geec_lit, ";"])
+							geec_out at end = geec_line
+						string geec_code = s_join_nl(geec_out)
+						int geec_past = cur + 2
+						return make_nl_result(move geec_code, geec_past, tokens)

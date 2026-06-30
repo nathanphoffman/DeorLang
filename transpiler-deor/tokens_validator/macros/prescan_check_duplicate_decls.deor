@@ -12,10 +12,37 @@ macro prescan_check_duplicate_decls
 			Token dn_tok = tokens at dn_pos
 			(kind, value) in dn_tok
 			if kind is "IDENT"
-				if list_has(decl_names, value)
-					errors at end = val_err(dn_tok, lbl_decl, rule_dup)
+				# Typed enums have an extra type word before the name: enum string Color
+				bool dn_is_typed_kw = false
+				if value is "string"
+					dn_is_typed_kw = true
+				else if value is "int"
+					dn_is_typed_kw = true
+				else if value is "float"
+					dn_is_typed_kw = true
+				else if value is "bool"
+					dn_is_typed_kw = true
+				if is_kw_enum
+					if dn_is_typed_kw
+						int dn_name_pos = dn_pos + 1
+						if dn_name_pos < token_count
+							Token dn_name_tok = tokens at dn_name_pos
+							(kind, value) in dn_name_tok
+							if kind is "IDENT"
+								if list_has(decl_names, value)
+									errors at end = val_err(dn_name_tok, lbl_decl, rule_dup)
+								else
+									decl_names at end = value
+					else
+						if list_has(decl_names, value)
+							errors at end = val_err(dn_tok, lbl_decl, rule_dup)
+						else
+							decl_names at end = value
 				else
-					decl_names at end = value
+					if list_has(decl_names, value)
+						errors at end = val_err(dn_tok, lbl_decl, rule_dup)
+					else
+						decl_names at end = value
 	if kind is "KW_FN"
 		int fn_name_pos = pre_i + 2
 		if fn_name_pos < token_count

@@ -84,11 +84,28 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run validate_ident
 
 		# enum name: PascalCase, min 3
+		# typed enums (enum string/int/float/bool Name) have an extra type token before the name
 		string keyword = "KW_ENUM"
 		string lbl = lbl_enum
 		string rule = rule_pascal
 		fnTestRule test_rule = is_pascal
+		int ev_name_offset = 1
+		if cur_kind is "KW_ENUM"
+			int ev_type_pos = pos + 1
+			if ev_type_pos < token_count
+				Token ev_type_tok = tokens at ev_type_pos
+				(value) in ev_type_tok
+				if value is "string"
+					ev_name_offset = 2
+				else if value is "int"
+					ev_name_offset = 2
+				else if value is "float"
+					ev_name_offset = 2
+				else if value is "bool"
+					ev_name_offset = 2
+		validate_indent_offset as ev_name_offset
 		macro_run validate_ident
+		validate_indent_offset as 1
 
 		# shape name: camelCase, min 3
 		string keyword = "KW_SHAPE"

@@ -1,8 +1,27 @@
 
-# Prescan pass: walks each enum body and validates that all variants are PascalCase, at least 3 chars, and carry no data.
+# Prescan pass: walks each enum body and validates that all variants are PascalCase,
+# at least 3 chars, and follow the correct syntax for their enum kind.
+#
+# Untyped enums (enum Name): variants are bare identifiers — no data, no '= value'.
+# Typed enums (enum string/int/float/bool Name): each variant MUST have '= value'.
 macro prescan_check_enum_variants
 	if kind is "KW_ENUM"
+		# Detect typed vs. untyped by peeking at token after KW_ENUM
+		bool ev_is_typed = false
 		int ev_pos = pre_i + 1
+		if ev_pos < token_count
+			Token ev_type_tok = tokens at ev_pos
+			(value) in ev_type_tok
+			if value is "string"
+				ev_is_typed = true
+			else if value is "int"
+				ev_is_typed = true
+			else if value is "float"
+				ev_is_typed = true
+			else if value is "bool"
+				ev_is_typed = true
+
+		# Scan forward to INDENT (works for both typed and untyped)
 		for if ev_pos < token_count
 			Token ev_tok = tokens at ev_pos
 			(kind) in ev_tok
@@ -10,6 +29,8 @@ macro prescan_check_enum_variants
 				break
 			ev_pos = ev_pos + 1
 		ev_pos = ev_pos + 1
+
+		# Validate each variant in the body
 		for if ev_pos < token_count
 			Token ev_tok = tokens at ev_pos
 			(kind) in ev_tok
@@ -25,6 +46,12 @@ macro prescan_check_enum_variants
 				if after_variant < token_count
 					Token after_tok = tokens at after_variant
 					(kind) in after_tok
-					if kind is "LPAREN"
-						errors at end = val_err(ev_tok, lbl_variant, rule_enum_data)
+					if ev_is_typed
+						if kind is not "EQUALS"
+							errors at end = val_err(ev_tok, lbl_variant, rule_typed_enum_eq)
+					else
+						if kind is "LPAREN"
+							errors at end = val_err(ev_tok, lbl_variant, rule_enum_data)
+						if kind is "EQUALS"
+							errors at end = val_err(ev_tok, lbl_variant, rule_untyped_enum_eq)
 			ev_pos = ev_pos + 1

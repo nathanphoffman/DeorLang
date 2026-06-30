@@ -7,11 +7,13 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 	macro_run for_collect_fields_into_fields_list
 	macro_run gen_input_check
 
+	int field_count = len(fields)
+	macro_run gen_enum_extract_check
+
 	int val_pos = cur + 1
 	macro_run gen_expr_r
 
 	strList dest_lines = empty
-	int field_count = len(fields)
 
 	macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)

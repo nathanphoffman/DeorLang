@@ -14,6 +14,8 @@ macro define_errors
 	string rule_dup = "duplicate declaration — this name is already used by another struct, enum, shape, fn, or type"
 	string rule_enum_pascal = "enum variant must be PascalCase"
 	string rule_enum_data = "enum variants cannot carry data — use a struct alongside the enum instead"
+	string rule_typed_enum_eq = "typed enum variant must have a value — add '= value' after the variant name"
+	string rule_untyped_enum_eq = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants"
 	string rule_list_validator = "list shapes cannot be validator base types — validators only wrap primitives"
 
 	# function rules

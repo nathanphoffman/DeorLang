@@ -31,6 +31,8 @@ struct GenCtx
 	strList mut_names
 	strList type_reg
 	TokensRef tokens
+	strList typed_enum_reg
+	strList typed_variant_reg
 
 # Cursor-style view into a token list. Used inside `using c` blocks during declaration
 # parsing to step through tokens one at a time without carrying raw indices everywhere.

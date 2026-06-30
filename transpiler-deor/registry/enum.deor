@@ -1,7 +1,21 @@
 
 # Builds the enum and variant registries.
 # enum_reg:    [deorName, RustName] pairs (deorName lowercase, RustName PascalCase)
-# variant_reg: [variantName, rustEnumName] pairs for every variant of every enum
+# variant_reg: [variantName, rustEnumName] pairs for every variant of every untyped enum
+#
+# typed_enum_reg:    [enumName, valueType] pairs for typed enums (enum string/int/float/bool Name)
+# typed_variant_reg: ["EnumName.VariantName", literalValue] pairs for typed enum variants
+
+fn bool is_typed_enum_type(string word)
+	if word is "string"
+		return true
+	if word is "int"
+		return true
+	if word is "float"
+		return true
+	if word is "bool"
+		return true
+	return false
 
 fn strList build_enum_reg(TokensRef tokens)
 	strList result = empty
@@ -14,10 +28,12 @@ fn strList build_enum_reg(TokensRef tokens)
 			if name_pos < token_count
 				Token name_token = tokens at name_pos
 				(value) in name_token
-				string enum_name = value
-				string rust_name = s_pascal(enum_name)
-				result at end = enum_name
-				result at end = rust_name
+				bool be_is_typed = is_typed_enum_type(value)
+				if not be_is_typed
+					string enum_name = value
+					string rust_name = s_pascal(enum_name)
+					result at end = enum_name
+					result at end = rust_name
 	return result
 
 fn strList build_variant_reg(TokensRef tokens, strList enum_reg)
@@ -32,24 +48,105 @@ fn strList build_variant_reg(TokensRef tokens, strList enum_reg)
 			if name_pos < token_count
 				Token name_token = tokens at name_pos
 				(value) in name_token
-				string enum_name = value
-				string rust_name = reg_get(enum_reg, enum_name)
-				raw_i = name_pos + 1
-				for if raw_i < token_count
-					Token skip_token = tokens at raw_i
-					(kind) in skip_token
+				bool bvr_is_typed = is_typed_enum_type(value)
+				if not bvr_is_typed
+					string enum_name = value
+					string rust_name = reg_get(enum_reg, enum_name)
+					raw_i = name_pos + 1
+					for if raw_i < token_count
+						Token skip_token = tokens at raw_i
+						(kind) in skip_token
+						raw_i = raw_i + 1
+						if kind is "INDENT"
+							break
+					for if raw_i < token_count
+						Token variant_token = tokens at raw_i
+						(kind, value) in variant_token
+						raw_i = raw_i + 1
+						if kind is "DEDENT"
+							break
+						else if kind is "IDENT"
+							result at end = value
+							result at end = rust_name
+				else
 					raw_i = raw_i + 1
-					if kind is "INDENT"
-						break
-				for if raw_i < token_count
-					Token variant_token = tokens at raw_i
-					(kind, value) in variant_token
-					raw_i = raw_i + 1
-					if kind is "DEDENT"
-						break
-					else if kind is "IDENT"
-						result at end = value
-						result at end = rust_name
-				continue
+			continue
+		raw_i = raw_i + 1
+	return result
+
+fn strList build_typed_enum_reg(TokensRef tokens)
+	strList result = empty
+	int token_count = len(tokens)
+	for index in range(token_count)
+		Token token = tokens at index
+		(kind) in token
+		if kind is "KW_ENUM"
+			int type_pos = index + 1
+			if type_pos < token_count
+				Token type_tok = tokens at type_pos
+				(kind, value) in type_tok
+				if kind is "IDENT"
+					bool bte_is_typed = is_typed_enum_type(value)
+					if bte_is_typed
+						string val_type = value
+						int name_pos = type_pos + 1
+						if name_pos < token_count
+							Token name_tok = tokens at name_pos
+							(value) in name_tok
+							result at end = value
+							result at end = val_type
+	return result
+
+fn strList build_typed_variant_reg(TokensRef tokens)
+	strList result = empty
+	int token_count = len(tokens)
+	int raw_i = 0
+	for if raw_i < token_count
+		Token token = tokens at raw_i
+		(kind) in token
+		if kind is "KW_ENUM"
+			int btvr_type_pos = raw_i + 1
+			bool btvr_typed = false
+			if btvr_type_pos < token_count
+				Token btvr_type_tok = tokens at btvr_type_pos
+				(kind, value) in btvr_type_tok
+				btvr_typed = is_typed_enum_type(value)
+			if btvr_typed
+				int btvr_name_pos = raw_i + 2
+				if btvr_name_pos < token_count
+					Token btvr_name_tok = tokens at btvr_name_pos
+					(value) in btvr_name_tok
+					string btvr_enum = value
+					raw_i = btvr_name_pos + 1
+					for if raw_i < token_count
+						Token btvr_skip = tokens at raw_i
+						(kind) in btvr_skip
+						raw_i = raw_i + 1
+						if kind is "INDENT"
+							break
+					for if raw_i < token_count
+						Token btvr_var = tokens at raw_i
+						(kind, value) in btvr_var
+						raw_i = raw_i + 1
+						if kind is "DEDENT"
+							break
+						if kind is "IDENT"
+							string btvr_vname = value
+							if raw_i < token_count
+								Token btvr_eq = tokens at raw_i
+								(kind) in btvr_eq
+								raw_i = raw_i + 1
+								if kind is "EQUALS"
+									if raw_i < token_count
+										Token btvr_lit = tokens at raw_i
+										(value) in btvr_lit
+										raw_i = raw_i + 1
+										string dot = "."
+										string btvr_key = s_join([btvr_enum, dot, btvr_vname])
+										result at end = btvr_key
+										result at end = value
+			else
+				raw_i = raw_i + 1
+			continue
 		raw_i = raw_i + 1
 	return result

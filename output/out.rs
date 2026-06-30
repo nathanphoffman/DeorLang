@@ -33,6 +33,8 @@ struct GenCtx {
     mut_names: StrList,
     type_reg: StrList,
     tokens: TokensRef,
+    typed_enum_reg: StrList,
+    typed_variant_reg: StrList,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -2352,6 +2354,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_dup: String = "duplicate declaration — this name is already used by another struct, enum, shape, fn, or type".to_string();
     let mut rule_enum_pascal: String = "enum variant must be PascalCase".to_string();
     let mut rule_enum_data: String = "enum variants cannot carry data — use a struct alongside the enum instead".to_string();
+    let mut rule_typed_enum_eq: String = "typed enum variant must have a value — add '= value' after the variant name".to_string();
+    let mut rule_untyped_enum_eq: String = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants".to_string();
     let mut rule_list_validator: String = "list shapes cannot be validator base types — validators only wrap primitives".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
@@ -2488,12 +2492,60 @@ fn validate_tokens(tokens: TokensRef) {
                 let value = dn_tok.value.clone();
                 if kind == "IDENT" {
                     // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                    if list_has(decl_names.clone(), value.clone()) {
+                    let mut dn_is_typed_kw: bool = false;
+                    if value == "string" {
                         // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                        errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_dup.clone()).clone());
+                        dn_is_typed_kw = true;
+                    } else if value == "int" {
+                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                        dn_is_typed_kw = true;
+                    } else if value == "float" {
+                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                        dn_is_typed_kw = true;
+                    } else if value == "bool" {
+                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                        dn_is_typed_kw = true;
+                    }
+                    if is_kw_enum {
+                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                        if dn_is_typed_kw {
+                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                            let mut dn_name_pos: i32 = dn_pos + 1.clone();
+                            if dn_name_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                                let mut dn_name_tok: Token = tokens[dn_name_pos as usize].clone();
+                                let kind = dn_name_tok.kind.clone();
+                                let value = dn_name_tok.value.clone();
+                                if kind == "IDENT" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                                    if list_has(decl_names.clone(), value.clone()) {
+                                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                                        errors.push(val_err(dn_name_tok.clone(), lbl_decl.clone(), rule_dup.clone()).clone());
+                                    } else {
+                                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                                        decl_names.push(value.clone());
+                                    }
+                                }
+                            }
+                        } else {
+                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                            if list_has(decl_names.clone(), value.clone()) {
+                                // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                                errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_dup.clone()).clone());
+                            } else {
+                                // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                                decl_names.push(value.clone());
+                            }
+                        }
                     } else {
                         // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                        decl_names.push(value.clone());
+                        if list_has(decl_names.clone(), value.clone()) {
+                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                            errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_dup.clone()).clone());
+                        } else {
+                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
+                            decl_names.push(value.clone());
+                        }
                     }
                 }
             }
@@ -2611,7 +2663,26 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: prescan_check_enum_variants (transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor)
         if kind == "KW_ENUM" {
             // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+            let mut ev_is_typed: bool = false;
             let mut ev_pos: i32 = pre_i + 1.clone();
+            if ev_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                let mut ev_type_tok: Token = tokens[ev_pos as usize].clone();
+                let value = ev_type_tok.value.clone();
+                if value == "string" {
+                    // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                    ev_is_typed = true;
+                } else if value == "int" {
+                    // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                    ev_is_typed = true;
+                } else if value == "float" {
+                    // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                    ev_is_typed = true;
+                } else if value == "bool" {
+                    // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                    ev_is_typed = true;
+                }
+            }
             while ev_pos < token_count {
                 // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
                 let mut ev_tok: Token = tokens[ev_pos as usize].clone();
@@ -2647,9 +2718,22 @@ fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
                         let mut after_tok: Token = tokens[after_variant as usize].clone();
                         let kind = after_tok.kind.clone();
-                        if kind == "LPAREN" {
+                        if ev_is_typed {
                             // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
-                            errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_enum_data.clone()).clone());
+                            if kind != "EQUALS" {
+                                // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                                errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_typed_enum_eq.clone()).clone());
+                            }
+                        } else {
+                            // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                            if kind == "LPAREN" {
+                                // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                                errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_enum_data.clone()).clone());
+                            }
+                            if kind == "EQUALS" {
+                                // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                                errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_untyped_enum_eq.clone()).clone());
+                            }
                         }
                     }
                 }
@@ -2833,6 +2917,30 @@ fn validate_tokens(tokens: TokensRef) {
         let mut lbl: String = lbl_enum.clone();
         let mut rule: String = rule_pascal.clone();
         let mut test_rule: fn(String) -> bool = is_pascal.clone();
+        let mut ev_name_offset: i32 = 1;
+        if cur_kind == "KW_ENUM" {
+            // transpiler-deor/tokens_validator/tokens_validation.deor
+            let mut ev_type_pos: i32 = pos + 1.clone();
+            if ev_type_pos < token_count {
+                // transpiler-deor/tokens_validator/tokens_validation.deor
+                let mut ev_type_tok: Token = tokens[ev_type_pos as usize].clone();
+                let value = ev_type_tok.value.clone();
+                if value == "string" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    ev_name_offset = 2;
+                } else if value == "int" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    ev_name_offset = 2;
+                } else if value == "float" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    ev_name_offset = 2;
+                } else if value == "bool" {
+                    // transpiler-deor/tokens_validator/tokens_validation.deor
+                    ev_name_offset = 2;
+                }
+            }
+        }
+        let mut validate_indent_offset = ev_name_offset;
         // macro: validate_ident (transpiler-deor/tokens_validator/macros/validate_ident.deor)
         if cur_kind == keyword {
             // transpiler-deor/tokens_validator/macros/validate_ident.deor
@@ -2860,6 +2968,7 @@ fn validate_tokens(tokens: TokensRef) {
             continue;
         }
         // transpiler-deor/tokens_validator/tokens_validation.deor
+        let mut validate_indent_offset = 1;
         let mut keyword: String = "KW_SHAPE".to_string();
         let mut lbl: String = lbl_shape.clone();
         let mut rule: String = rule_camel.clone();
@@ -3845,6 +3954,27 @@ fn build_shape_reg(tokens: TokensRef) -> Vec<String> {
 }
 
 // transpiler-deor/registry/enum.deor
+fn is_typed_enum_type(word: String) -> bool {
+    // transpiler-deor/registry/enum.deor
+    if word == "string" {
+        // transpiler-deor/registry/enum.deor
+        return true;
+    }
+    if word == "int" {
+        // transpiler-deor/registry/enum.deor
+        return true;
+    }
+    if word == "float" {
+        // transpiler-deor/registry/enum.deor
+        return true;
+    }
+    if word == "bool" {
+        // transpiler-deor/registry/enum.deor
+        return true;
+    }
+    return false;
+}
+
 fn build_enum_reg(tokens: TokensRef) -> Vec<String> {
     // transpiler-deor/registry/enum.deor
     let mut result: Vec<String> = Vec::new();
@@ -3862,10 +3992,14 @@ fn build_enum_reg(tokens: TokensRef) -> Vec<String> {
                 // transpiler-deor/registry/enum.deor
                 let mut name_token: Token = tokens[name_pos as usize].clone();
                 let value = name_token.value.clone();
-                let mut enum_name: String = value.clone();
-                let mut rust_name: String = s_pascal(enum_name.clone());
-                result.push(enum_name.clone());
-                result.push(rust_name.clone());
+                let mut be_is_typed: bool = is_typed_enum_type(value.clone());
+                if !be_is_typed {
+                    // transpiler-deor/registry/enum.deor
+                    let mut enum_name: String = value.clone();
+                    let mut rust_name: String = s_pascal(enum_name.clone());
+                    result.push(enum_name.clone());
+                    result.push(rust_name.clone());
+                }
             }
         }
     }
@@ -3890,36 +4024,166 @@ fn build_variant_reg(tokens: TokensRef, enum_reg: Vec<String>) -> Vec<String> {
                 // transpiler-deor/registry/enum.deor
                 let mut name_token: Token = tokens[name_pos as usize].clone();
                 let value = name_token.value.clone();
-                let mut enum_name: String = value.clone();
-                let mut rust_name: String = reg_get(enum_reg.clone(), enum_name.clone());
-                raw_i = name_pos + 1;
-                while raw_i < token_count {
+                let mut bvr_is_typed: bool = is_typed_enum_type(value.clone());
+                if !bvr_is_typed {
                     // transpiler-deor/registry/enum.deor
-                    let mut skip_token: Token = tokens[raw_i as usize].clone();
-                    let kind = skip_token.kind.clone();
-                    raw_i = raw_i + 1;
-                    if kind == "INDENT" {
+                    let mut enum_name: String = value.clone();
+                    let mut rust_name: String = reg_get(enum_reg.clone(), enum_name.clone());
+                    raw_i = name_pos + 1;
+                    while raw_i < token_count {
                         // transpiler-deor/registry/enum.deor
-                        break;
+                        let mut skip_token: Token = tokens[raw_i as usize].clone();
+                        let kind = skip_token.kind.clone();
+                        raw_i = raw_i + 1;
+                        if kind == "INDENT" {
+                            // transpiler-deor/registry/enum.deor
+                            break;
+                        }
                     }
-                }
-                while raw_i < token_count {
+                    while raw_i < token_count {
+                        // transpiler-deor/registry/enum.deor
+                        let mut variant_token: Token = tokens[raw_i as usize].clone();
+                        let kind = variant_token.kind.clone();
+                        let value = variant_token.value.clone();
+                        raw_i = raw_i + 1;
+                        if kind == "DEDENT" {
+                            // transpiler-deor/registry/enum.deor
+                            break;
+                        } else if kind == "IDENT" {
+                            // transpiler-deor/registry/enum.deor
+                            result.push(value.clone());
+                            result.push(rust_name.clone());
+                        }
+                    }
+                } else {
                     // transpiler-deor/registry/enum.deor
-                    let mut variant_token: Token = tokens[raw_i as usize].clone();
-                    let kind = variant_token.kind.clone();
-                    let value = variant_token.value.clone();
                     raw_i = raw_i + 1;
-                    if kind == "DEDENT" {
-                        // transpiler-deor/registry/enum.deor
-                        break;
-                    } else if kind == "IDENT" {
-                        // transpiler-deor/registry/enum.deor
-                        result.push(value.clone());
-                        result.push(rust_name.clone());
-                    }
                 }
-                continue;
             }
+            continue;
+        }
+        raw_i = raw_i + 1;
+    }
+    return result;
+}
+
+fn build_typed_enum_reg(tokens: TokensRef) -> Vec<String> {
+    // transpiler-deor/registry/enum.deor
+    let mut result: Vec<String> = Vec::new();
+    let mut token_count: i32 = (tokens.len() as i32);
+    for index in 0..token_count {
+        // transpiler-deor/registry/enum.deor
+        let mut token: Token = tokens[index as usize].clone();
+        let kind = token.kind.clone();
+        if kind == "KW_ENUM" {
+            // transpiler-deor/registry/enum.deor
+            let mut type_pos: i32 = index + 1.clone();
+            if type_pos < token_count {
+                // transpiler-deor/registry/enum.deor
+                let mut type_tok: Token = tokens[type_pos as usize].clone();
+                let kind = type_tok.kind.clone();
+                let value = type_tok.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/registry/enum.deor
+                    let mut bte_is_typed: bool = is_typed_enum_type(value.clone());
+                    if bte_is_typed {
+                        // transpiler-deor/registry/enum.deor
+                        let mut val_type: String = value.clone();
+                        let mut name_pos: i32 = type_pos + 1.clone();
+                        if name_pos < token_count {
+                            // transpiler-deor/registry/enum.deor
+                            let mut name_tok: Token = tokens[name_pos as usize].clone();
+                            let value = name_tok.value.clone();
+                            result.push(value.clone());
+                            result.push(val_type.clone());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
+
+fn build_typed_variant_reg(tokens: TokensRef) -> Vec<String> {
+    // transpiler-deor/registry/enum.deor
+    let mut result: Vec<String> = Vec::new();
+    let mut token_count: i32 = (tokens.len() as i32);
+    let mut raw_i: i32 = 0;
+    while raw_i < token_count {
+        // transpiler-deor/registry/enum.deor
+        let mut token: Token = tokens[raw_i as usize].clone();
+        let kind = token.kind.clone();
+        if kind == "KW_ENUM" {
+            // transpiler-deor/registry/enum.deor
+            let mut btvr_type_pos: i32 = raw_i + 1.clone();
+            let mut btvr_typed: bool = false;
+            if btvr_type_pos < token_count {
+                // transpiler-deor/registry/enum.deor
+                let mut btvr_type_tok: Token = tokens[btvr_type_pos as usize].clone();
+                let kind = btvr_type_tok.kind.clone();
+                let value = btvr_type_tok.value.clone();
+                btvr_typed = is_typed_enum_type(value.clone());
+            }
+            if btvr_typed {
+                // transpiler-deor/registry/enum.deor
+                let mut btvr_name_pos: i32 = raw_i + 2.clone();
+                if btvr_name_pos < token_count {
+                    // transpiler-deor/registry/enum.deor
+                    let mut btvr_name_tok: Token = tokens[btvr_name_pos as usize].clone();
+                    let value = btvr_name_tok.value.clone();
+                    let mut btvr_enum: String = value.clone();
+                    raw_i = btvr_name_pos + 1;
+                    while raw_i < token_count {
+                        // transpiler-deor/registry/enum.deor
+                        let mut btvr_skip: Token = tokens[raw_i as usize].clone();
+                        let kind = btvr_skip.kind.clone();
+                        raw_i = raw_i + 1;
+                        if kind == "INDENT" {
+                            // transpiler-deor/registry/enum.deor
+                            break;
+                        }
+                    }
+                    while raw_i < token_count {
+                        // transpiler-deor/registry/enum.deor
+                        let mut btvr_var: Token = tokens[raw_i as usize].clone();
+                        let kind = btvr_var.kind.clone();
+                        let value = btvr_var.value.clone();
+                        raw_i = raw_i + 1;
+                        if kind == "DEDENT" {
+                            // transpiler-deor/registry/enum.deor
+                            break;
+                        }
+                        if kind == "IDENT" {
+                            // transpiler-deor/registry/enum.deor
+                            let mut btvr_vname: String = value.clone();
+                            if raw_i < token_count {
+                                // transpiler-deor/registry/enum.deor
+                                let mut btvr_eq: Token = tokens[raw_i as usize].clone();
+                                let kind = btvr_eq.kind.clone();
+                                raw_i = raw_i + 1;
+                                if kind == "EQUALS" {
+                                    // transpiler-deor/registry/enum.deor
+                                    if raw_i < token_count {
+                                        // transpiler-deor/registry/enum.deor
+                                        let mut btvr_lit: Token = tokens[raw_i as usize].clone();
+                                        let value = btvr_lit.value.clone();
+                                        raw_i = raw_i + 1;
+                                        let mut dot: String = ".".to_string();
+                                        let mut btvr_key: String = [btvr_enum.as_str(), dot.as_str(), btvr_vname.as_str()].concat();
+                                        result.push(btvr_key.clone());
+                                        result.push(value.clone());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // transpiler-deor/registry/enum.deor
+                raw_i = raw_i + 1;
+            }
+            continue;
         }
         raw_i = raw_i + 1;
     }
@@ -4111,10 +4375,12 @@ fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     let mut enum_reg: Vec<String> = build_enum_reg(tokens_ref.clone());
     let mut variant_reg: Vec<String> = build_variant_reg(tokens_ref.clone(), enum_reg.clone());
     let mut type_reg: Vec<String> = build_type_reg(tokens_ref.clone());
+    let mut typed_enum_reg: Vec<String> = build_typed_enum_reg(tokens_ref.clone());
+    let mut typed_variant_reg: Vec<String> = build_typed_variant_reg(tokens_ref.clone());
     let mut mut_names: Vec<String> = Vec::new();
     let mut placeholder: Vec<Token> = Vec::new();
     let mut tokens: TokensRef = tokens_wrap(placeholder);
-    let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens };
+    let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg };
     let mut ctx: RcCtx = make_rctx(ctx_raw);
     return ctx;
 }
@@ -5027,47 +5293,53 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     // macro: gen_input_check (transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor)
     let mut gic_matched: bool = false;
     let mut gic_is_args: bool = false;
+    let mut gic_nm_ok: bool = false;
+    let mut gic_lp: i32 = 0;
+    // macro: gic_match_kw_and_name (transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor)
     let mut gic_in_tok: Token = tokens[cur as usize].clone();
     let kind = gic_in_tok.kind.clone();
     if kind == "KW_IN" {
-        // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+        // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
         let mut gic_nm_pos: i32 = cur + 1.clone();
         if gic_nm_pos < token_count {
-            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
             let mut gic_nm_tok: Token = tokens[gic_nm_pos as usize].clone();
             let kind = gic_nm_tok.kind.clone();
             let value = gic_nm_tok.value.clone();
             if kind == "IDENT" {
-                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
-                let mut gic_nm_ok: bool = false;
+                // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
                 if value == "input" {
-                    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
                     gic_nm_ok = true;
                 } else if value == "args" {
-                    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
                     gic_nm_ok = true;
                     gic_is_args = true;
                 }
                 if gic_nm_ok {
-                    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
-                    let mut gic_lp: i32 = gic_nm_pos + 1.clone();
-                    if gic_lp < token_count {
-                        // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
-                        let mut gic_lp_tok: Token = tokens[gic_lp as usize].clone();
-                        let kind = gic_lp_tok.kind.clone();
-                        if kind == "LPAREN" {
-                            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
-                            let mut gic_rp: i32 = gic_lp + 1.clone();
-                            if gic_rp < token_count {
-                                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
-                                let mut gic_rp_tok: Token = tokens[gic_rp as usize].clone();
-                                let kind = gic_rp_tok.kind.clone();
-                                if kind == "RPAREN" {
-                                    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
-                                    gic_matched = true;
-                                }
-                            }
-                        }
+                    // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
+                    gic_lp = gic_nm_pos + 1;
+                }
+            }
+        }
+    }
+    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+    if gic_nm_ok {
+        // macro: gic_match_parens (transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor)
+        if gic_lp < token_count {
+            // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+            let mut gic_lp_tok: Token = tokens[gic_lp as usize].clone();
+            let kind = gic_lp_tok.kind.clone();
+            if kind == "LPAREN" {
+                // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+                let mut gic_rp: i32 = gic_lp + 1.clone();
+                if gic_rp < token_count {
+                    // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+                    let mut gic_rp_tok: Token = tokens[gic_rp as usize].clone();
+                    let kind = gic_rp_tok.kind.clone();
+                    if kind == "RPAREN" {
+                        // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+                        gic_matched = true;
                     }
                 }
             }
@@ -5099,13 +5371,14 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
         let mut gic_pad: String = s_repeat(RS_IND.clone(), depth.clone());
         let mut gic_out: Vec<String> = Vec::new();
+        // macro: gic_emit_header (transpiler-deor/codegen/decl/stmt/macros/gic_emit_header.deor)
         if gic_is_args {
-            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            // transpiler-deor/codegen/decl/stmt/macros/gic_emit_header.deor
             let mut gic_hdr: String = "let _deor_args: Vec<String> = std::env::args().skip(1).collect();".to_string();
             let mut gic_hdr_line: String = [gic_pad.as_str(), gic_hdr.as_str(), RS_NL.as_str()].concat();
             gic_out.push(gic_hdr_line.clone());
         } else {
-            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            // transpiler-deor/codegen/decl/stmt/macros/gic_emit_header.deor
             let mut gic_raw_decl: String = "let mut _deor_raw: String = String::new();".to_string();
             let mut gic_raw_line: String = [gic_pad.as_str(), gic_raw_decl.as_str(), RS_NL.as_str()].concat();
             gic_out.push(gic_raw_line.clone());
@@ -5116,36 +5389,120 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut gic_split_line: String = [gic_pad.as_str(), gic_split.as_str(), RS_NL.as_str()].concat();
             gic_out.push(gic_split_line.clone());
         }
+        // macro: gic_emit_bindings (transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor)
         let mut gic_fc: i32 = (fields.len() as i32);
         for gic_i in 0..gic_fc {
-            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
             let mut gic_fname: String = fields[gic_i as usize].clone();
             let mut gic_bind: String = "".to_string();
             if gic_fname == "first" {
-                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
                 gic_bind = "let first: String = _deor_args.get(0).cloned().unwrap_or_default();".to_string();
             } else if gic_fname == "second" {
-                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
                 gic_bind = "let second: String = _deor_args.get(1).cloned().unwrap_or_default();".to_string();
             } else if gic_fname == "third" {
-                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
                 gic_bind = "let third: String = _deor_args.get(2).cloned().unwrap_or_default();".to_string();
             } else if gic_fname == "input_string" {
-                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
                 gic_bind = "let input_string: String = _deor_args.join(\" \");".to_string();
             } else if gic_fname == "input_list" {
-                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
                 gic_bind = "let input_list: Vec<String> = _deor_args.clone();".to_string();
             }
             if !is_empty(gic_bind.clone()) {
-                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
                 let mut gic_line: String = [gic_pad.as_str(), gic_bind.as_str(), RS_NL.as_str()].concat();
                 gic_out.push(gic_line.clone());
             }
         }
+        // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
         let mut gic_code: String = s_join(gic_out.clone());
         let mut gic_past: i32 = cur + 4.clone();
         return make_nl_result(gic_code, gic_past.clone(), tokens.clone());
+    }
+    // transpiler-deor/codegen/decl/stmt/destructure.deor
+    let mut field_count: i32 = (fields.len() as i32);
+    // macro: gen_enum_extract_check (transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor)
+    let typed_enum_reg = ctx.typed_enum_reg.clone();
+    let typed_variant_reg = ctx.typed_variant_reg.clone();
+    let mut geec_matched: bool = false;
+    if cur < token_count {
+        // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+        let mut geec_in_tok: Token = tokens[cur as usize].clone();
+        let kind = geec_in_tok.kind.clone();
+        if kind == "KW_IN" {
+            // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+            let mut geec_name_pos: i32 = cur + 1.clone();
+            if geec_name_pos < token_count {
+                // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+                let mut geec_name_tok: Token = tokens[geec_name_pos as usize].clone();
+                let kind = geec_name_tok.kind.clone();
+                let value = geec_name_tok.value.clone();
+                if kind == "IDENT" {
+                    // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+                    let mut geec_val_type: String = reg_get(typed_enum_reg.clone(), value.clone());
+                    if !is_empty(geec_val_type.clone()) {
+                        // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+                        geec_matched = true;
+                        let mut geec_enum: String = value.clone();
+                        // macro: rust_strings (transpiler-deor/codegen/rust_strings.deor)
+                        let RS_IND: String = "    ".to_string();
+                        let RS_NL: String = "\n".to_string();
+                        let RS_SC: String = ";\n".to_string();
+                        let RS_OB: String = " {\n".to_string();
+                        let RS_CB: String = "}\n".to_string();
+                        let RS_CB2: String = "\n}\n\n".to_string();
+                        let RS_FNC_CB: String = "}\n\n".to_string();
+                        let RS_EQ: String = " = ".to_string();
+                        let RS_LET: String = "let ".to_string();
+                        let RS_LETM: String = "let mut ".to_string();
+                        let RS_COL: String = ": ".to_string();
+                        let RS_COM: String = ",".to_string();
+                        let RS_CSEP: String = ", ".to_string();
+                        let RS_LP: String = "(".to_string();
+                        let RS_RP: String = ")".to_string();
+                        let RS_RP_SC: String = ");\n".to_string();
+                        let RS_ARR: String = " -> ".to_string();
+                        let RS_OB_SP: String = " { ".to_string();
+                        let RS_CB_SC: String = " };\n".to_string();
+                        let RS_CLN: String = ".clone()".to_string();
+                        let RS_TOS: String = ".to_string()".to_string();
+                        // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+                        let mut geec_pad: String = s_repeat(RS_IND.clone(), depth.clone());
+                        let mut geec_out: Vec<String> = Vec::new();
+                        for geec_fi in 0..field_count {
+                            // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+                            let mut geec_field: String = fields[geec_fi as usize].clone();
+                            let mut geec_dot: String = ".".to_string();
+                            let mut geec_key: String = [geec_enum.as_str(), geec_dot.as_str(), geec_field.as_str()].concat();
+                            let mut geec_lit: String = reg_get(typed_variant_reg.clone(), geec_key.clone());
+                            let mut geec_is_mut: bool = list_has(mut_names.clone(), geec_field.clone());
+                            let mut geec_mut: String = "".to_string();
+                            if geec_is_mut {
+                                // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+                                geec_mut = "mut ".to_string();
+                            }
+                            let mut geec_line: String = "".to_string();
+                            if geec_val_type == "string" {
+                                // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+                                let mut geec_debug: String = s_debug(geec_lit.clone());
+                                geec_line = [geec_pad.as_str(), "let ", geec_mut.as_str(), geec_field.as_str(), ": String = ", geec_debug.as_str(), ".to_string();"].concat();
+                            } else {
+                                // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
+                                let mut geec_rust_t: String = render_rust_type(geec_val_type.clone());
+                                geec_line = [geec_pad.as_str(), "let ", geec_mut.as_str(), geec_field.as_str(), ": ", geec_rust_t.as_str(), " = ", geec_lit.as_str(), ";"].concat();
+                            }
+                            geec_out.push(geec_line.clone());
+                        }
+                        let mut geec_code: String = s_join_nl(geec_out.clone());
+                        let mut geec_past: i32 = cur + 2.clone();
+                        return make_nl_result(geec_code, geec_past.clone(), tokens.clone());
+                    }
+                }
+            }
+        }
     }
     // transpiler-deor/codegen/decl/stmt/destructure.deor
     let mut val_pos: i32 = cur + 1.clone();
@@ -5157,7 +5514,6 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let val_end = new_pos;
     // transpiler-deor/codegen/decl/stmt/destructure.deor
     let mut dest_lines: Vec<String> = Vec::new();
-    let mut field_count: i32 = (fields.len() as i32);
     // macro: rust_strings (transpiler-deor/codegen/rust_strings.deor)
     let RS_IND: String = "    ".to_string();
     let RS_NL: String = "\n".to_string();
@@ -6745,7 +7101,27 @@ fn gen_enum_decl(tokens: TokensRef, pos: i32) -> ParseResult {
     let mut start_pos: i32 = pos + 1.clone();
     let mut cur: TokenCursor = cur_at_ref(tokens.clone(), start_pos.clone());
     let current = cur.current.clone();
+    let kind = current.kind.clone();
     let value = current.value.clone();
+    let mut ged_is_typed: bool = is_typed_enum_type(value.clone());
+    if ged_is_typed {
+        // transpiler-deor/codegen/decl/enum.deor
+        cur = cur_next_ref(cur.clone(), tokens.clone());
+        cur = cur_skip_to_body_ref(cur.clone(), tokens.clone());
+        while !c_at_end(cur.clone()) {
+            // transpiler-deor/codegen/decl/enum.deor
+            let current = cur.current.clone();
+            let kind = current.kind.clone();
+            cur = cur_next_ref(cur.clone(), tokens.clone());
+            if kind == "DEDENT" {
+                // transpiler-deor/codegen/decl/enum.deor
+                break;
+            }
+        }
+        let pos = cur.pos.clone();
+        let mut empty_str: String = "".to_string();
+        return make_result(empty_str.clone(), pos.clone());
+    }
     let mut enum_name: String = value.clone();
     let mut rust_name: String = s_pascal(enum_name.clone());
     cur = cur_next_ref(cur.clone(), tokens.clone());
@@ -7019,6 +7395,8 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let pos = cur.pos.clone();
     let mut body_start: i32 = pos.clone();
     // macro: fn_build_body_ctx (transpiler-deor/codegen/decl/macros/fn_build_body_ctx.deor)
+    let typed_enum_reg = ctx.typed_enum_reg.clone();
+    let typed_variant_reg = ctx.typed_variant_reg.clone();
     let mut body_end_pos: i32 = find_block_end_ref(fn_tokens.clone(), indent_pos.clone());
     let mut body_slice_end: i32 = body_end_pos + 1.clone();
     let mut body_tokens_raw: Vec<Token> = l_slice_ref(fn_tokens.clone(), body_start.clone(), body_slice_end.clone());
@@ -7027,7 +7405,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let mut body_last: i32 = body_len - 1.clone();
     let mut mut_names: Vec<String> = collect_mut_names(body_tokens_raw.clone(), zero.clone(), body_last.clone());
     let mut tokens: TokensRef = tokens_wrap(body_tokens_raw);
-    let mut body_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens };
+    let mut body_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg };
     let mut body_ctx: RcCtx = make_rctx(body_ctx_raw);
     // macro: fn_emit (transpiler-deor/codegen/decl/macros/fn_emit.deor)
     let mut body_pos: i32 = 0;

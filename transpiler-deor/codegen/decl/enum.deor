@@ -3,11 +3,29 @@
 # `#[derive(Clone, Copy, PartialEq, Debug)]` — Copy is viable because Deor enum
 # variants carry no payload data. Converts the Deor camelCase name to PascalCase
 # for the Rust type name.
+#
+# Typed enums (`enum string/int/float/bool Name`) emit no Rust — they exist only as
+# Deor compile-time registries and are extracted via `(Variant) in EnumName`.
 fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 	int start_pos = pos + 1
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
 	(current) in cur
-	(value) in current
+	(kind, value) in current
+
+	bool ged_is_typed = is_typed_enum_type(value)
+	if ged_is_typed
+		cur = cur_next_ref(cur, tokens)
+		cur = cur_skip_to_body_ref(cur, tokens)
+		for if not c_at_end(cur)
+			(current) in cur
+			(kind) in current
+			cur = cur_next_ref(cur, tokens)
+			if kind is "DEDENT"
+				break
+		(pos) in cur
+		string empty_str = ""
+		return make_result(empty_str, pos)
+
 	string enum_name = value
 	string rust_name = s_pascal(enum_name)
 	cur = cur_next_ref(cur, tokens)

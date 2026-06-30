@@ -3,6 +3,7 @@
 # the per-function GenCtx. Expects: fn_tokens, indent_pos, body_start,
 # variant_reg, shape_reg, struct_reg, enum_reg, type_reg in scope from gen_fn_decl.
 macro fn_build_body_ctx
+	(typed_enum_reg, typed_variant_reg) in ctx
 	int body_end_pos = find_block_end_ref(fn_tokens, indent_pos)
 	int body_slice_end = body_end_pos + 1
 	tokenList body_tokens_raw = l_slice_ref(fn_tokens, body_start, body_slice_end)
@@ -11,5 +12,5 @@ macro fn_build_body_ctx
 	int body_last = body_len - 1
 	strList mut_names = collect_mut_names(body_tokens_raw, zero, body_last)
 	TokensRef tokens = tokens_wrap(move body_tokens_raw)
-	GenCtx body_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens)
+	GenCtx body_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg)
 	RcCtx body_ctx = make_rctx(move body_ctx_raw)
