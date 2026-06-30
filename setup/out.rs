@@ -1609,7 +1609,7 @@ fn load_file(path: String) -> Vec<Token> {
     let mut pos: i32 = 0;
     let mut depth: i32 = 0;
     let mut seen_decl: bool = false;
-    while true {
+    loop {
         // transpiler-deor/importer/load.deor
         let is_at_end_of_file = pos >= token_count;
         if is_at_end_of_file {
@@ -4534,7 +4534,7 @@ fn gen_call_args(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let RS_CLN: String = ".clone()".to_string();
     let RS_TOS: String = ".to_string()".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
-    while true {
+    loop {
         // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
         if cur >= token_count {
             // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
@@ -4623,7 +4623,7 @@ fn gen_list_items(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let RS_CLN: String = ".clone()".to_string();
     let RS_TOS: String = ".to_string()".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
-    while true {
+    loop {
         // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
         if cur >= token_count {
             // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
@@ -4689,7 +4689,7 @@ fn gen_join_items(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
     let RS_CLN: String = ".clone()".to_string();
     let RS_TOS: String = ".to_string()".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
-    while true {
+    loop {
         // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
         if cur >= token_count {
             // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
@@ -5745,7 +5745,7 @@ fn gen_block(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let RS_TOS: String = ".to_string()".to_string();
     // transpiler-deor/codegen/decl/stmt/block.deor
     let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
-    while true {
+    loop {
         // transpiler-deor/codegen/decl/stmt/block.deor
         if cur >= token_count {
             // transpiler-deor/codegen/decl/stmt/block.deor
@@ -5884,7 +5884,7 @@ fn gen_if(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut brc_cl: String = "}".to_string();
     let mut result_code: String = [pad.as_str(), if_kw.as_str(), then_code.as_str(), pad.as_str(), brc_cl.as_str()].concat();
     let mut cur = new_pos;
-    while true {
+    loop {
         // transpiler-deor/codegen/decl/stmt/if.deor
         if cur >= token_count {
             // transpiler-deor/codegen/decl/stmt/if.deor
@@ -5996,7 +5996,12 @@ fn gen_for(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
         let blk_code = code;
         let blk_end = new_pos;
         let mut whl_kw: String = "while ".to_string();
-        let mut while_code: String = [pad.as_str(), whl_kw.as_str(), val_code.as_str(), RS_OB.as_str(), blk_code.as_str(), pad.as_str(), RS_CB.as_str()].concat();
+        let mut fw_head: String = [whl_kw.as_str(), val_code.as_str()].concat();
+        if val_code == "true" {
+            // transpiler-deor/codegen/decl/stmt/macros/for_while.deor
+            fw_head = "loop".to_string();
+        }
+        let mut while_code: String = [pad.as_str(), fw_head.as_str(), RS_OB.as_str(), blk_code.as_str(), pad.as_str(), RS_CB.as_str()].concat();
         return make_result(while_code, blk_end.clone());
     }
     if kind == "KW_MOVE" {
@@ -7564,7 +7569,7 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     let mut last_file: String = "".to_string();
     let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
     let mut _timer_start: i32 = now_ms();
-    while true {
+    loop {
         // transpiler-deor/codegen/codegen.deor
         if pos >= token_count {
             // transpiler-deor/codegen/codegen.deor
