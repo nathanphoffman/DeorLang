@@ -2,12 +2,24 @@
 # Handles prefix keyword operators that modify the next primary expression.
 #   move expr  — transparently passes through to the inner expression (ownership transfer,
 #                no Rust code difference needed since Deor values are already moved by default)
+#   avow expr  — forced unwrap: appends `.unwrap().0`, same as the parenthesized `(avow expr)`
+#                form. Binds only to the next primary (same rule as move), so `avow val + 2`
+#                parses as `(avow val) + 2` — no ambiguity, parens stay optional.
 #   not expr   — logical negation: prepends `!` to the inner expression code
 macro primary_prefix_ops
 	if kind is "KW_MOVE"
 		int po_inner = pos + 1
 		ParseResult po_r = gen_primary(tokens, po_inner, ctx)
 		return po_r
+	if kind is "KW_AVOW"
+		int po_avow_inner = pos + 1
+		ParseResult po_avow_r = gen_primary(tokens, po_avow_inner, ctx)
+		move (code, new_pos) in po_avow_r
+		po_avow_code as code
+		po_avow_end as new_pos
+		string po_avow_sfx = ".unwrap().0"
+		string po_avow_unwrap_code = s_join([po_avow_code, po_avow_sfx])
+		return make_result(move po_avow_unwrap_code, po_avow_end)
 	if kind is "KW_NOT"
 		int po_operand = pos + 1
 		ParseResult po_operand_r = gen_primary(tokens, po_operand, ctx)
