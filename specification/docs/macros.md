@@ -10,6 +10,8 @@ Macros can be declared at the top level or inside a function body. A top-level m
 
 You can call other macros with `macro_run` from inside a macro body — nesting calls is fully supported. However, defining a `macro` inside another macro body is a compile error. Define all macros at the appropriate scope and call them with `macro_run`.
 
+You can also use `macro_block` *calls* inside a macro body. Because `macro_block` is a text preprocessor that runs before tokenization, the call site is already fully expanded by the time the token-level macro expander collects the macro body. The macro body simply contains the already-expanded Deor lines.
+
 ```
 macro say_hello
     print(hello)
@@ -79,7 +81,13 @@ Three keywords form the system:
 - `macro_block_close name` — Deor code injected after the body
 - `macro_block name` — the call site; its indented body is sandwiched between open and close
 
-The body is dedented one level and handed to the tokenizer normally — you can use any Deor syntax inside, including nested `macro_block` calls, `macro_run` calls, and `rust` blocks.
+The body content is dedented one level and handed to the tokenizer normally. Inside a `macro_block` body you can use:
+
+- nested `macro_block name` *calls* — the preprocessor expands them recursively (up to 20 levels deep)
+- `macro_run` calls — they pass through the preprocessor untouched and are expanded later by the token-level macro expander
+- `rust` blocks and any other Deor syntax
+
+You cannot place `macro_block_open` or `macro_block_close` *definitions* inside a `macro_block` body — the preprocessor treats that as an error.
 
 **Definition:**
 
@@ -128,6 +136,22 @@ macro_block_close checked
 
 ### Rules
 
-- `macro_block` definitions cannot appear inside a `macro_block` body — the preprocessor will error.
+- `macro_block_open` / `macro_block_close` definitions cannot appear inside a `macro_block` body — the preprocessor will exit with an error.
+- Nested `macro_block` *calls* inside a `macro_block` body are allowed and are expanded recursively. Circular references are caught by a depth limit of 20.
 - Definitions are picked up from **directly imported files**. Define `macro_block_open` / `macro_block_close` in a library file, import it, and use `macro_block name` anywhere in the importing file. Only immediate imports are scanned — transitive imports are not visible.
 - `macro_block` differs from `macro` / `macro_run` in two ways: it operates on raw source text before the lexer runs, and it wraps a variable body of caller-supplied code rather than inlining a fixed snippet.
+
+---
+
+## Interaction Between the Two Systems
+
+`macro` / `macro_run` and `macro_block` run at different pipeline stages — `macro_block` is a text preprocessor, `macro` / `macro_run` is a token-level expander that runs later. This ordering determines what is and is not allowed when the two systems are mixed.
+
+| Combination | Result |
+|---|---|
+| `macro_run` inside a `macro` body | ✅ Supported — the standard way to compose macros |
+| `macro` definition inside a `macro` body | ❌ Compile error |
+| `macro_block` call inside a `macro` body | ✅ Supported — the text preprocessor expands the call before the token expander ever sees the macro body |
+| `macro_run` inside a `macro_block` body | ✅ Supported — the preprocessor passes `macro_run` through as plain text; the token expander handles it afterwards |
+| `macro_block` call inside a `macro_block` body | ✅ Supported — recursive expansion, depth limit 20 |
+| `macro_block_open/close` definition inside a `macro_block` body | ❌ Preprocessor error |

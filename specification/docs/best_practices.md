@@ -161,8 +161,37 @@ Keep files to a reasonable length. There is no hard limit, but when a file start
 ## Naming External Libs
 Because Deor does not support third-party importing, the standard convention is to copy Deor files into the `lib/` folder. The following prefix pattern is recommended.
 
-Standard library wrappers use the **`s_`** prefix — e.g. `s_join`, `s_trim`. These mirror existing Rust std functions closely.
+Custom lib prefixes are **two letters**: a category letter followed by the first letter of the lib filename. Functions inside that lib are then prefixed with those two letters and an underscore.
 
-Cargo crate wrappers use the **`cx_`** prefix — e.g. `cx_json_parse`. Note that this prefix is only for thin wrappers around a crate call; a third-party `.deor` file that happens to use cargo internally does not get the `cx_` prefix.
+| Category letter | Meaning | Second letter | Example |
+|---|---|---|---|
+| `c` | cargo crate wrapper | first letter of the crate name | `cr_` for `rand.deor` wrapping the `rand` crate |
+| `e` | external Deor lib | first letter of the lib filename | `en_` for `nates_lib.deor` |
 
-Personal or third-party Deor libs use the **`ex_`** prefix — e.g. `ex_do_cool_thing`. These might use rust blocks, cargo, or pure Deor, but they represent external logic distributed by blog, git, or copy-paste.
+**Cargo crate wrappers (`c<initial>_`)** — thin `.deor` wrappers around a single Rust crate added to `Cargo.toml`. The `c` stands for cargo.
+
+```
+# rand.deor — wraps the rand crate
+fn int cr_rand_int(int min, int max)
+    rust
+        use rand::Rng;
+        rand::thread_rng().gen_range(min..=max)
+
+# json.deor — wraps a json crate
+fn string cj_stringify(string key, string val)
+    rust
+        format!("{{\"{}\":\"{}\"}}", key, val)
+```
+
+**External Deor libs (`e<initial>_`)** — `.deor` files written by you or a third party, distributed by git, blog, or copy-paste. These may use `rust` blocks or pure Deor internally. The `e` stands for external.
+
+```
+# nates_lib.deor — a personal utility lib
+fn string en_format_label(string key, string val)
+    str as key + ": " + val
+    return str
+
+# postgres.deor — a community Deor lib for postgres interop
+fn bool ep_connect(string url)
+    ...
+```

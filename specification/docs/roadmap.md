@@ -43,50 +43,7 @@ What is matching in item?  first off if it is a prop it should be (matching) in 
 - move: if there are rust blocks here, label clearly which ones are deor and which ones are rust
 
 ---
-
-
-
-Libs:
-- Give better examples of naming for cx and ex in the docs around naming custom libs
--- x here represents their lib first-letter like s in string
--- so a nate external 3rd party lib would be en,  e for external, n for nates_lib.deor
--- c i honestly forget the intention of but similarly we should give useful examples
-
-## Confirm macros allow for macros within macros
-
-## Talk about adding values to enums
-I am thinking of something like
-
-enum int Color
-  Red = 1
-  Blue = 2
-  Red = 3
-
-or
-
-enum string Color
-  Red = "Red"
-  Blue = "Blue"
-  Yellow = "Yellow"
-
-enums without types should just be how enums work today
-
-So someone can do
-
-(Red, Blue) in Color
-
-value as "Red"
-value2 as Red <-- this is not allowed and should throw an error
-
-if Red is value
-  print("is red")
-
-enum Color
-  Red
-  Blue
-  Yellow
-
-
+# Footnotes
 
 ##
 ---
@@ -95,6 +52,8 @@ macro_blocks are to remain just open/close no boundary splitting mid-function, n
 
 ---
 ## Test Latest Fixes
+
+  -- test to make sure args() works properly
 
   2. Func shapes as struct fields — prescan_check_struct_fields validates field names but not field types; a filterFunc shape field would pass through.
     ^^ validation being added -- should be fixed? validate

@@ -413,12 +413,14 @@ Standard library prefixes (reserved):
 | `n_` | `lib/time.deor` |
 | `t_` | `lib/tasks.deor`, `lib/taskpool.deor` |
 
-For custom wrappers, use a distinct prefix to avoid collisions:
+For custom wrappers, use a two-letter prefix — category letter + first letter of the lib filename — to avoid collisions with the standard library and with each other:
 
-| Prefix | Use |
-|---|---|
-| `cx_` | Cargo crate wrapper (`cx_json_parse`) |
-| `ex_` | Personal/third-party Deor lib (`ex_do_cool_thing`) |
+| Category | Letter | Second letter | Full prefix | Example |
+|---|---|---|---|---|
+| Cargo crate wrapper | `c` | first letter of crate name | `cr_` for `rand.deor` | `cr_rand_int` |
+| External Deor lib | `e` | first letter of lib filename | `en_` for `nates_lib.deor` | `en_format_label` |
+
+`c` stands for **cargo** — thin wrappers around a `Cargo.toml` dependency. `e` stands for **external** — any `.deor` file written outside the standard library, whether personal or third-party.
 
 ### I/O
 
@@ -458,10 +460,11 @@ The same pattern works for `ParsedFloat` — swap `i32` for `f64`.
 
 ### Cargo Crates
 
-For anything requiring an external crate, add it to `Cargo.toml` manually and wrap it the same way:
+For anything requiring an external crate, add it to `Cargo.toml` manually and wrap it the same way. The prefix is `c` + the crate's first letter:
 
 ```
-fn int cx_rand_int(int min, int max)
+# rand.deor — wraps the rand crate, prefix cr_
+fn int cr_rand_int(int min, int max)
     rust
         use rand::Rng;
         rand::thread_rng().gen_range(min..=max)
