@@ -19,17 +19,19 @@
 
 [Experimental](docs/experimental.md) — features currently in testing
 
-[Move](docs/move.md) — `move` keyword, ownership transfer without cloning
-
 [Functions](docs/functions.md) — `fn`, return rules, void, recursion
 
 [Immutability](docs/immutability.md) — immutability rules, record update (`with`)
 
 [Imports](docs/imports.md) — local module imports
 
+[Libs](docs/libs.md) — standard library and custom wrapper patterns
+
 [Loops](docs/loops.md) — `for` collection and numeric iteration
 
 [Macros](docs/macros.md) — macros for organizing code, useful for avoiding clone
+
+[Move](docs/move.md) — `move` keyword, ownership transfer without cloning
 
 [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded
 
@@ -38,8 +40,6 @@
 [Rust Interop](docs/interop.md) — `rust` blocks, `raw` variables, external `.rs` files
 
 [Shapes](docs/shapes.md) — `shape`, list shapes, func shapes, naming, file ordering
-
-[Libs](docs/libs.md) — standard library and custom wrapper patterns
 
 [Strings](docs/strings.md) — concatenation, escape sequences, string built-ins
 

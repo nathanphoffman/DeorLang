@@ -5024,6 +5024,129 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             cur = cur + 1;
         }
     }
+    // macro: gen_input_check (transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor)
+    let mut gic_matched: bool = false;
+    let mut gic_is_args: bool = false;
+    let mut gic_in_tok: Token = tokens[cur as usize].clone();
+    let kind = gic_in_tok.kind.clone();
+    if kind == "KW_IN" {
+        // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+        let mut gic_nm_pos: i32 = cur + 1.clone();
+        if gic_nm_pos < token_count {
+            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            let mut gic_nm_tok: Token = tokens[gic_nm_pos as usize].clone();
+            let kind = gic_nm_tok.kind.clone();
+            let value = gic_nm_tok.value.clone();
+            if kind == "IDENT" {
+                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                let mut gic_nm_ok: bool = false;
+                if value == "input" {
+                    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                    gic_nm_ok = true;
+                } else if value == "args" {
+                    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                    gic_nm_ok = true;
+                    gic_is_args = true;
+                }
+                if gic_nm_ok {
+                    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                    let mut gic_lp: i32 = gic_nm_pos + 1.clone();
+                    if gic_lp < token_count {
+                        // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                        let mut gic_lp_tok: Token = tokens[gic_lp as usize].clone();
+                        let kind = gic_lp_tok.kind.clone();
+                        if kind == "LPAREN" {
+                            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                            let mut gic_rp: i32 = gic_lp + 1.clone();
+                            if gic_rp < token_count {
+                                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                                let mut gic_rp_tok: Token = tokens[gic_rp as usize].clone();
+                                let kind = gic_rp_tok.kind.clone();
+                                if kind == "RPAREN" {
+                                    // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                                    gic_matched = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if gic_matched {
+        // macro: rust_strings (transpiler-deor/codegen/rust_strings.deor)
+        let RS_IND: String = "    ".to_string();
+        let RS_NL: String = "\n".to_string();
+        let RS_SC: String = ";\n".to_string();
+        let RS_OB: String = " {\n".to_string();
+        let RS_CB: String = "}\n".to_string();
+        let RS_CB2: String = "\n}\n\n".to_string();
+        let RS_FNC_CB: String = "}\n\n".to_string();
+        let RS_EQ: String = " = ".to_string();
+        let RS_LET: String = "let ".to_string();
+        let RS_LETM: String = "let mut ".to_string();
+        let RS_COL: String = ": ".to_string();
+        let RS_COM: String = ",".to_string();
+        let RS_CSEP: String = ", ".to_string();
+        let RS_LP: String = "(".to_string();
+        let RS_RP: String = ")".to_string();
+        let RS_RP_SC: String = ");\n".to_string();
+        let RS_ARR: String = " -> ".to_string();
+        let RS_OB_SP: String = " { ".to_string();
+        let RS_CB_SC: String = " };\n".to_string();
+        let RS_CLN: String = ".clone()".to_string();
+        let RS_TOS: String = ".to_string()".to_string();
+        // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+        let mut gic_pad: String = s_repeat(RS_IND.clone(), depth.clone());
+        let mut gic_out: Vec<String> = Vec::new();
+        if gic_is_args {
+            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            let mut gic_hdr: String = "let _deor_args: Vec<String> = std::env::args().skip(1).collect();".to_string();
+            let mut gic_hdr_line: String = [gic_pad.as_str(), gic_hdr.as_str(), RS_NL.as_str()].concat();
+            gic_out.push(gic_hdr_line.clone());
+        } else {
+            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            let mut gic_raw_decl: String = "let mut _deor_raw: String = String::new();".to_string();
+            let mut gic_raw_line: String = [gic_pad.as_str(), gic_raw_decl.as_str(), RS_NL.as_str()].concat();
+            gic_out.push(gic_raw_line.clone());
+            let mut gic_read: String = "std::io::stdin().read_line(&mut _deor_raw).unwrap_or_default();".to_string();
+            let mut gic_read_line: String = [gic_pad.as_str(), gic_read.as_str(), RS_NL.as_str()].concat();
+            gic_out.push(gic_read_line.clone());
+            let mut gic_split: String = "let _deor_args: Vec<String> = _deor_raw.split_whitespace().map(|s| s.to_string()).collect();".to_string();
+            let mut gic_split_line: String = [gic_pad.as_str(), gic_split.as_str(), RS_NL.as_str()].concat();
+            gic_out.push(gic_split_line.clone());
+        }
+        let mut gic_fc: i32 = (fields.len() as i32);
+        for gic_i in 0..gic_fc {
+            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            let mut gic_fname: String = fields[gic_i as usize].clone();
+            let mut gic_bind: String = "".to_string();
+            if gic_fname == "first" {
+                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                gic_bind = "let first: String = _deor_args.get(0).cloned().unwrap_or_default();".to_string();
+            } else if gic_fname == "second" {
+                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                gic_bind = "let second: String = _deor_args.get(1).cloned().unwrap_or_default();".to_string();
+            } else if gic_fname == "third" {
+                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                gic_bind = "let third: String = _deor_args.get(2).cloned().unwrap_or_default();".to_string();
+            } else if gic_fname == "input_string" {
+                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                gic_bind = "let input_string: String = _deor_args.join(\" \");".to_string();
+            } else if gic_fname == "input_list" {
+                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                gic_bind = "let input_list: Vec<String> = _deor_args.clone();".to_string();
+            }
+            if !is_empty(gic_bind.clone()) {
+                // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+                let mut gic_line: String = [gic_pad.as_str(), gic_bind.as_str(), RS_NL.as_str()].concat();
+                gic_out.push(gic_line.clone());
+            }
+        }
+        let mut gic_code: String = s_join(gic_out.clone());
+        let mut gic_past: i32 = cur + 4.clone();
+        return make_nl_result(gic_code, gic_past.clone(), tokens.clone());
+    }
     // transpiler-deor/codegen/decl/stmt/destructure.deor
     let mut val_pos: i32 = cur + 1.clone();
     // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)

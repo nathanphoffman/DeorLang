@@ -1,0 +1,82 @@
+
+# Intercepts `(fields) in args()` and `(fields) in input()` destructuring forms.
+# Run immediately after for_collect_fields_into_fields_list, where `cur`
+# points to KW_IN, `fields` holds the requested names, and `tokens`,
+# `token_count`, `depth` are all in scope.
+#
+# args()  — CLI arguments (argv[1..])
+# input() — one line read from stdin, split on whitespace
+#
+# Valid field names: first  second  third  input_string  input_list
+#   first/second/third  → word[0..2], empty string if not present
+#   input_string        → all words joined with " " (single space)
+#   input_list          → all words as Vec<String>
+#
+# Returns early with the generated Rust code if the pattern matches.
+macro gen_input_check
+	bool gic_matched = false
+	bool gic_is_args = false
+	Token gic_in_tok = tokens at cur
+	(kind) in gic_in_tok
+	if kind is "KW_IN"
+		int gic_nm_pos = cur + 1
+		if gic_nm_pos < token_count
+			Token gic_nm_tok = tokens at gic_nm_pos
+			(kind, value) in gic_nm_tok
+			if kind is "IDENT"
+				bool gic_nm_ok = false
+				if value is "input"
+					gic_nm_ok = true
+				else if value is "args"
+					gic_nm_ok = true
+					gic_is_args = true
+				if gic_nm_ok
+					int gic_lp = gic_nm_pos + 1
+					if gic_lp < token_count
+						Token gic_lp_tok = tokens at gic_lp
+						(kind) in gic_lp_tok
+						if kind is "LPAREN"
+							int gic_rp = gic_lp + 1
+							if gic_rp < token_count
+								Token gic_rp_tok = tokens at gic_rp
+								(kind) in gic_rp_tok
+								if kind is "RPAREN"
+									gic_matched = true
+	if gic_matched
+		macro_run rust_strings
+		string gic_pad = s_repeat(RS_IND, depth)
+		strList gic_out = empty
+		if gic_is_args
+			string gic_hdr = "let _deor_args: Vec<String> = std::env::args().skip(1).collect();"
+			string gic_hdr_line = s_join([gic_pad, gic_hdr, RS_NL])
+			gic_out at end = gic_hdr_line
+		else
+			string gic_raw_decl = "let mut _deor_raw: String = String::new();"
+			string gic_raw_line = s_join([gic_pad, gic_raw_decl, RS_NL])
+			gic_out at end = gic_raw_line
+			string gic_read = "std::io::stdin().read_line(&mut _deor_raw).unwrap_or_default();"
+			string gic_read_line = s_join([gic_pad, gic_read, RS_NL])
+			gic_out at end = gic_read_line
+			string gic_split = "let _deor_args: Vec<String> = _deor_raw.split_whitespace().map(|s| s.to_string()).collect();"
+			string gic_split_line = s_join([gic_pad, gic_split, RS_NL])
+			gic_out at end = gic_split_line
+		int gic_fc = len(fields)
+		for gic_i in range(gic_fc)
+			string gic_fname = fields at gic_i
+			string gic_bind = ""
+			if gic_fname is "first"
+				gic_bind = "let first: String = _deor_args.get(0).cloned().unwrap_or_default();"
+			else if gic_fname is "second"
+				gic_bind = "let second: String = _deor_args.get(1).cloned().unwrap_or_default();"
+			else if gic_fname is "third"
+				gic_bind = "let third: String = _deor_args.get(2).cloned().unwrap_or_default();"
+			else if gic_fname is "input_string"
+				gic_bind = "let input_string: String = _deor_args.join(\" \");"
+			else if gic_fname is "input_list"
+				gic_bind = "let input_list: Vec<String> = _deor_args.clone();"
+			if not is_empty(gic_bind)
+				string gic_line = s_join([gic_pad, gic_bind, RS_NL])
+				gic_out at end = gic_line
+		string gic_code = s_join(gic_out)
+		int gic_past = cur + 4
+		return make_nl_result(move gic_code, gic_past, tokens)

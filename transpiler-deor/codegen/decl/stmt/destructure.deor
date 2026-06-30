@@ -5,6 +5,7 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 
 	macro_run initialize_gen_destructure
 	macro_run for_collect_fields_into_fields_list
+	macro_run gen_input_check
 
 	int val_pos = cur + 1
 	macro_run gen_expr_r

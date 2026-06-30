@@ -1,0 +1,7 @@
+fn void main()
+	(first, second, input_string, input_list) in input()
+	print(first)
+	print(second)
+	print(input_string)
+	int count = len(input_list)
+	print(count)

@@ -83,3 +83,48 @@ The generated `panic!("{}", x)` uses Rust's `Display` trait to format the argume
 | `bool` | `true` or `false` |
 
 Structs, list shapes, and validator types do not implement `Display` by default and will cause a Rust compile error if passed to `crash`. If you need to crash with a struct or list value, extract a field or build a descriptive string first.
+
+---
+
+## `args()` and `input()` destructuring
+
+Two built-in forms for reading word-split data into named variables. Both use the same `in` destructuring syntax and the same five keywords — any subset, any order.
+
+| Form | Source |
+|---|---|
+| `(fields) in args()` | command-line arguments passed at launch |
+| `(fields) in input()` | one line read from stdin |
+
+```
+(first, second, third, input_string, input_list) in args()
+(first, second, third, input_string, input_list) in input()
+```
+
+| Keyword | Type | Value |
+|---|---|---|
+| `first` | `string` | first word — empty string `""` if not present |
+| `second` | `string` | second word |
+| `third` | `string` | third word |
+| `input_string` | `string` | all words joined with a single space |
+| `input_list` | `strList` | all words as a list |
+
+Missing words default to `""` — no crash. Use `if first is ""` to detect absence.
+
+**`args()` example** — reading CLI flags:
+```
+(first, second) in args()
+print(first)
+print(second)
+```
+Running `./prog hello world` prints `hello` then `world`.
+
+**`input()` example** — prompting the user:
+```
+(first, input_list) in input()
+print(first)
+int count = len(input_list)
+print(count)
+```
+If the user types `hello world extra`, prints `hello` then `3`.
+
+For more than three words, use `input_list` directly (`input_list at 3`, `for item in input_list`, etc.).
