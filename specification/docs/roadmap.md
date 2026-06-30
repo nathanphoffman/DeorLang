@@ -48,6 +48,10 @@ What is matching in item?  first off if it is a prop it should be (matching) in 
 
 --- Should be done the stuff above
 
+
+----
+Enum docs need updated to reflect the new value format
+
 ---
 # Footnotes
 

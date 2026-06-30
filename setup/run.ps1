@@ -1,5 +1,5 @@
 param(
-    [string]$Input = "setup\hello.deor"
+    [string]$Input = "setup\main.deor"
 )
 
 $ErrorActionPreference = "Stop"

@@ -36,15 +36,40 @@ Restart your terminal. The binary is added to your user PATH automatically.
 
 ---
 
+## Working on an existing Deor project
+
+If you cloned a project that already uses Deor and just need the toolchain (the Deor programming language installed).
+
+```sh
+just install-deor
+```
+
+Or directly:
+```sh
+curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/install-deor.sh | sh
+```
+
+**Windows (PowerShell)**
+```powershell
+Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/install-deor.ps1" -UseBasicParsing).Content
+```
+
+This installs only the `deor` binary and sets up your PATH — it does not create or modify any project files.
+
+---
+
 ## Update
 
 Pull the latest transpiler and standard library into an existing project:
+
+Run this from inside your project directory and it will recompile `~/.deor/bin/deor` and refresh the `lib/` files in place:
 
 ```sh
 curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/update.sh | sh
 ```
 
-Run this from inside your project directory and it will recompile `~/.deor/bin/deor` and refresh the `lib/` files in place. To target a specific project path instead:
+
+To target a specific project path instead:
 
 ```sh
 curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/update.sh | sh -s -- /path/to/your/project
@@ -60,16 +85,16 @@ During install you'll be prompted for a folder to create your starter project in
 Where would you like to create your starter project? (default: /your/current/dir/hello-deor):
 ```
 
-Hit enter to accept the default or type a custom path. A `hello.deor` file will be placed there. Once your shell is reloaded, run it:
+Hit enter to accept the default or type a custom path. A `main.deor` file will be placed there. Once your shell is reloaded, run it:
 
 ```sh
 # Unix / macOS
 cd hello-deor
-deor hello.deor hello.rs && rustc hello.rs -o hello && ./hello
+deor main.deor main.rs && rustc main.rs -o main && ./main
 
 # Windows
 cd hello-deor
-deor hello.deor hello.rs; rustc hello.rs -o hello.exe; .\hello.exe
+deor main.deor main.rs; rustc main.rs -o main.exe; .\main.exe
 ```
 
 You should see:

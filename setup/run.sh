@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-INPUT="${1:-setup/hello.deor}"
+INPUT="${1:-setup/main.deor}"
 OUT_RS="/tmp/_deor_out.rs"
 OUT_BIN="/tmp/_deor_run"
 

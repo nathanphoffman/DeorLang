@@ -47,7 +47,7 @@ Write-Host "  Compiling transpiler..."
 if ($LASTEXITCODE -ne 0) { throw "rustc failed" }
 
 Write-Host "  Creating starter project..."
-Copy-Item "$ScriptDir\hello.deor"   "$ProjectDir\hello.deor"
+Copy-Item "$ScriptDir\main.deor"    "$ProjectDir\main.deor"
 Copy-Item "$ScriptDir\.gitignore"   "$ProjectDir\.gitignore"
 Copy-Item "$ScriptDir\justfile"     "$ProjectDir\justfile"
 (Get-Content "$ScriptDir\Cargo.toml") -replace '{{PROJECT_NAME}}', $ProjectName |
@@ -67,4 +67,4 @@ Write-Host "To run your hello world:"
 Write-Host "  cd `"$ProjectDir`""
 Write-Host "  just run"
 Write-Host ""
-Write-Host "  (Without just: set DEOR_LIB=lib && deor hello.deor build\main.rs && cargo run)"
+Write-Host "  (Without just: set DEOR_LIB=lib && deor main.deor build\main.rs && cargo run)"
