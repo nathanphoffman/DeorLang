@@ -1,5 +1,10 @@
 
-# Handles `for if cond`: generates `while cond { ... }`.
+# Handles `for if cond`: generates `while cond { ... }`. When cond is the literal
+# `true`, generates bare `loop { ... }` instead — Rust gives `loop` (with no reachable
+# break) the never type, so a function whose only return path is inside such a loop
+# type-checks correctly. `while true { ... }` doesn't get that treatment from Rust,
+# even though it's runtime-identical. Any other condition (including compound ones
+# that merely start with `true`, like `true and x`) is untouched.
 macro for_while
 	int cond_pos = next_pos + 1
 	val_pos as cond_pos
@@ -14,5 +19,11 @@ macro for_while
 	blk_code as code
 	blk_end as new_pos
 	string whl_kw = "while "
-	string while_code = s_join([pad, whl_kw, val_code, RS_OB, blk_code, pad, RS_CB])
+	string fw_head = s_join([whl_kw, val_code])
+	
+	# This was added to address a bug where no returns at the end of the function caused errors with RUST
+	# Infinite loops are one of the only cases where this happens
+	if val_code is "true"
+		fw_head = "loop"
+	string while_code = s_join([pad, fw_head, RS_OB, blk_code, pad, RS_CB])
 	return make_result(move while_code, blk_end)

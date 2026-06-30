@@ -4896,6 +4896,18 @@ fn gen_primary(tokens: TokensRef, pos: i32, ctx: RcCtx) -> ParseResult {
         let mut po_r: ParseResult = gen_primary(tokens.clone(), po_inner.clone(), ctx.clone());
         return po_r;
     }
+    if kind == "KW_AVOW" {
+        // transpiler-deor/codegen/decl/stmt/expr/macros/prefix_ops.deor
+        let mut po_avow_inner: i32 = pos + 1.clone();
+        let mut po_avow_r: ParseResult = gen_primary(tokens.clone(), po_avow_inner.clone(), ctx.clone());
+        let code = po_avow_r.code;
+        let new_pos = po_avow_r.new_pos;
+        let po_avow_code = code;
+        let po_avow_end = new_pos;
+        let mut po_avow_sfx: String = ".unwrap().0".to_string();
+        let mut po_avow_unwrap_code: String = [po_avow_code.as_str(), po_avow_sfx.as_str()].concat();
+        return make_result(po_avow_unwrap_code, po_avow_end.clone());
+    }
     if kind == "KW_NOT" {
         // transpiler-deor/codegen/decl/stmt/expr/macros/prefix_ops.deor
         let mut po_operand: i32 = pos + 1.clone();
