@@ -81,4 +81,12 @@ let new_var: String = prev_var;
 
 ## When to Use
 
-`move` is a performance tool — reach for it when profiling shows clone overhead on large collections or structs. Standard Deor (no `move`) is always correct; `move` trades safety (original gone) for speed (no copy). Use `rust` blocks for the most performance-critical paths.
+`move` is a performance tool. Deor's default clone-everything behavior is always *correct* — your program will produce the right answers without it. But cloning a large list or struct on every call or loop iteration has a real cost, and `move` eliminates that cost by transferring ownership instead of copying.
+
+The tradeoff: the original variable is gone after a move. If you need the value again, you cannot use `move`. Reach for `move` when:
+
+- A large collection or struct is passed to a function and never used again afterward
+- A loop iterates a collection that can be consumed rather than kept
+- A struct is built from fields that have no further use after construction
+
+Use `rust` blocks for the most performance-critical paths where even the transpiler layer is too much overhead.

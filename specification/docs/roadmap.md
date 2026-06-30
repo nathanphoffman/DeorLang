@@ -41,6 +41,12 @@ What is matching in item?  first off if it is a prop it should be (matching) in 
 
 - macros: if there are rust blocks here, label clearly which ones are Deor and which ones are Rust
 - move: if there are rust blocks here, label clearly which ones are deor and which ones are rust
+- move: "Standard Deor (no move) is always correct; "  But if thats the case why ever use move?
+- operators: strings and libs link is broken, types-forced wrab link doesn't seem to exist
+- index: remove roadmap link from the index
+
+
+--- Should be done the stuff above
 
 ---
 # Footnotes

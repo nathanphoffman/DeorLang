@@ -4,7 +4,7 @@
 
 | Operator | Meaning | Notes |
 |---|---|---|
-| `+` | Addition / string concat | See [strings](strings.md) for string `+` behavior |
+| `+` | Addition / string concat | See the Strings doc for string `+` behavior |
 | `-` | Subtraction | |
 | `*` | Multiplication | |
 | `/` | Division | Integer division truncates: `5 / 2 = 2` |
@@ -18,7 +18,7 @@ int quo = 5 / 2       # 2 — truncated
 float flt = 5.0 / 2   # 2.5
 ```
 
-Deor has no `**` operator. For exponentiation, use `m_pow` from `lib/math.deor` — see [Libs](libs.md):
+Deor has no `**` operator. For exponentiation, use `m_pow` from `lib/math.deor` (see the Libs doc):
 ```
 base as 2
 exp as 10
@@ -72,7 +72,7 @@ Forced unwrap of a validator type uses the separate `avow` keyword — it is not
 (avow val)    # forced unwrap — panics if not valid (validator types only)
 ```
 
-See [Types — Forced Unwrap](types.md#forced-unwrap--avow) for full details.
+See [Types — Forced Unwrap](types.md#forced-unwrap-avow) for full details.
 
 ---
 
