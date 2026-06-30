@@ -56,6 +56,12 @@ Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/nat
 
 This installs only the `deor` binary and sets up your PATH — it does not create or modify any project files.
 
+Then reload your shell so the `deor` command is available:
+```sh
+. ~/.deor/env
+```
+Or restart your terminal.
+
 ---
 
 ## Update
