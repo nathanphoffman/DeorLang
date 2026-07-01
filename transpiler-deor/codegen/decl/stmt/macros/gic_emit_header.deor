@@ -1,7 +1,9 @@
 
 # Emits the Rust preamble lines that produce the _deor_args Vec.
 #   args()  → collects argv[1..] directly
-#   input() → reads one stdin line then splits on whitespace
+#   input() → flushes stdout (so an unterminated prompt printed just before
+#             this isn't left sitting in the buffer), then reads one stdin
+#             line and splits on whitespace
 # Appends lines to gic_out.
 # Reads: gic_is_args, gic_pad, RS_NL, gic_out.
 macro gic_emit_header
@@ -13,6 +15,9 @@ macro gic_emit_header
 		string gic_raw_decl = "let mut _deor_raw: String = String::new();"
 		string gic_raw_line = s_join([gic_pad, gic_raw_decl, RS_NL])
 		gic_out at end = gic_raw_line
+		string gic_flush = "std::io::Write::flush(&mut std::io::stdout()).unwrap_or(());"
+		string gic_flush_line = s_join([gic_pad, gic_flush, RS_NL])
+		gic_out at end = gic_flush_line
 		string gic_read = "std::io::stdin().read_line(&mut _deor_raw).unwrap_or_default();"
 		string gic_read_line = s_join([gic_pad, gic_read, RS_NL])
 		gic_out at end = gic_read_line

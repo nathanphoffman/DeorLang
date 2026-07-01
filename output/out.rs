@@ -5473,6 +5473,9 @@ fn gen_destructure(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
             let mut gic_raw_decl: String = "let mut _deor_raw: String = String::new();".to_string();
             let mut gic_raw_line: String = [gic_pad.as_str(), gic_raw_decl.as_str(), RS_NL.as_str()].concat();
             gic_out.push(gic_raw_line.clone());
+            let mut gic_flush: String = "std::io::Write::flush(&mut std::io::stdout()).unwrap_or(());".to_string();
+            let mut gic_flush_line: String = [gic_pad.as_str(), gic_flush.as_str(), RS_NL.as_str()].concat();
+            gic_out.push(gic_flush_line.clone());
             let mut gic_read: String = "std::io::stdin().read_line(&mut _deor_raw).unwrap_or_default();".to_string();
             let mut gic_read_line: String = [gic_pad.as_str(), gic_read.as_str(), RS_NL.as_str()].concat();
             gic_out.push(gic_read_line.clone());
