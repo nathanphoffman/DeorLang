@@ -3,13 +3,11 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 # Road Map
 Upcoming features, mostly an internal markdown file used by the creator Nathan Hoffman.
 
-# We need a way to read input from console
-thinking of (first,second) in input()
+# Add to best practices:
+- Spacing can be used between functions (double return)  -- no function should be less than 2 extra spaces away (3 returns) from each other or other blocks.  All other blocks are 1 extra space
 
-# Should we go back to strict ordering?
-- I am feeling inspired by fortran, like all variable definitions at the top of the block, unless they are moved
-- This is complicated though by macros, especially if you want to be clear about what variables are being passed in
-- On second thought maybe not a good idea but still worth consideration
+# More types long and double precision?
+- Consider adding long and double
 
 ## Doc Corrections
 - best-practices: lets add something about avoiding deep nesting, and keeping functions small and using functions if not in a loop, and if in a loop using macros (to keep performance reasonable).  Files should also be kept to a reasonable length.

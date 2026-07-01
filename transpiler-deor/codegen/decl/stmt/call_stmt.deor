@@ -1,7 +1,8 @@
 
 # Generates code for a function-call statement: `name(args)`. pos points to the
 # function name identifier. Emits `name(args);` with special casing for `print`
-# (→ println!) and `crash` (→ panic!).
+# (→ println! for 1 arg, print! for 2 args where the second replaces the
+# trailing newline) and `crash` (→ panic!).
 fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	(tokens, mut_names) in ctx
 	int token_count = len(tokens)
@@ -19,8 +20,14 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	int after_paren = args_end + 1
 	string call_code = ""
 	if ident_name is "print"
-		string prt_pfx = "println!(\"{}\", "
-		call_code = s_join([pad, prt_pfx, args_code, RS_RP_SC])
+		# If print has 2 arguments it has a custom separator
+		int print_arg_count = count_call_args(tokens, next_pos)
+		if print_arg_count is 2
+			string prt_pfx = "print!(\"{}{}\", "
+			call_code = s_join([pad, prt_pfx, args_code, RS_RP_SC])
+		else # otherwise it new lines as per normal println
+			string prt_pfx = "println!(\"{}\", "
+			call_code = s_join([pad, prt_pfx, args_code, RS_RP_SC])
 	else if ident_name is "crash"
 		string crsh_pfx = "panic!(\"{}\", "
 		call_code = s_join([pad, crsh_pfx, args_code, RS_RP_SC])

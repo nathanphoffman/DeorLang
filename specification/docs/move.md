@@ -1,6 +1,6 @@
 # Move
 
-By default Deor clones every value — function arguments, loop elements, and assignments all get a fresh copy. This is safe and simple but has a performance cost. `move` opts out of cloning for a specific operation and transfers ownership instead, matching Rust's default behavior. The original variable is no longer accessible after a move.
+By default Deor clones every value — function arguments, loop elements, and assignments all get a fresh copy. This is safe and simple but has a performance cost. `move` opts out of cloning for a specific operation and transfers ownership instead, matching Rust's default behavior. The original variable is no longer accessible after a move — **for non-`Copy` types.** See [Move and `Copy` Types](#move-and-copy-types) below for the important exception.
 
 ---
 
@@ -79,6 +79,43 @@ let new_var: String = prev_var;
 
 ---
 
+## Move and `Copy` Types
+
+`int`, `float`, and `bool` map to Rust's `i32`/`f64`/`bool`, all of which are `Copy` types — duplicating one is always just a bitwise copy, identical in cost and effect to a `.clone()`. Because of this, `move` on a primitive doesn't actually transfer anything: the codegen difference (skipping the `.clone()` call) is real, but the *behavior* is identical either way. The original variable stays valid and usable after a `move` of a primitive — Rust copies it instead of consuming it, the same way it would for any other use of a `Copy` value.
+
+```
+int a = 5
+int b = move a
+print(a)  # still valid — a was never actually consumed
+```
+
+This means `move` only has a real, observable effect (the original becomes inaccessible) on non-`Copy` types: `string`, list shapes, structs, and validator-wrapped structs. `move`-ing a `string`, list, or struct genuinely consumes the source — using it afterward is a real Rust "use of moved value" compile error. `move`-ing an `int`/`float`/`bool` never produces that error, because there's nothing to consume.
+
+Using `move` on a primitive isn't wrong — it's just inert, a no-op annotation rather than a real ownership transfer. Prefer reserving `move` for the non-`Copy` cases where it's actually doing something, so its presence in code reliably signals "this value is really being consumed here."
+
+---
+
+## Move in `return`
+
+`move` has no effect at all in a `return` statement, for *any* type — not because of `Copy`, but because `return` never clones to begin with. Every other site that defaults to cloning a bare identifier (function call arguments, typed-binding right-hand sides, list literal items) explicitly opts into that behavior; `return` was never one of them.
+
+```
+fn string make_label(string prefix)
+    string label = prefix
+    return label
+```
+
+```rust
+fn make_label(prefix: String) -> String {
+    let label: String = prefix.clone();
+    return label;
+}
+```
+
+`return label` and `return move label` generate byte-for-byte identical Rust here, even though `string` is not `Copy`. Once a function returns, the local being returned is never read again regardless, so there was never a clone to opt out of — `return` already behaves like an implicit move every time. Writing `move` before a `return` value doesn't hurt anything, but it never changes the generated code.
+
+---
+
 ## When to Use
 
 `move` is a performance tool. Deor's default clone-everything behavior is always *correct* — your program will produce the right answers without it. But cloning a large list or struct on every call or loop iteration has a real cost, and `move` eliminates that cost by transferring ownership instead of copying.
@@ -90,3 +127,5 @@ The tradeoff: the original variable is gone after a move. If you need the value 
 - A struct is built from fields that have no further use after construction
 
 Use `rust` blocks for the most performance-critical paths where even the transpiler layer is too much overhead.
+
+Two cases where `move` is always a no-op, regardless of the above: values of a `Copy` type (`int`/`float`/`bool`), and anything in a `return` statement. See the two sections above for why.

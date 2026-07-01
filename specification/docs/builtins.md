@@ -20,6 +20,21 @@ println!("{}", "Hello, world!");
 println!("{}", count);
 ```
 
+Pass a second argument to replace the trailing newline with a string of your choice — a space, a comma, or even an empty string, useful for building output across multiple `print` calls without a line break. Since this is a 2-argument call, the second argument must be a named variable already in scope (the same rule that applies to `range(start, stop)` — see [Enforced Practices](enforced_practices.md#named-arguments-user-defined-functions-only)).
+
+Deor:
+```
+string sep = ", "
+print(first, sep)
+print(second)
+```
+
+Rust:
+```rust
+print!("{}{}", first.clone(), sep.clone());
+println!("{}", second.clone());
+```
+
 ---
 
 ## `len`

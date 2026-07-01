@@ -5,10 +5,10 @@ Style recommendations not enforced by the transpiler.
 ## Order of Declaration
 1. Imports - Everything else could use it, relies on nothing else in the file
 2. Enums - Relies likely on nothing else in the file
-3. `const` declarations - They could rely on enums and are important to see (at top)
+3. Structs - Reliant on most everything above but still structural (so above functions)
 4. Types - Type validators being types must be defined early
 5. Shapes - Shapes can reference almost anything above
-6. Structs - Reliant on most everything above but still structural (so above functions)
+6. Macros
 7. Functions - Reliant on everything above
 
 ---

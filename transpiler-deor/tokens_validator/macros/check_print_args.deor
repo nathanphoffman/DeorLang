@@ -1,0 +1,17 @@
+
+# Enforces that print() is called with 1 or 2 arguments.
+macro check_print_args
+	if cur_kind is "IDENT"
+		bool is_print = cur_val is "print"
+		if is_print
+			int print_lp = pos + 1
+			if print_lp < token_count
+				Token print_lp_tok = tokens at print_lp
+				(kind) in print_lp_tok
+				if kind is "LPAREN"
+					int print_arg_count = count_call_args(tokens, print_lp)
+					bool is_one = print_arg_count is 1
+					bool is_two = print_arg_count is 2
+					if not is_one
+						if not is_two
+							errors at end = val_err(tok, lbl_call, rule_print_args)

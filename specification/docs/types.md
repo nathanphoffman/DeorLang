@@ -57,6 +57,20 @@ The body evaluates to a `bool`. Simple predicates are a single boolean expressio
 
 A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.
 
+**Only the full declaration form runs the predicate.** `TypeName varName = expr` — naming the type explicitly — is the *only* statement shape that constructs through the validator and produces a checked `Option<TypeName>`. A later bare reassignment (`varName = expr`) or `as` binding (`varName as expr`) to that same name does **not** re-run the predicate — `=` will type-mismatch (it's assigning the raw base type into a slot typed `Option<TypeName>`), and `as` will silently shadow the validator-typed variable with a fresh, unrelated binding inferred from the new expression. The transpiler catches both forms and reports an error pointing at the full declaration form instead. If you need to re-validate a new value against the same validator type — for example, retrying user input in a loop until it passes — declare it fresh each time:
+
+```
+for if true
+    (first) in input()
+    Roll attempt = c_string_to_int(first)   # fresh declaration each iteration
+    if attempt is valid
+        return (avow attempt)
+    else
+        print("invalid, try again")
+```
+
+Shadowing a validator-typed name across loop iterations like this is the normal, expected pattern — it's not a one-time declaration you update, it's a fresh "construct and check" every time you need one.
+
 ```
 # import lib/math.deor and lib/convert.deor for these functions
 type Squarefeet(int val)
@@ -188,13 +202,13 @@ let mut rooms: Vec<Room> = Vec::new();
 
 ### Forced Unwrap — `avow`
 
-`(avow val)` is Deor's equivalent of Rust's `.unwrap()` — it asserts the value is `Some` and extracts the underlying primitive. Panics at runtime if not valid. Use only when you are certain the value is valid — typically inside an `if val is valid` block. Using `avow` on a non-validator-type variable is a transpiler error.
+`avow val` (or `(avow val)`) is Deor's equivalent of Rust's `.unwrap()` — it asserts the value is `Some` and extracts the underlying primitive. Panics at runtime if not valid. Use only when you are certain the value is valid — typically inside an `if val is valid` block. Using `avow` on a non-validator-type variable is a transpiler error.
 
-The parentheses are always required — this is intentional. Without them, `avow val + 2` would be ambiguous: does `avow` bind to `val` or to `val + 2`? The parens make the boundary explicit, which matters most when `avow` is used inline inside a larger expression like `(avow value) + 2`. Writing `avow val` on its own line would be unambiguous, but the rule is uniform: parens always.
+Parentheses are optional, not required. `avow` binds only to the next primary — a bare identifier, literal, or parenthesized group — the same rule `move` already follows. So `avow val + 2` parses unambiguously as `(avow val) + 2`, never as `avow (val + 2)`; there's no scenario where omitting the parens changes what `avow` applies to. Use the parens when they help a reader scan a larger expression (`(avow value) + 2` reads a little more clearly than `avow value + 2`), but they're a style choice, not a syntax requirement.
 
 `avow` gives you the raw primitive beneath the validator type — `int` from a `Roll`, `float` from a `Squarefeet`. When you need to pass a validator type value to a function that accepts that validator type, pass the variable directly — no `avow` needed. Only reach for `avow` when you specifically need the underlying primitive.
 
-**Note:** `avow` must be captured into a variable — you cannot pass it directly as a function argument. This is intentional and matches the generated Rust output.
+`avow` can be used directly as a function argument (`show(avow roll)`) — it does not need to be captured into a variable first.
 
 ```
 Roll roll = roll_die(d20)

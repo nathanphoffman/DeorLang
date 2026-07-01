@@ -28,6 +28,7 @@ macro define_errors
 	string rule_return_none = "none is not a Deor keyword — declare a validator type variable without a value and return it to signal not-valid"
 	string rule_void_var = "'void' is not a valid variable type — only functions can return void"
 	string rule_crash = "crash takes exactly 1 string argument"
+	string rule_print_args = "print takes 1 argument, or 2 arguments where the second replaces the trailing newline"
 
 	# statement rules
 	string rule_avow = "avow can only be used on a validator type variable"

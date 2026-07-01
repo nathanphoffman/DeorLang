@@ -2366,6 +2366,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_return_none: String = "none is not a Deor keyword — declare a validator type variable without a value and return it to signal not-valid".to_string();
     let mut rule_void_var: String = "'void' is not a valid variable type — only functions can return void".to_string();
     let mut rule_crash: String = "crash takes exactly 1 string argument".to_string();
+    let mut rule_print_args: String = "print takes 1 argument, or 2 arguments where the second replaces the trailing newline".to_string();
     let mut rule_avow: String = "avow can only be used on a validator type variable".to_string();
     let mut rule_invalid_char: String = "character is not valid in Deor — use Deor operators and keywords; raw Rust syntax belongs inside a 'rust' block".to_string();
     let mut rule_validator_empty: String = "empty is not valid for validator types — declare without a value to start as not valid: 'Roll best'".to_string();
@@ -3276,6 +3277,33 @@ fn validate_tokens(tokens: TokensRef) {
                         if wrong_count {
                             // transpiler-deor/tokens_validator/macros/check_crash_args.deor
                             errors.push(val_err(tok.clone(), lbl_call.clone(), rule_crash.clone()).clone());
+                        }
+                    }
+                }
+            }
+        }
+        // macro: check_print_args (transpiler-deor/tokens_validator/macros/check_print_args.deor)
+        if cur_kind == "IDENT" {
+            // transpiler-deor/tokens_validator/macros/check_print_args.deor
+            let mut is_print: bool = cur_val == "print".clone();
+            if is_print {
+                // transpiler-deor/tokens_validator/macros/check_print_args.deor
+                let mut print_lp: i32 = pos + 1.clone();
+                if print_lp < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_print_args.deor
+                    let mut print_lp_tok: Token = tokens[print_lp as usize].clone();
+                    let kind = print_lp_tok.kind.clone();
+                    if kind == "LPAREN" {
+                        // transpiler-deor/tokens_validator/macros/check_print_args.deor
+                        let mut print_arg_count: i32 = count_call_args(tokens.clone(), print_lp.clone());
+                        let mut is_one: bool = print_arg_count == 1.clone();
+                        let mut is_two: bool = print_arg_count == 2.clone();
+                        if !is_one {
+                            // transpiler-deor/tokens_validator/macros/check_print_args.deor
+                            if !is_two {
+                                // transpiler-deor/tokens_validator/macros/check_print_args.deor
+                                errors.push(val_err(tok.clone(), lbl_call.clone(), rule_print_args.clone()).clone());
+                            }
                         }
                     }
                 }
@@ -6378,8 +6406,16 @@ fn gen_call_stmt(pos: i32, depth: i32, ctx: RcCtx) -> ParseResult {
     let mut call_code: String = "".to_string();
     if ident_name == "print" {
         // transpiler-deor/codegen/decl/stmt/call_stmt.deor
-        let mut prt_pfx: String = "println!(\"{}\", ".to_string();
-        call_code = [pad.as_str(), prt_pfx.as_str(), args_code.as_str(), RS_RP_SC.as_str()].concat();
+        let mut print_arg_count: i32 = count_call_args(tokens.clone(), next_pos.clone());
+        if print_arg_count == 2 {
+            // transpiler-deor/codegen/decl/stmt/call_stmt.deor
+            let mut prt_pfx: String = "print!(\"{}{}\", ".to_string();
+            call_code = [pad.as_str(), prt_pfx.as_str(), args_code.as_str(), RS_RP_SC.as_str()].concat();
+        } else {
+            // transpiler-deor/codegen/decl/stmt/call_stmt.deor
+            let mut prt_pfx: String = "println!(\"{}\", ".to_string();
+            call_code = [pad.as_str(), prt_pfx.as_str(), args_code.as_str(), RS_RP_SC.as_str()].concat();
+        }
     } else if ident_name == "crash" {
         // transpiler-deor/codegen/decl/stmt/call_stmt.deor
         let mut crsh_pfx: String = "panic!(\"{}\", ".to_string();

@@ -95,73 +95,131 @@
 
         <pre class="bg-gray-800 rounded-lg text-left max-h-0 overflow-hidden transition-all duration-3000">
         <code class="language-deor">
-        
-        const string HELLO = "Hello"
+            import "lib/convert.deor"
+            import "lib/tasks.deor" where T = PiChunk
 
-        enum PlanetEnum
-            Mercury
-            Venus
-            Earth
-            Mars
+            struct PiChunk
+                int min
+                int max
+                float value
 
-        # all type aliases are validator types, they must return a boolean
-        # validator type returns are the only place where returning is not strict, even 1 line no-return
-        type Positive(int: num)
-            num > 0
-          
-        # validator types will crash when failed at assignment ForOrLess my_num = 5 will error
-        type FourOrLess(int num)
-            5 > num
+            type SmallPositive(int value)
+                value > 0 and value <= 16
 
-        # validator types can also be ran as boolean fns to avoid hard-crashes on invalid assignments
-        ## like here, it can be used to chain composite validators together
-        type ZeroToFour(int num)
-            Positive(num) and FourOrLess(num)
+            type LargePositive(int value)
+                value > 0 and value <= 1_000_000
 
-        # shapes are a way to alias generic types and 1st class fns, required by Deor to avoid nasty <>
-        shape funcSayHiPlanet = func of Planet to string 
-        shape listOfPlanet = list of Planet
+            macro leibniz_iteration
+                is_even as (iter % 2 is 0)
+                decimal_iter as c_int_to_float(iter)
+                float denom = 1.0 + decimal_iter * 2.0
 
-        # structs are immutable value types (like this one), primitives mutable value types
-        ## unsafe structs and lists do exist to create a mutable reference from a type like a struct
-        struct HelloWorld
-            string message
-            string name
+                if is_even
+                    value = value + 1.0 / denom
+                else
+                    value = value - 1.0 / denom
 
-        fn string say_hi_planet(string: planetName)
-            # x_ represents deor-wrapped rust functions provided standard with deor
-            what_to_say = s_join([message, " ", planet])
-            # print is one of only four built-ins: print, len, range, throw
-            print(what_to_say)
 
-        fn void run_for_all_planets(funcSayHiPlanet: say_hi, listPlanet: planets)
-            FourOrLess countOfPlanets = len(planets)
-            index as 0
+            fn PiChunk compute_pi_chunk(PiChunk chunk)
+                (min, max) in chunk
 
-            # syntax is readable left to right, no ++ for index, no non-human symbols
-            # no i for index, all var, struct, etc names must be 3+ characters
-            for index if index < countOfPlanets
-                planet = listPlanet at index
-                funcSayHiPlanet(planet)
-                # short hand for index = index + 1, no non-human symbols (++)
-                index add 1
-            
-        # all functions are pure and must take inputs and give outputs, except main
-        fn void main()
-            # as is used to infer the type from literal context
-            message as "Hello World"
-            name as "Nate"
+                value as perform_liebniz_computation(min, max)
+                PiChunk chunk_with_value = (min, max, value)
 
-            # all structs are immutable value types and must be (de)constructed to use
-            # our decon then construct is unusual but is allowed through "shadowing"
-            HelloWorld hello_text = (message, name)
-            (message, name) in hello_text 
+                return chunk_with_value
 
-            # if a function has more than one param, no magic data is allowed
-            what_to_say as get_message(message, name)
 
-            # you can also define variables explicitly
-            Positive say_times = 5
+            fn float perform_liebniz_computation(int start_iter, int end_iter)
+                float value = 0.0
+
+                # although quite unnecessary here, a macro can be helpful to divide up work
+                # with 0 concern of stack overflow and copying of values, they are best
+                # when used to break up heavily repeated code that is inside of loops
+                for iter in range(start_iter, end_iter)
+                    macro_run leibniz_iteration
+
+                return move value
+
+
+            fn piChunkList build_chunk(int max_iterations, int chunk_count)
+                piChunkList list_of_chunks = empty
+                float value = 0.0
+                current as 0
+
+                for if current < max_iterations
+                    current = current + chunk_count
+
+                    int max = current
+                    if max > max_iterations
+                        max = max_iterations
+
+                    min as current - chunk_count
+                    PiChunk chunk = (min, max, value)
+                    list_of_chunks at end = move chunk
+                
+                return list_of_chunks
+
+
+            fn int ask_for_threads()
+                
+                for if true
+                    print("How many thread-tasks would you like to run? (default 8)")
+                    (first) in input()
+
+                    SmallPositive threads = c_string_to_int(first)	
+                    
+                    if threads is valid
+                        return avow threads
+                    else
+                        print("Incorrect entry, must be >0 and the max is 16")
+
+
+            fn int ask_for_iterations()
+                
+                for if true
+                    print("How many thousands of iterations per thread? (default 1000): ")
+                    (first) in input()
+                    
+                    LargePositive iterations_per_thread = c_string_to_int(first)
+
+                    if iterations_per_thread is valid
+                        return avow iterations_per_thread
+                    else
+                        print("Incorrect entry, must be >0 and the max is 10 million - thousand")
+
+
+            fn float total_final_results(piChunkList results)
+                float net_value = 0.0
+                for res in results
+                    (min, max, value) in res
+                    net_value = net_value + value
+                
+                return net_value
+
+
+            fn void main()
+                
+                const int THOUSANDS = 1000
+                const float LIEBNIZ_COEFFICIENT = 4
+
+                threads as ask_for_threads()
+                iterations as ask_for_iterations()
+                iterations_per_thread as iterations * THOUSANDS
+
+                total_iterations as iterations_per_thread * threads
+                print("Performing " + c_int_to_string(total_iterations) + " iterations")
+                
+                # Multithreading operations
+                TaskPool pool = t_pool_make()
+                list_of_chunks as build_chunk(total_iterations, threads)
+                piChunkList results = t_pi_chunk_run_all(pool, list_of_chunks, compute_pi_chunk)
+                
+                net_value as total_final_results(move results)
+
+                float pi_value = LIEBNIZ_COEFFICIENT * net_value
+                print(pi_value)
+
+
 
         </code>
         </pre>

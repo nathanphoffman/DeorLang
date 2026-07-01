@@ -83,6 +83,11 @@ fn void main()
 	#     print(result)
 
 
+	same_line_hello as "hello"
+	same_line_world as "world"
+	const string NO_SEPARATOR = ""
+	print(same_line_hello, NO_SEPARATOR)
+	print(same_line_world)
 
 	aaa as 2
 	int val_as = move aaa

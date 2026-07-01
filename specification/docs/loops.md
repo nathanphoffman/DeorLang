@@ -141,9 +141,30 @@ for if true
 ```
 
 ```rust
-while true {
+loop {
     if done { break; }
     do_work();
+}
+```
+
+`for if true` specifically (the literal condition `true`, not an expression that merely evaluates true) generates a bare `loop { ... }` rather than `while true { ... }`. This matters for functions that return a value: Rust gives `loop` the special "never returns normally" type when it has no reachable `break`, which lets the compiler accept a function whose only return path is inside the loop. `while true { ... }`, even though it runs identically, doesn't get that treatment from Rust — a function ending in `while true { ... }` with no value-producing code after it fails to compile with "expected T, found ()", regardless of whether every branch inside actually returns. Any other condition (`for if cur < token_count`, `for if not done`, etc.) always generates `while`, unaffected by this.
+
+```
+fn int ask_until_valid()
+    for if true
+        int val = read_input()
+        if is_valid(val)
+            return val
+```
+
+```rust
+fn ask_until_valid() -> i32 {
+    loop {
+        let val: i32 = read_input();
+        if is_valid(val) {
+            return val;
+        }
+    }
 }
 ```
 

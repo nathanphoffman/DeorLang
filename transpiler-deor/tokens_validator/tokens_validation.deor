@@ -137,6 +137,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run check_raw_assignment
 		macro_run track_validator_vars
 		macro_run check_crash_args
+		macro_run check_print_args
 		macro_run check_avow_target
 		macro_run check_validator_empty
 		macro_run check_empty_bracket
