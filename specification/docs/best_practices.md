@@ -153,6 +153,27 @@ for item in items
 If the logic is non-trivial, extract it into a function regardless — readability wins over minor call overhead for complex operations.
 
 ---
+## Reusable Consts — via Macros
+
+Deor has no global scope, so a `const` can't be declared once and shared across every function that needs it — it only exists inside the block where it's declared. When the same constant values are needed in multiple functions, declare them once inside a `macro` and `macro_run` it wherever they're needed. Because the macro body is inlined at each call site, every function gets its own copy of the same named consts — nothing is shared at runtime, but the names and values stay consistent everywhere they're used.
+
+```
+macro use_log_consts
+    const string INFO_PREFIX = "[INFO] "
+    const string ERROR_PREFIX = "[ERROR] "
+
+fn void log_info(string msg)
+    macro_run use_log_consts
+    print(INFO_PREFIX + msg)
+
+fn void log_error(string msg)
+    macro_run use_log_consts
+    print(ERROR_PREFIX + msg)
+```
+
+Don't `macro_run` the same const-macro twice in one function body — the second inlining redeclares the same names in the same scope, which is a transpiler error like any other duplicate declaration.
+
+---
 ## File Length
 
 Keep files to a reasonable length. There is no hard limit, but when a file starts to feel long, consider splitting it. A natural split point is when the file contains multiple distinct concerns — for example, separate structs and their associated functions into their own files.

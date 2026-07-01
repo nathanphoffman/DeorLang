@@ -33,7 +33,7 @@ Imports are required to be at the top of a file, however there are no other rest
 ---
 ## Validator Type Predicate Required
 
-The predicate body is mandatory — see [Types — Validator Types](docs/types.md#validator-types-type) for why.
+The predicate body is mandatory — see [Validator Types — Declaration](docs/validator_types.md#declaration) for why.
 
 **Correct:**
 ```

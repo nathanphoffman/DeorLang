@@ -58,30 +58,16 @@ See [Struct Construction](#struct-construction) below for full details and the e
 
 **What `as` is not for:**
 
-**Validator type bindings** — `as` has no way to know whether you want a plain `int` (no predicate, stored directly) or a `Squarefeet` validator type (predicate runs, result is `Option<T>`). Without an explicit type the transpiler cannot decide which behaviour you intend, so it errors. Use explicit `ValidatorType name = value` — see [Validator Type Bindings](#validator-type-bindings) below.
+- **Validator type bindings** — `as` can't tell whether you want a plain `int` or a `Squarefeet` validator (predicate run, `Option<T>` result); use explicit `ValidatorType name = value` instead — see [Validator Type Bindings](#validator-type-bindings) below.
+- **Type annotation** — `as` never takes an explicit type prefix.
+- **Variable copying** — `as` requires a literal, `[items]`, or `(fields)` on the right, not a bare variable name.
+- **Move transfer** — `as` already produces an owned binding, so combining it with `move` is redundant and rejected.
 
 ```
-area as 9             # transpiler error — int or Squarefeet?
-Squarefeet area = 9   # correct
-```
-
-**Type annotation** — `as` never takes an explicit type prefix:
-
-```
-int count as 0      # transpiler error
-int count = 0       # correct
-```
-
-**Variable copying** — `as` requires a literal, `[items]`, or `(fields)` on the right:
-
-```
-copy as original    # transpiler error — use Room copy = original
-```
-
-**Move transfer** — `as` already produces an owned binding; combining it with `move` is a transpiler error:
-
-```
-a as move b    # transpiler error — as already transfers ownership
+area as 9             # transpiler error — int or Squarefeet? use Squarefeet area = 9
+int count as 0        # transpiler error — annotation not allowed with as; use int count = 0
+copy as original      # transpiler error — not a structural RHS; use Room copy = original
+a as move b           # transpiler error — as already transfers ownership
 ```
 
 Record update (`with`) uses `as` — the type is known from the source struct. See [Immutability](docs/immutability.md).

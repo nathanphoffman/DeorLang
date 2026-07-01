@@ -72,7 +72,7 @@ Forced unwrap of a validator type uses the separate `avow` keyword — it is not
 (avow val)    # forced unwrap — panics if not valid (validator types only)
 ```
 
-See [Types — Forced Unwrap](docs/types.md#forced-unwrap-avow) for full details.
+See [Validator Types — Forced Unwrap](docs/validator_types.md#forced-unwrap-avow) for full details.
 
 ---
 
