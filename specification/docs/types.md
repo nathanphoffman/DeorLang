@@ -36,7 +36,7 @@ See [Rust Interop](docs/interop.md) for full documentation, rules, and the build
 
 ## Validator Types (`type`)
 
-Deor's replacement for `Option`/null — a base primitive or struct wrapped with a runtime predicate. This is a large enough feature to have its own page: see [Validator Types](docs/validator_types.md) for declaration rules, `is valid`/`is not valid`, `avow`, struct fields, and function returns.
+A type that carries its own "is this actually valid?" check, for values that can be built fine but still not make sense — a negative area, an out-of-range roll. This is a large enough feature to have its own page: see [Validator Types](docs/validator_types.md) for how it works, declaration rules, `is valid`/`is not valid`, `avow`, struct fields, and function returns.
 
 ---
 

@@ -1,10 +1,21 @@
 # Validator Types
 
-Deor's replacement for `Option`/null. A `type` wraps a base primitive or struct with a runtime predicate — every validator type is `Option<T>` under the hood, and there's no other way to represent "no value" in the language. See [Types](docs/types.md) for primitives, `raw` variables, and structs.
+Sometimes a value can be built just fine but still not make sense — a shape with a negative area, a dice roll outside its range. Deor's answer is the **validator type**: a type with its own built-in rule for what counts as valid. Write the rule once, and every place that type is used, the rule runs automatically — there's no way to hold one of these values without it having been checked.
+
+A validator type is declared with `type`:
+
+```
+type Positive(int val)
+    val > 0
+```
+
+This defines `Positive`, built on `int`, with one rule: greater than zero. Assigning an `int` runs the rule — pass, and you have a valid `Positive`; fail, and instead of a crash or a garbage value, you get a `Positive` that's explicitly **not valid**, which the language forces you to check before use.
+
+(Rust readers: under the hood this is `Option<T>` — valid is `Some`, not valid is `None`.) See [Types](docs/types.md) for primitives, `raw` variables, and structs.
 
 ## Declaration
 
-A `type` definition wraps a base primitive with a predicate. **The predicate body is mandatory** — the transpiler errors on a `type` with an empty body. A validator type without a constraint adds no meaning over its base primitive; use the base type directly instead.
+**The predicate body is mandatory** — a `type` with no rule means nothing more than its base type, so the transpiler rejects an empty body. Just use the base type directly if you don't need a check.
 
 The base type must be a primitive (`int`, `float`, `string`, `bool`) or a struct — list shapes are not valid as a validator base type and are a transpiler error:
 
@@ -21,11 +32,11 @@ type Roll(int int)     # transpiler error — parameter name shadows its base ty
 type Roll(int val)     # correct
 ```
 
-The body evaluates to a `bool`. Simple predicates are a single boolean expression; predicates that need intermediate values may declare bindings before the final bool expression, following the same rules as a function body.
+The body evaluates to a `bool` — a single expression for simple predicates, or intermediate bindings followed by a final bool expression for more complex ones, same rules as a function body.
 
-A validator type is always `Option<T>` under the hood — assignment runs the predicate at runtime; if it passes the value is `Some`, if it fails the value is `None`. Primitives and structs are never null — only validator types carry presence/absence.
+Plain primitives and structs can never be "missing" — only validator types carry that possibility, and only because the predicate runs on assignment.
 
-**Only the full declaration form runs the predicate.** `TypeName varName = expr` is the only statement shape that constructs through the validator. A bare reassignment (`varName = expr`) or `as` binding (`varName as expr`) does **not** re-run it — both are transpiler errors, pointing back at the full declaration form. To re-validate a new value — for example, retrying user input in a loop — declare it fresh each time:
+**Only the full declaration form re-runs the predicate.** `TypeName varName = expr` triggers validation; a later bare reassignment (`varName = expr`) or `as` binding does not, and both are transpiler errors. To re-validate a new value — retrying input in a loop, for example — declare it fresh each time:
 
 ```
 for if true
@@ -37,7 +48,9 @@ for if true
         print("invalid, try again")
 ```
 
-Shadowing a validator-typed name across loop iterations like this is the normal, expected pattern — it's not a one-time declaration you update, it's a fresh "construct and check" every time you need one.
+This kind of shadowing across loop iterations is the normal pattern — a fresh "construct and check" each time, not a one-time declaration you update.
+
+A slightly more realistic predicate, using values from an earlier calculation:
 
 ```
 # import lib/math.deor and lib/convert.deor for these functions
@@ -48,23 +61,18 @@ type Squarefeet(int val)
     return root_i * root_i is val
 ```
 
-`c_int_to_float`, `m_sqrt`, and `m_floor` are from `lib/convert.deor` and `lib/math.deor` — see [Libs](docs/libs.md). Each intermediate result is stored before being passed to the next call. A negative `val` makes `m_sqrt` return NaN; `m_floor(NaN)` gives `0`; `0 * 0 is val` fails — no separate guard needed.
+`c_int_to_float`, `m_sqrt`, and `m_floor` come from `lib/convert.deor` and `lib/math.deor` (see [Libs](docs/libs.md)). A negative `val` makes `m_sqrt` return NaN, `m_floor` turns that into `0`, and `0 * 0 is val` fails — no separate negative-number guard needed.
 
 ```
 Squarefeet area = 9     # valid — predicate passes
 Squarefeet area = -1    # transpiler error — literal value fails predicate at compile time
 ```
 
-```rust
-let area: Option<Squarefeet> = Squarefeet::new(9);
-let area: Option<Squarefeet> = Squarefeet::new(-1);
-```
-
 ---
 
 ## `is valid` / `is not valid`
 
-A validator type variable is either **valid** (`Some` under the hood — predicate passed) or **not valid** (`None` under the hood — predicate failed or no value assigned). There is no keyword to force an invalid state. A variable becomes not valid in exactly two ways:
+A validator type variable is always **valid** (rule passed) or **not valid** (rule failed, or nothing assigned yet) — `Some`/`None` for Rust readers. There's no keyword to force an invalid state; it happens in exactly two ways:
 
 - Declared without a value: `Squarefeet sqft` — not valid until assigned
 - Assigned a value that fails the predicate: `Squarefeet sqft = -10` — predicate fails, not valid
@@ -79,7 +87,7 @@ if sqft is not valid
     print("no value")
 ```
 
-This is Deor's only concept of null. Every validator type defines exactly what makes a value invalid — a `customer_id` below 1, a `Squarefeet` that isn't a perfect square. Almost all types conceptually different from their base primitive have a natural constraint; the predicate makes that constraint explicit and enforced.
+This is Deor's only concept of null — every validator type defines exactly what makes a value invalid, and the predicate makes that constraint explicit and enforced.
 
 ---
 
@@ -97,7 +105,7 @@ let mut best: Option<Roll> = None;
 let mut area: Option<Squarefeet> = None;
 ```
 
-`empty` is not valid for validator types — using it is a transpiler error. There is no "empty" state for a validator type; not valid is expressed by declaring without a value:
+`empty` is not valid for validator types and is a transpiler error — not valid is expressed by declaring without a value instead:
 
 ```
 Roll best = empty    # transpiler error — empty is not valid for validator types
@@ -110,11 +118,11 @@ List shapes use `empty` instead — see [Variables — List Construction](docs/v
 
 ## Forced Unwrap — `avow`
 
-`avow val` (or `(avow val)`) is Deor's equivalent of Rust's `.unwrap()` — it asserts the value is `Some` and extracts the underlying primitive. Panics at runtime if not valid. Use only when you are certain the value is valid — typically inside an `if val is valid` block. Using `avow` on a non-validator-type variable is a transpiler error.
+`avow val` (or `(avow val)`) pulls the raw value out of a validator type — the plain `int` inside a `Roll`. It panics at runtime if the value isn't actually valid, so use it only when you're sure — typically right after an `if val is valid` check. (Rust readers: this is `.unwrap()`.) Using it on a non-validator-type variable is a transpiler error.
 
-`avow` binds only to the next primary — a bare identifier, literal, or parenthesized group — the same rule `move` follows, so `avow val + 2` always parses as `(avow val) + 2`. Parentheses are a style choice for readability, not a syntax requirement.
+`avow` binds only to the next primary (identifier, literal, or parenthesized group) — same rule as `move` — so `avow val + 2` always parses as `(avow val) + 2`. Parens are a readability choice, not required.
 
-`avow` gives you the raw primitive beneath the validator type — `int` from a `Roll`, `float` from a `Squarefeet`. When you need to pass a validator type value to a function that accepts that validator type, pass the variable directly — no `avow` needed. Only reach for `avow` when you specifically need the underlying primitive. It can also be used directly as a function argument (`show(avow roll)`) without capturing it into a variable first.
+Pass the variable directly (no `avow`) when a function accepts that validator type; only reach for `avow` when you need the raw primitive. It can be used as a function argument directly too (`show(avow roll)`), no need to capture it first.
 
 ```
 Roll roll = roll_die(d20)
@@ -130,15 +138,7 @@ if roll.is_some() {
 }
 ```
 
-Outside an `if` check, `avow` is the programmer's explicit assertion that the value is Some:
-
-```
-int sum = (avow value) + 2
-```
-
-```rust
-let sum: i64 = value.unwrap().0 + 2;
-```
+Outside an `if` check, `avow` is your explicit assertion that the value is valid — `int sum = (avow value) + 2` works the same way, just without the safety net.
 
 ---
 
@@ -158,52 +158,24 @@ if max_capacity is valid
     int cap = (avow max_capacity)
 ```
 
-```rust
-let (area, max_capacity) = (room.area, room.max_capacity);
-if max_capacity.is_some() {
-    let cap: i64 = max_capacity.unwrap().0;
-}
-```
-
 ---
 
 ## Functions Returning Validator Types
 
-A function returning a validator type returns a variable that may or may not be valid. To return a not-valid result, either declare the variable without a value and return it unassigned, or assign a value that fails the predicate.
-
-`return empty` and `return none` are both transpiler errors — neither is a Deor keyword in return position.
+A function returning a validator type returns a variable that may or may not be valid. To return a not-valid result, either declare the variable without a value and return it unassigned, or assign a value that fails the predicate. `return empty` and `return none` are both transpiler errors — neither is a Deor keyword in return position.
 
 ```
-shape rollResultList = list of RollResult
-
-fn Roll find_crit(rollResultList rolls)
-    Roll found
-
-    for roll in rolls
-        value in roll
-        if is_critical(roll)
-            found = value
-
-    return found
-```
-
-```rust
-fn find_crit(rolls: &Vec<RollResult>) -> Option<Roll> {
-    let mut found: Option<Roll> = None;
-    for roll in rolls {
-        let value = roll.value;
-        if is_critical(roll) {
-            found = value;
-        }
-    }
-    found
-}
+fn Roll find_best(int val)
+    Roll best
+    if val > 0
+        best = val
+    return best    # not valid if val <= 0
 ```
 
 The caller checks with `is valid`:
 
 ```
-Roll crit = find_crit(rolls)
+Roll crit = find_best(val)
 if crit is valid
     int bonus = (avow crit)
 ```
