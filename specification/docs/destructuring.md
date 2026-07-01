@@ -1,5 +1,5 @@
 # Destructuring
-`in` extracts one or more fields from a struct into the current scope. This is the only way to access struct fields — there is no dot syntax in source.
+`in` extracts one or more fields from a struct into the current scope. This is the only way to access struct fields — there is no dot syntax in source, so every field a block of code touches is named up front in one place, instead of scattered across dot-chains wherever they happen to get used.
 
 Parentheses are always required, even for a single field.
 

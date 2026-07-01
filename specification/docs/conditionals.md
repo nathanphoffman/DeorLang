@@ -39,7 +39,7 @@ Any number of `else if` chains are allowed. `else` is always last and optional.
 
 ## No Pattern Matching — By Design
 
-Deor has no `match` keyword and no pattern matching syntax. This is intentional.
+Deor has no `match` keyword and no pattern matching syntax. This is intentional: `match` would be a second, structurally different way to branch, with its own nesting and rules to learn. Keeping dispatch on `if`/`else if` with `is` means there's exactly one way to branch in Deor, using the same comparison operator as everywhere else.
 
 Dispatching on enum variants uses `if`/`else if` chains with `is` comparisons — the same operator used for equality everywhere else in Deor:
 

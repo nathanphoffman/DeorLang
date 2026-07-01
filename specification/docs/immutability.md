@@ -2,6 +2,8 @@
 
 ## Mutability Rules
 
+A struct handed to a function or dropped into a list shouldn't change out from under the code still holding it, so structs are immutable — the only way to get a "changed" version is `with`, which builds a new one, or recomposing it entirely. Lists and primitives don't carry that risk (growing a list or bumping a counter isn't rewriting data someone else is relying on), so they stay mutable.
+
 | Kind | Mutability | Notes |
 |---|---|---|
 | Primitives (`int`, `float`, `bool`, ...) | Mutable value types | `val = val + 1` always legal |

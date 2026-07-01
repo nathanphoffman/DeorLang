@@ -28,6 +28,8 @@
     --text-xl--line-height: calc(1.75 / 1.25);
     --text-2xl: 1.5rem;
     --text-2xl--line-height: calc(2 / 1.5);
+    --text-3xl: 1.875rem;
+    --text-3xl--line-height: calc(2.25 / 1.875);
     --text-4xl: 2.25rem;
     --text-4xl--line-height: calc(2.5 / 2.25);
     --text-5xl: 3rem;
@@ -199,6 +201,12 @@
   }
 }
 @layer utilities {
+  .m-4 {
+    margin: calc(var(--spacing) * 4);
+  }
+  .m-5 {
+    margin: calc(var(--spacing) * 5);
+  }
   .m-8 {
     margin: calc(var(--spacing) * 8);
   }
@@ -217,6 +225,12 @@
   .mt-4 {
     margin-top: calc(var(--spacing) * 4);
   }
+  .mt-5 {
+    margin-top: calc(var(--spacing) * 5);
+  }
+  .mt-6 {
+    margin-top: calc(var(--spacing) * 6);
+  }
   .mt-8 {
     margin-top: calc(var(--spacing) * 8);
   }
@@ -232,8 +246,14 @@
   .mr-1 {
     margin-right: var(--spacing);
   }
+  .mb-1 {
+    margin-bottom: var(--spacing);
+  }
   .mb-5 {
     margin-bottom: calc(var(--spacing) * 5);
+  }
+  .mb-6 {
+    margin-bottom: calc(var(--spacing) * 6);
   }
   .ml-1 {
     margin-left: var(--spacing);
@@ -342,6 +362,10 @@
     font-size: var(--text-2xl);
     line-height: var(--tw-leading, var(--text-2xl--line-height));
   }
+  .text-3xl {
+    font-size: var(--text-3xl);
+    line-height: var(--tw-leading, var(--text-3xl--line-height));
+  }
   .text-4xl {
     font-size: var(--text-4xl);
     line-height: var(--tw-leading, var(--text-4xl--line-height));
@@ -401,6 +425,9 @@
   }
   .text-gray-900 {
     color: var(--color-gray-900);
+  }
+  .italic {
+    font-style: italic;
   }
   .underline {
     text-decoration-line: underline;
@@ -493,6 +520,11 @@
   .sm\:\[grid-template-areas\:\'deer_title\'_\'deer_desc\'\] {
     @media (width >= 40rem) {
       grid-template-areas: 'deer title' 'deer desc';
+    }
+  }
+  .md\:m-8 {
+    @media (width >= 48rem) {
+      margin: calc(var(--spacing) * 8);
     }
   }
   .md\:mt-8 {

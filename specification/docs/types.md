@@ -42,7 +42,7 @@ A type that carries its own "is this actually valid?" check, for values that can
 
 ## Truthiness
 
-**Only `bool` and validator types have a presence check.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — use explicit comparisons:
+Implicit truthiness hides a decision — is `if my_int` checking for nonzero, or for "was this ever set"? Deor makes you write the comparison you actually mean. **Only `bool` and validator types have a presence check.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — use explicit comparisons:
 
 ```
 if len(my_list) > 0    # correct — explicit non-empty check
