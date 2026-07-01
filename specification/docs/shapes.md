@@ -1,6 +1,6 @@
 # Shapes
 
-A `shape` is a named type alias for a parameterized or named type. Shapes are the only way to use lists, function types, and named byte buffers in Deor — there is no anonymous inline syntax like `list of Room` outside of a shape declaration.
+A `shape` is a named type alias for a parameterized or named type. Shapes are the only way to use lists, function types, and named byte buffers in Deor — there is no anonymous inline syntax like `list of Room` outside of a shape declaration.  Shapes are effectively generics.
 
 ## Declaration
 

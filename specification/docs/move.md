@@ -128,4 +128,4 @@ The tradeoff: the original variable is gone after a move. If you need the value 
 
 Use `rust` blocks for the most performance-critical paths where even the transpiler layer is too much overhead.
 
-Two cases where `move` is always a no-op, regardless of the above: values of a `Copy` type (`int`/`float`/`bool`), and anything in a `return` statement. See the two sections above for why.
+Reminder: `move` is a no-op on `Copy` types (`int`/`float`/`bool`) and in `return` statements — see above.

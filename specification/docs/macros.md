@@ -71,7 +71,7 @@ If the macro only reads variables from the caller's scope without declaring any 
 
 ## Convention: Wrapping a Body With a Start/End Pair
 
-There's no dedicated syntax for wrapping arbitrary code between "before" and "after" snippets — just define two macros and call them in sequence. The `timer` macros (`transpiler-deor/macros/timer.deor`) are the standard example:
+There's no dedicated syntax for wrapping arbitrary code between "before" and "after" snippets — just define two macros and call them in sequence, like this:
 
 ```
 macro timer_start

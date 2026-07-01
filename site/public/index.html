@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description"
         content="Deor is a language for all, transpiled to Rust, as simple as Python and as readable as a book.">
     <meta property="og:title" content="Deor">
@@ -66,170 +67,137 @@
 
         img {
             image-rendering: pixelated;
-            width: 100px;
         }
     </style>
 </head>
 
 <body class="bg-gray-900">
-    <main class="max-w-5xl px-6 text-gray-100 mx-auto text-center">
-        <div class="flex gap-4 m-10 text-left">
-            <img src="reddeer.png" alt="Pixel art of a red deer, the Deor mascot" />
-            <div>
-                <h1 class="text-[60pt] font-serif">Deor</h1>
-                <p class="text-lg">A language for all, transpiled to Rust, as simple as Python, as readable as a Book
-                </p>
-            </div>
+    <main class="max-w-5xl px-6 text-gray-300 mx-auto text-center">
+        <div
+            class="grid grid-cols-[auto_1fr] items-start gap-x-4 [grid-template-areas:'deer_title'_'desc_desc'] sm:[grid-template-areas:'deer_title'_'deer_desc'] m-8 text-left">
+            <img src="reddeer.png" alt="Pixel art of a red deer, the Deor mascot"
+                class="w-16 sm:w-24 md:w-28 [grid-area:deer]" />
+            <h1 class="text-7xl font-serif [grid-area:title]">Deor</h1>
+            <p class="text-lg mt-4 sm:mt-0 [grid-area:desc]">A language for all, transpiled to Rust, as simple as
+                Python, as readable as a Book
+            </p>
         </div>
 
-        <p class="mx-auto">
+        <p>
             Learn more by reading the <a href=""
-                class="p-2 bg-gray-100 rounded-sm text-black ml-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">documentation</a>
+                class="block md:inline p-2 bg-gray-300 hover:bg-gray-100 rounded-sm text-black shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">Documentation</a>
         </p>
 
-        <p class="mt-8 mx-auto">
+        <p class="mt-2 md:mt-8">
             <a href=""
-                class="p-2 bg-gray-100 rounded-sm text-black mr-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">Getting
+                class="block md:inline p-2 bg-gray-300 hover:bg-gray-100 rounded-sm text-black shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">Getting
                 Started</a> is the place to go to get
             up and running.
         </p>
 
-        <div class="bg-gray-800 mt-10 rounded-3xl overflow-hidden shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)]">
+        <h2 class="mt-11 text-4xl font-serif">Pi Calculator Sample</h2>
+        <div class="bg-gray-800 mt-2 rounded-3xl overflow-hidden shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)]">
             <div class="text-left pt-8">
                 <button onclick="toggleComments()"
-                    class="text-left p-2 bg-gray-900 text-gray-100 rounded-sm text-black mr-1 ml-6">
+                    class="cursor-pointer text-left p-2 bg-gray-900 text-gray-100 rounded-sm text-black mr-1 ml-6">
                     Show Comments
                 </button> for readability
             </div>
-
-            <pre class="bg-gray-800 text-left max-h-0 overflow-hidden transition-all duration-3000">
+    
+    <pre class="bg-gray-800 text-left max-h-0 overflow-hidden transition-all duration-3000">
         <code class="language-deor">
-            import "lib/convert.deor"
-            import "lib/tasks.deor" where T = PiChunk
-
-            struct PiChunk
-                int min
-                int max
-                float value
-
-            type SmallPositive(int value)
-                value > 0 and value <= 16
-
-            type LargePositive(int value)
-                value > 0 and value <= 1_000_000
-
-            macro leibniz_iteration
-                is_even as (iter % 2 is 0)
-                decimal_iter as c_int_to_float(iter)
-                float denom = 1.0 + decimal_iter * 2.0
-
-                if is_even
-                    value = value + 1.0 / denom
-                else
-                    value = value - 1.0 / denom
-
-
-            fn PiChunk compute_pi_chunk(PiChunk chunk)
-                (min, max) in chunk
-
-                value as perform_liebniz_computation(min, max)
-                PiChunk chunk_with_value = (min, max, value)
-
-                return chunk_with_value
-
-
-            fn float perform_liebniz_computation(int start_iter, int end_iter)
-                float value = 0.0
-
-                # although quite unnecessary here, a macro can be helpful to divide up work
-                # with 0 concern of stack overflow and copying of values, they are best
-                # when used to break up heavily repeated code that is inside of loops
-                for iter in range(start_iter, end_iter)
-                    macro_run leibniz_iteration
-
-                return move value
-
-
-            fn piChunkList build_chunk(int max_iterations, int chunk_count)
-                piChunkList list_of_chunks = empty
-                float value = 0.0
-                current as 0
-
-                for if current < max_iterations
-                    current = current + chunk_count
-
-                    int max = current
-                    if max > max_iterations
-                        max = max_iterations
-
-                    min as current - chunk_count
-                    PiChunk chunk = (min, max, value)
-                    list_of_chunks at end = move chunk
-                
-                return list_of_chunks
-
-
-            fn int ask_for_threads()
-                
-                for if true
-                    print("How many thread-tasks would you like to run? (default 8)")
-                    (first) in input()
-
-                    SmallPositive threads = c_string_to_int(first)	
-                    
-                    if threads is valid
-                        return avow threads
-                    else
-                        print("Incorrect entry, must be >0 and the max is 16")
-
-
-            fn int ask_for_iterations()
-                
-                for if true
-                    print("How many thousands of iterations per thread? (default 1000): ")
-                    (first) in input()
-                    
-                    LargePositive iterations_per_thread = c_string_to_int(first)
-
-                    if iterations_per_thread is valid
-                        return avow iterations_per_thread
-                    else
-                        print("Incorrect entry, must be >0 and the max is 10 million - thousand")
-
-
-            fn float total_final_results(piChunkList results)
-                float net_value = 0.0
-                for res in results
-                    (min, max, value) in res
-                    net_value = net_value + value
-                
-                return net_value
-
-
-            fn void main()
-                
-                const int THOUSANDS = 1000
-                const float LIEBNIZ_COEFFICIENT = 4
-
-                threads as ask_for_threads()
-                iterations as ask_for_iterations()
-                iterations_per_thread as iterations * THOUSANDS
-
-                total_iterations as iterations_per_thread * threads
-                print("Performing " + c_int_to_string(total_iterations) + " iterations")
-                
-                # Multithreading operations
-                TaskPool pool = t_pool_make()
-                list_of_chunks as build_chunk(total_iterations, threads)
-                piChunkList results = t_pi_chunk_run_all(pool, list_of_chunks, compute_pi_chunk)
-                
-                net_value as total_final_results(move results)
-
-                float pi_value = LIEBNIZ_COEFFICIENT * net_value
-                print(pi_value)
-
-
-
+    import "lib/convert.deor"
+    import "lib/tasks.deor" where T = PiChun
+    struct PiChunk
+        int min
+        int max
+        float valu
+    type SmallPositive(int value)
+        value > 0 and value <= 1
+    type LargePositive(int value)
+        value > 0 and value <= 1_000_00
+    macro leibniz_iteration
+        is_even as (iter % 2 is 0)
+        decimal_iter as c_int_to_float(iter)
+        float denom = 1.0 + decimal_iter * 2.
+        if is_even
+            value = value + 1.0 / denom
+        else
+            value = value - 1.0 / deno
+    fn PiChunk compute_pi_chunk(PiChunk chunk)
+        (min, max) in chun
+        value as perform_liebniz_computation(min, max)
+        PiChunk chunk_with_value = (min, max, value
+        return chunk_with_valu
+    fn float perform_liebniz_computation(int start_iter, int end_iter)
+        float value = 0.
+        # although quite unnecessary here, a macro can be helpful to divide up work
+        # with 0 concern of stack overflow and copying of values, they are best
+        # when used to break up heavily repeated code that is inside of loops
+        for iter in range(start_iter, end_iter)
+            macro_run leibniz_iteratio
+        return move valu
+    fn piChunkList build_chunk(int max_iterations, int chunk_count)
+        piChunkList list_of_chunks = empty
+        float value = 0.0
+        current as 
+        for if current < max_iterations
+            current = current + chunk_coun
+            int max = current
+            if max > max_iterations
+                max = max_iteration
+            min as current - chunk_count
+            PiChunk chunk = (min, max, value)
+            list_of_chunks at end = move chunk
+        
+        return list_of_chunk
+    fn int ask_for_threads()
+        
+        for if true
+            print("How many thread-tasks would you like to run? (default 8)")
+            (first) in input(
+            SmallPositive threads = c_string_to_int(first)	
+            
+            if threads is valid
+                return avow threads
+            else
+                print("Incorrect entry, must be >0 and the max is 16"
+    fn int ask_for_iterations()
+        
+        for if true
+            print("How many thousands of iterations per thread? (default 1000): ")
+            (first) in input()
+            
+            LargePositive iterations_per_thread = c_string_to_int(first
+            if iterations_per_thread is valid
+                return avow iterations_per_thread
+            else
+                print("Incorrect entry, must be >0 and the max is 10 million - thousand"
+    fn float total_final_results(piChunkList results)
+        float net_value = 0.0
+        for res in results
+            (min, max, value) in res
+            net_value = net_value + value
+        
+        return net_valu
+    fn void main()
+        
+        const int THOUSANDS = 1000
+        const float LIEBNIZ_COEFFICIENT = 
+        threads as ask_for_threads()
+        iterations as ask_for_iterations()
+        iterations_per_thread as iterations * THOUSAND
+        total_iterations as iterations_per_thread * threads
+        print("Performing " + c_int_to_string(total_iterations) + " iterations")
+        
+        # Multithreading operations
+        TaskPool pool = t_pool_make()
+        list_of_chunks as build_chunk(total_iterations, threads)
+        piChunkList results = t_pi_chunk_run_all(pool, list_of_chunks, compute_pi_chunk)
+        
+        net_value as total_final_results(move results
+        float pi_value = LIEBNIZ_COEFFICIENT * net_value
+        print(pi_value
         </code>
         </pre>
         </div>

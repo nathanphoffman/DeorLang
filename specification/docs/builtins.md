@@ -62,26 +62,7 @@ Produces an integer sequence for use in `for` loops. Two forms:
 | `range(count)` | `0` through `count - 1` |
 | `range(start, end)` | `start` through `end - 1` (exclusive upper bound) |
 
-Deor:
-```
-for idx in range(10)
-    print(idx)
-
-for idx in range(3, 7)
-    print(idx)
-```
-
-Rust:
-```rust
-for idx in 0..10 {
-    println!("{}", idx);
-}
-for idx in 3..7 {
-    println!("{}", idx);
-}
-```
-
-`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned.
+`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned. See [Loops — Numeric Iteration](docs/loops.md#numeric-iteration) for the full `for` usage and Rust translation.
 
 ---
 

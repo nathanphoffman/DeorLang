@@ -3,17 +3,10 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 
 ---
 ## Naming Conventions
-- enums, structs, and custom types (type validators) MUST be PascalCase
-  - think structure = PascalCase
-  - the logic behind this is it stands out boldly, but blends together as boldness > readability
-- shapes must be camelCase
-  - think aliasing = camelCase
-  - the logic behind this is it stands out fairly well, but blends together as boldness = readability
-- variable and function names must be snake_case
-  - think runtime items = snake_case
-  - the logic behind this is that these are very important to be readable as readability > boldness
-- `const` variable names must be SCREAMING_SNAKE_CASE
-  - `const` signals a fixed, never-reassigned value — the casing makes constants instantly recognizable and matches their intent
+- enums, structs, and custom types (type validators) MUST be PascalCase — bold and structural, distinct from the code around it
+- shapes must be camelCase — aliasing, distinct but blends in more than PascalCase
+- variable and function names must be snake_case — the most common case, kept plain and readable
+- `const` variable names must be SCREAMING_SNAKE_CASE — signals a fixed, never-reassigned value at a glance
 ---
 ## Minimum Name Length — 3 Characters
 All identifiers must be at least 3 characters long. This applies to every named thing in Deor source: variables, function parameters, function names, struct names, validator type names, struct field names, and list names.
@@ -40,7 +33,7 @@ Imports are required to be at the top of a file, however there are no other rest
 ---
 ## Validator Type Predicate Required
 
-A `type` definition must have a predicate body. A type with no constraint adds no meaning over the base type — use the base type directly instead.
+The predicate body is mandatory — see [Types — Validator Types](docs/types.md#validator-types-type) for why.
 
 **Correct:**
 ```
@@ -291,9 +284,7 @@ A `raw` variable must be assigned from a `rust` block return value. Assigning a 
 **Correct:**
 ```
 raw index = rust
-    entries.iter()
-        .map(|e| (e.key.clone(), e.value.clone()))
-        .collect::<std::collections::HashMap<String, String>>()
+    build_lookup_table()
 
 string result = lookup(index, search_key)    # passing raw to a function that uses it in rust — ok
 ```

@@ -110,38 +110,7 @@ The transpiler matches fields by name — order does not matter. Mirrors destruc
 
 ### Struct Construction as an Expression
 
-`(fields)` can also appear as a bare expression in return position. The transpiler resolves the struct type by matching the field names against all known structs — no type annotation is needed because the function's return type already determines which struct is expected.
-
-```
-struct DivResult
-    int quotient
-    int remainder
-
-fn DivResult divmod(int lft, int rgt)
-    int quotient = lft / rgt
-    int remainder = lft % rgt
-    return (quotient, remainder)
-```
-
-```rust
-fn divmod(lft: i64, rgt: i64) -> DivResult {
-    let quotient = lft / rgt;
-    let remainder = lft % rgt;
-    return DivResult { quotient, remainder };
-}
-```
-
-This is equivalent to assigning to an intermediate variable and returning it — just more concise:
-
-```
-fn DivResult divmod(int a, int b)
-    int quotient = a / b
-    int remainder = a % b
-    DivResult result = (quotient, remainder)   # equivalent
-    return result
-```
-
-`(fields)` as a bare expression is also valid in return position — the function's declared return type resolves the struct.
+`(fields)` can also appear as a bare expression in return position — no type annotation needed, since the function's declared return type already determines which struct is expected. See [Functions — Multiple return values](docs/functions.md#multiple-return-values) for the full worked example (`DivResult`/`divmod`).
 
 If you need a field name that differs from the variable you have, rename it first:
 
@@ -181,15 +150,7 @@ Roll best
 let mut best: Option<Roll> = None;
 ```
 
-List shapes use `empty` to initialize — `[]` is a transpiler error:
-
-```
-roomList rooms = empty
-```
-
-```rust
-let mut rooms: Vec<Room> = Vec::new();
-```
+(List shapes use `empty` the same way — see [List Construction](#list-construction) above.)
 
 ### Reassignment
 

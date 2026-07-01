@@ -35,8 +35,6 @@
 
 [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded
 
-[Roadmap](docs/roadmap.md) — deferred features
-
 [Rust Interop](docs/interop.md) — `rust` blocks, `raw` variables, external `.rs` files
 
 [Shapes](docs/shapes.md) — `shape`, list shapes, func shapes, naming, file ordering

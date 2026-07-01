@@ -188,15 +188,7 @@ Roll best = empty    # transpiler error — empty is not valid for validator typ
 Roll best            # correct — starts as not valid
 ```
 
-List shapes use `empty` to initialize — `[]` is a transpiler error:
-
-```
-roomList rooms = empty
-```
-
-```rust
-let mut rooms: Vec<Room> = Vec::new();
-```
+List shapes use `empty` instead — see [Variables — List Construction](docs/variables.md#list-construction).
 
 ---
 
