@@ -10,7 +10,7 @@
 - **Simple** - structs are immutable, variables and lists are mutable, everything is safely cloned
 - **Uniform Composition** - destructuring order must match, functions limited to 3 parameters
 - **Flat Structure** - no namespacing, nested fns, or closures
-- **Easy Exception Handling** - validator types with `valid`/`not valid` replace Rust's `Option`/`Some`/`None` pattern
+- **Easy Exception Handling** - validator types with `valid`/`not valid` replace Rust's `Option`/`Some`/`None` pattern (and C's null/sentinel conventions) — see [Validator Types](docs/validator_types.md#replacing-null-and-undefined)
 
 ---
 

@@ -87,7 +87,7 @@ if sqft is not valid
     print("no value")
 ```
 
-This is Deor's only concept of null — every validator type defines exactly what makes a value invalid, and the predicate makes that constraint explicit and enforced.
+This is Deor's only concept of null — see [Replacing Null and Undefined](#replacing-null-and-undefined) for the pattern and why.
 
 ---
 
@@ -113,6 +113,38 @@ Roll best            # correct — starts as not valid
 ```
 
 List shapes use `empty` instead — see [Variables — List Construction](docs/variables.md#list-construction).
+
+---
+
+## Replacing Null and Undefined
+
+Older, C-style code marks "this might not be set" with a comment and a sentinel — a `-1`, a `NULL`, a `0` that quietly means "unset" — enforced by nothing but the reader remembering. Rust replaces that with `Option<T>`, fully enforced but asking you to learn and thread pattern-matching through code that, most of the time, never needed to hold "nothing" at all. Deor sits in between: most values can't be missing at all, and the rare ones that can require naming the concept as a `type` and writing its invalidity rule as real, checked code — the C comment, formalized, without Rust's full `Option` machinery.
+
+There are two ways to use a validator type for this. Pick one interpretation per type — a real project wouldn't declare `ValidInt` both ways.
+
+**Nothing means "not set yet"** — the predicate accepts anything, so the only way to be not valid is to never assign it:
+
+```
+type ValidInt(int val)
+    true
+
+ValidInt score          # not valid — nothing assigned, i.e. "null"
+ValidInt score = 42     # valid — any int satisfies the predicate
+```
+
+`true` isn't a no-op here — it says "any assigned value is fine, only *absence* matters," leaning entirely on the declare-without-a-value mechanic above.
+
+**A sentinel means "missing"** — the predicate itself rules out the value that stands for "nothing":
+
+```
+type ValidInt(int val)
+    val is not 0
+
+ValidInt count = 0      # not valid — 0 means "no count"
+ValidInt count = 5      # valid
+```
+
+**Note:** It is always ideal to avoid making a generic validator type like this, as most types do have actual names like Temperature, which do have valid numbers they can't be (and are not always true), but for the rare case you actually need a generic nullable-ish type, this is the way to do it.
 
 ---
 

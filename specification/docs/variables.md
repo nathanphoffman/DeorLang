@@ -138,6 +138,8 @@ let mut best: Option<Roll> = None;
 
 (List shapes use `empty` the same way — see [List Construction](#list-construction) above.)
 
+This is how Deor represents an absent value without a `null`/`undefined` keyword — see [Validator Types — Replacing Null and Undefined](docs/validator_types.md#replacing-null-and-undefined).
+
 ### Reassignment
 
 Reassigning a validator type re-runs the predicate. The variable may transition between valid and not valid.
