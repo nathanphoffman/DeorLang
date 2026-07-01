@@ -133,3 +133,50 @@ fn describe(color: ColorTag) -> String {
     return "other".to_string();
 }
 ```
+
+---
+
+## Typed Enums (Value-Backed)
+
+Sometimes a set of named variants each needs a real backing value — an HTTP status, a priority level with actual ordering. `enum string/int/float/bool Name` gives each variant a literal value of that type, one per line as `Variant = value`:
+
+Deor:
+```
+enum string Color
+    Red = "Red"
+    Green = "Green"
+    Blue = "Blue"
+
+enum int Priority
+    Low = 1
+    Medium = 2
+    High = 3
+```
+
+A typed enum has no Rust type behind it at all — it's resolved entirely at compile time. Instead of assigning a variable of that type, you pull a variant's value straight out with `(Variant) in EnumName`, the same destructuring syntax used for structs:
+
+Deor:
+```
+(Red) in Color
+print(Red)
+
+(Low, High) in Priority
+int range = High - Low
+```
+
+Rust:
+```rust
+let Red: String = "Red".to_string();
+
+let Low: i64 = 1;
+let High: i64 = 3;
+let range: i64 = High - Low;
+```
+
+`Red`, `Low`, and `High` come out as plain `string`/`int` variables, so `High - Low` above is ordinary integer subtraction — not enum comparison.
+
+Variant naming rules match untyped enums (PascalCase, 3+ characters), but the `= value` requirement flips: a typed enum variant **must** have `= value`; an untyped variant **must not**, and can never carry data (`Variant(...)` is a transpiler error either way).
+
+A typed enum's name isn't a usable type anywhere else — no Rust enum is generated for it, so there's no `Color background = Red` and no `fn void thing(Color c)`. The only thing you can do with one is extract variant values via `(Variant) in EnumName`.
+
+**Conversion notes:** the `enum` declaration itself emits nothing in the generated Rust. Extraction becomes a plain `let` binding with the literal value already filled in — `.to_string()` for `string`-backed enums, a raw literal for `int`/`float`/`bool`.

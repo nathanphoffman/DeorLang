@@ -1,21 +1,23 @@
+import "lib/string.deor"
+
 shape intList = list of int
-shape strList = list of string
+shape wordList = list of string
 
 fn int sum_list(intList nums)
 	total as 0
-	int n = len(nums)
-	for i in range(n)
-		int val = nums at i
+	int cnt = len(nums)
+	for idx in range(cnt)
+		int val = nums at idx
 		total = total + val
 	return total
 
-fn string join_two(string a, string b)
-	return a + " " + b
+fn string join_two(string word_a, string word_b)
+	return word_a + " " + word_b
 
-fn main()
+fn void main()
 	intList scores = [10, 20, 30]
-	int n = len(scores)
-	print(n)
+	int cnt = len(scores)
+	print(cnt)
 
 	int first = scores at 0
 	print(first)
@@ -43,12 +45,26 @@ fn main()
 	string line = "fn " + "main" + "()"
 	print(line)
 
-	strList words = ["foo", "bar", "baz"]
-	string w = words at 1
-	print(w)
+	wordList words = ["foo", "bar", "baz"]
+	string word = words at 1
+	print(word)
 
-	bool found = contains(w, "a")
+	string needle = "a"
+	bool found = s_contains(word, needle)
 	print(found)
 
-	string up = to_upper(w)
-	print(up)
+	string upper_word = s_to_upper(word)
+	print(upper_word)
+
+# expect:
+# 3
+# 10
+# 99
+# 149
+# 4
+# 3
+# hello world
+# fn main()
+# bar
+# true
+# BAR

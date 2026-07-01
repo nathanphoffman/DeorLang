@@ -22,3 +22,9 @@ fn void main()
     int range = High - Low
     string range_str = c_int_to_string(range)
     print(range_str)
+
+# expect:
+# Red
+# Green
+# Blue
+# 2

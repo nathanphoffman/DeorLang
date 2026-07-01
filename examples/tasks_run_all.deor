@@ -39,8 +39,15 @@ fn void main()
 	scoreList results = t_score_run_all(pool, jobs, worker)
 
 	int count = len(results)
+	print(count)
+
+	int total_points = 0
 	for idx in range(count)
 		Score res = results at idx
-		(label, points) in res
-		print(label)
-		print(points)
+		(points) in res
+		total_points = total_points + points
+	print(total_points)
+
+# expect:
+# 3
+# 84

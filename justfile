@@ -44,3 +44,8 @@ run-splash:
 sync-setup:
     cp output/out.rs setup/out.rs
 
+test-examples:
+    DEOR_LIB=lib ./output/out tests/run_examples.deor output/test_runner.rs
+    rustc -O output/test_runner.rs -o output/test_runner
+    ./output/test_runner
+

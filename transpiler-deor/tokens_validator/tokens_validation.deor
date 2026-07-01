@@ -164,6 +164,9 @@ fn void validate_tokens(TokensRef tokens)
 				macro_run check_call_args
 			macro_run check_rust_generic
 			macro_run check_raw_in_binding
+			macro_run check_raw_reassign
+			macro_run check_raw_operator_use
+			macro_run check_raw_in_special_builtin
 			macro_run check_const_reassign
 			macro_run check_validator_reassign
 			macro_run check_var_decl

@@ -1,0 +1,40 @@
+
+# Flags a raw variable used inside the argument span of the builtins that get
+# type-assuming codegen instead of a plain pass-through function call: len(...)
+# (assumes a `.len()` method + numeric cast), crash(...) (assumes Display for
+# panic!), and the bracket-literal form of s_join([...]) (assumes concatenation).
+# Ordinary function calls (Deor or lib) aren't checked here — raw values are
+# meant to pass through those untouched, with Rust's own compiler as the guard.
+macro check_raw_in_special_builtin
+	if cur_kind is "IDENT"
+		bool rsb_is_len = cur_val is "len"
+		bool rsb_is_crash = cur_val is "crash"
+		bool rsb_is_sjoin = cur_val is "s_join"
+		bool rsb_is_target = rsb_is_len or rsb_is_crash or rsb_is_sjoin
+		if rsb_is_target
+			int rsb_lp = pos + 1
+			if rsb_lp < token_count
+				Token rsb_lp_tok = tokens at rsb_lp
+				(kind) in rsb_lp_tok
+				if kind is "LPAREN"
+					int rsb_scan = rsb_lp + 1
+					int rsb_depth = 0
+					for if rsb_scan < token_count
+						Token rsb_tok = tokens at rsb_scan
+						(kind, value) in rsb_tok
+						if kind is "RPAREN"
+							bool rsb_root = rsb_depth is 0
+							if rsb_root
+								break
+							rsb_depth = rsb_depth - 1
+						else if kind is "LPAREN"
+							rsb_depth = rsb_depth + 1
+						else if kind is "LBRACKET"
+							rsb_depth = rsb_depth + 1
+						else if kind is "RBRACKET"
+							rsb_depth = rsb_depth - 1
+						else if kind is "IDENT"
+							bool rsb_is_raw = list_has(raw_var_names, value)
+							if rsb_is_raw
+								errors at end = val_err(rsb_tok, lbl_var, rule_raw_in_expr)
+						rsb_scan = rsb_scan + 1

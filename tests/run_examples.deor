@@ -1,0 +1,260 @@
+import "lib/file.deor"
+import "lib/string.deor"
+import "lib/convert.deor"
+
+# Test runner for examples/*.deor. Each example declares what it expects in a
+# trailing comment block:
+#   # expect:        — program should run cleanly; lines after this are the
+#                       exact expected stdout, one Deor comment line each.
+#   # expect-error:   — transpiling should FAIL; lines after this are required
+#                       substrings that must all appear in the transpiler's output.
+#   # expect-panic:   — program should compile but panic at runtime; lines
+#                       after this are required substrings in the crash output.
+#   # stdin:          — optional, precedes the expect block; lines fed to the
+#                       program's stdin (for examples using input()).
+# Actual process spawning (transpile / rustc / run, each under a timeout) is
+# done in a rust block; this file's job is orchestration and comparison.
+
+struct ParsedSpec
+	string mode
+	string stdin_data
+	string expected
+
+struct RunResult
+	int exit_code
+	string stdout_text
+	string stderr_text
+
+struct ProcSpec
+	string program
+	stringList args
+	string stdin_data
+	bool set_lib_env
+	int timeout_secs
+
+rust
+	use std::process::{Command, Stdio};
+	use std::io::{Read, Write};
+	use std::time::{Duration, Instant};
+
+	fn run_cmd_timeout(mut cmd: Command, stdin_data: &str, timeout_secs: u64) -> (i64, String, String) {
+		cmd.stdin(Stdio::piped());
+		cmd.stdout(Stdio::piped());
+		cmd.stderr(Stdio::piped());
+		let mut child = match cmd.spawn() {
+			Ok(c) => c,
+			Err(e) => return (-1, String::new(), format!("failed to spawn: {}", e)),
+		};
+		if let Some(mut stdin) = child.stdin.take() {
+			let _ = stdin.write_all(stdin_data.as_bytes());
+		}
+		let start = Instant::now();
+		let mut exit_code: i64 = -9;
+		loop {
+			match child.try_wait() {
+				Ok(Some(status)) => { exit_code = status.code().unwrap_or(-1) as i64; break; }
+				Ok(None) => {
+					if start.elapsed() > Duration::from_secs(timeout_secs) {
+						let _ = child.kill();
+						let _ = child.wait();
+						exit_code = -9;
+						break;
+					}
+					std::thread::sleep(Duration::from_millis(50));
+				}
+				Err(_) => { exit_code = -1; break; }
+			}
+		}
+		let mut stdout_s = String::new();
+		let mut stderr_s = String::new();
+		if let Some(mut out) = child.stdout.take() { let _ = out.read_to_string(&mut stdout_s); }
+		if let Some(mut err) = child.stderr.take() { let _ = err.read_to_string(&mut stderr_s); }
+		(exit_code, stdout_s, stderr_s)
+	}
+
+# Reads examples/*.deor, sorted, skipping subdirectories (e.g. cargo_test).
+fn stringList list_deor_files(string dir)
+	rust
+		{
+			let mut v: Vec<String> = std::fs::read_dir(&dir)
+				.map(|rd| rd.filter_map(|e| e.ok())
+					.map(|e| e.path())
+					.filter(|p| p.extension().map(|s| s == "deor").unwrap_or(false))
+					.map(|p| p.to_string_lossy().to_string())
+					.collect())
+				.unwrap_or_default();
+			v.sort();
+			v
+		}
+
+# Extracts the # stdin: / # expect: / # expect-error: / # expect-panic: block
+# from a raw source file, before it's ever tokenized.
+fn ParsedSpec parse_spec(string source)
+	rust
+		{
+			let lines: Vec<&str> = source.lines().collect();
+			let mut mode = "skip".to_string();
+			let mut stdin_lines: Vec<String> = Vec::new();
+			let mut expected_lines: Vec<String> = Vec::new();
+			let mut i = 0;
+			while i < lines.len() {
+				let t = lines[i].trim();
+				if t == "# stdin:" {
+					i += 1;
+					while i < lines.len() {
+						let lt = lines[i].trim_start();
+						if let Some(rest) = lt.strip_prefix("# ") {
+							stdin_lines.push(rest.to_string());
+							i += 1;
+						} else {
+							break;
+						}
+					}
+					continue;
+				}
+				if t == "# expect:" || t == "# expect-error:" || t == "# expect-panic:" {
+					mode = if t == "# expect:" { "run".to_string() }
+						else if t == "# expect-error:" { "error".to_string() }
+						else { "panic".to_string() };
+					i += 1;
+					while i < lines.len() {
+						let lt = lines[i].trim_start();
+						if let Some(rest) = lt.strip_prefix("# ") {
+							expected_lines.push(rest.to_string());
+							i += 1;
+						} else {
+							break;
+						}
+					}
+					continue;
+				}
+				i += 1;
+			}
+			let mut stdin_data = stdin_lines.join("\n");
+			if !stdin_data.is_empty() { stdin_data.push('\n'); }
+			ParsedSpec { mode, stdin_data, expected: expected_lines.join("\n") }
+		}
+
+fn string basename_no_ext(string path)
+	rust
+		std::path::Path::new(&path).file_stem().map(|s| s.to_string_lossy().to_string()).unwrap_or_default()
+
+fn void ensure_scratch_dir()
+	rust
+		{
+			let _ = std::fs::create_dir_all("output/test_scratch");
+		}
+
+fn RunResult run_process(ProcSpec spec)
+	(program, args, stdin_data, set_lib_env, timeout_secs) in spec
+	rust
+		{
+			let mut cmd = Command::new(&program);
+			for a in args.iter() { cmd.arg(a); }
+			if set_lib_env { cmd.env("DEOR_LIB", "lib"); }
+			let (exit_code, stdout_text, stderr_text) = run_cmd_timeout(cmd, &stdin_data, timeout_secs as u64);
+			RunResult { exit_code, stdout_text, stderr_text }
+		}
+
+fn bool contains_all(string haystack, string needles_joined)
+	rust
+		needles_joined.lines().all(|n| haystack.contains(n))
+
+fn bool run_one(string path, ParsedSpec spec)
+	(mode, stdin_data, expected) in spec
+	string real_stdin = stdin_data
+	string base = basename_no_ext(path)
+	ensure_scratch_dir()
+	string rs_path = s_join(["output/test_scratch/", base, ".rs"])
+	string bin_path = s_join(["output/test_scratch/", base, "_bin"])
+
+	string program = "./output/out"
+	stringList args = [path, rs_path]
+	string stdin_data = ""
+	bool set_lib_env = true
+	int timeout_secs = 30
+	ProcSpec transpile_spec = (program, args, stdin_data, set_lib_env, timeout_secs)
+	RunResult transpile_res = run_process(transpile_spec)
+	(exit_code, stdout_text, stderr_text) in transpile_res
+	string transpile_combined = s_join([stdout_text, stderr_text])
+	int transpile_exit = exit_code
+
+	if mode is "error"
+		bool transpile_failed = transpile_exit is not 0
+		bool has_all = contains_all(transpile_combined, expected)
+		bool result_ok = transpile_failed and has_all
+		if not result_ok
+			string exit_str = c_int_to_string(transpile_exit)
+			print(s_join(["  expected transpile failure containing:\n", expected, "\n  got (exit ", exit_str, "):\n", transpile_combined]))
+		return result_ok
+
+	if transpile_exit is not 0
+		print(s_join(["  unexpected transpile failure:\n", transpile_combined]))
+		return false
+
+	string program = "rustc"
+	stringList args = ["-O", rs_path, "-o", bin_path]
+	bool set_lib_env = false
+	int timeout_secs = 60
+	ProcSpec rustc_spec = (program, args, stdin_data, set_lib_env, timeout_secs)
+	RunResult rustc_res = run_process(rustc_spec)
+	(exit_code, stdout_text, stderr_text) in rustc_res
+	if exit_code is not 0
+		print(s_join(["  rustc failed:\n", stderr_text]))
+		return false
+
+	string program = bin_path
+	stringList args = empty
+	string stdin_data = real_stdin
+	int timeout_secs = 10
+	ProcSpec run_spec = (program, args, stdin_data, set_lib_env, timeout_secs)
+	RunResult run_res = run_process(run_spec)
+	(exit_code, stdout_text, stderr_text) in run_res
+	string run_combined = s_join([stdout_text, stderr_text])
+
+	if mode is "panic"
+		bool crashed = exit_code is not 0
+		bool has_all = contains_all(run_combined, expected)
+		bool result_ok = crashed and has_all
+		if not result_ok
+			string exit_str = c_int_to_string(exit_code)
+			print(s_join(["  expected panic containing:\n", expected, "\n  got (exit ", exit_str, "):\n", run_combined]))
+		return result_ok
+
+	string actual_trimmed = s_trim(stdout_text)
+	string expected_trimmed = s_trim(expected)
+	bool matched = actual_trimmed is expected_trimmed
+	bool clean_exit = exit_code is 0
+	bool result_ok = matched and clean_exit
+	if not result_ok
+		string exit_str = c_int_to_string(exit_code)
+		print(s_join(["  expected stdout:\n", expected_trimmed, "\n  got (exit ", exit_str, "):\n", actual_trimmed]))
+	return result_ok
+
+fn void main()
+	stringList files = list_deor_files("examples")
+	int total = len(files)
+	int passed = 0
+	int failed = 0
+	int skipped = 0
+	for idx in range(total)
+		string path = files at idx
+		string source = f_read(path)
+		ParsedSpec spec = parse_spec(source)
+		(mode) in spec
+		if mode is "skip"
+			skipped = skipped + 1
+			print(s_join(["[skip] ", path]))
+		else
+			bool result_ok = run_one(path, spec)
+			if result_ok
+				passed = passed + 1
+				print(s_join(["[pass] ", path]))
+			else
+				failed = failed + 1
+				print(s_join(["[fail] ", path]))
+
+	print(s_join(["passed: ", c_int_to_string(passed), "  failed: ", c_int_to_string(failed), "  skipped: ", c_int_to_string(skipped)]))
+	if failed > 0
+		rust
+			std::process::exit(1);

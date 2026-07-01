@@ -9,3 +9,6 @@ fn void main()
 		print(second)
 		print("City:")
 		print(third)
+
+# expect:
+# usage: args_example <name> <age> <city>

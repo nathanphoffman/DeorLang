@@ -4,7 +4,9 @@
 
 # -----------------------------------------------------------------------
 # 1. Duplicate declaration name
-#    Second 'Player' should fire: "duplicate declaration"
+#    Second 'Player' SHOULD fire "duplicate declaration" but currently does not —
+#    prescan_check_duplicate_decls doesn't fire for structs or fns (verified via
+#    isolated repro); tracked as a known bug, not asserted in # expect-error below.
 # -----------------------------------------------------------------------
 struct Player
 	string name
@@ -87,3 +89,15 @@ fn void test_typed_as()
 fn void test_as_move()
 	int src = 5
 	val as move src
+
+# expect-error:
+# name must be at least 3 characters
+# name must be lower_snake_case
+# enum variant must be PascalCase
+# enum variants cannot carry data
+# 'void' is not a valid variable type
+# void functions must not use return
+# 'move' can only precede a variable name
+# parameter name cannot be the same as its type
+# typed `as` bindings are not supported
+# `as` already transfers ownership

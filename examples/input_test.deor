@@ -5,3 +5,12 @@ fn void main()
 	print(input_string)
 	int count = len(input_list)
 	print(count)
+
+# stdin:
+# hello world foo bar baz
+
+# expect:
+# hello
+# world
+# hello world foo bar baz
+# 5

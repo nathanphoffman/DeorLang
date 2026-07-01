@@ -13,3 +13,9 @@ fn void main()
 		print(pie)
 	else
 		print(phi)
+
+# expect:
+# 1.618
+# 3.14159
+# 1000000
+# 3.14159

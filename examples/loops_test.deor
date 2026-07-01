@@ -1,36 +1,44 @@
-fn int sum_to(int n)
+fn int sum_to(int num)
 
 	total as 0
-	for i in range(n)
-		total = total + i
+	for idx in range(num)
+		total = total + idx
 
 	return total
 
-fn int sum_range(int start, int end)
+fn int sum_range(int start, int stop)
 
 	total as 0
-	for i in (start, end)
-		total = total + i
+	for idx in (start, stop)
+		total = total + idx
 
 	return total
 
-fn int count_down(int n)
+fn int count_down(int num)
 	result as 0
-	for i in range(n)
-		if i < 2
+	for idx in range(num)
+		if idx < 2
 			continue
-		result = result + i
+		result = result + idx
 	return result
 
-fn main()
-	int s = sum_to(5)
-	print(s)
-	int r = sum_range(3, 7)
-	print(r)
-	int d = count_down(5)
-	print(d)
+fn void main()
+	int total1 = sum_to(5)
+	print(total1)
+	int range_start = 3
+	int range_end = 7
+	int total2 = sum_range(range_start, range_end)
+	print(total2)
+	int total3 = count_down(5)
+	print(total3)
 	flag as true
 	if not flag
 		print("no")
 	else
 		print("yes")
+
+# expect:
+# 10
+# 18
+# 9
+# yes

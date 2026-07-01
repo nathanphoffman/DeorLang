@@ -60,13 +60,11 @@ See [Struct Construction](#struct-construction) below for full details and the e
 
 - **Validator type bindings** — `as` can't tell whether you want a plain `int` or a `Squarefeet` validator (predicate run, `Option<T>` result); use explicit `ValidatorType name = value` instead — see [Validator Type Bindings](#validator-type-bindings) below.
 - **Type annotation** — `as` never takes an explicit type prefix.
-- **Variable copying** — `as` requires a literal, `[items]`, or `(fields)` on the right, not a bare variable name.
 - **Move transfer** — `as` already produces an owned binding, so combining it with `move` is redundant and rejected.
 
 ```
 area as 9             # transpiler error — int or Squarefeet? use Squarefeet area = 9
 int count as 0        # transpiler error — annotation not allowed with as; use int count = 0
-copy as original      # transpiler error — not a structural RHS; use Room copy = original
 a as move b           # transpiler error — as already transfers ownership
 ```
 

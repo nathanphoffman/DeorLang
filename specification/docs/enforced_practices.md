@@ -76,22 +76,14 @@ PIPE = "/"              # transpiler error — cannot reassign a const variable
 Use a plain typed binding (`string pipe = "|"`) if you need a variable that may change.
 
 ---
-## `as` — No Type Annotation, No Variable Rebinding
+## `as` — No Type Annotation
 
-`as` is the type-inferring binding form. Two things are always transpiler errors with `as`:
-
-**Type annotation with `as`:** when you have an explicit type, use `=` instead.
+`as` is the type-inferring binding form. Pairing it with an explicit type is always a transpiler error — when you have an explicit type, use `=` instead.
 
 ```
 count as 0          # correct — int inferred
 int count as 0      # transpiler error — annotation not allowed with as
 int count = 0       # correct
-```
-
-**Rebinding from an existing variable:** `as` requires a structural RHS — a scalar literal, `(fields)`, `[items]`, or `name with field`. Pointing it at a plain variable name is not a structural form.
-
-```
-copy as original    # transpiler error — use Type name = original
 ```
 
 ---
@@ -277,23 +269,36 @@ fn string describe(int val)
 Move all helper functions to the top level of the file and call them by name.
 
 ---
-## `raw` — Assigned from `rust` Blocks Only
+## `raw` — Opaque Values Deor Doesn't Type-Check
 
-A `raw` variable must be assigned from a `rust` block return value. Assigning a `raw` variable from a Deor expression is a transpiler error. Consuming a `raw` variable outside a `rust` block is a transpiler error. A `raw` variable cannot be declared as a struct field.
+A `raw` variable holds a value whose real type Deor doesn't know or track — only Rust does. `raw name = expr` accepts any expression, including a call to a function that returns a `rust`-block-backed value. Once declared, a raw variable can be passed to functions (as an argument, or captured from what they return) and used freely inside `rust` blocks. It can never be:
+
+- given a different type via a typed binding or an `as` rebind
+- reassigned
+- used as an operand of a Deor operator (`+`, `is`, `and`, ...)
+- passed to `len`, `crash`, or the bracket-literal form of `s_join` — these assume a concrete type
+- declared as a struct field
+
+Each of the above is a transpiler error. Passing a raw variable into an ordinary function call is fine — Rust's own compiler is what checks that value is used correctly there.
 
 **Correct:**
 ```
-raw index = rust
-    build_lookup_table()
+fn LookupTable build_lookup_table()
+    rust
+        ...
 
-string result = lookup(index, search_key)    # passing raw to a function that uses it in rust — ok
+fn void run()
+    raw index = build_lookup_table()
+    string result = lookup(index, search_key)    # passing raw to a function — ok
 ```
 
 **Incorrect — transpiler errors:**
 ```
-raw index = some_list           # raw must come from a rust block
-string val = index              # raw cannot be used in a Deor expression
-int cnt = len(index)            # len does not accept raw
+string val = index              # raw cannot be given another type
+copy as index                   # as-rebinding is still a type capture
+index = build_lookup_table()    # raw cannot be reassigned
+int cnt = len(index)            # len assumes a concrete type
+int total = index + 1           # operators assume a concrete type
 
 struct Config
     raw lookup_table            # raw cannot be a struct field

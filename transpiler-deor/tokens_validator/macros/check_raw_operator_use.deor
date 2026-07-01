@@ -1,0 +1,24 @@
+
+# Flags a raw variable used as either operand of a binary operator. Arithmetic,
+# comparison, `is`/`is not`, and `and`/`or` codegen all assume a known concrete
+# type on both sides — raw variables by definition don't have one in Deor's eyes.
+# Operator kind list mirrors is_binary_op in codegen/decl/stmt/expr/expr.deor.
+macro check_raw_operator_use
+	if cur_kind is "IDENT"
+		bool rop_is_raw = list_has(raw_var_names, cur_val)
+		if rop_is_raw
+			strList rop_op_kinds = ["PLUS", "MINUS", "STAR", "SLASH", "PERCENT", "GT", "LT", "GTE", "LTE", "KW_IS", "KW_AND", "KW_OR"]
+			bool rop_next_is_op = false
+			int rop_next_pos = pos + 1
+			if rop_next_pos < token_count
+				Token rop_next_tok = tokens at rop_next_pos
+				(kind) in rop_next_tok
+				rop_next_is_op = list_has(rop_op_kinds, kind)
+			bool rop_prev_is_op = false
+			if pos > 0
+				int rop_prev_pos = pos - 1
+				Token rop_prev_tok = tokens at rop_prev_pos
+				(kind) in rop_prev_tok
+				rop_prev_is_op = list_has(rop_op_kinds, kind)
+			if rop_next_is_op or rop_prev_is_op
+				errors at end = val_err(tok, lbl_var, rule_raw_in_expr)

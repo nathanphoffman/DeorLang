@@ -6,7 +6,39 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 # Add to best practices:
 - Spacing can be used between functions (double return)  -- no function should be less than 2 extra spaces away (3 returns) from each other or other blocks.  All other blocks are 1 extra space
 
+## New Audit
 
+ Major — docs describe validation that doesn't exist
+
+
+  Working On: 2. raw rules in enforced_practices.md are overstated, and its own example contradicts the rule. Only two checks exist: check_raw_assignment (must come from a
+  rust block) and check_raw_in_binding (catches string val = raw_var, a typed binding only). The doc claims "consuming a raw variable outside a rust block is a
+  transpiler error" and lists int cnt = len(index) as an error case — but passing a raw var as a function argument or into len() isn't checked at all. Worse, the
+  doc's own "Correct" example passes index into lookup(index, search_key) — a plain function call outside a rust block — and calls it fine, directly undercutting
+  the rule stated two lines above it.
+
+
+  Needs to be worked:
+
+   3. "No nested functions" is not transpiler-validated. enforced_practices.md calls this a transpiler error; there's no validator for it. A nested fn would only
+  fail later at rustc, so the doc mislabels which stage catches it. -- Fix: Add a validator check to this in token validation (if it belongs there)
+
+  4. validator_types.md's "literal predicate failure" section is wrong about when the check happens. It shows Squarefeet area = -1 as a compile-time error. In
+  reality (tb_validator.deor), codegen just emits Squarefeet::new(-1) returning Option<Squarefeet> — the predicate runs at runtime, not transpile time. As written,
+  the doc would lead someone to expect a build failure that won't happen.
+  
+  5. strings.md: "mixed string/int + is a transpiler error" — no such type-checking exists anywhere in the validators; not enforced.
+
+  Minor
+
+  - builtins.md:144 says input_list has type strList — the actual type used everywhere in lib/ is stringList. Isolated typo, not a systemic rename miss.
+  - syntax.md lists crash as a reserved keyword; it's actually just a regular builtin function name (no KW_CRASH in the lexer), just with special arg-count
+  validation.
+  - none is a real blocked identifier (lexer rejects it as a keyword) but isn't mentioned in any doc.
+  - shapes.md/validator_types.md don't mention that struct-field validation only checks for func-shape fields — an invalid/undefined type name in a struct field
+  silently passes the prescan and only errors later at codegen, which could be confusing to debug.
+  - examples.md, experimental.md, shims.md are still 3-line stubs (examples.md = "Coming soon", experimental.md = empty, shims.md just redirects to libs.md) —
+  matches what roadmap.md already tracks as unfinished.
 
 
 

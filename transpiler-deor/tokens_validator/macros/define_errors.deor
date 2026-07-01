@@ -51,8 +51,8 @@ macro define_errors
 	string rule_validator_reassign = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate"
 
 	# raw rules
-	string rule_raw_assignment = "raw variables must be assigned from a rust block — use 'raw name = rust ...'"
-	string rule_raw_in_expr = "raw variables cannot be used in Deor expressions — consume them inside a rust block"
+	string rule_raw_in_expr = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block"
+	string rule_raw_reassign = "raw variables cannot be reassigned — declare a new 'raw name = expr' instead"
 
 	# struct field rules
 	string rule_no_func_field = "func shapes cannot be struct fields — pass the func shape as a function parameter instead"

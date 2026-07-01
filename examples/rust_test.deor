@@ -1,14 +1,21 @@
-fn int add_raw(int a, int b)
+fn int add_raw(int num_a, int num_b)
 	rust
-		a + b
+		num_a + num_b
 
-fn string repeat_str(string s, int n)
+fn string repeat_str(string text, int count)
 	rust
-		s.repeat(n as usize)
+		text.repeat(count as usize)
 
-fn main()
-	int sum = add_raw(3, 4)
+fn void main()
+	int val_a = 3
+	int val_b = 4
+	int sum = add_raw(val_a, val_b)
 	print(sum)
 	string prefix = "ab"
-	string repeated = repeat_str(prefix, 3)
+	int times = 3
+	string repeated = repeat_str(prefix, times)
 	print(repeated)
+
+# expect:
+# 7
+# ababab

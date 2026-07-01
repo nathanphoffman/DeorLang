@@ -2177,8 +2177,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
     let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
     let mut rule_validator_reassign: String = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate".to_string();
-    let mut rule_raw_assignment: String = "raw variables must be assigned from a rust block — use 'raw name = rust ...'".to_string();
-    let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor expressions — consume them inside a rust block".to_string();
+    let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
+    let mut rule_raw_reassign: String = "raw variables cannot be reassigned — declare a new 'raw name = expr' instead".to_string();
     let mut rule_no_func_field: String = "func shapes cannot be struct fields — pass the func shape as a function parameter instead".to_string();
     let mut rule_no_raw_field: String = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs".to_string();
     let mut rule_struct_field_count: String = "wrong number of fields in struct construction — all fields must be provided".to_string();
@@ -3021,17 +3021,6 @@ fn validate_tokens(tokens: TokensRef) {
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
                         raw_var_names.push(value.clone());
-                        let mut ra_rust_pos: i64 = pos + 3.clone();
-                        if ra_rust_pos < token_count {
-                            // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
-                            let mut ra_rust_tok: Token = tokens[ra_rust_pos as usize].clone();
-                            let kind = ra_rust_tok.kind.clone();
-                            let mut ra_is_rust: bool = kind == "KW_RUST".clone();
-                            if !ra_is_rust {
-                                // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
-                                errors.push(val_err(ra_rust_tok.clone(), lbl_var.clone(), rule_raw_assignment.clone()).clone());
-                            }
-                        }
                     }
                 }
             }
@@ -3289,6 +3278,137 @@ fn validate_tokens(tokens: TokensRef) {
                         if rib_is_raw {
                             // transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor
                             errors.push(val_err(rib_val_tok.clone(), lbl_var.clone(), rule_raw_in_expr.clone()).clone());
+                        }
+                    }
+                }
+                let mut rac_as_pos: i64 = pos + 1.clone();
+                let mut rac_val_pos: i64 = pos + 2.clone();
+                if rac_val_pos < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor
+                    let mut rac_as_tok: Token = tokens[rac_as_pos as usize].clone();
+                    let mut rac_val_tok: Token = tokens[rac_val_pos as usize].clone();
+                    let kind = rac_as_tok.kind.clone();
+                    let mut rac_is_as: bool = kind == "KW_AS".clone();
+                    let kind = rac_val_tok.kind.clone();
+                    let value = rac_val_tok.value.clone();
+                    let mut rac_val_is_ident: bool = kind == "IDENT".clone();
+                    if rac_is_as && rac_val_is_ident {
+                        // transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor
+                        let mut rac_is_raw: bool = list_has(raw_var_names.clone(), value.clone());
+                        if rac_is_raw {
+                            // transpiler-deor/tokens_validator/macros/check_raw_in_binding.deor
+                            errors.push(val_err(rac_val_tok.clone(), lbl_var.clone(), rule_raw_in_expr.clone()).clone());
+                        }
+                    }
+                }
+            }
+            // macro: check_raw_reassign (transpiler-deor/tokens_validator/macros/check_raw_reassign.deor)
+            let mut rr_is_tracked: bool = list_has(raw_var_names.clone(), cur_val.clone());
+            if rr_is_tracked {
+                // transpiler-deor/tokens_validator/macros/check_raw_reassign.deor
+                let mut rr_next_pos: i64 = pos + 1.clone();
+                if rr_next_pos < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_raw_reassign.deor
+                    let mut rr_next_tok: Token = tokens[rr_next_pos as usize].clone();
+                    let kind = rr_next_tok.kind.clone();
+                    let mut rr_is_eq: bool = kind == "EQUALS".clone();
+                    let mut rr_is_as: bool = kind == "KW_AS".clone();
+                    if rr_is_eq || rr_is_as {
+                        // transpiler-deor/tokens_validator/macros/check_raw_reassign.deor
+                        let mut rr_is_decl: bool = false;
+                        if pos > 0 {
+                            // transpiler-deor/tokens_validator/macros/check_raw_reassign.deor
+                            let mut rr_prev_pos: i64 = pos - 1.clone();
+                            let mut rr_prev_tok: Token = tokens[rr_prev_pos as usize].clone();
+                            let kind = rr_prev_tok.kind.clone();
+                            rr_is_decl = kind == "KW_RAW";
+                        }
+                        if !rr_is_decl {
+                            // transpiler-deor/tokens_validator/macros/check_raw_reassign.deor
+                            errors.push(val_err(tok.clone(), lbl_var.clone(), rule_raw_reassign.clone()).clone());
+                        }
+                    }
+                }
+            }
+            // macro: check_raw_operator_use (transpiler-deor/tokens_validator/macros/check_raw_operator_use.deor)
+            if cur_kind == "IDENT" {
+                // transpiler-deor/tokens_validator/macros/check_raw_operator_use.deor
+                let mut rop_is_raw: bool = list_has(raw_var_names.clone(), cur_val.clone());
+                if rop_is_raw {
+                    // transpiler-deor/tokens_validator/macros/check_raw_operator_use.deor
+                    let mut rop_op_kinds: Vec<String> = vec!["PLUS".to_string(), "MINUS".to_string(), "STAR".to_string(), "SLASH".to_string(), "PERCENT".to_string(), "GT".to_string(), "LT".to_string(), "GTE".to_string(), "LTE".to_string(), "KW_IS".to_string(), "KW_AND".to_string(), "KW_OR".to_string()];
+                    let mut rop_next_is_op: bool = false;
+                    let mut rop_next_pos: i64 = pos + 1.clone();
+                    if rop_next_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/check_raw_operator_use.deor
+                        let mut rop_next_tok: Token = tokens[rop_next_pos as usize].clone();
+                        let kind = rop_next_tok.kind.clone();
+                        rop_next_is_op = list_has(rop_op_kinds.clone(), kind.clone());
+                    }
+                    let mut rop_prev_is_op: bool = false;
+                    if pos > 0 {
+                        // transpiler-deor/tokens_validator/macros/check_raw_operator_use.deor
+                        let mut rop_prev_pos: i64 = pos - 1.clone();
+                        let mut rop_prev_tok: Token = tokens[rop_prev_pos as usize].clone();
+                        let kind = rop_prev_tok.kind.clone();
+                        rop_prev_is_op = list_has(rop_op_kinds.clone(), kind.clone());
+                    }
+                    if rop_next_is_op || rop_prev_is_op {
+                        // transpiler-deor/tokens_validator/macros/check_raw_operator_use.deor
+                        errors.push(val_err(tok.clone(), lbl_var.clone(), rule_raw_in_expr.clone()).clone());
+                    }
+                }
+            }
+            // macro: check_raw_in_special_builtin (transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor)
+            if cur_kind == "IDENT" {
+                // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                let mut rsb_is_len: bool = cur_val == "len".clone();
+                let mut rsb_is_crash: bool = cur_val == "crash".clone();
+                let mut rsb_is_sjoin: bool = cur_val == "s_join".clone();
+                let mut rsb_is_target: bool = rsb_is_len || rsb_is_crash || rsb_is_sjoin.clone();
+                if rsb_is_target {
+                    // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                    let mut rsb_lp: i64 = pos + 1.clone();
+                    if rsb_lp < token_count {
+                        // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                        let mut rsb_lp_tok: Token = tokens[rsb_lp as usize].clone();
+                        let kind = rsb_lp_tok.kind.clone();
+                        if kind == "LPAREN" {
+                            // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                            let mut rsb_scan: i64 = rsb_lp + 1.clone();
+                            let mut rsb_depth: i64 = 0;
+                            while rsb_scan < token_count {
+                                // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                                let mut rsb_tok: Token = tokens[rsb_scan as usize].clone();
+                                let kind = rsb_tok.kind.clone();
+                                let value = rsb_tok.value.clone();
+                                if kind == "RPAREN" {
+                                    // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                                    let mut rsb_root: bool = rsb_depth == 0.clone();
+                                    if rsb_root {
+                                        // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                                        break;
+                                    }
+                                    rsb_depth = rsb_depth - 1;
+                                } else if kind == "LPAREN" {
+                                    // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                                    rsb_depth = rsb_depth + 1;
+                                } else if kind == "LBRACKET" {
+                                    // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                                    rsb_depth = rsb_depth + 1;
+                                } else if kind == "RBRACKET" {
+                                    // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                                    rsb_depth = rsb_depth - 1;
+                                } else if kind == "IDENT" {
+                                    // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                                    let mut rsb_is_raw: bool = list_has(raw_var_names.clone(), value.clone());
+                                    if rsb_is_raw {
+                                        // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
+                                        errors.push(val_err(rsb_tok.clone(), lbl_var.clone(), rule_raw_in_expr.clone()).clone());
+                                    }
+                                }
+                                rsb_scan = rsb_scan + 1;
+                            }
                         }
                     }
                 }

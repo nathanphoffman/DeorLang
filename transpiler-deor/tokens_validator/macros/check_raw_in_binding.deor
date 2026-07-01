@@ -1,6 +1,8 @@
 
-# Flags raw variables used as the RHS of a typed binding: `string val = raw_index`.
-# Fires when the current token is in a type position and the value token is a raw var.
+# Flags raw variables captured under a new name outside of a rust block — either
+# a typed binding (`string val = raw_index`) or an untyped `as` rebind
+# (`copy as raw_index`). Both would hand the raw value a Deor-tracked identity
+# that's no longer treated as raw, defeating every other raw check downstream.
 macro check_raw_in_binding
 	if cur_kind is "IDENT"
 		int rib_name_pos = pos + 1
@@ -22,3 +24,17 @@ macro check_raw_in_binding
 				bool rib_is_raw = list_has(raw_var_names, value)
 				if rib_is_raw
 					errors at end = val_err(rib_val_tok, lbl_var, rule_raw_in_expr)
+
+		int rac_as_pos = pos + 1
+		int rac_val_pos = pos + 2
+		if rac_val_pos < token_count
+			Token rac_as_tok = tokens at rac_as_pos
+			Token rac_val_tok = tokens at rac_val_pos
+			(kind) in rac_as_tok
+			bool rac_is_as = kind is "KW_AS"
+			(kind, value) in rac_val_tok
+			bool rac_val_is_ident = kind is "IDENT"
+			if rac_is_as and rac_val_is_ident
+				bool rac_is_raw = list_has(raw_var_names, value)
+				if rac_is_raw
+					errors at end = val_err(rac_val_tok, lbl_var, rule_raw_in_expr)

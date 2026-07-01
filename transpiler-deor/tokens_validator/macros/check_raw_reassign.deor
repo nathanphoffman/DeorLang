@@ -1,0 +1,24 @@
+
+# Fires when a raw variable name is followed by EQUALS or KW_AS without a preceding
+# KW_RAW — i.e., a bare reassignment (`pool = other`) rather than the original
+# `raw pool = expr` declaration. Can't reuse check_bare_reassign here: it excludes
+# the declaration site by checking for a preceding IDENT (the type name in
+# `Type name = ...`), but raw's own declaration is preceded by KW_RAW, not IDENT.
+macro check_raw_reassign
+	bool rr_is_tracked = list_has(raw_var_names, cur_val)
+	if rr_is_tracked
+		int rr_next_pos = pos + 1
+		if rr_next_pos < token_count
+			Token rr_next_tok = tokens at rr_next_pos
+			(kind) in rr_next_tok
+			bool rr_is_eq = kind is "EQUALS"
+			bool rr_is_as = kind is "KW_AS"
+			if rr_is_eq or rr_is_as
+				bool rr_is_decl = false
+				if pos > 0
+					int rr_prev_pos = pos - 1
+					Token rr_prev_tok = tokens at rr_prev_pos
+					(kind) in rr_prev_tok
+					rr_is_decl = kind is "KW_RAW"
+				if not rr_is_decl
+					errors at end = val_err(tok, lbl_var, rule_raw_reassign)

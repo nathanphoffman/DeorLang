@@ -1,34 +1,44 @@
 shape pointList = list of Point
 
 struct Point
-	int x
-	int y
+	int pos_x
+	int pos_y
 
-fn Point make_point(int x, int y)
-	p as (x, y)
-	return p
+fn Point make_point(int pos_x, int pos_y)
+	point as (pos_x, pos_y)
+	return point
 
-fn int manhattan(Point p)
-	(x, y) in p
-	return x + y
+fn int manhattan(Point point)
+	(pos_x, pos_y) in point
+	return pos_x + pos_y
 
 fn int sum_distances(pointList pts)
 	total as 0
-	for pt in pts
-		int d = manhattan(pt)
-		total = total + d
+	for point in pts
+		int dist = manhattan(point)
+		total = total + dist
 	return total
 
-fn main()
-	Point a = make_point(3, 4)
-	Point b = make_point(1, 2)
-	(x, y) in a
-	print(x)
-	print(y)
-	int da = manhattan(a)
-	print(da)
+fn void main()
+	int coord_ax = 3
+	int coord_ay = 4
+	Point point_a = make_point(coord_ax, coord_ay)
+	int coord_bx = 1
+	int coord_by = 2
+	Point point_b = make_point(coord_bx, coord_by)
+	(pos_x, pos_y) in point_a
+	print(pos_x)
+	print(pos_y)
+	int dist_a = manhattan(point_a)
+	print(dist_a)
 	pointList pts = empty
-	pts insert a
-	pts insert b
+	pts at end = point_a
+	pts at end = point_b
 	int total = sum_distances(pts)
 	print(total)
+
+# expect:
+# 3
+# 4
+# 7
+# 10

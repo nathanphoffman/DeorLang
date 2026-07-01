@@ -3,3 +3,6 @@ fn void main()
 	if val is 0
 		crash("val was zero, cannot continue")
 	print("unreachable")
+
+# expect-panic:
+# val was zero, cannot continue
