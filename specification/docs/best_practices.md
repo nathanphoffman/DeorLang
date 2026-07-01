@@ -42,6 +42,19 @@ fn int square(int val)
     val * val
 ```
 ---
+## Multi-line Calls — No Trailing Comma
+
+When a call wraps across multiple lines, don't put a comma after the last argument. Deor favors reading like a plain human list — nobody writes "lettuce, tomato, onion," with a trailing comma, so don't write one here either.
+
+```
+Connection conn = Connect(
+    host,
+    port,
+    timeout
+)
+```
+
+---
 ## Construction and Destructuring
 
 Field order does not matter — all construction and destructuring forms are name-matched. Any subset in any order is valid for destructuring; fields in construction are matched by variable name to struct field name.

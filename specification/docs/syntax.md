@@ -22,7 +22,7 @@ fn abs(val: i64) -> i64 {
 }
 ```
 
-**Conversion notes:** indentation depth maps directly to brace nesting — a straightforward structural transform with no semantic subtleties.
+**Conversion notes:** each indented block becomes a `{ }` block in the generated Rust — one level of indentation in, one level of `{ }` out, with nothing subtle happening in between.
 
 ---
 
@@ -34,7 +34,7 @@ No line continuations except inside delimiters. Long expressions wrap inside `()
 Connection conn = Connect(
     host,
     port,
-    timeout,
+    timeout
 )
 ```
 
@@ -42,11 +42,11 @@ Connection conn = Connect(
 let conn: Connection = Connect(
     host,
     port,
-    timeout,
+    timeout
 );
 ```
 
-**Conversion notes:** trailing commas are encouraged and map directly onto Rust's own trailing-comma convention.
+**Conversion notes:** a comma before the closing `)`/`]` is optional — the transpiler accepts the argument list with or without one. See [Best Practices](docs/best_practices.md#multi-line-calls-no-trailing-comma) for the recommended style.
 
 ---
 
