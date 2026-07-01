@@ -22,7 +22,7 @@ fn int m_clamp(int val, int low, int high)
 
 fn int m_pow(int base, int exp)
 	rust
-		(base as i64).pow(exp as u32) as i32
+		(base as i64).pow(exp as u32) as i64
 
 # float operations
 
@@ -52,15 +52,15 @@ fn float m_sqrt(float val)
 
 fn int m_floor(float val)
 	rust
-		(val as f64).floor() as i32
+		(val as f64).floor() as i64
 
 fn int m_ceil(float val)
 	rust
-		(val as f64).ceil() as i32
+		(val as f64).ceil() as i64
 
 fn int m_round(float val)
 	rust
-		(val as f64).round() as i32
+		(val as f64).round() as i64
 
 fn float m_log(float val)
 	rust

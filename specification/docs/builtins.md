@@ -48,8 +48,8 @@ int chars = len(name)
 
 Rust:
 ```rust
-let size: i32 = rooms.len() as i32;
-let chars: i32 = name.len() as i32;
+let size: i64 = rooms.len() as i64;
+let chars: i64 = name.len() as i64;
 ```
 
 ---

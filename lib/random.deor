@@ -22,7 +22,7 @@ fn int m_rand_int(int min, int max)
 	rust
 		let lo = min as i64;
 		let hi = max as i64;
-		(lo + (_rng_next() % ((hi - lo + 1) as u64)) as i64) as i32
+		(lo + (_rng_next() % ((hi - lo + 1) as u64)) as i64) as i64
 
 fn float m_rand_float()
 	rust

@@ -48,8 +48,8 @@ rust
 	type RcCtx = Rc<GenCtx>;
 	fn tokens_wrap(t: Vec<Token>) -> TokensRef { Rc::new(t) }
 	fn make_rctx(ctx: GenCtx) -> RcCtx { Rc::new(ctx) }
-	fn now_ms() -> i32 { std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as i32 }
-	fn elapsed_ms(start: i32) -> i32 { now_ms() - start }
+	fn now_ms() -> i64 { std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as i64 }
+	fn elapsed_ms(start: i64) -> i64 { now_ms() - start }
 
 raw TokensRef
 raw RcCtx

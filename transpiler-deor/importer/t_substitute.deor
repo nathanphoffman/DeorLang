@@ -99,7 +99,7 @@ fn string replace_t_in_rust_block(string content, string placeholder, string con
 			fn sub_word(word: &str, placeholder: &str, concrete: &str) -> String {
 				if word == placeholder {
 					let rust_type = match concrete {
-						"int" => "i32",
+						"int" => "i64",
 						"float" => "f64",
 						"string" => "String",
 						_ => concrete,

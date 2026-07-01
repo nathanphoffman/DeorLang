@@ -1,6 +1,6 @@
 fn int c_float_to_int(float val)
 	rust
-		val as i32
+		val as i64
 
 fn float c_int_to_float(int val)
 	rust
@@ -20,7 +20,7 @@ fn string c_bool_to_string(bool val)
 
 fn int c_string_to_int(string val)
 	rust
-		val.parse::<i32>().unwrap_or(0)
+		val.parse::<i64>().unwrap_or(0)
 
 fn float c_string_to_float(string val)
 	rust

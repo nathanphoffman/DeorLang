@@ -7,7 +7,7 @@
 #   (Red, Blue) in Color      →  let Red: String = "Red".to_string();
 #                                 let Blue: String = "Blue".to_string();
 #
-#   (Active) in Status        →  let Active: i32 = 1;
+#   (Active) in Status        →  let Active: i64 = 1;
 #
 # Requires in scope: cur, tokens, token_count, fields, field_count, mut_names, depth, ctx.
 macro gen_enum_extract_check

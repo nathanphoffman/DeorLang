@@ -81,7 +81,7 @@ let new_var: String = prev_var;
 
 ## Move and `Copy` Types
 
-`int`, `float`, and `bool` map to Rust's `i32`/`f64`/`bool`, all of which are `Copy` types — duplicating one is always just a bitwise copy, identical in cost and effect to a `.clone()`. Because of this, `move` on a primitive doesn't actually transfer anything: the codegen difference (skipping the `.clone()` call) is real, but the *behavior* is identical either way. The original variable stays valid and usable after a `move` of a primitive — Rust copies it instead of consuming it, the same way it would for any other use of a `Copy` value.
+`int`, `float`, and `bool` map to Rust's `i64`/`f64`/`bool`, all of which are `Copy` types — duplicating one is always just a bitwise copy, identical in cost and effect to a `.clone()`. Because of this, `move` on a primitive doesn't actually transfer anything: the codegen difference (skipping the `.clone()` call) is real, but the *behavior* is identical either way. The original variable stays valid and usable after a `move` of a primitive — Rust copies it instead of consuming it, the same way it would for any other use of a `Copy` value.
 
 ```
 int a = 5

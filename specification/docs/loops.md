@@ -158,9 +158,9 @@ fn int ask_until_valid()
 ```
 
 ```rust
-fn ask_until_valid() -> i32 {
+fn ask_until_valid() -> i64 {
     loop {
-        let val: i32 = read_input();
+        let val: i64 = read_input();
         if is_valid(val) {
             return val;
         }

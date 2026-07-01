@@ -13,7 +13,7 @@ fn int abs(int val)
 ```
 
 ```rust
-fn abs(val: i32) -> i32 {
+fn abs(val: i64) -> i64 {
     if val < 0 {
         -val
     } else {
@@ -61,7 +61,7 @@ int val = 5    # inline comment
 
 ```rust
 // this is a comment
-let val: i32 = 5;    // inline comment
+let val: i64 = 5;    // inline comment
 ```
 
 Only `#` is valid — `//`, `/*`, `*/`, and `--` are syntax errors in Deor.

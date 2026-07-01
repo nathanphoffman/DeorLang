@@ -39,9 +39,9 @@ int last = scores at 3     # 40
 
 Rust:
 ```rust
-let scores: Vec<i32> = vec![10, 20, 30, 40];
-let first: i32 = scores[0];
-let last: i32 = scores[3];
+let scores: Vec<i64> = vec![10, 20, 30, 40];
+let first: i64 = scores[0];
+let last: i64 = scores[3];
 ```
 
 Dynamic computed indices are fine:

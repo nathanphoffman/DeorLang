@@ -1,6 +1,6 @@
 fn int n_now()
 	rust
-		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i32).unwrap_or(0)
+		std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
 
 fn float n_now_ms()
 	rust
@@ -8,7 +8,7 @@ fn float n_now_ms()
 
 fn int n_elapsed(int start)
 	rust
-		(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i32).unwrap_or(0)) - start
+		(std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)) - start
 
 fn float n_elapsed_ms(float start)
 	rust

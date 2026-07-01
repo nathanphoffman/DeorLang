@@ -1,49 +1,49 @@
-shape lTList = list of T
+shape tList = list of T
 
-fn T l_T_first(lTList items)
+fn T l_T_first(tList items)
 	rust
 		items[0].clone()
 
-fn T l_T_last(lTList items)
+fn T l_T_last(tList items)
 	rust
 		items[items.len() - 1].clone()
 
-fn bool l_T_is_empty(lTList items)
+fn bool l_T_is_empty(tList items)
 	rust
 		items.is_empty()
 
-fn lTList l_T_reverse(lTList items)
+fn tList l_T_reverse(tList items)
 	rust
 		items.into_iter().rev().collect()
 
-fn lTList l_T_slice(lTList items, int start, int end)
+fn tList l_T_slice(tList items, int start, int end)
 	rust
 		items[start as usize..end as usize].to_vec()
 
-fn lTList l_T_concat(lTList left, lTList right)
+fn tList l_T_concat(tList left, tList right)
 	rust
 		{ let mut r = left; r.extend(right); r }
 
-fn bool l_T_contains(lTList items, T item)
+fn bool l_T_contains(tList items, T item)
 	rust
 		items.contains(&item)
 
-fn int l_T_index_of(lTList items, T item)
+fn int l_T_index_of(tList items, T item)
 	rust
-		items.iter().position(|x| x == &item).map(|i| i as i32).unwrap_or(-1)
+		items.iter().position(|x| x == &item).map(|i| i as i64).unwrap_or(-1)
 
-fn lTList l_T_take(lTList items, int count)
+fn tList l_T_take(tList items, int count)
 	rust
 		items.into_iter().take(count as usize).collect()
 
-fn lTList l_T_drop(lTList items, int count)
+fn tList l_T_drop(tList items, int count)
 	rust
 		items.into_iter().skip(count as usize).collect()
 
-fn lTList l_T_push(lTList items, T item)
+fn tList l_T_push(tList items, T item)
 	rust
 		{ let mut r = items; r.push(item); r }
 
-fn lTList l_T_pop(lTList items)
+fn tList l_T_pop(tList items)
 	rust
 		{ let mut r = items; r.pop(); r }

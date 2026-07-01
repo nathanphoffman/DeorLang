@@ -25,7 +25,7 @@ shape rollList = list of Roll
 
 ```rust
 type RoomList = Vec<Room>;
-type IntList = Vec<i32>;
+type IntList = Vec<i64>;
 type RollList = Vec<Roll>;
 ```
 
@@ -40,7 +40,7 @@ int cnt = len(rooms)
 ```rust
 let mut result: Vec<Room> = Vec::new();
 let rooms: Vec<Room> = vec![kitchen.clone(), office.clone(), bedroom.clone()];
-let cnt: i32 = rooms.len() as i32;
+let cnt: i64 = rooms.len() as i64;
 ```
 
 In function signatures and struct fields, the shape name stands in for the full type:

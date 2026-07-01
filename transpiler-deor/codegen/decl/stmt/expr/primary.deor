@@ -1,6 +1,6 @@
 
 # Generates a single-argument built-in call by appending a Rust method suffix to the
-# argument expression. Used by ident_expr for `len(x)` → `(x.len() as i32)`.
+# argument expression. Used by ident_expr for `len(x)` → `(x.len() as i64)`.
 fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	(tokens) in ctx
 	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)

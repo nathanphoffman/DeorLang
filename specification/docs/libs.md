@@ -168,7 +168,7 @@ import "lib/list.deor" where T = Report     # any type works
 import "lib/list.deor" where Item = Report  # any placeholder name works
 ```
 
-After substitution the shape becomes `lIntList` (or `lReportList`, etc.) and all function names replace `T` with the lowercase concrete type. This file only contains operations that are valid for **any** element type (they need nothing beyond `Clone`/`PartialEq`, which every Deor type has) — safe to import for `int`, `float`, `string`, `bool`, or any struct. Sorting, dedup, sum, min, and max live in separate files (below) because they need trait support (`Ord`, `Hash`, `Copy`) that not every type has — importing them for an unsupported type fails to compile even if you never call the function, since the whole file gets substituted into concrete, non-generic Rust code.
+After substitution the shape becomes `intList` (or `reportList`, etc.) and all function names replace `T` with the lowercase concrete type. This file only contains operations that are valid for **any** element type (they need nothing beyond `Clone`/`PartialEq`, which every Deor type has) — safe to import for `int`, `float`, `string`, `bool`, or any struct. Sorting, dedup, sum, min, and max live in separate files (below) because they need trait support (`Ord`, `Hash`, `Copy`) that not every type has — importing them for an unsupported type fails to compile even if you never call the function, since the whole file gets substituted into concrete, non-generic Rust code.
 
 | Template | After `T = int` | Description |
 |---|---|---|
@@ -185,32 +185,32 @@ After substitution the shape becomes `lIntList` (or `lReportList`, etc.) and all
 | `l_T_push` | `l_int_push` | New list with item appended to the end |
 | `l_T_pop` | `l_int_pop` | New list with the last element removed |
 
-Signatures use `lTList` for the list type and `T` for the element — after substitution these become `lIntList` and `int` respectively:
+Signatures use `tList` for the list type and `T` for the element — after substitution these become `intList` and `int` respectively:
 
 | Template | Signature (template) | Signature after `T = int` |
 |---|---|---|
-| `l_T_first` | `lTList → T` | `lIntList → int` |
-| `l_T_last` | `lTList → T` | `lIntList → int` |
-| `l_T_is_empty` | `lTList → bool` | `lIntList → bool` |
-| `l_T_reverse` | `lTList → lTList` | `lIntList → lIntList` |
-| `l_T_slice` | `lTList, int, int → lTList` | `lIntList, int, int → lIntList` |
-| `l_T_concat` | `lTList, lTList → lTList` | `lIntList, lIntList → lIntList` |
-| `l_T_contains` | `lTList, T → bool` | `lIntList, int → bool` |
-| `l_T_index_of` | `lTList, T → int` | `lIntList, int → int` |
-| `l_T_take` | `lTList, int → lTList` | `lIntList, int → lIntList` |
-| `l_T_drop` | `lTList, int → lTList` | `lIntList, int → lIntList` |
-| `l_T_push` | `lTList, T → lTList` | `lIntList, int → lIntList` |
-| `l_T_pop` | `lTList → lTList` | `lIntList → lIntList` |
+| `l_T_first` | `tList → T` | `intList → int` |
+| `l_T_last` | `tList → T` | `intList → int` |
+| `l_T_is_empty` | `tList → bool` | `intList → bool` |
+| `l_T_reverse` | `tList → tList` | `intList → intList` |
+| `l_T_slice` | `tList, int, int → tList` | `intList, int, int → intList` |
+| `l_T_concat` | `tList, tList → tList` | `intList, intList → intList` |
+| `l_T_contains` | `tList, T → bool` | `intList, int → bool` |
+| `l_T_index_of` | `tList, T → int` | `intList, int → int` |
+| `l_T_take` | `tList, int → tList` | `intList, int → intList` |
+| `l_T_drop` | `tList, int → tList` | `intList, int → intList` |
+| `l_T_push` | `tList, T → tList` | `intList, int → intList` |
+| `l_T_pop` | `tList → tList` | `intList → intList` |
 
 ```
 import "lib/list.deor" where T = int
 
-lIntList scores = [10, 20, 30]
-lIntList top = l_int_slice(scores, 0, 2)
+intList scores = [10, 20, 30]
+intList top = l_int_slice(scores, 0, 2)
 bool has_ten = l_int_contains(scores, 10)
-lIntList first_two = l_int_take(scores, 2)
-lIntList grown = l_int_push(scores, 40)
-lIntList shrunk = l_int_pop(scores)
+intList first_two = l_int_take(scores, 2)
+intList grown = l_int_push(scores, 40)
+intList shrunk = l_int_pop(scores)
 ```
 
 To join a list of strings with a separator, use `s_join_with` from [`lib/string.deor`](#libstringdeor) directly — no generic list import needed, since joining only ever makes sense for `string`.
@@ -230,9 +230,9 @@ Sorting and dedup for list types whose element supports ordering and hashing —
 import "lib/list.deor" where T = int
 import "lib/list_order.deor" where T = int
 
-lIntList scores = [30, 10, 20, 10]
-lIntList sorted = l_int_sort(scores)
-lIntList deduped = l_int_unique(scores)
+intList scores = [30, 10, 20, 10]
+intList sorted = l_int_sort(scores)
+intList deduped = l_int_unique(scores)
 ```
 
 ---
@@ -251,7 +251,7 @@ Aggregate operations for numeric list types — intended for `int` and `float`. 
 import "lib/list.deor" where T = int
 import "lib/list_numeric.deor" where T = int
 
-lIntList scores = [10, 20, 30]
+intList scores = [10, 20, 30]
 int total = l_int_sum(scores)
 int best = l_int_max(scores)
 ```
@@ -408,7 +408,7 @@ import "lib/tasks.deor" where T = int
 import "lib/tasks.deor" where T = string
 ```
 
-Primitives map to their Rust equivalents in the generated code (`float` → `f64`, `int` → `i32`, `string` → `String`).
+Primitives map to their Rust equivalents in the generated code (`float` → `f64`, `int` → `i64`, `string` → `String`).
 
 ### Importing multiple types
 
@@ -474,7 +474,7 @@ type ParsedInt(int val)
 fn ParsedInt parse_int(string src)
     ParsedInt result
     rust
-        if let Ok(num) = src.parse::<i32>() {
+        if let Ok(num) = src.parse::<i64>() {
             result = Some(ParsedInt(num));
         }
     return result
@@ -487,7 +487,7 @@ if parsed is valid
     print(val)
 ```
 
-The same pattern works for `ParsedFloat` — swap `i32` for `f64`.
+The same pattern works for `ParsedFloat` — swap `i64` for `f64`.
 
 ### Cargo Crates
 

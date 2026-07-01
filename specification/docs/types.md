@@ -6,7 +6,7 @@ Deor's built-in primitive types and their Rust equivalents:
 
 | Deor | Rust | Notes |
 |---|---|---|
-| `int` | `i32` | General-purpose integer |
+| `int` | `i64` | General-purpose integer |
 | `float` | `f64` | General-purpose decimal |
 | `bool` | `bool` | |
 | `string` | `String` | Owned; available as `&str` via `.as_str()` in `rust` blocks |
@@ -84,12 +84,12 @@ type Squarefeet(int val)
 
 ```rust
 #[derive(Clone, Copy, PartialEq, Debug)]
-struct Squarefeet(i32);
+struct Squarefeet(i64);
 
 impl Squarefeet {
-    fn new(val: i32) -> Option<Self> {
+    fn new(val: i64) -> Option<Self> {
         let flt: f64 = val as f64;
-        let root: i32 = flt.sqrt().floor() as i32;
+        let root: i64 = flt.sqrt().floor() as i64;
         if root * root == val {
             Some(Squarefeet(val))
         } else {
@@ -158,7 +158,7 @@ if sqft                 # transpiler error — use is valid/is not valid
 
 ```rust
 if area.is_some() {
-    let val: i32 = area.unwrap().0;
+    let val: i64 = area.unwrap().0;
 }
 if area.is_none() {
     // not valid
@@ -219,7 +219,7 @@ if roll is valid
 
 ```rust
 if roll.is_some() {
-    let val: i32 = roll.unwrap().0;
+    let val: i64 = roll.unwrap().0;
     let crit: bool = is_critical(roll);
 }
 ```
@@ -231,7 +231,7 @@ int sum = (avow value) + 2
 ```
 
 ```rust
-let sum: i32 = value.unwrap().0 + 2;
+let sum: i64 = value.unwrap().0 + 2;
 ```
 
 ---
@@ -254,7 +254,7 @@ if max_capacity is valid
 ```rust
 let (area, max_capacity) = (room.area, room.max_capacity);
 if max_capacity.is_some() {
-    let cap: i32 = max_capacity.unwrap().0;
+    let cap: i64 = max_capacity.unwrap().0;
 }
 ```
 

@@ -12,7 +12,7 @@ fn int add(int left, int right)
 
 Rust:
 ```rust
-fn add(left: i32, right: i32) -> i32 {
+fn add(left: i64, right: i64) -> i64 {
     left + right
 }
 ```
@@ -89,9 +89,9 @@ fn DivResult divmod(int left, int right)
 
 Rust:
 ```rust
-struct DivResult { quotient: i32, remainder: i32 }
+struct DivResult { quotient: i64, remainder: i64 }
 
-fn divmod(left: i32, right: i32) -> DivResult {
+fn divmod(left: i64, right: i64) -> DivResult {
     let quotient = left / right;
     let remainder = left % right;
     DivResult { quotient, remainder }
@@ -131,7 +131,7 @@ fn int square(int val)
 
 Rust:
 ```rust
-fn square(val: i32) -> i32 {
+fn square(val: i64) -> i64 {
     val * val
 }
 ```
@@ -146,7 +146,7 @@ fn int abs(int val)
 
 Rust:
 ```rust
-fn abs(val: i32) -> i32 {
+fn abs(val: i64) -> i64 {
     if val < 0 {
         return -val;
     }
@@ -213,12 +213,12 @@ fn int factorial(int val)
 
 Rust:
 ```rust
-fn factorial(val: i32) -> i32 {
+fn factorial(val: i64) -> i64 {
     if val <= 1 {
         return 1;
     }
-    let prev: i32 = val - 1;
-    let sub: i32 = factorial(prev);
+    let prev: i64 = val - 1;
+    let sub: i64 = factorial(prev);
     return val * sub;
 }
 ```

@@ -28,7 +28,7 @@ fn StringMap h_remove(StringMap map, string key)
 
 fn int h_size(StringMap map)
 	rust
-		map.0.lock().unwrap().len() as i32
+		map.0.lock().unwrap().len() as i64
 
 fn stringList h_keys(StringMap map)
 	rust

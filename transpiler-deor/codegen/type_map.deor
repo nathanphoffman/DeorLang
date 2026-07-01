@@ -1,12 +1,12 @@
 
-# Converts a Deor primitive type name to the Rust equivalent: int→i32, string→String,
+# Converts a Deor primitive type name to the Rust equivalent: int→i64, string→String,
 # float→f64, void→"" (no return type). Non-primitives are capitalized via s_pascal to
 # match Rust's PascalCase convention for user-defined structs and enums.
 fn string render_rust_type(string type_name)
 	if type_name is "void"
 		return ""
 	if type_name is "int"
-		return "i32"
+		return "i64"
 	if type_name is "string"
 		return "String"
 	if type_name is "bool"

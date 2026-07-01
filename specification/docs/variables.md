@@ -124,7 +124,7 @@ fn DivResult divmod(int lft, int rgt)
 ```
 
 ```rust
-fn divmod(lft: i32, rgt: i32) -> DivResult {
+fn divmod(lft: i64, rgt: i64) -> DivResult {
     let quotient = lft / rgt;
     let remainder = lft % rgt;
     return DivResult { quotient, remainder };
@@ -217,7 +217,7 @@ const int MAX_RETRIES = 3
 
 ```rust
 let PIPE: String = "|".to_string();
-let MAX_RETRIES: i32 = 3;
+let MAX_RETRIES: i64 = 3;
 ```
 
 **`const` vs plain typed binding:** a plain `string pipe = "|"` is also immutable if never reassigned, but `const` makes the intent explicit and guarantees it at the transpiler level. Use `const` for values that should never change.
@@ -243,9 +243,9 @@ roomList result = empty
 ```
 
 ```rust
-let val: i32 = m_rand_int(min, max);
+let val: i64 = m_rand_int(min, max);
 let pick: String = random_room_name(&rooms);
-let mut result: Vec<i32> = Vec::new();
+let mut result: Vec<i64> = Vec::new();
 ```
 
 **Conversion notes:** a list binding that's later appended to must be emitted as `let mut` — the transpiler infers `mut` from usage.
@@ -275,9 +275,9 @@ int port = 8_080
 ```
 
 ```rust
-let population: i32 = 1_000_000;
+let population: i64 = 1_000_000;
 let rate: f64 = 0.000_001;
-let port: i32 = 8_080;
+let port: i64 = 8_080;
 ```
 
 Underscore placement is free-form — `1_000_000`, `10_00_00`, and `1000000` are all the same value.

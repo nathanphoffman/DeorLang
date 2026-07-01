@@ -14,7 +14,7 @@ macro primary_ident_expr
 				string ie_func = value
 				int ie_args_pos = ie_next + 1
 				if ie_func is "len"
-					string ie_len_sfx = ".len() as i32"
+					string ie_len_sfx = ".len() as i64"
 					ParseResult ie_len_r = gen_unary_method(ie_args_pos, ie_len_sfx, ctx)
 					move (code, new_pos) in ie_len_r
 					ie_len_code as code

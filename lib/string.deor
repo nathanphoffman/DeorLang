@@ -46,7 +46,7 @@ fn string s_char_at(string str, int idx)
 
 fn int s_index_of(string str, string needle)
 	rust
-		str.find(needle.as_str()).map(|i| i as i32).unwrap_or(-1)
+		str.find(needle.as_str()).map(|i| i as i64).unwrap_or(-1)
 
 fn string s_substring(string str, int start, int end)
 	rust
