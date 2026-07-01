@@ -36,9 +36,9 @@ fn string s_join_with(stringList parts, string sep)
 	rust
 		parts.join(sep.as_str())
 
-fn string s_replace(string str, string from, string to)
+fn string s_replace(string str, string from, string dest)
 	rust
-		str.replace(from.as_str(), to.as_str())
+		str.replace(from.as_str(), dest.as_str())
 
 fn string s_char_at(string str, int idx)
 	rust
@@ -52,9 +52,9 @@ fn string s_substring(string str, int start, int end)
 	rust
 		str.chars().skip(start as usize).take((end - start) as usize).collect()
 
-fn string s_repeat(string str, int n)
+fn string s_repeat(string str, int count)
 	rust
-		str.repeat(n as usize)
+		str.repeat(count as usize)
 
 fn string s_trim_start(string str)
 	rust

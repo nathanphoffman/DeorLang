@@ -127,8 +127,8 @@ bool is_pdf = s_ends_with(filename, ext)
 | `s_join_with(parts, sep)` | `parts.join(sep.as_str())` |
 | `s_trim_start(str)` | `str.trim_start().to_string()` |
 | `s_trim_end(str)` | `str.trim_end().to_string()` |
-| `s_replace(str, from, to)` | `str.replace(from.as_str(), to.as_str())` |
+| `s_replace(str, from, dest)` | `str.replace(from.as_str(), dest.as_str())` |
 | `s_index_of(str, needle)` | `str.find(needle.as_str()).map(\|i\| i as i32).unwrap_or(-1)` |
 | `s_char_at(str, idx)` | `str.chars().nth(idx as usize).map(\|c\| c.to_string()).unwrap_or_default()` |
 | `s_substring(str, start, end)` | `str.chars().skip(start).take(end - start).collect()` |
-| `s_repeat(str, n)` | `str.repeat(n as usize)` |
+| `s_repeat(str, count)` | `str.repeat(count as usize)` |

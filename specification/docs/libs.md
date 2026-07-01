@@ -26,10 +26,10 @@ String utilities beyond the built-in `+` concatenation.
 | `s_starts_with` | `string, string → bool` | True if the string starts with the prefix |
 | `s_ends_with` | `string, string → bool` | True if the string ends with the suffix |
 | `s_index_of` | `string, string → int` | Position of needle, or `-1` if not found |
-| `s_replace` | `string, string, string → string` | Replace all occurrences of `from` with `to` |
+| `s_replace` | `string, string, string → string` | Replace all occurrences of `from` with `dest` |
 | `s_substring` | `string, int, int → string` | Characters from `start` (inclusive) to `end` (exclusive) |
 | `s_char_at` | `string, int → string` | Single character at index as a string |
-| `s_repeat` | `string, int → string` | Repeat the string `n` times |
+| `s_repeat` | `string, int → string` | Repeat the string `count` times |
 | `s_split` | `string, string → stringList` | Split on delimiter, returns a `stringList` |
 | `s_join` | `stringList → string` | Join a list of strings with no separator |
 | `s_join_with` | `stringList, string → string` | Join a list of strings with a separator |
@@ -58,12 +58,12 @@ Integer and float math operations.
 | `m_sign` | `int → int` | −1, 0, or 1 |
 | `m_min` | `int, int → int` | Smaller of two |
 | `m_max` | `int, int → int` | Larger of two |
-| `m_clamp` | `int, int, int → int` | Clamp value between lo and hi |
+| `m_clamp` | `int, int, int → int` | Clamp value between low and high |
 | `m_pow` | `int, int → int` | Integer exponentiation |
 | `m_absf` | `float → float` | Absolute value |
 | `m_minf` | `float, float → float` | Smaller of two |
 | `m_maxf` | `float, float → float` | Larger of two |
-| `m_clampf` | `float, float, float → float` | Clamp value between lo and hi |
+| `m_clampf` | `float, float, float → float` | Clamp value between low and high |
 | `m_powf` | `float, float → float` | Float exponentiation |
 | `m_sqrt` | `float → float` | Square root |
 | `m_floor` | `float → int` | Round down |
@@ -186,8 +186,8 @@ After substitution the shape becomes `lIntList` (or `lReportList`, etc.) and all
 | `l_T_contains` | `l_int_contains` | True if the list contains the item |
 | `l_T_index_of` | `l_int_index_of` | Index of item, or `-1` if not found |
 | `l_T_unique` | `l_int_unique` | Copy with duplicates removed, preserving order |
-| `l_T_take` | `l_int_take` | First `n` elements |
-| `l_T_drop` | `l_int_drop` | All elements after the first `n` |
+| `l_T_take` | `l_int_take` | First `count` elements |
+| `l_T_drop` | `l_int_drop` | All elements after the first `count` |
 | `l_T_push` | `l_int_push` | New list with item appended to the end |
 | `l_T_pop` | `l_int_pop` | New list with the last element removed |
 

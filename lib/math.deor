@@ -16,9 +16,9 @@ fn int m_max(int left, int right)
 	rust
 		if left > right { left } else { right }
 
-fn int m_clamp(int val, int lo, int hi)
+fn int m_clamp(int val, int low, int high)
 	rust
-		if val < lo { lo } else if val > hi { hi } else { val }
+		if val < low { low } else if val > high { high } else { val }
 
 fn int m_pow(int base, int exp)
 	rust
@@ -38,9 +38,9 @@ fn float m_maxf(float left, float right)
 	rust
 		if (left as f64) > (right as f64) { left } else { right }
 
-fn float m_clampf(float val, float lo, float hi)
+fn float m_clampf(float val, float low, float high)
 	rust
-		if (val as f64) < (lo as f64) { lo } else if (val as f64) > (hi as f64) { hi } else { val }
+		if (val as f64) < (low as f64) { low } else if (val as f64) > (high as f64) { high } else { val }
 
 fn float m_powf(float base, float exp)
 	rust
