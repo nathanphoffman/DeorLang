@@ -7,7 +7,7 @@ import "lib/string.deor"
 import "lib/math.deor"
 ```
 
-Three of the library files are **parameterized** — they use `where Placeholder = Type` to produce a concrete, type-safe version of the module. `T` is the conventional placeholder name but any valid identifier works. See [Parameterized Imports](#parameterized-imports) below.
+Four of the library files are **parameterized** — they use `where Placeholder = Type` to produce a concrete, type-safe version of the module. `T` is the conventional placeholder name but any valid identifier works. See [Parameterized Imports](#parameterized-imports) below.
 
 ---
 
@@ -141,7 +141,7 @@ The placeholder can be any valid identifier — `T` is the convention in the sta
 
 All Deor primitive types work as the concrete value: `int`, `float`, `string`, and `bool`.
 
-Three standard library files (`lib/list.deor`, `lib/map.deor`, `lib/tasks.deor`) are parameterized this way. See their sections below for details.
+Four standard library files (`lib/list.deor`, `lib/list_order.deor`, `lib/list_numeric.deor`, `lib/tasks.deor`) are parameterized this way. See their sections below for details.
 
 ### Substitution rules
 
@@ -168,7 +168,7 @@ import "lib/list.deor" where T = Report     # any type works
 import "lib/list.deor" where Item = Report  # any placeholder name works
 ```
 
-After substitution the shape becomes `lIntList` (or `lReportList`, etc.) and all function names replace `T` with the lowercase concrete type. The table below shows both the template form and the result for `T = int`:
+After substitution the shape becomes `lIntList` (or `lReportList`, etc.) and all function names replace `T` with the lowercase concrete type. This file only contains operations that are valid for **any** element type (they need nothing beyond `Clone`/`PartialEq`, which every Deor type has) — safe to import for `int`, `float`, `string`, `bool`, or any struct. Sorting, dedup, sum, min, and max live in separate files (below) because they need trait support (`Ord`, `Hash`, `Copy`) that not every type has — importing them for an unsupported type fails to compile even if you never call the function, since the whole file gets substituted into concrete, non-generic Rust code.
 
 | Template | After `T = int` | Description |
 |---|---|---|
@@ -178,14 +178,8 @@ After substitution the shape becomes `lIntList` (or `lReportList`, etc.) and all
 | `l_T_reverse` | `l_int_reverse` | Reversed copy |
 | `l_T_slice` | `l_int_slice` | Sub-list from `start` (inclusive) to `end` (exclusive) |
 | `l_T_concat` | `l_int_concat` | Concatenate two lists |
-| `l_T_sort` | `l_int_sort` | Sorted copy (requires element type to implement `Ord`) |
-| `l_T_sum` | `l_int_sum` | Sum of all elements |
-| `l_T_min` | `l_int_min` | Minimum element |
-| `l_T_max` | `l_int_max` | Maximum element |
-| `l_T_join` | `l_int_join` | Join elements with a separator string |
 | `l_T_contains` | `l_int_contains` | True if the list contains the item |
 | `l_T_index_of` | `l_int_index_of` | Index of item, or `-1` if not found |
-| `l_T_unique` | `l_int_unique` | Copy with duplicates removed, preserving order |
 | `l_T_take` | `l_int_take` | First `count` elements |
 | `l_T_drop` | `l_int_drop` | All elements after the first `count` |
 | `l_T_push` | `l_int_push` | New list with item appended to the end |
@@ -201,14 +195,8 @@ Signatures use `lTList` for the list type and `T` for the element — after subs
 | `l_T_reverse` | `lTList → lTList` | `lIntList → lIntList` |
 | `l_T_slice` | `lTList, int, int → lTList` | `lIntList, int, int → lIntList` |
 | `l_T_concat` | `lTList, lTList → lTList` | `lIntList, lIntList → lIntList` |
-| `l_T_sort` | `lTList → lTList` | `lIntList → lIntList` |
-| `l_T_sum` | `lTList → T` | `lIntList → int` |
-| `l_T_min` | `lTList → T` | `lIntList → int` |
-| `l_T_max` | `lTList → T` | `lIntList → int` |
-| `l_T_join` | `lTList, string → string` | `lIntList, string → string` |
 | `l_T_contains` | `lTList, T → bool` | `lIntList, int → bool` |
 | `l_T_index_of` | `lTList, T → int` | `lIntList, int → int` |
-| `l_T_unique` | `lTList → lTList` | `lIntList → lIntList` |
 | `l_T_take` | `lTList, int → lTList` | `lIntList, int → lIntList` |
 | `l_T_drop` | `lTList, int → lTList` | `lIntList, int → lIntList` |
 | `l_T_push` | `lTList, T → lTList` | `lIntList, int → lIntList` |
@@ -218,13 +206,54 @@ Signatures use `lTList` for the list type and `T` for the element — after subs
 import "lib/list.deor" where T = int
 
 lIntList scores = [10, 20, 30]
-int total = l_int_sum(scores)
-int best = l_int_max(scores)
 lIntList top = l_int_slice(scores, 0, 2)
 bool has_ten = l_int_contains(scores, 10)
 lIntList first_two = l_int_take(scores, 2)
 lIntList grown = l_int_push(scores, 40)
 lIntList shrunk = l_int_pop(scores)
+```
+
+To join a list of strings with a separator, use `s_join_with` from [`lib/string.deor`](#libstringdeor) directly — no generic list import needed, since joining only ever makes sense for `string`.
+
+---
+
+## `lib/list_order.deor`
+
+Sorting and dedup for list types whose element supports ordering and hashing — `int`, `string`, and `bool`. **Not valid for `float`** (no total ordering, so no `Ord`/`Hash`) or struct types (Deor structs only derive `Clone`, `PartialEq`, `Debug` — not `Ord`, `Eq`, or `Hash`). Import alongside `lib/list.deor` for the same `T`.
+
+| Template | After `T = int` | Description |
+|---|---|---|
+| `l_T_sort` | `l_int_sort` | Sorted copy |
+| `l_T_unique` | `l_int_unique` | Copy with duplicates removed, preserving order |
+
+```
+import "lib/list.deor" where T = int
+import "lib/list_order.deor" where T = int
+
+lIntList scores = [30, 10, 20, 10]
+lIntList sorted = l_int_sort(scores)
+lIntList deduped = l_int_unique(scores)
+```
+
+---
+
+## `lib/list_numeric.deor`
+
+Aggregate operations for numeric list types — intended for `int` and `float`. `l_T_sum` needs `Copy` (so not `string`, not structs); `l_T_min`/`l_T_max` need `Ord` + `Default` (compiles for `string`/`bool` too, but grouped here since numeric lists are the practical use case). Import alongside `lib/list.deor` for the same `T`.
+
+| Template | After `T = int` | Description |
+|---|---|---|
+| `l_T_sum` | `l_int_sum` | Sum of all elements |
+| `l_T_min` | `l_int_min` | Minimum element |
+| `l_T_max` | `l_int_max` | Maximum element |
+
+```
+import "lib/list.deor" where T = int
+import "lib/list_numeric.deor" where T = int
+
+lIntList scores = [10, 20, 30]
+int total = l_int_sum(scores)
+int best = l_int_max(scores)
 ```
 
 `l_T_sort`, `l_T_sum`, `l_T_min`, `l_T_max`, `l_T_contains`, `l_T_index_of`, and `l_T_unique` require the element type to implement `Ord` / `Hash` / `Clone` in the generated Rust. They work naturally for `int`, `float`, and `string`. For custom structs, use a `rust` block instead.

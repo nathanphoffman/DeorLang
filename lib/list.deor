@@ -24,26 +24,6 @@ fn lTList l_T_concat(lTList left, lTList right)
 	rust
 		{ let mut r = left; r.extend(right); r }
 
-fn lTList l_T_sort(lTList items)
-	rust
-		{ let mut s = items; s.sort(); s }
-
-fn T l_T_sum(lTList items)
-	rust
-		items.iter().copied().sum()
-
-fn T l_T_min(lTList items)
-	rust
-		items.iter().cloned().min().unwrap_or_default()
-
-fn T l_T_max(lTList items)
-	rust
-		items.iter().cloned().max().unwrap_or_default()
-
-fn string l_T_join(lTList items, string sep)
-	rust
-		items.join(sep.as_str())
-
 fn bool l_T_contains(lTList items, T item)
 	rust
 		items.contains(&item)
@@ -51,10 +31,6 @@ fn bool l_T_contains(lTList items, T item)
 fn int l_T_index_of(lTList items, T item)
 	rust
 		items.iter().position(|x| x == &item).map(|i| i as i32).unwrap_or(-1)
-
-fn lTList l_T_unique(lTList items)
-	rust
-		{ let mut seen = std::collections::HashSet::new(); items.into_iter().filter(|x| seen.insert(x.clone())).collect() }
 
 fn lTList l_T_take(lTList items, int count)
 	rust
