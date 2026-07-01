@@ -193,7 +193,7 @@ Primitive return types (`fn int`, `fn bool`, etc.) are never valid/not valid —
 
 All callable values are named top-level `fn`s. There is no anonymous-function syntax, and functions may not be defined inside other function bodies. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
 
-To pass behavior as a value, declare a `func` shape and accept it as a typed parameter. The caller passes a named top-level function by name — this is Deor's equivalent of a lambda. See [Shapes — Func Shapes](shapes.md#func-shapes) for declaration syntax, single-param constraint, and conversion notes.
+To pass behavior as a value, declare a `func` shape and accept it as a typed parameter. The caller passes a named top-level function by name — this is Deor's equivalent of a lambda. See [Shapes — Func Shapes](docs/shapes.md#func-shapes) for declaration syntax, single-param constraint, and conversion notes.
 
 ---
 

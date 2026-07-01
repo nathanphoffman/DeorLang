@@ -84,7 +84,7 @@ copy as original    # transpiler error — use Room copy = original
 a as move b    # transpiler error — as already transfers ownership
 ```
 
-Record update (`with`) uses `as` — the type is known from the source struct. See [Immutability](immutability.md).
+Record update (`with`) uses `as` — the type is known from the source struct. See [Immutability](docs/immutability.md).
 
 ---
 

@@ -9,71 +9,72 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 	int pos = 0
 	string last_file = ""
 	string _timer_label = "[timer]   codegen-loop: "
-	macro_block timer
-		for if true
-			if pos >= token_count
-				break
+	macro_run timer_start
+	for if true
+		if pos >= token_count
+			break
 
-			Token token = all_ref at pos
-			(kind, file) in token
+		Token token = all_ref at pos
+		(kind, file) in token
 
-			if kind is "EOF"
-				break
-			if kind is "NEWLINE"
-				pos = pos + 1
-				continue
-			if file is not last_file
-				string fc_slash = "// "
-				string fc_nl = "\n"
-				string fc1 = s_cat(fc_slash, file)
-				string file_comment = s_cat(fc1, fc_nl)
-				parts at end = file_comment
-				last_file = file
-			if kind is "KW_STRUCT"
-				ParseResult result = gen_struct_decl(all_ref, pos)
-				move (code, new_pos) in result
-				parts at end = code
-				pos = new_pos
-				continue
-			if kind is "KW_SHAPE"
-				ParseResult result = gen_shape_decl(all_ref, pos)
-				move (code, new_pos) in result
-				parts at end = code
-				pos = new_pos
-				continue
-			if kind is "KW_ENUM"
-				ParseResult result = gen_enum_decl(all_ref, pos)
-				move (code, new_pos) in result
-				parts at end = code
-				pos = new_pos
-				continue
-			if kind is "KW_TYPE"
-				ParseResult result = gen_type_decl(all_ref, pos, ctx)
-				move (code, new_pos) in result
-				parts at end = code
-				pos = new_pos
-				continue
-			if kind is "KW_FN"
-				ParseResult result = gen_fn_decl(all_ref, pos, ctx)
-				move (code, new_pos) in result
-				parts at end = code
-				pos = new_pos
-				continue
-			if kind is "KW_RAW"
-				ParseResult result = gen_raw_decl(all_ref, pos)
-				move (code, new_pos) in result
-				parts at end = code
-				pos = new_pos
-				continue
-			if kind is "KW_RUST"
-				int block_pos = pos + 2
-				Token block_token = all_ref at block_pos
-				(value) in block_token
-				string newline = "\n"
-				string rust_chunk = s_cat(value, newline)
-				parts at end = rust_chunk
-				pos = block_pos + 1
-				continue
+		if kind is "EOF"
+			break
+		if kind is "NEWLINE"
 			pos = pos + 1
+			continue
+		if file is not last_file
+			string fc_slash = "// "
+			string fc_nl = "\n"
+			string fc1 = s_cat(fc_slash, file)
+			string file_comment = s_cat(fc1, fc_nl)
+			parts at end = file_comment
+			last_file = file
+		if kind is "KW_STRUCT"
+			ParseResult result = gen_struct_decl(all_ref, pos)
+			move (code, new_pos) in result
+			parts at end = code
+			pos = new_pos
+			continue
+		if kind is "KW_SHAPE"
+			ParseResult result = gen_shape_decl(all_ref, pos)
+			move (code, new_pos) in result
+			parts at end = code
+			pos = new_pos
+			continue
+		if kind is "KW_ENUM"
+			ParseResult result = gen_enum_decl(all_ref, pos)
+			move (code, new_pos) in result
+			parts at end = code
+			pos = new_pos
+			continue
+		if kind is "KW_TYPE"
+			ParseResult result = gen_type_decl(all_ref, pos, ctx)
+			move (code, new_pos) in result
+			parts at end = code
+			pos = new_pos
+			continue
+		if kind is "KW_FN"
+			ParseResult result = gen_fn_decl(all_ref, pos, ctx)
+			move (code, new_pos) in result
+			parts at end = code
+			pos = new_pos
+			continue
+		if kind is "KW_RAW"
+			ParseResult result = gen_raw_decl(all_ref, pos)
+			move (code, new_pos) in result
+			parts at end = code
+			pos = new_pos
+			continue
+		if kind is "KW_RUST"
+			int block_pos = pos + 2
+			Token block_token = all_ref at block_pos
+			(value) in block_token
+			string newline = "\n"
+			string rust_chunk = s_cat(value, newline)
+			parts at end = rust_chunk
+			pos = block_pos + 1
+			continue
+		pos = pos + 1
+	macro_run timer_end
 
 	return s_join(parts)

@@ -30,8 +30,7 @@ rust
 
 fn tokenList load_file(string path)
 	string source = f_read(path)
-	string processed = preprocess_source(source)
-	tokenList tok_raw = tokenize(processed, path)
+	tokenList tok_raw = tokenize(source, path)
 	tokenList result = empty
 	int token_count = len(tok_raw)
 	int pos = 0

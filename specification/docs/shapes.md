@@ -9,7 +9,7 @@ shape roomList = list of Room
 shape filterFunc = func of Room to bool
 ```
 
-Shapes are declared at the top level of a file, after imports and before structs. Two kinds exist: list shapes and func shapes. For discriminated variant types, see [Enums](enums.md).
+Shapes are declared at the top level of a file, after imports and before structs. Two kinds exist: list shapes and func shapes. For discriminated variant types, see [Enums](docs/enums.md).
 
 ---
 
@@ -180,7 +180,7 @@ Seeing a camelCase identifier means: this is a shape.
 
 ## File Ordering
 
-Imports must come first — that is the only ordering the transpiler enforces. Everything else is recommended style. See [Best Practices](best_practices.md#order-of-declaration) for the suggested order.
+Imports must come first — that is the only ordering the transpiler enforces. Everything else is recommended style. See [Best Practices](docs/best_practices.md#order-of-declaration) for the suggested order.
 
 ```
 # imports first — required

@@ -55,8 +55,6 @@ Enum docs need updated to reflect the new value format
 
 ##
 ---
-macro_blocks are to remain just open/close no boundary splitting mid-function, no auto-rust insertion, etc.  It limits their power but makes things much more maintainable anything beyond like a simple timer maro block compounds into massive scale issues.
-
 
 ---
 ## Test Latest Fixes

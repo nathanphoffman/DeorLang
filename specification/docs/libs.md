@@ -425,7 +425,7 @@ import "lib/tasks.deor" where T = Report
 
 When you need functionality not in the standard library, wrap a Rust function in a small Deor function using a `rust` block. The Deor function owns the signature and naming; the `rust` block handles the implementation. Keep blocks small — one thing per block.
 
-See [Rust Interop](interop.md) for full `rust` block rules.
+See [Rust Interop](docs/interop.md) for full `rust` block rules.
 
 ### Naming Convention
 

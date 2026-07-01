@@ -6,7 +6,7 @@ String utility functions live in `lib/string.deor`. Import the whole file:
 import "lib/string.deor"
 ```
 
-All functions in `lib/string.deor` follow the `s_` prefix convention. They are regular user-defined functions, so arguments must be named variables — literals are not valid arguments. See [Enforced Practices](enforced_practices.md#named-arguments--user-defined-functions-only).
+All functions in `lib/string.deor` follow the `s_` prefix convention. They are regular user-defined functions, so arguments must be named variables — literals are not valid arguments. See [Enforced Practices](docs/enforced_practices.md#named-arguments-user-defined-functions-only).
 
 ---
 

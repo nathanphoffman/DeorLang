@@ -34,7 +34,7 @@ There are no exceptions. All runtime identifiers — variables, parameters, fiel
 
 ---
 ## Ordering
-Imports are required to be at the top of a file, however there are no other restrictions, but there are suggestions for [best practices](best_practices.md).
+Imports are required to be at the top of a file, however there are no other restrictions, but there are suggestions for [best practices](docs/best_practices.md).
 
 
 ---
@@ -188,7 +188,7 @@ Everything placed inside `()` must be a named variable already in scope. This ru
 
 Order does not matter for struct construction or struct return — fields are matched by name. Order does matter for function calls, since those are positional.
 
-There are no anonymous tuple types in Deor. `return (quotient, remainder)` constructs the function's declared return struct — both `quotient` and `remainder` must be variables in scope that match field names on that struct. See [Functions — Multiple return values](functions.md#multiple-return-values) for the full pattern.
+There are no anonymous tuple types in Deor. `return (quotient, remainder)` constructs the function's declared return struct — both `quotient` and `remainder` must be variables in scope that match field names on that struct. See [Functions — Multiple return values](docs/functions.md#multiple-return-values) for the full pattern.
 
 **Correct:**
 ```

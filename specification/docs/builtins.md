@@ -1,7 +1,7 @@
 # Built-in Functions
 These functions are wired directly into the transpiler — no import, no wrapper needed.
 
-Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Libs](libs.md) for the standard library and custom wrapper patterns.
+Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Libs](docs/libs.md) for the standard library and custom wrapper patterns.
 
 ---
 
@@ -20,7 +20,7 @@ println!("{}", "Hello, world!");
 println!("{}", count);
 ```
 
-Pass a second argument to replace the trailing newline with a string of your choice — a space, a comma, or even an empty string, useful for building output across multiple `print` calls without a line break. Since this is a 2-argument call, the second argument must be a named variable already in scope (the same rule that applies to `range(start, stop)` — see [Enforced Practices](enforced_practices.md#named-arguments-user-defined-functions-only)).
+Pass a second argument to replace the trailing newline with a string of your choice — a space, a comma, or even an empty string, useful for building output across multiple `print` calls without a line break. Since this is a 2-argument call, the second argument must be a named variable already in scope (the same rule that applies to `range(start, stop)` — see [Enforced Practices](docs/enforced_practices.md#named-arguments-user-defined-functions-only)).
 
 Deor:
 ```
@@ -109,7 +109,7 @@ fn print_names(rooms: &Vec<Room>) {
 }
 ```
 
-Use `range` when you need the index. Use `for item in list` when you only need the values. See [Loops](loops.md) for the full set of loop forms.
+Use `range` when you need the index. Use `for item in list` when you only need the values. See [Loops](docs/loops.md) for the full set of loop forms.
 
 ---
 

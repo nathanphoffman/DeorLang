@@ -53,4 +53,4 @@ else if color is Blue
     print(msg_blue)
 ```
 
-For complex multi-arm dispatch that genuinely requires destructuring, use a `rust` block — Rust's `match` is fully available inside one. Deor's `if`/`else if` chains are the right tool for the tag-only unions Deor supports in v1. See [Enums](enums.md).
+For complex multi-arm dispatch that genuinely requires destructuring, use a `rust` block — Rust's `match` is fully available inside one. Deor's `if`/`else if` chains are the right tool for the tag-only unions Deor supports in v1. See [Enums](docs/enums.md).

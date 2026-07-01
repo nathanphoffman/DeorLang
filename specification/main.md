@@ -4,11 +4,11 @@ Deor is a small, highly-procedural, tabbed-block language that transpiles to Rus
 
 Its goal is to provide a comfier entrance point to Rust with simple syntactical sugar and such uniform composition rules that there is little room for debate, and when there is debate -- then it offers `rust` blocks for that.
 
-1) To create your first project in minutes visit [Getting Started](getting_started)
+1) To create your first project in minutes visit [Getting Started](getting_started.md)
 
-2) To learn about our core principles visit [Core Principles](core_principles)
+2) To learn about our core principles visit [Core Principles](core_principles.md)
 
-3) To read the documentation visit [Documentation Index](index)
+3) To read the documentation visit [Documentation Index](index.md)
 
 It took inspiration from the following languages, in this order:
 - **Python** - block scopes and heavily opinionated readability -- Python doesn't go far enough! ;)

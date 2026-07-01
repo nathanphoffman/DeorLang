@@ -2,6 +2,19 @@
 <html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="description"
+        content="Deor is a language for all, transpiled to Rust, as simple as Python and as readable as a book.">
+    <meta property="og:title" content="Deor">
+    <meta property="og:description"
+        content="Deor is a language for all, transpiled to Rust, as simple as Python and as readable as a book.">
+    <meta property="og:image" content="/reddeer.png">
+    <meta property="og:type" content="website">
+    <title>Deor</title>
+    <link rel="icon" href="/reddeer.png" type="image/png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"
+        integrity="sha384-wFjoQjtV1y5jVHbt0p35Ui8aV8GVpEZkyF99OXWqP/eNJDU93D3Ugxkoyh6Y2I4A" crossorigin="anonymous">
+    <link rel="stylesheet" href="/styles.css">
     <style>
         .token.keyword {
             color: #ff79c6;
@@ -51,24 +64,17 @@
             scrollbar-width: none;
         }
 
-    </style>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/styles.css">
-    <meta charset="UTF-8">
-    <title>Deor</title>
-    <style>
         img {
             image-rendering: pixelated;
             width: 100px;
         }
     </style>
-
 </head>
 
 <body class="bg-gray-900">
     <main class="max-w-5xl px-6 text-gray-100 mx-auto text-center">
         <div class="flex gap-4 m-10 text-left">
-            <img src="reddeer.png" />
+            <img src="reddeer.png" alt="Pixel art of a red deer, the Deor mascot" />
             <div>
                 <h1 class="text-[60pt] font-serif">Deor</h1>
                 <p class="text-lg">A language for all, transpiled to Rust, as simple as Python, as readable as a Book
@@ -77,15 +83,18 @@
         </div>
 
         <p class="mx-auto">
-            Learn more by reading the <a href="" class="p-2 bg-gray-100 rounded-sm text-black ml-1">documentation</a>
+            Learn more by reading the <a href=""
+                class="p-2 bg-gray-100 rounded-sm text-black ml-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">documentation</a>
         </p>
 
         <p class="mt-8 mx-auto">
-            <a href="" class="p-2 bg-gray-100 rounded-sm text-black mr-1">Getting Started</a> is the place to go to get
+            <a href=""
+                class="p-2 bg-gray-100 rounded-sm text-black mr-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">Getting
+                Started</a> is the place to go to get
             up and running.
         </p>
 
-        <div class="bg-gray-800 mt-10">
+        <div class="bg-gray-800 mt-10 rounded-3xl overflow-hidden shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)]">
             <div class="text-left pt-8">
                 <button onclick="toggleComments()"
                     class="text-left p-2 bg-gray-900 text-gray-100 rounded-sm text-black mr-1 ml-6">
@@ -93,7 +102,7 @@
                 </button> for readability
             </div>
 
-        <pre class="bg-gray-800 rounded-lg text-left max-h-0 overflow-hidden transition-all duration-3000">
+            <pre class="bg-gray-800 text-left max-h-0 overflow-hidden transition-all duration-3000">
         <code class="language-deor">
             import "lib/convert.deor"
             import "lib/tasks.deor" where T = PiChunk
@@ -235,7 +244,9 @@
         </p>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"
+        integrity="sha384-06z5D//U/xpvxZHuUz92xBvq3DqBBFi7Up53HRrbV7Jlv7Yvh/MZ7oenfUe9iCEt"
+        crossorigin="anonymous"></script>
     <script>
         Prism.languages.deor = {
             'comment': /\#.*/,

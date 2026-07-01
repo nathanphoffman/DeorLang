@@ -30,7 +30,7 @@ raw index = rust
         .collect::<std::collections::HashMap<String, String>>()
 ```
 
-See [Rust Interop](interop.md) for full documentation, rules, and the build-once pattern.
+See [Rust Interop](docs/interop.md) for full documentation, rules, and the build-once pattern.
 
 ---
 
@@ -80,7 +80,7 @@ type Squarefeet(int val)
     return root_i * root_i is val
 ```
 
-`c_int_to_float`, `m_sqrt`, and `m_floor` are from `lib/convert.deor` and `lib/math.deor` — see [Libs](libs.md). Each intermediate result is stored before being passed to the next call. A negative `val` makes `m_sqrt` return NaN; `m_floor(NaN)` gives `0`; `0 * 0 is val` fails — no separate guard needed.
+`c_int_to_float`, `m_sqrt`, and `m_floor` are from `lib/convert.deor` and `lib/math.deor` — see [Libs](docs/libs.md). Each intermediate result is stored before being passed to the next call. A negative `val` makes `m_sqrt` return NaN; `m_floor(NaN)` gives `0`; `0 * 0 is val` fails — no separate guard needed.
 
 ```rust
 #[derive(Clone, Copy, PartialEq, Debug)]

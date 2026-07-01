@@ -10,8 +10,6 @@ Macros can be declared at the top level or inside a function body. A top-level m
 
 You can call other macros with `macro_run` from inside a macro body — nesting calls is fully supported. However, defining a `macro` inside another macro body is a compile error. Define all macros at the appropriate scope and call them with `macro_run`.
 
-You can also use `macro_block` *calls* inside a macro body. Because `macro_block` is a text preprocessor that runs before tokenization, the call site is already fully expanded by the time the token-level macro expander collects the macro body. The macro body simply contains the already-expanded Deor lines.
-
 ```
 macro say_hello
     print(hello)
@@ -71,87 +69,26 @@ If the macro only reads variables from the caller's scope without declaring any 
 
 ---
 
-## `macro_block` — Wrap a Body With Open and Close Code
+## Convention: Wrapping a Body With a Start/End Pair
 
-`macro_block` is a pre-processor construct that runs before tokenization. It lets you define reusable open/close Deor snippets that wrap an indented body at each call site.
-
-Three keywords form the system:
-
-- `macro_block_open name` — Deor code injected before the body
-- `macro_block_close name` — Deor code injected after the body
-- `macro_block name` — the call site; its indented body is sandwiched between open and close
-
-The body content is dedented one level and handed to the tokenizer normally. Inside a `macro_block` body you can use:
-
-- nested `macro_block name` *calls* — the preprocessor expands them recursively (up to 20 levels deep)
-- `macro_run` calls — they pass through the preprocessor untouched and are expanded later by the token-level macro expander
-- `rust` blocks and any other Deor syntax
-
-You cannot place `macro_block_open` or `macro_block_close` *definitions* inside a `macro_block` body — the preprocessor treats that as an error.
-
-**Definition:**
+There's no dedicated syntax for wrapping arbitrary code between "before" and "after" snippets — just define two macros and call them in sequence. The `timer` macros (`transpiler-deor/macros/timer.deor`) are the standard example:
 
 ```
-macro_block_open timer
+macro timer_start
     int _timer_start = now_ms()
 
-macro_block_close timer
+macro timer_end
     int _timer_elapsed = elapsed_ms(_timer_start)
     string _timer_str = n_to_str(_timer_elapsed)
     string _timer_sfx = "ms"
     print(s_join([_timer_label, _timer_str, _timer_sfx]))
 ```
 
-**Usage:**
-
 ```
 string _timer_label = "[timer] load: "
-macro_block timer
-    tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
-```
-
-After expansion:
-
-```
-string _timer_label = "[timer] load: "
-int _timer_start = now_ms()
+macro_run timer_start
 tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
-int _timer_elapsed = elapsed_ms(_timer_start)
-string _timer_str = n_to_str(_timer_elapsed)
-string _timer_sfx = "ms"
-print(s_join([_timer_label, _timer_str, _timer_sfx]))
+macro_run timer_end
 ```
 
-The close body can freely read variables declared in the open body (`_timer_start`) and variables the caller placed in scope before the call (`_timer_label`).
-
-The body of `macro_block_open` and `macro_block_close` follows standard Deor indentation. If the close needs nested code, write it with the natural extra levels:
-
-```
-macro_block_close checked
-    if error_count > 0
-        print("failed")
-```
-
----
-
-### Rules
-
-- `macro_block_open` / `macro_block_close` definitions cannot appear inside a `macro_block` body — the preprocessor will exit with an error.
-- Nested `macro_block` *calls* inside a `macro_block` body are allowed and are expanded recursively. Circular references are caught by a depth limit of 20.
-- Definitions are picked up from **directly imported files**. Define `macro_block_open` / `macro_block_close` in a library file, import it, and use `macro_block name` anywhere in the importing file. Only immediate imports are scanned — transitive imports are not visible.
-- `macro_block` differs from `macro` / `macro_run` in two ways: it operates on raw source text before the lexer runs, and it wraps a variable body of caller-supplied code rather than inlining a fixed snippet.
-
----
-
-## Interaction Between the Two Systems
-
-`macro` / `macro_run` and `macro_block` run at different pipeline stages — `macro_block` is a text preprocessor, `macro` / `macro_run` is a token-level expander that runs later. This ordering determines what is and is not allowed when the two systems are mixed.
-
-| Combination | Result |
-|---|---|
-| `macro_run` inside a `macro` body | ✅ Supported — the standard way to compose macros |
-| `macro` definition inside a `macro` body | ❌ Compile error |
-| `macro_block` call inside a `macro` body | ✅ Supported — the text preprocessor expands the call before the token expander ever sees the macro body |
-| `macro_run` inside a `macro_block` body | ✅ Supported — the preprocessor passes `macro_run` through as plain text; the token expander handles it afterwards |
-| `macro_block` call inside a `macro_block` body | ✅ Supported — recursive expansion, depth limit 20 |
-| `macro_block_open/close` definition inside a `macro_block` body | ❌ Preprocessor error |
+`timer_end` freely reads `_timer_start` (declared by `timer_start`) and `_timer_label` (set by the caller) since both live in the same inlined scope. Nothing enforces that `timer_end` actually gets called — that's just the tradeoff of macros inlining into caller scope, same as any other macro.

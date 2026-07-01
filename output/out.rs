@@ -1309,209 +1309,6 @@ fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: Strin
     return result;
 }
 
-// transpiler-deor/importer/preprocess.deor
-thread_local! {
-	static MB_OPENS:  std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
-		std::cell::RefCell::new(std::collections::HashMap::new());
-	static MB_CLOSES: std::cell::RefCell<std::collections::HashMap<String, Vec<String>>> =
-		std::cell::RefCell::new(std::collections::HashMap::new());
-}
-fn mb_store_open(name: String, body: Vec<String>) {
-	MB_OPENS.with(|m| { m.borrow_mut().insert(name, body); });
-}
-fn mb_store_close(name: String, body: Vec<String>) {
-	MB_CLOSES.with(|m| { m.borrow_mut().insert(name, body); });
-}
-fn mb_get_open(name: &str) -> Vec<String> {
-	MB_OPENS.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
-}
-fn mb_get_close(name: &str) -> Vec<String> {
-	MB_CLOSES.with(|m| m.borrow().get(name).cloned().unwrap_or_default())
-}
-fn preprocess_source(source: String) -> String {
-    // transpiler-deor/importer/preprocess.deor
-    {
-    	fn normalize_indent(line: &str) -> String {
-    		let mut result = String::new();
-    		let mut rest = line;
-    		loop {
-    			if rest.starts_with('\t') {
-    				result.push('\t');
-    				rest = &rest[1..];
-    			} else if rest.starts_with("    ") {
-    				result.push('\t');
-    				rest = &rest[4..];
-    			} else {
-    				break;
-    			}
-    		}
-    		result.push_str(rest);
-    		result
-    	}
-
-    	let lines: Vec<String> = source.lines().map(|l| normalize_indent(l)).collect();
-    	let n = lines.len();
-
-    	fn get_indent(line: &str) -> usize {
-    		line.chars().take_while(|&c| c == '\t').count()
-    	}
-
-    	fn strip_one_indent(line: &str) -> String {
-    		if line.starts_with('\t') { line[1..].to_string() } else { line.to_string() }
-    	}
-
-    	fn collect_body(lines: &[String], start: usize, base_indent: usize) -> (Vec<String>, usize) {
-    		let mut body: Vec<String> = Vec::new();
-    		let mut i = start;
-    		while i < lines.len() {
-    			let line = &lines[i];
-    			if line.trim().is_empty() {
-    				body.push(String::new());
-    				i += 1;
-    			} else if get_indent(line) > base_indent {
-    				body.push(line.clone());
-    				i += 1;
-    			} else {
-    				break;
-    			}
-    		}
-    		while body.last().map(|l| l.trim().is_empty()).unwrap_or(false) {
-    			body.pop();
-    		}
-    		(body, i)
-    	}
-
-    	// Emits body lines at absolute depth `target`. Body lines are stored with
-    	// one leading tab from their definition indentation.
-    	fn adjust_body(body: &[String], target: usize) -> Vec<String> {
-    		body.iter().map(|line| {
-    			if line.trim().is_empty() { return String::new(); }
-    			if target == 0 {
-    				strip_one_indent(line)
-    			} else {
-    				format!("{}{}", "\t".repeat(target - 1), line)
-    			}
-    		}).collect()
-    	}
-
-    	fn is_def_keyword(t: &str) -> bool {
-    		t.starts_with("macro_block_open ")
-    			|| t.starts_with("macro_block_close ")
-    	}
-
-    	fn collect_defs_from_lines(imp_lines: &[String]) {
-    		let mut j = 0;
-    		while j < imp_lines.len() {
-    			let t = imp_lines[j].trim();
-    			let ib = get_indent(&imp_lines[j]);
-    			if t.starts_with("macro_block_open ") {
-    				let name = t["macro_block_open ".len()..].trim().to_string();
-    				let (body, end) = collect_body(imp_lines, j + 1, ib);
-    				mb_store_open(name, body);
-    				j = end;
-    			} else if t.starts_with("macro_block_close ") {
-    				let name = t["macro_block_close ".len()..].trim().to_string();
-    				let (body, end) = collect_body(imp_lines, j + 1, ib);
-    				mb_store_close(name, body);
-    				j = end;
-    			} else {
-    				j += 1;
-    			}
-    		}
-    	}
-
-    	fn expand_macro_block_lines(lines: &[String], depth: u32) -> Vec<String> {
-    		if depth > 20 {
-    			eprintln!("error: macro_block nesting too deep — possible circular reference");
-    			std::process::exit(1);
-    		}
-    		let n = lines.len();
-    		let mut result: Vec<String> = Vec::new();
-    		let mut i = 0;
-    		while i < n {
-    			let line = &lines[i];
-    			let trimmed = line.trim();
-    			if is_def_keyword(trimmed) {
-    				eprintln!("error: macro_block definitions cannot appear inside a macro_block body");
-    				std::process::exit(1);
-    			}
-    			if trimmed.starts_with("macro_block ") {
-    				let name = trimmed["macro_block ".len()..].trim().to_string();
-    				let call_indent = get_indent(line);
-    				let open_body = mb_get_open(&name);
-    				let close_body = mb_get_close(&name);
-    				i += 1;
-    				let mut content_lines: Vec<String> = Vec::new();
-    				while i < n {
-    					let cl = &lines[i];
-    					if cl.trim().is_empty() {
-    						content_lines.push(String::new());
-    						i += 1;
-    					} else if get_indent(cl) > call_indent {
-    						content_lines.push(strip_one_indent(cl));
-    						i += 1;
-    					} else {
-    						break;
-    					}
-    				}
-    				let expanded = expand_macro_block_lines(&content_lines, depth + 1);
-    				for l in adjust_body(&open_body,  call_indent) { result.push(l); }
-    				for l in expanded                               { result.push(l); }
-    				for l in adjust_body(&close_body, call_indent) { result.push(l); }
-    				continue;
-    			}
-    			result.push(line.clone());
-    			i += 1;
-    		}
-    		result
-    	}
-
-    	// Pre-scan direct imports for macro_block definitions
-    	for line in &lines {
-    		let t = line.trim();
-    		if t.starts_with("import \"") {
-    			let rest = &t["import \"".len()..];
-    			if let Some(close) = rest.find('"') {
-    				let path = &rest[..close];
-    				let resolved = if path.starts_with("lib/") {
-    					if let Ok(lib) = std::env::var("DEOR_LIB") {
-    						format!("{}/{}", lib.trim_end_matches('/'), &path[4..])
-    					} else { path.to_string() }
-    				} else { path.to_string() };
-    				if let Ok(imp_source) = std::fs::read_to_string(&resolved) {
-    					let imp_lines: Vec<String> = imp_source.lines().map(|l| normalize_indent(l)).collect();
-    					collect_defs_from_lines(&imp_lines);
-    				}
-    			}
-    		}
-    	}
-
-    	// Collect definitions from this file and mark their lines for removal
-    	let mut skip_ranges: Vec<(usize, usize)> = Vec::new();
-    	collect_defs_from_lines(&lines);
-    	let mut i = 0;
-    	while i < n {
-    		let t = lines[i].trim();
-    		let base = get_indent(&lines[i]);
-    		if is_def_keyword(t) {
-    			let (_, end) = collect_body(&lines, i + 1, base);
-    			skip_ranges.push((i, end));
-    			i = end;
-    		} else {
-    			i += 1;
-    		}
-    	}
-
-    	let should_skip = |idx: usize| skip_ranges.iter().any(|&(s, e)| idx >= s && idx < e);
-    	let filtered: Vec<String> = (0..n)
-    		.filter(|&idx| !should_skip(idx))
-    		.map(|idx| lines[idx].clone())
-    		.collect();
-    	let result = expand_macro_block_lines(&filtered, 0);
-    	result.join("\n")
-    }
-}
-
 // transpiler-deor/importer/decl_bounds.deor
 fn name_of_decl(tokens: Vec<Token>, pos: i64, is_fn: bool) -> String {
     // transpiler-deor/importer/decl_bounds.deor
@@ -1602,8 +1399,7 @@ fn resolve_lib_path(path: String) -> String {
 fn load_file(path: String) -> Vec<Token> {
     // transpiler-deor/importer/load.deor
     let mut source: String = f_read(path.clone());
-    let mut processed: String = preprocess_source(source.clone());
-    let mut tok_raw: Vec<Token> = tokenize(processed.clone(), path.clone());
+    let mut tok_raw: Vec<Token> = tokenize(source.clone(), path.clone());
     let mut result: Vec<Token> = Vec::new();
     let mut token_count: i64 = (tok_raw.len() as i64);
     let mut pos: i64 = 0;
@@ -7607,7 +7403,9 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     let mut pos: i64 = 0;
     let mut last_file: String = "".to_string();
     let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
+    // macro: timer_start (transpiler-deor/macros/timer.deor)
     let mut _timer_start: i64 = now_ms();
+    // transpiler-deor/codegen/codegen.deor
     loop {
         // transpiler-deor/codegen/codegen.deor
         if pos >= token_count {
@@ -7702,10 +7500,12 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
         }
         pos = pos + 1;
     }
+    // macro: timer_end (transpiler-deor/macros/timer.deor)
     let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
     let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
     let mut _timer_sfx: String = "ms".to_string();
     println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+    // transpiler-deor/codegen/codegen.deor
     return s_join(parts.clone());
 }
 
@@ -7722,41 +7522,61 @@ fn main() {
         let mut input_path: String = args[0 as usize].clone();
         let mut output_path: String = args[1 as usize].clone();
         let mut _timer_label: String = "[timer] load+dedup: ".to_string();
+        // macro: timer_start (transpiler-deor/macros/timer.deor)
         let mut _timer_start: i64 = now_ms();
+        // transpiler-deor/main.deor
         let mut raw_tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
+        // macro: timer_end (transpiler-deor/macros/timer.deor)
         let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+        // transpiler-deor/main.deor
         _timer_label = "[timer] macro-build: ".to_string();
+        // macro: timer_start (transpiler-deor/macros/timer.deor)
         let mut _timer_start: i64 = now_ms();
+        // transpiler-deor/main.deor
         let mut tokens: Vec<Token> = build_macros(raw_tokens.clone());
+        // macro: timer_end (transpiler-deor/macros/timer.deor)
         let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+        // transpiler-deor/main.deor
         let mut tokens_ref: TokensRef = tokens_wrap(tokens);
         _timer_label = "[timer] validate: ".to_string();
+        // macro: timer_start (transpiler-deor/macros/timer.deor)
         let mut _timer_start: i64 = now_ms();
+        // transpiler-deor/main.deor
         validate_tokens(tokens_ref.clone());
+        // macro: timer_end (transpiler-deor/macros/timer.deor)
         let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+        // transpiler-deor/main.deor
         _timer_label = "[timer] registry: ".to_string();
+        // macro: timer_start (transpiler-deor/macros/timer.deor)
         let mut _timer_start: i64 = now_ms();
+        // transpiler-deor/main.deor
         let ctx = build_registry(tokens_ref.clone());
+        // macro: timer_end (transpiler-deor/macros/timer.deor)
         let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+        // transpiler-deor/main.deor
         _timer_label = "[timer] total-codegen: ".to_string();
+        // macro: timer_start (transpiler-deor/macros/timer.deor)
         let mut _timer_start: i64 = now_ms();
+        // transpiler-deor/main.deor
         let mut rust_code: String = generate_rust_from_tokens(tokens_ref.clone(), ctx.clone());
+        // macro: timer_end (transpiler-deor/macros/timer.deor)
         let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+        // transpiler-deor/main.deor
         let mut allow_warnings: String = "#![allow(warnings)]\n".to_string();
         rust_code = s_cat(allow_warnings.clone(), rust_code.clone());
         f_write(output_path.clone(), rust_code.clone());
