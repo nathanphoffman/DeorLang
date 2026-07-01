@@ -21,7 +21,7 @@ int val = 1_000_000
 
 ## `raw` Variables
 
-`raw` is a special variable kind for holding an opaque Rust value — produced by a `rust` block and consumed only inside `rust` blocks. It has no type annotation, no Deor operators, and cannot appear in Deor expressions or struct fields.
+Some things are awkward to build in Deor at all — a `HashMap`, a compiled regex, a connection pool. `raw` is the escape hatch: a `rust` block builds the thing once, hands it back as an opaque value, and Deor carries that value around without needing to understand what's inside it. Because Deor can't see inside a `raw`, it also can't validate it — a `raw` has no type annotation, no Deor operators, and can't appear in Deor expressions or struct fields. It's only ever produced by a `rust` block and only ever consumed inside one.
 
 ```
 raw index = rust

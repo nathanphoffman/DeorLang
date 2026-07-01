@@ -129,7 +129,7 @@ string label = c_int_to_string(score)
 
 ## Parameterized Imports
 
-`where Placeholder = Value` is a general language feature — it works on any `.deor` file, not only standard library files. The transpiler performs a textual substitution of the placeholder identifier throughout the imported file before merging it into the token stream.
+Deor has no generics, so a file like `lib/list.deor` can't just be written once for "any type T" the way a generic function could. Instead, `where Placeholder = Value` stands in for that: the transpiler textually substitutes the placeholder identifier throughout the imported file before merging it into the token stream, effectively stamping out a fresh, concrete copy of that file for whatever type you asked for. This is a general language feature — it works on any `.deor` file, not only standard library files.
 
 ```
 import "lib/list.deor" where T = int          # standard library file
