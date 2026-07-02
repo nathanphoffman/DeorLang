@@ -2175,6 +2175,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
     let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
+    let mut rule_end: String = "'end' can only appear directly after 'at' (list at end / list at end = val) — it cannot be used as a variable name or expression".to_string();
     let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
     let mut rule_validator_reassign: String = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate".to_string();
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
@@ -3724,6 +3725,22 @@ fn validate_tokens(tokens: TokensRef) {
             if !valid_ok {
                 // transpiler-deor/tokens_validator/macros/check_valid_placement.deor
                 errors.push(val_err(tok.clone(), lbl_var.clone(), rule_valid.clone()).clone());
+            }
+        }
+        // macro: check_end_placement (transpiler-deor/tokens_validator/macros/check_end_placement.deor)
+        if cur_kind == "KW_END" {
+            // transpiler-deor/tokens_validator/macros/check_end_placement.deor
+            let mut end_ok: bool = false;
+            if pos > 0 {
+                // transpiler-deor/tokens_validator/macros/check_end_placement.deor
+                let mut end_prev_pos: i64 = pos - 1.clone();
+                let mut prev_end_tok: Token = tokens[end_prev_pos as usize].clone();
+                let kind = prev_end_tok.kind.clone();
+                end_ok = kind == "KW_AT";
+            }
+            if !end_ok {
+                // transpiler-deor/tokens_validator/macros/check_end_placement.deor
+                errors.push(val_err(tok.clone(), lbl_var.clone(), rule_end.clone()).clone());
             }
         }
         // transpiler-deor/tokens_validator/tokens_validation.deor

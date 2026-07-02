@@ -1,11 +1,11 @@
-run file="examples/hello.deor":
+run file="examples/args_example.deor":
     DEOR_LIB=lib ./output/out {{file}} output/run.rs
     rustc -O output/run.rs -o output/run
     ./output/run
 
 # Self-compiles the Deor transpiler, then runs it on `file`.
 # -O: optimize the transpiler binary (cuts codegen time significantly)
-run-deor file="examples/hello.deor":
+run-deor file="examples/args_example.deor":
     ./output/out transpiler-deor/main.deor output/out.rs
     rustc -O output/out.rs -o output/out
     DEOR_LIB=lib ./output/out {{file}} output/run.rs

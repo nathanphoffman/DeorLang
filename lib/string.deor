@@ -48,9 +48,9 @@ fn int s_index_of(string str, string needle)
 	rust
 		str.find(needle.as_str()).map(|i| i as i64).unwrap_or(-1)
 
-fn string s_substring(string str, int start, int end)
+fn string s_substring(string str, int start, int stop)
 	rust
-		str.chars().skip(start as usize).take((end - start) as usize).collect()
+		str.chars().skip(start as usize).take((stop - start) as usize).collect()
 
 fn string s_repeat(string str, int count)
 	rust

@@ -16,9 +16,9 @@ fn tList l_T_reverse(tList items)
 	rust
 		items.into_iter().rev().collect()
 
-fn tList l_T_slice(tList items, int start, int end)
+fn tList l_T_slice(tList items, int start, int stop)
 	rust
-		items[start as usize..end as usize].to_vec()
+		items[start as usize..stop as usize].to_vec()
 
 fn tList l_T_concat(tList left, tList right)
 	rust

@@ -1,0 +1,12 @@
+# Ensures `end` only appears directly after `at` (`list at end`, `list at end = val`)
+# — it cannot be used as a variable/parameter name or as a plain expression value.
+macro check_end_placement
+	if cur_kind is "KW_END"
+		bool end_ok = false
+		if pos > 0
+			int end_prev_pos = pos - 1
+			Token prev_end_tok = tokens at end_prev_pos
+			(kind) in prev_end_tok
+			end_ok = kind is "KW_AT"
+		if not end_ok
+			errors at end = val_err(tok, lbl_var, rule_end)

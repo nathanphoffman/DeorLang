@@ -176,6 +176,7 @@ fn void validate_tokens(TokensRef tokens)
 
 		macro_run check_void_var
 		macro_run check_valid_placement
+		macro_run check_end_placement
 
 		pos = pos + 1
 

@@ -90,6 +90,7 @@ import "transpiler-deor/tokens_validator/macros/check_empty_bracket.deor"
 import "transpiler-deor/tokens_validator/macros/check_bracket_indexing.deor"
 import "transpiler-deor/tokens_validator/macros/check_void_var.deor"
 import "transpiler-deor/tokens_validator/macros/check_valid_placement.deor"
+import "transpiler-deor/tokens_validator/macros/check_end_placement.deor"
 import "transpiler-deor/tokens_validator/macros/check_struct_construction.deor"
 import "transpiler-deor/tokens_validator/tokens_validation.deor"
 
