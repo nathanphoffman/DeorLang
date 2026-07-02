@@ -1,0 +1,35 @@
+
+# Copies the 5-token "fn void main()" signature into sep_result and advances sep_pos, then
+# checks for a following NEWLINE + INDENT and copies those too if both are present. Only
+# when sep_opener_ok ends up true is sep_pos positioned right after the INDENT, ready to
+# scan for pragma lines.
+# Reads/writes: tokens, sep_pos, sep_result
+# Reads: sep_len
+# Writes: sep_opener_ok
+macro sep_copy_main_opener
+	int sep_copy_idx = 0
+	for if sep_copy_idx < 5
+		Token c_tok = tokens at (sep_pos + sep_copy_idx)
+		sep_result at end = c_tok
+		sep_copy_idx = sep_copy_idx + 1
+	sep_pos = sep_pos + 5
+	bool sep_opener_ok = false
+	bool sep_nl_present = false
+	if sep_pos < sep_len
+		Token nl_tok = tokens at sep_pos
+		(kind) in nl_tok
+		sep_nl_present = kind is "NEWLINE"
+	if sep_nl_present
+		Token nl_tok2 = tokens at sep_pos
+		sep_result at end = nl_tok2
+		sep_pos = sep_pos + 1
+		bool sep_indent_present = false
+		if sep_pos < sep_len
+			Token ind_tok = tokens at sep_pos
+			(kind) in ind_tok
+			sep_indent_present = kind is "INDENT"
+		if sep_indent_present
+			Token ind_tok2 = tokens at sep_pos
+			sep_result at end = ind_tok2
+			sep_pos = sep_pos + 1
+			sep_opener_ok = true

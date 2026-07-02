@@ -1,0 +1,29 @@
+
+# Repeatedly consumes ENFORCE_UNIQUE_FILE_DECLARATIONS / ENFORCE_UNIQUE_IMPORT_DECLARATIONS
+# pragma lines (IDENT + NEWLINE) starting at sep_pos, setting the matching flag for each one
+# found and advancing past it. Stops at the first token that isn't a recognized pragma line.
+# Reads/writes: tokens, sep_pos, enforce_unique_file, enforce_unique_import
+# Reads: sep_len
+macro sep_scan_pragma_lines
+	bool sep_scanning = true
+	for if sep_scanning
+		sep_scanning = false
+		if sep_pos < sep_len
+			Token prag_tok = tokens at sep_pos
+			(kind, value) in prag_tok
+			bool is_file_flag = kind is "IDENT" and value is "ENFORCE_UNIQUE_FILE_DECLARATIONS"
+			bool is_import_flag = kind is "IDENT" and value is "ENFORCE_UNIQUE_IMPORT_DECLARATIONS"
+			if is_file_flag or is_import_flag
+				int sep_nl_pos = sep_pos + 1
+				bool nl_ok = false
+				if sep_nl_pos < sep_len
+					Token prag_nl_tok = tokens at sep_nl_pos
+					(kind) in prag_nl_tok
+					nl_ok = kind is "NEWLINE"
+				if nl_ok
+					if is_file_flag
+						enforce_unique_file = true
+					else
+						enforce_unique_import = true
+					sep_pos = sep_pos + 2
+					sep_scanning = true

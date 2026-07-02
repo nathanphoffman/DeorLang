@@ -5,9 +5,9 @@
 # directly inline (call arg / return / as-binding) rather than pre-bound to a
 # `string` variable first.
 #
-# Note: the leading operand of a chain is *moved*, not cloned (only operands
-# after the first get `&`) — so each scenario below uses its own fresh
-# variables rather than reusing one across multiple chains.
+# A bare-identifier leading operand is cloned, matching Deor's clone-by-default
+# contract — the source variable stays usable after the chain (see
+# `reused_lead_var` below), not moved out from under it.
 
 fn string glue(string aaa, string bbb)
 	return aaa + bbb + "!"
@@ -79,6 +79,13 @@ fn void main()
 	string result_lead = glue(ppp, qqq) + " done"
 	print(result_lead)
 
+	# leading operand is a bare variable — must be cloned, not moved, so it's
+	# still usable after the chain
+	rrr as "r"
+	string reused_lead_var = rrr + "-tail"
+	print(reused_lead_var)
+	print(rrr)
+
 # expect:
 # pre-mid!
 # ab-end
@@ -92,3 +99,5 @@ fn void main()
 # pre-midend
 # no!
 # pq! done
+# r-tail
+# r

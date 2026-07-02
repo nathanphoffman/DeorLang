@@ -9,9 +9,6 @@ Make sure docs get updated with dedup
 
 ---
 
-## Proposed Features
-I think we should consider adding in import hints that do nothing other than import the file as per normal import, but allow you to specify what you are using from it to help trace function use in a file
-
 ## Audit Documentation
 *Large Lift* | *Critical Priority*
 

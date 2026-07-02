@@ -105,6 +105,19 @@ fn void main()
 
 They're independent — set one, both, or neither, in either order. Both apply across all declaration forms (`struct`, `enum`, `shape`, `type`, `fn`) and across declaration kinds, so a `struct Foo` and a `fn Foo` sharing a name are checked the same way. The check runs while imports are being merged, before any other validation, and fails fast on the first collision found.
 
+### Why two separate pragmas, and why opt-in
+
+This is deliberately Fortran-`IMPLICIT NONE`-flavored: loose by default, strict only if you ask for it, and the ask has to be a visible declaration at the top of the entry point rather than a buried config flag.
+
+The two checks are kept independent rather than folded into one "strict mode" because project style varies:
+
+- Some projects want strictness from day one and set both — accepting the cost of pulling shared aliases (like the stdlib's `stringList`/`tList` pattern) out into their own dedicated file so nothing collides.
+- Some projects are one long, run-on file by convention, with the same shape or struct deliberately redeclared in different regions for local readability — `ENFORCE_UNIQUE_IMPORT_DECLARATIONS` alone fits that style without breaking it.
+- Some small projects don't care about cross-file collisions at all but still want a typo like a copy-pasted `struct Player` block in the same file to fail loudly — `ENFORCE_UNIQUE_FILE_DECLARATIONS` alone covers that.
+- Some projects want to redeclare a generic library shape locally after `T`-substitution, just to see its concrete form inline — the default, with neither pragma, supports that without any opt-in at all.
+
+Because they're separate statements rather than one combined flag, the choice a project made is visible directly at the top of `main()`, not inferred from a build setting elsewhere.
+
 ```
 struct Room
     string name

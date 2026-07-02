@@ -1,4 +1,2 @@
 fn void main()
-    string nates_string = "hello"
-    print(nates_string + " hi")
-    print(nates_string)
+    print("hola" + "Hello World!" + "hi")

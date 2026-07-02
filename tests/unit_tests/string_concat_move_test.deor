@@ -1,0 +1,15 @@
+# string_concat_move_test.deor
+# Confirms `move` genuinely opts a leading identifier out of the clone that
+# string_concat_test.deor's `reused_lead_var` case relies on — `move` really
+# transfers ownership into the chain, so reusing the variable afterward must
+# be a real Rust "use of moved value" error. Deor's own validator has no way
+# to catch this (the generated Rust is syntactically valid); only rustc's
+# borrow checker can, hence expect-rustc-error instead of expect-error.
+
+fn void main()
+	string nates_string = "hello"
+	print(move nates_string + " hi")
+	print(nates_string)
+
+# expect-rustc-error:
+# borrow of moved value: `nates_string`

@@ -10,6 +10,11 @@ import "lib/convert.deor"
 #                       substrings that must all appear in the transpiler's output.
 #   # expect-panic:   — program should compile but panic at runtime; lines
 #                       after this are required substrings in the crash output.
+#   # expect-rustc-error: — transpiling should SUCCEED but the generated Rust
+#                       should FAIL to compile; lines after this are required
+#                       substrings that must all appear in rustc's output. For
+#                       codegen bugs (e.g. a bad move) that Deor's own
+#                       validator has no way to catch — only rustc can.
 #   # stdin:          — optional, precedes the expect block; lines fed to the
 #                       program's stdin (for tests using input()).
 #   # args:           — optional, precedes the expect block; lines passed as
@@ -129,9 +134,10 @@ fn ParsedSpec parse_spec(string source)
 					}
 					continue;
 				}
-				if t == "# expect:" || t == "# expect-error:" || t == "# expect-panic:" {
+				if t == "# expect:" || t == "# expect-error:" || t == "# expect-panic:" || t == "# expect-rustc-error:" {
 					mode = if t == "# expect:" { "run".to_string() }
 						else if t == "# expect-error:" { "error".to_string() }
+						else if t == "# expect-rustc-error:" { "rustc-error".to_string() }
 						else { "panic".to_string() };
 					i += 1;
 					while i < lines.len() {
@@ -217,6 +223,17 @@ fn bool run_one(string path, ParsedSpec spec)
 	ProcSpec rustc_spec = (program, proc_args, stdin_data, set_lib_env, timeout_secs)
 	RunResult rustc_res = run_process(rustc_spec)
 	(exit_code, stdout_text, stderr_text) in rustc_res
+
+	if mode is "rustc-error"
+		string rustc_combined = s_join([stdout_text, stderr_text])
+		bool rustc_failed = exit_code is not 0
+		bool has_all = contains_all(rustc_combined, expected)
+		bool result_ok = rustc_failed and has_all
+		if not result_ok
+			string exit_str = c_int_to_string(exit_code)
+			print(s_join(["  expected rustc failure containing:\n", expected, "\n  got (exit ", exit_str, "):\n", rustc_combined]))
+		return result_ok
+
 	if exit_code is not 0
 		print(s_join(["  rustc failed:\n", stderr_text]))
 		return false

@@ -1093,7 +1093,7 @@ fn scan_import_where(tokens: Vec<Token>, pos: i64) -> ParseResult {
                 let replacement_value = value;
                 let value = concrete_tok.value.clone();
                 let mut after_where: i64 = concrete_pos + 1;
-                let replace_with = replacement_value + "|" + &value;
+                let replace_with = replacement_value.clone() + "|" + &value;
                 return make_result(replace_with.clone(), after_where.clone());
             }
         }
@@ -1526,10 +1526,10 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> Vec<Token> {
         let kind = sep_tok.kind.clone();
         let mut sep_is_main: bool = false;
         if kind == "KW_FN" {
-            // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
+            // macro: sep_check_main_signature (transpiler-deor/importer/macros/sep_check_main_signature.deor)
             let mut sep_sig_end: i64 = sep_pos + 4;
             if sep_sig_end < sep_len {
-                // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
+                // transpiler-deor/importer/macros/sep_check_main_signature.deor
                 let mut sig_void: Token = tokens[(sep_pos + 1) as usize].clone();
                 let mut sig_name: Token = tokens[(sep_pos + 2) as usize].clone();
                 let mut sig_lparen: Token = tokens[(sep_pos + 3) as usize].clone();
@@ -1547,69 +1547,78 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> Vec<Token> {
             }
         }
         if sep_is_main {
-            // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
+            // macro: sep_copy_main_opener (transpiler-deor/importer/macros/sep_copy_main_opener.deor)
             let mut sep_copy_idx: i64 = 0;
             while sep_copy_idx < 5 {
-                // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
+                // transpiler-deor/importer/macros/sep_copy_main_opener.deor
                 let mut c_tok: Token = tokens[(sep_pos + sep_copy_idx) as usize].clone();
                 sep_result.push(c_tok.clone());
                 sep_copy_idx = sep_copy_idx + 1;
             }
             sep_pos = sep_pos + 5;
+            let mut sep_opener_ok: bool = false;
+            let mut sep_nl_present: bool = false;
             if sep_pos < sep_len {
-                // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
+                // transpiler-deor/importer/macros/sep_copy_main_opener.deor
                 let mut nl_tok: Token = tokens[sep_pos as usize].clone();
                 let kind = nl_tok.kind.clone();
-                if kind == "NEWLINE" {
-                    // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                    sep_result.push(nl_tok.clone());
+                sep_nl_present = kind == "NEWLINE";
+            }
+            if sep_nl_present {
+                // transpiler-deor/importer/macros/sep_copy_main_opener.deor
+                let mut nl_tok2: Token = tokens[sep_pos as usize].clone();
+                sep_result.push(nl_tok2.clone());
+                sep_pos = sep_pos + 1;
+                let mut sep_indent_present: bool = false;
+                if sep_pos < sep_len {
+                    // transpiler-deor/importer/macros/sep_copy_main_opener.deor
+                    let mut ind_tok: Token = tokens[sep_pos as usize].clone();
+                    let kind = ind_tok.kind.clone();
+                    sep_indent_present = kind == "INDENT";
+                }
+                if sep_indent_present {
+                    // transpiler-deor/importer/macros/sep_copy_main_opener.deor
+                    let mut ind_tok2: Token = tokens[sep_pos as usize].clone();
+                    sep_result.push(ind_tok2.clone());
                     sep_pos = sep_pos + 1;
+                    sep_opener_ok = true;
+                }
+            }
+            // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
+            if sep_opener_ok {
+                // macro: sep_scan_pragma_lines (transpiler-deor/importer/macros/sep_scan_pragma_lines.deor)
+                let mut sep_scanning: bool = true;
+                while sep_scanning {
+                    // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                    sep_scanning = false;
                     if sep_pos < sep_len {
-                        // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                        let mut ind_tok: Token = tokens[sep_pos as usize].clone();
-                        let kind = ind_tok.kind.clone();
-                        if kind == "INDENT" {
-                            // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                            sep_result.push(ind_tok.clone());
-                            sep_pos = sep_pos + 1;
-                            let mut sep_scanning: bool = true;
-                            while sep_scanning {
-                                // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                                sep_scanning = false;
-                                if sep_pos < sep_len {
-                                    // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                                    let mut prag_tok: Token = tokens[sep_pos as usize].clone();
-                                    let kind = prag_tok.kind.clone();
-                                    let value = prag_tok.value.clone();
-                                    if kind == "IDENT" {
-                                        // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                                        let mut is_file_flag: bool = value == "ENFORCE_UNIQUE_FILE_DECLARATIONS";
-                                        let mut is_import_flag: bool = value == "ENFORCE_UNIQUE_IMPORT_DECLARATIONS";
-                                        if is_file_flag || is_import_flag {
-                                            // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                                            let mut sep_nl_pos: i64 = sep_pos + 1;
-                                            let mut nl_ok: bool = false;
-                                            if sep_nl_pos < sep_len {
-                                                // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                                                let mut prag_nl_tok: Token = tokens[sep_nl_pos as usize].clone();
-                                                let kind = prag_nl_tok.kind.clone();
-                                                nl_ok = kind == "NEWLINE";
-                                            }
-                                            if nl_ok {
-                                                // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                                                if is_file_flag {
-                                                    // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                                                    enforce_unique_file = true;
-                                                } else {
-                                                    // transpiler-deor/importer/macros/strip_enforce_pragmas.deor
-                                                    enforce_unique_import = true;
-                                                }
-                                                sep_pos = sep_pos + 2;
-                                                sep_scanning = true;
-                                            }
-                                        }
-                                    }
+                        // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                        let mut prag_tok: Token = tokens[sep_pos as usize].clone();
+                        let kind = prag_tok.kind.clone();
+                        let value = prag_tok.value.clone();
+                        let mut is_file_flag: bool = kind == "IDENT" && value == "ENFORCE_UNIQUE_FILE_DECLARATIONS";
+                        let mut is_import_flag: bool = kind == "IDENT" && value == "ENFORCE_UNIQUE_IMPORT_DECLARATIONS";
+                        if is_file_flag || is_import_flag {
+                            // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                            let mut sep_nl_pos: i64 = sep_pos + 1;
+                            let mut nl_ok: bool = false;
+                            if sep_nl_pos < sep_len {
+                                // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                                let mut prag_nl_tok: Token = tokens[sep_nl_pos as usize].clone();
+                                let kind = prag_nl_tok.kind.clone();
+                                nl_ok = kind == "NEWLINE";
+                            }
+                            if nl_ok {
+                                // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                                if is_file_flag {
+                                    // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                                    enforce_unique_file = true;
+                                } else {
+                                    // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                                    enforce_unique_import = true;
                                 }
+                                sep_pos = sep_pos + 2;
+                                sep_scanning = true;
                             }
                         }
                     }
@@ -5789,6 +5798,31 @@ fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                 // transpiler-deor/codegen/decl/stmt/expr/expr.deor
                 let mut ts_sfx: String = ".to_string()".to_string();
                 left_code = s_cat(left_code, ts_sfx.clone());
+            }
+        } else if kind == "IDENT" {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            let mut es_next_pos: i64 = pos + 1;
+            let mut es_is_call: bool = false;
+            let mut es_is_idx: bool = false;
+            if es_next_pos < token_count {
+                // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                let mut es_next_tok: Token = tokens[es_next_pos as usize].clone();
+                let kind = es_next_tok.kind.clone();
+                es_is_call = kind == "LPAREN";
+                es_is_idx = kind == "KW_AT";
+            }
+            if !es_is_call {
+                // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                if !es_is_idx {
+                    // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                    let mut after_primary_tok: Token = tokens[cur_pos as usize].clone();
+                    let kind = after_primary_tok.kind.clone();
+                    if kind == "PLUS" {
+                        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                        let mut cl_sfx: String = ".clone()".to_string();
+                        left_code = s_cat(left_code, cl_sfx.clone());
+                    }
+                }
             }
         }
     }

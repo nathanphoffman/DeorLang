@@ -186,7 +186,7 @@ fn void log_error(string msg)
     print(ERROR_PREFIX + msg)
 ```
 
-Don't `macro_run` the same const-macro twice in one function body — the second inlining redeclares the same names in the same scope, which is a transpiler error like any other duplicate declaration.
+Don't `macro_run` the same const-macro twice in one function body — the second inlining redeclares the same variable names in the same scope, which the transpiler always rejects. This is a separate check from [top-level duplicate declarations](enforced_practices.md#duplicate-top-level-names) — variable redeclaration inside a function body is never allowed, regardless of the `ENFORCE_UNIQUE_*` pragmas.
 
 ---
 ## File Length

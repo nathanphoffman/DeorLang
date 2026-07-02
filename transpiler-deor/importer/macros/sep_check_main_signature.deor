@@ -1,0 +1,21 @@
+
+# Checks whether tokens[sep_pos..sep_pos+4] is the fixed "fn void main()" signature
+# (KW_FN already confirmed by the caller at sep_pos itself).
+# Reads: tokens, sep_pos, sep_len
+# Writes: sep_is_main
+macro sep_check_main_signature
+	int sep_sig_end = sep_pos + 4
+	if sep_sig_end < sep_len
+		Token sig_void = tokens at (sep_pos + 1)
+		Token sig_name = tokens at (sep_pos + 2)
+		Token sig_lparen = tokens at (sep_pos + 3)
+		Token sig_rparen = tokens at (sep_pos + 4)
+		(kind) in sig_void
+		bool ok1 = kind is "KW_VOID"
+		(kind, value) in sig_name
+		bool ok2 = kind is "IDENT" and value is "main"
+		(kind) in sig_lparen
+		bool ok3 = kind is "LPAREN"
+		(kind) in sig_rparen
+		bool ok4 = kind is "RPAREN"
+		sep_is_main = ok1 and ok2 and ok3 and ok4

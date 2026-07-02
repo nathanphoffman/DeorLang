@@ -78,6 +78,28 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 			if kind is "PLUS"
 				string ts_sfx = ".to_string()"
 				left_code = s_cat(move left_code, ts_sfx)
+		else if kind is "IDENT"
+			# A bare variable leading a string-concat chain (`nates_string + " hi"`) hits
+			# Rust's `impl Add<&str> for String`, which takes `self` by value — without a
+			# clone here, the chain would silently move the variable instead of borrowing
+			# it, breaking Deor's clone-by-default contract (see move.md). Function calls
+			# and index reads already produce a fresh owned value, so they're excluded the
+			# same way call_args/tb_default exclude them for the single-token case.
+			int es_next_pos = pos + 1
+			bool es_is_call = false
+			bool es_is_idx = false
+			if es_next_pos < token_count
+				Token es_next_tok = tokens at es_next_pos
+				(kind) in es_next_tok
+				es_is_call = kind is "LPAREN"
+				es_is_idx = kind is "KW_AT"
+			if not es_is_call
+				if not es_is_idx
+					Token after_primary_tok = tokens at cur_pos
+					(kind) in after_primary_tok
+					if kind is "PLUS"
+						string cl_sfx = ".clone()"
+						left_code = s_cat(move left_code, cl_sfx)
 
 	for if cur_pos < token_count
 		Token operator_token = tokens at cur_pos
