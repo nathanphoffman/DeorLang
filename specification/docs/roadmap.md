@@ -54,6 +54,10 @@ Bugs found and fixed along the way (all pre-existing, unrelated to earlier work 
   matches what roadmap.md already tracks as unfinished.
 
 
+# More validation adds
+- Empty parens () should be validated out
+- Open [ and Closing ] should be prevented on their own like we did with a leading and closing paren
+
 
 ---
 ## Test Latest Fixes
@@ -62,9 +66,6 @@ Bugs found and fixed along the way (all pre-existing, unrelated to earlier work 
 
   2. Func shapes as struct fields — prescan_check_struct_fields validates field names but not field types; a filterFunc shape field would pass through.
     ^^ validation being added -- should be fixed? validate
-
-  3. raw rules — "raw must come from a rust block", "raw can't be used in a Deor expression", "raw can't be a struct field" — none of these are validated.
-    ^^ sounds good, add validation -- should be fixed, validate
 
   4. Type validator parameter shadowing its type — type Roll(int Roll) — check_fn_declaration catches this for functions but validator type declarations aren't checked the same way.
     ^^ add validation, fix -- should be fixed, validate
