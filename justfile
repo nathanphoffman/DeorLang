@@ -1,14 +1,12 @@
-run file="examples/args_example.deor":
-    DEOR_LIB=lib ./output/out {{file}} output/run.rs
+# Runs a scratch file from tests/snippets/ (your own scratchpad, not a real test).
+run file="scratch_pad.deor":
+    DEOR_LIB=lib ./output/out tests/snippets/{{file}} output/run.rs
     rustc -O output/run.rs -o output/run
     ./output/run
 
-# Self-compiles the Deor transpiler, then runs it on `file`.
-# -O: optimize the transpiler binary (cuts codegen time significantly)
-run-deor file="examples/args_example.deor":
-    ./output/out transpiler-deor/main.deor output/out.rs
-    rustc -O output/out.rs -o output/out
-    DEOR_LIB=lib ./output/out {{file}} output/run.rs
+# Runs a single file from tests/unit_tests/ outside the full suite.
+run-test file="crash_test.deor":
+    DEOR_LIB=lib ./output/out tests/unit_tests/{{file}} output/run.rs
     rustc -O output/run.rs -o output/run
     ./output/run
 
@@ -32,8 +30,8 @@ install-ext-vsce:
     @echo "Done — reload VS Code window to apply."
 
 run-cargo-test:
-    ./output/out examples/cargo_test/main.deor examples/cargo_test/output/main.rs
-    cargo run --manifest-path examples/cargo_test/Cargo.toml
+    ./output/out tests/unit_tests/cargo_test/main.deor tests/unit_tests/cargo_test/output/main.rs
+    cargo run --manifest-path tests/unit_tests/cargo_test/Cargo.toml
 
 run-spec:
     cd specification && npm run start
@@ -45,7 +43,7 @@ sync-setup:
     cp output/out.rs setup/out.rs
 
 test-examples:
-    DEOR_LIB=lib ./output/out tests/run_examples.deor output/test_runner.rs
+    DEOR_LIB=lib ./output/out tests/unit_tester.deor output/test_runner.rs
     rustc -O output/test_runner.rs -o output/test_runner
     ./output/test_runner
 

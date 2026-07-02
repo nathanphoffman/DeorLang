@@ -1,4 +1,4 @@
-import "examples/cargo_test/lib/json.deor"
+import "tests/unit_tests/cargo_test/lib/json.deor"
 
 fn void main()
 	string name_key = "name"

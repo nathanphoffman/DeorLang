@@ -2,7 +2,7 @@ import "lib/file.deor"
 import "lib/string.deor"
 import "lib/convert.deor"
 
-# Test runner for examples/*.deor. Each example declares what it expects in a
+# Test runner for tests/unit_tests/*.deor. Each example declares what it expects in a
 # trailing comment block:
 #   # expect:        — program should run cleanly; lines after this are the
 #                       exact expected stdout, one Deor comment line each.
@@ -11,7 +11,7 @@ import "lib/convert.deor"
 #   # expect-panic:   — program should compile but panic at runtime; lines
 #                       after this are required substrings in the crash output.
 #   # stdin:          — optional, precedes the expect block; lines fed to the
-#                       program's stdin (for examples using input()).
+#                       program's stdin (for tests using input()).
 # Actual process spawning (transpile / rustc / run, each under a timeout) is
 # done in a rust block; this file's job is orchestration and comparison.
 
@@ -72,7 +72,7 @@ rust
 		(exit_code, stdout_s, stderr_s)
 	}
 
-# Reads examples/*.deor, sorted, skipping subdirectories (e.g. cargo_test).
+# Reads tests/unit_tests/*.deor, sorted, skipping subdirectories (e.g. cargo_test).
 fn stringList list_deor_files(string dir)
 	rust
 		{
@@ -232,7 +232,7 @@ fn bool run_one(string path, ParsedSpec spec)
 	return result_ok
 
 fn void main()
-	stringList files = list_deor_files("examples")
+	stringList files = list_deor_files("tests/unit_tests")
 	int total = len(files)
 	int passed = 0
 	int failed = 0
