@@ -1,5 +1,5 @@
 fn void main()
-	(first, second, third) in args()
+	(first, second, third, input_string, input_list) in args()
 	if first is ""
 		print("usage: args_example <name> <age> <city>")
 	else
@@ -9,6 +9,23 @@ fn void main()
 		print(second)
 		print("City:")
 		print(third)
+		print("All args:")
+		print(input_string)
+		int count = len(input_list)
+		print(count)
+
+# args:
+# Alice
+# 30
+# Portland
 
 # expect:
-# usage: args_example <name> <age> <city>
+# Name:
+# Alice
+# Age:
+# 30
+# City:
+# Portland
+# All args:
+# Alice 30 Portland
+# 3

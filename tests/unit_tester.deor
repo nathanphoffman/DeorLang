@@ -12,12 +12,15 @@ import "lib/convert.deor"
 #                       after this are required substrings in the crash output.
 #   # stdin:          — optional, precedes the expect block; lines fed to the
 #                       program's stdin (for tests using input()).
+#   # args:           — optional, precedes the expect block; lines passed as
+#                       real CLI args to the compiled binary (for tests using args()).
 # Actual process spawning (transpile / rustc / run, each under a timeout) is
 # done in a rust block; this file's job is orchestration and comparison.
 
 struct ParsedSpec
 	string mode
 	string stdin_data
+	stringList cli_args
 	string expected
 
 struct RunResult
@@ -87,7 +90,7 @@ fn stringList list_deor_files(string dir)
 			v
 		}
 
-# Extracts the # stdin: / # expect: / # expect-error: / # expect-panic: block
+# Extracts the # stdin: / # args: / # expect: / # expect-error: / # expect-panic: block
 # from a raw source file, before it's ever tokenized.
 fn ParsedSpec parse_spec(string source)
 	rust
@@ -95,6 +98,7 @@ fn ParsedSpec parse_spec(string source)
 			let lines: Vec<&str> = source.lines().collect();
 			let mut mode = "skip".to_string();
 			let mut stdin_lines: Vec<String> = Vec::new();
+			let mut arg_lines: Vec<String> = Vec::new();
 			let mut expected_lines: Vec<String> = Vec::new();
 			let mut i = 0;
 			while i < lines.len() {
@@ -105,6 +109,19 @@ fn ParsedSpec parse_spec(string source)
 						let lt = lines[i].trim_start();
 						if let Some(rest) = lt.strip_prefix("# ") {
 							stdin_lines.push(rest.to_string());
+							i += 1;
+						} else {
+							break;
+						}
+					}
+					continue;
+				}
+				if t == "# args:" {
+					i += 1;
+					while i < lines.len() {
+						let lt = lines[i].trim_start();
+						if let Some(rest) = lt.strip_prefix("# ") {
+							arg_lines.push(rest.to_string());
 							i += 1;
 						} else {
 							break;
@@ -132,7 +149,7 @@ fn ParsedSpec parse_spec(string source)
 			}
 			let mut stdin_data = stdin_lines.join("\n");
 			if !stdin_data.is_empty() { stdin_data.push('\n'); }
-			ParsedSpec { mode, stdin_data, expected: expected_lines.join("\n") }
+			ParsedSpec { mode, stdin_data, cli_args: arg_lines, expected: expected_lines.join("\n") }
 		}
 
 fn string basename_no_ext(string path)
@@ -161,8 +178,9 @@ fn bool contains_all(string haystack, string needles_joined)
 		needles_joined.lines().all(|n| haystack.contains(n))
 
 fn bool run_one(string path, ParsedSpec spec)
-	(mode, stdin_data, expected) in spec
+	(mode, stdin_data, cli_args, expected) in spec
 	string real_stdin = stdin_data
+	stringList real_args = cli_args
 	string base = basename_no_ext(path)
 	ensure_scratch_dir()
 	string rs_path = s_join(["output/test_scratch/", base, ".rs"])
@@ -204,7 +222,7 @@ fn bool run_one(string path, ParsedSpec spec)
 		return false
 
 	string program = bin_path
-	stringList args = empty
+	stringList args = real_args
 	string stdin_data = real_stdin
 	int timeout_secs = 10
 	ProcSpec run_spec = (program, args, stdin_data, set_lib_env, timeout_secs)

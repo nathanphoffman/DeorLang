@@ -4,20 +4,8 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 Upcoming features, mostly an internal markdown file used by the creator Nathan Hoffman.
 
 
-## Things I need to Test
-
-
-  -- test to make sure args() works properly
-
-  2. Func shapes as struct fields — prescan_check_struct_fields validates field names but not field types; a filterFunc shape field would pass through.
-    ^^ validation being added -- should be fixed? validate
-
-  4. Type validator parameter shadowing its type — type Roll(int Roll) — check_fn_declaration catches this for functions but validator type declarations aren't checked the same way.
-    ^^ add validation, fix -- should be fixed, validate
-
 ## New Fixes
-- raw hello = 0 fails with the proper error, but raw hello as 0 actually works fine, my guess is raw is just dropped as the hello as 0 stands alone.  But to eliminate confusion we should throw an error about this too.
-
+- Working: add validation to make sure validator types are not allowed to reference themselves, type Positive(Positive val), infact, they should only ever be able to reference primitives, which is the easier check type Positive(int)
 ## Audits
 
  Major — docs describe validation that doesn't exist
