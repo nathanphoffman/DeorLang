@@ -49,3 +49,7 @@ test-examples:
     rustc -O output/test_runner.rs -o output/test_runner
     ./output/test_runner
 
+# Self-compiles the transpiler (Deor -> Rust -> binary), then runs the example
+# suite through the freshly built binary.
+build-and-test: build-transpiler rebuild-binary test-examples
+

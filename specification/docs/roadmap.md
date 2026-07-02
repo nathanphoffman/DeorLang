@@ -13,7 +13,7 @@ Bugs found and fixed along the way (all pre-existing, unrelated to earlier work 
   value silently emits /* unknown_primary */, producing an unbounded start.. range. I hit this live — multiple runaway processes had to be killed. Worked around it
   in the example; the transpiler doesn't currently stop you from naming something end.
 
-  check it is working?: raw name = rust <block> (the one form the old raw-validator required) never worked in codegen either — confirmed in the earlier raw-rules work, documented with a
+  should be fixed soon: raw name = rust <block> (the one form the old raw-validator required) never worked in codegen either — confirmed in the earlier raw-rules work, documented with a
   working example instead.
 
   - prescan_check_duplicate_decls doesn't fire at all — verified with isolated repros for both duplicate struct and duplicate fn names. validation_test.deor's

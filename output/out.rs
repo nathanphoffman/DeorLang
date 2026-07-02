@@ -2180,6 +2180,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_validator_reassign: String = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate".to_string();
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
     let mut rule_raw_reassign: String = "raw variables cannot be reassigned — declare a new 'raw name = expr' instead".to_string();
+    let mut rule_raw_assignment: String = "raw variables can only be assigned from a function call — use 'raw name = some_function()', not a literal or an inline rust block".to_string();
     let mut rule_no_func_field: String = "func shapes cannot be struct fields — pass the func shape as a function parameter instead".to_string();
     let mut rule_no_raw_field: String = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs".to_string();
     let mut rule_struct_field_count: String = "wrong number of fields in struct construction — all fields must be provided".to_string();
@@ -3022,6 +3023,27 @@ fn validate_tokens(tokens: TokensRef) {
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
                         raw_var_names.push(value.clone());
+                        let mut ra_call_pos: i64 = ra_eq_pos + 1.clone();
+                        let mut ra_is_call: bool = false;
+                        if ra_call_pos < token_count {
+                            // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
+                            let mut ra_call_tok: Token = tokens[ra_call_pos as usize].clone();
+                            let kind = ra_call_tok.kind.clone();
+                            if kind == "IDENT" {
+                                // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
+                                let mut ra_lparen_pos: i64 = ra_call_pos + 1.clone();
+                                if ra_lparen_pos < token_count {
+                                    // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
+                                    let mut ra_lparen_tok: Token = tokens[ra_lparen_pos as usize].clone();
+                                    let kind = ra_lparen_tok.kind.clone();
+                                    ra_is_call = kind == "LPAREN";
+                                }
+                            }
+                        }
+                        if !ra_is_call {
+                            // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
+                            errors.push(val_err(ra_name_tok.clone(), lbl_var.clone(), rule_raw_assignment.clone()).clone());
+                        }
                     }
                 }
             }

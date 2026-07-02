@@ -1,8 +1,10 @@
 
-# Validates `raw name = expr` — the RHS may be a rust block or any call to a
-# function (Deor or rust-backed) that hands back a raw value; Rust's own type
-# checker is what actually validates the value, not Deor. Tracks the variable
-# name into raw_var_names for use by the other raw checks.
+# Validates `raw name = expr` — the RHS must be a call to a function (Deor or
+# rust-backed); that function's return value is what's actually opaque to Deor.
+# A literal or an inline `rust` block is rejected: `rust` was never wired up as
+# a value-producing expression in codegen, and a literal defeats the point of
+# marking something raw in the first place. Tracks the variable name into
+# raw_var_names for use by the other raw checks.
 macro check_raw_assignment
 	if cur_kind is "KW_RAW"
 		int ra_eq_pos = pos + 2
@@ -15,3 +17,16 @@ macro check_raw_assignment
 				(kind, value) in ra_name_tok
 				if kind is "IDENT"
 					raw_var_names at end = value
+					int ra_call_pos = ra_eq_pos + 1
+					bool ra_is_call = false
+					if ra_call_pos < token_count
+						Token ra_call_tok = tokens at ra_call_pos
+						(kind) in ra_call_tok
+						if kind is "IDENT"
+							int ra_lparen_pos = ra_call_pos + 1
+							if ra_lparen_pos < token_count
+								Token ra_lparen_tok = tokens at ra_lparen_pos
+								(kind) in ra_lparen_tok
+								ra_is_call = kind is "LPAREN"
+					if not ra_is_call
+						errors at end = val_err(ra_name_tok, lbl_var, rule_raw_assignment)
