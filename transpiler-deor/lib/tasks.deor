@@ -69,6 +69,6 @@ fn string t_chan_recv(Receiver rcv)
 
 # Spawns a task onto the pool. The task function receives the sender so it can
 # push its result back to the caller via t_chan_recv on the matching receiver.
-fn void t_spawn(TaskPool pool, Sender snd, fn(Sender) func)
+fn void t_spawn(TaskPool pool, Sender snd, fn(Sender) worker)
     rust
-        pool.sender.send(Box::new(move || func(snd))).unwrap();
+        pool.sender.send(Box::new(move || worker(snd))).unwrap();

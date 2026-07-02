@@ -5,14 +5,14 @@ shape tTransformFunc = func of T to T
 
 # Maps a list of T through a worker function in parallel using the pool.
 # Each item is dispatched as a separate task; all results are collected and returned.
-fn tList t_T_run_all(TaskPool pool, tList items, tTransformFunc func)
+fn tList t_T_run_all(TaskPool pool, tList items, tTransformFunc worker)
 	rust
 		let item_count = items.len();
 		let (tx, rx) = mpsc::channel::<T>();
 		for item in items.into_iter() {
 			let tx = tx.clone();
 			pool.sender.send(Box::new(move || {
-				let result = func(item);
+				let result = worker(item);
 				tx.send(result).unwrap();
 			})).unwrap();
 		}

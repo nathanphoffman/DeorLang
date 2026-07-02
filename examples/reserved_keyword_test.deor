@@ -1,0 +1,61 @@
+# reserved_keyword_test.deor
+# Exercises check_kw_as_name: a reserved keyword used as a declaration/binding
+# name (`Type keyword = expr` or `keyword as expr`) silently corrupted codegen
+# with zero validation error before this check existed — confirmed for raw,
+# remove, avow, empty, and none. list at end = val is deliberately NOT covered
+# here since it's the one legitimate position for 'end' (see end_placement_test).
+# Also exercises the same gap in check_fn_declaration's param-name check — a
+# keyword as a function parameter name was silently unvalidated too.
+
+shape intList = list of int
+
+fn void test_typed_raw()
+	int raw = 5
+	print(raw)
+
+fn void test_typed_remove()
+	intList remove = [1, 2, 3]
+	int cnt = len(remove)
+	print(cnt)
+
+fn void test_typed_avow()
+	int avow = 5
+	print(avow)
+
+fn void test_typed_empty()
+	int empty = 5
+	print(empty)
+
+fn void test_typed_none()
+	int none = 5
+	print(none)
+
+fn void test_as_binding()
+	raw as 5
+
+fn void test_param_avow(int avow)
+	print(avow)
+
+fn void test_param_empty(int empty)
+	print(empty)
+
+fn void test_param_none(int none)
+	print(none)
+
+fn void test_param_const(int const)
+	print(const)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 13: variable 'raw' - reserved keyword cannot be used as a name
+# line 17: variable 'remove' - reserved keyword cannot be used as a name
+# line 22: variable 'avow' - reserved keyword cannot be used as a name
+# line 26: variable 'empty' - reserved keyword cannot be used as a name
+# line 30: variable 'none' - reserved keyword cannot be used as a name
+# line 34: variable 'raw' - reserved keyword cannot be used as a name
+# line 36: fn 'avow' - reserved keyword cannot be used as a name
+# line 39: fn 'empty' - reserved keyword cannot be used as a name
+# line 42: fn 'none' - reserved keyword cannot be used as a name
+# line 45: fn 'const' - reserved keyword cannot be used as a name

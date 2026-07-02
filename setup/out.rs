@@ -2204,6 +2204,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_struct_field_name: String = "unknown field name in struct construction — variable name does not match any field in this struct".to_string();
     // transpiler-deor/tokens_validator/tokens_validation.deor
     let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
+    let mut reserved_keywords: Vec<String> = vec!["KW_AND".to_string(), "KW_AS".to_string(), "KW_AT".to_string(), "KW_AVOW".to_string(), "KW_BLOCK".to_string(), "KW_BREAK".to_string(), "KW_CONST".to_string(), "KW_CONTINUE".to_string(), "KW_ELSE".to_string(), "KW_EMPTY".to_string(), "KW_ENUM".to_string(), "KW_FALSE".to_string(), "KW_FN".to_string(), "KW_FOR".to_string(), "KW_FUNC".to_string(), "KW_IF".to_string(), "KW_IMPORT".to_string(), "KW_IN".to_string(), "KW_IS".to_string(), "KW_LIST".to_string(), "KW_MACRO".to_string(), "KW_MACRO_RUN".to_string(), "KW_MOVE".to_string(), "KW_NONE".to_string(), "KW_NOT".to_string(), "KW_OF".to_string(), "KW_OR".to_string(), "KW_RAW".to_string(), "KW_REMOVE".to_string(), "KW_RETURN".to_string(), "KW_RUST".to_string(), "KW_SHAPE".to_string(), "KW_STRUCT".to_string(), "KW_TO".to_string(), "KW_TRUE".to_string(), "KW_TYPE".to_string(), "KW_VALID".to_string(), "KW_VOID".to_string(), "KW_WITH".to_string()];
     let mut func_shape_names: Vec<String> = Vec::new();
     let mut validator_type_names: Vec<String> = Vec::new();
     let mut pre_i: i64 = 0;
@@ -2662,6 +2663,23 @@ fn validate_tokens(tokens: TokensRef) {
                 errors.push(val_err(tok.clone(), lbl_var.clone(), rule_kw_in_parens.clone()).clone());
             }
         }
+        // macro: check_kw_as_name (transpiler-deor/tokens_validator/macros/check_kw_as_name.deor)
+        let mut kan_is_reserved: bool = list_has(reserved_keywords.clone(), cur_kind.clone());
+        if kan_is_reserved {
+            // transpiler-deor/tokens_validator/macros/check_kw_as_name.deor
+            let mut kan_next_pos: i64 = pos + 1.clone();
+            if kan_next_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/check_kw_as_name.deor
+                let mut kan_next_tok: Token = tokens[kan_next_pos as usize].clone();
+                let kind = kan_next_tok.kind.clone();
+                let mut kan_next_is_eq: bool = kind == "EQUALS".clone();
+                let mut kan_next_is_as: bool = kind == "KW_AS".clone();
+                if kan_next_is_eq || kan_next_is_as {
+                    // transpiler-deor/tokens_validator/macros/check_kw_as_name.deor
+                    errors.push(val_err(tok.clone(), lbl_var.clone(), rule_kw_in_parens.clone()).clone());
+                }
+            }
+        }
         // macro: skip_rust_block (transpiler-deor/tokens_validator/macros/skip_rust_block.deor)
         if cur_kind == "KW_RUST" {
             // transpiler-deor/tokens_validator/macros/skip_rust_block.deor
@@ -2965,6 +2983,10 @@ fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor
                                         errors.push(val_err(pn_tok.clone(), lbl_fn.clone(), rule_snake.clone()).clone());
                                     }
+                                    ps_pos = pn_pos;
+                                } else if list_has(reserved_keywords.clone(), kind.clone()) {
+                                    // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor
+                                    errors.push(val_err(pn_tok.clone(), lbl_fn.clone(), rule_kw_in_parens.clone()).clone());
                                     ps_pos = pn_pos;
                                 }
                             }

@@ -1,0 +1,18 @@
+# Flags any reserved keyword used in a declaration/binding name slot: `Type
+# keyword = expr` or `keyword as expr`. No legitimate Deor syntax has a reserved
+# keyword immediately followed by EQUALS or KW_AS, so this is safe to check
+# universally. Without this, a keyword in a name slot (raw, remove, avow, empty,
+# none, ...) silently corrupts codegen instead of raising an error, since the
+# per-context checks (check_var_decl, etc.) only recognize IDENT-kind names and
+# quietly skip anything else.
+macro check_kw_as_name
+	bool kan_is_reserved = list_has(reserved_keywords, cur_kind)
+	if kan_is_reserved
+		int kan_next_pos = pos + 1
+		if kan_next_pos < token_count
+			Token kan_next_tok = tokens at kan_next_pos
+			(kind) in kan_next_tok
+			bool kan_next_is_eq = kind is "EQUALS"
+			bool kan_next_is_as = kind is "KW_AS"
+			if kan_next_is_eq or kan_next_is_as
+				errors at end = val_err(tok, lbl_var, rule_kw_in_parens)

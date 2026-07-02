@@ -36,6 +36,9 @@ macro check_fn_declaration
 								if not is_snake(value)
 									errors at end = val_err(pn_tok, lbl_fn, rule_snake)
 								ps_pos = pn_pos
+							else if list_has(reserved_keywords, kind)
+								errors at end = val_err(pn_tok, lbl_fn, rule_kw_in_parens)
+								ps_pos = pn_pos
 					ps_pos = ps_pos + 1
 		int ret_pos = pos + 1
 		int lp2_pos = pos + 2

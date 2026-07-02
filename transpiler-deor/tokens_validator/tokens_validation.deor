@@ -28,6 +28,15 @@ fn void validate_tokens(TokensRef tokens)
 
 	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
 
+	# Every reserved keyword kind except KW_END — used by check_kw_as_name to flag
+	# any of them appearing in a declaration/binding name slot (`Type keyword =
+	# expr` or `keyword as expr`). Keywords silently corrupt codegen when they end
+	# up in a name position instead of erroring, so this is checked universally
+	# rather than one keyword at a time. KW_END is excluded: `list at end = val`
+	# is legitimate (end immediately followed by EQUALS), and check_end_placement
+	# already handles that keyword's one legitimate position precisely.
+	strList reserved_keywords = ["KW_AND", "KW_AS", "KW_AT", "KW_AVOW", "KW_BLOCK", "KW_BREAK", "KW_CONST", "KW_CONTINUE", "KW_ELSE", "KW_EMPTY", "KW_ENUM", "KW_FALSE", "KW_FN", "KW_FOR", "KW_FUNC", "KW_IF", "KW_IMPORT", "KW_IN", "KW_IS", "KW_LIST", "KW_MACRO", "KW_MACRO_RUN", "KW_MOVE", "KW_NONE", "KW_NOT", "KW_OF", "KW_OR", "KW_RAW", "KW_REMOVE", "KW_RETURN", "KW_RUST", "KW_SHAPE", "KW_STRUCT", "KW_TO", "KW_TRUE", "KW_TYPE", "KW_VALID", "KW_VOID", "KW_WITH"]
+
 	# first pre-scan: collect names that later prescan passes depend on
 	strList func_shape_names = empty
 	strList validator_type_names = empty
@@ -71,6 +80,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run check_return_invalid
 		macro_run check_move_target
 		macro_run check_keyword_in_parens
+		macro_run check_kw_as_name
 		macro_run skip_rust_block
 		macro_run check_not_is_order
 
