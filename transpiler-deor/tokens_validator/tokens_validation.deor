@@ -134,11 +134,11 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run validate_ident
 
 		# type name: PascalCase, min 3
-		# check_type_base_not_shape / check_validator_declaration are both gated on
+		# check_type_base_primitive / check_validator_declaration are both gated on
 		# KW_TYPE and must run BEFORE validate_ident below — validate_ident does an
 		# unconditional `pos = pos + 1; continue` on a keyword match, which would
 		# otherwise skip both checks every time (as it did, silently, until this fix).
-		macro_run check_type_base_not_shape
+		macro_run check_type_base_primitive
 		macro_run check_validator_declaration
 
 		string keyword = "KW_TYPE"

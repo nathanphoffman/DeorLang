@@ -1,5 +1,5 @@
 
-# Prescan pass: collects all shape names into shape_names so check_type_base_not_shape can identify them.
+# Prescan pass: collects all shape names into shape_names for later checks that need to identify them.
 macro prescan_collect_shapes
 	if kind is "KW_SHAPE"
 		int sn_pos = pre_i + 1

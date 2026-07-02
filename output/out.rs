@@ -2169,7 +2169,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_enum_data: String = "enum variants cannot carry data — use a struct alongside the enum instead".to_string();
     let mut rule_typed_enum_eq: String = "typed enum variant must have a value — add '= value' after the variant name".to_string();
     let mut rule_untyped_enum_eq: String = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants".to_string();
-    let mut rule_list_validator: String = "list shapes cannot be validator base types — validators only wrap primitives".to_string();
+    let mut rule_non_primitive_validator: String = "validator base type must be a primitive (int, float, string, bool) — structs, list shapes, and other validator types cannot be used".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
     let mut rule_type_param_shadow: String = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num'".to_string();
@@ -2202,6 +2202,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
     let mut rule_raw_reassign: String = "raw variables cannot be reassigned — declare a new 'raw name = expr' instead".to_string();
     let mut rule_raw_assignment: String = "raw variables can only be assigned from a function call — use 'raw name = some_function()', not a literal or an inline rust block".to_string();
+    let mut rule_raw_as: String = "raw declarations must use '=', not 'as' — 'raw name = call()' declares an opaque value from a function call".to_string();
     let mut rule_no_func_field: String = "func shapes cannot be struct fields — pass the func shape as a function parameter instead".to_string();
     let mut rule_no_raw_field: String = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs".to_string();
     let mut rule_struct_field_count: String = "wrong number of fields in struct construction — all fields must be provided".to_string();
@@ -2986,20 +2987,24 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
-        // macro: check_type_base_not_shape (transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor)
+        // macro: check_type_base_primitive (transpiler-deor/tokens_validator/macros/check_type_base_primitive.deor)
         if cur_kind == "KW_TYPE" {
-            // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
-            let mut base_type_pos: i64 = pos + 3.clone();
-            if base_type_pos < token_count {
-                // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
-                let mut base_type_tok: Token = tokens[base_type_pos as usize].clone();
-                let mut value = base_type_tok.value.clone();
-                let mut base_is_shape: bool = list_has(shape_names.clone(), value.clone());
-                if base_is_shape {
-                    // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
-                    let mut type_name_pos: i64 = pos + 1.clone();
-                    let mut type_name_tok: Token = tokens[type_name_pos as usize].clone();
-                    errors.push(val_err(type_name_tok.clone(), lbl_type.clone(), rule_list_validator.clone()).clone());
+            // transpiler-deor/tokens_validator/macros/check_type_base_primitive.deor
+            let mut tbp_pos: i64 = pos + 3.clone();
+            if tbp_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/check_type_base_primitive.deor
+                let mut tbp_tok: Token = tokens[tbp_pos as usize].clone();
+                let mut value = tbp_tok.value.clone();
+                let mut tbp_is_int: bool = value == "int".clone();
+                let mut tbp_is_float: bool = value == "float".clone();
+                let mut tbp_is_string: bool = value == "string".clone();
+                let mut tbp_is_bool: bool = value == "bool".clone();
+                let mut tbp_is_primitive: bool = tbp_is_int || tbp_is_float || tbp_is_string || tbp_is_bool.clone();
+                if !tbp_is_primitive {
+                    // transpiler-deor/tokens_validator/macros/check_type_base_primitive.deor
+                    let mut tbp_name_pos: i64 = pos + 1.clone();
+                    let mut tbp_name_tok: Token = tokens[tbp_name_pos as usize].clone();
+                    errors.push(val_err(tbp_name_tok.clone(), lbl_type.clone(), rule_non_primitive_validator.clone()).clone());
                 }
             }
         }
@@ -3213,7 +3218,12 @@ fn validate_tokens(tokens: TokensRef) {
                 // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
                 let mut ra_eq_tok: Token = tokens[ra_eq_pos as usize].clone();
                 let mut kind = ra_eq_tok.kind.clone();
-                if kind == "EQUALS" {
+                if kind == "KW_AS" {
+                    // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
+                    let mut ra_as_name_pos: i64 = pos + 1.clone();
+                    let mut ra_as_name_tok: Token = tokens[ra_as_name_pos as usize].clone();
+                    errors.push(val_err(ra_as_name_tok.clone(), lbl_var.clone(), rule_raw_as.clone()).clone());
+                } else if kind == "EQUALS" {
                     // transpiler-deor/tokens_validator/macros/check_raw_assignment.deor
                     let mut ra_name_pos: i64 = pos + 1.clone();
                     let mut ra_name_tok: Token = tokens[ra_name_pos as usize].clone();

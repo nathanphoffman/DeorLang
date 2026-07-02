@@ -16,7 +16,7 @@ macro define_errors
 	string rule_enum_data = "enum variants cannot carry data — use a struct alongside the enum instead"
 	string rule_typed_enum_eq = "typed enum variant must have a value — add '= value' after the variant name"
 	string rule_untyped_enum_eq = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants"
-	string rule_list_validator = "list shapes cannot be validator base types — validators only wrap primitives"
+	string rule_non_primitive_validator = "validator base type must be a primitive (int, float, string, bool) — structs, list shapes, and other validator types cannot be used"
 
 	# function rules
 	string rule_max_params = "functions may have at most 3 parameters"
@@ -59,6 +59,7 @@ macro define_errors
 	string rule_raw_in_expr = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block"
 	string rule_raw_reassign = "raw variables cannot be reassigned — declare a new 'raw name = expr' instead"
 	string rule_raw_assignment = "raw variables can only be assigned from a function call — use 'raw name = some_function()', not a literal or an inline rust block"
+	string rule_raw_as = "raw declarations must use '=', not 'as' — 'raw name = call()' declares an opaque value from a function call"
 
 	# struct field rules
 	string rule_no_func_field = "func shapes cannot be struct fields — pass the func shape as a function parameter instead"

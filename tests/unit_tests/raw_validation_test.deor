@@ -19,6 +19,9 @@ fn void test_raw_assignment_rust_block()
 fn void test_raw_assignment_literal()
 	raw bad_b = 5
 
+fn void test_raw_as_binding()
+	raw bad_h as 0
+
 # -----------------------------------------------------------------------
 # 2. raw cannot be given another type — typed binding or 'as' rebind
 # -----------------------------------------------------------------------
@@ -65,10 +68,11 @@ fn void main()
 # expect-error:
 # line 16: variable 'bad_a' - raw variables can only be assigned from a function call
 # line 20: variable 'bad_b' - raw variables can only be assigned from a function call
-# line 27: variable 'good_a' - raw variables cannot be used in Deor operators, builtins, or rebindings
-# line 31: variable 'good_b' - raw variables cannot be used in Deor operators, builtins, or rebindings
-# line 38: variable 'good_c' - raw variables cannot be reassigned
-# line 45: variable 'good_d' - raw variables cannot be used in Deor operators, builtins, or rebindings
-# line 52: variable 'good_e' - raw variables cannot be used in Deor operators, builtins, or rebindings
-# line 56: variable 'good_f' - raw variables cannot be used in Deor operators, builtins, or rebindings
-# line 60: variable 'good_g' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 23: variable 'bad_h' - raw declarations must use '='
+# line 30: variable 'good_a' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 34: variable 'good_b' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 41: variable 'good_c' - raw variables cannot be reassigned
+# line 48: variable 'good_d' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 55: variable 'good_e' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 59: variable 'good_f' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 63: variable 'good_g' - raw variables cannot be used in Deor operators, builtins, or rebindings

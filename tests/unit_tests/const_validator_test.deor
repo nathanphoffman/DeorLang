@@ -1,11 +1,16 @@
 # const_validator_test.deor
 # Exercises the const and validator-type validator rules: a validator type's
 # own declaration shadowing its type name or base type, a validator built on
-# a list shape instead of a primitive, reassigning a const, using 'empty' on
-# a validator type, reassigning a validator-type variable without re-running
-# its predicate, and 'avow' used on a non-validator variable.
+# a list shape, a struct, or another validator type (including itself) instead
+# of a primitive, reassigning a const, using 'empty' on a validator type,
+# reassigning a validator-type variable without re-running its predicate, and
+# 'avow' used on a non-validator variable.
 
 shape intList = list of int
+
+struct Point
+	int pos_x
+	int pos_y
 
 type Positive(int val)
 	val > 0
@@ -17,6 +22,12 @@ type Weight(int int)
 	int > 0
 
 type BadValidator(intList vals)
+	true
+
+type BadStructValidator(Point vals)
+	true
+
+type SelfValidator(SelfValidator vals)
 	true
 
 fn void test_const_reassign()
@@ -41,10 +52,12 @@ fn void main()
 	test_avow_non_validator()
 
 # expect-error:
-# line 13: type 'Roll' - validator parameter name cannot be the same as the type name
-# line 16: type 'int' - parameter name cannot be the same as its type
-# line 19: type 'BadValidator' - list shapes cannot be validator base types
-# line 24: variable 'PIPE' - cannot reassign a const variable
-# line 27: variable 'empty' - empty is not valid for validator types
-# line 31: variable 'pos_val' - cannot reassign a validator type variable
-# line 35: variable 'plain' - avow can only be used on a validator type variable
+# line 18: type 'Roll' - validator parameter name cannot be the same as the type name
+# line 21: type 'int' - parameter name cannot be the same as its type
+# line 24: type 'BadValidator' - validator base type must be a primitive
+# line 27: type 'BadStructValidator' - validator base type must be a primitive
+# line 30: type 'SelfValidator' - validator base type must be a primitive
+# line 35: variable 'PIPE' - cannot reassign a const variable
+# line 38: variable 'empty' - empty is not valid for validator types
+# line 42: variable 'pos_val' - cannot reassign a validator type variable
+# line 46: variable 'plain' - avow can only be used on a validator type variable

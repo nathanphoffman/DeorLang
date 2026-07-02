@@ -1,0 +1,20 @@
+
+# Flags `type Name(baseType ...)` where the base type is not a primitive (int, float, string, bool) —
+# validators can only wrap primitives, not structs, list shapes, or other validator types (including themselves).
+macro check_type_base_primitive
+	if cur_kind is "KW_TYPE"
+		# ex: type Foo({intList} value) — pos+3 grabs the base type
+		int tbp_pos = pos + 3
+		if tbp_pos < token_count
+			Token tbp_tok = tokens at tbp_pos
+			(value) in tbp_tok
+			bool tbp_is_int = value is "int"
+			bool tbp_is_float = value is "float"
+			bool tbp_is_string = value is "string"
+			bool tbp_is_bool = value is "bool"
+			bool tbp_is_primitive = tbp_is_int or tbp_is_float or tbp_is_string or tbp_is_bool
+			if not tbp_is_primitive
+				# ex: type {Foo}(intList value) — pos+1 grabs the type name
+				int tbp_name_pos = pos + 1
+				Token tbp_name_tok = tokens at tbp_name_pos
+				errors at end = val_err(tbp_name_tok, lbl_type, rule_non_primitive_validator)

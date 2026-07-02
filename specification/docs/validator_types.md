@@ -17,11 +17,13 @@ This defines `Positive`, built on `int`, with one rule: greater than zero. Assig
 
 **The predicate body is mandatory** — a `type` with no rule means nothing more than its base type, so the transpiler rejects an empty body. Just use the base type directly if you don't need a check.
 
-The base type must be a primitive (`int`, `float`, `string`, `bool`) or a struct — list shapes are not valid as a validator base type and are a transpiler error:
+The base type must be a primitive (`int`, `float`, `string`, `bool`) — structs, list shapes, and other validator types (including the type referencing itself) are not valid as a validator base type and are transpiler errors:
 
 ```
-type Foo(int val)       # correct — primitive base type
-type Foo(intList val)   # transpiler error — list shapes cannot be validator base types
+type Foo(int val)          # correct — primitive base type
+type Foo(intList val)      # transpiler error — list shapes cannot be validator base types
+type Foo(Point val)        # transpiler error — structs cannot be validator base types
+type Foo(Foo val)          # transpiler error — a validator type cannot reference itself
 ```
 
 The parameter name cannot shadow the type name or its own base type — both are transpiler errors:

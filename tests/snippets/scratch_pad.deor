@@ -1,16 +1,9 @@
 
 
-type Positive(Positive val)
-    val > 0
 
 fn void main()
     print("Hello World!")
 
-    (input_list) in args()
+    (input_list) in input()
     item as input_list at 0
     print("You entered " + item)
-
-    Positive hello = 2
-
-    # this should not be allowed
-    #raw hello = 0

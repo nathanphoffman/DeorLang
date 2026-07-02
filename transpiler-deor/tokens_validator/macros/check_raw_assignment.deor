@@ -12,7 +12,12 @@ macro check_raw_assignment
 		if ra_eq_pos < token_count
 			Token ra_eq_tok = tokens at ra_eq_pos
 			(kind) in ra_eq_tok
-			if kind is "EQUALS"
+			if kind is "KW_AS"
+				# ex: raw {name} as 0 — pos+1 grabs the binding name for the error
+				int ra_as_name_pos = pos + 1
+				Token ra_as_name_tok = tokens at ra_as_name_pos
+				errors at end = val_err(ra_as_name_tok, lbl_var, rule_raw_as)
+			else if kind is "EQUALS"
 				# ex: raw {name} = call() — pos+1 grabs the binding name
 				int ra_name_pos = pos + 1
 				Token ra_name_tok = tokens at ra_name_pos
