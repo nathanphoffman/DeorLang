@@ -1,6 +1,10 @@
 
 # Default typed binding: emits `let [mut] name: RustType = val[suffix]` where suffix is
 # `.to_string()` for string literals, `.clone()` for plain identifiers, and empty otherwise.
+# Both suffixes assume val is a single bare token/call — safe to skip entirely when val is
+# actually a binary-op chain (e.g. `prefix + &content + "\n"`), since a chain already
+# produces a correctly owned value by construction, and appending a suffix meant for a
+# single token would land on the chain's last operand instead of the whole expression.
 macro tb_default
 	bool tb_is_float = var_type is "float"
 	if tb_is_float
@@ -15,19 +19,38 @@ macro tb_default
 	string mut_kw = ""
 	if mg_is_mut
 		mut_kw = "mut "
+
+	bool tb_is_chain = false
+	int tb_scan = val_pos
+	int tb_depth = 0
+	for if tb_scan < val_end
+		Token tb_scan_tok = tokens at tb_scan
+		(kind) in tb_scan_tok
+		if kind is "LPAREN"
+			tb_depth = tb_depth + 1
+		if kind is "RPAREN"
+			if tb_depth > 0
+				tb_depth = tb_depth - 1
+		if tb_depth is 0
+			if is_binary_op(kind)
+				tb_is_chain = true
+				break
+		tb_scan = tb_scan + 1
+
 	string suffix = ""
-	if kind is "STRING"
-		suffix = ".to_string()"
-	else if kind is "IDENT"
-		# ex: Type name = other{(}x) — val_pos+1 checks for a call/index after the identifier
-		int val_next_idx = val_pos + 1
-		if val_next_idx < token_count
-			Token next_val_tok = tokens at val_next_idx
-			(kind) in next_val_tok
-			bool val_is_call = kind is "LPAREN"
-			bool val_is_idx = kind is "KW_AT"
-			if not val_is_call
-				if not val_is_idx
-					suffix = ".clone()"
+	if not tb_is_chain
+		if kind is "STRING"
+			suffix = ".to_string()"
+		else if kind is "IDENT"
+			# ex: Type name = other{(}x) — val_pos+1 checks for a call/index after the identifier
+			int val_next_idx = val_pos + 1
+			if val_next_idx < token_count
+				Token next_val_tok = tokens at val_next_idx
+				(kind) in next_val_tok
+				bool val_is_call = kind is "LPAREN"
+				bool val_is_idx = kind is "KW_AT"
+				if not val_is_call
+					if not val_is_idx
+						suffix = ".clone()"
 	string bind_code = s_join([pad, RS_LET, mut_kw, var_name, RS_COL, rust_type, RS_EQ, val_code, suffix, RS_SC])
 	return make_nl_result(move bind_code, val_end, tokens)

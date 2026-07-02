@@ -1,0 +1,26 @@
+# string_concat_test.deor
+# Regression test for `+` string-concat chains where the literal that
+# identifies the chain as string concatenation isn't the first operand.
+# Previously `prefix + content + "!"` failed to compile (String + String
+# has no native Rust translation) because promotion only triggered off the
+# very first token. Fixed by scanning the whole `+` chain for a literal
+# before deciding, then chaining every operand as `first + &rest...`.
+
+fn void main()
+	prefix as "pre-"
+	content as "mid"
+	string chained = prefix + content + "!"
+	print(chained)
+
+	aaa as "a"
+	bbb as "b"
+	string three_deep = aaa + bbb + "-end"
+	print(three_deep)
+
+	string all_literals = "fn " + "main" + "()"
+	print(all_literals)
+
+# expect:
+# pre-mid!
+# ab-end
+# fn main()

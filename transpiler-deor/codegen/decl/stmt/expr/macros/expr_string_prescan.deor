@@ -1,0 +1,43 @@
+
+# Pre-scans the current run of `+` operators (stopping at any other binary
+# operator, NEWLINE, EOF, or an unmatched RPAREN) for a STRING literal. If one
+# appears anywhere in the chain, the whole chain is treated as string
+# concatenation rather than arithmetic — see expr_string_concat. Scoped to
+# just the `+` run (unlike expr_float_prescan, which scans the whole
+# expression) because concatenation only ever applies to `+`.
+macro expr_string_prescan
+	bool expr_has_str_lit = false
+	int estr_scan = pos
+	int estr_depth = 0
+	for if estr_scan < token_count
+		Token estr_tok = tokens at estr_scan
+		(kind) in estr_tok
+		if kind is "NEWLINE"
+			break
+		if kind is "EOF"
+			break
+		if kind is "LPAREN"
+			estr_depth = estr_depth + 1
+		else if kind is "LBRACKET"
+			estr_depth = estr_depth + 1
+		else if kind is "RPAREN"
+			if estr_depth is 0
+				break
+			estr_depth = estr_depth - 1
+		else if kind is "RBRACKET"
+			if estr_depth is 0
+				break
+			estr_depth = estr_depth - 1
+		else if kind is "COMMA"
+			if estr_depth is 0
+				break
+		else if kind is "STRING"
+			# Only a literal that's actually part of THIS chain (not one buried inside a
+			# nested call's own args or a nested list literal) should count.
+			if estr_depth is 0
+				expr_has_str_lit = true
+		if estr_depth is 0
+			if is_binary_op(kind)
+				if kind is not "PLUS"
+					break
+		estr_scan = estr_scan + 1

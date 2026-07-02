@@ -67,7 +67,7 @@ type Squarefeet(int val)
 
 ```
 Squarefeet area = 9     # valid — predicate passes
-Squarefeet area = -1    # transpiler error — literal value fails predicate at compile time
+Squarefeet area = -1    # transpiles and compiles fine — not valid only at runtime
 ```
 
 ---
@@ -222,4 +222,4 @@ if crit is valid
 - `(avow val)` → `.unwrap().0`.
 - Equality (`is` / `is not`) transpiles to `==` / `!=` in Rust and falls through to `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
 - `and` / `or` / `not` map to `&&` / `||` / `!`.
-- Literal predicate failures (`Squarefeet area = -1`) are caught at transpile time.
+- The predicate always runs at runtime inside `new()` — even for literals like `Squarefeet area = -1`. There is no compile-time evaluation of the predicate, but it is runtime validated.

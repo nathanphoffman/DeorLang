@@ -1,6 +1,8 @@
 
 # Default as-binding: emits `let [mut] name = expr[.to_string()]` for any `name as expr` form
-# not handled by the other aas macros.
+# not handled by the other aas macros. Skipped when expr is a binary-op chain (e.g.
+# `x as a + b + "c"`) — a chain already produces a correctly owned value, and this
+# suffix is meant for a single token.
 macro aas_default
 	(kind) in after_as_token
 	val_pos as after_as
@@ -8,7 +10,27 @@ macro aas_default
 	move (code, new_pos) in ge_r
 	val_code as code
 	val_end as new_pos
-	bool aas_is_str = kind is "STRING"
+
+	bool aas_is_chain = false
+	int aas_scan = val_pos
+	int aas_depth = 0
+	for if aas_scan < val_end
+		Token aas_scan_tok = tokens at aas_scan
+		(kind) in aas_scan_tok
+		if kind is "LPAREN"
+			aas_depth = aas_depth + 1
+		if kind is "RPAREN"
+			if aas_depth > 0
+				aas_depth = aas_depth - 1
+		if aas_depth is 0
+			if is_binary_op(kind)
+				aas_is_chain = true
+				break
+		aas_scan = aas_scan + 1
+
+	bool aas_is_str = false
+	if not aas_is_chain
+		aas_is_str = kind is "STRING"
 	string var_name = ident_name
 	bool mg_is_mut = list_has(mut_names, var_name)
 	string mut_kw = ""

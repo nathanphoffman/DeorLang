@@ -2,6 +2,8 @@
 
 
 fn void main()
-    print("Hello World!")
+    print("hola" + "Hello World!" + "hi")
+
+
 
     

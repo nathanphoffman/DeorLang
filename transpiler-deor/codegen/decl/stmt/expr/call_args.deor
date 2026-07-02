@@ -2,6 +2,8 @@
 # Parses the argument list for a function call and generates Rust code for each arg.
 # Applies ownership coercions: string literals get `.to_string()`, plain identifiers
 # get `.clone()`. Call results and index reads are already owned and pass through as-is.
+# Skipped entirely when the arg is a binary-op chain (e.g. `a + &b + "c"`) — a chain
+# already produces a correctly owned value, and this suffix is meant for a single token.
 fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 	strList arg_codes = empty
 	int cur = pos
@@ -25,22 +27,40 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		move (code, new_pos) in arg_r
 		arg_code as code
 		arg_pos as new_pos
+		bool ca_is_chain = false
+		int ca_scan = cur
+		int ca_depth = 0
+		for if ca_scan < arg_pos
+			Token ca_scan_tok = tokens at ca_scan
+			(kind) in ca_scan_tok
+			if kind is "LPAREN"
+				ca_depth = ca_depth + 1
+			if kind is "RPAREN"
+				if ca_depth > 0
+					ca_depth = ca_depth - 1
+			if ca_depth is 0
+				if is_binary_op(kind)
+					ca_is_chain = true
+					break
+			ca_scan = ca_scan + 1
+
 		Token start_token = tokens at cur
 		(kind) in start_token
-		if kind is "STRING"
-			arg_code = s_join([arg_code, RS_TOS])
-		else if kind is "IDENT"
-			int next_cur = cur + 1
-			bool peek_is_call = false
-			bool peek_is_idx = false
-			if next_cur < token_count
-				Token next_tok = tokens at next_cur
-				(kind) in next_tok
-				peek_is_call = kind is "LPAREN"
-				peek_is_idx = kind is "KW_AT"
-			if not peek_is_call
-				if not peek_is_idx
-					arg_code = s_join([arg_code, RS_CLN])
+		if not ca_is_chain
+			if kind is "STRING"
+				arg_code = s_join([arg_code, RS_TOS])
+			else if kind is "IDENT"
+				int next_cur = cur + 1
+				bool peek_is_call = false
+				bool peek_is_idx = false
+				if next_cur < token_count
+					Token next_tok = tokens at next_cur
+					(kind) in next_tok
+					peek_is_call = kind is "LPAREN"
+					peek_is_idx = kind is "KW_AT"
+				if not peek_is_call
+					if not peek_is_idx
+						arg_code = s_join([arg_code, RS_CLN])
 		arg_codes at end = arg_code
 		cur = arg_pos
 	string args_str = s_join_with(arg_codes, RS_CSEP)

@@ -50,13 +50,15 @@ fn string map_op(string operator)
 # Parses a full expression using a left-associative loop over binary operators. Calls
 # gen_primary for the left operand, then repeatedly folds in right operands as long as
 # the next token is a binary operator. Handles the two-token `is not` operator and
-# string-concatenation promotion: emits `format!("{}{}", ...)` when either side is a
-# string literal, and appends `.as_str()` when chaining an identifier onto an already
-# promoted String expression.
+# string-concatenation: once expr_string_prescan finds a STRING literal anywhere in the
+# current `+` chain, every operand is chained with native Rust `+`/`&` (see
+# expr_string_concat) — a literal leading operand gets `.to_string()` here to become an
+# owned String; everything after the first is borrowed by expr_string_concat.
 fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	int token_count = len(tokens)
 
 	macro_run expr_float_prescan
+	macro_run expr_string_prescan
 
 	ParseResult primary_r = gen_primary(tokens, pos, ctx)
 	move (code, new_pos) in primary_r
@@ -64,7 +66,18 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	cur_pos as new_pos
 	Token first_token = tokens at pos
 	(kind) in first_token
-	bool left_has_str = kind is "STRING"
+	if expr_has_str_lit
+		if kind is "STRING"
+			# A leading literal only needs `.to_string()` when it's actually the start of
+			# a `+` chain (expr_string_concat handles the rest). A standalone literal with
+			# no `+` after it — e.g. one item inside `s_join([...])` — must stay a bare
+			# &str; expr_has_str_lit is trivially true for it (it IS the literal the
+			# prescan found), so that flag alone isn't enough to gate this.
+			Token after_primary_tok = tokens at cur_pos
+			(kind) in after_primary_tok
+			if kind is "PLUS"
+				string ts_sfx = ".to_string()"
+				left_code = s_cat(move left_code, ts_sfx)
 
 	for if cur_pos < token_count
 		Token operator_token = tokens at cur_pos

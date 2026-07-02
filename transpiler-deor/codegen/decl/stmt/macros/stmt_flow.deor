@@ -3,6 +3,9 @@
 #   return expr  → `return expr[.to_string()];`
 #   break        → `break;`
 #   continue     → `continue;`
+# The `.to_string()` suffix is skipped when expr is a binary-op chain (e.g.
+# `return a + b + "c"`) — a chain already produces a correctly owned value, and this
+# suffix is meant for a single token.
 macro stmt_flow
 	if kind is "KW_RETURN"
 		# ex: return {expr} — pos+1 grabs the return value expression
@@ -13,9 +16,28 @@ macro stmt_flow
 		move (code, new_pos) in sf_val_r
 		sf_val_code as code
 		sf_val_end as new_pos
+
+		bool sf_is_chain = false
+		int sf_scan = sf_val_pos
+		int sf_depth = 0
+		for if sf_scan < sf_val_end
+			Token sf_scan_tok = tokens at sf_scan
+			(kind) in sf_scan_tok
+			if kind is "LPAREN"
+				sf_depth = sf_depth + 1
+			if kind is "RPAREN"
+				if sf_depth > 0
+					sf_depth = sf_depth - 1
+			if sf_depth is 0
+				if is_binary_op(kind)
+					sf_is_chain = true
+					break
+			sf_scan = sf_scan + 1
+
 		string sf_suffix = ""
-		if kind is "STRING"
-			sf_suffix = ".to_string()"
+		if not sf_is_chain
+			if kind is "STRING"
+				sf_suffix = ".to_string()"
 		string sf_ret_kw = "return "
 		string sf_ret_sc = ";\n"
 		string sf_ret_code = s_join([pad, sf_ret_kw, sf_val_code, sf_suffix, sf_ret_sc])

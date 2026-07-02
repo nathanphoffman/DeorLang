@@ -1,31 +1,25 @@
 
-# Inside the binary-op loop: handles `+` string concatenation. When the left side is a
-# string literal emits `format!("{}{}", left, rhs)` and continues. When the left is already
-# a promoted String expression, appends `.as_str()` to an rhs identifier. Tracks
-# `left_has_str` so subsequent segments chain correctly.
+# Inside the binary-op loop: handles `+` string concatenation. Whether the
+# whole chain is concatenation is decided once, up front, by
+# expr_string_prescan (expr_has_str_lit) — not per-token — so a chain like
+# `prefix + content + "\n"` is recognized even though the literal isn't the
+# first operand.
+#
+# Once recognized, every operand becomes a native Rust `+`/`&` chain
+# (`s1 + &s2 + &s3 + ...`), the same pattern you'd write by hand: `String`
+# only implements `Add<&str>`, never `Add<String>`, so every operand after
+# the first must be borrowed. A literal never needs `&` — it's already
+# `&str`. (The chain's first operand is handled separately in gen_expr: a
+# literal there gets `.to_string()` to become an owned String; a variable or
+# call already produces one.) This macro only ever adjusts `rhs_code` and
+# falls through to the loop's normal `left_code + op + rhs_code` append —
+# it does not build the joined string itself.
 macro expr_string_concat
 	if operator_str is "+"
-		Token left_token = tokens at pos
-		(kind) in left_token
-		bool left_is_str = kind is "STRING"
-		Token rhs_token = tokens at after_op
-		(kind) in rhs_token
-		bool rhs_is_str = kind is "STRING"
-		bool rhs_is_ident = kind is "IDENT"
-		if left_is_str
-			string fmt_pfx = "format!(\"{}{}\", "
-			string fmt_mid = ", "
-			string fmt_sfx = ")"
-			left_code = s_cat(fmt_pfx, move left_code)
-			left_code = s_cat(move left_code, fmt_mid)
-			left_code = s_cat(move left_code, rhs_code)
-			left_code = s_cat(move left_code, fmt_sfx)
-			left_has_str = true
-			cur_pos = rhs_pos
-			continue
-		if left_has_str
-			if rhs_is_ident
-				string astr_sfx = ".as_str()"
-				rhs_code = s_cat(move rhs_code, astr_sfx)
-		if rhs_is_str
-			left_has_str = true
+		if expr_has_str_lit
+			Token rhs_token = tokens at after_op
+			(kind) in rhs_token
+			bool rhs_is_str = kind is "STRING"
+			if not rhs_is_str
+				string amp = "&"
+				rhs_code = s_cat(amp, move rhs_code)
