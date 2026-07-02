@@ -85,6 +85,7 @@ import "transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deo
 import "transpiler-deor/tokens_validator/macros/check_with_parens.deor"
 import "transpiler-deor/tokens_validator/macros/check_empty_parens.deor"
 import "transpiler-deor/tokens_validator/macros/check_paren_balance.deor"
+import "transpiler-deor/tokens_validator/macros/check_bracket_balance.deor"
 import "transpiler-deor/tokens_validator/macros/check_not_is_order.deor"
 import "transpiler-deor/tokens_validator/macros/check_type_base_primitive.deor"
 import "transpiler-deor/tokens_validator/macros/check_fn_declaration.deor"

@@ -94,7 +94,6 @@ Open an indented block when followed by a newline.
 | Word | Use |
 |---|---|
 | `return` | Return a value from a function |
-| `crash` | Unrecoverable hard stop (`panic!`) |
 | `avow` | Forced unwrap of a validator type — panics if not valid |
 | `break` | Exit the innermost loop |
 | `continue` | Skip to the next loop iteration |
@@ -132,7 +131,7 @@ Open an indented block when followed by a newline.
 | `list` | Parameterized list — always used inside a `shape` declaration |
 | `func` | Parameterized function type — always used inside a `shape` declaration |
 
-**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a for-loop-only construct — it is not a callable function and cannot be used outside a `for` header (e.g. assigned to a variable or passed as an argument). `end` is a reserved keyword — only valid as `list at end = val`, and cannot be used as a variable name. `valid` is a reserved keyword — only valid after `is` or `is not`.
+**Note:** `remove` is a reserved mutation verb for lists and cannot be used as an identifier. `range` is a for-loop-only construct — it is not a callable function and cannot be used outside a `for` header (e.g. assigned to a variable or passed as an argument). `end` is a reserved keyword — only valid as `list at end = val`, and cannot be used as a variable name. `valid` is a reserved keyword — only valid after `is` or `is not`. `none` is a reserved keyword — it exists solely so `return none` produces a clear error (see [Functions](docs/functions.md)); it is not a usable value and cannot be used as an identifier. `crash` is **not** a reserved keyword — it's a regular builtin function name with its own argument-count validation (see [Builtins](docs/builtins.md#crash)); nothing stops it from being shadowed as a variable or function name, though doing so is not recommended.
 
 ### Banned Rust Type Names
 

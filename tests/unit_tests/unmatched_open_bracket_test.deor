@@ -1,0 +1,12 @@
+# unmatched_open_bracket_test.deor
+# Exercises check_bracket_balance.deor's unclosed-'[' case — the bracket
+# equivalent of unmatched_open_paren_test.deor's unclosed-'(' check.
+
+shape intList = list of int
+
+fn void main()
+	intList nums = [1, 2
+	print("hi")
+
+# expect-error:
+# line 8: variable '[' - '[' is never closed

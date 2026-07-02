@@ -141,7 +141,7 @@ Two built-in forms for reading word-split data into named variables. Both use th
 | `second` | `string` | second word |
 | `third` | `string` | third word |
 | `input_string` | `string` | all words joined with a single space |
-| `input_list` | `strList` | all words as a list |
+| `input_list` | `stringList` | all words as a list |
 
 Missing words default to `""` — no crash. Use `if first is ""` to detect absence.
 

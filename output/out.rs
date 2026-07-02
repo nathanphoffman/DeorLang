@@ -2198,6 +2198,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_unmatched_open_paren: String = "'(' is never closed — every open paren needs a matching ')'".to_string();
     let mut rule_unmatched_close_paren: String = "')' has no matching '(' before it — remove the extra ')' or add the missing '('".to_string();
     let mut rule_empty_parens: String = "'()' is not valid — parens must contain at least one item, except when declaring or calling a zero-parameter function".to_string();
+    let mut rule_unmatched_open_bracket: String = "'[' is never closed — every open bracket needs a matching ']'".to_string();
+    let mut rule_unmatched_close_bracket: String = "']' has no matching '[' before it — remove the extra ']' or add the missing '['".to_string();
     let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
     let mut rule_validator_reassign: String = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate".to_string();
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
@@ -2247,6 +2249,46 @@ fn validate_tokens(tokens: TokensRef) {
         let mut file: String = pb_open_file.clone();
         let mut pb_open_tok = Token { kind: kind.clone(), value: value.clone(), line: line.clone(), file: file.clone() };
         errors.push(val_err(pb_open_tok.clone(), lbl_var.clone(), rule_unmatched_open_paren.clone()).clone());
+    }
+    // macro: check_bracket_balance (transpiler-deor/tokens_validator/macros/check_bracket_balance.deor)
+    let mut bb_depth: i64 = 0;
+    let mut bb_open_line: i64 = 0;
+    let mut bb_open_file: String = "".to_string();
+    let mut bb_i: i64 = 0;
+    while bb_i < token_count {
+        // transpiler-deor/tokens_validator/macros/check_bracket_balance.deor
+        let mut bb_tok: Token = tokens[bb_i as usize].clone();
+        let mut kind = bb_tok.kind.clone();
+        let mut line = bb_tok.line.clone();
+        let mut file = bb_tok.file.clone();
+        if kind == "LBRACKET" {
+            // transpiler-deor/tokens_validator/macros/check_bracket_balance.deor
+            if bb_depth == 0 {
+                // transpiler-deor/tokens_validator/macros/check_bracket_balance.deor
+                bb_open_line = line;
+                bb_open_file = file;
+            }
+            bb_depth = bb_depth + 1;
+        } else if kind == "RBRACKET" {
+            // transpiler-deor/tokens_validator/macros/check_bracket_balance.deor
+            if bb_depth == 0 {
+                // transpiler-deor/tokens_validator/macros/check_bracket_balance.deor
+                errors.push(val_err(bb_tok.clone(), lbl_var.clone(), rule_unmatched_close_bracket.clone()).clone());
+            } else {
+                // transpiler-deor/tokens_validator/macros/check_bracket_balance.deor
+                bb_depth = bb_depth - 1;
+            }
+        }
+        bb_i = bb_i + 1;
+    }
+    if bb_depth > 0 {
+        // transpiler-deor/tokens_validator/macros/check_bracket_balance.deor
+        let mut kind: String = "LBRACKET".to_string();
+        let mut value: String = "[".to_string();
+        let mut line: i64 = bb_open_line.clone();
+        let mut file: String = bb_open_file.clone();
+        let mut bb_open_tok = Token { kind: kind.clone(), value: value.clone(), line: line.clone(), file: file.clone() };
+        errors.push(val_err(bb_open_tok.clone(), lbl_var.clone(), rule_unmatched_open_bracket.clone()).clone());
     }
     // transpiler-deor/tokens_validator/tokens_validation.deor
     handle_errors(errors.clone());

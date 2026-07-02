@@ -1,0 +1,10 @@
+# unmatched_close_bracket_test.deor
+# Exercises check_bracket_balance.deor's extra-']' case — the bracket
+# equivalent of unmatched_close_paren_test.deor's extra-')' check.
+
+fn void main()
+	int total = 1 + 2]
+	print(total)
+
+# expect-error:
+# line 6: variable ']' - ']' has no matching '[' before it

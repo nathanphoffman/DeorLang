@@ -30,6 +30,7 @@ fn void validate_tokens(TokensRef tokens)
 	# other paren_depth-dependent check for the remainder of the file (see
 	# check_paren_balance.deor), so it must be reported before anything else runs.
 	macro_run check_paren_balance
+	macro_run check_bracket_balance
 	handle_errors(errors)
 
 	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_IMPORT", "KW_MACRO", "KW_VOID", "KW_RAW"]
