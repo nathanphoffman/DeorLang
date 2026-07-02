@@ -183,14 +183,6 @@ fn f_args() -> Vec<String> {
 }
 
 // transpiler-deor/lib/list.deor
-fn l_slice(tokens: Vec<Token>, start: i64, end_val: i64) -> Vec<Token> {
-    // transpiler-deor/lib/list.deor
-    {
-    	let end = (end_val as usize).min(tokens.len());
-    	tokens[start as usize..end].to_vec()
-    }
-}
-
 fn l_slice_ref(tokens: TokensRef, start: i64, end_val: i64) -> Vec<Token> {
     // transpiler-deor/lib/list.deor
     {
@@ -204,11 +196,6 @@ fn is_empty(source: String) -> bool {
     // transpiler-deor/utils.deor
     let mut length: i64 = (source.len() as i64);
     return length == 0;
-}
-
-fn str_eq(left: String, right: String) -> bool {
-    // transpiler-deor/utils.deor
-    return left == right;
 }
 
 fn reg_get_stride(pairs: Vec<String>, key: String, stride: i64) -> String {
@@ -254,12 +241,6 @@ fn reg_has(pairs: Vec<String>, key: String) -> bool {
     // transpiler-deor/utils.deor
     let mut two: i64 = 2;
     return reg_has_stride(pairs.clone(), key.clone(), two.clone());
-}
-
-fn reg3_get(pairs: Vec<String>, key: String) -> String {
-    // transpiler-deor/utils.deor
-    let mut thr: i64 = 3;
-    return reg_get_stride(pairs.clone(), key.clone(), thr.clone());
 }
 
 fn reg3_has(pairs: Vec<String>, key: String) -> bool {
@@ -318,43 +299,6 @@ fn make_result(code: String, new_pos: i64) -> ParseResult {
     // transpiler-deor/deor_helpers.deor
     let result = ParseResult { code: code.clone(), new_pos: new_pos.clone() };
     return result;
-}
-
-fn adv_nl(pos: i64, tokens: Vec<Token>) -> i64 {
-    // transpiler-deor/deor_helpers.deor
-    let mut token_count: i64 = (tokens.len() as i64);
-    if pos < token_count {
-        // transpiler-deor/deor_helpers.deor
-        let mut cur_token: Token = tokens[pos as usize].clone();
-        let kind = cur_token.kind.clone();
-        if kind == "NEWLINE" {
-            // transpiler-deor/deor_helpers.deor
-            return pos + 1;
-        }
-    }
-    return pos;
-}
-
-fn adv_indent(pos: i64, tokens: Vec<Token>) -> i64 {
-    // transpiler-deor/deor_helpers.deor
-    let mut token_count: i64 = (tokens.len() as i64);
-    if pos < token_count {
-        // transpiler-deor/deor_helpers.deor
-        let mut cur_token: Token = tokens[pos as usize].clone();
-        let kind = cur_token.kind.clone();
-        if kind == "INDENT" {
-            // transpiler-deor/deor_helpers.deor
-            return pos + 1;
-        }
-    }
-    return pos;
-}
-
-fn skip_to_body(tokens: Vec<Token>, pos: i64) -> i64 {
-    // transpiler-deor/deor_helpers.deor
-    let mut cur: i64 = adv_nl(pos.clone(), tokens.clone());
-    cur = adv_indent(cur.clone(), tokens.clone());
-    return cur;
 }
 
 fn adv_nl_ref(pos: i64, tokens: TokensRef) -> i64 {
@@ -1103,11 +1047,6 @@ fn scan_import_where(tokens: Vec<Token>, pos: i64) -> ParseResult {
 }
 
 // transpiler-deor/importer/t_substitute.deor
-fn s_to_lower(source: String) -> String {
-    // transpiler-deor/importer/t_substitute.deor
-    source.to_lowercase()
-}
-
 fn s_camel(source: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     let mut chars = source.chars();
@@ -1307,69 +1246,6 @@ fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: Strin
         }
     }
     return result;
-}
-
-// transpiler-deor/importer/decl_bounds.deor
-fn name_of_decl(tokens: Vec<Token>, pos: i64, is_fn: bool) -> String {
-    // transpiler-deor/importer/decl_bounds.deor
-    let mut token_count: i64 = (tokens.len() as i64);
-    let mut name_offset: i64 = 1;
-    if is_fn {
-        // transpiler-deor/importer/decl_bounds.deor
-        name_offset = 2;
-    }
-    let mut name_pos: i64 = pos + name_offset;
-    if name_pos < token_count {
-        // transpiler-deor/importer/decl_bounds.deor
-        let mut name_tok: Token = tokens[name_pos as usize].clone();
-        let value = name_tok.value.clone();
-        return value;
-    }
-    return "".to_string();
-}
-
-fn end_of_block(tokens: Vec<Token>, pos: i64) -> i64 {
-    // transpiler-deor/importer/decl_bounds.deor
-    let mut token_count: i64 = (tokens.len() as i64);
-    let mut cur: i64 = pos.clone();
-    let mut depth: i64 = 0;
-    let mut entered: bool = false;
-    while cur < token_count {
-        // transpiler-deor/importer/decl_bounds.deor
-        let mut tok: Token = tokens[cur as usize].clone();
-        let kind = tok.kind.clone();
-        cur = cur + 1;
-        if kind == "INDENT" {
-            // transpiler-deor/importer/decl_bounds.deor
-            depth = depth + 1;
-            entered = true;
-        } else if kind == "DEDENT" {
-            // transpiler-deor/importer/decl_bounds.deor
-            depth = depth - 1;
-            if depth == 0 && entered {
-                // transpiler-deor/importer/decl_bounds.deor
-                break;
-            }
-        }
-    }
-    return cur;
-}
-
-fn end_of_shape(tokens: Vec<Token>, pos: i64) -> i64 {
-    // transpiler-deor/importer/decl_bounds.deor
-    let mut token_count: i64 = (tokens.len() as i64);
-    let mut cur: i64 = pos.clone();
-    while cur < token_count {
-        // transpiler-deor/importer/decl_bounds.deor
-        let mut tok: Token = tokens[cur as usize].clone();
-        let kind = tok.kind.clone();
-        cur = cur + 1;
-        if kind == "NEWLINE" {
-            // transpiler-deor/importer/decl_bounds.deor
-            break;
-        }
-    }
-    return cur;
 }
 
 // transpiler-deor/importer/load.deor
@@ -2388,7 +2264,6 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters)".to_string();
     let mut rule_screaming: String = "const name must be SCREAMING_SNAKE_CASE (all caps, underscores between words)".to_string();
     let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args".to_string();
-    let mut rule_dup: String = "duplicate declaration — this name is already used by another struct, enum, shape, fn, or type".to_string();
     let mut rule_enum_pascal: String = "enum variant must be PascalCase".to_string();
     let mut rule_enum_data: String = "enum variants cannot carry data — use a struct alongside the enum instead".to_string();
     let mut rule_typed_enum_eq: String = "typed enum variant must have a value — add '= value' after the variant name".to_string();
@@ -2570,7 +2445,6 @@ fn validate_tokens(tokens: TokensRef) {
         pre_i = pre_i + 1;
     }
     let mut shape_names: Vec<String> = Vec::new();
-    let mut decl_names: Vec<String> = Vec::new();
     let mut struct_field_reg: Vec<String> = Vec::new();
     let mut validator_vars: Vec<String> = Vec::new();
     let mut raw_var_names: Vec<String> = Vec::new();
@@ -2654,12 +2528,6 @@ fn validate_tokens(tokens: TokensRef) {
                                     if list_has(builtin_names.clone(), value.clone()) {
                                         // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
                                         errors.push(val_err(dn_name_tok.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
-                                    } else if list_has(decl_names.clone(), value.clone()) {
-                                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                                        errors.push(val_err(dn_name_tok.clone(), lbl_decl.clone(), rule_dup.clone()).clone());
-                                    } else {
-                                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                                        decl_names.push(value.clone());
                                     }
                                 }
                             }
@@ -2668,12 +2536,6 @@ fn validate_tokens(tokens: TokensRef) {
                             if list_has(builtin_names.clone(), value.clone()) {
                                 // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
                                 errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
-                            } else if list_has(decl_names.clone(), value.clone()) {
-                                // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                                errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_dup.clone()).clone());
-                            } else {
-                                // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                                decl_names.push(value.clone());
                             }
                         }
                     } else {
@@ -2681,12 +2543,6 @@ fn validate_tokens(tokens: TokensRef) {
                         if list_has(builtin_names.clone(), value.clone()) {
                             // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
                             errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
-                        } else if list_has(decl_names.clone(), value.clone()) {
-                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                            errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_dup.clone()).clone());
-                        } else {
-                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                            decl_names.push(value.clone());
                         }
                     }
                 }
@@ -2705,12 +2561,6 @@ fn validate_tokens(tokens: TokensRef) {
                     if list_has(builtin_names.clone(), value.clone()) {
                         // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
                         errors.push(val_err(fn_name_tok.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
-                    } else if list_has(decl_names.clone(), value.clone()) {
-                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                        errors.push(val_err(fn_name_tok.clone(), lbl_decl.clone(), rule_dup.clone()).clone());
-                    } else {
-                        // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                        decl_names.push(value.clone());
                     }
                 }
             }
@@ -4853,34 +4703,6 @@ fn resolve_type(type_name: String, shape_reg: Vec<String>, enum_reg: Vec<String>
 }
 
 // transpiler-deor/registry/mut_scan.deor
-fn find_block_end(tokens: Vec<Token>, indent_pos: i64) -> i64 {
-    // transpiler-deor/registry/mut_scan.deor
-    let mut token_count: i64 = (tokens.len() as i64);
-    let mut depth: i64 = 1;
-    let mut result: i64 = indent_pos.clone();
-    let mut start: i64 = indent_pos + 1;
-    for raw_i in start..token_count {
-        // transpiler-deor/registry/mut_scan.deor
-        let mut token: Token = tokens[raw_i as usize].clone();
-        let kind = token.kind.clone();
-        let value = token.value.clone();
-        let line = token.line.clone();
-        if kind == "INDENT" {
-            // transpiler-deor/registry/mut_scan.deor
-            depth = depth + 1;
-        } else if kind == "DEDENT" {
-            // transpiler-deor/registry/mut_scan.deor
-            depth = depth - 1;
-            if depth == 0 {
-                // transpiler-deor/registry/mut_scan.deor
-                result = raw_i;
-                break;
-            }
-        }
-    }
-    return result;
-}
-
 fn find_block_end_ref(tokens: TokensRef, indent_pos: i64) -> i64 {
     // transpiler-deor/registry/mut_scan.deor
     let mut token_count: i64 = (tokens.len() as i64);
@@ -7835,40 +7657,11 @@ fn cur_at(tokens: Vec<Token>, pos: i64) -> TokenCursor {
     return cur;
 }
 
-fn cur_next(cur: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
-    // transpiler-deor/codegen/decl/cursor.deor
-    let token_count = cur.token_count.clone();
-    let mut pos = cur.pos.clone();
-    let mut current = cur.current.clone();
-    let mut pos: i64 = pos + 1;
-    if pos < token_count {
-        // transpiler-deor/codegen/decl/cursor.deor
-        let mut current: Token = tokens[pos as usize].clone();
-        return TokenCursor { token_count, pos, current };
-    }
-    return TokenCursor { token_count, pos, current };
-}
-
 fn c_at_end(cur: TokenCursor) -> bool {
     // transpiler-deor/codegen/decl/cursor.deor
     let token_count = cur.token_count.clone();
     let pos = cur.pos.clone();
     return pos >= token_count;
-}
-
-fn cur_skip_to_body(cur: TokenCursor, tokens: Vec<Token>) -> TokenCursor {
-    // transpiler-deor/codegen/decl/cursor.deor
-    let pos = cur.pos.clone();
-    let mut body_pos: i64 = adv_nl(pos.clone(), tokens.clone());
-    body_pos = adv_indent(body_pos.clone(), tokens.clone());
-    return cur_at(tokens.clone(), body_pos.clone());
-}
-
-fn cur_peek(cur: TokenCursor, tokens: Vec<Token>, offset: i64) -> Token {
-    // transpiler-deor/codegen/decl/cursor.deor
-    let pos = cur.pos.clone();
-    let mut peek_pos: i64 = pos + offset;
-    return tokens[peek_pos as usize].clone();
 }
 
 fn cur_at_ref(tokens: TokensRef, pos: i64) -> TokenCursor {
@@ -7899,13 +7692,6 @@ fn cur_skip_to_body_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
     let mut body_pos: i64 = adv_nl_ref(pos.clone(), tokens.clone());
     body_pos = adv_indent_ref(body_pos.clone(), tokens.clone());
     return cur_at_ref(tokens.clone(), body_pos.clone());
-}
-
-fn cur_peek_ref(cur: TokenCursor, tokens: TokensRef, offset: i64) -> Token {
-    // transpiler-deor/codegen/decl/cursor.deor
-    let pos = cur.pos.clone();
-    let mut peek_pos: i64 = pos + offset;
-    return tokens[peek_pos as usize].clone();
 }
 
 // transpiler-deor/codegen/decl/struct.deor

@@ -8,7 +8,7 @@
 #   registry/enum.deor           — build_enum_reg, build_variant_reg
 #   registry/validator_type.deor — build_type_reg
 #   registry/type_resolve.deor   — resolve_type
-#   registry/mut_scan.deor       — find_block_end, collect_mut_names
+#   registry/mut_scan.deor       — find_block_end_ref, collect_mut_names
 
 fn RcCtx build_registry(TokensRef tokens_ref)
 	strList struct_reg = build_struct_reg(tokens_ref)

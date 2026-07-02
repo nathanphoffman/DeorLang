@@ -2,7 +2,7 @@
 # Handles identifiers, which are the most complex primary form — the next token
 # determines which of three sub-cases applies:
 #   name(args)   — function call (with special handling for len and crash builtins)
-#   name at idx  — index read, inlined from codegen_expr_at (nested macro_run not supported)
+#   name at idx  — index read (nested macro_run not supported, so this is inlined rather than shared)
 #   name         — plain identifier, or an enum variant if found in the variant registry
 macro primary_ident_expr
 	if kind is "IDENT"

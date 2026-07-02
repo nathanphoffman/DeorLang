@@ -61,7 +61,6 @@ fn void validate_tokens(TokensRef tokens)
 
 	# second pre-scan: collect remaining names + validate members
 	strList shape_names = empty
-	strList decl_names = empty
 	strList struct_field_reg = empty
 	strList validator_vars = empty
 	strList raw_var_names = empty

@@ -22,7 +22,7 @@ fn ParseResult make_result(string code, int new_pos)
 
 # If the token at `pos` is a NEWLINE, returns pos+1; otherwise returns pos unchanged.
 # Called after parsing a statement's value to step past the trailing newline.
-fn int adv_nl(int pos, tokenList tokens)
+fn int adv_nl_ref(int pos, TokensRef tokens)
 	int token_count = len(tokens)
 	if pos < token_count
 		Token cur_token = tokens at pos
@@ -32,8 +32,8 @@ fn int adv_nl(int pos, tokenList tokens)
 	return pos
 
 # If the token at `pos` is an INDENT, returns pos+1; otherwise returns pos unchanged.
-# Used alongside adv_nl to skip the indent token at the opening of a block body.
-fn int adv_indent(int pos, tokenList tokens)
+# Used alongside adv_nl_ref to skip the indent token at the opening of a block body.
+fn int adv_indent_ref(int pos, TokensRef tokens)
 	int token_count = len(tokens)
 	if pos < token_count
 		Token cur_token = tokens at pos
@@ -44,31 +44,6 @@ fn int adv_indent(int pos, tokenList tokens)
 
 # Skips over both the NEWLINE and INDENT that separate a declaration header from its
 # body, landing at the first statement token. Called before entering any block body.
-fn int skip_to_body(tokenList tokens, int pos)
-	int cur = adv_nl(pos, tokens)
-	cur = adv_indent(cur, tokens)
-	return cur
-
-# TokensRef variants of the above helpers — same logic but accept Rc<Vec<Token>>
-# so the hot-path gen_* functions (which use TokensRef) don't need to deref.
-fn int adv_nl_ref(int pos, TokensRef tokens)
-	int token_count = len(tokens)
-	if pos < token_count
-		Token cur_token = tokens at pos
-		(kind) in cur_token
-		if kind is "NEWLINE"
-			return pos + 1
-	return pos
-
-fn int adv_indent_ref(int pos, TokensRef tokens)
-	int token_count = len(tokens)
-	if pos < token_count
-		Token cur_token = tokens at pos
-		(kind) in cur_token
-		if kind is "INDENT"
-			return pos + 1
-	return pos
-
 fn int skip_to_body_ref(TokensRef tokens, int pos)
 	int cur = adv_nl_ref(pos, tokens)
 	cur = adv_indent_ref(cur, tokens)

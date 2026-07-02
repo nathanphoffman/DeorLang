@@ -1,6 +1,9 @@
 
-# Prescan pass: flags duplicate top-level declaration names across struct, enum, shape, type, and fn declarations,
-# and rejects a built-in function name (print, crash, len, range, args, input) used in any of those slots.
+# Prescan pass: rejects a built-in function name (print, crash, len, range, args, input) used
+# as a struct, enum, shape, type, or fn declaration name. Duplicate declaration names are no
+# longer checked here — dedup.deor resolves (or, under an ENFORCE_UNIQUE_* pragma, hard-errors
+# on) every repeated declaration name during import-merging, well before this validator ever
+# runs, so no duplicate can reach this pass.
 macro prescan_check_duplicate_decls
 	bool is_kw_struct = kind is "KW_STRUCT"
 	bool is_kw_enum = kind is "KW_ENUM"
@@ -34,24 +37,12 @@ macro prescan_check_duplicate_decls
 							if kind is "IDENT"
 								if list_has(builtin_names, value)
 									errors at end = val_err(dn_name_tok, lbl_decl, rule_builtin_shadow)
-								else if list_has(decl_names, value)
-									errors at end = val_err(dn_name_tok, lbl_decl, rule_dup)
-								else
-									decl_names at end = value
 					else
 						if list_has(builtin_names, value)
 							errors at end = val_err(dn_tok, lbl_decl, rule_builtin_shadow)
-						else if list_has(decl_names, value)
-							errors at end = val_err(dn_tok, lbl_decl, rule_dup)
-						else
-							decl_names at end = value
 				else
 					if list_has(builtin_names, value)
 						errors at end = val_err(dn_tok, lbl_decl, rule_builtin_shadow)
-					else if list_has(decl_names, value)
-						errors at end = val_err(dn_tok, lbl_decl, rule_dup)
-					else
-						decl_names at end = value
 	if kind is "KW_FN"
 		# ex: fn int {add}(...) — pre_i+2 grabs the fn name
 		int fn_name_pos = pre_i + 2
@@ -61,7 +52,3 @@ macro prescan_check_duplicate_decls
 			if kind is "IDENT"
 				if list_has(builtin_names, value)
 					errors at end = val_err(fn_name_tok, lbl_decl, rule_builtin_shadow)
-				else if list_has(decl_names, value)
-					errors at end = val_err(fn_name_tok, lbl_decl, rule_dup)
-				else
-					decl_names at end = value

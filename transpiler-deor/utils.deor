@@ -7,11 +7,6 @@ fn bool is_empty(string source)
 	int length = len(source)
 	return length is 0
 
-# Named string-equality predicate. Deor's `is` keyword compiles to `==` for all types;
-# this function makes intent explicit when used as a higher-order predicate.
-fn bool str_eq(string left, string right)
-	return left is right
-
 # === Registry: flat pairs (stride=2) or triplets (stride=3) ===
 
 # Internal engine for flat-list registry lookups. Registries store key-value or
@@ -51,12 +46,6 @@ fn string reg_get(strList pairs, string key)
 fn bool reg_has(strList pairs, string key)
 	int two = 2
 	return reg_has_stride(pairs, key, two)
-
-# Looks up a key in a stride-3 registry (name → type → paramName triplets).
-# Used for validator types where both the parameter type and name must be retrieved.
-fn string reg3_get(strList pairs, string key)
-	int thr = 3
-	return reg_get_stride(pairs, key, thr)
 
 # Checks existence in a stride-3 registry. Used to detect user-defined validator types
 # so the code generator can emit `TypeName::new(val)` instead of a plain let binding.

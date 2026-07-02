@@ -4,25 +4,6 @@
 
 # Finds the DEDENT token that closes the block opened by the INDENT at indent_pos.
 # Tracks nesting depth so inner blocks don't terminate the search prematurely.
-fn int find_block_end(tokenList tokens, int indent_pos)
-	int token_count = len(tokens)
-	int depth = 1
-	int result = indent_pos
-	# ex: fn foo()\n{\t}body — indent_pos+1 grabs the first token of the block body
-	int start = indent_pos + 1
-	for raw_i in (start, token_count)
-		Token token = tokens at raw_i
-		(kind, value, line) in token
-		if kind is "INDENT"
-			depth = depth + 1
-		else if kind is "DEDENT"
-			depth = depth - 1
-			if depth is 0
-				result = raw_i
-				break
-	return result
-
-# Finds the DEDENT token that closes the block opened by the INDENT at indent_pos (ref variant).
 fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 	int token_count = len(tokens)
 	int depth = 1

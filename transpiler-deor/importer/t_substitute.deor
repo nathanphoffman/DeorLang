@@ -8,10 +8,6 @@
 #        camelCase prefix: thingList      -> piChunkList
 #   3. RUST_BLOCK content                 -> word-boundary replace using same rules
 
-fn string s_to_lower(string source)
-	rust
-		source.to_lowercase()
-
 fn string s_camel(string source)
 	rust
 		let mut chars = source.chars();

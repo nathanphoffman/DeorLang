@@ -111,7 +111,7 @@ This is deliberately Fortran-`IMPLICIT NONE`-flavored: loose by default, strict 
 
 The two checks are kept independent rather than folded into one "strict mode" because project style varies:
 
-- Some projects want strictness from day one and set both — accepting the cost of pulling shared aliases (like the stdlib's `stringList`/`tList` pattern) out into their own dedicated file so nothing collides.
+- Some projects want strictness from day one and set both — accepting the cost of pulling shared aliases (like the stdlib's `stringList`/`tList` pattern) out into their own dedicated file so nothing collides and accepting responsibility to clean up built-in lib shapes, or implementing your own libs.
 - Some projects are one long, run-on file by convention, with the same shape or struct deliberately redeclared in different regions for local readability — `ENFORCE_UNIQUE_IMPORT_DECLARATIONS` alone fits that style without breaking it.
 - Some small projects don't care about cross-file collisions at all but still want a typo like a copy-pasted `struct Player` block in the same file to fail loudly — `ENFORCE_UNIQUE_FILE_DECLARATIONS` alone covers that.
 - Some projects want to redeclare a generic library shape locally after `T`-substitution, just to see its concrete form inline — the default, with neither pragma, supports that without any opt-in at all.
