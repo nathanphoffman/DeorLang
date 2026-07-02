@@ -1,0 +1,35 @@
+# syntax_expr_test.deor
+# Exercises the syntax/expression validator rules: bracket indexing instead of
+# 'at', an empty bracket literal instead of 'empty', a reserved keyword used
+# where a variable name is expected, 'not x is y' ordering, and a raw Rust
+# generic type name (Option/Vec/Box/Rc/Arc/Result) used directly.
+
+shape intList = list of int
+
+fn void test_bracket_indexing()
+	intList nums = [1, 2, 3]
+	int first = nums[0]
+
+fn void test_empty_bracket()
+	intList empty_list = []
+
+fn void test_kw_in_parens()
+	print(if)
+
+fn void test_not_is_order()
+	bool flag = true
+	if not flag is true
+		print("bad order")
+
+fn void test_rust_generic()
+	Option bad_type = 5
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 11: variable 'nums' - bracket indexing is not valid in Deor
+# line 14: variable '[' - use 'empty' to initialize an empty list
+# line 17: variable 'if' - reserved keyword cannot be used as a name
+# line 21: variable 'flag' - use 'x is not y' instead of 'not x is y'
+# line 25: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor

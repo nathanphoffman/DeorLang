@@ -1,0 +1,20 @@
+# naming_test.deor
+# Exercises the declaration-name-casing validator rules: a struct name that
+# isn't PascalCase, a shape name that isn't camelCase, and a const name that
+# isn't SCREAMING_SNAKE_CASE.
+
+struct badname
+	int val
+
+shape BadShape = list of int
+
+fn void test_const_screaming()
+	const string bad_name = "x"
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 6: struct 'badname' - name must be PascalCase
+# line 9: shape 'BadShape' - name must be camelCase
+# line 12: variable 'bad_name' - const name must be SCREAMING_SNAKE_CASE

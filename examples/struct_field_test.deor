@@ -1,0 +1,34 @@
+# struct_field_test.deor
+# Exercises the struct-field validator rules: a func shape as a struct field,
+# raw as a struct field, and struct construction with the wrong number of
+# fields or a field name that doesn't match the struct's declared fields.
+
+shape mathFunc = func of int to int
+
+struct Calculator
+	mathFunc operation
+
+struct Wrapper
+	raw handle
+
+struct Point
+	int pos_x
+	int pos_y
+
+fn void test_wrong_field_count()
+	int pos_x = 1
+	Point bad_point = move (pos_x)
+
+fn void test_wrong_field_name()
+	int pos_x = 1
+	int stray_val = 2
+	Point bad_point2 = move (pos_x, stray_val)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 9: struct field 'operation' - func shapes cannot be struct fields
+# line 12: struct field 'handle' - raw cannot be a struct field
+# line 20: struct 'Point' - wrong number of fields in struct construction
+# line 25: struct 'Point' - unknown field name in struct construction

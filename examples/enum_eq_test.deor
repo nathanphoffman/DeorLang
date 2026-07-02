@@ -1,0 +1,18 @@
+# enum_eq_test.deor
+# Exercises the enum variant value-equals rules: a typed enum variant missing
+# its '= value', and an untyped enum variant that has one anyway.
+
+enum string Status
+	Active = "on"
+	Inactive
+
+enum Mode
+	Fast = 1
+	Slow
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 7: enum variant 'Inactive' - typed enum variant must have a value
+# line 10: enum variant 'Fast' - untyped enum variant cannot have a value

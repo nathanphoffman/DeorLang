@@ -1,8 +1,11 @@
 # const_validator_test.deor
 # Exercises the const and validator-type validator rules: a validator type's
-# own declaration shadowing its type name or base type, reassigning a const,
-# using 'empty' on a validator type, reassigning a validator-type variable
-# without re-running its predicate, and 'avow' used on a non-validator variable.
+# own declaration shadowing its type name or base type, a validator built on
+# a list shape instead of a primitive, reassigning a const, using 'empty' on
+# a validator type, reassigning a validator-type variable without re-running
+# its predicate, and 'avow' used on a non-validator variable.
+
+shape intList = list of int
 
 type Positive(int val)
 	val > 0
@@ -12,6 +15,9 @@ type Roll(int Roll)
 
 type Weight(int int)
 	int > 0
+
+type BadValidator(intList vals)
+	true
 
 fn void test_const_reassign()
 	const string PIPE = "|"
@@ -35,9 +41,10 @@ fn void main()
 	test_avow_non_validator()
 
 # expect-error:
-# line 10: type 'Roll' - validator parameter name cannot be the same as the type name
-# line 13: type 'int' - parameter name cannot be the same as its type
-# line 18: variable 'PIPE' - cannot reassign a const variable
-# line 21: variable 'empty' - empty is not valid for validator types
-# line 25: variable 'pos_val' - cannot reassign a validator type variable
-# line 29: variable 'plain' - avow can only be used on a validator type variable
+# line 13: type 'Roll' - validator parameter name cannot be the same as the type name
+# line 16: type 'int' - parameter name cannot be the same as its type
+# line 19: type 'BadValidator' - list shapes cannot be validator base types
+# line 24: variable 'PIPE' - cannot reassign a const variable
+# line 27: variable 'empty' - empty is not valid for validator types
+# line 31: variable 'pos_val' - cannot reassign a validator type variable
+# line 35: variable 'plain' - avow can only be used on a validator type variable
