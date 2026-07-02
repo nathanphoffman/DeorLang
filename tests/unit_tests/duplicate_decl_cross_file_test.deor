@@ -1,13 +1,16 @@
 # duplicate_decl_cross_file_test.deor
 # Exercises dedup.deor's duplicate-declaration check across two different files that each
-# declare 'Widget'. Previously this silently kept the first and dropped the second
-# (intentional "diamond import" leniency); now every top-level name must be unique
-# project-wide, so this is a hard error too.
+# declare 'Widget', with ENFORCE_UNIQUE_IMPORT_DECLARATIONS opted in via the pragma at the
+# top of main(). Without the pragma this is silently tolerated instead — the same name
+# from two different files keeps the first and drops the second (e.g. the standard
+# library's repeated 'shape stringList' convenience alias across lib/string.deor,
+# lib/file.deor, lib/map.deor relies on that default).
 
 import "tests/unit_tests/fixtures/dup_decl_a.deor"
 import "tests/unit_tests/fixtures/dup_decl_b.deor"
 
 fn void main()
+	ENFORCE_UNIQUE_IMPORT_DECLARATIONS
 	print("unreachable")
 
 # expect-error:

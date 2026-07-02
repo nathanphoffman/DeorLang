@@ -1,0 +1,89 @@
+
+# Fortran-IMPLICIT-style opt-in pragmas. If ENFORCE_UNIQUE_FILE_DECLARATIONS and/or
+# ENFORCE_UNIQUE_IMPORT_DECLARATIONS appear as the first statement(s) of fn void main() —
+# in either order, either or both — they're consumed here and never reach validation or
+# codegen. Neither present means fully loose: dedup.deor silently keeps the first
+# declaration of any repeated name, same as it always has.
+#   ENFORCE_UNIQUE_FILE_DECLARATIONS   — error on a name repeated within the same file
+#   ENFORCE_UNIQUE_IMPORT_DECLARATIONS — error on a name repeated across two different files
+# The two are independent: set one, both, or neither.
+# Reads: tokens
+# Writes: tokens (pragma lines removed), enforce_unique_file, enforce_unique_import
+macro strip_enforce_pragmas
+	bool enforce_unique_file = false
+	bool enforce_unique_import = false
+	tokenList sep_result = empty
+	int sep_len = len(tokens)
+	int sep_pos = 0
+	for if sep_pos < sep_len
+		Token sep_tok = tokens at sep_pos
+		(kind) in sep_tok
+		bool sep_is_main = false
+		if kind is "KW_FN"
+			int sep_sig_end = sep_pos + 4
+			if sep_sig_end < sep_len
+				Token sig_void = tokens at (sep_pos + 1)
+				Token sig_name = tokens at (sep_pos + 2)
+				Token sig_lparen = tokens at (sep_pos + 3)
+				Token sig_rparen = tokens at (sep_pos + 4)
+				(kind) in sig_void
+				bool ok1 = kind is "KW_VOID"
+				(kind, value) in sig_name
+				bool ok2 = kind is "IDENT" and value is "main"
+				(kind) in sig_lparen
+				bool ok3 = kind is "LPAREN"
+				(kind) in sig_rparen
+				bool ok4 = kind is "RPAREN"
+				sep_is_main = ok1 and ok2 and ok3 and ok4
+		if sep_is_main
+			int sep_copy_idx = 0
+			for if sep_copy_idx < 5
+				Token c_tok = tokens at (sep_pos + sep_copy_idx)
+				sep_result at end = c_tok
+				sep_copy_idx = sep_copy_idx + 1
+			sep_pos = sep_pos + 5
+			if sep_pos < sep_len
+				Token nl_tok = tokens at sep_pos
+				(kind) in nl_tok
+				if kind is "NEWLINE"
+					sep_result at end = nl_tok
+					sep_pos = sep_pos + 1
+					if sep_pos < sep_len
+						Token ind_tok = tokens at sep_pos
+						(kind) in ind_tok
+						if kind is "INDENT"
+							sep_result at end = ind_tok
+							sep_pos = sep_pos + 1
+							bool sep_scanning = true
+							for if sep_scanning
+								sep_scanning = false
+								if sep_pos < sep_len
+									Token prag_tok = tokens at sep_pos
+									(kind, value) in prag_tok
+									if kind is "IDENT"
+										bool is_file_flag = value is "ENFORCE_UNIQUE_FILE_DECLARATIONS"
+										bool is_import_flag = value is "ENFORCE_UNIQUE_IMPORT_DECLARATIONS"
+										if is_file_flag or is_import_flag
+											int sep_nl_pos = sep_pos + 1
+											bool nl_ok = false
+											if sep_nl_pos < sep_len
+												Token prag_nl_tok = tokens at sep_nl_pos
+												(kind) in prag_nl_tok
+												nl_ok = kind is "NEWLINE"
+											if nl_ok
+												if is_file_flag
+													enforce_unique_file = true
+												else
+													enforce_unique_import = true
+												sep_pos = sep_pos + 2
+												sep_scanning = true
+			rust
+				for i in (sep_pos as usize)..(sep_len as usize) {
+					sep_result.push(tokens[i].clone());
+				}
+			sep_pos = sep_len
+			break
+		else
+			sep_result at end = sep_tok
+			sep_pos = sep_pos + 1
+	tokens = sep_result

@@ -1,7 +1,9 @@
 
 # Checks a block declaration (fn/struct/enum/type/macro) against every name declared so
-# far, anywhere in the project. Hard-errors on a repeat; otherwise copies the full indented
-# block to result and advances pos.
+# far, anywhere in the project. Hard-errors on a repeat if the relevant ENFORCE_UNIQUE_*
+# pragma is set (same-file repeat needs ENFORCE_UNIQUE_FILE_DECLARATIONS, cross-file needs
+# ENFORCE_UNIQUE_IMPORT_DECLARATIONS); otherwise keeps the first and drops the repeat.
+# Copies the full indented block to result and advances pos.
 macro dd_handle_block_decl
 	int dn_offset = 1
 	if is_fn
@@ -24,7 +26,15 @@ macro dd_handle_block_decl
 			break
 	if already_seen
 		string origin_file = seen_files at dup_idx
-		macro_run dd_error_duplicate
+		(file) in dn_tok
+		bool is_same_file = origin_file is file
+		bool should_error = false
+		if is_same_file
+			should_error = enforce_unique_file
+		else
+			should_error = enforce_unique_import
+		if should_error
+			macro_run dd_error_duplicate
 	else
 		seen at end = decl_name
 		(file) in dn_tok

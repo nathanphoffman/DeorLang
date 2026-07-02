@@ -1,11 +1,14 @@
 
 # Removes duplicate rust-block declarations (byte-identical loose `rust { ... }` boilerplate
-# repeated across files, kept silent — see dd_handle_rust_block) and hard-errors on any
-# fn/struct/enum/shape/type/macro/raw name reused anywhere in the project. A file is only
-# ever loaded once (see load.deor's file_is_new_keyed), so by the time a name shows up twice
-# here it always came from two distinct files — there's no "diamond import" case left to
-# excuse it silently.
-fn tokenList deduplicate_decls(tokenList tokens)
+# repeated across files, always kept silent — see dd_handle_rust_block) and, depending on
+# the ENFORCE_UNIQUE_* pragmas declared at the top of fn void main() (see
+# strip_enforce_pragmas), either hard-errors on or silently keeps the first of any
+# fn/struct/enum/shape/type/macro/raw name reused in the same file and/or across files.
+# With neither pragma set, every repeat is silently kept-first — the original, fully
+# loose behavior.
+fn tokenList deduplicate_decls(tokenList tokens_in)
+	tokenList tokens = tokens_in
+	macro_run strip_enforce_pragmas
 	tokenList result = empty
 	strList seen = empty
 	strList seen_files = empty

@@ -1,0 +1,26 @@
+# duplayer_objicate_decl_default_loose_test.deor
+# With no ENFORCE_UNIQUE_* pragma, dedup.deor is fully loose (the original, pre-existing
+# behavior): a repeated declaration name is silently kept-first, no error. This locks that
+# in — the second 'Player' (with a 'label' field) is dropped entirely, so main() can only
+# ever see the first definition's 'score' field.
+
+struct Player
+	string name
+	int score
+
+struct Player
+	string label
+
+fn Player make_player_objayer(string name, int score)
+	player_objayer as (name, score)
+	return player_objayer
+
+fn void main()
+	string player_objayer_name = "Ada"
+	int player_objayer_score = 5
+	Player player_obj = make_player_objayer(player_objayer_name, player_objayer_score)
+	(name, score) in player_obj
+	print(score)
+
+# expect:
+# 5

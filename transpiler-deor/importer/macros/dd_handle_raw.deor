@@ -1,8 +1,10 @@
 
 # Checks a raw type declaration, keyed with a "_raw_" prefix so it can't collide with a
 # regular decl name, against every raw name declared so far, anywhere in the project.
-# Hard-errors on a repeat; otherwise copies the single-line declaration to result and
-# advances pos.
+# Hard-errors on a repeat if the relevant ENFORCE_UNIQUE_* pragma is set (same-file repeat
+# needs ENFORCE_UNIQUE_FILE_DECLARATIONS, cross-file needs ENFORCE_UNIQUE_IMPORT_DECLARATIONS);
+# otherwise keeps the first and drops the repeat. Copies the single-line declaration to
+# result and advances pos.
 macro dd_handle_raw
 	int dn_offset = 1
 	if is_fn
@@ -29,8 +31,16 @@ macro dd_handle_raw
 			break
 	if already_seen
 		string origin_file = seen_files at dup_idx
-		decl_name = raw_display_name
-		macro_run dd_error_duplicate
+		(file) in dn_tok
+		bool is_same_file = origin_file is file
+		bool should_error = false
+		if is_same_file
+			should_error = enforce_unique_file
+		else
+			should_error = enforce_unique_import
+		if should_error
+			decl_name = raw_display_name
+			macro_run dd_error_duplicate
 	else
 		seen at end = decl_name
 		(file) in dn_tok

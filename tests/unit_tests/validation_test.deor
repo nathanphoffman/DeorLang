@@ -1,10 +1,12 @@
 # validation_test.deor
 # Each block below deliberately violates one validator rule.
 # Run this file through the transpiler and expect 10+ errors — zero passing output.
-# Duplicate top-level declarations are covered separately, in duplicate_decl_same_file_test.deor
-# and duplicate_decl_cross_file_test.deor — that check now fires during import-merging
-# (dedup.deor) and exits immediately, before the validator this file exercises ever runs,
-# so it can't share a file with the checks below.
+# Duplicate top-level declarations are covered separately, in duplicate_decl_same_file_test.deor,
+# duplicate_decl_cross_file_test.deor, and duplicate_decl_default_loose_test.deor — an
+# opt-in check (ENFORCE_UNIQUE_FILE_DECLARATIONS / ENFORCE_UNIQUE_IMPORT_DECLARATIONS
+# pragmas in main(), see strip_enforce_pragmas.deor) that fires during import-merging
+# (dedup.deor) and exits immediately when triggered, before the validator this file
+# exercises ever runs — so it can't share a file with the checks below.
 
 # -----------------------------------------------------------------------
 # 1. Struct field naming — too short AND camelCase

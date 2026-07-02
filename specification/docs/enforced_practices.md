@@ -89,23 +89,37 @@ int count = 0       # correct
 ---
 ## Duplicate Top-Level Names
 
-Declaring two top-level items with the same name is a hard transpiler error. This applies across all declaration forms — `struct`, `enum`, `shape`, `type`, and `fn`. The names are checked in a single prescan pass before any other validation.
+By default, declaring two top-level items with the same name is **not** an error — whichever one the importer merges in first silently wins, and the rest are dropped. This is deliberate: it's what lets the standard library have several `lib/*.deor` files each redeclare the same convenience alias (`shape stringList = list of string`, for example) so any one of them can be imported standalone.
+
+If you want stricter checking, opt in with a pragma as the very first statement(s) of `fn void main()`:
+
+```
+fn void main()
+    ENFORCE_UNIQUE_FILE_DECLARATIONS
+    ENFORCE_UNIQUE_IMPORT_DECLARATIONS
+    ...
+```
+
+- `ENFORCE_UNIQUE_FILE_DECLARATIONS` — a name declared twice **in the same file** is a hard transpiler error.
+- `ENFORCE_UNIQUE_IMPORT_DECLARATIONS` — a name declared in two **different** files is a hard transpiler error.
+
+They're independent — set one, both, or neither, in either order. Both apply across all declaration forms (`struct`, `enum`, `shape`, `type`, `fn`) and across declaration kinds, so a `struct Foo` and a `fn Foo` sharing a name are checked the same way. The check runs while imports are being merged, before any other validation, and fails fast on the first collision found.
 
 ```
 struct Room
     string name
 
-struct Room    # transpiler error — duplicate name
+struct Room    # error only with ENFORCE_UNIQUE_FILE_DECLARATIONS
     float area
 
 fn void process(Room item)
     ...
 
-fn void process(string label)    # transpiler error — duplicate name
+fn void process(string label)    # error only with ENFORCE_UNIQUE_FILE_DECLARATIONS
     ...
 ```
 
-The names are checked across declaration kinds, so a `struct Foo` and a `fn Foo` in the same file are also an error. Variable shadowing within function bodies is separate and is allowed — see below.
+Variable shadowing within function bodies is unrelated to either pragma and is always allowed — see below.
 
 ---
 ## Variable Shadowing

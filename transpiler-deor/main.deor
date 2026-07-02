@@ -5,6 +5,7 @@ import "transpiler-deor/macros/timer.deor"
 # collect_all_tokens_with_all_imports to load and resolve all imports, calls generate
 # to produce Rust source, and writes it to the output file.
 fn void main()
+	ENFORCE_UNIQUE_FILE_DECLARATIONS
 
 	strList cli_args = f_args()
 	int arg_count = len(cli_args)

@@ -35,6 +35,7 @@ import "transpiler-deor/importer/macros/dd_handle_block_decl.deor"
 import "transpiler-deor/importer/macros/dd_handle_shape.deor"
 import "transpiler-deor/importer/macros/dd_handle_raw.deor"
 import "transpiler-deor/importer/macros/dd_handle_rust_block.deor"
+import "transpiler-deor/importer/macros/strip_enforce_pragmas.deor"
 import "transpiler-deor/importer/dedup.deor"
 import "transpiler-deor/importer/importer.deor"
 

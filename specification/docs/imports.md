@@ -20,7 +20,7 @@ The importer resolves imports **depth-first**: when it encounters an import stat
 
 The order you write imports only directly controls the relative ordering of files that have no dependency relationship with each other (siblings). Transitive dependencies are always resolved first regardless of where you list them.
 
-The ordering of declarations in the generated Rust output does not affect correctness — Rust does not require forward declarations within a module, and the type registry is built from the full merged token stream before code generation begins. Ordering only matters for **collision resolution**: when two files define a declaration with the same name, the first one encountered in the merged stream wins.
+The ordering of declarations in the generated Rust output does not affect correctness — Rust does not require forward declarations within a module, and the type registry is built from the full merged token stream before code generation begins. Ordering only matters for **collision resolution**: when two files define a declaration with the same name, the first one encountered in the merged stream wins. This is the default, loose behavior — see [Duplicate Top-Level Names](enforced_practices.md#duplicate-top-level-names) for the opt-in pragmas that turn same-name collisions into hard errors instead.
 
 ### When ordering causes errors
 
