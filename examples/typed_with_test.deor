@@ -1,0 +1,26 @@
+struct PiChunk
+	float min
+	float max
+	float value
+
+fn PiChunk compute_pi_chunk(PiChunk chunk)
+	(min, max) in chunk
+	float value = min + max
+	PiChunk chunk_with_value = chunk with (value)
+	return chunk_with_value
+
+fn void main()
+	float min = 1.5
+	float max = 2.25
+	float value = 0.0
+	PiChunk chunk = (min, max, value)
+	PiChunk result = compute_pi_chunk(chunk)
+	(min, max, value) in result
+	print(min)
+	print(max)
+	print(value)
+
+# expect:
+# 1.5
+# 2.25
+# 3.75

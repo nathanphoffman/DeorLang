@@ -5,6 +5,7 @@
 #   (avow x)    — forced unwrap: .unwrap() for custom types, .unwrap().0 for primitives
 #   (f1, f2)    — positional struct construction: StructType { f1: v1, f2: v2, ... }
 #   [items]     — list literal: let mut varName: RustType = vec![...]
+#   source with (f1, f2)  — record-update spread: RustType { f1, f2, ..source }
 #   validator   — ValidatorType::new(expr) wrapped in Option<ValidatorType>
 #   default     — let [mut] varName: RustType = val[.clone()/.to_string()]
 fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
@@ -33,6 +34,9 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 
 	if kind is "LBRACKET"
 		macro_run tb_list_literal
+
+	if kind is "IDENT"
+		macro_run tb_with
 
 	bool is_validator = reg3_has(type_reg, var_type)
 	if is_validator

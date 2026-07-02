@@ -6712,6 +6712,59 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         let mut lst_code: String = [pad.as_str(), lst_pfx.as_str(), var_name.as_str(), lst_col.as_str(), rust_type.as_str(), lst_eq.as_str(), val_code.as_str(), lst_sc.as_str()].concat();
         return make_nl_result(lst_code, val_end.clone(), tokens.clone());
     }
+    if kind == "IDENT" {
+        // macro: tb_with (transpiler-deor/codegen/decl/stmt/macros/tb_with.deor)
+        let mut tb_with_pos: i64 = val_pos + 1.clone();
+        if tb_with_pos < token_count {
+            // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+            let mut tb_with_tok: Token = tokens[tb_with_pos as usize].clone();
+            let kind = tb_with_tok.kind.clone();
+            if kind == "KW_WITH" {
+                // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                let value = val_token.value.clone();
+                let mut tb_src: String = value.clone();
+                let mut tb_lp: i64 = tb_with_pos + 1.clone();
+                let mut tb_ovr: Vec<String> = Vec::new();
+                let mut tb_wend: i64 = tb_lp + 1.clone();
+                while tb_wend < token_count {
+                    // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                    let mut tb_wtok: Token = tokens[tb_wend as usize].clone();
+                    let kind = tb_wtok.kind.clone();
+                    let value = tb_wtok.value.clone();
+                    if kind == "RPAREN" {
+                        // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                        tb_wend = tb_wend + 1;
+                        break;
+                    }
+                    if kind == "COMMA" {
+                        // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                        tb_wend = tb_wend + 1;
+                        continue;
+                    }
+                    if kind == "IDENT" {
+                        // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                        tb_ovr.push(value.clone());
+                        tb_wend = tb_wend + 1;
+                    }
+                }
+                let mut tb_wsep: String = ", ".to_string();
+                let mut tb_wfields: String = s_join_with(tb_ovr.clone(), tb_wsep.clone());
+                let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+                let mut mut_kw: String = "".to_string();
+                if mg_is_mut {
+                    // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                    mut_kw = "mut ".to_string();
+                }
+                let mut tb_wlet: String = "let ".to_string();
+                let mut tb_weq: String = " = ".to_string();
+                let mut tb_wob: String = " { ".to_string();
+                let mut tb_wsp: String = ", ..".to_string();
+                let mut tb_wcb: String = " };\n".to_string();
+                let mut tb_with_code: String = [pad.as_str(), tb_wlet.as_str(), mut_kw.as_str(), var_name.as_str(), tb_weq.as_str(), rust_type.as_str(), tb_wob.as_str(), tb_wfields.as_str(), tb_wsp.as_str(), tb_src.as_str(), tb_wcb.as_str()].concat();
+                return make_nl_result(tb_with_code, tb_wend.clone(), tokens.clone());
+            }
+        }
+    }
     let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
     if is_validator {
         // macro: tb_validator (transpiler-deor/codegen/decl/stmt/macros/tb_validator.deor)
