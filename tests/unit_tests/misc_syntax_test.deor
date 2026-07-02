@@ -1,7 +1,9 @@
 # misc_syntax_test.deor
 # Exercises a grab-bag of remaining validator rules: returning 'empty' or
 # 'none' from a function, a bad 'name ident literal' statement shape, an
-# invalid raw character, and 'valid' used somewhere other than after 'is'.
+# invalid raw character (including '!', banned because Deor has no '!='
+# operator — 'is not' is required), and 'valid' used somewhere other than
+# after 'is'.
 
 fn int test_return_empty()
 	return empty
@@ -16,6 +18,11 @@ fn void test_invalid_char()
 	int val_a = 5 & 3
 	print(val_a)
 
+fn void test_invalid_not_equal()
+	int val_b = 5
+	if val_b != 5
+		print("bad")
+
 fn void test_valid_misuse()
 	bool result = valid
 
@@ -23,8 +30,9 @@ fn void main()
 	print("should never reach here")
 
 # expect-error:
-# line 7: fn 'empty' - cannot return 'empty'
-# line 10: fn 'none' - none is not a Deor keyword
-# line 13: variable 'string' - literal cannot follow 'name ident'
-# line 16: identifier '&' - character is not valid in Deor
-# line 20: variable 'valid' - 'valid' can only appear after 'is' or 'is not'
+# line 9: fn 'empty' - cannot return 'empty'
+# line 12: fn 'none' - none is not a Deor keyword
+# line 15: variable 'string' - literal cannot follow 'name ident'
+# line 18: identifier '&' - character is not valid in Deor
+# line 23: identifier '!' - character is not valid in Deor
+# line 27: variable 'valid' - 'valid' can only appear after 'is' or 'is not'

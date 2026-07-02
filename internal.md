@@ -21,4 +21,3 @@ A lot of the documentation needs refreshed it is based on an old AI structure I 
 ---
 ## Designated Low Priority
 - args()/input() destructuring silently drops unrecognized field names (e.g. a typo) instead of erroring — undocumented either way.
-- adding validation errors for things rust reasonably provides errors for like int/float conversion and string concat problems

@@ -98,6 +98,7 @@ import "transpiler-deor/tokens_validator/macros/check_void_var.deor"
 import "transpiler-deor/tokens_validator/macros/check_valid_placement.deor"
 import "transpiler-deor/tokens_validator/macros/check_end_placement.deor"
 import "transpiler-deor/tokens_validator/macros/check_struct_construction.deor"
+import "transpiler-deor/tokens_validator/macros/check_range_placement.deor"
 import "transpiler-deor/tokens_validator/tokens_validation.deor"
 
 # utility macros

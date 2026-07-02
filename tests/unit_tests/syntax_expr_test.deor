@@ -2,8 +2,9 @@
 # Exercises the syntax/expression validator rules: bracket indexing instead of
 # 'at', an empty bracket literal instead of 'empty', a reserved keyword used
 # where a variable name is expected, 'not x is y' ordering (bare identifier,
-# parenthesized expression, and function call forms), and a raw Rust
-# generic type name (Option/Vec/Box/Rc/Arc/Result) used directly.
+# parenthesized expression, and function call forms), 'range(...)' used
+# outside a for-loop header, and a raw Rust generic type name
+# (Option/Vec/Box/Rc/Arc/Result) used directly.
 
 shape intList = list of int
 
@@ -35,6 +36,13 @@ fn void test_not_is_order_call()
 fn bool get_flag()
 	return true
 
+fn void test_range_assigned()
+	int bad_assign = range(5)
+	print(bad_assign)
+
+fn void test_range_as_arg()
+	print(range(3))
+
 fn void test_rust_generic()
 	Option bad_type = 5
 
@@ -42,10 +50,12 @@ fn void main()
 	print("should never reach here")
 
 # expect-error:
-# line 12: variable 'nums' - bracket indexing is not valid in Deor
-# line 15: variable '[' - use 'empty' to initialize an empty list
-# line 18: variable 'if' - reserved keyword cannot be used as a name
-# line 22: variable 'flag' - use 'x is not y' instead of 'not x is y'
-# line 28: variable '(' - use 'x is not y' instead of 'not x is y'
-# line 32: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
-# line 39: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
+# line 13: variable 'nums' - bracket indexing is not valid in Deor
+# line 16: variable '[' - use 'empty' to initialize an empty list
+# line 19: variable 'if' - reserved keyword cannot be used as a name
+# line 23: variable 'flag' - use 'x is not y' instead of 'not x is y'
+# line 29: variable '(' - use 'x is not y' instead of 'not x is y'
+# line 33: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
+# line 40: call to 'range' - 'range' can only be used as a for-loop's iterator expression
+# line 44: call to 'range' - 'range' can only be used as a for-loop's iterator expression
+# line 47: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor

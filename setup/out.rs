@@ -968,6 +968,10 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
                 let mut op_kind_inv: String = "INVALID".to_string();
                 tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
+            } else if character == "!" {
+                // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
+                let mut op_kind_inv: String = "INVALID".to_string();
+                tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
             } else if character == "{" {
                 // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
                 let mut op_kind_inv: String = "INVALID".to_string();
@@ -2326,6 +2330,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_unmatched_open_bracket: String = "'[' is never closed — every open bracket needs a matching ']'".to_string();
     let mut rule_unmatched_close_bracket: String = "']' has no matching '[' before it — remove the extra ']' or add the missing '['".to_string();
     let mut rule_builtin_shadow: String = "this name belongs to a built-in function (print, crash, len, range, args, input) and cannot be shadowed or redeclared".to_string();
+    let mut rule_range_placement: String = "'range' can only be used as a for-loop's iterator expression ('for var in range(n)' or 'for in range(n)') — it cannot be assigned to a variable or passed as an argument".to_string();
     let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
     let mut rule_validator_reassign: String = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate".to_string();
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
@@ -4066,28 +4071,42 @@ fn validate_tokens(tokens: TokensRef) {
                 let mut cc1: i64 = pos + 1;
                 let mut cc2: i64 = pos + 2;
                 let mut cc3: i64 = pos + 3;
-                let mut cc4: i64 = pos + 4;
-                if cc4 < token_count {
+                if cc3 < token_count {
                     // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
                     let mut cc_t1: Token = tokens[cc1 as usize].clone();
                     let mut cc_t2: Token = tokens[cc2 as usize].clone();
                     let mut cc_t3: Token = tokens[cc3 as usize].clone();
-                    let mut cc_t4: Token = tokens[cc4 as usize].clone();
                     let mut kind = cc_t1.kind.clone();
                     let mut cc_k1: String = kind.clone();
                     let mut kind = cc_t2.kind.clone();
                     let mut cc_k2: String = kind.clone();
                     let mut kind = cc_t3.kind.clone();
                     let mut cc_k3: String = kind.clone();
-                    let mut kind = cc_t4.kind.clone();
-                    let mut cc_k4: String = kind.clone();
                     let mut cc_is_var: bool = cc_k1 == "IDENT";
                     let mut cc_is_eq: bool = cc_k2 == "EQUALS";
-                    let mut cc_is_mv: bool = cc_k3 == "KW_MOVE";
-                    let mut cc_is_lp: bool = cc_k4 == "LPAREN";
-                    let mut cc_match: bool = cc_is_var && cc_is_eq;
-                    cc_match = cc_match && cc_is_mv;
-                    cc_match = cc_match && cc_is_lp;
+                    let mut cc_prefix_ok: bool = cc_is_var && cc_is_eq;
+                    let mut cc_match: bool = false;
+                    let mut cc_paren_pos: i64 = cc3.clone();
+                    if cc_prefix_ok {
+                        // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                        if cc_k3 == "LPAREN" {
+                            // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                            cc_match = true;
+                        } else if cc_k3 == "KW_MOVE" {
+                            // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                            let mut cc4: i64 = pos + 4;
+                            if cc4 < token_count {
+                                // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                let mut cc_t4: Token = tokens[cc4 as usize].clone();
+                                let mut kind = cc_t4.kind.clone();
+                                if kind == "LPAREN" {
+                                    // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
+                                    cc_match = true;
+                                    cc_paren_pos = cc4;
+                                }
+                            }
+                        }
+                    }
                     if cc_match {
                         // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
                         let mut cc_sep: String = ",".to_string();
@@ -4098,7 +4117,7 @@ fn validate_tokens(tokens: TokensRef) {
                             let mut cc_expected: Vec<String> = s_split(cc_fields_str.clone(), cc_sep.clone());
                             let mut cc_exp_count: i64 = (cc_expected.len() as i64);
                             let mut cc_provided: Vec<String> = Vec::new();
-                            let mut cc_scan: i64 = cc4 + 1;
+                            let mut cc_scan: i64 = cc_paren_pos + 1;
                             let mut cc_scanning: bool = true;
                             while cc_scanning {
                                 // transpiler-deor/tokens_validator/macros/check_struct_construction.deor
@@ -4137,6 +4156,55 @@ fn validate_tokens(tokens: TokensRef) {
                                     }
                                     cc_fi = cc_fi + 1;
                                 }
+                            }
+                        }
+                    }
+                }
+            }
+            // macro: check_range_placement (transpiler-deor/tokens_validator/macros/check_range_placement.deor)
+            if cur_kind == "IDENT" {
+                // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                if cur_val == "range" {
+                    // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                    let mut crp_next: i64 = pos + 1;
+                    if crp_next < token_count {
+                        // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                        let mut crp_next_tok: Token = tokens[crp_next as usize].clone();
+                        let mut kind = crp_next_tok.kind.clone();
+                        if kind == "LPAREN" {
+                            // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                            let mut crp_valid: bool = false;
+                            if pos > 1 {
+                                // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                                let mut crp_prev: i64 = pos - 1;
+                                let mut crp_prev_tok: Token = tokens[crp_prev as usize].clone();
+                                let mut kind = crp_prev_tok.kind.clone();
+                                if kind == "KW_IN" {
+                                    // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                                    let mut crp_prev2: i64 = pos - 2;
+                                    let mut crp_prev2_tok: Token = tokens[crp_prev2 as usize].clone();
+                                    let mut kind = crp_prev2_tok.kind.clone();
+                                    if kind == "KW_FOR" {
+                                        // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                                        crp_valid = true;
+                                    } else if kind == "IDENT" {
+                                        // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                                        if pos > 2 {
+                                            // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                                            let mut crp_prev3: i64 = pos - 3;
+                                            let mut crp_prev3_tok: Token = tokens[crp_prev3 as usize].clone();
+                                            let mut kind = crp_prev3_tok.kind.clone();
+                                            if kind == "KW_FOR" {
+                                                // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                                                crp_valid = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if !crp_valid {
+                                // transpiler-deor/tokens_validator/macros/check_range_placement.deor
+                                errors.push(val_err(tok.clone(), lbl_call.clone(), rule_range_placement.clone()).clone());
                             }
                         }
                     }

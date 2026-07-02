@@ -1,0 +1,41 @@
+
+# Flags `range(...)` used anywhere except directly as a for-loop's iterator
+# expression. `range` has no real existence outside of for_iter_expr's special
+# codegen — that macro only recognizes it while parsing a for-loop header, so
+# anywhere else it's treated as a plain (undefined) function call and silently
+# emits a `range(...)` call in the generated Rust with no such function to call.
+# Valid forms: `for var in range(n)` and `for in range(n)` — in both, the
+# token right before `range` is `in`, and the token(s) before that are the
+# start of a `for` header (`for`, or `for var`).
+macro check_range_placement
+	if cur_kind is "IDENT"
+		if cur_val is "range"
+			# ex: range{(}n) — pos+1 checks that this is actually a call, not just the bare name
+			int crp_next = pos + 1
+			if crp_next < token_count
+				Token crp_next_tok = tokens at crp_next
+				(kind) in crp_next_tok
+				if kind is "LPAREN"
+					bool crp_valid = false
+					if pos > 1
+						# ex: for var {in} range(n) — pos-1 checks for the 'in' keyword right before 'range'
+						int crp_prev = pos - 1
+						Token crp_prev_tok = tokens at crp_prev
+						(kind) in crp_prev_tok
+						if kind is "KW_IN"
+							# ex: for {var} in range(n) — pos-2 checks for a loop variable or 'for' itself
+							int crp_prev2 = pos - 2
+							Token crp_prev2_tok = tokens at crp_prev2
+							(kind) in crp_prev2_tok
+							if kind is "KW_FOR"
+								crp_valid = true
+							else if kind is "IDENT"
+								if pos > 2
+									# ex: {for} var in range(n) — pos-3 confirms the 'for' that opened this header
+									int crp_prev3 = pos - 3
+									Token crp_prev3_tok = tokens at crp_prev3
+									(kind) in crp_prev3_tok
+									if kind is "KW_FOR"
+										crp_valid = true
+					if not crp_valid
+						errors at end = val_err(tok, lbl_call, rule_range_placement)

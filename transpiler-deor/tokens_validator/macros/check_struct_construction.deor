@@ -1,38 +1,48 @@
 
-# Validates `Type var = move (field1, field2, ...)` struct construction.
-# Fires when the current IDENT token is a known struct type and the following
-# tokens form a move-construction pattern. Checks that the provided variable
-# names match the struct's declared fields exactly.
+# Validates `Type var = (field1, field2, ...)` and `Type var = move (field1, field2, ...)`
+# struct construction. Fires when the current IDENT token is a known struct type and the
+# following tokens form either construction pattern. Checks that the provided variable
+# names match the struct's declared fields exactly, whether or not 'move' is present —
+# the plain (non-move) form used to skip this check entirely, letting a typo'd field name
+# through to an opaque rustc error instead of a clear one here.
 macro check_struct_construction
 	if paren_depth is 0
-		# ex: Item {item} = move(a, b) — pos+1 grabs the variable name
+		# ex: Item {item} = (a, b) — pos+1 grabs the variable name
 		int cc1 = pos + 1
-		# ex: Item item {=} move(a, b) — pos+2 grabs the equals sign
+		# ex: Item item {=} (a, b) — pos+2 grabs the equals sign
 		int cc2 = pos + 2
-		# ex: Item item = {move}(a, b) — pos+3 grabs the move keyword
+		# ex: Item item = {(}a, b)  OR  Item item = {move}(a, b) — pos+3 is either the
+		# opening paren (plain form) or the move keyword (move form)
 		int cc3 = pos + 3
-		# ex: Item item = move{(}a, b) — pos+4 grabs the opening paren
-		int cc4 = pos + 4
-		if cc4 < token_count
+		if cc3 < token_count
 			Token cc_t1 = tokens at cc1
 			Token cc_t2 = tokens at cc2
 			Token cc_t3 = tokens at cc3
-			Token cc_t4 = tokens at cc4
 			(kind) in cc_t1
 			string cc_k1 = kind
 			(kind) in cc_t2
 			string cc_k2 = kind
 			(kind) in cc_t3
 			string cc_k3 = kind
-			(kind) in cc_t4
-			string cc_k4 = kind
 			bool cc_is_var = cc_k1 is "IDENT"
 			bool cc_is_eq = cc_k2 is "EQUALS"
-			bool cc_is_mv = cc_k3 is "KW_MOVE"
-			bool cc_is_lp = cc_k4 is "LPAREN"
-			bool cc_match = cc_is_var and cc_is_eq
-			cc_match = cc_match and cc_is_mv
-			cc_match = cc_match and cc_is_lp
+			bool cc_prefix_ok = cc_is_var and cc_is_eq
+
+			bool cc_match = false
+			int cc_paren_pos = cc3
+			if cc_prefix_ok
+				if cc_k3 is "LPAREN"
+					cc_match = true
+				else if cc_k3 is "KW_MOVE"
+					# ex: Item item = move{(}a, b) — pos+4 grabs the opening paren after 'move'
+					int cc4 = pos + 4
+					if cc4 < token_count
+						Token cc_t4 = tokens at cc4
+						(kind) in cc_t4
+						if kind is "LPAREN"
+							cc_match = true
+							cc_paren_pos = cc4
+
 			if cc_match
 				string cc_sep = ","
 				string cc_fields_str = find_struct_field_str(struct_field_reg, cur_val)
@@ -41,7 +51,7 @@ macro check_struct_construction
 					strList cc_expected = s_split(cc_fields_str, cc_sep)
 					int cc_exp_count = len(cc_expected)
 					strList cc_provided = empty
-					int cc_scan = cc4 + 1
+					int cc_scan = cc_paren_pos + 1
 					bool cc_scanning = true
 					for if cc_scanning
 						if cc_scan >= token_count

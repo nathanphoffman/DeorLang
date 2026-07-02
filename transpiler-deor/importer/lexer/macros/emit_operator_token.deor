@@ -83,6 +83,9 @@ macro emit_operator_token
 	else if character is "^"
 		string op_kind_inv = "INVALID"
 		tokens at end = make_token(op_kind_inv, character, meta)
+	else if character is "!"
+		string op_kind_inv = "INVALID"
+		tokens at end = make_token(op_kind_inv, character, meta)
 	else if character is "{"
 		string op_kind_inv = "INVALID"
 		tokens at end = make_token(op_kind_inv, character, meta)

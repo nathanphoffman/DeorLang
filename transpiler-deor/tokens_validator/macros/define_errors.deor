@@ -51,6 +51,7 @@ macro define_errors
 	string rule_unmatched_open_bracket = "'[' is never closed — every open bracket needs a matching ']'"
 	string rule_unmatched_close_bracket = "']' has no matching '[' before it — remove the extra ']' or add the missing '['"
 	string rule_builtin_shadow = "this name belongs to a built-in function (print, crash, len, range, args, input) and cannot be shadowed or redeclared"
+	string rule_range_placement = "'range' can only be used as a for-loop's iterator expression ('for var in range(n)' or 'for in range(n)') — it cannot be assigned to a variable or passed as an argument"
 
 	# const rules
 	string rule_const_reassign = "cannot reassign a const variable — const bindings are immutable"

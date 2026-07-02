@@ -206,6 +206,7 @@ fn void validate_tokens(TokensRef tokens)
 			macro_run check_bad_stmt
 			macro_run check_bracket_indexing
 			macro_run check_struct_construction
+			macro_run check_range_placement
 
 		macro_run check_void_var
 		macro_run check_valid_placement
