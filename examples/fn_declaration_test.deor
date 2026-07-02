@@ -1,0 +1,17 @@
+# fn_declaration_test.deor
+# Exercises the function-declaration validator rules: a function with more
+# than 3 parameters, and a function missing its return type token entirely
+# (fn name() instead of fn void name() / fn RetType name()).
+
+fn void too_many_params(int first, int second, int third, int fourth)
+	print(first)
+
+fn missing_return_type()
+	print("no return type")
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 6: fn 'too_many_params' - functions may have at most 3 parameters
+# line 9: fn 'missing_return_type' - missing return type

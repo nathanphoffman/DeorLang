@@ -1,0 +1,27 @@
+# call_args_test.deor
+# Exercises the call/argument validator rules: a 2+ arg call site where the
+# args aren't named variables, crash() called with the wrong argument count,
+# and print() called with more than 2 arguments.
+
+fn void takes_two(int first, int second)
+	print(first)
+
+fn void test_named_arg()
+	takes_two(1, 2)
+
+fn void test_crash_args()
+	crash()
+
+fn void test_print_args()
+	int val_a = 1
+	int val_b = 2
+	int val_c = 3
+	print(val_a, val_b, val_c)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 10: call to 'takes_two' - each arg must be a named variable when passing 2 or more args
+# line 13: call to 'crash' - crash takes exactly 1 string argument
+# line 19: call to 'print' - print takes 1 argument, or 2 arguments where the second replaces the trailing newline
