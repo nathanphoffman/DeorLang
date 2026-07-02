@@ -2012,6 +2012,32 @@ fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
     return true;
 }
 
+fn find_matching_rparen(tokens: TokensRef, lp_pos: i64) -> i64 {
+    // transpiler-deor/tokens_validator/arg_helpers.deor
+    let mut token_count: i64 = (tokens.len() as i64);
+    let mut cur: i64 = lp_pos + 1;
+    let mut depth: i64 = 0;
+    while cur < token_count {
+        // transpiler-deor/tokens_validator/arg_helpers.deor
+        let mut tok: Token = tokens[cur as usize].clone();
+        let kind = tok.kind.clone();
+        if kind == "LPAREN" {
+            // transpiler-deor/tokens_validator/arg_helpers.deor
+            depth = depth + 1;
+        } else if kind == "RPAREN" {
+            // transpiler-deor/tokens_validator/arg_helpers.deor
+            let mut at_root: bool = depth == 0;
+            if at_root {
+                // transpiler-deor/tokens_validator/arg_helpers.deor
+                return cur;
+            }
+            depth = depth - 1;
+        }
+        cur = cur + 1;
+    }
+    return lp_pos;
+}
+
 fn count_call_args(tokens: TokensRef, lp_pos: i64) -> i64 {
     // transpiler-deor/tokens_validator/arg_helpers.deor
     let mut token_count: i64 = (tokens.len() as i64);
@@ -3017,21 +3043,36 @@ fn validate_tokens(tokens: TokensRef) {
         if cur_kind == "KW_NOT" {
             // transpiler-deor/tokens_validator/macros/check_not_is_order.deor
             let mut next_not: i64 = pos + 1;
-            let mut after_not: i64 = pos + 2;
-            if after_not < token_count {
+            if next_not < token_count {
                 // transpiler-deor/tokens_validator/macros/check_not_is_order.deor
                 let mut next_not_tok: Token = tokens[next_not as usize].clone();
-                let mut after_not_tok: Token = tokens[after_not as usize].clone();
                 let mut kind = next_not_tok.kind.clone();
-                let mut next_not_kind: String = kind.clone();
-                let mut kind = after_not_tok.kind.clone();
-                let mut after_not_kind: String = kind.clone();
-                let mut next_is_ident: bool = next_not_kind == "IDENT";
-                let mut after_is_is: bool = after_not_kind == "KW_IS";
-                if next_is_ident && after_is_is {
+                let mut cnio_end: i64 = next_not.clone();
+                if kind == "LPAREN" {
                     // transpiler-deor/tokens_validator/macros/check_not_is_order.deor
-                    let mut value = next_not_tok.value.clone();
-                    errors.push(val_err(next_not_tok.clone(), lbl_var.clone(), rule_not_is.clone()).clone());
+                    cnio_end = find_matching_rparen(tokens.clone(), next_not.clone());
+                } else if kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/macros/check_not_is_order.deor
+                    let mut cnio_peek: i64 = next_not + 1;
+                    if cnio_peek < token_count {
+                        // transpiler-deor/tokens_validator/macros/check_not_is_order.deor
+                        let mut cnio_peek_tok: Token = tokens[cnio_peek as usize].clone();
+                        let mut kind = cnio_peek_tok.kind.clone();
+                        if kind == "LPAREN" {
+                            // transpiler-deor/tokens_validator/macros/check_not_is_order.deor
+                            cnio_end = find_matching_rparen(tokens.clone(), cnio_peek.clone());
+                        }
+                    }
+                }
+                let mut after_not: i64 = cnio_end + 1;
+                if after_not < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_not_is_order.deor
+                    let mut after_not_tok: Token = tokens[after_not as usize].clone();
+                    let mut kind = after_not_tok.kind.clone();
+                    if kind == "KW_IS" {
+                        // transpiler-deor/tokens_validator/macros/check_not_is_order.deor
+                        errors.push(val_err(next_not_tok.clone(), lbl_var.clone(), rule_not_is.clone()).clone());
+                    }
                 }
             }
         }

@@ -1,20 +1,36 @@
 
-# Flags `not x is y` — the correct form is `x is not y` since `not` binds before `is` resolves.
+# Flags `not x is y` — the correct form is `x is not y` since `not` binds before `is`
+# resolves. Covers three forms of `x`: a bare identifier (`not val is y`), a function
+# call (`not some_func() is y`), and a parenthesized/grouped expression
+# (`not (a > b) is y`) — in each case, skip past `x` itself to find the token right
+# after it, and flag if that token is `is`. This matters beyond style: for non-bool
+# `x` (an int or float), the compiled `!x` is Rust's bitwise complement, not logical
+# negation, so `not x is y` silently checks an unrelated number instead of erroring
+# or computing "not equal."
 macro check_not_is_order
 	if cur_kind is "KW_NOT"
-		# ex: not {x} is y — pos+1 grabs the identifier right after 'not'
+		# ex: not {x} is y — pos+1 grabs the token right after 'not'
 		int next_not = pos + 1
-		# ex: not x {is} y — pos+2 grabs the 'is' keyword to detect the bad order
-		int after_not = pos + 2
-		if after_not < token_count
+		if next_not < token_count
 			Token next_not_tok = tokens at next_not
-			Token after_not_tok = tokens at after_not
 			(kind) in next_not_tok
-			string next_not_kind = kind
-			(kind) in after_not_tok
-			string after_not_kind = kind
-			bool next_is_ident = next_not_kind is "IDENT"
-			bool after_is_is = after_not_kind is "KW_IS"
-			if next_is_ident and after_is_is
-				(value) in next_not_tok
-				errors at end = val_err(next_not_tok, lbl_var, rule_not_is)
+			int cnio_end = next_not
+
+			if kind is "LPAREN"
+				# not (expr) is y — skip to the matching close paren
+				cnio_end = find_matching_rparen(tokens, next_not)
+			else if kind is "IDENT"
+				# not name(...) is y — skip a following call's argument list too
+				int cnio_peek = next_not + 1
+				if cnio_peek < token_count
+					Token cnio_peek_tok = tokens at cnio_peek
+					(kind) in cnio_peek_tok
+					if kind is "LPAREN"
+						cnio_end = find_matching_rparen(tokens, cnio_peek)
+
+			int after_not = cnio_end + 1
+			if after_not < token_count
+				Token after_not_tok = tokens at after_not
+				(kind) in after_not_tok
+				if kind is "KW_IS"
+					errors at end = val_err(next_not_tok, lbl_var, rule_not_is)

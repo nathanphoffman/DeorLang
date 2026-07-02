@@ -137,7 +137,7 @@ fn bool any_match(roomList items, matchFunc predicate)
 
 ---
 ## Updating a Struct Inside a List
-Deor does not allow in-place field mutation — `rooms at 0` followed by field assignment is a transpiler error. Struct values inside a list are replaced, not mutated. Extract the struct, build an updated copy with `with`, write it back.
+Struct values inside a list are replaced, not mutated in place — since Deor has no dot syntax, there's no way to reach into a list element's field directly. Extract the struct, build an updated copy with `with`, write it back.
 
 Deor:
 ```

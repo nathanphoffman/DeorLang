@@ -10,6 +10,23 @@ for room in rooms
 ```
 
 ---
+## Move Iteration
+Plain `for item in collection` borrows the collection (`for item in &collection`) — `item` is a reference. `for move (item in collection)` consumes the collection instead — `item` is owned, and `collection` cannot be used after the loop.
+
+```
+for move (item in collection)
+    process(item)
+```
+
+```rust
+for item in collection {
+    process(item);
+}
+```
+
+Use this when the loop body needs to actually own each item (e.g. pass it into something that takes ownership, or store it elsewhere) — it avoids having to clone each borrowed item yourself. See [Move](docs/move.md#loop-iteration).
+
+---
 ## Numeric Iteration
 `range(count)` produces values from `0` to `count - 1`. `range(a_start_num, an_end_num)` produces values from `a_start_num` up to but not including `an_end_num`. `range` is a built-in, so literals are valid directly.
 

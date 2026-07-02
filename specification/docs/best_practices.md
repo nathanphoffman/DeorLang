@@ -194,5 +194,31 @@ Don't `macro_run` the same const-macro twice in one function body — the second
 Keep files to a reasonable length. There is no hard limit, but when a file starts to feel long, consider splitting it. A natural split point is when the file contains multiple distinct concerns — for example, separate structs and their associated functions into their own files.
 
 ---
+## Prefer `is not` Over `not ... is`
+
+When negating a comparison, use `is not` rather than wrapping the comparison in `not`. `val is not 5` is required for bare identifiers (the transpiler rejects `not val is 5`), and the same preference applies even in the cases the transpiler doesn't catch, like `not (a > b) is y` or `not some_func() is y` — reorder these to `(a > b) is not y` and `some_func() is not y` instead.
+
+**Recommended:**
+```
+if (a > b) is not y
+    ...
+```
+
+**Avoid:**
+```
+if not (a > b) is y
+    ...
+```
+
+Reach for plain `not` only when there's no comparison to reorder around — negating a standalone boolean value or expression:
+
+```
+if not done
+    ...
+
+opposite as not original
+```
+
+---
 ## Naming External Libs
 Because Deor does not support third-party importing, the standard convention is to copy Deor files into the `lib/` folder, prefixed the same two-letter way as the standard library. See [Libs — Naming Convention](docs/libs.md#naming-convention) for the full prefix scheme and examples.

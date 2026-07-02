@@ -1,7 +1,8 @@
 # syntax_expr_test.deor
 # Exercises the syntax/expression validator rules: bracket indexing instead of
 # 'at', an empty bracket literal instead of 'empty', a reserved keyword used
-# where a variable name is expected, 'not x is y' ordering, and a raw Rust
+# where a variable name is expected, 'not x is y' ordering (bare identifier,
+# parenthesized expression, and function call forms), and a raw Rust
 # generic type name (Option/Vec/Box/Rc/Arc/Result) used directly.
 
 shape intList = list of int
@@ -21,6 +22,19 @@ fn void test_not_is_order()
 	if not flag is true
 		print("bad order")
 
+fn void test_not_is_order_paren()
+	int low = 3
+	int high = 4
+	if not (low > high) is true
+		print("bad order paren")
+
+fn void test_not_is_order_call()
+	if not get_flag() is true
+		print("bad order call")
+
+fn bool get_flag()
+	return true
+
 fn void test_rust_generic()
 	Option bad_type = 5
 
@@ -28,8 +42,10 @@ fn void main()
 	print("should never reach here")
 
 # expect-error:
-# line 11: variable 'nums' - bracket indexing is not valid in Deor
-# line 14: variable '[' - use 'empty' to initialize an empty list
-# line 17: variable 'if' - reserved keyword cannot be used as a name
-# line 21: variable 'flag' - use 'x is not y' instead of 'not x is y'
-# line 25: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
+# line 12: variable 'nums' - bracket indexing is not valid in Deor
+# line 15: variable '[' - use 'empty' to initialize an empty list
+# line 18: variable 'if' - reserved keyword cannot be used as a name
+# line 22: variable 'flag' - use 'x is not y' instead of 'not x is y'
+# line 28: variable '(' - use 'x is not y' instead of 'not x is y'
+# line 32: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
+# line 39: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor

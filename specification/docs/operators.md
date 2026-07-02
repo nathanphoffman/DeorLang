@@ -92,6 +92,19 @@ if not is_valid
     ...
 ```
 
+`not` is general-purpose negation — it works on any boolean value or expression, not just as part of a comparison. Use it whenever you're flipping a single boolean on its own, with nothing to compare it against:
+
+```
+if not done
+    ...
+
+opposite as not original
+```
+
+`opposite as not original` compiles to `let opposite = !original;` — the concise way to negate a value, versus writing out an `if`/`else` that sets `true`/`false` by hand.
+
+Don't reach for `not` to negate the result of a comparison, though — see [Comparison](#comparison) above: `not x is y` is a transpiler error, `x is not y` is the required form.
+
 ---
 
 ## Banned Symbolic Operators
