@@ -1,0 +1,41 @@
+
+# Whole-file paren-balance check, run once before any other validation and short-
+# circuited on immediately. Two failure modes, both silently corrupting downstream
+# validation instead of erroring cleanly:
+#   - An unmatched '(' leaves paren_depth (used by check_keyword_in_parens)
+#     permanently elevated for the rest of the file, so every reserved keyword
+#     after it — if, else, return, fn, for — gets flagged as "used as a name",
+#     a wall of unrelated noise instead of one clear error about the real problem.
+#   - An unmatched extra ')' drives paren_depth negative, which silently disables
+#     check_keyword_in_parens (it only fires when paren_depth > 0) for the rest of
+#     the file, and the stray token is otherwise ignored — the file still builds.
+# Reporting this first, before the main loop runs, avoids both failure modes.
+# pb_open_line/file only update on a depth 0 -> 1 transition, so a later, properly
+# matched top-level group (e.g. an unrelated print(x) further down the file) never
+# overwrites the line of the group that's actually left open.
+macro check_paren_balance
+	int pb_depth = 0
+	int pb_open_line = 0
+	string pb_open_file = ""
+	int pb_i = 0
+	for if pb_i < token_count
+		Token pb_tok = tokens at pb_i
+		(kind, line, file) in pb_tok
+		if kind is "LPAREN"
+			if pb_depth is 0
+				pb_open_line = line
+				pb_open_file = file
+			pb_depth = pb_depth + 1
+		else if kind is "RPAREN"
+			if pb_depth is 0
+				errors at end = val_err(pb_tok, lbl_var, rule_unmatched_close_paren)
+			else
+				pb_depth = pb_depth - 1
+		pb_i = pb_i + 1
+	if pb_depth > 0
+		string kind = "LPAREN"
+		string value = "("
+		int line = pb_open_line
+		string file = pb_open_file
+		Token pb_open_tok = (kind, value, line, file)
+		errors at end = val_err(pb_open_tok, lbl_var, rule_unmatched_open_paren)

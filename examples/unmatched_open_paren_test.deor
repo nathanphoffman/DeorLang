@@ -1,0 +1,17 @@
+# unmatched_open_paren_test.deor
+# Exercises check_paren_balance.deor's unclosed-'(' case. Before this check
+# existed, an unclosed '(' left paren_depth permanently elevated for the rest
+# of the file, so every reserved keyword after it (if/else/return/fn/for) was
+# wrongly flagged by check_keyword_in_parens as "used as a name" — a wall of
+# unrelated noise instead of one clear error about the real problem.
+
+fn void main()
+	int total = (1 + 2
+	print(total)
+	if total > 0
+		print(total)
+	else
+		print(total)
+
+# expect-error:
+# line 9: variable '(' - '(' is never closed

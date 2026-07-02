@@ -1,0 +1,12 @@
+# unmatched_close_paren_test.deor
+# Exercises check_paren_balance.deor's extra-')' case. Before this check existed,
+# an unmatched extra ')' drove paren_depth negative, which silently disabled
+# check_keyword_in_parens (it only fires when paren_depth > 0) for the rest of
+# the file — the stray token was otherwise ignored and the file built anyway.
+
+fn void main()
+	int total = 1 + 2)
+	print(total)
+
+# expect-error:
+# line 8: variable ')' - ')' has no matching '(' before it
