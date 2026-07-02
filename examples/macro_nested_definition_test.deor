@@ -1,0 +1,13 @@
+# macro_nested_definition_test.deor
+# Exercises expand_deor_macros' check that a `macro` cannot be declared inside
+# another macro's body (docs: use macro_run to compose macros instead).
+
+macro outer_macro
+	macro inner_macro
+		print("nested")
+
+fn void main()
+	print("hi")
+
+# expect-error:
+# macro 'inner_macro' - cannot be defined inside another macro body

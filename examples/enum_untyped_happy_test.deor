@@ -1,0 +1,27 @@
+# enum_untyped_happy_test.deor
+# Happy-path coverage for a plain untyped enum (no associated values) — every
+# other enum-related example only tests misuse. Assign a variant, check it
+# with `is`/`is not`.
+
+enum Direction
+	North
+	South
+	East
+	West
+
+fn void main()
+	Direction heading = North
+	if heading is North
+		print("heading north")
+	else
+		print("not north")
+
+	Direction other = West
+	if other is North
+		print("wrong")
+	else
+		print("not north either")
+
+# expect:
+# heading north
+# not north either

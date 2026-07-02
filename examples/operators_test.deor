@@ -1,0 +1,48 @@
+# operators_test.deor
+# Happy-path coverage for the operator set: arithmetic precedence, integer
+# division truncation, modulo, and/or/not, and the full comparison set
+# (is / is not / < / > / <= / >=). Unary minus (-x) is documented but
+# currently broken in codegen (/* unknown_primary */) — not covered here.
+
+fn void main()
+	int prec = 2 + 3 * 4
+	print(prec)
+
+	int div = 5 / 2
+	print(div)
+
+	int modv = 7 % 2
+	print(modv)
+
+	bool flag_a = true
+	bool flag_b = false
+	if flag_a and not flag_b
+		print("and-not ok")
+
+	if flag_a or flag_b
+		print("or ok")
+
+	int left = 3
+	int right = 5
+	if left is not right
+		print("is-not ok")
+	if left < right
+		print("lt ok")
+	if right > left
+		print("gt ok")
+	if left <= 3
+		print("lte ok")
+	if right >= 5
+		print("gte ok")
+
+# expect:
+# 14
+# 2
+# 1
+# and-not ok
+# or ok
+# is-not ok
+# lt ok
+# gt ok
+# lte ok
+# gte ok

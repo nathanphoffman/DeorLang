@@ -1,0 +1,28 @@
+# validator_type_happy_test.deor
+# Happy-path coverage for validator types — every other validator-type example
+# only tests misuse. Assign a value that passes the predicate and one that
+# fails it, check with `is`/`is not valid`, and `avow` to unwrap the valid one.
+
+import "lib/convert.deor"
+
+type Positive(int val)
+	val > 0
+
+fn void main()
+	Positive good_num = 5
+	if good_num is valid
+		int unwrapped = avow good_num
+		string msg = c_int_to_string(unwrapped)
+		print(msg)
+	else
+		print("should have been valid")
+
+	Positive bad_num = 0
+	if bad_num is not valid
+		print("correctly rejected")
+	else
+		print("should have been rejected")
+
+# expect:
+# 5
+# correctly rejected

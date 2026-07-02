@@ -1,0 +1,11 @@
+# import_missing_test.deor
+# Exercises the importer's "cannot find import" check — a distinct error path
+# from the token validator (immediate exit(1), no line number).
+
+import "lib/definitely_not_a_real_file.deor"
+
+fn void main()
+	print("hi")
+
+# expect-error:
+# cannot find import: lib/definitely_not_a_real_file.deor

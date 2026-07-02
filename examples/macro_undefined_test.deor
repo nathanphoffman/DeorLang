@@ -1,0 +1,14 @@
+# macro_undefined_test.deor
+# Exercises validate_macros' check that every macro_run references a macro
+# that's actually defined somewhere in the merged token stream. This runs at
+# its own pipeline stage (macro validation, before expand_deor_macros), so it
+# needs to be isolated from other macro-system test cases.
+
+fn void run()
+	macro_run this_macro_does_not_exist
+
+fn void main()
+	run()
+
+# expect-error:
+# macro_run 'this_macro_does_not_exist' - macro is not defined

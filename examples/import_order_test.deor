@@ -1,0 +1,15 @@
+# import_order_test.deor
+# Exercises the importer's "imports must come first" check — a distinct error
+# path from the token validator (immediate exit(1), no line number, no
+# accumulation with other errors), triggered by a declaration before an import.
+
+fn void helper()
+	print("hi")
+
+import "lib/string.deor"
+
+fn void main()
+	helper()
+
+# expect-error:
+# imports must appear at the top of the file before any declarations
