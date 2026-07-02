@@ -1712,14 +1712,26 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
             pos = end_pos;
         } else if is_rust_blk {
             // macro: dd_handle_rust_block (transpiler-deor/importer/macros/dd_handle_rust_block.deor)
+            let mut rust_nl_pos: i64 = pos + 1.clone();
             let mut rust_content_pos: i64 = pos + 2.clone();
-            let mut rust_in_range: bool = rust_content_pos < token_count.clone();
-            if rust_in_range {
+            let mut rust_is_block: bool = false;
+            let mut block_value: String = "".to_string();
+            if rust_content_pos < token_count {
                 // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                let mut rust_nl_tok: Token = tokens[rust_nl_pos as usize].clone();
                 let mut rust_tok: Token = tokens[rust_content_pos as usize].clone();
+                let kind = rust_nl_tok.kind.clone();
+                let mut rust_nl_ok: bool = kind == "NEWLINE".clone();
+                let kind = rust_tok.kind.clone();
                 let value = rust_tok.value.clone();
+                let mut rust_block_ok: bool = kind == "RUST_BLOCK".clone();
+                rust_is_block = rust_nl_ok && rust_block_ok;
+                block_value = value;
+            }
+            if rust_is_block {
+                // transpiler-deor/importer/macros/dd_handle_rust_block.deor
                 let mut rk_pfx: String = "_rust_".to_string();
-                let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), value.clone()];
+                let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), block_value.clone()];
                 let mut decl_name: String = s_join(rk_parts.clone());
                 let mut already_seen: bool = false;
                 let mut cs_len: i64 = (seen.len() as i64);
@@ -1742,8 +1754,13 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                         result.push(copy_tok.clone());
                     }
                 }
+                pos = pos + 3;
+            } else {
+                // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                let mut rb_fallback_tok: Token = tokens[pos as usize].clone();
+                result.push(rb_fallback_tok.clone());
+                pos = pos + 1;
             }
-            pos = pos + 3;
         } else {
             // transpiler-deor/importer/dedup.deor
             result.push(token.clone());
@@ -2648,19 +2665,24 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: skip_rust_block (transpiler-deor/tokens_validator/macros/skip_rust_block.deor)
         if cur_kind == "KW_RUST" {
             // transpiler-deor/tokens_validator/macros/skip_rust_block.deor
-            let mut skip_pos: i64 = pos + 1.clone();
-            while skip_pos < token_count {
+            let mut srb_nl_pos: i64 = pos + 1.clone();
+            let mut srb_block_pos: i64 = pos + 2.clone();
+            let mut srb_is_block: bool = false;
+            if srb_block_pos < token_count {
                 // transpiler-deor/tokens_validator/macros/skip_rust_block.deor
-                let mut skip_tok: Token = tokens[skip_pos as usize].clone();
-                let kind = skip_tok.kind.clone();
-                skip_pos = skip_pos + 1;
-                if kind == "RUST_BLOCK" {
-                    // transpiler-deor/tokens_validator/macros/skip_rust_block.deor
-                    break;
-                }
+                let mut srb_nl_tok: Token = tokens[srb_nl_pos as usize].clone();
+                let mut srb_block_tok: Token = tokens[srb_block_pos as usize].clone();
+                let kind = srb_nl_tok.kind.clone();
+                let mut srb_nl_ok: bool = kind == "NEWLINE".clone();
+                let kind = srb_block_tok.kind.clone();
+                let mut srb_block_ok: bool = kind == "RUST_BLOCK".clone();
+                srb_is_block = srb_nl_ok && srb_block_ok;
             }
-            pos = skip_pos;
-            continue;
+            if srb_is_block {
+                // transpiler-deor/tokens_validator/macros/skip_rust_block.deor
+                pos = srb_block_pos + 1;
+                continue;
+            }
         }
         // macro: check_not_is_order (transpiler-deor/tokens_validator/macros/check_not_is_order.deor)
         if cur_kind == "KW_NOT" {

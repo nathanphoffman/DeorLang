@@ -1,13 +1,23 @@
 
-# Skips over raw `rust { ... }` blocks during validation so their contents are not checked as Deor tokens.
+# Skips over raw `rust { ... }` blocks during validation so their contents are not
+# checked as Deor tokens. A well-formed standalone rust block is always exactly
+# KW_RUST NEWLINE RUST_BLOCK — checked directly rather than scanned for, so a
+# malformed KW_RUST (e.g. one that isn't a real block-introducing statement) falls
+# through untouched instead of scanning to end-of-file looking for a RUST_BLOCK
+# that will never appear.
 macro skip_rust_block
 	if cur_kind is "KW_RUST"
-		int skip_pos = pos + 1
-		for if skip_pos < token_count
-			Token skip_tok = tokens at skip_pos
-			(kind) in skip_tok
-			skip_pos = skip_pos + 1
-			if kind is "RUST_BLOCK"
-				break
-		pos = skip_pos
-		continue
+		int srb_nl_pos = pos + 1
+		int srb_block_pos = pos + 2
+		bool srb_is_block = false
+		if srb_block_pos < token_count
+			Token srb_nl_tok = tokens at srb_nl_pos
+			Token srb_block_tok = tokens at srb_block_pos
+			(kind) in srb_nl_tok
+			bool srb_nl_ok = kind is "NEWLINE"
+			(kind) in srb_block_tok
+			bool srb_block_ok = kind is "RUST_BLOCK"
+			srb_is_block = srb_nl_ok and srb_block_ok
+		if srb_is_block
+			pos = srb_block_pos + 1
+			continue

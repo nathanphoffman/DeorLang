@@ -1,0 +1,74 @@
+# raw_validation_test.deor
+# Each block below deliberately violates one of the raw-specific validator rules
+# added in check_raw_assignment / check_raw_in_binding / check_raw_reassign /
+# check_raw_operator_use / check_raw_in_special_builtin.
+# Run this file through the transpiler and expect several errors — zero passing output.
+
+fn int make_thing()
+	rust
+		42
+
+# -----------------------------------------------------------------------
+# 1. raw assignment must be a function call
+#    An inline rust block and a bare literal are both rejected.
+# -----------------------------------------------------------------------
+fn void test_raw_assignment_rust_block()
+	raw bad_a = rust
+		42
+
+fn void test_raw_assignment_literal()
+	raw bad_b = 5
+
+# -----------------------------------------------------------------------
+# 2. raw cannot be given another type — typed binding or 'as' rebind
+# -----------------------------------------------------------------------
+fn void test_raw_typed_binding()
+	raw good_a = make_thing()
+	int captured = good_a
+
+fn void test_raw_as_capture()
+	raw good_b = make_thing()
+	copy as good_b
+
+# -----------------------------------------------------------------------
+# 3. raw cannot be reassigned
+# -----------------------------------------------------------------------
+fn void test_raw_reassign()
+	raw good_c = make_thing()
+	good_c = make_thing()
+
+# -----------------------------------------------------------------------
+# 4. raw cannot be used with operators
+# -----------------------------------------------------------------------
+fn void test_raw_operator()
+	raw good_d = make_thing()
+	int total = 1 + good_d
+
+# -----------------------------------------------------------------------
+# 5. raw cannot be passed to the special-cased builtins len / crash / s_join
+# -----------------------------------------------------------------------
+fn void test_raw_len()
+	raw good_e = make_thing()
+	int cnt = len(good_e)
+
+fn void test_raw_crash()
+	raw good_f = make_thing()
+	crash(good_f)
+
+fn void test_raw_sjoin()
+	raw good_g = make_thing()
+	string joined = s_join([good_g, "x"])
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 16: variable 'bad_a' - raw variables can only be assigned from a function call
+# line 20: variable 'bad_b' - raw variables can only be assigned from a function call
+# line 27: variable 'good_a' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 31: variable 'good_b' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 38: variable 'good_c' - raw variables cannot be reassigned
+# line 45: variable 'good_d' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 52: variable 'good_e' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 56: variable 'good_f' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 60: variable 'good_g' - raw variables cannot be used in Deor operators, builtins, or rebindings

@@ -1,14 +1,27 @@
 
 # Deduplicates a raw rust block: keys on the full block content using a "_rust_" prefix,
 # skips if already seen, otherwise copies the 3-token block (KW_RUST + NEWLINE + RUST_BLOCK) to result.
+# A well-formed standalone rust block is always exactly KW_RUST NEWLINE RUST_BLOCK —
+# checked directly rather than assumed, so a malformed KW_RUST (not a real
+# block-introducing statement) is copied through as a single ordinary token
+# instead of misreading an unrelated token as the block's content.
 macro dd_handle_rust_block
+	int rust_nl_pos = pos + 1
 	int rust_content_pos = pos + 2
-	bool rust_in_range = rust_content_pos < token_count
-	if rust_in_range
+	bool rust_is_block = false
+	string block_value = ""
+	if rust_content_pos < token_count
+		Token rust_nl_tok = tokens at rust_nl_pos
 		Token rust_tok = tokens at rust_content_pos
-		(value) in rust_tok
+		(kind) in rust_nl_tok
+		bool rust_nl_ok = kind is "NEWLINE"
+		(kind, value) in rust_tok
+		bool rust_block_ok = kind is "RUST_BLOCK"
+		rust_is_block = rust_nl_ok and rust_block_ok
+		block_value = value
+	if rust_is_block
 		string rk_pfx = "_rust_"
-		strList rk_parts = [rk_pfx, value]
+		strList rk_parts = [rk_pfx, block_value]
 		string decl_name = s_join(rk_parts)
 		bool already_seen = false
 		int cs_len = len(seen)
@@ -23,4 +36,8 @@ macro dd_handle_rust_block
 				int tok_pos = pos + copy_idx
 				Token copy_tok = tokens at tok_pos
 				result at end = copy_tok
-	pos = pos + 3
+		pos = pos + 3
+	else
+		Token rb_fallback_tok = tokens at pos
+		result at end = rb_fallback_tok
+		pos = pos + 1
