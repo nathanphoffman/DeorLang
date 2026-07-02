@@ -10,6 +10,10 @@
 #   registry/type_resolve.deor   — resolve_type
 #   registry/mut_scan.deor       — find_block_end_ref, collect_mut_names
 
+# Scans the full merged token stream once and builds every top-level registry
+# (structs, shapes, enums/variants, validator types, typed enums/variants) that
+# codegen needs to resolve names it encounters. mut_names starts empty here — it's
+# per-function, populated later by collect_mut_names when each fn body is generated.
 fn RcCtx build_registry(TokensRef tokens_ref)
 	strList struct_reg = build_struct_reg(tokens_ref)
 	strList shape_reg = build_shape_reg(tokens_ref)

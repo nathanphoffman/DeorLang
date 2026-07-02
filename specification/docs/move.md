@@ -44,6 +44,25 @@ The collection itself is consumed — it cannot be used after the loop.
 
 ---
 
+## Destructuring
+
+Extract fields from a struct without cloning them:
+
+Deor:
+```
+move (label, points) in score
+```
+
+Rust:
+```rust
+let label = score.label;
+let points = score.points;
+```
+
+`score` cannot be used afterward for any field that was moved out. See [Destructuring](docs/destructuring.md#move-destructuring).
+
+---
+
 ## Struct Construction
 
 Build a struct from fields without cloning them:

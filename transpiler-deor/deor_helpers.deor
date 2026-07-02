@@ -49,6 +49,8 @@ fn int skip_to_body_ref(TokensRef tokens, int pos)
 	cur = adv_indent_ref(cur, tokens)
 	return cur
 
+# Convenience wrapper around make_result that also steps past a trailing NEWLINE at
+# `pos` first — saves callers an explicit adv_nl_ref call after a statement's value.
 fn ParseResult make_nl_result(string code, int pos, TokensRef tokens)
 	int next_pos = adv_nl_ref(pos, tokens)
 	return make_result(move code, next_pos)

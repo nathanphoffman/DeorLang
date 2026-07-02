@@ -22,25 +22,17 @@ The order you write imports only directly controls the relative ordering of file
 
 The ordering of declarations in the generated Rust output does not affect correctness — Rust does not require forward declarations within a module, and the type registry is built from the full merged token stream before code generation begins. Ordering only matters for **collision resolution**: when two files define a declaration with the same name, the first one encountered in the merged stream wins. This is the default, loose behavior — see [Duplicate Top-Level Names](enforced_practices.md#duplicate-top-level-names) for the opt-in pragmas that turn same-name collisions into hard errors instead.
 
-### When ordering causes errors
+### Ordering does not cause errors
 
-Order matters when a file uses a type or function defined in another file but does **not** import that file itself — relying on the caller to have already loaded it. If the dependency arrives later in the merge stream than the file that needs it, the transpiler will error because the name was not yet declared when it was referenced.
+Order does **not** matter for using a type or function defined in another file, even if that file relies on the caller to have already loaded it and does not import it directly. The registry of structs, shapes, enums, and types is built from the full merged token stream before code generation begins, so a name can be referenced anywhere in the merged output regardless of where it was declared — the same way Rust does not require forward declarations within a module.
 
-**Causes an error:**
 ```
-# imports.deor — wrong order
-import "services/billing.deor"   # uses Customer — not declared yet
-import "models/customer.deor"    # defines Customer — too late
-```
-
-**Correct:**
-```
-# imports.deor — dependency first
+# imports.deor — order does not matter here
+import "services/billing.deor"   # uses Customer, even if it doesn't import customer.deor itself
 import "models/customer.deor"    # defines Customer
-import "services/billing.deor"   # uses Customer — now in scope
 ```
 
-If `billing.deor` imported `models/customer.deor` itself, order would not matter — the depth-first traversal would pull `customer.deor` in before `billing.deor`'s own declarations regardless of where it appears in the list. The error only occurs when a file relies on an implicit dependency (one it does not import directly).
+This still works, but relying on an implicit dependency like this is bad practice — `billing.deor` should import `models/customer.deor` itself so its dependencies are self-documenting. Import order only matters for **collision resolution** — see below.
 
 ## Two Valid Approaches
 

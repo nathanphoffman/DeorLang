@@ -1,14 +1,15 @@
 AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
-
+---
 # Road Map
 Upcoming features, mostly an internal markdown file used by the creator Nathan Hoffman.
 
+---
 ## Working On 
 
-Make sure docs get updated with dedup
+- Clearing dead code
+- Need to perform a new spec/docs to transpiler audit and look for discrepancies
 
 ---
-
 ## Audit Documentation
 *Large Lift* | *Critical Priority*
 

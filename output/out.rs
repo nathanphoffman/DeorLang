@@ -7649,14 +7649,6 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/cursor.deor
-fn cur_at(tokens: Vec<Token>, pos: i64) -> TokenCursor {
-    // transpiler-deor/codegen/decl/cursor.deor
-    let mut token_count: i64 = (tokens.len() as i64);
-    let mut current: Token = tokens[pos as usize].clone();
-    let cur = TokenCursor { token_count: token_count.clone(), pos: pos.clone(), current: current.clone() };
-    return cur;
-}
-
 fn c_at_end(cur: TokenCursor) -> bool {
     // transpiler-deor/codegen/decl/cursor.deor
     let token_count = cur.token_count.clone();

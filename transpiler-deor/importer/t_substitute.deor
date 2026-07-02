@@ -8,6 +8,7 @@
 #        camelCase prefix: thingList      -> piChunkList
 #   3. RUST_BLOCK content                 -> word-boundary replace using same rules
 
+# Lowercases the first character of source, leaving the rest unchanged (PascalCase -> camelCase).
 fn string s_camel(string source)
 	rust
 		let mut chars = source.chars();
@@ -16,6 +17,8 @@ fn string s_camel(string source)
 			Some(c) => c.to_lowercase().to_string() + chars.as_str(),
 		}
 
+# Converts source to snake_case by lowercasing and inserting '_' before each
+# interior uppercase letter.
 fn string s_to_snake(string source)
 	rust
 		{
@@ -31,10 +34,12 @@ fn string s_to_snake(string source)
 			result
 		}
 
+# Returns true when `needle` occurs anywhere in `source`.
 fn bool s_contains(string source, string needle)
 	rust
 		source.contains(needle.as_str())
 
+# Replaces every occurrence of `from` in `source` with `output`.
 fn string s_replace(string source, string from, string output)
 	rust
 		source.replace(from.as_str(), output.as_str())

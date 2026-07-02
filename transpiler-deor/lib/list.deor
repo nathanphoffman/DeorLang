@@ -1,9 +1,9 @@
 
 # Returns a sub-slice of a token list from `start` (inclusive) to `end_val` (exclusive),
-# clamping end_val to the list length. Used in gen_fn_decl to extract just the body
-# tokens so that recursive registry scans (collect_mut_names) work on a small slice
-# rather than the entire merged token stream — the key optimization that cut
-# self-compile time from 11s to 1.3s.
+# clamping end_val to the list length. Used in gen_fn_decl and gen_type_decl (validator
+# types) to extract just the body tokens so that recursive registry scans
+# (collect_mut_names) work on a small slice rather than the entire merged token stream —
+# the key optimization that cut self-compile time from 11s to 1.3s.
 fn tokenList l_slice_ref(TokensRef tokens, int start, int end_val)
 	rust
 		{

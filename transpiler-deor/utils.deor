@@ -53,9 +53,10 @@ fn bool reg3_has(strList pairs, string key)
 	int thr = 3
 	return reg_has_stride(pairs, key, thr)
 
-# Linear scan checking whether a strList contains a specific string. Used to check
-# mutable variable names, import name filters, and seen-declaration sets during
-# deduplication.
+# Linear scan checking whether a strList contains a specific string. Used throughout
+# validation and codegen — e.g. checking mutable variable names, built-in-name shadowing,
+# and reserved keywords. Not used by dedup.deor's own `seen` list: that uses a direct
+# index loop instead to avoid the clone this function's by-value strList param forces.
 fn bool list_has(strList items, string val)
 	int item_count = len(items)
 	for index in range(item_count)
@@ -71,14 +72,21 @@ rust
 	fn _float_ctx_get() -> bool { FLOAT_CTX.with(|f| f.get()) }
 	fn _float_ctx_set(v: bool) { FLOAT_CTX.with(|f| f.set(v)); }
 
+# Returns whether float-literal context is currently active (see FLOAT_CTX above) —
+# i.e. whether a bare numeric literal like `5` in the current expression should be
+# rendered as a Rust float (`5.0`) rather than an int.
 fn bool float_ctx_get()
 	rust
 		_float_ctx_get()
 
+# Turns on float-literal context. Set by callers (e.g. a `float` typed binding's RHS)
+# before generating an expression so bare numeric literals inside it render as floats.
 fn void float_ctx_enable()
 	rust
 		_float_ctx_set(true)
 
+# Turns off float-literal context, restoring the default int rendering for bare
+# numeric literals. Called after leaving a float-typed expression context.
 fn void float_ctx_disable()
 	rust
 		_float_ctx_set(false)

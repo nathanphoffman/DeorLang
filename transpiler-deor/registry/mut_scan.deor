@@ -22,6 +22,11 @@ fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 				break
 	return result
 
+# Scans a block's token range for every name immediately followed by an EQUALS token
+# (its declaration's own initializer counts too, not just later reassignments — codegen
+# just emits an unneeded `let mut` in that case, which #![allow(warnings)] silences) and
+# returns those names so codegen knows to mark them mutable. Const names are tracked
+# separately and excluded even though a const's initializer also uses '='.
 fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 	strList result = empty
 	strList const_names = empty

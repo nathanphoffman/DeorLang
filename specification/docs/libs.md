@@ -350,6 +350,10 @@ After substitution with `T = Score`:
 | `scoreList` | shape | `list of Score` |
 | `scoreTransformFunc` | shape | `func of Score to Score` |
 
+| Function | Signature | Description |
+|---|---|---|
+| `t_pool_make` | `() → TaskPool` | Create a thread pool sized to the number of logical CPU cores. Not `T`-substituted — same name regardless of `T`. |
+
 | Function (before substitution) | Signature | Description |
 |---|---|---|
 | `t_T_run_all` | `TaskPool, tList, tTransformFunc → tList` | Map a list of T through a worker in parallel, return all results |

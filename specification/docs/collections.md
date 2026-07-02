@@ -84,9 +84,11 @@ rooms at end = new_room
 
 Rust:
 ```rust
-result.push(item);
+result.push(item.clone());
 rooms.push(new_room.clone());
 ```
+
+Any identifier pushed is always cloned, regardless of type — the transpiler does not special-case this.
 
 ---
 ## Remove

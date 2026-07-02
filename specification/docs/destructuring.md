@@ -53,3 +53,16 @@ name as "Alice"
 
 Use this deliberately to "update" a name after processing, or avoid it by choosing distinct names.
 
+---
+
+## Move Destructuring
+`move (f1, f2) in source` extracts fields without cloning — each binding takes ownership of the field instead of copying it. `source` cannot be used afterward for any field that was moved out. See [Move](docs/move.md#destructuring) for details.
+
+```
+move (label, points) in score
+```
+```rust
+let label = score.label;
+let points = score.points;
+```
+

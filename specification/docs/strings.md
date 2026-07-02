@@ -48,18 +48,16 @@ string full = first + " " + last
 ```
 
 ```rust
-let greeting: String = format!("{}{}", "hello ", name);
-let line: String = format!("{}{}", prefix, format!("{}{}", content, "\n"));
-let full: String = format!("{}{}", first, format!("{} {}", " ", last));
+let greeting: String = "hello ".to_string() + &name;
+let line: String = prefix + &content + "\n";
+let full: String = first + " " + &last;
 ```
 
-Chains of `+` are evaluated left to right. Mixed string/int `+` in the same expression is a transpiler error — use a `rust` block if you need to format an integer into a string.
+Chains of `+` are evaluated left to right and compiled to a native Rust `+`/`&` chain, not `format!`. The first operand becomes an owned `String` (a literal gets `.to_string()`; a variable or call is already owned). Every operand after that is borrowed with `&`, except string literals, which are already `&str` and need no borrow.
+
+The transpiler does not check that all operands in a `+` chain are strings — mixing in a non-string operand (e.g. an `int`) is not caught at the Deor level and will fail with a Rust type error instead. Use a `rust` block if you need to format an integer into a string:
 
 ```
-# Transpiler error — mixed types in one + chain
-string bad = "count: " + count    # count is int — not allowed
-
-# Correct — convert first with a rust block
 fn string int_to_str(int n)
     rust
         n.to_string()
@@ -115,7 +113,8 @@ bool is_pdf = s_ends_with(filename, ext)
 
 | Deor | Rust |
 |---|---|
-| `a + b` | `format!("{}{}", a, b)` |
+| `a + b` (both idents) | `a + &b` |
+| `"lit" + b` | `"lit".to_string() + &b` |
 | `s_contains(str, needle)` | `str.contains(needle.as_str())` |
 | `s_starts_with(str, prefix)` | `str.starts_with(prefix.as_str())` |
 | `s_ends_with(str, suffix)` | `str.ends_with(suffix.as_str())` |
