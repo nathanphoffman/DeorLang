@@ -1,0 +1,43 @@
+# builtin_shadow_test.deor
+# Exercises the built-in-name-shadow validator: print, crash, len, range, args,
+# and input are plain IDENTs (not lexer keywords) but still cannot be used as a
+# variable, fn param, struct field, for-loop var, top-level fn name, or
+# destructuring target.
+
+shape intList = list of int
+
+struct Item
+	int range
+
+fn void crash()
+	print("hi")
+
+fn void test_local_var()
+	int print = 5
+
+fn void test_param(int len)
+	print("hi")
+
+fn void test_for_loop()
+	intList items = [1, 2, 3]
+	for input in items
+		print("hi")
+
+fn void test_destructure()
+	Item thing = (5)
+	(args) in thing
+
+fn void main()
+	crash()
+	test_local_var()
+	test_param(5)
+	test_for_loop()
+	test_destructure()
+
+# expect-error:
+# line 10: struct field 'range' - this name belongs to a built-in function
+# line 12: declaration 'crash' - this name belongs to a built-in function
+# line 16: variable 'print' - this name belongs to a built-in function
+# line 18: fn 'len' - this name belongs to a built-in function
+# line 23: variable 'input' - this name belongs to a built-in function
+# line 28: variable 'args' - this name belongs to a built-in function

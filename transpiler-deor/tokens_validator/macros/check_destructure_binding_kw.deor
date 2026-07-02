@@ -1,10 +1,10 @@
-# Flags a reserved keyword used as a destructuring binding name: `(f1, keyword)
-# in expr`. Only fires for a genuine destructure — the matching close paren must
-# be followed by KW_IN — so a plain parenthesized expression like `(not flag)`
-# is untouched. Without this, a keyword in a binding-name slot used to hang the
-# compiler forever: for_collect_fields_into_fields_list's cursor only advanced
-# inside its RPAREN/COMMA/IDENT branches, so an unrecognized token kind left the
-# cursor stuck and the loop never terminated.
+# Flags a reserved keyword or built-in function name used as a destructuring binding
+# name: `(f1, keyword) in expr`. Only fires for a genuine destructure — the matching
+# close paren must be followed by KW_IN — so a plain parenthesized expression like
+# `(not flag)` is untouched. Without the reserved-keyword check, a keyword in a
+# binding-name slot used to hang the compiler forever: for_collect_fields_into_fields_list's
+# cursor only advanced inside its RPAREN/COMMA/IDENT branches, so an unrecognized token
+# kind left the cursor stuck and the loop never terminated.
 macro check_destructure_binding_kw
 	if cur_kind is "LPAREN"
 		bool dbk_is_call = false
@@ -38,12 +38,14 @@ macro check_destructure_binding_kw
 				bool dbk_at_name_slot = true
 				for if dbk_name_pos < dbk_scan
 					Token dbk_name_tok = tokens at dbk_name_pos
-					(kind) in dbk_name_tok
+					(kind, value) in dbk_name_tok
 					if kind is "COMMA"
 						dbk_at_name_slot = true
 					else if dbk_at_name_slot
-						if kind is not "IDENT"
-							if list_has(reserved_keywords, kind)
-								errors at end = val_err(dbk_name_tok, lbl_var, rule_kw_in_parens)
+						if kind is "IDENT"
+							if list_has(builtin_names, value)
+								errors at end = val_err(dbk_name_tok, lbl_var, rule_builtin_shadow)
+						else if list_has(reserved_keywords, kind)
+							errors at end = val_err(dbk_name_tok, lbl_var, rule_kw_in_parens)
 						dbk_at_name_slot = false
 					dbk_name_pos = dbk_name_pos + 1

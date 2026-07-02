@@ -49,6 +49,8 @@ macro prescan_check_struct_fields
 							errors at end = val_err(field_name_tok, lbl_field, rule_min3)
 						if not is_snake(value)
 							errors at end = val_err(field_name_tok, lbl_field, rule_snake)
+						if list_has(builtin_names, value)
+							errors at end = val_err(field_name_tok, lbl_field, rule_builtin_shadow)
 						bool sf_is_func = list_has(func_shape_names, sf_field_type)
 						if sf_is_func
 							errors at end = val_err(field_name_tok, lbl_field, rule_no_func_field)

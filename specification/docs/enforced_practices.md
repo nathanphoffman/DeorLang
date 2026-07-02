@@ -128,6 +128,12 @@ if condition
 print(val)          # 5
 ```
 
+**Exception:** built-in function names (`print`, `crash`, `len`, `range`, `args`, `input`) can never be shadowed, even though they aren't reserved keywords — see [Syntax — Built-in Function Names](docs/syntax.md#built-in-function-names).
+
+```
+int print = 5    # transpiler error — print is a built-in, not shadowable
+```
+
 ---
 ## Maximum 3 Parameters per Function
 

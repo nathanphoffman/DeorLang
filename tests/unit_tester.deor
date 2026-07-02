@@ -30,7 +30,7 @@ struct RunResult
 
 struct ProcSpec
 	string program
-	stringList args
+	stringList proc_args
 	string stdin_data
 	bool set_lib_env
 	int timeout_secs
@@ -163,11 +163,11 @@ fn void ensure_scratch_dir()
 		}
 
 fn RunResult run_process(ProcSpec spec)
-	(program, args, stdin_data, set_lib_env, timeout_secs) in spec
+	(program, proc_args, stdin_data, set_lib_env, timeout_secs) in spec
 	rust
 		{
 			let mut cmd = Command::new(&program);
-			for a in args.iter() { cmd.arg(a); }
+			for a in proc_args.iter() { cmd.arg(a); }
 			if set_lib_env { cmd.env("DEOR_LIB", "lib"); }
 			let (exit_code, stdout_text, stderr_text) = run_cmd_timeout(cmd, &stdin_data, timeout_secs as u64);
 			RunResult { exit_code, stdout_text, stderr_text }
@@ -187,11 +187,11 @@ fn bool run_one(string path, ParsedSpec spec)
 	string bin_path = s_join(["output/test_scratch/", base, "_bin"])
 
 	string program = "./output/out"
-	stringList args = [path, rs_path]
+	stringList proc_args = [path, rs_path]
 	string stdin_data = ""
 	bool set_lib_env = true
 	int timeout_secs = 30
-	ProcSpec transpile_spec = (program, args, stdin_data, set_lib_env, timeout_secs)
+	ProcSpec transpile_spec = (program, proc_args, stdin_data, set_lib_env, timeout_secs)
 	RunResult transpile_res = run_process(transpile_spec)
 	(exit_code, stdout_text, stderr_text) in transpile_res
 	string transpile_combined = s_join([stdout_text, stderr_text])
@@ -211,10 +211,10 @@ fn bool run_one(string path, ParsedSpec spec)
 		return false
 
 	string program = "rustc"
-	stringList args = ["-O", rs_path, "-o", bin_path]
+	stringList proc_args = ["-O", rs_path, "-o", bin_path]
 	bool set_lib_env = false
 	int timeout_secs = 60
-	ProcSpec rustc_spec = (program, args, stdin_data, set_lib_env, timeout_secs)
+	ProcSpec rustc_spec = (program, proc_args, stdin_data, set_lib_env, timeout_secs)
 	RunResult rustc_res = run_process(rustc_spec)
 	(exit_code, stdout_text, stderr_text) in rustc_res
 	if exit_code is not 0
@@ -222,10 +222,10 @@ fn bool run_one(string path, ParsedSpec spec)
 		return false
 
 	string program = bin_path
-	stringList args = real_args
+	stringList proc_args = real_args
 	string stdin_data = real_stdin
 	int timeout_secs = 10
-	ProcSpec run_spec = (program, args, stdin_data, set_lib_env, timeout_secs)
+	ProcSpec run_spec = (program, proc_args, stdin_data, set_lib_env, timeout_secs)
 	RunResult run_res = run_process(run_spec)
 	(exit_code, stdout_text, stderr_text) in run_res
 	string run_combined = s_join([stdout_text, stderr_text])

@@ -51,6 +51,7 @@ macro define_errors
 	string rule_empty_parens = "'()' is not valid — parens must contain at least one item, except when declaring or calling a zero-parameter function"
 	string rule_unmatched_open_bracket = "'[' is never closed — every open bracket needs a matching ']'"
 	string rule_unmatched_close_bracket = "']' has no matching '[' before it — remove the extra ']' or add the missing '['"
+	string rule_builtin_shadow = "this name belongs to a built-in function (print, crash, len, range, args, input) and cannot be shadowed or redeclared"
 
 	# const rules
 	string rule_const_reassign = "cannot reassign a const variable — const bindings are immutable"

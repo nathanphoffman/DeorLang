@@ -1,5 +1,6 @@
 
-# Prescan pass: flags duplicate top-level declaration names across struct, enum, shape, type, and fn declarations.
+# Prescan pass: flags duplicate top-level declaration names across struct, enum, shape, type, and fn declarations,
+# and rejects a built-in function name (print, crash, len, range, args, input) used in any of those slots.
 macro prescan_check_duplicate_decls
 	bool is_kw_struct = kind is "KW_STRUCT"
 	bool is_kw_enum = kind is "KW_ENUM"
@@ -31,17 +32,23 @@ macro prescan_check_duplicate_decls
 							Token dn_name_tok = tokens at dn_name_pos
 							(kind, value) in dn_name_tok
 							if kind is "IDENT"
-								if list_has(decl_names, value)
+								if list_has(builtin_names, value)
+									errors at end = val_err(dn_name_tok, lbl_decl, rule_builtin_shadow)
+								else if list_has(decl_names, value)
 									errors at end = val_err(dn_name_tok, lbl_decl, rule_dup)
 								else
 									decl_names at end = value
 					else
-						if list_has(decl_names, value)
+						if list_has(builtin_names, value)
+							errors at end = val_err(dn_tok, lbl_decl, rule_builtin_shadow)
+						else if list_has(decl_names, value)
 							errors at end = val_err(dn_tok, lbl_decl, rule_dup)
 						else
 							decl_names at end = value
 				else
-					if list_has(decl_names, value)
+					if list_has(builtin_names, value)
+						errors at end = val_err(dn_tok, lbl_decl, rule_builtin_shadow)
+					else if list_has(decl_names, value)
 						errors at end = val_err(dn_tok, lbl_decl, rule_dup)
 					else
 						decl_names at end = value
@@ -52,7 +59,9 @@ macro prescan_check_duplicate_decls
 			Token fn_name_tok = tokens at fn_name_pos
 			(kind, value) in fn_name_tok
 			if kind is "IDENT"
-				if list_has(decl_names, value)
+				if list_has(builtin_names, value)
+					errors at end = val_err(fn_name_tok, lbl_decl, rule_builtin_shadow)
+				else if list_has(decl_names, value)
 					errors at end = val_err(fn_name_tok, lbl_decl, rule_dup)
 				else
 					decl_names at end = value

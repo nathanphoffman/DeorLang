@@ -5,8 +5,15 @@
 # -----------------------------------------------------------------------
 # 1. Duplicate declaration name
 #    Second 'Player' SHOULD fire "duplicate declaration" but currently does not —
-#    prescan_check_duplicate_decls doesn't fire for structs or fns (verified via
-#    isolated repro); tracked as a known bug, not asserted in # expect-error below.
+#    prescan_check_duplicate_decls never gets the chance to. Root cause: importer/
+#    dedup.deor's deduplicate_decls runs during import-merging, BEFORE validation,
+#    and silently keeps only the first declaration for any name — first wins, the
+#    second is dropped from the token stream with no error anywhere (not even a
+#    downstream rustc error, since only one definition ever reaches codegen).
+#    Cross-file collisions (the same file diamond-imported via two paths) are
+#    intentionally fine to dedup silently — but a same-file duplicate like the one
+#    below should be flagged and currently isn't. Fix is deferred; needs a real
+#    unit test once implemented. Not asserted in # expect-error below.
 # -----------------------------------------------------------------------
 struct Player
 	string name

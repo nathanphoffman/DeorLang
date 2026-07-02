@@ -6,14 +6,14 @@ import "transpiler-deor/macros/timer.deor"
 # to produce Rust source, and writes it to the output file.
 fn void main()
 
-	strList args = f_args()
-	int arg_count = len(args)
+	strList cli_args = f_args()
+	int arg_count = len(cli_args)
 
 	if arg_count < 2
 		print("usage: deor input.deor output.rs")
 	else
-		string input_path = args at 0
-		string output_path = args at 1
+		string input_path = cli_args at 0
+		string output_path = cli_args at 1
 
 		string _timer_label = "[timer] load+dedup: "
 		macro_run timer_start

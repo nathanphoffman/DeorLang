@@ -44,6 +44,8 @@ macro check_fn_declaration
 									errors at end = val_err(pn_tok, lbl_fn, rule_min3)
 								if not is_snake(value)
 									errors at end = val_err(pn_tok, lbl_fn, rule_snake)
+								if list_has(builtin_names, value)
+									errors at end = val_err(pn_tok, lbl_fn, rule_builtin_shadow)
 								ps_pos = pn_pos
 							else if list_has(reserved_keywords, kind)
 								errors at end = val_err(pn_tok, lbl_fn, rule_kw_in_parens)

@@ -28,3 +28,5 @@ macro check_validator_declaration
 						errors at end = val_err(vd_pname_tok, lbl_type, rule_type_param_shadow)
 					if value is vd_param_type
 						errors at end = val_err(vd_pname_tok, lbl_type, rule_param_shadow)
+					if list_has(builtin_names, value)
+						errors at end = val_err(vd_pname_tok, lbl_type, rule_builtin_shadow)

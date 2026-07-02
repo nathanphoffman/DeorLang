@@ -19,9 +19,9 @@ fn void main()
     print(Blue)
 
     (Low, High) in Priority
-    int range = High - Low
-    string range_str = c_int_to_string(range)
-    print(range_str)
+    int span = High - Low
+    string span_str = c_int_to_string(span)
+    print(span_str)
 
 # expect:
 # Red
