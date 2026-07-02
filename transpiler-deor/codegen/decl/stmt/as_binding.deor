@@ -14,7 +14,9 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	Token name_token = tokens at pos
 	(value) in name_token
 	string ident_name = value
+	# ex: result {as} (a, b) — pos+1 grabs the 'as' keyword
 	int next_pos = pos + 1
+	# ex: result as {(}a, b) — next_pos+1 grabs the token after 'as' used to dispatch the binding form
 	int after_as = next_pos + 1
 	Token after_as_token = tokens at after_as
 	(kind) in after_as_token

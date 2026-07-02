@@ -7,6 +7,7 @@
 # Typed enums (`enum string/int/float/bool Name`) emit no Rust — they exist only as
 # Deor compile-time registries and are extracted via `(Variant) in EnumName`.
 fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
+	# ex: enum {Color} — pos+1 grabs the enum name (or type keyword if typed)
 	int start_pos = pos + 1
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
 	(current) in cur

@@ -12,6 +12,7 @@ macro check_raw_in_special_builtin
 		bool rsb_is_sjoin = cur_val is "s_join"
 		bool rsb_is_target = rsb_is_len or rsb_is_crash or rsb_is_sjoin
 		if rsb_is_target
+			# ex: len{(}pool) — pos+1 grabs the opening paren after the builtin name
 			int rsb_lp = pos + 1
 			if rsb_lp < token_count
 				Token rsb_lp_tok = tokens at rsb_lp

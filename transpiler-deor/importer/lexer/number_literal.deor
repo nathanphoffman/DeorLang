@@ -28,6 +28,7 @@ fn ParseResult scan_number(strList chars, int char_index, int char_count)
 			break
 	if new_pos < char_count
 		string dot_char = chars at new_pos
+		# ex: 3.{1}4 — new_pos+1 grabs the char right after the decimal point
 		int frac_start = new_pos + 1
 		if dot_char is "." and frac_start < char_count
 			string frac_first = chars at frac_start

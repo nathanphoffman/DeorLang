@@ -7,6 +7,7 @@
 macro check_raw_reassign
 	bool rr_is_tracked = list_has(raw_var_names, cur_val)
 	if rr_is_tracked
+		# ex: pool {=} other — pos+1 grabs the token after the raw variable
 		int rr_next_pos = pos + 1
 		if rr_next_pos < token_count
 			Token rr_next_tok = tokens at rr_next_pos
@@ -16,6 +17,7 @@ macro check_raw_reassign
 			if rr_is_eq or rr_is_as
 				bool rr_is_decl = false
 				if pos > 0
+					# ex: {raw} pool = expr — pos-1 checks the token before the raw variable for the declaring keyword
 					int rr_prev_pos = pos - 1
 					Token rr_prev_tok = tokens at rr_prev_pos
 					(kind) in rr_prev_tok

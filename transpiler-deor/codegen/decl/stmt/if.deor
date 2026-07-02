@@ -20,6 +20,7 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 	int token_count = len(tokens)
 	macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
+	# ex: if {cond} — pos+1 grabs the condition expression after 'if'
 	int if_cond_pos = pos + 1
 	ParseResult then_r = gen_if_branch(if_cond_pos, depth, ctx)
 	move (code, new_pos) in then_r
@@ -38,12 +39,14 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 			continue
 		if kind is not "KW_ELSE"
 			break
+		# ex: else {if} cond — cur+1 grabs the token after 'else' that decides else-if vs plain else
 		int after_else = cur + 1
 		if after_else >= token_count
 			break
 		Token after_else_token = tokens at after_else
 		(kind) in after_else_token
 		if kind is "KW_IF"
+			# ex: else if {cond} — after_else+1 grabs the condition expression after 'else if'
 			int ei_cond = after_else + 1
 			ParseResult ei_r = gen_if_branch(ei_cond, depth, ctx)
 			move (code, new_pos) in ei_r

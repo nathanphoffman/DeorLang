@@ -4,6 +4,7 @@ macro check_crash_args
 	if cur_kind is "IDENT"
 		bool is_crash = cur_val is "crash"
 		if is_crash
+			# ex: crash{(}"msg") — pos+1 grabs the opening paren
 			int crash_lp = pos + 1
 			if crash_lp < token_count
 				Token crash_lp_tok = tokens at crash_lp

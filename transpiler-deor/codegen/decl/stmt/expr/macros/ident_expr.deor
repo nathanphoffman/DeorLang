@@ -6,12 +6,14 @@
 #   name         — plain identifier, or an enum variant if found in the variant registry
 macro primary_ident_expr
 	if kind is "IDENT"
+		# ex: name{(}args) — pos+1 grabs the token that decides call/index/plain
 		int ie_next = pos + 1
 		if ie_next < token_count
 			Token ie_next_tok = tokens at ie_next
 			(kind) in ie_next_tok
 			if kind is "LPAREN"
 				string ie_func = value
+				# ex: name({args}) — ie_next+1 grabs the first call-argument slot
 				int ie_args_pos = ie_next + 1
 				if ie_func is "len"
 					string ie_len_sfx = ".len() as i64"
@@ -37,6 +39,7 @@ macro primary_ident_expr
 					Token sj_arg_tok = tokens at ie_args_pos
 					(kind) in sj_arg_tok
 					if kind is "LBRACKET"
+						# ex: s_join([{a}, b]) — ie_args_pos+1 grabs the first item after '['
 						int sj_inner = ie_args_pos + 1
 						ParseResult sj_r = gen_join_items(tokens, sj_inner, ctx)
 						move (code, new_pos) in sj_r
@@ -57,6 +60,7 @@ macro primary_ident_expr
 				string ie_call_code = s_join([ie_func, ie_lp, ie_args_code, ie_rp])
 				return make_result(move ie_call_code, ie_after)
 			if kind is "KW_AT"
+				# ex: name at {idx} — ie_next+1 grabs the index expression after 'at'
 				int ie_idx_pos = ie_next + 1
 				ParseResult ie_idx_r = gen_primary(tokens, ie_idx_pos, ctx)
 				move (code, new_pos) in ie_idx_r

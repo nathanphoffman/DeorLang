@@ -1,12 +1,16 @@
 
 # Handles `for move var in expr`: generates `for var in expr { ... }` consuming ownership.
 macro for_move
+	# ex: for move {(}item in collection) — next_pos+1 grabs the opening paren
 	int lparen_pos = next_pos + 1
+	# ex: for move ({item} in collection) — lparen_pos+1 grabs the loop variable
 	int var_pos = lparen_pos + 1
 	Token var_tok = tokens at var_pos
 	(value) in var_tok
 	string move_var = value
+	# ex: for move (item {in} collection) — var_pos+1 grabs the in keyword
 	int in_pos = var_pos + 1
+	# ex: for move (item in {collection}) — in_pos+1 grabs the start of the iterable expression
 	int iter_pos = in_pos + 1
 	val_pos as iter_pos
 	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)

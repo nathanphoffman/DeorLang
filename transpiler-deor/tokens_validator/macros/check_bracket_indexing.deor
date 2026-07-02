@@ -1,6 +1,7 @@
 
 # Flags `name[index]` bracket indexing, which is not valid in Deor — use `name at index` instead.
 macro check_bracket_indexing
+	# ex: data{[}0] — pos+1 checks for a '[' right after the name (invalid indexing)
 	int next_pos = pos + 1
 	if next_pos < token_count
 		Token next_tok = tokens at next_pos

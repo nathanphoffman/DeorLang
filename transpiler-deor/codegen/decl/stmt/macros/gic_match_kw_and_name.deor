@@ -8,6 +8,7 @@ macro gic_match_kw_and_name
 	Token gic_in_tok = tokens at cur
 	(kind) in gic_in_tok
 	if kind is "KW_IN"
+		# ex: (fields) in {input}() — cur+1 grabs the args/input identifier
 		int gic_nm_pos = cur + 1
 		if gic_nm_pos < token_count
 			Token gic_nm_tok = tokens at gic_nm_pos
@@ -19,4 +20,5 @@ macro gic_match_kw_and_name
 					gic_nm_ok = true
 					gic_is_args = true
 				if gic_nm_ok
+					# ex: (fields) in input{(}) — gic_nm_pos+1 grabs the opening paren
 					gic_lp = gic_nm_pos + 1

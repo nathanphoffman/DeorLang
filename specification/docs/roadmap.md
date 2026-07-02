@@ -6,16 +6,6 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 
 ## Things I need to Test
 
-  ### Test a lot of rar behavior:
-  should be fixed soon: raw name = rust <block> (the one form the old raw-validator required) never worked in codegen either — confirmed in the earlier raw-rules work, documented with a
-  working example instead.
-
-  Should be working: 2. raw rules in enforced_practices.md are overstated, and its own example contradicts the rule. Only two checks exist: check_raw_assignment (must come from a
-  rust block) and check_raw_in_binding (catches string val = raw_var, a typed binding only). The doc claims "consuming a raw variable outside a rust block is a
-  transpiler error" and lists int cnt = len(index) as an error case — but passing a raw var as a function argument or into len() isn't checked at all. Worse, the
-  doc's own "Correct" example passes index into lookup(index, search_key) — a plain function call outside a rust block — and calls it fine, directly undercutting
-  the rule stated two lines above it.
-
 
   -- test to make sure args() works properly
 
@@ -24,6 +14,9 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 
   4. Type validator parameter shadowing its type — type Roll(int Roll) — check_fn_declaration catches this for functions but validator type declarations aren't checked the same way.
     ^^ add validation, fix -- should be fixed, validate
+
+## New Fixes
+- raw hello = 0 fails with the proper error, but raw hello as 0 actually works fine, my guess is raw is just dropped as the hello as 0 stands alone.  But to eliminate confusion we should throw an error about this too.
 
 ## Audits
 

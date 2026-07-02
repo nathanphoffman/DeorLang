@@ -8,6 +8,7 @@
 macro check_kw_as_name
 	bool kan_is_reserved = list_has(reserved_keywords, cur_kind)
 	if kan_is_reserved
+		# ex: int {raw} = 5 — pos+1 checks the token after the reserved-keyword name
 		int kan_next_pos = pos + 1
 		if kan_next_pos < token_count
 			Token kan_next_tok = tokens at kan_next_pos

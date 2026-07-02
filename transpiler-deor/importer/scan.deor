@@ -3,12 +3,14 @@
 
 # Handles `import "path"` — KW_IMPORT is at pos, STRING path is at pos+1.
 fn ParseResult scan_import_new(tokenList tokens, int pos)
+	# ex: import {"lib/json.deor"} — pos+1 grabs the STRING path
 	int path_pos = pos + 1
 	int token_count = len(tokens)
 	if path_pos < token_count
 		Token path_tok = tokens at path_pos
 		(kind, value) in path_tok
 		if kind is "STRING"
+			# ex: import "lib/json.deor"{\n} — path_pos+1 grabs the token after the path
 			int after_path = path_pos + 1
 			return make_result(value, after_path)
 	string emp = ""
@@ -21,8 +23,11 @@ fn ParseResult scan_import_new(tokenList tokens, int pos)
 fn ParseResult scan_import_where(tokenList tokens, int pos)
 	int token_count = len(tokens)
 	int where_pos = pos
+	# ex: where {Placeholder} = ConcreteType — pos+1 grabs the placeholder name
 	int replacement_pos = pos + 1
+	# ex: where Placeholder {=} ConcreteType — pos+2 grabs the EQUALS token
 	int eq_pos = pos + 2
+	# ex: where Placeholder = {ConcreteType} — pos+3 grabs the concrete type
 	int concrete_pos = pos + 3
 	if concrete_pos < token_count
 		Token where_tok = tokens at where_pos
@@ -39,6 +44,7 @@ fn ParseResult scan_import_where(tokenList tokens, int pos)
 				replacement_value as value
 
 				(value) in concrete_tok
+				# ex: where Placeholder = ConcreteType{\n} — concrete_pos+1 grabs the token after the clause
 				int after_where = concrete_pos + 1
 
 				replace_with as replacement_value + "|" + value

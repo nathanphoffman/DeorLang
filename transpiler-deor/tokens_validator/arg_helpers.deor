@@ -19,6 +19,7 @@ fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 	int check_pos = scan_pos
 	string chk_kind = kind
 	if kind is "KW_MOVE"
+		# ex: move {data} — scan_pos+1 skips 'move' to reach the real arg name
 		check_pos = scan_pos + 1
 		if check_pos < token_count
 			Token move_tok = tokens at check_pos
@@ -26,6 +27,7 @@ fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 			chk_kind = kind
 	if chk_kind is not "IDENT"
 		return false
+	# ex: add(data{(}5)) — check_pos+1 peeks the token after the arg name
 	int peek_pos = check_pos + 1
 	if peek_pos < token_count
 		Token peek_tok = tokens at peek_pos

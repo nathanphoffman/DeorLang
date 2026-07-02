@@ -3,9 +3,13 @@
 # and param name shadowing its own base type (type Roll(int int)).
 macro check_validator_declaration
 	if cur_kind is "KW_TYPE"
+		# ex: type {Roll}(int Roll) — pos+1 grabs the type name
 		int vd_name_pos = pos + 1
+		# ex: type Roll{(}int Roll) — pos+2 grabs the opening paren
 		int vd_lp_pos = pos + 2
+		# ex: type Roll({int} Roll) — pos+3 grabs the param's base type
 		int vd_ptype_pos = pos + 3
+		# ex: type Roll(int {Roll}) — pos+4 grabs the param name
 		int vd_pname_pos = pos + 4
 		if vd_pname_pos < token_count
 			Token vd_name_tok = tokens at vd_name_pos

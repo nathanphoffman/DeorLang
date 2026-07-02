@@ -66,6 +66,7 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 			pos = new_pos
 			continue
 		if kind is "KW_RUST"
+			# ex: rust\n{"fn foo() {}"} — pos+2 grabs the RUST_BLOCK content token
 			int block_pos = pos + 2
 			Token block_token = all_ref at block_pos
 			(value) in block_token

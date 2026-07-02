@@ -9,6 +9,7 @@ macro check_raw_operator_use
 		if rop_is_raw
 			strList rop_op_kinds = ["PLUS", "MINUS", "STAR", "SLASH", "PERCENT", "GT", "LT", "GTE", "LTE", "KW_IS", "KW_AND", "KW_OR"]
 			bool rop_next_is_op = false
+			# ex: pool {+} 1 — pos+1 grabs the token after the raw variable to check for a binary operator
 			int rop_next_pos = pos + 1
 			if rop_next_pos < token_count
 				Token rop_next_tok = tokens at rop_next_pos
@@ -16,6 +17,7 @@ macro check_raw_operator_use
 				rop_next_is_op = list_has(rop_op_kinds, kind)
 			bool rop_prev_is_op = false
 			if pos > 0
+				# ex: 1 {+} pool — pos-1 grabs the token before the raw variable to check for a binary operator
 				int rop_prev_pos = pos - 1
 				Token rop_prev_tok = tokens at rop_prev_pos
 				(kind) in rop_prev_tok

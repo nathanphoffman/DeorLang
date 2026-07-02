@@ -5,9 +5,13 @@
 # names match the struct's declared fields exactly.
 macro check_struct_construction
 	if paren_depth is 0
+		# ex: Item {item} = move(a, b) — pos+1 grabs the variable name
 		int cc1 = pos + 1
+		# ex: Item item {=} move(a, b) — pos+2 grabs the equals sign
 		int cc2 = pos + 2
+		# ex: Item item = {move}(a, b) — pos+3 grabs the move keyword
 		int cc3 = pos + 3
+		# ex: Item item = move{(}a, b) — pos+4 grabs the opening paren
 		int cc4 = pos + 4
 		if cc4 < token_count
 			Token cc_t1 = tokens at cc1

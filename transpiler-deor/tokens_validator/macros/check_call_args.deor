@@ -1,6 +1,7 @@
 
 # Enforces that every argument at a call site with 2 or more args is a named variable (not a literal or expression).
 macro check_call_args
+	# ex: add{(}left, right) — pos+1 grabs the opening paren of the call
 	int call_lp = pos + 1
 	if call_lp < token_count
 		Token call_lp_tok = tokens at call_lp

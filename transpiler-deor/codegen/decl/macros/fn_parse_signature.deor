@@ -34,6 +34,7 @@ macro fn_parse_signature
 			cur = cur_next_ref(cur, fn_tokens)
 		else
 			cur = cur_next_ref(cur, fn_tokens)
+	# ex: fn int add(left, right)\n{\t}body — pos is the NEWLINE after ')', pos+1 grabs the INDENT starting the body
 	(pos) in cur
 	int indent_pos = pos + 1
 	cur = cur_skip_to_body_ref(cur, fn_tokens)

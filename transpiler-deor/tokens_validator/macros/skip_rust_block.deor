@@ -7,7 +7,9 @@
 # that will never appear.
 macro skip_rust_block
 	if cur_kind is "KW_RUST"
+		# ex: rust {NEWLINE} then the raw block — pos+1 grabs the newline that must follow rust
 		int srb_nl_pos = pos + 1
+		# ex: rust NEWLINE {RUST_BLOCK} — pos+2 grabs the raw block body
 		int srb_block_pos = pos + 2
 		bool srb_is_block = false
 		if srb_block_pos < token_count

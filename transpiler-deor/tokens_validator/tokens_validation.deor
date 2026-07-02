@@ -109,6 +109,7 @@ fn void validate_tokens(TokensRef tokens)
 		fnTestRule test_rule = is_pascal
 		int ev_name_offset = 1
 		if cur_kind is "KW_ENUM"
+			# ex: enum {string} Color — pos+1 grabs the token after enum to check for a type keyword
 			int ev_type_pos = pos + 1
 			if ev_type_pos < token_count
 				Token ev_type_tok = tokens at ev_type_pos
@@ -166,6 +167,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run check_empty_bracket
 
 		if cur_kind is "KW_FOR"
+			# ex: for {item} in list — pos+1 grabs the loop variable name
 			int fv_pos = pos + 1
 			if fv_pos < token_count
 				Token fv_tok = tokens at fv_pos
@@ -179,6 +181,7 @@ fn void validate_tokens(TokensRef tokens)
 		if cur_kind is "IDENT"
 			bool is_fn_decl_name = false
 			if pos > 1
+				# ex: {fn} int add(...) — pos-2 checks two tokens back for the fn keyword to identify this IDENT as the fn name
 				int prev2_p = pos - 2
 				Token prev2_tok = tokens at prev2_p
 				(kind) in prev2_tok

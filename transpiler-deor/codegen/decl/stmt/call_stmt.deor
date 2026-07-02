@@ -11,7 +11,9 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	Token name_token = tokens at pos
 	(value) in name_token
 	string ident_name = value
+	# ex: print{(}left, right) — pos+1 grabs the opening paren
 	int next_pos = pos + 1
+	# ex: print({left}, right) — next_pos+1 grabs the first argument slot
 	int args_pos = next_pos + 1
 	ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
 	move (code, new_pos) in args_r

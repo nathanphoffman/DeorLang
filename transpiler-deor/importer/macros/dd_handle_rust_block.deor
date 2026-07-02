@@ -6,7 +6,9 @@
 # block-introducing statement) is copied through as a single ordinary token
 # instead of misreading an unrelated token as the block's content.
 macro dd_handle_rust_block
+	# ex: rust {\n}"fn foo() {}" — pos+1 grabs the NEWLINE after KW_RUST
 	int rust_nl_pos = pos + 1
+	# ex: rust\n{"fn foo() {}"} — pos+2 grabs the RUST_BLOCK content token
 	int rust_content_pos = pos + 2
 	bool rust_is_block = false
 	string block_value = ""

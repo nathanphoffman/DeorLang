@@ -8,6 +8,7 @@ macro prescan_check_enum_variants
 	if kind is "KW_ENUM"
 		# Detect typed vs. untyped by peeking at token after KW_ENUM
 		bool ev_is_typed = false
+		# ex: enum {string} Color — pre_i+1 grabs the token after enum to check for a type keyword
 		int ev_pos = pre_i + 1
 		if ev_pos < token_count
 			Token ev_type_tok = tokens at ev_pos

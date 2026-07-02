@@ -2,4 +2,5 @@ macro initialize_gen_destructure
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens) in ctx
 	int token_count = len(tokens)
 	strList fields = empty
+	# ex: ({f1}, f2) in source — pos+1 grabs the first field name
 	int cur = pos + 1

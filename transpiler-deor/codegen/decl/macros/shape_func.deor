@@ -2,6 +2,7 @@
 # Handles `shape Foo = func [of T] [to U]` → `type Foo = fn(T) -> U;`
 # Expects: pos, tokens, rust_name in scope from gen_shape_decl.
 macro shape_func
+	# ex: shape Foo = func {of} T to U — pos+4 grabs KW_OF/KW_TO (or nothing, if bare func)
 	int t4_pos = pos + 4
 	Token t4_token = tokens at t4_pos
 	(kind, value) in t4_token
@@ -12,16 +13,19 @@ macro shape_func
 	int func_end = t4_pos
 
 	if t4_is_of
+		# ex: shape Foo = func of {T} to U — pos+5 grabs the input type
 		int t5_pos = pos + 5
 		Token t5_token = tokens at t5_pos
 		(value) in t5_token
 		in_type = value
+		# ex: shape Foo = func of T {to} U — pos+6 grabs KW_TO (or nothing, if no output)
 		int t6_pos = pos + 6
 		Token t6_token = tokens at t6_pos
 		(value) in t6_token
 		bool t6_is_to = kind is "KW_TO"
 		func_end = t6_pos
 		if t6_is_to
+			# ex: shape Foo = func of T to {U} — pos+7 grabs the output type
 			int t7_pos = pos + 7
 			Token t7_token = tokens at t7_pos
 			(value) in t7_token
@@ -29,6 +33,7 @@ macro shape_func
 			func_end = t7_pos
 
 	else if t4_is_to
+		# ex: shape Foo = func to {U} — pos+5 grabs the output type
 		int t5_pos = pos + 5
 		Token t5_token = tokens at t5_pos
 		(value) in t5_token

@@ -26,6 +26,7 @@ macro check_destructure_binding_kw
 					if dbk_depth is 0
 						break
 				dbk_scan = dbk_scan + 1
+			# ex: (f1, val){)} in items — dbk_scan+1 checks the token after the matched close paren for KW_IN
 			int dbk_after_pos = dbk_scan + 1
 			bool dbk_is_destructure = false
 			if dbk_after_pos < token_count

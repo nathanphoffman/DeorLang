@@ -19,6 +19,7 @@ macro tb_default
 	if kind is "STRING"
 		suffix = ".to_string()"
 	else if kind is "IDENT"
+		# ex: Type name = other{(}x) — val_pos+1 checks for a call/index after the identifier
 		int val_next_idx = val_pos + 1
 		if val_next_idx < token_count
 			Token next_val_tok = tokens at val_next_idx

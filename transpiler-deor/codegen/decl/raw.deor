@@ -4,7 +4,9 @@
 # resolve_type can return its name as-is. At code-gen time there is nothing to emit —
 # the actual Rust type must be defined in an adjacent `rust` block.
 fn ParseResult gen_raw_decl(TokensRef tokens, int pos)
+	# ex: raw {TypeName} — pos+1 grabs the raw type's name
 	int name_pos = pos + 1
+	# ex: raw TypeName{\n} — name_pos+1 grabs the NEWLINE ending the decl
 	int after = name_pos + 1
 	string emp = ""
 	return make_nl_result(move emp, after, tokens)

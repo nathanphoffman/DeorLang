@@ -5,6 +5,7 @@
 #   continue     → `continue;`
 macro stmt_flow
 	if kind is "KW_RETURN"
+		# ex: return {expr} — pos+1 grabs the return value expression
 		int sf_val_pos = pos + 1
 		Token sf_val_tok = tokens at sf_val_pos
 		(kind) in sf_val_tok
@@ -22,10 +23,12 @@ macro stmt_flow
 	if kind is "KW_BREAK"
 		string sf_brk_kw = "break;\n"
 		string sf_brk_code = s_join([pad, sf_brk_kw])
+		# ex: break{\n} — pos+1 grabs the token after break, where parsing resumes
 		int sf_brk_n = pos + 1
 		return make_nl_result(move sf_brk_code, sf_brk_n, tokens)
 	if kind is "KW_CONTINUE"
 		string sf_cnt_kw = "continue;\n"
 		string sf_cnt_code = s_join([pad, sf_cnt_kw])
+		# ex: continue{\n} — pos+1 grabs the token after continue, where parsing resumes
 		int sf_cnt_n = pos + 1
 		return make_nl_result(move sf_cnt_code, sf_cnt_n, tokens)

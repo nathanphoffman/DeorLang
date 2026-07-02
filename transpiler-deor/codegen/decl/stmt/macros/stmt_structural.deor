@@ -7,6 +7,7 @@
 macro stmt_structural
 
     if kind is "KW_MOVE"
+    	# ex: move {(}f1, f2) in src — pos+1 grabs the opening paren
     	int smd_next = pos + 1
     	Token smd_next_tok = tokens at smd_next
     	(kind) in smd_next_tok
@@ -14,11 +15,13 @@ macro stmt_structural
     		return gen_move_destructure(smd_next, depth, ctx)
 
 	if kind is "LPAREN"
+		# ex: ({avow} expr) — pos+1 grabs the token after the opening paren
 		int su_peek = pos + 1
 		if su_peek < token_count
 			Token su_peek_tok = tokens at su_peek
 			(kind) in su_peek_tok
 			if kind is "KW_AVOW"
+				# ex: (avow {expr}) — su_peek+1 grabs the expression after avow
 				int su_expr_pos = su_peek + 1
 				ParseResult su_expr_r = gen_expr(tokens, su_expr_pos, ctx)
 				move (code, new_pos) in su_expr_r

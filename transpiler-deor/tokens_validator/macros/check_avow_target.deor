@@ -3,6 +3,7 @@
 # avow appears inside parens: (avow x) — the token after KW_AVOW is the target.
 macro check_avow_target
 	if cur_kind is "KW_AVOW"
+		# ex: (avow {x}) — pos+1 grabs the avow target
 		int avow_next = pos + 1
 		if avow_next < token_count
 			Token avow_target = tokens at avow_next

@@ -1,7 +1,9 @@
 
 # Validates variable names in typed declarations (`Type name = ...`) and as-bindings: enforces min 3 chars and snake_case.
 macro check_var_decl
+	# ex: int {name} = 5 — pos+1 grabs the variable name
 	int next1 = pos + 1
+	# ex: int name {=} 5 — pos+2 grabs the equals sign
 	int next2 = pos + 2
 	if next2 < token_count
 		Token tok_one = tokens at next1
@@ -19,6 +21,7 @@ macro check_var_decl
 				errors at end = val_err(tok_one, lbl_var, rule_min3)
 			bool cvd_is_const = false
 			if pos > 0
+				# ex: {const} int NAME = 5 — pos-1 checks the token before the type for the const keyword
 				int cvd_prev = pos - 1
 				Token cvd_prev_tok = tokens at cvd_prev
 				(kind) in cvd_prev_tok

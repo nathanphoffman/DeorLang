@@ -10,6 +10,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	int token_count = len(tokens)
 	macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
+	# ex: for {if} cond — pos+1 grabs the token after 'for' that decides the loop form
 	int next_pos = pos + 1
 	Token next_token = tokens at next_pos
 	(kind) in next_token
@@ -23,11 +24,14 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	string var_name = "_"
 	int iter_pos = 0
 	if kind is "KW_IN"
+		# ex: for in {(}start, end) — next_pos+1 grabs the range expression after 'in'
 		iter_pos = next_pos + 1
 	else
 		(value) in next_token
 		var_name = value
+		# ex: for {var} in expr — next_pos+1 grabs the expected 'in' keyword after the loop var
 		int in_pos = next_pos + 1
+		# ex: for var in {expr} — in_pos+1 grabs the iteration expression after 'in'
 		iter_pos = in_pos + 1
 
 	Token iter_token = tokens at iter_pos

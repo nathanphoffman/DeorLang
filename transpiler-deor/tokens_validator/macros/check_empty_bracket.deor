@@ -2,6 +2,7 @@
 # Flags `[]` empty bracket literals — use `empty` to initialize an empty list instead.
 macro check_empty_bracket
 	if cur_kind is "LBRACKET"
+		# ex: list = [{]} — pos+1 checks for an immediate ']' (empty bracket literal)
 		int next_pos = pos + 1
 		if next_pos < token_count
 			Token next_tok = tokens at next_pos

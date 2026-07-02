@@ -2,6 +2,7 @@
 # Handles `Type name = (...)`: emits struct construction if the type is a known struct,
 # or an unwrap expression for `(avow x)`. Falls through for plain grouped expressions.
 macro tb_paren
+	# ex: Type name = ({avow} x) — val_pos+1 grabs the token after the opening paren
 	int peek_pos = val_pos + 1
 	Token peek_token = tokens at peek_pos
 	(kind) in peek_token
@@ -44,6 +45,7 @@ macro tb_paren
 			string sc_code = s_join([pad, scc_let, mut_kw, var_name, scc_eq, var_type, scc_ob, fields_code, scc_cb])
 			return make_nl_result(move sc_code, tb_fend, tokens)
 	if is_avow_expr
+		# ex: Type name = (avow {x}) — peek_pos+1 grabs the expression after avow
 		int inner_pos = peek_pos + 1
 		val_pos as inner_pos
 		ParseResult ge_r = gen_expr(tokens, val_pos, ctx)

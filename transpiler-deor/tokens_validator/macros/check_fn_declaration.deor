@@ -6,9 +6,11 @@
 macro check_fn_declaration
 	if cur_kind is "KW_FN"
 		if block_depth > 0
+			# ex: fn int {inner}(val) — pos+2 grabs func name
 			int nf_name_pos = pos + 2
 			Token nf_name_tok = tokens at nf_name_pos
 			errors at end = val_err(nf_name_tok, lbl_fn, rule_nested_fn)
+		# ex: fn int add{(}left, right) — pos+3 grabs opening paren
 		int lp_pos = pos + 3
 		if lp_pos < token_count
 			Token lp_tok = tokens at lp_pos
@@ -16,6 +18,7 @@ macro check_fn_declaration
 			if kind is "LPAREN"
 				int param_count = count_call_args(tokens, lp_pos)
 				if param_count > 3
+					# ex: fn int {add}(left, right) — pos+2 grabs func name
 					int fn_name_pos = pos + 2
 					Token fn_name_tok = tokens at fn_name_pos
 					errors at end = val_err(fn_name_tok, lbl_fn, rule_max_params)
@@ -46,7 +49,10 @@ macro check_fn_declaration
 								errors at end = val_err(pn_tok, lbl_fn, rule_kw_in_parens)
 								ps_pos = pn_pos
 					ps_pos = ps_pos + 1
+		# ex: fn {int} add(left, right) — pos+1 grabs the return-type slot
 		int ret_pos = pos + 1
+		# ex: fn name{(}left, right) — pos+2 lands on '(' when the return
+		# type is missing, i.e. the "return-type slot" was really the fn name
 		int lp2_pos = pos + 2
 		if lp2_pos < token_count
 			Token ret_tok = tokens at ret_pos

@@ -4,6 +4,7 @@
 #   rust   → inline Rust source block, re-indented to match current depth
 macro stmt_blocks
 	if kind is "KW_BLOCK"
+		# ex: block {\n}    ... — pos+1 grabs the NEWLINE before the scoped body
 		int sb_nl = pos + 1
 		int sb_body_start = skip_to_body_ref(tokens, sb_nl)
 		int sb_body_depth = depth + 1
@@ -18,6 +19,7 @@ macro stmt_blocks
 		string sb_blk_code = s_join([sb_blk_open, sb_body_code, sb_blk_close])
 		return make_result(move sb_blk_code, sb_body_end)
 	if kind is "KW_RUST"
+		# ex: rust\n{"fn foo() {}"} — pos+2 grabs the RUST_BLOCK content token
 		int sb_block_pos = pos + 2
 		Token sb_block_tok = tokens at sb_block_pos
 		(value) in sb_block_tok

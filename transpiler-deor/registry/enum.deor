@@ -24,6 +24,7 @@ fn strList build_enum_reg(TokensRef tokens)
 		Token token = tokens at index
 		(kind, value, line) in token
 		if kind is "KW_ENUM"
+			# ex: enum {Color} — index+1 grabs the enum name (or type keyword if typed)
 			int name_pos = index + 1
 			if name_pos < token_count
 				Token name_token = tokens at name_pos
@@ -44,6 +45,7 @@ fn strList build_variant_reg(TokensRef tokens, strList enum_reg)
 		Token token = tokens at raw_i
 		(kind, value, line) in token
 		if kind is "KW_ENUM"
+			# ex: enum {Color} — raw_i+1 grabs the enum name (or type keyword if typed)
 			int name_pos = raw_i + 1
 			if name_pos < token_count
 				Token name_token = tokens at name_pos
@@ -81,6 +83,7 @@ fn strList build_typed_enum_reg(TokensRef tokens)
 		Token token = tokens at index
 		(kind) in token
 		if kind is "KW_ENUM"
+			# ex: enum {int} Status — index+1 grabs the value-type keyword
 			int type_pos = index + 1
 			if type_pos < token_count
 				Token type_tok = tokens at type_pos
@@ -89,6 +92,7 @@ fn strList build_typed_enum_reg(TokensRef tokens)
 					bool bte_is_typed = is_typed_enum_type(value)
 					if bte_is_typed
 						string val_type = value
+						# ex: enum int {Status} — type_pos+1 grabs the enum name
 						int name_pos = type_pos + 1
 						if name_pos < token_count
 							Token name_tok = tokens at name_pos
@@ -105,6 +109,7 @@ fn strList build_typed_variant_reg(TokensRef tokens)
 		Token token = tokens at raw_i
 		(kind) in token
 		if kind is "KW_ENUM"
+			# ex: enum {int} Status — raw_i+1 grabs the value-type keyword
 			int btvr_type_pos = raw_i + 1
 			bool btvr_typed = false
 			if btvr_type_pos < token_count
@@ -112,6 +117,7 @@ fn strList build_typed_variant_reg(TokensRef tokens)
 				(kind, value) in btvr_type_tok
 				btvr_typed = is_typed_enum_type(value)
 			if btvr_typed
+				# ex: enum int {Status} — raw_i+2 grabs the enum name
 				int btvr_name_pos = raw_i + 2
 				if btvr_name_pos < token_count
 					Token btvr_name_tok = tokens at btvr_name_pos

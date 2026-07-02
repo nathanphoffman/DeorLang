@@ -12,6 +12,7 @@
 #                          predicate's `return` exits the closure, not the constructor.
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, type_reg, typed_enum_reg, typed_variant_reg) in ctx
+	# ex: type {Positive}(int val) — pos+1 grabs the validator type's name
 	int start_pos = pos + 1
 
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
@@ -33,6 +34,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 	cur = cur_next_ref(cur, tokens)   # RPAREN
 	cur = cur_next_ref(cur, tokens)   # NEWLINE
+	# ex: type Positive(int val)\n{\t}return val > 0 — pos is the NEWLINE, pos+1 grabs the INDENT starting the predicate body
 	(pos) in cur
 	int td_indent_pos = pos + 1
 	cur = cur_skip_to_body_ref(cur, tokens)

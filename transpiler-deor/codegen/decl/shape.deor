@@ -21,7 +21,9 @@ fn string gen_func_shape_code(string rust_name, string rust_in, string rust_out)
 # Generates a Rust type alias from a Deor `shape` declaration. Dispatches to
 # shape_list for `list of T` forms and shape_func for `func of T to U` forms.
 fn ParseResult gen_shape_decl(TokensRef tokens, int pos)
+	# ex: shape {Foo} = list of T — pos+1 grabs the shape name
 	int name_pos = pos + 1
+	# ex: shape Foo = {list} of T — pos+3 grabs the form keyword (list/func)
 	int form_pos = pos + 3
 	Token name_token = tokens at name_pos
 	Token form_token = tokens at form_pos

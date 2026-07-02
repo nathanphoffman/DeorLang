@@ -2,12 +2,14 @@
 # Handles `name as source with (f1, f2, ...)`: emits a record-update spread `StructName { f1, f2, ..source }`.
 # Falls through (no return) if the token after the source ident is not `with`.
 macro aas_with
+	# ex: name as source {with} (f1, f2) — after_as+1 grabs the with keyword slot
 	int aas_with_pos = after_as + 1
 	if aas_with_pos < token_count
 		Token aas_with_tok = tokens at aas_with_pos
 		(kind) in aas_with_tok
 		if kind is "KW_WITH"
 			string aas_src = after_as_value
+			# ex: name as source with {(}f1, f2) — aas_with_pos+1 grabs the opening paren
 			int aas_lp = aas_with_pos + 1
 			strList aas_ovr = empty
 			int aas_wend = aas_lp + 1

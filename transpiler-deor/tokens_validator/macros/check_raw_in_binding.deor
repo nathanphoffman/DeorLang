@@ -5,8 +5,11 @@
 # that's no longer treated as raw, defeating every other raw check downstream.
 macro check_raw_in_binding
 	if cur_kind is "IDENT"
+		# ex: string {val} = raw_index — pos+1 grabs the binding name
 		int rib_name_pos = pos + 1
+		# ex: string val {=} raw_index — pos+2 grabs the equals sign
 		int rib_eq_pos = pos + 2
+		# ex: string val = {raw_index} — pos+3 grabs the RHS value being bound
 		int rib_val_pos = pos + 3
 		if rib_val_pos < token_count
 			Token rib_name_tok = tokens at rib_name_pos
@@ -25,7 +28,9 @@ macro check_raw_in_binding
 				if rib_is_raw
 					errors at end = val_err(rib_val_tok, lbl_var, rule_raw_in_expr)
 
+		# ex: copy {as} raw_index — pos+1 grabs the 'as' keyword
 		int rac_as_pos = pos + 1
+		# ex: copy as {raw_index} — pos+2 grabs the RHS value being rebound
 		int rac_val_pos = pos + 2
 		if rac_val_pos < token_count
 			Token rac_as_tok = tokens at rac_as_pos

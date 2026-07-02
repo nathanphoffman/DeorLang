@@ -8,6 +8,7 @@ fn int find_block_end(tokenList tokens, int indent_pos)
 	int token_count = len(tokens)
 	int depth = 1
 	int result = indent_pos
+	# ex: fn foo()\n{\t}body — indent_pos+1 grabs the first token of the block body
 	int start = indent_pos + 1
 	for raw_i in (start, token_count)
 		Token token = tokens at raw_i
@@ -26,6 +27,7 @@ fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 	int token_count = len(tokens)
 	int depth = 1
 	int result = indent_pos
+	# ex: fn foo()\n{\t}body — indent_pos+1 grabs the first token of the block body
 	int start = indent_pos + 1
 	for raw_i in (start, token_count)
 		Token token = tokens at raw_i
@@ -46,6 +48,7 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 		Token token = tokens at raw_i
 		(kind, value, line) in token
 		if kind is "KW_CONST"
+			# ex: const int {LIMIT} = 10 — raw_i+2 grabs the const variable name
 			int const_name_pos = raw_i + 2
 			if const_name_pos < end_pos
 				Token const_name_tok = tokens at const_name_pos
@@ -53,6 +56,7 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 				if not list_has(const_names, value)
 					const_names at end = value
 		if kind is "EQUALS"
+			# ex: {count} = count + 1 — raw_i-1 grabs the IDENT being assigned to
 			int prev_pos = raw_i - 1
 			if prev_pos >= start
 				Token prev_token = tokens at prev_pos

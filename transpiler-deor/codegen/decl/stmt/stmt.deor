@@ -32,10 +32,12 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	macro_run stmt_structural
 
 	if kind is "KW_RAW"
+		# ex: raw {name} = ... — pos+1 grabs the variable name after 'raw'
 		int raw_name_pos = pos + 1
 		Token raw_name_tok = tokens at raw_name_pos
 		(value) in raw_name_tok
 		string raw_var_name = value
+		# ex: raw name = {val} — raw_name_pos+2 skips the name and '=' to grab the value expr
 		int val_pos = raw_name_pos + 2
 		
 		macro_run gen_expr_r
@@ -47,6 +49,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		return make_nl_result(move raw_code, val_end, tokens)
 
 	if kind is "KW_CONST"
+		# ex: const {Type} name = val — pos+1 grabs the type token after 'const'
 		int const_type_pos = pos + 1
 		return gen_typed_binding(const_type_pos, depth, ctx)
 
@@ -58,6 +61,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 
 	if kind is "IDENT"
 		string ident_name = value
+		# ex: name {=} expr — pos+1 grabs the token after the identifier that decides the statement form
 		int next_pos = pos + 1
 		if next_pos >= token_count
 			string eof_code = "/* eof */\n"
@@ -79,6 +83,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 
 		# name = expr  (plain reassignment)
 		if kind is "EQUALS"
+			# ex: name = {expr} — next_pos+1 grabs the value expression after '='
 			int val_pos = next_pos + 1
 			Token eq_val_token = tokens at val_pos
 			(kind) in eq_val_token
@@ -92,6 +97,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 
 		# Type name = expr  (typed binding)
 		if kind is "IDENT"
+			# ex: Type name {=} val — next_pos+1 grabs the expected '=' after the var name
 			int eq_pos = next_pos + 1
 			if eq_pos < token_count
 				Token eq_token = tokens at eq_pos

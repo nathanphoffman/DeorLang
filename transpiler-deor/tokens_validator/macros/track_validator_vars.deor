@@ -11,6 +11,7 @@ macro track_validator_vars
 	if cur_kind is "IDENT"
 		bool tvv_is_vtype = list_has(validator_type_names, cur_val)
 		if tvv_is_vtype
+			# ex: Roll {best} = expr — pos+1 grabs the token after the validator type
 			int tvv_next = pos + 1
 			if tvv_next < token_count
 				Token tvv_tok = tokens at tvv_next

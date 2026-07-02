@@ -5,7 +5,9 @@
 #   collection                    → `&collection`
 macro for_iter_expr
 	if kind is "IDENT" and value is "range"
+		# ex: for x in range{(}n) — iter_pos+1 grabs the opening paren
 		int lparen = iter_pos + 1
+		# ex: for x in range({n}) — lparen+1 grabs the first range argument
 		int first_pos = lparen + 1
 		val_pos as first_pos
 		ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
@@ -30,6 +32,7 @@ macro for_iter_expr
 			range_expr = s_join([rng0_pfx, val_code])
 			body_tok_pos = val_end + 1
 	else if kind is "LPAREN"
+		# ex: for x in ({start}, end) — iter_pos+1 grabs the range start expression
 		int start_pos = iter_pos + 1
 		val_pos as start_pos
 		ParseResult ge_r = gen_expr(tokens, val_pos, ctx)

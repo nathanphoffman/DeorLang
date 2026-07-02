@@ -7,22 +7,26 @@
 # raw_var_names for use by the other raw checks.
 macro check_raw_assignment
 	if cur_kind is "KW_RAW"
+		# ex: raw name {=} call() — pos+2 grabs the equals sign
 		int ra_eq_pos = pos + 2
 		if ra_eq_pos < token_count
 			Token ra_eq_tok = tokens at ra_eq_pos
 			(kind) in ra_eq_tok
 			if kind is "EQUALS"
+				# ex: raw {name} = call() — pos+1 grabs the binding name
 				int ra_name_pos = pos + 1
 				Token ra_name_tok = tokens at ra_name_pos
 				(kind, value) in ra_name_tok
 				if kind is "IDENT"
 					raw_var_names at end = value
+					# ex: raw name = {call}() — ra_eq_pos+1 grabs the call target right after '='
 					int ra_call_pos = ra_eq_pos + 1
 					bool ra_is_call = false
 					if ra_call_pos < token_count
 						Token ra_call_tok = tokens at ra_call_pos
 						(kind) in ra_call_tok
 						if kind is "IDENT"
+							# ex: raw name = call{(}) — ra_call_pos+1 confirms a '(' follows the call name
 							int ra_lparen_pos = ra_call_pos + 1
 							if ra_lparen_pos < token_count
 								Token ra_lparen_tok = tokens at ra_lparen_pos

@@ -8,10 +8,12 @@
 #   not expr   — logical negation: prepends `!` to the inner expression code
 macro primary_prefix_ops
 	if kind is "KW_MOVE"
+		# ex: move {expr} — pos+1 grabs the expression after 'move'
 		int po_inner = pos + 1
 		ParseResult po_r = gen_primary(tokens, po_inner, ctx)
 		return po_r
 	if kind is "KW_AVOW"
+		# ex: avow {expr} — pos+1 grabs the expression after 'avow'
 		int po_avow_inner = pos + 1
 		ParseResult po_avow_r = gen_primary(tokens, po_avow_inner, ctx)
 		move (code, new_pos) in po_avow_r
@@ -21,6 +23,7 @@ macro primary_prefix_ops
 		string po_avow_unwrap_code = s_join([po_avow_code, po_avow_sfx])
 		return make_result(move po_avow_unwrap_code, po_avow_end)
 	if kind is "KW_NOT"
+		# ex: not {expr} — pos+1 grabs the expression after 'not'
 		int po_operand = pos + 1
 		ParseResult po_operand_r = gen_primary(tokens, po_operand, ctx)
 		move (code, new_pos) in po_operand_r

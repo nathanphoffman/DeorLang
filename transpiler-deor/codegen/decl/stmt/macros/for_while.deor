@@ -6,6 +6,7 @@
 # even though it's runtime-identical. Any other condition (including compound ones
 # that merely start with `true`, like `true and x`) is untouched.
 macro for_while
+	# ex: for if {cond} — next_pos+1 grabs the start of the loop condition
 	int cond_pos = next_pos + 1
 	val_pos as cond_pos
 	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)

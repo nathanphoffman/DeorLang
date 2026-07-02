@@ -6,11 +6,13 @@
 #   (expr)       — grouped arithmetic/logic: generates `(expr)`
 macro primary_paren_expr
 	if kind is "LPAREN"
+		# ex: ({avow} expr) — pos+1 grabs the token that decides avow/struct/grouped
 		int pe_peek = pos + 1
 		if pe_peek < token_count
 			Token pe_peek_tok = tokens at pe_peek
 			(kind) in pe_peek_tok
 			if kind is "KW_AVOW"
+				# ex: (avow {expr}) — pe_peek+1 grabs the expression after 'avow'
 				int pe_expr_pos = pe_peek + 1
 				ParseResult pe_expr_r = gen_expr(tokens, pe_expr_pos, ctx)
 				move (code, new_pos) in pe_expr_r

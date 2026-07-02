@@ -1,6 +1,7 @@
 macro codegen_expr_at
 	# index read: name at idx
 	if kind is "KW_AT"
+		# ex: name at {idx} — next_pos+1 grabs the index expression after 'at'
 		int idx_pos = next_pos + 1
 		ParseResult idx_r = gen_primary(tokens, idx_pos, ctx)
 		move (code, new_pos) in idx_r

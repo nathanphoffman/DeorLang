@@ -4,6 +4,7 @@
 # declaration form instead of `as`. Falls through (no return) if the token
 # after the source ident is not `with`.
 macro tb_with
+	# ex: Type name = source {with} (f1, f2) — val_pos+1 grabs the with keyword slot
 	int tb_with_pos = val_pos + 1
 	if tb_with_pos < token_count
 		Token tb_with_tok = tokens at tb_with_pos
@@ -11,6 +12,7 @@ macro tb_with
 		if kind is "KW_WITH"
 			(value) in val_token
 			string tb_src = value
+			# ex: Type name = source with {(}f1, f2) — tb_with_pos+1 grabs the opening paren
 			int tb_lp = tb_with_pos + 1
 			strList tb_ovr = empty
 			int tb_wend = tb_lp + 1

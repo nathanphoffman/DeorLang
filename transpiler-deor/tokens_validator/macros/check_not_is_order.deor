@@ -2,7 +2,9 @@
 # Flags `not x is y` — the correct form is `x is not y` since `not` binds before `is` resolves.
 macro check_not_is_order
 	if cur_kind is "KW_NOT"
+		# ex: not {x} is y — pos+1 grabs the identifier right after 'not'
 		int next_not = pos + 1
+		# ex: not x {is} y — pos+2 grabs the 'is' keyword to detect the bad order
 		int after_not = pos + 2
 		if after_not < token_count
 			Token next_not_tok = tokens at next_not

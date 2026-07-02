@@ -3,6 +3,7 @@
 # For not-valid validator results, declare the variable without a value and return it.
 macro check_return_invalid
 	if cur_kind is "KW_RETURN"
+		# ex: return {empty} — pos+1 grabs the returned value
 		int ri_next = pos + 1
 		if ri_next < token_count
 			Token ri_tok = tokens at ri_next

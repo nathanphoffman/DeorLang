@@ -3,6 +3,7 @@
 # element list and wrapping the result in `vec![...]`.
 macro primary_list_literal
 	if kind is "LBRACKET"
+		# ex: [{item}, item] — pos+1 grabs the first list element after '['
 		int ll_inner = pos + 1
 		ParseResult ll_items_r = gen_list_items(tokens, ll_inner, ctx)
 		move (code, new_pos) in ll_items_r

@@ -3,7 +3,9 @@
 # `name as Type` (typed as-bindings are unsupported), and `name as move` (`as` already transfers ownership).
 macro check_bad_stmt
 	if paren_depth is 0
+		# ex: total {value} 5 — pos+1 grabs the second identifier in a bad stmt
 		int next1 = pos + 1
+		# ex: total value {5} — pos+2 grabs the literal/'as'-keyword that follows
 		int next2 = pos + 2
 		if next2 < token_count
 			Token tok_one = tokens at next1

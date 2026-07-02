@@ -3,6 +3,7 @@
 # types (empty is not valid there), and an error comment for any other type.
 macro tb_empty
 	bool is_shape = reg_has(shape_reg, var_type)
+	# ex: Type name = empty{\n} — val_pos+1 grabs the token after empty, where parsing resumes
 	int val_next_pos = val_pos + 1
 	int after_empty = adv_nl_ref(val_next_pos, tokens)
 	if is_shape

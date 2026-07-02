@@ -4,6 +4,7 @@ macro check_print_args
 	if cur_kind is "IDENT"
 		bool is_print = cur_val is "print"
 		if is_print
+			# ex: print{(}"msg") — pos+1 grabs the opening paren
 			int print_lp = pos + 1
 			if print_lp < token_count
 				Token print_lp_tok = tokens at print_lp

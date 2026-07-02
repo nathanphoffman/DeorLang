@@ -16,6 +16,7 @@ macro track_block_scope
 		if block_depth is 0
 			rust
 				validator_vars.clear();
+		# ex: fn {void} name() — pos+1 grabs the return-type slot
 		int void_check = pos + 1
 		if void_check < token_count
 			Token void_tok = tokens at void_check

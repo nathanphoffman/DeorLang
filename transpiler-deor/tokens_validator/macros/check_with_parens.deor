@@ -7,6 +7,7 @@
 macro check_with_parens
 	if cur_kind is "KW_WITH"
 		bool with_ok = false
+		# ex: with {(}f1, f2) — pos+1 grabs the token after with
 		int with_next_pos = pos + 1
 		if with_next_pos < token_count
 			Token with_next_tok = tokens at with_next_pos

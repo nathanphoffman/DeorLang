@@ -12,17 +12,20 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 	Token name_token = tokens at pos
 	(value) in name_token
 	string ident_name = value
+	# ex: name {at} end = val — pos+1 grabs the mutation-kind keyword after the list name
 	int next_pos = pos + 1
 	Token next_token = tokens at next_pos
 	(kind) in next_token
 
 	# name at end = val  OR  name at idx = val
 	if kind is "KW_AT"
+		# ex: name at {end} = val — next_pos+1 grabs the token after 'at' (KW_END or an index expr)
 		int after_at = next_pos + 1
 		if after_at < token_count
 			Token at_next_token = tokens at after_at
 			(kind, value) in at_next_token
 			if kind is "KW_END"
+				# ex: name at end = {val} — after_at+2 skips 'end' and '=' to grab the value expr
 				int val_pos = after_at + 2
 				macro_run gen_expr_r
 				Token val_tok = tokens at val_pos
@@ -47,6 +50,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 
 	# name remove at idx
 	if kind is "KW_REMOVE"
+		# ex: name remove at {idx} — next_pos+2 skips 'remove' and 'at' to grab the index expr
 		int idx_pos = next_pos + 2
 		val_pos as idx_pos
 		macro_run gen_expr_r

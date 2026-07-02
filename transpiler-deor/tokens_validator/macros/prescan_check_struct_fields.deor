@@ -5,6 +5,7 @@ macro prescan_check_struct_fields
 	if kind is "KW_STRUCT"
 		# capture struct name
 		string sf_struct_name = ""
+		# ex: struct {Item} — pre_i+1 grabs the struct name
 		int sf_name_p = pre_i + 1
 		if sf_name_p < token_count
 			Token sf_nm = tokens at sf_name_p
