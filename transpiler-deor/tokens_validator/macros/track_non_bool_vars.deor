@@ -1,0 +1,79 @@
+
+# Tracks declared variable types for two downstream checks:
+#   non_bool_var_names — anything except 'bool' and validator types, since only
+#     those two have bare truthiness (see check_bare_truthiness).
+#   string_var_names / numeric_var_names — vars declared 'string' vs 'int'/'float',
+#     so check_mixed_string_concat can catch a numeric operand in a string '+'
+#     chain (or vice versa) instead of letting it fail as an opaque rustc error.
+# Two sources: typed declarations ('Type name = expr', same pattern check_var_decl
+# detects) and function parameters ('fn Ret name(Type1 p1, Type2 p2, ...)').
+# Deliberately does NOT track destructured struct fields ('(field) in source') —
+# there's no field-type registry to look up against, so those are left
+# unclassified rather than guessed at; both downstream checks only flag names
+# they can positively confirm.
+macro track_non_bool_vars
+	if cur_kind is "IDENT"
+		# ex: Type {name} = expr — pos+1 grabs the variable name
+		int tnb_next1 = pos + 1
+		# ex: Type name {=} expr — pos+2 grabs the equals sign
+		int tnb_next2 = pos + 2
+		if tnb_next2 < token_count
+			Token tnb_tok1 = tokens at tnb_next1
+			Token tnb_tok2 = tokens at tnb_next2
+			(kind) in tnb_tok1
+			string tnb_k1 = kind
+			(kind) in tnb_tok2
+			string tnb_k2 = kind
+			if tnb_k1 is "IDENT" and tnb_k2 is "EQUALS"
+				bool tnb_is_bool = cur_val is "bool"
+				bool tnb_is_vtype = list_has(validator_type_names, cur_val)
+				if not tnb_is_bool
+					if not tnb_is_vtype
+						(value) in tnb_tok1
+						non_bool_var_names at end = value
+				if cur_val is "string"
+					(value) in tnb_tok1
+					string_var_names at end = value
+				else if cur_val is "int"
+					(value) in tnb_tok1
+					numeric_var_names at end = value
+				else if cur_val is "float"
+					(value) in tnb_tok1
+					numeric_var_names at end = value
+
+	if cur_kind is "KW_FN"
+		# ex: fn int add{(}left, right) — pos+3 grabs the opening paren
+		int tnb_lp = pos + 3
+		if tnb_lp < token_count
+			Token tnb_lp_tok = tokens at tnb_lp
+			(kind) in tnb_lp_tok
+			if kind is "LPAREN"
+				int tnb_ps = tnb_lp + 1
+				for if tnb_ps < token_count
+					Token tnb_ps_tok = tokens at tnb_ps
+					(kind, value) in tnb_ps_tok
+					if kind is "RPAREN"
+						break
+					if kind is "COMMA"
+						tnb_ps = tnb_ps + 1
+						continue
+					if kind is "IDENT"
+						string tnb_param_type = value
+						int tnb_pn = tnb_ps + 1
+						if tnb_pn < token_count
+							Token tnb_pn_tok = tokens at tnb_pn
+							(kind, value) in tnb_pn_tok
+							if kind is "IDENT"
+								bool tnb_p_is_bool = tnb_param_type is "bool"
+								bool tnb_p_is_vtype = list_has(validator_type_names, tnb_param_type)
+								if not tnb_p_is_bool
+									if not tnb_p_is_vtype
+										non_bool_var_names at end = value
+								if tnb_param_type is "string"
+									string_var_names at end = value
+								else if tnb_param_type is "int"
+									numeric_var_names at end = value
+								else if tnb_param_type is "float"
+									numeric_var_names at end = value
+								tnb_ps = tnb_pn
+					tnb_ps = tnb_ps + 1

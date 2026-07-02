@@ -65,6 +65,9 @@ fn void validate_tokens(TokensRef tokens)
 	strList validator_vars = empty
 	strList raw_var_names = empty
 	strList const_var_names = empty
+	strList non_bool_var_names = empty
+	strList string_var_names = empty
+	strList numeric_var_names = empty
 	pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
@@ -96,6 +99,8 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run check_empty_parens
 		macro_run skip_rust_block
 		macro_run check_not_is_order
+		macro_run check_bare_truthiness
+		macro_run check_mixed_string_concat
 
 		validate_indent_offset as 1
 
@@ -131,6 +136,8 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run validate_ident
 		validate_indent_offset as 1
 
+		macro_run check_func_shape_multi_param
+
 		# shape name: camelCase, min 3
 		string keyword = "KW_SHAPE"
 		string lbl = lbl_shape
@@ -153,6 +160,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run validate_ident
 
 		macro_run check_fn_declaration
+		macro_run track_non_bool_vars
 
 		# fn name: snake_case, min 3
 		string keyword = "KW_FN"

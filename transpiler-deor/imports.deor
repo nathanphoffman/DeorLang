@@ -99,6 +99,10 @@ import "transpiler-deor/tokens_validator/macros/check_valid_placement.deor"
 import "transpiler-deor/tokens_validator/macros/check_end_placement.deor"
 import "transpiler-deor/tokens_validator/macros/check_struct_construction.deor"
 import "transpiler-deor/tokens_validator/macros/check_range_placement.deor"
+import "transpiler-deor/tokens_validator/macros/track_non_bool_vars.deor"
+import "transpiler-deor/tokens_validator/macros/check_bare_truthiness.deor"
+import "transpiler-deor/tokens_validator/macros/check_func_shape_multi_param.deor"
+import "transpiler-deor/tokens_validator/macros/check_mixed_string_concat.deor"
 import "transpiler-deor/tokens_validator/tokens_validation.deor"
 
 # utility macros

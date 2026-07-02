@@ -1,0 +1,29 @@
+# func_shape_test.deor
+# Exercises check_func_shape_multi_param: func shapes accept at most one input
+# type and one output type — a parenthesized list on either side is a
+# transpiler error rather than silently corrupting codegen. Also confirms the
+# legitimate single-param, no-input, and void-output forms still compile clean.
+
+struct Room
+	int area
+
+shape badInput = func of (Room, string) to bool
+
+shape badOutput = func of Room to (bool, string)
+
+shape roomFunc = func of Room to bool
+
+shape noInputFunc = func to bool
+
+shape sinkFunc = func of Room to void
+
+fn bool check_room(Room room)
+	return true
+
+fn void main()
+	roomFunc worker = check_room
+	print("ok")
+
+# expect-error:
+# line 10: shape 'shape' - func shapes accept at most one input type and one output type
+# line 12: shape 'shape' - func shapes accept at most one input type and one output type

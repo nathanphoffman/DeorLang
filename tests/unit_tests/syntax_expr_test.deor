@@ -3,8 +3,9 @@
 # 'at', an empty bracket literal instead of 'empty', a reserved keyword used
 # where a variable name is expected, 'not x is y' ordering (bare identifier,
 # parenthesized expression, and function call forms), 'range(...)' used
-# outside a for-loop header, and a raw Rust generic type name
-# (Option/Vec/Box/Rc/Arc/Result) used directly.
+# outside a for-loop header, bare truthiness on a non-bool/non-validator
+# variable, and a raw Rust generic type name (Option/Vec/Box/Rc/Arc/Result)
+# used directly.
 
 shape intList = list of int
 
@@ -43,6 +44,11 @@ fn void test_range_assigned()
 fn void test_range_as_arg()
 	print(range(3))
 
+fn void test_bare_truthiness()
+	int my_count = 5
+	if my_count
+		print("bad truthiness")
+
 fn void test_rust_generic()
 	Option bad_type = 5
 
@@ -50,12 +56,13 @@ fn void main()
 	print("should never reach here")
 
 # expect-error:
-# line 13: variable 'nums' - bracket indexing is not valid in Deor
-# line 16: variable '[' - use 'empty' to initialize an empty list
-# line 19: variable 'if' - reserved keyword cannot be used as a name
-# line 23: variable 'flag' - use 'x is not y' instead of 'not x is y'
-# line 29: variable '(' - use 'x is not y' instead of 'not x is y'
-# line 33: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
-# line 40: call to 'range' - 'range' can only be used as a for-loop's iterator expression
-# line 44: call to 'range' - 'range' can only be used as a for-loop's iterator expression
-# line 47: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
+# line 14: variable 'nums' - bracket indexing is not valid in Deor
+# line 17: variable '[' - use 'empty' to initialize an empty list
+# line 20: variable 'if' - reserved keyword cannot be used as a name
+# line 24: variable 'flag' - use 'x is not y' instead of 'not x is y'
+# line 30: variable '(' - use 'x is not y' instead of 'not x is y'
+# line 34: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
+# line 41: call to 'range' - 'range' can only be used as a for-loop's iterator expression
+# line 45: call to 'range' - 'range' can only be used as a for-loop's iterator expression
+# line 49: variable 'my_count' - only bool and validator types have truthiness
+# line 53: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor

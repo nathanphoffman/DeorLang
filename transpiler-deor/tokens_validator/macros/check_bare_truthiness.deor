@@ -1,0 +1,25 @@
+
+# Flags `if my_int` / `if my_string` / `if my_list` — a bare identifier used as an
+# entire if-condition (also covers 'for if', since that's just KW_FOR followed by
+# this same KW_IF token) with nothing else after it on that line. Only fires when
+# the identifier is positively known (via track_non_bool_vars) to be declared with
+# a type other than 'bool' or a validator type — those two are the only types with
+# real truthiness in Deor. An untracked identifier (e.g. a destructured struct
+# field) is left alone rather than guessed at, to avoid false positives.
+macro check_bare_truthiness
+	if cur_kind is "KW_IF"
+		# ex: if {my_int} — pos+1 grabs the identifier that might be the whole condition
+		int cbt_next = pos + 1
+		if cbt_next < token_count
+			Token cbt_tok = tokens at cbt_next
+			(kind, value) in cbt_tok
+			if kind is "IDENT"
+				# ex: if my_int{\n} — pos+2 must be a bare newline for this identifier to BE
+				# the whole condition, not just its first token (e.g. 'if my_int is not 0')
+				int cbt_after = cbt_next + 1
+				if cbt_after < token_count
+					Token cbt_after_tok = tokens at cbt_after
+					(kind) in cbt_after_tok
+					if kind is "NEWLINE"
+						if list_has(non_bool_var_names, value)
+							errors at end = val_err(cbt_tok, lbl_var, rule_bare_truthiness)

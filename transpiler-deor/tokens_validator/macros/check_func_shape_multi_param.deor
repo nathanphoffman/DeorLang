@@ -1,0 +1,50 @@
+
+# Flags `shape Foo = func of (A, B) to C` and `shape Foo = func of A to (B, C)` —
+# func shapes accept at most one input type and one output type (see
+# docs/shapes.md#single-param-constraint). Without this check, a parenthesized
+# list where a single type name is expected silently corrupts codegen: shape_func
+# (codegen/decl/macros/shape_func.deor) reads exactly one token after 'of'/'to',
+# so it grabs the '(' itself as the type name instead of erroring. Bundle
+# multiple inputs into a struct instead.
+macro check_func_shape_multi_param
+	if cur_kind is "KW_SHAPE"
+		# ex: shape Foo = {func} of ... — pos+3 confirms this is a func shape, not list/raw
+		int fsm_form = pos + 3
+		if fsm_form < token_count
+			Token fsm_form_tok = tokens at fsm_form
+			(kind) in fsm_form_tok
+			if kind is "KW_FUNC"
+				# ex: shape Foo = func {of} T ... — pos+4 checks for an of-clause
+				int fsm_of = pos + 4
+				if fsm_of < token_count
+					Token fsm_of_tok = tokens at fsm_of
+					(kind) in fsm_of_tok
+					if kind is "KW_OF"
+						# ex: shape Foo = func of {(}A, B) to C — pos+5 checks the input-type slot
+						int fsm_in = pos + 5
+						if fsm_in < token_count
+							Token fsm_in_tok = tokens at fsm_in
+							(kind) in fsm_in_tok
+							if kind is "LPAREN"
+								errors at end = val_err(tok, lbl_shape, rule_func_shape_multi_param)
+						# ex: shape Foo = func of T {to} (A, B) — pos+6 checks for a to-clause
+						int fsm_to = pos + 6
+						if fsm_to < token_count
+							Token fsm_to_tok = tokens at fsm_to
+							(kind) in fsm_to_tok
+							if kind is "KW_TO"
+								# ex: shape Foo = func of T to {(}A, B) — pos+7 checks the output-type slot
+								int fsm_out = pos + 7
+								if fsm_out < token_count
+									Token fsm_out_tok = tokens at fsm_out
+									(kind) in fsm_out_tok
+									if kind is "LPAREN"
+										errors at end = val_err(tok, lbl_shape, rule_func_shape_multi_param)
+					else if kind is "KW_TO"
+						# ex: shape Foo = func {to} (A, B) — no of-clause, pos+5 checks the output-type slot
+						int fsm_out2 = pos + 5
+						if fsm_out2 < token_count
+							Token fsm_out2_tok = tokens at fsm_out2
+							(kind) in fsm_out2_tok
+							if kind is "LPAREN"
+								errors at end = val_err(tok, lbl_shape, rule_func_shape_multi_param)
