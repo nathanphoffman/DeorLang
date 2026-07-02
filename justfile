@@ -1,8 +1,8 @@
 # Runs a scratch file from tests/snippets/ (your own scratchpad, not a real test).
-run file="scratch_pad.deor":
+run file="scratch_pad.deor" *args:
     DEOR_LIB=lib ./output/out tests/snippets/{{file}} output/run.rs
     rustc -O output/run.rs -o output/run
-    ./output/run
+    ./output/run {{args}}
 
 # Runs a single file from tests/unit_tests/ outside the full suite.
 run-test file="crash_test.deor":

@@ -1,8 +1,14 @@
 
 # Validates fn declarations: enforces max 3 params, no param name shadowing its type, snake_case and min-3-char
-# param names, and that a return type is present (catches `fn name()` missing the return type token).
+# param names, that a return type is present (catches `fn name()` missing the return type token), and that
+# the fn isn't nested inside another block (block_depth > 0 means we're inside a fn/struct/enum/shape/macro
+# body, an if/for, etc. — fn is only ever valid at block_depth 0).
 macro check_fn_declaration
 	if cur_kind is "KW_FN"
+		if block_depth > 0
+			int nf_name_pos = pos + 2
+			Token nf_name_tok = tokens at nf_name_pos
+			errors at end = val_err(nf_name_tok, lbl_fn, rule_nested_fn)
 		int lp_pos = pos + 3
 		if lp_pos < token_count
 			Token lp_tok = tokens at lp_pos

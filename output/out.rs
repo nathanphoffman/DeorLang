@@ -2174,6 +2174,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
     let mut rule_type_param_shadow: String = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num'".to_string();
     let mut rule_no_ret: String = "missing return type — use 'fn void name()' for functions that return nothing".to_string();
+    let mut rule_nested_fn: String = "functions may only be declared at the top level of a file — nested fn declarations are not allowed".to_string();
     let mut rule_void_return: String = "void functions must not use return — remove the return statement and let the function fall through".to_string();
     let mut rule_return_empty: String = "cannot return 'empty' — declare a validator type variable without a value and return it to signal not-valid".to_string();
     let mut rule_return_none: String = "none is not a Deor keyword — declare a validator type variable without a value and return it to signal not-valid".to_string();
@@ -3076,6 +3077,12 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: check_fn_declaration (transpiler-deor/tokens_validator/macros/check_fn_declaration.deor)
         if cur_kind == "KW_FN" {
             // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor
+            if block_depth > 0 {
+                // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor
+                let mut nf_name_pos: i64 = pos + 2.clone();
+                let mut nf_name_tok: Token = tokens[nf_name_pos as usize].clone();
+                errors.push(val_err(nf_name_tok.clone(), lbl_fn.clone(), rule_nested_fn.clone()).clone());
+            }
             let mut lp_pos: i64 = pos + 3.clone();
             if lp_pos < token_count {
                 // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor

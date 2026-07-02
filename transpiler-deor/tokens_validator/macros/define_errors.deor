@@ -23,6 +23,7 @@ macro define_errors
 	string rule_param_shadow = "parameter name cannot be the same as its type — choose a descriptive name"
 	string rule_type_param_shadow = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num'"
 	string rule_no_ret = "missing return type — use 'fn void name()' for functions that return nothing"
+	string rule_nested_fn = "functions may only be declared at the top level of a file — nested fn declarations are not allowed"
 	string rule_void_return = "void functions must not use return — remove the return statement and let the function fall through"
 	string rule_return_empty = "cannot return 'empty' — declare a validator type variable without a value and return it to signal not-valid"
 	string rule_return_none = "none is not a Deor keyword — declare a validator type variable without a value and return it to signal not-valid"

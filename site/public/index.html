@@ -52,6 +52,13 @@
             background: transparent !important;
         }
 
+        /* Prism's theme sets overflow: auto here, which gives the code block its
+           own scroll independent of the page. Force it to only scroll horizontally. */
+        pre[class*="language-"] {
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
         html {
             overflow-y: scroll;
         }
@@ -72,7 +79,7 @@
 </head>
 
 <body class="bg-gray-900">
-    <main class="max-w-5xl px-6 text-gray-300 mx-auto text-center text-lg">
+    <main class="max-w-[80rem] px-6 text-gray-300 mx-auto text-center text-lg">
         <div
             class="grid grid-cols-[auto_1fr] items-start gap-x-4 [grid-template-areas:'deer_title'_'desc_desc'] sm:[grid-template-areas:'deer_title'_'deer_desc'] m-4 mt-6 mb-6 md:m-8 text-left">
             <img src="reddeer.png" alt="Pixel art of a red deer, the Deor mascot"
@@ -96,15 +103,15 @@
         </p>
 
         <h2 class="mt-11 text-4xl font-serif">Pi Calculator Sample</h2>
-        <div class="bg-gray-800 mt-2 rounded-3xl overflow-hidden shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)]">
-            <div class="text-left pt-8">
+        <div class="bg-gray-800 mt-2 rounded-3xl shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)]">
+            <div class="text-left pt-8 pb-2 sticky top-0 z-10 bg-gray-800 rounded-t-3xl">
                 <button onclick="toggleComments()"
                     class="cursor-pointer text-left p-2 bg-gray-900 text-gray-100 rounded-sm text-black mr-1 ml-6">
                     Show Comments
                 </button> for readability
             </div>
-    
-    <pre class="bg-gray-800 text-left max-h-0 overflow-hidden transition-all duration-3000">
+
+    <pre class="bg-gray-800 text-left max-h-0 transition-all duration-3000 rounded-b-3xl">
             <code class="language-deor">
     # Imports must be declared at the top of a file but are global, this means
     #  imports can all be imported in main or from an imports.deor file imported by main
@@ -312,7 +319,7 @@
         </pre>
         </div>
     </main>
-    <footer class="text-gray-500 max-w-5xl px-6 mt-10 text-center mx-auto mb-5">
+    <footer class="text-gray-500 max-w-[80rem] px-6 mt-10 text-center mx-auto mb-5">
         <p class="text-gray-500 text-center">
             Deor was created by <a href="nathanhoffman.me" class="text-gray-200 underline">Nathan Hoffman</a>
         </p>
@@ -348,7 +355,7 @@
             original = document.querySelector('code').innerHTML;
             toggleComments();
             setTimeout(() => {
-                pre.classList.add('max-h-[2000px]');
+                pre.style.maxHeight = pre.scrollHeight + 'px';
             }, 100);
 
         });
@@ -365,6 +372,12 @@
                 code.innerHTML = original;
             }
             document.querySelector('button').textContent = showing ? 'Hide Comments' : 'Show Comments';
+
+            // Keep the collapsible height in sync with content so it never clips vertically
+            const pre = document.querySelector('pre');
+            if (pre.style.maxHeight) {
+                pre.style.maxHeight = pre.scrollHeight + 'px';
+            }
         }
 
     </script>

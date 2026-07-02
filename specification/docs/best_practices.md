@@ -15,6 +15,8 @@ Style recommendations not enforced by the transpiler.
 ## Spacing
 Add a blank line before `return` in any function body that contains more than one statement. One-liner functions (single expression, no bindings) are exempt. Try to keep blocks spaced out keeping like concepts with one another.
 
+Functions get extra separation from everything around them: leave 2 blank lines (3 returns) between a function and the next function or block. All other top-level blocks (structs, enums, shapes, macros) only need 1 blank line between them.
+
 **Recommended:**
 ```
 shape rollResultList = list of RollResult
