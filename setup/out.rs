@@ -2825,6 +2825,60 @@ fn validate_tokens(tokens: TokensRef) {
             pos = pos + 1;
             continue;
         }
+        // macro: check_type_base_not_shape (transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor)
+        if cur_kind == "KW_TYPE" {
+            // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
+            let mut base_type_pos: i64 = pos + 3.clone();
+            if base_type_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
+                let mut base_type_tok: Token = tokens[base_type_pos as usize].clone();
+                let value = base_type_tok.value.clone();
+                let mut base_is_shape: bool = list_has(shape_names.clone(), value.clone());
+                if base_is_shape {
+                    // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
+                    let mut type_name_pos: i64 = pos + 1.clone();
+                    let mut type_name_tok: Token = tokens[type_name_pos as usize].clone();
+                    errors.push(val_err(type_name_tok.clone(), lbl_type.clone(), rule_list_validator.clone()).clone());
+                }
+            }
+        }
+        // macro: check_validator_declaration (transpiler-deor/tokens_validator/macros/check_validator_declaration.deor)
+        if cur_kind == "KW_TYPE" {
+            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+            let mut vd_name_pos: i64 = pos + 1.clone();
+            let mut vd_lp_pos: i64 = pos + 2.clone();
+            let mut vd_ptype_pos: i64 = pos + 3.clone();
+            let mut vd_pname_pos: i64 = pos + 4.clone();
+            if vd_pname_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                let mut vd_name_tok: Token = tokens[vd_name_pos as usize].clone();
+                let mut vd_lp_tok: Token = tokens[vd_lp_pos as usize].clone();
+                let mut vd_ptype_tok: Token = tokens[vd_ptype_pos as usize].clone();
+                let mut vd_pname_tok: Token = tokens[vd_pname_pos as usize].clone();
+                let kind = vd_name_tok.kind.clone();
+                let value = vd_name_tok.value.clone();
+                let mut vd_type_name: String = value.clone();
+                let kind = vd_lp_tok.kind.clone();
+                if kind == "LPAREN" {
+                    // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                    let value = vd_ptype_tok.value.clone();
+                    let mut vd_param_type: String = value.clone();
+                    let kind = vd_pname_tok.kind.clone();
+                    let value = vd_pname_tok.value.clone();
+                    if kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                        if value == vd_type_name {
+                            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                            errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_type_param_shadow.clone()).clone());
+                        }
+                        if value == vd_param_type {
+                            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
+                            errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_param_shadow.clone()).clone());
+                        }
+                    }
+                }
+            }
+        }
         // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut keyword: String = "KW_TYPE".to_string();
         let mut lbl: String = lbl_type.clone();
@@ -2855,23 +2909,6 @@ fn validate_tokens(tokens: TokensRef) {
             }
             pos = pos + 1;
             continue;
-        }
-        // macro: check_type_base_not_shape (transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor)
-        if cur_kind == "KW_TYPE" {
-            // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
-            let mut base_type_pos: i64 = pos + 3.clone();
-            if base_type_pos < token_count {
-                // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
-                let mut base_type_tok: Token = tokens[base_type_pos as usize].clone();
-                let value = base_type_tok.value.clone();
-                let mut base_is_shape: bool = list_has(shape_names.clone(), value.clone());
-                if base_is_shape {
-                    // transpiler-deor/tokens_validator/macros/check_type_base_not_shape.deor
-                    let mut type_name_pos: i64 = pos + 1.clone();
-                    let mut type_name_tok: Token = tokens[type_name_pos as usize].clone();
-                    errors.push(val_err(type_name_tok.clone(), lbl_type.clone(), rule_list_validator.clone()).clone());
-                }
-            }
         }
         // macro: check_fn_declaration (transpiler-deor/tokens_validator/macros/check_fn_declaration.deor)
         if cur_kind == "KW_FN" {
@@ -2950,43 +2987,6 @@ fn validate_tokens(tokens: TokensRef) {
                     if kind == "LPAREN" {
                         // transpiler-deor/tokens_validator/macros/check_fn_declaration.deor
                         errors.push(val_err(ret_tok.clone(), lbl_fn.clone(), rule_no_ret.clone()).clone());
-                    }
-                }
-            }
-        }
-        // macro: check_validator_declaration (transpiler-deor/tokens_validator/macros/check_validator_declaration.deor)
-        if cur_kind == "KW_TYPE" {
-            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
-            let mut vd_name_pos: i64 = pos + 1.clone();
-            let mut vd_lp_pos: i64 = pos + 2.clone();
-            let mut vd_ptype_pos: i64 = pos + 3.clone();
-            let mut vd_pname_pos: i64 = pos + 4.clone();
-            if vd_pname_pos < token_count {
-                // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
-                let mut vd_name_tok: Token = tokens[vd_name_pos as usize].clone();
-                let mut vd_lp_tok: Token = tokens[vd_lp_pos as usize].clone();
-                let mut vd_ptype_tok: Token = tokens[vd_ptype_pos as usize].clone();
-                let mut vd_pname_tok: Token = tokens[vd_pname_pos as usize].clone();
-                let kind = vd_name_tok.kind.clone();
-                let value = vd_name_tok.value.clone();
-                let mut vd_type_name: String = value.clone();
-                let kind = vd_lp_tok.kind.clone();
-                if kind == "LPAREN" {
-                    // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
-                    let value = vd_ptype_tok.value.clone();
-                    let mut vd_param_type: String = value.clone();
-                    let kind = vd_pname_tok.kind.clone();
-                    let value = vd_pname_tok.value.clone();
-                    if kind == "IDENT" {
-                        // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
-                        if value == vd_type_name {
-                            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
-                            errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_type_param_shadow.clone()).clone());
-                        }
-                        if value == vd_param_type {
-                            // transpiler-deor/tokens_validator/macros/check_validator_declaration.deor
-                            errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_param_shadow.clone()).clone());
-                        }
                     }
                 }
             }

@@ -1,0 +1,43 @@
+# const_validator_test.deor
+# Exercises the const and validator-type validator rules: a validator type's
+# own declaration shadowing its type name or base type, reassigning a const,
+# using 'empty' on a validator type, reassigning a validator-type variable
+# without re-running its predicate, and 'avow' used on a non-validator variable.
+
+type Positive(int val)
+	val > 0
+
+type Roll(int Roll)
+	Roll > 0
+
+type Weight(int int)
+	int > 0
+
+fn void test_const_reassign()
+	const string PIPE = "|"
+	PIPE = "/"
+
+fn void test_validator_empty()
+	Positive pos_val = empty
+
+fn void test_validator_reassign()
+	Positive pos_val = 5
+	pos_val = 6
+
+fn void test_avow_non_validator()
+	int plain = 5
+	int result = (avow plain)
+
+fn void main()
+	test_const_reassign()
+	test_validator_empty()
+	test_validator_reassign()
+	test_avow_non_validator()
+
+# expect-error:
+# line 10: type 'Roll' - validator parameter name cannot be the same as the type name
+# line 13: type 'int' - parameter name cannot be the same as its type
+# line 18: variable 'PIPE' - cannot reassign a const variable
+# line 21: variable 'empty' - empty is not valid for validator types
+# line 25: variable 'pos_val' - cannot reassign a validator type variable
+# line 29: variable 'plain' - avow can only be used on a validator type variable

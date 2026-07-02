@@ -1,0 +1,54 @@
+# macro_test.deor — exercises the macro / macro_run system: repeated calls,
+# `block` to contain variables that would otherwise collide across calls,
+# nesting (macro_run inside a macro body), and a function-local macro
+# declaration that's only visible inside that function.
+
+macro say_hello
+	print("Hi There")
+
+fn void greet()
+	macro_run say_hello
+	macro_run say_hello
+
+macro compute_area
+	block
+		length as 10
+		width as 5
+		area as length * width
+		print(area)
+
+fn void run_area_twice()
+	macro_run compute_area
+	macro_run compute_area
+
+macro inner_macro
+	print("inner")
+
+macro outer_macro
+	print("outer start")
+	macro_run inner_macro
+	print("outer end")
+
+fn void run_nested()
+	macro_run outer_macro
+
+fn void run_local_macro_scope()
+	macro local_only
+		print("local macro ran")
+	macro_run local_only
+
+fn void main()
+	greet()
+	run_area_twice()
+	run_nested()
+	run_local_macro_scope()
+
+# expect:
+# Hi There
+# Hi There
+# 50
+# 50
+# outer start
+# inner
+# outer end
+# local macro ran

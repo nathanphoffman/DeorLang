@@ -1,0 +1,25 @@
+# end_placement_test.deor
+# 'end' is reserved — only valid directly after 'at' (list at end / list at end = val).
+# Each case below misuses it as a plain identifier and should be rejected.
+
+fn int sum_range(int start, int end)
+	total as 0
+	for idx in (start, end)
+		total = total + idx
+	return total
+
+fn void bad_bare_use()
+	int end = 5
+	print(end)
+
+fn void main()
+	int range_start = 3
+	int range_end = 7
+	int total = sum_range(range_start, range_end)
+	print(total)
+
+# expect-error:
+# line 5: variable 'end' - 'end' can only appear directly after 'at'
+# line 7: variable 'end' - 'end' can only appear directly after 'at'
+# line 12: variable 'end' - 'end' can only appear directly after 'at'
+# line 13: variable 'end' - 'end' can only appear directly after 'at'
