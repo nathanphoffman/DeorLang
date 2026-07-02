@@ -54,4 +54,6 @@ macro prescan_check_enum_variants
 							errors at end = val_err(ev_tok, lbl_variant, rule_enum_data)
 						if kind is "EQUALS"
 							errors at end = val_err(ev_tok, lbl_variant, rule_untyped_enum_eq)
+			else if list_has(reserved_keywords, kind)
+				errors at end = val_err(ev_tok, lbl_variant, rule_kw_in_parens)
 			ev_pos = ev_pos + 1

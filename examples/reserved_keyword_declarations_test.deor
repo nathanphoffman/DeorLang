@@ -1,0 +1,45 @@
+# reserved_keyword_declarations_test.deor
+# Exercises the remaining "keyword used as a name" positions beyond typed
+# declarations/as-bindings/fn params (covered in reserved_keyword_test.deor):
+# struct/enum declaration names, enum variant names, struct field names, and
+# destructuring binding names. The destructure case is the most serious one —
+# before check_destructure_binding_kw existed, a keyword in a binding-name slot
+# hung the compiler forever (for_collect_fields_into_fields_list's cursor only
+# advanced inside its RPAREN/COMMA/IDENT branches, so an unrecognized token
+# kind left it stuck in an infinite loop). Enum variant names had a milder but
+# still real bug: a keyword-named variant was silently dropped from the
+# generated enum with zero error, rather than just failing a naming check.
+
+struct raw
+	int val
+
+enum avow
+	VariantA
+	VariantB
+
+enum Color
+	Red
+	empty
+	Blue
+
+struct Settings
+	int const
+
+struct Point
+	int pos_x
+	int pos_y
+
+fn void test_destructure_binding()
+	Point pt_a = (3, 4)
+	(pos_x, none) in pt_a
+	print(pos_x)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 13: struct 'raw' - reserved keyword cannot be used as a name
+# line 16: enum 'avow' - reserved keyword cannot be used as a name
+# line 22: enum variant 'empty' - reserved keyword cannot be used as a name
+# line 26: struct field 'const' - reserved keyword cannot be used as a name
+# line 34: variable 'none' - reserved keyword cannot be used as a name

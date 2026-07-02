@@ -1,0 +1,30 @@
+# with_parens_test.deor
+# Exercises the with-requires-parens rule for both the `as` and typed-decl forms
+# of record update. Before check_with_parens existed, omitting the parens left
+# the with-scanning loop's cursor stuck on the first token that wasn't
+# RPAREN/COMMA/IDENT, hanging the compiler forever instead of erroring.
+
+struct Room
+	int area
+	string name
+
+fn void test_as_with_no_parens()
+	int area = 5
+	string name = "Office"
+	room as (area, name)
+	new_room as room with area
+	print(area)
+
+fn void test_typed_with_no_parens()
+	int area = 5
+	string name = "Office"
+	Room room = (area, name)
+	Room new_room = room with area
+	print(area)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 15: variable 'with' - 'with' must be followed by a parenthesized field list
+# line 22: variable 'with' - 'with' must be followed by a parenthesized field list

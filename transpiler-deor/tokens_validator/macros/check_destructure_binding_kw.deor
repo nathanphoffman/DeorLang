@@ -1,0 +1,48 @@
+# Flags a reserved keyword used as a destructuring binding name: `(f1, keyword)
+# in expr`. Only fires for a genuine destructure — the matching close paren must
+# be followed by KW_IN — so a plain parenthesized expression like `(not flag)`
+# is untouched. Without this, a keyword in a binding-name slot used to hang the
+# compiler forever: for_collect_fields_into_fields_list's cursor only advanced
+# inside its RPAREN/COMMA/IDENT branches, so an unrecognized token kind left the
+# cursor stuck and the loop never terminated.
+macro check_destructure_binding_kw
+	if cur_kind is "LPAREN"
+		bool dbk_is_call = false
+		if pos > 0
+			int dbk_prev_pos = pos - 1
+			Token dbk_prev_tok = tokens at dbk_prev_pos
+			(kind) in dbk_prev_tok
+			dbk_is_call = kind is "IDENT"
+		if not dbk_is_call
+			int dbk_scan = pos + 1
+			int dbk_depth = 1
+			for if dbk_scan < token_count
+				Token dbk_dtok = tokens at dbk_scan
+				(kind) in dbk_dtok
+				if kind is "LPAREN"
+					dbk_depth = dbk_depth + 1
+				else if kind is "RPAREN"
+					dbk_depth = dbk_depth - 1
+					if dbk_depth is 0
+						break
+				dbk_scan = dbk_scan + 1
+			int dbk_after_pos = dbk_scan + 1
+			bool dbk_is_destructure = false
+			if dbk_after_pos < token_count
+				Token dbk_after_tok = tokens at dbk_after_pos
+				(kind) in dbk_after_tok
+				dbk_is_destructure = kind is "KW_IN"
+			if dbk_is_destructure
+				int dbk_name_pos = pos + 1
+				bool dbk_at_name_slot = true
+				for if dbk_name_pos < dbk_scan
+					Token dbk_name_tok = tokens at dbk_name_pos
+					(kind) in dbk_name_tok
+					if kind is "COMMA"
+						dbk_at_name_slot = true
+					else if dbk_at_name_slot
+						if kind is not "IDENT"
+							if list_has(reserved_keywords, kind)
+								errors at end = val_err(dbk_name_tok, lbl_var, rule_kw_in_parens)
+						dbk_at_name_slot = false
+					dbk_name_pos = dbk_name_pos + 1

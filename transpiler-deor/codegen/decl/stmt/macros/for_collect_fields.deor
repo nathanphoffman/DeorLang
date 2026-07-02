@@ -11,3 +11,8 @@ macro for_collect_fields_into_fields_list
 		else if kind is "IDENT"
 			fields at end = value
 			cur = cur + 1
+		else
+			# Anything else (e.g. a reserved keyword in a binding-name slot — now
+			# rejected by check_destructure_binding_kw before codegen ever runs)
+			# still must advance the cursor, or this loop never terminates.
+			cur = cur + 1

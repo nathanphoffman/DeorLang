@@ -2193,6 +2193,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
     let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
     let mut rule_end: String = "'end' can only appear directly after 'at' (list at end / list at end = val) — it cannot be used as a variable name or expression".to_string();
+    let mut rule_with_parens: String = "'with' must be followed by a parenthesized field list — 'with (area)', not 'with area' — parens are required even for a single field".to_string();
     let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
     let mut rule_validator_reassign: String = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate".to_string();
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
@@ -2464,6 +2465,9 @@ fn validate_tokens(tokens: TokensRef) {
                                 errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_no_func_field.clone()).clone());
                             }
                             sf_fields.push(value.clone());
+                        } else if list_has(reserved_keywords.clone(), kind.clone()) {
+                            // transpiler-deor/tokens_validator/macros/prescan_check_struct_fields.deor
+                            errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_kw_in_parens.clone()).clone());
                         }
                     }
                 }
@@ -2554,6 +2558,9 @@ fn validate_tokens(tokens: TokensRef) {
                             }
                         }
                     }
+                } else if list_has(reserved_keywords.clone(), kind.clone()) {
+                    // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
+                    errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_kw_in_parens.clone()).clone());
                 }
                 ev_pos = ev_pos + 1;
             }
@@ -2680,6 +2687,89 @@ fn validate_tokens(tokens: TokensRef) {
                 }
             }
         }
+        // macro: check_destructure_binding_kw (transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor)
+        if cur_kind == "LPAREN" {
+            // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+            let mut dbk_is_call: bool = false;
+            if pos > 0 {
+                // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                let mut dbk_prev_pos: i64 = pos - 1.clone();
+                let mut dbk_prev_tok: Token = tokens[dbk_prev_pos as usize].clone();
+                let kind = dbk_prev_tok.kind.clone();
+                dbk_is_call = kind == "IDENT";
+            }
+            if !dbk_is_call {
+                // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                let mut dbk_scan: i64 = pos + 1.clone();
+                let mut dbk_depth: i64 = 1;
+                while dbk_scan < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                    let mut dbk_dtok: Token = tokens[dbk_scan as usize].clone();
+                    let kind = dbk_dtok.kind.clone();
+                    if kind == "LPAREN" {
+                        // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                        dbk_depth = dbk_depth + 1;
+                    } else if kind == "RPAREN" {
+                        // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                        dbk_depth = dbk_depth - 1;
+                        if dbk_depth == 0 {
+                            // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                            break;
+                        }
+                    }
+                    dbk_scan = dbk_scan + 1;
+                }
+                let mut dbk_after_pos: i64 = dbk_scan + 1.clone();
+                let mut dbk_is_destructure: bool = false;
+                if dbk_after_pos < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                    let mut dbk_after_tok: Token = tokens[dbk_after_pos as usize].clone();
+                    let kind = dbk_after_tok.kind.clone();
+                    dbk_is_destructure = kind == "KW_IN";
+                }
+                if dbk_is_destructure {
+                    // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                    let mut dbk_name_pos: i64 = pos + 1.clone();
+                    let mut dbk_at_name_slot: bool = true;
+                    while dbk_name_pos < dbk_scan {
+                        // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                        let mut dbk_name_tok: Token = tokens[dbk_name_pos as usize].clone();
+                        let kind = dbk_name_tok.kind.clone();
+                        if kind == "COMMA" {
+                            // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                            dbk_at_name_slot = true;
+                        } else if dbk_at_name_slot {
+                            // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                            if kind != "IDENT" {
+                                // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                                if list_has(reserved_keywords.clone(), kind.clone()) {
+                                    // transpiler-deor/tokens_validator/macros/check_destructure_binding_kw.deor
+                                    errors.push(val_err(dbk_name_tok.clone(), lbl_var.clone(), rule_kw_in_parens.clone()).clone());
+                                }
+                            }
+                            dbk_at_name_slot = false;
+                        }
+                        dbk_name_pos = dbk_name_pos + 1;
+                    }
+                }
+            }
+        }
+        // macro: check_with_parens (transpiler-deor/tokens_validator/macros/check_with_parens.deor)
+        if cur_kind == "KW_WITH" {
+            // transpiler-deor/tokens_validator/macros/check_with_parens.deor
+            let mut with_ok: bool = false;
+            let mut with_next_pos: i64 = pos + 1.clone();
+            if with_next_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/check_with_parens.deor
+                let mut with_next_tok: Token = tokens[with_next_pos as usize].clone();
+                let kind = with_next_tok.kind.clone();
+                with_ok = kind == "LPAREN";
+            }
+            if !with_ok {
+                // transpiler-deor/tokens_validator/macros/check_with_parens.deor
+                errors.push(val_err(tok.clone(), lbl_var.clone(), rule_with_parens.clone()).clone());
+            }
+        }
         // macro: skip_rust_block (transpiler-deor/tokens_validator/macros/skip_rust_block.deor)
         if cur_kind == "KW_RUST" {
             // transpiler-deor/tokens_validator/macros/skip_rust_block.deor
@@ -2751,6 +2841,9 @@ fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/validate_ident.deor
                         errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
+                } else if list_has(reserved_keywords.clone(), name_kind.clone()) {
+                    // transpiler-deor/tokens_validator/macros/validate_ident.deor
+                    errors.push(val_err(name_tok.clone(), lbl.clone(), rule_kw_in_parens.clone()).clone());
                 }
             }
             pos = pos + 1;
@@ -2806,6 +2899,9 @@ fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/validate_ident.deor
                         errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
+                } else if list_has(reserved_keywords.clone(), name_kind.clone()) {
+                    // transpiler-deor/tokens_validator/macros/validate_ident.deor
+                    errors.push(val_err(name_tok.clone(), lbl.clone(), rule_kw_in_parens.clone()).clone());
                 }
             }
             pos = pos + 1;
@@ -2838,6 +2934,9 @@ fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/validate_ident.deor
                         errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
+                } else if list_has(reserved_keywords.clone(), name_kind.clone()) {
+                    // transpiler-deor/tokens_validator/macros/validate_ident.deor
+                    errors.push(val_err(name_tok.clone(), lbl.clone(), rule_kw_in_parens.clone()).clone());
                 }
             }
             pos = pos + 1;
@@ -2923,6 +3022,9 @@ fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/validate_ident.deor
                         errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
+                } else if list_has(reserved_keywords.clone(), name_kind.clone()) {
+                    // transpiler-deor/tokens_validator/macros/validate_ident.deor
+                    errors.push(val_err(name_tok.clone(), lbl.clone(), rule_kw_in_parens.clone()).clone());
                 }
             }
             pos = pos + 1;
@@ -3040,6 +3142,9 @@ fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/validate_ident.deor
                         errors.push(val_err(name_tok.clone(), lbl.clone(), rule.clone()).clone());
                     }
+                } else if list_has(reserved_keywords.clone(), name_kind.clone()) {
+                    // transpiler-deor/tokens_validator/macros/validate_ident.deor
+                    errors.push(val_err(name_tok.clone(), lbl.clone(), rule_kw_in_parens.clone()).clone());
                 }
             }
             pos = pos + 1;
@@ -5378,6 +5483,9 @@ fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
             fields.push(value.clone());
             cur = cur + 1;
+        } else {
+            // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+            cur = cur + 1;
         }
     }
     // macro: gen_input_check (transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor)
@@ -5682,6 +5790,9 @@ fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         } else if kind == "IDENT" {
             // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
             fields.push(value.clone());
+            cur = cur + 1;
+        } else {
+            // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
             cur = cur + 1;
         }
     }
@@ -6711,6 +6822,59 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         let mut lst_sc: String = ";\n".to_string();
         let mut lst_code: String = [pad.as_str(), lst_pfx.as_str(), var_name.as_str(), lst_col.as_str(), rust_type.as_str(), lst_eq.as_str(), val_code.as_str(), lst_sc.as_str()].concat();
         return make_nl_result(lst_code, val_end.clone(), tokens.clone());
+    }
+    if kind == "IDENT" {
+        // macro: tb_with (transpiler-deor/codegen/decl/stmt/macros/tb_with.deor)
+        let mut tb_with_pos: i64 = val_pos + 1.clone();
+        if tb_with_pos < token_count {
+            // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+            let mut tb_with_tok: Token = tokens[tb_with_pos as usize].clone();
+            let kind = tb_with_tok.kind.clone();
+            if kind == "KW_WITH" {
+                // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                let value = val_token.value.clone();
+                let mut tb_src: String = value.clone();
+                let mut tb_lp: i64 = tb_with_pos + 1.clone();
+                let mut tb_ovr: Vec<String> = Vec::new();
+                let mut tb_wend: i64 = tb_lp + 1.clone();
+                while tb_wend < token_count {
+                    // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                    let mut tb_wtok: Token = tokens[tb_wend as usize].clone();
+                    let kind = tb_wtok.kind.clone();
+                    let value = tb_wtok.value.clone();
+                    if kind == "RPAREN" {
+                        // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                        tb_wend = tb_wend + 1;
+                        break;
+                    }
+                    if kind == "COMMA" {
+                        // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                        tb_wend = tb_wend + 1;
+                        continue;
+                    }
+                    if kind == "IDENT" {
+                        // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                        tb_ovr.push(value.clone());
+                        tb_wend = tb_wend + 1;
+                    }
+                }
+                let mut tb_wsep: String = ", ".to_string();
+                let mut tb_wfields: String = s_join_with(tb_ovr.clone(), tb_wsep.clone());
+                let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+                let mut mut_kw: String = "".to_string();
+                if mg_is_mut {
+                    // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                    mut_kw = "mut ".to_string();
+                }
+                let mut tb_wlet: String = "let ".to_string();
+                let mut tb_weq: String = " = ".to_string();
+                let mut tb_wob: String = " { ".to_string();
+                let mut tb_wsp: String = ", ..".to_string();
+                let mut tb_wcb: String = " };\n".to_string();
+                let mut tb_with_code: String = [pad.as_str(), tb_wlet.as_str(), mut_kw.as_str(), var_name.as_str(), tb_weq.as_str(), rust_type.as_str(), tb_wob.as_str(), tb_wfields.as_str(), tb_wsp.as_str(), tb_src.as_str(), tb_wcb.as_str()].concat();
+                return make_nl_result(tb_with_code, tb_wend.clone(), tokens.clone());
+            }
+        }
     }
     let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
     if is_validator {

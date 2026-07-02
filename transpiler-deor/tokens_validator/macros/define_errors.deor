@@ -44,6 +44,7 @@ macro define_errors
 	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"
 	string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"
 	string rule_end = "'end' can only appear directly after 'at' (list at end / list at end = val) — it cannot be used as a variable name or expression"
+	string rule_with_parens = "'with' must be followed by a parenthesized field list — 'with (area)', not 'with area' — parens are required even for a single field"
 
 	# const rules
 	string rule_const_reassign = "cannot reassign a const variable — const bindings are immutable"

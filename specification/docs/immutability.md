@@ -22,8 +22,12 @@ A struct handed to a function or dropped into a list shouldn't change out from u
 
 `with` produces a new struct with one or more fields overridden. The original is unchanged. Each field name must already exist as a variable in scope — the same rule as struct literals.
 
-- Single field: `new_room as room with (area)` — parens always required
+Works with both binding forms — `as` (type inferred from the source struct) and a typed declaration (`Type name = source with (...)`, as seen in [Updating a Struct Inside a List](collections.md#updating-a-struct-inside-a-list)):
+
+- Single field: `new_room as room with (area)` — parens always required, even for one field
 - Multiple fields: `new_room as room with (area, name)`
+
+The transpiler enforces the parens: `with` not immediately followed by `(` is a validation error, for both forms.
 
 Deor:
 ```

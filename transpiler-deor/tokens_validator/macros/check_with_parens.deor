@@ -1,0 +1,16 @@
+# Ensures `with` is always followed by a parenthesized field list — `with (f1, f2)`,
+# parens required even for a single field — for both the `as` and typed-decl forms.
+# Without this, a missing paren left the with-scanning loop's cursor stuck on the
+# first token that isn't RPAREN/COMMA/IDENT (e.g. a NEWLINE), hanging the compiler
+# forever instead of erroring. Same root cause check_destructure_binding_kw guards
+# against for `(f1, keyword) in expr`.
+macro check_with_parens
+	if cur_kind is "KW_WITH"
+		bool with_ok = false
+		int with_next_pos = pos + 1
+		if with_next_pos < token_count
+			Token with_next_tok = tokens at with_next_pos
+			(kind) in with_next_tok
+			with_ok = kind is "LPAREN"
+		if not with_ok
+			errors at end = val_err(tok, lbl_var, rule_with_parens)

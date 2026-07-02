@@ -52,6 +52,8 @@ macro prescan_check_struct_fields
 						if sf_is_func
 							errors at end = val_err(field_name_tok, lbl_field, rule_no_func_field)
 						sf_fields at end = value
+					else if list_has(reserved_keywords, kind)
+						errors at end = val_err(field_name_tok, lbl_field, rule_kw_in_parens)
 			sf_pos = sf_pos + 1
 
 		# register struct → field list for construction validation
