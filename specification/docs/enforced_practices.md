@@ -271,7 +271,7 @@ Move all helper functions to the top level of the file and call them by name.
 ---
 ## `raw` — Opaque Values Deor Doesn't Type-Check
 
-A `raw` variable holds a value whose real type Deor doesn't know or track — only Rust does. `raw name = expr` accepts any expression, including a call to a function that returns a `rust`-block-backed value. Once declared, a raw variable can be passed to functions (as an argument, or captured from what they return) and used freely inside `rust` blocks. It can never be:
+A `raw` variable holds a value whose real type Deor doesn't know or track — only Rust does. `raw name = expr` must be assigned from a call to a function — a bare literal or an inline `rust` block on the right of `=` is rejected, and so is `raw name as expr` (it must be `=`, not `as`). Once declared, a raw variable can be passed to functions (as an argument, or captured from what they return) and used freely inside `rust` blocks. It can never be:
 
 - given a different type via a typed binding or an `as` rebind
 - reassigned
@@ -299,6 +299,11 @@ copy as index                   # as-rebinding is still a type capture
 index = build_lookup_table()    # raw cannot be reassigned
 int cnt = len(index)            # len assumes a concrete type
 int total = index + 1           # operators assume a concrete type
+
+raw bad1 = 5                    # must be a function call, not a literal
+raw bad2 = rust
+    42                          # must be a function call, not an inline rust block
+raw bad3 as build_lookup_table() # must be '=', not 'as'
 
 struct Config
     raw lookup_table            # raw cannot be a struct field

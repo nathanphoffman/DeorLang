@@ -89,6 +89,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run check_kw_as_name
 		macro_run check_destructure_binding_kw
 		macro_run check_with_parens
+		macro_run check_empty_parens
 		macro_run skip_rust_block
 		macro_run check_not_is_order
 

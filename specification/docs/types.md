@@ -21,16 +21,19 @@ int val = 1_000_000
 
 ## `raw` Variables
 
-Some things are awkward to build in Deor at all — a `HashMap`, a compiled regex, a connection pool. `raw` is the escape hatch: a `rust` block builds the thing once, hands it back as an opaque value, and Deor carries that value around without needing to understand what's inside it. Because Deor can't see inside a `raw`, it also can't validate it — a `raw` has no type annotation, no Deor operators, and can't appear in Deor expressions or struct fields. It's only ever produced by a `rust` block and only ever consumed inside one.
+Some things are awkward to build in Deor at all — a `HashMap`, a compiled regex, a connection pool. `raw` is the escape hatch: a `rust` block builds the thing once, hands it back as an opaque value, and Deor carries that value around without needing to understand what's inside it. Because Deor can't see inside a `raw`, it also can't validate it — a `raw` has no type annotation, no Deor operators, and can't appear in Deor expressions or struct fields. It's only ever produced by a function call and only ever consumed inside a `rust` block.
 
 ```
-raw index = rust
-    entries.iter()
-        .map(|e| (e.key.clone(), e.value.clone()))
-        .collect::<std::collections::HashMap<String, String>>()
+fn Index build_index()
+    rust
+        entries.iter()
+            .map(|e| (e.key.clone(), e.value.clone()))
+            .collect::<std::collections::HashMap<String, String>>()
+
+raw index = build_index()
 ```
 
-See [Rust Interop](docs/interop.md) for full documentation, rules, and the build-once pattern.
+See [Rust Interop](docs/interop.md) for full documentation, rules, the build-once pattern, and how a top-level `raw TypeName` declaration is used to share a reference-counted value across functions (Deor's only global-like pattern).
 
 ---
 

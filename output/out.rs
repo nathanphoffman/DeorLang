@@ -2197,6 +2197,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_with_parens: String = "'with' must be followed by a parenthesized field list — 'with (area)', not 'with area' — parens are required even for a single field".to_string();
     let mut rule_unmatched_open_paren: String = "'(' is never closed — every open paren needs a matching ')'".to_string();
     let mut rule_unmatched_close_paren: String = "')' has no matching '(' before it — remove the extra ')' or add the missing '('".to_string();
+    let mut rule_empty_parens: String = "'()' is not valid — parens must contain at least one item, except when declaring or calling a zero-parameter function".to_string();
     let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
     let mut rule_validator_reassign: String = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate".to_string();
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
@@ -2813,6 +2814,43 @@ fn validate_tokens(tokens: TokensRef) {
             if !with_ok {
                 // transpiler-deor/tokens_validator/macros/check_with_parens.deor
                 errors.push(val_err(tok.clone(), lbl_var.clone(), rule_with_parens.clone()).clone());
+            }
+        }
+        // macro: check_empty_parens (transpiler-deor/tokens_validator/macros/check_empty_parens.deor)
+        if cur_kind == "LPAREN" {
+            // transpiler-deor/tokens_validator/macros/check_empty_parens.deor
+            let mut ep_next_pos: i64 = pos + 1.clone();
+            if ep_next_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/check_empty_parens.deor
+                let mut ep_next_tok: Token = tokens[ep_next_pos as usize].clone();
+                let mut kind = ep_next_tok.kind.clone();
+                if kind == "RPAREN" {
+                    // transpiler-deor/tokens_validator/macros/check_empty_parens.deor
+                    let mut ep_is_fn: bool = false;
+                    if pos > 0 {
+                        // transpiler-deor/tokens_validator/macros/check_empty_parens.deor
+                        let mut ep_prev_pos: i64 = pos - 1.clone();
+                        let mut ep_prev_tok: Token = tokens[ep_prev_pos as usize].clone();
+                        let mut kind = ep_prev_tok.kind.clone();
+                        let mut ep_prev_is_ident: bool = kind == "IDENT".clone();
+                        if ep_prev_is_ident {
+                            // transpiler-deor/tokens_validator/macros/check_empty_parens.deor
+                            let mut ep_is_type_decl: bool = false;
+                            if pos > 1 {
+                                // transpiler-deor/tokens_validator/macros/check_empty_parens.deor
+                                let mut ep_prev2_pos: i64 = pos - 2.clone();
+                                let mut ep_prev2_tok: Token = tokens[ep_prev2_pos as usize].clone();
+                                let mut kind = ep_prev2_tok.kind.clone();
+                                ep_is_type_decl = kind == "KW_TYPE";
+                            }
+                            ep_is_fn = !ep_is_type_decl;
+                        }
+                    }
+                    if !ep_is_fn {
+                        // transpiler-deor/tokens_validator/macros/check_empty_parens.deor
+                        errors.push(val_err(tok.clone(), lbl_var.clone(), rule_empty_parens.clone()).clone());
+                    }
+                }
             }
         }
         // macro: skip_rust_block (transpiler-deor/tokens_validator/macros/skip_rust_block.deor)

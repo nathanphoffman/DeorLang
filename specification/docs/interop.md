@@ -24,18 +24,57 @@ Deor does not check this — a `rust` block is spliced into the generated file v
 
 Use a rust block when Deor cannot express what you need — crate calls, closures, `HashMap`, async, type casting, anything that requires Rust's full type system. Do not reach for a rust block just to avoid Deor syntax.
 
-The `raw` type exists for passing opaque Rust values through Deor code. It is the right pattern when you need to build something once in Rust and use it repeatedly — a HashMap built from a list, a compiled regex, a connection pool handle. Build it once in a rust block, hold it as `raw`, pass it through:
+The `raw` type exists for passing opaque Rust values through Deor code. It is the right pattern when you need to build something once in Rust and use it repeatedly — a HashMap built from a list, a compiled regex, a connection pool handle. `raw name = expr` must be assigned from a function call — a bare literal or an inline `rust` block on the right of `=` is a transpiler error (and so is `raw name as expr` — it must be `=`, not `as`).
+
+This is deliberate, not just a syntax restriction. The whole point of `raw` is "Deor can't see inside this value" — but a literal like `5` isn't opaque to Deor at all, it's a plain `int` Deor already understands fully. Only a function call can actually hand back something Deor genuinely can't inspect (typically a `rust`-block-backed value). Requiring the function call keeps `raw` meaningful: if you see `raw x = build_index()`, you know `x` is really opaque. If literals were allowed, `raw x = 5` would just be a relabeled plain value, and the `raw` marker would stop telling readers anything true.
+
+`as` is rejected for the same reason, from the other direction. `x as some_fn()` is Deor's ordinary binding form, used everywhere for normal values — nothing about it signals that `x` is special. If `raw` allowed `as` as an alternate separator, `x as some_fn()` and `raw x = some_fn()` would produce the same opaque value, but only one of them would visibly warn a reader that `x` can't be used in Deor expressions, passed to `len`/`crash`/`s_join`, or reassigned. The explicit `raw` keyword at the declaration site is what makes that unmistakable — so `raw` is only ever spelled one way: `raw name = expr`.
+
+So build it once inside a function, and hold the function's return value as `raw`:
 
 ```
-raw index = rust
-    entries.iter()
-        .map(|e| (e.key.clone(), e.value.clone()))
-        .collect::<std::collections::HashMap<String, String>>()
+fn Index build_index()
+    rust
+        entries.iter()
+            .map(|e| (e.key.clone(), e.value.clone()))
+            .collect::<std::collections::HashMap<String, String>>()
 
+raw index = build_index()
 string result = lookup(index, search_key)
 ```
 
 This generates the same Rust you would write by hand — no boxing, no overhead.
+
+---
+
+## Global-Style References — Sharing State Across Functions
+
+Deor has no global scope — every ordinary variable exists only inside the block where it's declared. A top-level `raw` type declaration is the one exception, and it's the only way to get something that behaves like a shared global: declare the opaque type once, give it a real Rust definition (usually wrapping the data in `Rc<...>` or `Arc<...>` so it's cheap to clone), build a single instance somewhere central, and thread that instance through function parameters. Because the underlying value is reference-counted, passing it down through many layers of calls is a cheap pointer clone, not a deep copy of the data.
+
+`lib/map.deor`'s `StringMap` (see [Libs](docs/libs.md#libmapdeor)) is a real example already in the standard library:
+
+```
+raw StringMap
+
+rust
+    #[derive(Clone)]
+    struct StringMap(std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, String>>>);
+
+fn StringMap h_make()
+    rust
+        StringMap(std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new())))
+```
+
+Once `StringMap` is registered this way, callers don't even write `raw` again — they just use it like any other declared type:
+
+```
+StringMap config = h_make()
+config = h_set(config, "host", "localhost")
+```
+
+Every function that takes a `StringMap` parameter is handed the same underlying `Arc<Mutex<...>>`, not a copy of the map.
+
+Only reach for this pattern when you actually need reference-style sharing for performance — a large data structure threaded through many layers of calls, or a hot path where repeated cloning would be measurably slow. For everything else, plain function-to-function parameter passing is simpler, keeps ownership explicit, and should stay the default.
 
 ---
 

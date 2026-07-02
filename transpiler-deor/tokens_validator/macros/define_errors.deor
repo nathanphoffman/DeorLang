@@ -48,6 +48,7 @@ macro define_errors
 	string rule_with_parens = "'with' must be followed by a parenthesized field list — 'with (area)', not 'with area' — parens are required even for a single field"
 	string rule_unmatched_open_paren = "'(' is never closed — every open paren needs a matching ')'"
 	string rule_unmatched_close_paren = "')' has no matching '(' before it — remove the extra ')' or add the missing '('"
+	string rule_empty_parens = "'()' is not valid — parens must contain at least one item, except when declaring or calling a zero-parameter function"
 
 	# const rules
 	string rule_const_reassign = "cannot reassign a const variable — const bindings are immutable"

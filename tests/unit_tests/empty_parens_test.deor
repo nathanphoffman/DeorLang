@@ -1,0 +1,29 @@
+# empty_parens_test.deor
+# Exercises the empty-parens validator: '()' with nothing inside is invalid
+# everywhere except a zero-parameter fn declaration or a call to one.
+
+struct Room
+	int area
+	string name
+
+fn void greet()
+	print("hi")
+
+fn void test_with_empty()
+	Room room = (5, "Office")
+	Room updated = room with ()
+
+fn int test_return_empty()
+	return ()
+
+fn void test_move_empty()
+	int x = 5
+	int y = move ()
+
+fn void main()
+	greet()
+
+# expect-error:
+# line 14: variable '(' - '()' is not valid
+# line 17: variable '(' - '()' is not valid
+# line 21: variable '(' - '()' is not valid

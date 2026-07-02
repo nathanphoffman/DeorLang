@@ -1,0 +1,34 @@
+
+# Flags `()` with nothing inside — every legitimate use of parens in Deor wraps at
+# least one token: a call arg, a fn param, a tuple element, a struct-construction
+# field, a `with` field list, or a grouped expression like `(avow x)`. The only
+# exception is a zero-parameter fn declaration (`fn void main()`) or a call to one
+# (`main()`), both of which look like `IDENT ( )` — distinguished from a validator
+# type declaration (`type Foo()`, also `IDENT ( )` but preceded by `KW_TYPE`), which
+# is never allowed to be empty since its base type is mandatory.
+macro check_empty_parens
+	if cur_kind is "LPAREN"
+		# ex: foo({)} — pos+1 checks the very next token for an immediate close
+		int ep_next_pos = pos + 1
+		if ep_next_pos < token_count
+			Token ep_next_tok = tokens at ep_next_pos
+			(kind) in ep_next_tok
+			if kind is "RPAREN"
+				bool ep_is_fn = false
+				if pos > 0
+					# ex: {name}() — pos-1 checks the token immediately before '(' for a call/decl name
+					int ep_prev_pos = pos - 1
+					Token ep_prev_tok = tokens at ep_prev_pos
+					(kind) in ep_prev_tok
+					bool ep_prev_is_ident = kind is "IDENT"
+					if ep_prev_is_ident
+						bool ep_is_type_decl = false
+						if pos > 1
+							# ex: type Name{(} — pos-2 checks for the 'type' keyword to exclude validator declarations
+							int ep_prev2_pos = pos - 2
+							Token ep_prev2_tok = tokens at ep_prev2_pos
+							(kind) in ep_prev2_tok
+							ep_is_type_decl = kind is "KW_TYPE"
+						ep_is_fn = not ep_is_type_decl
+				if not ep_is_fn
+					errors at end = val_err(tok, lbl_var, rule_empty_parens)

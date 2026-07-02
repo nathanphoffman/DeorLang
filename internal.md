@@ -3,12 +3,13 @@ AI DONT TOUCH THIS DOCUMENT, THIS IS FOR NATE ONLY
 # Road Map
 Upcoming features, mostly an internal markdown file used by the creator Nathan Hoffman.
 
-
-## New Fixes
-- Working: add validation to make sure validator types are not allowed to reference themselves, type Positive(Positive val), infact, they should only ever be able to reference primitives, which is the easier check type Positive(int)
 ## Audits
 
  Major — docs describe validation that doesn't exist
+
+# More validation adds
+- Fixing: Empty parens () should be validated out
+- Open [ and Closing ] should be prevented on their own like we did with a leading and closing paren
 
   Needs to be worked:
 
@@ -36,11 +37,6 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
   silently passes the prescan and only errors later at codegen, which could be confusing to debug.
   - examples.md, experimental.md, shims.md are still 3-line stubs (examples.md = "Coming soon", experimental.md = empty, shims.md just redirects to libs.md) —
   matches what roadmap.md already tracks as unfinished.
-
-
-# More validation adds
-- Empty parens () should be validated out
-- Open [ and Closing ] should be prevented on their own like we did with a leading and closing paren
 
 
 
