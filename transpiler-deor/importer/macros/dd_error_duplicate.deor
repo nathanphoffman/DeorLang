@@ -1,0 +1,17 @@
+
+# Reports a duplicate top-level declaration as a fatal import-time error and exits.
+# Fires for any name reused anywhere in the project, same file or a different one —
+# there is no more silent "first one wins" for cross-file collisions.
+# Reads: decl_name, dn_tok, origin_file
+macro dd_error_duplicate
+	(file, line) in dn_tok
+	string line_str = n_to_str(line)
+	string err_pre = "[error] "
+	string err_line = " line "
+	string err_mid = ": duplicate declaration '"
+	string err_end = "' — already declared in "
+	strList err_parts = [err_pre, file, err_line, line_str, err_mid, decl_name, err_end, origin_file]
+	string err_msg = s_join(err_parts)
+	print(err_msg)
+	rust
+		std::process::exit(1);

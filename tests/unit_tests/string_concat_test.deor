@@ -1,14 +1,22 @@
 # string_concat_test.deor
-# Regression test for `+` string-concat chains where the literal that
-# identifies the chain as string concatenation isn't the first operand.
-# Previously `prefix + content + "!"` failed to compile (String + String
-# has no native Rust translation) because promotion only triggered off the
-# very first token. Fixed by scanning the whole `+` chain for a literal
-# before deciding, then chaining every operand as `first + &rest...`.
+# Regression tests for `+` string-concat chains: chains where the literal that
+# marks the chain as concatenation (rather than arithmetic) isn't the first
+# operand, chains of varying length and literal position, and chains built
+# directly inline (call arg / return / as-binding) rather than pre-bound to a
+# `string` variable first.
+#
+# Note: the leading operand of a chain is *moved*, not cloned (only operands
+# after the first get `&`) — so each scenario below uses its own fresh
+# variables rather than reusing one across multiple chains.
+
+fn string glue(string aaa, string bbb)
+	return aaa + bbb + "!"
 
 fn void main()
 	prefix as "pre-"
 	content as "mid"
+
+	# literal only at the end
 	string chained = prefix + content + "!"
 	print(chained)
 
@@ -17,10 +25,70 @@ fn void main()
 	string three_deep = aaa + bbb + "-end"
 	print(three_deep)
 
+	# all literals
 	string all_literals = "fn " + "main" + "()"
 	print(all_literals)
+
+	# literal only at the start
+	ccc as "c"
+	ddd as "d"
+	string lead_literal = "Result: " + ccc + ddd
+	print(lead_literal)
+
+	# literal only in the middle
+	eee as "e"
+	fff as "f"
+	string mid_literal = eee + "-" + fff
+	print(mid_literal)
+
+	# two operands, no third
+	ggg as "g"
+	string two_op = "Hi, " + ggg
+	print(two_op)
+
+	# four-operand chain
+	hhh as "h"
+	iii as "i"
+	jjj as "j"
+	string four_op = hhh + iii + jjj + "-end"
+	print(four_op)
+
+	# empty-string literal in the chain
+	kkk as "k"
+	string with_empty = "" + kkk + "!"
+	print(with_empty)
+
+	# chain built directly inline as a call argument, not pre-bound to a variable
+	lll as "l-"
+	mmm as "m"
+	print(lll + mmm + "!")
+
+	# chain built directly in a `name as expr` binding
+	xxx as "pre-" + "mid" + "end"
+	print(xxx)
+
+	# chain returned directly from a function
+	nnn as "n"
+	ooo as "o"
+	string returned = glue(nnn, ooo)
+	print(returned)
+
+	# call result used as the leading operand of a further chain
+	ppp as "p"
+	qqq as "q"
+	string result_lead = glue(ppp, qqq) + " done"
+	print(result_lead)
 
 # expect:
 # pre-mid!
 # ab-end
 # fn main()
+# Result: cd
+# e-f
+# Hi, g
+# hij-end
+# k!
+# l-m!
+# pre-midend
+# no!
+# pq! done

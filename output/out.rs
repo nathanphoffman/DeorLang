@@ -1515,6 +1515,7 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
     // transpiler-deor/importer/dedup.deor
     let mut result: Vec<Token> = Vec::new();
     let mut seen: Vec<String> = Vec::new();
+    let mut seen_files: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
     let mut pos: i64 = 0;
     while pos < token_count {
@@ -1551,13 +1552,15 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
             }
             let mut dn_pos: i64 = pos + dn_offset;
             let mut decl_name: String = "".to_string();
+            let mut dn_tok: Token = tokens[pos as usize].clone();
             if dn_pos < token_count {
                 // transpiler-deor/importer/macros/dd_handle_block_decl.deor
-                let mut dn_tok: Token = tokens[dn_pos as usize].clone();
+                dn_tok = tokens[dn_pos as usize].clone();
                 let value = dn_tok.value.clone();
                 decl_name = value;
             }
             let mut already_seen: bool = false;
+            let mut dup_idx: i64 = 0;
             let mut cs_len: i64 = (seen.len() as i64);
             for cs_i in 0..cs_len {
                 // transpiler-deor/importer/macros/dd_handle_block_decl.deor
@@ -1565,12 +1568,30 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 if cs_val == decl_name {
                     // transpiler-deor/importer/macros/dd_handle_block_decl.deor
                     already_seen = true;
+                    dup_idx = cs_i;
                     break;
                 }
             }
-            if !already_seen {
+            if already_seen {
+                // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                let mut origin_file: String = seen_files[dup_idx as usize].clone();
+                // macro: dd_error_duplicate (transpiler-deor/importer/macros/dd_error_duplicate.deor)
+                let file = dn_tok.file.clone();
+                let line = dn_tok.line.clone();
+                let mut line_str: String = n_to_str(line.clone());
+                let mut err_pre: String = "[error] ".to_string();
+                let mut err_line: String = " line ".to_string();
+                let mut err_mid: String = ": duplicate declaration '".to_string();
+                let mut err_end: String = "' — already declared in ".to_string();
+                let mut err_parts: Vec<String> = vec![err_pre.clone(), file.clone(), err_line.clone(), line_str.clone(), err_mid.clone(), decl_name.clone(), err_end.clone(), origin_file.clone()];
+                let mut err_msg: String = s_join(err_parts.clone());
+                println!("{}", err_msg.clone());
+                std::process::exit(1);
+            } else {
                 // transpiler-deor/importer/macros/dd_handle_block_decl.deor
                 seen.push(decl_name.clone());
+                let file = dn_tok.file.clone();
+                seen_files.push(file.clone());
             }
             let mut fbe_cur: i64 = pos.clone();
             let mut fbe_depth: i64 = 0;
@@ -1610,13 +1631,15 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
             }
             let mut dn_pos: i64 = pos + dn_offset;
             let mut decl_name: String = "".to_string();
+            let mut dn_tok: Token = tokens[pos as usize].clone();
             if dn_pos < token_count {
                 // transpiler-deor/importer/macros/dd_handle_shape.deor
-                let mut dn_tok: Token = tokens[dn_pos as usize].clone();
+                dn_tok = tokens[dn_pos as usize].clone();
                 let value = dn_tok.value.clone();
                 decl_name = value;
             }
             let mut already_seen: bool = false;
+            let mut dup_idx: i64 = 0;
             let mut cs_len: i64 = (seen.len() as i64);
             for cs_i in 0..cs_len {
                 // transpiler-deor/importer/macros/dd_handle_shape.deor
@@ -1624,12 +1647,30 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 if cs_val == decl_name {
                     // transpiler-deor/importer/macros/dd_handle_shape.deor
                     already_seen = true;
+                    dup_idx = cs_i;
                     break;
                 }
             }
-            if !already_seen {
+            if already_seen {
+                // transpiler-deor/importer/macros/dd_handle_shape.deor
+                let mut origin_file: String = seen_files[dup_idx as usize].clone();
+                // macro: dd_error_duplicate (transpiler-deor/importer/macros/dd_error_duplicate.deor)
+                let file = dn_tok.file.clone();
+                let line = dn_tok.line.clone();
+                let mut line_str: String = n_to_str(line.clone());
+                let mut err_pre: String = "[error] ".to_string();
+                let mut err_line: String = " line ".to_string();
+                let mut err_mid: String = ": duplicate declaration '".to_string();
+                let mut err_end: String = "' — already declared in ".to_string();
+                let mut err_parts: Vec<String> = vec![err_pre.clone(), file.clone(), err_line.clone(), line_str.clone(), err_mid.clone(), decl_name.clone(), err_end.clone(), origin_file.clone()];
+                let mut err_msg: String = s_join(err_parts.clone());
+                println!("{}", err_msg.clone());
+                std::process::exit(1);
+            } else {
                 // transpiler-deor/importer/macros/dd_handle_shape.deor
                 seen.push(decl_name.clone());
+                let file = dn_tok.file.clone();
+                seen_files.push(file.clone());
             }
             let mut fse_cur: i64 = pos.clone();
             while fse_cur < token_count {
@@ -1663,16 +1704,19 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
             }
             let mut dn_pos: i64 = pos + dn_offset;
             let mut decl_name: String = "".to_string();
+            let mut dn_tok: Token = tokens[pos as usize].clone();
             if dn_pos < token_count {
                 // transpiler-deor/importer/macros/dd_handle_raw.deor
-                let mut dn_tok: Token = tokens[dn_pos as usize].clone();
+                dn_tok = tokens[dn_pos as usize].clone();
                 let value = dn_tok.value.clone();
                 decl_name = value;
             }
+            let mut raw_display_name: String = decl_name.clone();
             let mut raw_pfx: String = "_raw_".to_string();
             let mut raw_key_parts: Vec<String> = vec![raw_pfx.clone(), decl_name.clone()];
             decl_name = s_join(raw_key_parts.clone());
             let mut already_seen: bool = false;
+            let mut dup_idx: i64 = 0;
             let mut cs_len: i64 = (seen.len() as i64);
             for cs_i in 0..cs_len {
                 // transpiler-deor/importer/macros/dd_handle_raw.deor
@@ -1680,12 +1724,31 @@ fn deduplicate_decls(tokens: Vec<Token>) -> Vec<Token> {
                 if cs_val == decl_name {
                     // transpiler-deor/importer/macros/dd_handle_raw.deor
                     already_seen = true;
+                    dup_idx = cs_i;
                     break;
                 }
             }
-            if !already_seen {
+            if already_seen {
+                // transpiler-deor/importer/macros/dd_handle_raw.deor
+                let mut origin_file: String = seen_files[dup_idx as usize].clone();
+                decl_name = raw_display_name;
+                // macro: dd_error_duplicate (transpiler-deor/importer/macros/dd_error_duplicate.deor)
+                let file = dn_tok.file.clone();
+                let line = dn_tok.line.clone();
+                let mut line_str: String = n_to_str(line.clone());
+                let mut err_pre: String = "[error] ".to_string();
+                let mut err_line: String = " line ".to_string();
+                let mut err_mid: String = ": duplicate declaration '".to_string();
+                let mut err_end: String = "' — already declared in ".to_string();
+                let mut err_parts: Vec<String> = vec![err_pre.clone(), file.clone(), err_line.clone(), line_str.clone(), err_mid.clone(), decl_name.clone(), err_end.clone(), origin_file.clone()];
+                let mut err_msg: String = s_join(err_parts.clone());
+                println!("{}", err_msg.clone());
+                std::process::exit(1);
+            } else {
                 // transpiler-deor/importer/macros/dd_handle_raw.deor
                 seen.push(decl_name.clone());
+                let file = dn_tok.file.clone();
+                seen_files.push(file.clone());
             }
             let mut fse_cur: i64 = pos.clone();
             while fse_cur < token_count {

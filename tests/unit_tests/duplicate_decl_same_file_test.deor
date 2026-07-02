@@ -1,0 +1,14 @@
+# duplicate_decl_same_file_test.deor
+# Exercises dedup.deor's duplicate-declaration check for two decls in the same file —
+# a distinct error path from the token validator (fires during import-merging, immediate
+# exit(1), no accumulation with other errors).
+
+struct Player
+	string name
+	int score
+
+struct Player
+	string label
+
+# expect-error:
+# duplicate declaration 'Player' — already declared in tests/unit_tests/duplicate_decl_same_file_test.deor

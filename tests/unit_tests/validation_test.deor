@@ -1,29 +1,13 @@
 # validation_test.deor
 # Each block below deliberately violates one validator rule.
-# Run this file through the transpiler and expect 12+ errors — zero passing output.
+# Run this file through the transpiler and expect 10+ errors — zero passing output.
+# Duplicate top-level declarations are covered separately, in duplicate_decl_same_file_test.deor
+# and duplicate_decl_cross_file_test.deor — that check now fires during import-merging
+# (dedup.deor) and exits immediately, before the validator this file exercises ever runs,
+# so it can't share a file with the checks below.
 
 # -----------------------------------------------------------------------
-# 1. Duplicate declaration name
-#    Second 'Player' SHOULD fire "duplicate declaration" but currently does not —
-#    prescan_check_duplicate_decls never gets the chance to. Root cause: importer/
-#    dedup.deor's deduplicate_decls runs during import-merging, BEFORE validation,
-#    and silently keeps only the first declaration for any name — first wins, the
-#    second is dropped from the token stream with no error anywhere (not even a
-#    downstream rustc error, since only one definition ever reaches codegen).
-#    Cross-file collisions (the same file diamond-imported via two paths) are
-#    intentionally fine to dedup silently — but a same-file duplicate like the one
-#    below should be flagged and currently isn't. Fix is deferred; needs a real
-#    unit test once implemented. Not asserted in # expect-error below.
-# -----------------------------------------------------------------------
-struct Player
-	string name
-	int score
-
-struct Player
-	string label
-
-# -----------------------------------------------------------------------
-# 2. Struct field naming — too short AND camelCase
+# 1. Struct field naming — too short AND camelCase
 #    'x' fires: "name must be at least 3 characters"
 #    'myField' fires: "name must be lower_snake_case"
 # -----------------------------------------------------------------------
@@ -32,7 +16,7 @@ struct BadFields
 	string myField
 
 # -----------------------------------------------------------------------
-# 3. Enum variant naming — lowercase AND too short
+# 2. Enum variant naming — lowercase AND too short
 #    'north' fires: "name must be PascalCase"
 #    'ab' fires both min-3 and PascalCase
 #    'East' and 'West' are correct, no error expected
@@ -44,7 +28,7 @@ enum Direction
 	West
 
 # -----------------------------------------------------------------------
-# 4. Data-carrying enum variant
+# 3. Data-carrying enum variant
 #    'Move(int)' fires: "enum variants cannot carry data"
 # -----------------------------------------------------------------------
 enum Message
@@ -52,14 +36,14 @@ enum Message
 	Move(int)
 
 # -----------------------------------------------------------------------
-# 5. void used as variable type
+# 4. void used as variable type
 #    'void result = 5' fires: "'void' is not a valid variable type"
 # -----------------------------------------------------------------------
 fn void test_void_var()
 	void result = 5
 
 # -----------------------------------------------------------------------
-# 6. return inside a void function
+# 5. return inside a void function
 #    'return num' fires: "void functions must not use return"
 # -----------------------------------------------------------------------
 fn void test_void_return()
@@ -67,7 +51,7 @@ fn void test_void_return()
 	return num
 
 # -----------------------------------------------------------------------
-# 7. move applied to a literal
+# 6. move applied to a literal
 #    'move 5' fires: "'move' can only precede a variable name"
 # -----------------------------------------------------------------------
 fn int test_move_literal()
@@ -75,14 +59,14 @@ fn int test_move_literal()
 	return move 5
 
 # -----------------------------------------------------------------------
-# 8. Parameter name same as its type
+# 7. Parameter name same as its type
 #    second param 'string string' fires: "parameter name cannot be the same as its type"
 # -----------------------------------------------------------------------
 fn void test_param_shadow(int count, string string)
 	int unused = 0
 
 # -----------------------------------------------------------------------
-# 9. Typed as-binding
+# 8. Typed as-binding
 #    'int val as src' fires: "typed `as` bindings are not supported"
 # -----------------------------------------------------------------------
 fn void test_typed_as()
@@ -90,7 +74,7 @@ fn void test_typed_as()
 	int val as src
 
 # -----------------------------------------------------------------------
-# 10. as + move (redundant move)
+# 9. as + move (redundant move)
 #     'val as move src' fires: "`as` already transfers ownership"
 # -----------------------------------------------------------------------
 fn void test_as_move()

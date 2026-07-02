@@ -1,0 +1,14 @@
+# duplicate_decl_cross_file_test.deor
+# Exercises dedup.deor's duplicate-declaration check across two different files that each
+# declare 'Widget'. Previously this silently kept the first and dropped the second
+# (intentional "diamond import" leniency); now every top-level name must be unique
+# project-wide, so this is a hard error too.
+
+import "tests/unit_tests/fixtures/dup_decl_a.deor"
+import "tests/unit_tests/fixtures/dup_decl_b.deor"
+
+fn void main()
+	print("unreachable")
+
+# expect-error:
+# duplicate declaration 'Widget' — already declared in tests/unit_tests/fixtures/dup_decl_a.deor

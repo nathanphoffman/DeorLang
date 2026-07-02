@@ -1,0 +1,3 @@
+# Fixture for duplicate_decl_cross_file_test.deor — declares the same name as dup_decl_a.deor.
+struct Widget
+	int id

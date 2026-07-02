@@ -1,28 +1,40 @@
 
-# Deduplicates a raw type declaration: reads the name with a "_raw_" prefix as the dedup key,
-# skips if already seen, otherwise copies the single-line declaration to result and advances pos.
+# Checks a raw type declaration, keyed with a "_raw_" prefix so it can't collide with a
+# regular decl name, against every raw name declared so far, anywhere in the project.
+# Hard-errors on a repeat; otherwise copies the single-line declaration to result and
+# advances pos.
 macro dd_handle_raw
 	int dn_offset = 1
 	if is_fn
 		dn_offset = 2
 	int dn_pos = pos + dn_offset
 	string decl_name = ""
+	Token dn_tok = tokens at pos
 	if dn_pos < token_count
-		Token dn_tok = tokens at dn_pos
+		dn_tok = tokens at dn_pos
 		(value) in dn_tok
 		decl_name = value
+	string raw_display_name = decl_name
 	string raw_pfx = "_raw_"
 	strList raw_key_parts = [raw_pfx, decl_name]
 	decl_name = s_join(raw_key_parts)
 	bool already_seen = false
+	int dup_idx = 0
 	int cs_len = len(seen)
 	for cs_i in range(cs_len)
 		string cs_val = seen at cs_i
 		if cs_val is decl_name
 			already_seen = true
+			dup_idx = cs_i
 			break
-	if not already_seen
+	if already_seen
+		string origin_file = seen_files at dup_idx
+		decl_name = raw_display_name
+		macro_run dd_error_duplicate
+	else
 		seen at end = decl_name
+		(file) in dn_tok
+		seen_files at end = file
 	int fse_cur = pos
 	for if fse_cur < token_count
 		Token fse_tok = tokens at fse_cur
