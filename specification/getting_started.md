@@ -1,26 +1,41 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification](main.md) -->
+<!-- themes: dusk -->
+
 # Getting Started
 To get started with Deor you will need to install cargo/rust, then pull the latest version from the git repo.
 
-## Install Cargo (if you don't have it)
-It is worth [visiting this link](https://rust-lang.org/tools/install/) for the latest cargo instructions, below is the latest linux/macOS install for cargo (as of June 18th, 2026).  If you are on windows try one of the [standalone installers](https://forge.rust-lang.org/infra/other-installation-methods.html#standalone).
+**Prerequisites:** [Rust / Cargo](https://rustup.rs) must be installed first
 
-### Linux Cargo Install
-```
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+---
+
+# Install Deor
+
+
+
+### Unix Install — One Line:
+```sh
+curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/install.sh | sh
 ```
 
-## Pull Latest Deor From GitHub
-```
+**Unix — manual** (if you prefer to inspect before running):
+```sh
 git clone https://github.com/nathanphoffman/DeorLang
+cd DeorLang
+bash setup/install.sh
 ```
 
-For manual instructions:
+Both options install the `deor` binary and standard library to `~/.deor/` and patch your `.bashrc`/`.zshrc`. Restart your shell (or run `. ~/.deor/env`) when done.
 
-1. Pull down or open up ```https://github.com/nathanphoffman/DeorLang```
-2. Copy out the setup folder (the rest you don't need) into a new project folder of your choosing
-3. Run ```cargo build``` in this folder (using a command line)
-4. Run ```just run```
-5. You should see hello world, you are ready to begin!
+### Windows (PowerShell)
+```powershell
+git clone https://github.com/nathanphoffman/DeorLang
+cd DeorLang
+.\setup\install.ps1
+```
+Restart your terminal. The binary is added to your user PATH automatically.
+
+
 
 ## Important things to note
 - Most importantly **deor is in extreme early revision** do not build production apps with it.

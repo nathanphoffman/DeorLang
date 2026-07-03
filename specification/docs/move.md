@@ -1,3 +1,6 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
 # Move
 
 By default Deor clones every value — function arguments, loop elements, and assignments all get a fresh copy. This is safe and simple but has a performance cost. `move` opts out of cloning for a specific operation and transfers ownership instead, matching Rust's default behavior. The original variable is no longer accessible after a move — **for non-`Copy` types.** See [Move and `Copy` Types](#move-and-copy-types) below for the important exception.

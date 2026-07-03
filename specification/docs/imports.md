@@ -1,3 +1,6 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
 # Imports
 
 Imports use the `import` keyword followed by a path:

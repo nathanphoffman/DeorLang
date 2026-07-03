@@ -1,3 +1,6 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
 # Macros
 
 A macro is a named block of code that is inlined at every `macro_run` call site — equivalent to copy-pasting the macro body at that point in the source.

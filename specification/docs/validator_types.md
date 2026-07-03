@@ -1,3 +1,6 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
 # Validator Types
 
 Sometimes a value can be built just fine but still not make sense — a shape with a negative area, a dice roll outside its range. Deor's answer is the **validator type**: a type with its own built-in rule for what counts as valid. Write the rule once, and every place that type is used, the rule runs automatically — there's no way to hold one of these values without it having been checked.

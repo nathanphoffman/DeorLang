@@ -1,3 +1,6 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
 # Enums
 
 An `enum` declares a named set of variants. Each variant is a distinct value of that type. Enums are enforced as PascalCase names.

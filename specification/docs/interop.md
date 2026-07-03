@@ -1,3 +1,6 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
 # Rust Interop
 
 Deor transpiles to a single Rust file. When Deor cannot express something — a data structure, an algorithm, a crate call — you drop into a `rust` block. This is intentional and encouraged where appropriate.

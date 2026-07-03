@@ -1,4 +1,6 @@
-
+<!-- title: Deor Specification -->
+<!-- [Deor Specification](main.md) -->
+<!-- themes: dusk -->
 # Core Principles
 
 ---

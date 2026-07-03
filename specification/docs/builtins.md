@@ -1,3 +1,7 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
+
 # Built-in Functions
 These functions are wired directly into the transpiler — no import, no wrapper needed.
 

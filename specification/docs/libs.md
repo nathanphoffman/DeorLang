@@ -1,3 +1,6 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
 # Standard Library
 
 The `lib/` directory contains importable Deor files that ship with the transpiler. Each file is a normal `.deor` file — import it like any other file and its functions become available. No package manager, no crates required (except where noted).

@@ -1,3 +1,6 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: dusk -->
 # Shapes
 
 Deor has no generics — you can't just write "a list of Room" or "a function that takes a Room" inline wherever a type is expected. A `shape` is how you name that kind of type once so you can reuse it: `shape roomList = list of Room` gives "list of Room" a real name you can write in signatures and struct fields from then on. Shapes are the only way to use lists, function types, and named byte buffers in Deor — there is no anonymous inline syntax like `list of Room` outside of a shape declaration.

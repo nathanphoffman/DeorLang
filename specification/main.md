@@ -1,3 +1,7 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification](main.md) -->
+<!-- themes: dusk -->
+
 # Deor Language Specification
 
 Deor is a small, highly-procedural, tabbed-block language that transpiles to Rust. It enforces near-book readability, explicit typing, and predictable control flow — and exposes a `rust` block for when you need the full language.
