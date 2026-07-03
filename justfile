@@ -41,6 +41,10 @@ run-splash:
 
 sync-setup:
     cp output/out.rs setup/out.rs
+    rm -rf setup/deor_specification
+    mkdir -p setup/deor_specification
+    cp -r specification/. setup/deor_specification/
+    rm -rf setup/deor_specification/node_modules setup/deor_specification/railway.json
 
 test-examples:
     DEOR_LIB=lib ./output/out tests/unit_tester.deor output/test_runner.rs

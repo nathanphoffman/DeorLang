@@ -6,10 +6,6 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 ---
 ## Working On 
 
-Docs are likely incorrect for this:
-  2. I hit one real transpiler quirk: list-shape (stringList) params compile to owned Vec<String> here, not the &Vec<T> the docs describe — needed an explicit
-  &lines in xs_run. Noting it since it's the same category of "docs vs. actual compiler" mismatch as the string-concat bug earlier.
-
 Finalize syntax highlighting and port over latest new web build
 ---
 ## Audit Documentation

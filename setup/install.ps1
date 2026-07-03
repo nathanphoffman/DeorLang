@@ -53,6 +53,7 @@ Copy-Item "$ScriptDir\justfile"     "$ProjectDir\justfile"
 (Get-Content "$ScriptDir\Cargo.toml") -replace '{{PROJECT_NAME}}', $ProjectName |
     Set-Content "$ProjectDir\Cargo.toml"
 Copy-Item -Recurse -Force "$RepoRoot\lib\*" "$ProjectDir\lib\"
+Copy-Item -Recurse -Force "$ScriptDir\deor_specification\*" "$ProjectDir\deor_specification\"
 
 $userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
 if ($userPath -notlike "*$BinDir*") {

@@ -8,6 +8,9 @@ build:
     DEOR_LIB=lib deor main.deor build/main.rs
     cargo build
 
+run-spec:
+    cd deor_specification && bun server.js
+
 update-deor-with-latest:
     curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/update.sh | sh
 

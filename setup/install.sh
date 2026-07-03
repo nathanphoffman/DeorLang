@@ -13,6 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SCRIPT_DIR=""
 if [ -f "$SCRIPT_DIR/out.rs" ] && [ -d "$SCRIPT_DIR/../lib" ]; then
     OUT_RS="$SCRIPT_DIR/out.rs"
     LIB_SRC="$SCRIPT_DIR/../lib"
+    SPEC_SRC="$SCRIPT_DIR/deor_specification"
     HELLO_SRC="$SCRIPT_DIR/main.deor"
     GITIGNORE_SRC="$SCRIPT_DIR/.gitignore"
     CARGO_SRC="$SCRIPT_DIR/Cargo.toml"
@@ -25,6 +26,7 @@ else
         | tar xz -C "$TMP"
     OUT_RS="$TMP/DeorLang-$BRANCH/setup/out.rs"
     LIB_SRC="$TMP/DeorLang-$BRANCH/lib"
+    SPEC_SRC="$TMP/DeorLang-$BRANCH/setup/deor_specification"
     HELLO_SRC="$TMP/DeorLang-$BRANCH/setup/main.deor"
     GITIGNORE_SRC="$TMP/DeorLang-$BRANCH/setup/.gitignore"
     CARGO_SRC="$TMP/DeorLang-$BRANCH/setup/Cargo.toml"
@@ -80,6 +82,7 @@ cp "$GITIGNORE_SRC" "$PROJECT_DIR/.gitignore"
 cp "$JUSTFILE_SRC" "$PROJECT_DIR/justfile"
 sed "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" "$CARGO_SRC" > "$PROJECT_DIR/Cargo.toml"
 cp -r "$LIB_SRC/." "$PROJECT_DIR/lib/"
+cp -r "$SPEC_SRC/." "$PROJECT_DIR/deor_specification/"
 
 cat > "$ENV_FILE" << EOF
 export PATH="$BIN_DIR:\$PATH"

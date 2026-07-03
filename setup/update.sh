@@ -12,6 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SCRIPT_DIR=""
 if [ -f "$SCRIPT_DIR/out.rs" ] && [ -d "$SCRIPT_DIR/../lib" ]; then
     OUT_RS="$SCRIPT_DIR/out.rs"
     LIB_SRC="$SCRIPT_DIR/../lib"
+    SPEC_SRC="$SCRIPT_DIR/deor_specification"
 else
     echo "  Downloading latest from GitHub..."
     TMP="$(mktemp -d)"
@@ -20,6 +21,7 @@ else
         | tar xz -C "$TMP"
     OUT_RS="$TMP/DeorLang-$BRANCH/setup/out.rs"
     LIB_SRC="$TMP/DeorLang-$BRANCH/lib"
+    SPEC_SRC="$TMP/DeorLang-$BRANCH/setup/deor_specification"
 fi
 
 echo "Updating Deor..."
@@ -51,9 +53,15 @@ if [ -n "$PROJECT_DIR" ]; then
     mkdir -p "$PROJECT_DIR/lib"
     cp -r "$LIB_SRC/." "$PROJECT_DIR/lib/"
     echo "  Libs updated."
+
+    echo "  Updating spec docs in $PROJECT_DIR/deor_specification/ ..."
+    rm -rf "$PROJECT_DIR/deor_specification"
+    mkdir -p "$PROJECT_DIR/deor_specification"
+    cp -r "$SPEC_SRC/." "$PROJECT_DIR/deor_specification/"
+    echo "  Spec docs updated."
 else
     echo ""
-    echo "  No project directory detected. To also update a project's lib files:"
+    echo "  No project directory detected. To also update a project's lib files and spec docs:"
     echo "    cd /path/to/your/project && curl -sSf https://raw.githubusercontent.com/$REPO/main/setup/update.sh | sh"
     echo "  or: curl -sSf https://raw.githubusercontent.com/$REPO/main/setup/update.sh | sh -s -- /path/to/your/project"
 fi
