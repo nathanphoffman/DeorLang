@@ -68,12 +68,14 @@ fn void validate_tokens(TokensRef tokens)
 	strList non_bool_var_names = empty
 	strList string_var_names = empty
 	strList numeric_var_names = empty
+	strList declared_var_names = empty
 	pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
 		(kind) in pre_tok
 		macro_run prescan_collect_shapes
 		macro_run prescan_collect_const_names
+		macro_run prescan_collect_declared_vars
 		macro_run prescan_check_duplicate_decls
 		macro_run prescan_check_struct_fields
 		macro_run prescan_check_enum_variants
@@ -212,6 +214,7 @@ fn void validate_tokens(TokensRef tokens)
 			macro_run check_validator_reassign
 			macro_run check_var_decl
 			macro_run check_bad_stmt
+			macro_run check_undeclared_reassign
 			macro_run check_bracket_indexing
 			macro_run check_struct_construction
 			macro_run check_range_placement

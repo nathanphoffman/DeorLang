@@ -35,6 +35,7 @@ macro define_errors
 	string rule_invalid_char = "character is not valid in Deor — use Deor operators and keywords; raw Rust syntax belongs inside a 'rust' block"
 	string rule_validator_empty = "empty is not valid for validator types — declare without a value to start as not valid: 'Roll best'"
 	string rule_bad_stmt = "literal cannot follow 'name ident' — capture in a named variable first"
+	string rule_undeclared_reassign = "'name = expr' only works for reassigning an existing variable — this name was never declared. Prefix it with a type to declare it (e.g. 'string hello = expr'), or use 'as' instead of '=' if it's a fresh binding and moving/copying ownership is fine (e.g. 'hello as expr')"
 	string rule_typed_as = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move"
 	string rule_as_move = "`as` already transfers ownership — use `a as b` instead of `a as move b`"
 	string rule_bracket_index = "bracket indexing is not valid in Deor — use 'name at index' instead"

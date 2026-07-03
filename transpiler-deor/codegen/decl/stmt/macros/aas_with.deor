@@ -38,6 +38,7 @@ macro aas_with
 			string aas_weq = " = "
 			string aas_wob = " { "
 			string aas_wsp = ", .."
+			string aas_wclone = ".clone()"
 			string aas_wcb = " };\n"
-			string aas_with_code = s_join([pad, aas_wlet, mut_kw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wcb])
+			string aas_with_code = s_join([pad, aas_wlet, mut_kw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wclone, aas_wcb])
 			return make_nl_result(move aas_with_code, aas_wend, tokens)

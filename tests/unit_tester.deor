@@ -277,17 +277,19 @@ fn void main()
 		string source = f_read(path)
 		ParsedSpec spec = parse_spec(source)
 		(mode) in spec
+		int display_num = idx + 1
+		string progress = s_join([c_int_to_string(display_num), "/", c_int_to_string(total)])
 		if mode is "skip"
 			skipped = skipped + 1
-			print(s_join(["[skip] ", path]))
+			print(s_join(["[skip ", progress, "] ", path]))
 		else
 			bool result_ok = run_one(path, spec)
 			if result_ok
 				passed = passed + 1
-				print(s_join(["[pass] ", path]))
+				print(s_join(["[pass ", progress, "] ", path]))
 			else
 				failed = failed + 1
-				print(s_join(["[fail] ", path]))
+				print(s_join(["[fail ", progress, "] ", path]))
 
 	print(s_join(["passed: ", c_int_to_string(passed), "  failed: ", c_int_to_string(failed), "  skipped: ", c_int_to_string(skipped)]))
 	if failed > 0

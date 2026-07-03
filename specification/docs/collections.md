@@ -161,6 +161,6 @@ Rust:
 ```rust
 let old_room: Room = rooms[idx as usize].clone();
 let new_area: Option<Squarefeet> = Squarefeet::new(25);
-let new_room: Room = Room { area: new_area, ..old_room };
+let new_room: Room = Room { area: new_area, ..old_room.clone() };
 rooms[idx as usize] = new_room;
 ```

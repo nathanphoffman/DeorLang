@@ -38,6 +38,7 @@ macro tb_with
 			string tb_weq = " = "
 			string tb_wob = " { "
 			string tb_wsp = ", .."
+			string tb_wclone = ".clone()"
 			string tb_wcb = " };\n"
-			string tb_with_code = s_join([pad, tb_wlet, mut_kw, var_name, tb_weq, rust_type, tb_wob, tb_wfields, tb_wsp, tb_src, tb_wcb])
+			string tb_with_code = s_join([pad, tb_wlet, mut_kw, var_name, tb_weq, rust_type, tb_wob, tb_wfields, tb_wsp, tb_src, tb_wclone, tb_wcb])
 			return make_nl_result(move tb_with_code, tb_wend, tokens)

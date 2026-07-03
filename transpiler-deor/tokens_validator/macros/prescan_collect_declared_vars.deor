@@ -1,0 +1,173 @@
+
+# Prescan pass: collects every name introduced by any binding form into
+# declared_var_names, so check_undeclared_reassign can tell a real reassignment
+# (`total = total + 1`, name declared earlier) from a typo'd or never-declared
+# bare `=` (`hello = "world"`, name never introduced anywhere).
+# Sources covered: typed decl / const / validator ('Type name = expr'),
+# as-binding ('name as expr'), raw decl ('raw name = expr'), fn params
+# ('fn Ret name(Type1 p1, Type2 p2)'), for-loop vars ('for item in list'),
+# and tuple destructuring ('(f1, f2) in source').
+macro prescan_collect_declared_vars
+	if kind is "IDENT"
+		# ex: Type {name} = expr — pre_i+1 grabs the variable name, +2 the equals sign
+		int dv_n1 = pre_i + 1
+		int dv_n2 = pre_i + 2
+		if dv_n2 < token_count
+			Token dv_t1 = tokens at dv_n1
+			Token dv_t2 = tokens at dv_n2
+			(kind, value) in dv_t1
+			string dv_k1 = kind
+			string dv_v1 = value
+			(kind) in dv_t2
+			if dv_k1 is "IDENT" and kind is "EQUALS"
+				declared_var_names at end = dv_v1
+		if dv_n1 < token_count
+			# ex: {name} as expr — dv_n1 grabs the 'as' keyword slot
+			Token dv_as_tok = tokens at dv_n1
+			(kind) in dv_as_tok
+			if kind is "KW_AS"
+				(value) in pre_tok
+				declared_var_names at end = value
+
+	if kind is "KW_RAW"
+		# ex: raw {name} = expr — pre_i+1 grabs the raw variable name, +2 the equals sign
+		int dv_rn = pre_i + 1
+		int dv_re = pre_i + 2
+		if dv_re < token_count
+			Token dv_rn_tok = tokens at dv_rn
+			Token dv_re_tok = tokens at dv_re
+			(kind, value) in dv_rn_tok
+			string dv_rk = kind
+			string dv_rv = value
+			(kind) in dv_re_tok
+			if dv_rk is "IDENT" and kind is "EQUALS"
+				declared_var_names at end = dv_rv
+
+	if kind is "KW_FOR"
+		# ex: for {item} in list — pre_i+1 grabs the loop variable, +2 the 'in' keyword
+		int dv_fv1 = pre_i + 1
+		int dv_fv2 = pre_i + 2
+		if dv_fv2 < token_count
+			Token dv_fv1_tok = tokens at dv_fv1
+			Token dv_fv2_tok = tokens at dv_fv2
+			(kind, value) in dv_fv1_tok
+			string dv_fk = kind
+			string dv_fv = value
+			(kind) in dv_fv2_tok
+			if dv_fk is "IDENT" and kind is "KW_IN"
+				declared_var_names at end = dv_fv
+
+	if kind is "KW_FN"
+		# ex: fn int add{(}left, right) — pre_i+3 grabs the opening paren
+		int dv_lp = pre_i + 3
+		if dv_lp < token_count
+			Token dv_lp_tok = tokens at dv_lp
+			(kind) in dv_lp_tok
+			if kind is "LPAREN"
+				int dv_ps = dv_lp + 1
+				for if dv_ps < token_count
+					Token dv_ps_tok = tokens at dv_ps
+					(kind, value) in dv_ps_tok
+					if kind is "RPAREN"
+						break
+					if kind is "COMMA"
+						dv_ps = dv_ps + 1
+						continue
+					if kind is "IDENT"
+						# ex: {Type} name — dv_ps+1 grabs the param name after its type
+						int dv_pn = dv_ps + 1
+						if dv_pn < token_count
+							Token dv_pn_tok = tokens at dv_pn
+							(kind, value) in dv_pn_tok
+							if kind is "IDENT"
+								declared_var_names at end = value
+								dv_ps = dv_pn
+					dv_ps = dv_ps + 1
+
+	if kind is "KW_ENUM"
+		# ex: enum {string} Color — pre_i+1 grabs the type keyword slot of a typed enum
+		int dv_ep = pre_i + 1
+		if dv_ep < token_count
+			Token dv_ep_tok = tokens at dv_ep
+			(kind, value) in dv_ep_tok
+			bool dv_e_typed = false
+			if kind is "IDENT"
+				if value is "string"
+					dv_e_typed = true
+				else if value is "int"
+					dv_e_typed = true
+				else if value is "float"
+					dv_e_typed = true
+				else if value is "bool"
+					dv_e_typed = true
+			if dv_e_typed
+				# find the INDENT that opens this enum's variant block
+				int dv_iscan = dv_ep + 2
+				for if dv_iscan < token_count
+					Token dv_itok = tokens at dv_iscan
+					(kind) in dv_itok
+					if kind is "INDENT"
+						break
+					dv_iscan = dv_iscan + 1
+				# ex: enum string Color\n{\t}Red = "Red" — dv_iscan+1 grabs the first variant name
+				int dv_body = dv_iscan + 1
+				int dv_edepth = 1
+				for if dv_body < token_count
+					Token dv_body_tok = tokens at dv_body
+					(kind, value) in dv_body_tok
+					if kind is "INDENT"
+						dv_edepth = dv_edepth + 1
+					else if kind is "DEDENT"
+						dv_edepth = dv_edepth - 1
+						if dv_edepth is 0
+							break
+					else if kind is "IDENT"
+						# ex: Red {=} "Red" — dv_body+1 grabs the equals sign after a variant name
+						int dv_bn = dv_body + 1
+						if dv_bn < token_count
+							Token dv_bn_tok = tokens at dv_bn
+							(kind) in dv_bn_tok
+							if kind is "EQUALS"
+								declared_var_names at end = value
+					dv_body = dv_body + 1
+
+	if kind is "LPAREN"
+		bool dv_is_call = false
+		if pre_i > 0
+			int dv_prev = pre_i - 1
+			Token dv_prev_tok = tokens at dv_prev
+			(kind) in dv_prev_tok
+			dv_is_call = kind is "IDENT"
+		if not dv_is_call
+			int dv_scan = pre_i + 1
+			int dv_depth = 1
+			for if dv_scan < token_count
+				Token dv_dtok = tokens at dv_scan
+				(kind) in dv_dtok
+				if kind is "LPAREN"
+					dv_depth = dv_depth + 1
+				else if kind is "RPAREN"
+					dv_depth = dv_depth - 1
+					if dv_depth is 0
+						break
+				dv_scan = dv_scan + 1
+			# ex: (f1, f2){)} in source — dv_scan+1 checks the token after the matched close paren for KW_IN
+			int dv_after = dv_scan + 1
+			bool dv_is_destructure = false
+			if dv_after < token_count
+				Token dv_after_tok = tokens at dv_after
+				(kind) in dv_after_tok
+				dv_is_destructure = kind is "KW_IN"
+			if dv_is_destructure
+				int dv_name_pos = pre_i + 1
+				bool dv_at_name_slot = true
+				for if dv_name_pos < dv_scan
+					Token dv_name_tok = tokens at dv_name_pos
+					(kind, value) in dv_name_tok
+					if kind is "COMMA"
+						dv_at_name_slot = true
+					else if dv_at_name_slot
+						if kind is "IDENT"
+							declared_var_names at end = value
+						dv_at_name_slot = false
+					dv_name_pos = dv_name_pos + 1

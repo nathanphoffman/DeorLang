@@ -1,0 +1,50 @@
+# undeclared_reassign_test.deor
+# Exercises check_undeclared_reassign: a bare `name = expr` where `name` was
+# never introduced by any binding form should error with a friendly message
+# instead of reaching codegen as an invalid Rust `name = expr;` with no `let`.
+# Also confirms every legitimate binding form (typed decl + reassign, shape
+# decl, raw decl, for-loop var, tuple destructure, fn param) is recognized as
+# already-declared and does NOT trigger a false positive.
+
+shape intList = list of int
+
+struct Pair
+	int fa
+	int fb
+
+fn int add_one(int left)
+	left = left + 1
+	return left
+
+fn void test_typed_reassign()
+	string greeting = "hi"
+	greeting = "hello"
+	print(greeting)
+
+fn void test_raw_reassign()
+	raw handle = add_one(1)
+	print("done")
+
+fn void test_for_loop_reassign()
+	for item in range(3)
+		item = item + 1
+
+fn void test_destructure_reassign()
+	Pair pair = (1, 2)
+	(fa, fb) in pair
+	fa = fa + 1
+	print(fa)
+
+fn void test_undeclared_reassign()
+	hello = "world"
+	print(hello)
+
+fn void main()
+	print(add_one(1))
+	test_typed_reassign()
+	test_raw_reassign()
+	test_for_loop_reassign()
+	test_destructure_reassign()
+
+# expect-error:
+# line 39: variable 'hello' - 'name = expr' only works for reassigning an existing variable
