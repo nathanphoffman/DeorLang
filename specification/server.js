@@ -4,7 +4,7 @@ import { extname, join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const dir = dirname(fileURLToPath(import.meta.url));
-const PORT = 8070;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 8070;
 
 const MIME = {
   '.html': 'text/html',

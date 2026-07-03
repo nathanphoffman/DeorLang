@@ -1,7 +1,8 @@
-console.log("Server running at http://localhost:3000");
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+console.log(`Server running at http://localhost:${port}`);
 
 Bun.serve({
-    port: 3000,
+    port,
     async fetch(req) {
         const url = new URL(req.url);
         const filePath = url.pathname === "/" ? "/index.html" : url.pathname;
