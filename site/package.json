@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": "20"
+  },
   "dependencies": {},
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.1",
