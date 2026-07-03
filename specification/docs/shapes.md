@@ -58,7 +58,7 @@ struct House
 ```
 
 ```rust
-fn occupied_rooms(rooms: &Vec<Room>) -> Vec<Room> { ... }
+fn occupied_rooms(rooms: Vec<Room>) -> Vec<Room> { ... }
 
 struct House {
     address: String,
@@ -116,7 +116,7 @@ filter(rooms, by_name)    # by_name satisfies filterFunc — passed as a regular
 ```
 
 ```rust
-fn filter(items: &Vec<Room>, predicate: fn(Room) -> bool) -> Vec<Room> {
+fn filter(items: Vec<Room>, predicate: fn(Room) -> bool) -> Vec<Room> {
     let mut result: Vec<Room> = Vec::new();
     for item in items {
         if predicate(item.clone()) {

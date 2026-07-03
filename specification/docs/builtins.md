@@ -88,8 +88,8 @@ fn void print_names(roomList rooms)
 
 Rust:
 ```rust
-fn print_names(rooms: &Vec<Room>) {
-    for room in rooms {
+fn print_names(rooms: Vec<Room>) {
+    for room in &rooms {
         let name = room.name.clone();
         println!("{}", name);
     }
