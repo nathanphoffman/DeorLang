@@ -4,7 +4,7 @@
 # Variables
 
 ## `as` — Type-Inferred Bindings
-`as` creates a binding whose type is derived from the right-hand side at compile time. It has three valid forms:
+`as` creates a binding whose type is derived from the right-hand side at compile time. It has four valid forms:
 
 ### Scalar literals
 The type is inferred from the literal value.
@@ -57,13 +57,28 @@ let score = Score { label: label.clone(), points: points.clone() };
 
 See [Struct Construction](#struct-construction) below for full details and the equivalent explicit-type form.
 
+### Existing variable
+
+A bare identifier on the right binds directly to an existing variable — this is the one `as` form that does **not** clone. It transfers ownership instead, the same as `move` (see [Move](docs/move.md)).
+
+```deor
+saved_lines as lines
+# lines is not accessible here and below
+```
+
+```rust
+let saved_lines = lines;
+```
+
+For `Copy` types (`int`, `float`, `bool`) there's nothing to transfer, so the source stays usable. For everything else — `string`, list shapes, structs — the source variable is consumed; using it afterward is a compile error. If you want a real copy instead, use an explicit typed declaration, which always clones: `stringList saved_lines = lines`.
+
 ---
 
 **What `as` is not for:**
 
 - **Validator type bindings** — `as` can't tell whether you want a plain `int` or a `Squarefeet` validator (predicate run, `Option<T>` result); use explicit `ValidatorType name = value` instead — see [Validator Type Bindings](#validator-type-bindings) below.
 - **Type annotation** — `as` never takes an explicit type prefix.
-- **Move transfer** — `as` already produces an owned binding, so combining it with `move` is redundant and rejected.
+- **Move transfer** — for the existing-variable form, `as` already transfers ownership on its own (see [Existing variable](#existing-variable) above), so combining it with `move` is redundant and rejected.
 
 ```deor
 area as 9             # transpiler error — int or Squarefeet? use Squarefeet area = 9

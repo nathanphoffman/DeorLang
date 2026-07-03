@@ -56,6 +56,27 @@ name as "Alice"
 
 Use this deliberately to "update" a name after processing, or avoid it by choosing distinct names.
 
+**Shadowing is scoped to the block it happens in.** Destructuring inside an `if`, loop, or other nested block only shadows for the rest of that block — it does not change the outer variable. Once the block ends, the outer name is back to its original value.
+
+```deor
+name as "Alice"
+if some_condition
+    (name) in employee    # shadows name, but only inside this if-block
+    print(name)            # employee.name
+print(name)                 # "Alice" — unaffected by the block above
+```
+
+```rust
+let name = "Alice".to_string();
+if some_condition {
+    let name = employee.name.clone();  // scoped to this block
+    println!("{}", name);
+}
+println!("{}", name);  // "Alice"
+```
+
+This is normal Rust `let` scoping, not special Deor behavior — a destructure never reaches out to reassign a variable declared in an outer scope.
+
 ---
 
 ## Move Destructuring
