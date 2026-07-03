@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": "20"
+  },
   "name": "newweb",
   "version": "0.1.0",
   "description": "A markdown-first web framework powered by WASM",
