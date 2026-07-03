@@ -2148,9 +2148,19 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
 
     	// collect macro definition
     	if kind == "KW_MACRO" {
-    		let name = if let Some(t) = queue.pop_front() { t.value } else { String::new() };
-    		// skip NEWLINE then INDENT
+    		let name_tok = queue.pop_front();
+    		let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
+    		// skip NEWLINE
     		while queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
+    		// a macro definition must have an indented body — without one, the body-collection
+    		// loop below has no INDENT to balance against and runs away consuming the rest of
+    		// the file as its "body" until it happens to hit an unrelated DEDENT
+    		let has_body = queue.front().map(|t| t.kind == "INDENT").unwrap_or(false);
+    		if !has_body {
+    			let err_tok = name_tok.clone().unwrap_or(cur.clone());
+    			handle_errors(vec![val_err(err_tok, "macro".to_string(), "must have an indented body — an empty 'macro <name>' with no block is not valid".to_string())]);
+    		}
+    		// skip INDENT
     		while queue.front().map(|t| t.kind == "INDENT").unwrap_or(false) { queue.pop_front(); }
     		// collect body tokens, excluding the outer INDENT/DEDENT pair
     		let mut body: Vec<Token> = vec![];

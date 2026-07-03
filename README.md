@@ -66,9 +66,9 @@ Or restart your terminal.
 
 ## Update
 
-Pull the latest transpiler and standard library into an existing project:
+Pull the latest transpiler, standard library, and spec docs into an existing project:
 
-Run this from inside your project directory and it will recompile `~/.deor/bin/deor` and refresh the `lib/` files in place:
+Run this from inside your project directory and it will recompile `~/.deor/bin/deor` and refresh the `lib/` and `deor_specification/` files in place:
 
 ```sh
 curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/update.sh | sh
@@ -79,6 +79,17 @@ To target a specific project path instead:
 
 ```sh
 curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/update.sh | sh -s -- /path/to/your/project
+```
+
+**Windows (PowerShell)** — run from a clone of the DeorLang repo:
+```powershell
+cd DeorLang
+.\setup\update.ps1
+```
+
+To target a specific project path instead:
+```powershell
+.\setup\update.ps1 C:\path\to\your\project
 ```
 
 ---

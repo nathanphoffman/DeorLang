@@ -1,0 +1,14 @@
+# macro_empty_body_test.deor
+# Exercises expand_deor_macros' check that a `macro` declaration must have an
+# indented body. Without this check, an empty 'macro name' with no block left
+# the body-collection loop with no INDENT to balance against, so it ran away
+# consuming the rest of the file as its "body" — main() would silently vanish
+# into a never-called macro instead of erroring.
+
+macro empty_macro
+
+fn void main()
+	print("hi")
+
+# expect-error:
+# macro 'empty_macro' - must have an indented body
