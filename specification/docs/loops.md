@@ -4,7 +4,7 @@
 # Loops
 
 ## Collection Iteration
-```
+```deor
 for room in rooms
     (name) in room
     (occupied) in room
@@ -16,7 +16,7 @@ for room in rooms
 ## Move Iteration
 Plain `for item in collection` borrows the collection (`for item in &collection`) — `item` is a reference. `for move (item in collection)` consumes the collection instead — `item` is owned, and `collection` cannot be used after the loop.
 
-```
+```deor
 for move (item in collection)
     process(item)
 ```
@@ -33,7 +33,7 @@ Use this when the loop body needs to actually own each item (e.g. pass it into s
 ## Numeric Iteration
 `range(count)` produces values from `0` to `count - 1`. `range(a_start_num, an_end_num)` produces values from `a_start_num` up to but not including `an_end_num`. `range` is a built-in, so literals are valid directly.
 
-```
+```deor
 for idx in range(count)
     ...
 
@@ -60,7 +60,7 @@ for idx in 1..11 {
 ## Bare Tuple Range
 `(start, end)` is an alternative to `range(start, end)` when both bounds are already named variables in scope. Produces identical Rust output — use whichever reads more clearly.
 
-```
+```deor
 for idx in (low, high)
     print(idx)
 ```
@@ -73,7 +73,7 @@ for idx in low..high {
 
 The index-free form works too:
 
-```
+```deor
 for in (low, high)
     do_something()
 ```
@@ -88,7 +88,7 @@ for _ in low..high {
 ## Repeat Without an Index
 When the loop index is not needed, write `for in range(n)` — the variable name is omitted but `in` stays:
 
-```
+```deor
 for in range(10)
     do_something()
 
@@ -112,7 +112,7 @@ for _ in 1..11 {
 `break` exits the innermost loop immediately. Execution continues after the loop body.
 
 Deor:
-```
+```deor
 found as false
 for room in rooms
     (occupied) in room
@@ -138,7 +138,7 @@ for room in &rooms {
 ## Condition-Based Loops — `for if`
 `for if condition` is Deor's while loop. It loops as long as the condition is true.
 
-```
+```deor
 for if cur < token_count
     # process token at cur
     cur = cur + 1
@@ -153,7 +153,7 @@ while cur < token_count {
 
 `for if true` is the infinite loop form — use with `break` to exit:
 
-```
+```deor
 for if true
     if done
         break
@@ -169,7 +169,7 @@ loop {
 
 `for if true` specifically (the literal condition `true`, not an expression that merely evaluates true) generates a bare `loop { ... }` rather than `while true { ... }`. This matters for functions that return a value: Rust gives `loop` the special "never returns normally" type when it has no reachable `break`, which lets the compiler accept a function whose only return path is inside the loop. `while true { ... }`, even though it runs identically, doesn't get that treatment from Rust — a function ending in `while true { ... }` with no value-producing code after it fails to compile with "expected T, found ()", regardless of whether every branch inside actually returns. Any other condition (`for if cur < token_count`, `for if not done`, etc.) always generates `while`, unaffected by this.
 
-```
+```deor
 fn int ask_until_valid()
     for if true
         int val = read_input()
@@ -195,7 +195,7 @@ fn ask_until_valid() -> i64 {
 
 `continue` skips the rest of the current loop body and moves to the next iteration.
 
-```
+```deor
 for item in items
     (active) in item
     if not active

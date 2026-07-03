@@ -14,7 +14,7 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 ## Minimum Name Length — 3 Characters
 All identifiers must be at least 3 characters long. This applies to every named thing in Deor source: variables, function parameters, function names, struct names, validator type names, struct field names, and list names.
 
-```
+```deor
 int val = 5      # correct
 int vl = 5       # transpiler error — 2 characters
 int v = 5        # transpiler error — 1 character
@@ -39,13 +39,13 @@ Imports are required to be at the top of a file, however there are no other rest
 The predicate body is mandatory — see [Validator Types — Declaration](docs/validator_types.md#declaration) for why.
 
 **Correct:**
-```
+```deor
 type Positive(int val)
     val > 0
 ```
 
 **Incorrect — transpiler errors:**
-```
+```deor
 type Positive(int val)
 ```
 
@@ -54,14 +54,14 @@ type Positive(int val)
 
 List shape variables can be initialized with either `empty` or a list literal:
 
-```
+```deor
 roomList rooms = empty              # starts empty
 roomList rooms = [kitchen, office]  # starts with items
 ```
 
 `empty` is not valid for validator types — declare a validator type variable without a value to start it as not valid:
 
-```
+```deor
 Roll best                 # correct — starts not valid
 Roll best = empty         # transpiler error — empty not valid for validator types
 ```
@@ -71,7 +71,7 @@ Roll best = empty         # transpiler error — empty not valid for validator t
 
 `const` variables cannot be reassigned. Attempting to assign a new value to a `const` variable after its declaration is a transpiler error.
 
-```
+```deor
 const string PIPE = "|"
 PIPE = "/"              # transpiler error — cannot reassign a const variable
 ```
@@ -83,7 +83,7 @@ Use a plain typed binding (`string pipe = "|"`) if you need a variable that may 
 
 `as` is the type-inferring binding form. Pairing it with an explicit type is always a transpiler error — when you have an explicit type, use `=` instead.
 
-```
+```deor
 count as 0          # correct — int inferred
 int count as 0      # transpiler error — annotation not allowed with as
 int count = 0       # correct
@@ -96,7 +96,7 @@ By default, declaring two top-level items with the same name is **not** an error
 
 If you want stricter checking, opt in with a pragma as the very first statement(s) of `fn void main()`:
 
-```
+```deor
 fn void main()
     ENFORCE_UNIQUE_FILE_DECLARATIONS
     ENFORCE_UNIQUE_IMPORT_DECLARATIONS
@@ -121,7 +121,7 @@ The two checks are kept independent rather than folded into one "strict mode" be
 
 Because they're separate statements rather than one combined flag, the choice a project made is visible directly at the top of `main()`, not inferred from a build setting elsewhere.
 
-```
+```deor
 struct Room
     string name
 
@@ -142,7 +142,7 @@ Variable shadowing within function bodies is unrelated to either pragma and is a
 
 Variable shadowing is allowed. A new declaration with the same name in the same block or an inner block replaces the binding from that point forward.
 
-```
+```deor
 int val = 5
 int val = 10    # allowed — val is now 10
 print(val)      # 10
@@ -150,7 +150,7 @@ print(val)      # 10
 
 Inner block shadowing is also allowed and does not affect the outer binding:
 
-```
+```deor
 int val = 5
 if condition
     int val = 10    # shadows outer val within this block only
@@ -160,7 +160,7 @@ print(val)          # 5
 
 **Exception:** built-in function names (`print`, `crash`, `len`, `range`, `args`, `input`) can never be shadowed, even though they aren't reserved keywords — see [Syntax — Built-in Function Names](docs/syntax.md#built-in-function-names).
 
-```
+```deor
 int print = 5    # transpiler error — print is a built-in, not shadowable
 ```
 
@@ -169,11 +169,11 @@ int print = 5    # transpiler error — print is a built-in, not shadowable
 
 Functions may accept at most 3 parameters. If more context is needed, bundle values into a struct first. This is enforced by the transpiler.
 
-```
+```deor
 fn roomList filter(roomList items, string query, filterFunc predicate)    # correct — 3 params
 ```
 
-```
+```deor
 fn roomList filter(roomList items, string query, int limit, filterFunc predicate)    # transpiler error — 4 params
 ```
 
@@ -185,12 +185,12 @@ fn roomList filter(roomList items, string query, int limit, filterFunc predicate
 Struct fields must be data types — primitives, validator types, other structs, or list shapes. A `func` shape field would make the struct a closure in disguise, which Deor does not allow.
 
 **Correct:**
-```
+```deor
 fn roomList apply(roomList items, filterFunc predicate)    # func as parameter — fine
 ```
 
 **Incorrect — transpiler error:**
-```
+```deor
 struct Config
     roomList items
     filterFunc predicate    # func shape as struct field — not allowed
@@ -212,7 +212,7 @@ Order does not matter for struct construction or struct return — fields are ma
 There are no anonymous tuple types in Deor. `return (quotient, remainder)` constructs the function's declared return struct — both `quotient` and `remainder` must be variables in scope that match field names on that struct. See [Functions — Multiple return values](docs/functions.md#multiple-return-values) for the full pattern.
 
 **Correct:**
-```
+```deor
 struct Room
     Squarefeet area
     string name
@@ -224,7 +224,7 @@ Room room = (name, area)      # also correct — order doesn't matter for struct
 ```
 
 **Incorrect — transpiler error:**
-```
+```deor
 Room room = ("Office", area)  # literal not allowed — name must be a variable
 ```
 
@@ -237,7 +237,7 @@ When a user-defined function is called with **2 or 3 arguments**, every argument
 When called with **exactly 1 argument**, the argument does not need to be a named variable — a literal or expression is allowed.
 
 **Correct:**
-```
+```deor
 fn int add(int left, int right)
     return left + right
 
@@ -246,7 +246,7 @@ amt as 3
 int result = add(num, amt)    # 2 args — both must be named
 ```
 
-```
+```deor
 fn int double(int val)
     return val * 2
 
@@ -254,20 +254,20 @@ int result = double(5)        # 1 arg — literal allowed
 ```
 
 **Incorrect — transpiler errors:**
-```
+```deor
 int result = add(5, 3)               # 2 args — literals not allowed
 int result = add(num + 1, amt)       # 2 args — expression not allowed
 ```
 
 `move var` counts as a named argument — passing ownership of a variable still satisfies the rule:
 
-```
+```deor
 do_something(move big_list, other)    # valid — move var is a named argument
 ```
 
 **Built-in functions** accept a single literal or expression directly. For built-ins called with 2 or more arguments, the named-variable rule still applies:
 
-```
+```deor
 print("Hello, world!")    # 1 arg — literal fine
 int cnt = len(rooms)      # 1 arg — variable fine
 
@@ -282,7 +282,7 @@ for idx in range(start, stop)    # 2 args — named variables required
 Functions may only be declared at the top level of a file. Defining a `fn` inside another `fn` body is a transpiler error.
 
 **Correct:**
-```
+```deor
 fn bool is_valid(int val)
     return val > 0
 
@@ -293,7 +293,7 @@ fn string describe(int val)
 ```
 
 **Incorrect — transpiler errors:**
-```
+```deor
 fn string describe(int val)
     fn bool is_valid(int num)    # not allowed
         return num > 0
@@ -318,7 +318,7 @@ A `raw` variable holds a value whose real type Deor doesn't know or track — on
 Each of the above is a transpiler error. Passing a raw variable into an ordinary function call is fine — Rust's own compiler is what checks that value is used correctly there.
 
 **Correct:**
-```
+```deor
 fn LookupTable build_lookup_table()
     rust
         ...
@@ -329,7 +329,7 @@ fn void run()
 ```
 
 **Incorrect — transpiler errors:**
-```
+```deor
 string val = index              # raw cannot be given another type
 copy as index                   # as-rebinding is still a type capture
 index = build_lookup_table()    # raw cannot be reassigned

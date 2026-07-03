@@ -5,7 +5,7 @@
 
 String utility functions live in `lib/string.deor`. Import the whole file:
 
-```
+```deor
 import "lib/string.deor"
 ```
 
@@ -24,7 +24,7 @@ Standard escape sequences are supported inside string literals:
 | `\\` | Literal backslash |
 | `\"` | Literal double quote |
 
-```
+```deor
 msg as "Hello\nWorld"
 path as "C:\\Users\\name"
 quote as "She said \"hello\""
@@ -44,7 +44,7 @@ No other escape sequences are supported in v1. For Unicode escapes or raw byte s
 
 `+` joins strings. It works with literals, variables, or any combination:
 
-```
+```deor
 string greeting = "hello " + name
 string line = prefix + content + "\n"
 string full = first + " " + last
@@ -60,7 +60,7 @@ Chains of `+` are evaluated left to right and compiled to a native Rust `+`/`&` 
 
 The transpiler does not check that all operands in a `+` chain are strings — mixing in a non-string operand (e.g. an `int`) is not caught at the Deor level and will fail with a Rust type error instead. Use a `rust` block if you need to format an integer into a string:
 
-```
+```deor
 fn string int_to_str(int n)
     rust
         n.to_string()
@@ -72,7 +72,7 @@ string msg = "count: " + int_to_str(count)
 
 ## Examples
 
-```
+```deor
 import "lib/string.deor"
 
 string raw = "  Hello, World!  "
@@ -98,7 +98,7 @@ let sep: String = ",".to_string();
 let parts: Vec<String> = csv.split(sep.as_str()).map(|s| s.to_string()).collect();
 ```
 
-```
+```deor
 string path = "/api/users"
 string slash = "/"
 bool is_abs = s_starts_with(path, slash)

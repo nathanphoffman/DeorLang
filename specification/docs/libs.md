@@ -5,7 +5,7 @@
 
 The `lib/` directory contains importable Deor files that ship with the transpiler. Each file is a normal `.deor` file — import it like any other file and its functions become available. No package manager, no crates required (except where noted).
 
-```
+```deor
 import "lib/string.deor"
 import "lib/math.deor"
 ```
@@ -37,7 +37,7 @@ String utilities beyond the built-in `+` concatenation.
 | `s_join` | `stringList → string` | Join a list of strings with no separator |
 | `s_join_with` | `stringList, string → string` | Join a list of strings with a separator |
 
-```
+```deor
 import "lib/string.deor"
 
 string sentence = "  hello world  "
@@ -76,7 +76,7 @@ Integer and float math operations.
 | `m_log2` | `float → float` | Log base 2 |
 | `m_log10` | `float → float` | Log base 10 |
 
-```
+```deor
 import "lib/math.deor"
 
 int clamped = m_clamp(val, low, high)
@@ -95,7 +95,7 @@ Random number generation with no external crates. Seeded automatically from the 
 | `m_rand_float` | `→ float` | Random float in `[0.0, 1.0)` |
 | `m_rand_bool` | `→ bool` | Random boolean |
 
-```
+```deor
 import "lib/random.deor"
 
 int roll = m_rand_int(1, 6)
@@ -121,7 +121,7 @@ Type conversions between Deor primitives.
 
 The `string → int`/`float` conversions never crash — unparseable input silently becomes `0`/`0.0`, the same convention as C's `atoi`. This means a failed parse and a legitimate `"0"` are indistinguishable from the return value alone. That's fine for the overwhelming majority of cases (numeric input is rarely intentionally `0`), but if `0` is a meaningful, distinct input for your use case, check the raw string before converting (`if raw is "0"`) rather than relying on the converted value.
 
-```
+```deor
 import "lib/convert.deor"
 
 float precise = c_int_to_float(count)
@@ -134,7 +134,7 @@ string label = c_int_to_string(score)
 
 Deor has no generics, so a file like `lib/list.deor` can't just be written once for "any type T" the way a generic function could. Instead, `where Placeholder = Value` stands in for that: the transpiler textually substitutes the placeholder identifier throughout the imported file before merging it into the token stream, effectively stamping out a fresh, concrete copy of that file for whatever type you asked for. This is a general language feature — it works on any `.deor` file, not only standard library files.
 
-```
+```deor
 import "lib/list.deor" where T = int          # standard library file
 import "lib/list.deor" where T = Report
 import "workers/pipeline.deor" where Job = Report   # your own file
@@ -165,7 +165,7 @@ Anything that does not match one of these four patterns is left unchanged.
 
 Parameterized list operations for any element type. Import once per type you need. The placeholder can be any valid identifier — `T` is the standard library convention but `Item`, `Row`, or any other name works.
 
-```
+```deor
 import "lib/list.deor" where T = int
 import "lib/list.deor" where T = Report     # any type works
 import "lib/list.deor" where Item = Report  # any placeholder name works
@@ -205,7 +205,7 @@ Signatures use `tList` for the list type and `T` for the element — after subst
 | `l_T_push` | `tList, T → tList` | `intList, int → intList` |
 | `l_T_pop` | `tList → tList` | `intList → intList` |
 
-```
+```deor
 import "lib/list.deor" where T = int
 
 intList scores = [10, 20, 30]
@@ -229,7 +229,7 @@ Sorting and dedup for list types whose element supports ordering and hashing —
 | `l_T_sort` | `l_int_sort` | Sorted copy |
 | `l_T_unique` | `l_int_unique` | Copy with duplicates removed, preserving order |
 
-```
+```deor
 import "lib/list.deor" where T = int
 import "lib/list_order.deor" where T = int
 
@@ -250,7 +250,7 @@ Aggregate operations for numeric list types — intended for `int` and `float`. 
 | `l_T_min` | `l_int_min` | Minimum element |
 | `l_T_max` | `l_int_max` | Maximum element |
 
-```
+```deor
 import "lib/list.deor" where T = int
 import "lib/list_numeric.deor" where T = int
 
@@ -278,7 +278,7 @@ String-to-string hash map backed by `Arc<Mutex<HashMap>>`. The `StringMap` is a 
 | `h_keys` | `StringMap → stringList` | All keys |
 | `h_values` | `StringMap → stringList` | All values |
 
-```
+```deor
 import "lib/map.deor"
 
 StringMap config = h_make()
@@ -304,7 +304,7 @@ File system operations. All paths are strings. Functions that can fail return `b
 | `f_lines` | `string → stringList` | Read file as a list of lines |
 | `f_delete` | `string → bool` | Delete a file, returns success |
 
-```
+```deor
 import "lib/file.deor"
 
 bool ok = f_write("log.txt", "starting up\n")
@@ -327,7 +327,7 @@ Timestamps and elapsed time. `n_now` returns Unix seconds as `int` (valid until 
 | `n_elapsed` | `int → int` | Seconds elapsed since the given `n_now` snapshot |
 | `n_elapsed_ms` | `float → float` | Milliseconds elapsed since the given `n_now_ms` snapshot |
 
-```
+```deor
 import "lib/time.deor"
 
 float start = n_now_ms()
@@ -342,7 +342,7 @@ print(c_float_to_string(ms))
 
 Pool-bounded parallel map over a typed list. Imports `lib/taskpool.deor` automatically.
 
-```
+```deor
 import "lib/tasks.deor" where T = Score
 ```
 
@@ -367,7 +367,7 @@ The pool caps concurrency automatically — dispatching 10 000 items still only 
 
 ### Example
 
-```
+```deor
 import "lib/tasks.deor" where T = Score
 
 struct Score
@@ -409,7 +409,7 @@ fn void main()
 
 All Deor primitive types work as `T`:
 
-```
+```deor
 import "lib/tasks.deor" where T = float
 import "lib/tasks.deor" where T = int
 import "lib/tasks.deor" where T = string
@@ -421,7 +421,7 @@ Primitives map to their Rust equivalents in the generated code (`float` → `f64
 
 Each `where T = ...` import is independent:
 
-```
+```deor
 import "lib/tasks.deor" where T = Request
 import "lib/tasks.deor" where T = Report
 ```
@@ -462,7 +462,7 @@ For custom wrappers, use a two-letter prefix — category letter + first letter 
 
 ### I/O
 
-```
+```deor
 fn string read_line()
     rust
         let mut line = String::new();
@@ -474,7 +474,7 @@ fn string read_line()
 
 Wrap parse results in a validator type so the caller can check success:
 
-```
+```deor
 type ParsedInt(int val)
     true
 
@@ -487,7 +487,7 @@ fn ParsedInt parse_int(string src)
     return result
 ```
 
-```
+```deor
 ParsedInt parsed = parse_int(user_input)
 if parsed is valid
     int val = (avow parsed)
@@ -500,7 +500,7 @@ The same pattern works for `ParsedFloat` — swap `i64` for `f64`.
 
 For anything requiring an external crate, add it to `Cargo.toml` manually and wrap it the same way. The prefix is `c` + the crate's first letter:
 
-```
+```deor
 # rand.deor — wraps the rand crate, prefix cr_
 fn int cr_rand_int(int min, int max)
     rust

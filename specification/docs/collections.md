@@ -9,7 +9,7 @@ List operations assume a list shape has already been declared — see [Shapes](d
 To define an empty list use the `empty` keyword. `[]` is never valid for initializing an empty list — `[` and `]` are only used for list literals with items.
 
 Deor:
-```
+```deor
 stringList list_names = empty
 if list_names is empty
     print("list is empty")
@@ -34,7 +34,7 @@ if !list_names.is_empty() {
 Elements are read by index using `at`. Zero-indexed, matching Rust's behavior.
 
 Deor:
-```
+```deor
 intList scores = [10, 20, 30, 40]
 int first = scores at 0    # 10
 int last = scores at 3     # 40
@@ -50,7 +50,7 @@ let last: i64 = scores[3];
 Dynamic computed indices are fine:
 
 Deor:
-```
+```deor
 int idx = 2
 int mid = scores at idx    # 30
 ```
@@ -62,7 +62,7 @@ Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts
 Elements are replaced by index using `at` on the left side of an assignment. The right-hand side must be a named variable of the list's element type.
 
 Deor:
-```
+```deor
 rooms at idx = new_room
 scores at idx = updated_score
 ```
@@ -80,7 +80,7 @@ Out-of-bounds assignment is a runtime panic.
 `at end` appends a new element to the end of the list. `end` is a reserved keyword meaning "the position after the last element" — it is only valid in this position.
 
 Deor:
-```
+```deor
 result at end = item
 rooms at end = new_room
 ```
@@ -98,7 +98,7 @@ Any identifier pushed is always cloned, regardless of type — the transpiler do
 `remove at` removes the element at a given index, shifting subsequent elements left.
 
 Deor:
-```
+```deor
 result remove at 2
 ```
 
@@ -110,7 +110,7 @@ result.remove(2);
 For removing multiple elements, remove from highest index to lowest to avoid index-shifting errors:
 
 Deor:
-```
+```deor
 result remove at 5
 result remove at 2
 result remove at 1
@@ -128,7 +128,7 @@ result.remove(1);
 Deor has no built-in membership operator. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
 
 Deor:
-```
+```deor
 shape matchFunc = func of Room to bool
 
 fn bool any_match(roomList items, matchFunc predicate)
@@ -143,7 +143,7 @@ fn bool any_match(roomList items, matchFunc predicate)
 Struct values inside a list are replaced, not mutated in place — since Deor has no dot syntax, there's no way to reach into a list element's field directly. Extract the struct, build an updated copy with `with`, write it back.
 
 Deor:
-```
+```deor
 # 1. Read the existing struct
 Room old_room = rooms at idx
 

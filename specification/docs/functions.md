@@ -8,7 +8,7 @@
 Return type is written as a prefix before the function name. Parameters follow `Type name` order.
 
 Deor:
-```
+```deor
 fn int add(int left, int right)
     left + right
 ```
@@ -27,7 +27,7 @@ fn add(left: i64, right: i64) -> i64 {
 `void` is the explicit return type for functions that return nothing. It is mandatory — omitting the return type is a transpiler error.
 
 Deor:
-```
+```deor
 fn void greet(string name)
     print(name)
 ```
@@ -42,7 +42,7 @@ fn greet(name: String) {
 The entry point follows this same rule:
 
 Deor:
-```
+```deor
 fn void main()
     # program starts here
 ```
@@ -50,7 +50,7 @@ fn void main()
 Void functions fall through to the end — `return` is not valid inside a void function. For loop control, use `continue` to skip to the next iteration or `break` to exit the loop early:
 
 Deor:
-```
+```deor
 shape itemList = list of Item
 
 fn void process(itemList items, bool skip_invalid)
@@ -79,7 +79,7 @@ fn process(items: Vec<Item>, skip_invalid: bool) {
 There are no anonymous tuple return types. A function returning multiple values must declare a named struct for the return type. The struct is then constructed and destructured using the existing `as`/`in` syntax — no new keywords.
 
 Deor:
-```
+```deor
 struct DivResult
     int quotient
     int remainder
@@ -104,7 +104,7 @@ fn divmod(left: i64, right: i64) -> DivResult {
 Capturing the result uses standard struct destructuring:
 
 Deor:
-```
+```deor
 (quotient, remainder) in divmod(num, div)
 print(quotient)
 print(remainder)
@@ -127,7 +127,7 @@ A function body that is a **single expression** — one line, nothing else — i
 Any function body with **more than one statement** requires explicit `return` at every exit point.
 
 Deor:
-```
+```deor
 fn int square(int val)
     val * val    # single expression — return implicit
 ```
@@ -140,7 +140,7 @@ fn square(val: i64) -> i64 {
 ```
 
 Deor:
-```
+```deor
 fn int abs(int val)
     if val < 0       # multiple statements — return required everywhere
         return -val
@@ -166,7 +166,7 @@ fn abs(val: i64) -> i64 {
 A function returning a validator type returns a variable that may or may not be valid. To return a not-valid result, declare the variable without a value and return it unassigned, or assign a value that fails the predicate. `empty` and `none` are both transpiler errors in return position.
 
 Deor:
-```
+```deor
 shape rollList = list of Roll
 
 fn Roll find_best(rollList rolls)
@@ -182,7 +182,7 @@ fn Roll find_best(rollList rolls)
 When the result depends entirely on the predicate, just assign and return:
 
 Deor:
-```
+```deor
 fn Positive get_positive(int num)
     Positive result = num    # not valid if num fails the predicate
     return result
@@ -205,7 +205,7 @@ To pass behavior as a value, declare a `func` shape and accept it as a typed par
 Functions may call themselves. Recursion follows the same rules as any other function call — arguments must be named variables in scope, and the return type must match.
 
 Deor:
-```
+```deor
 fn int factorial(int val)
     if val <= 1
         return 1
@@ -235,7 +235,7 @@ No tail-call optimization is guaranteed — deep recursion can stack-overflow ju
 Functions accept at most **3 parameters**. If more context is needed, bundle values into a struct first. This is enforced by the transpiler.
 
 Deor:
-```
+```deor
 fn roomList filter(roomList items, string query, filterFunc predicate)
     # 3 params: list, data, behavior — the natural ceiling
 ```
@@ -244,7 +244,7 @@ Parameters follow `Type name` order. All types — including shape names — are
 
 A parameter's name cannot be identical to its type name — the transpiler rejects the exact same string appearing in both positions:
 
-```
+```deor
 fn void process(Room Room)    # transpiler error — name identical to type
 fn void process(Room item)    # correct
 ```
@@ -252,7 +252,7 @@ fn void process(Room item)    # correct
 In practice this is rarely an issue since type names are PascalCase and parameter names are snake_case, but the transpiler enforces it explicitly.
 
 Deor:
-```
+```deor
 shape roomList = list of Room
 shape filterFunc = func of Room to bool
 
@@ -269,7 +269,7 @@ fn roomList filter(roomList items, filterFunc predicate)
 The function named `main` is always the program entry point. It must be declared `fn void main()`.
 
 Deor:
-```
+```deor
 fn void main()
     # program starts here
 ```

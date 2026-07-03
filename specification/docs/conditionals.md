@@ -8,7 +8,7 @@
 Standard conditional blocks. No parentheses around the condition. All branches support multi-line bodies. `else if` is a flat two-word keyword pair — not a nested `if` inside an `else` block.
 
 Deor:
-```
+```deor
 if val > 10
     do_something()
     do_more()
@@ -47,7 +47,7 @@ Deor has no `match` keyword and no pattern matching syntax. This is intentional:
 Dispatching on enum variants uses `if`/`else if` chains with `is` comparisons — the same operator used for equality everywhere else in Deor:
 
 Deor:
-```
+```deor
 if color is Red
     print(msg_red)
 else if color is Green

@@ -33,7 +33,7 @@ Works with both binding forms — `as` (type inferred from the source struct) an
 The transpiler enforces the parens: `with` not immediately followed by `(` is a validation error, for both forms.
 
 Deor:
-```
+```deor
 Squarefeet area = 2
 new_room as room with (area)
 

@@ -8,7 +8,7 @@ Parentheses are always required, even for a single field.
 
 ## Single Field
 Deor:
-```
+```deor
 (area) in room
 ```
 Rust:
@@ -18,7 +18,7 @@ let area = room.area.clone();
 
 ## Multiple Fields
 Deor:
-```
+```deor
 (area, name) in room
 ```
 Rust:
@@ -34,7 +34,7 @@ Each extracted field becomes its own `let field = src.field.clone();` binding �
 ## Partial Extraction
 You can extract a subset of a struct's fields. Any combination is valid — the struct may have more fields than you extract.
 
-```
+```deor
 struct Room
     Squarefeet area
     string name
@@ -49,7 +49,7 @@ struct Room
 ## Shadowing
 If a name being extracted already exists in scope, the new binding silently shadows it. This is standard Rust `let` rebinding and is intentional in Deor.
 
-```
+```deor
 name as "Alice"
 (name) in employee    # name now refers to employee.name — "Alice" is gone
 ```
@@ -61,7 +61,7 @@ Use this deliberately to "update" a name after processing, or avoid it by choosi
 ## Move Destructuring
 `move (f1, f2) in source` extracts fields without cloning — each binding takes ownership of the field instead of copying it. `source` cannot be used afterward for any field that was moved out. See [Move](docs/move.md#destructuring) for details.
 
-```
+```deor
 move (label, points) in score
 ```
 ```rust

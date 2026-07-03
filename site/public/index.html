@@ -360,11 +360,17 @@
         Prism.highlightAll();
 
         let original;
+        let originalLines;
+        let isCommentLine;
+        let lineHeight;
         let showing = true;
 
         window.addEventListener('load', () => {
             const pre = document.querySelector('pre');
             original = document.querySelector('code').innerHTML;
+            originalLines = original.split('\n');
+            isCommentLine = originalLines.map(line => line.includes('token comment'));
+            lineHeight = pre.scrollHeight / originalLines.length;
             toggleComments();
             setTimeout(() => {
                 pre.style.maxHeight = pre.scrollHeight + 'px';
@@ -373,22 +379,59 @@
         });
 
         function toggleComments() {
-            showing = !showing;
+            const pre = document.querySelector('pre');
             const code = document.querySelector('code');
+
+            // Figure out which currently-visible line sits at the top of the
+            // viewport, so we can keep that same line pinned in place once
+            // the code block's height changes below/around it.
+            const preTop = pre.getBoundingClientRect().top + window.scrollY;
+            const scrolledIntoPre = window.scrollY - preTop;
+            const currentLineIndex = scrolledIntoPre > 0 ? Math.floor(scrolledIntoPre / lineHeight) : -1;
+
+            showing = !showing;
+            let scrollShift = 0;
+
             if (!showing) {
-                code.innerHTML = code.innerHTML
-                    .split('\n')
-                    .filter(line => !line.includes('token comment'))
+                // Map the visible (full) line index to its index in the
+                // filtered (comments removed) version, then hide comments.
+                if (currentLineIndex >= 0) {
+                    const newLineIndex = originalLines
+                        .slice(0, currentLineIndex)
+                        .filter((_, i) => !isCommentLine[i]).length;
+                    scrollShift = (newLineIndex - currentLineIndex) * lineHeight;
+                }
+                code.innerHTML = originalLines
+                    .filter((_, i) => !isCommentLine[i])
                     .join('\n');
             } else {
+                // Map the filtered line index back to its index in the full
+                // (comments restored) version.
+                if (currentLineIndex >= 0) {
+                    let seen = 0;
+                    let newLineIndex = originalLines.length;
+                    for (let i = 0; i < originalLines.length; i++) {
+                        if (isCommentLine[i]) continue;
+                        if (seen === currentLineIndex) {
+                            newLineIndex = i;
+                            break;
+                        }
+                        seen++;
+                    }
+                    scrollShift = (newLineIndex - currentLineIndex) * lineHeight;
+                }
                 code.innerHTML = original;
             }
+
             document.querySelector('button').textContent = showing ? 'Hide Comments' : 'Show Comments';
 
             // Keep the collapsible height in sync with content so it never clips vertically
-            const pre = document.querySelector('pre');
             if (pre.style.maxHeight) {
                 pre.style.maxHeight = pre.scrollHeight + 'px';
+            }
+
+            if (scrollShift !== 0) {
+                window.scrollBy(0, scrollShift);
             }
         }
 

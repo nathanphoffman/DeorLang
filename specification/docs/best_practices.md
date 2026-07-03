@@ -18,7 +18,7 @@ Add a blank line before `return` in any function body that contains more than on
 Functions get extra separation from everything around them: leave 2 blank lines (3 returns) between a function and the next function or block. All other top-level blocks (structs, enums, shapes, macros) only need 1 blank line between them.
 
 **Recommended:**
-```
+```deor
 shape rollResultList = list of RollResult
 
 fn int sum_rolls(rollResultList rolls)
@@ -39,7 +39,7 @@ fn int sum_rolls(rollResultList rolls)
 ```
 
 **Exempt — one-liner, no blank line needed:**
-```
+```deor
 fn int square(int val)
     val * val
 ```
@@ -48,7 +48,7 @@ fn int square(int val)
 
 When a call wraps across multiple lines, don't put a comma after the last argument. Deor favors reading like a plain human list — nobody writes "lettuce, tomato, onion," with a trailing comma, so don't write one here either.
 
-```
+```deor
 Connection conn = Connect(
     host,
     port,
@@ -61,7 +61,7 @@ Connection conn = Connect(
 
 Field order does not matter — all construction and destructuring forms are name-matched. Any subset in any order is valid for destructuring; fields in construction are matched by variable name to struct field name.
 
-```
+```deor
 struct Employee
     int employee_id
     string first_name
@@ -77,7 +77,7 @@ Even though order is not enforced, write fields in the same order they appear in
 Additionally, all `in` extractions should appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
 
 **Correct:**
-```
+```deor
 fn RollResult roll_die(Die die)
 
     (sides, label) in die
@@ -97,14 +97,14 @@ fn RollResult roll_die(Die die)
 Always capture `avow` into its own binding — do not use `(avow val)` inline inside a larger expression.
 
 **Recommended:**
-```
+```deor
 if result is valid
     int val = (avow result)
     total = total + val
 ```
 
 **Avoid:**
-```
+```deor
 if result is valid
     total = total + (avow result)
 ```
@@ -117,7 +117,7 @@ Also always guard `avow` with an `is valid` check immediately above it, or add a
 Limit nesting to two or three levels. Deeply nested code is hard to read and usually signals that logic should be extracted into a helper function. Prefer early returns and guard clauses over deep `if/else` trees.
 
 **Preferred — early return flattens nesting:**
-```
+```deor
 fn string classify(int val)
     if val < 0
         return "negative"
@@ -127,7 +127,7 @@ fn string classify(int val)
 ```
 
 **Avoid — deep nesting:**
-```
+```deor
 fn string classify(int val)
     if val < 0
         return "negative"
@@ -149,7 +149,7 @@ A function should do one thing. If a function body is growing long or handles mu
 Prefer functions for reusable logic that is called outside loops. Inside a loop body, prefer macros when the operation is simple and call overhead matters — macros expand inline, whereas function calls add a frame per iteration.
 
 **Use a function — called once or outside a loop:**
-```
+```deor
 fn int square(int val)
     val * val
 
@@ -157,7 +157,7 @@ int area = square(side)
 ```
 
 **Use a macro — called inside a loop:**
-```
+```deor
 macro sq(val)
     val * val
 
@@ -172,7 +172,7 @@ If the logic is non-trivial, extract it into a function regardless — readabili
 
 Deor has no global scope, so a `const` can't be declared once and shared across every function that needs it — it only exists inside the block where it's declared. When the same constant values are needed in multiple functions, declare them once inside a `macro` and `macro_run` it wherever they're needed. Because the macro body is inlined at each call site, every function gets its own copy of the same named consts — nothing is shared at runtime, but the names and values stay consistent everywhere they're used.
 
-```
+```deor
 macro use_log_consts
     const string INFO_PREFIX = "[INFO] "
     const string ERROR_PREFIX = "[ERROR] "
@@ -199,20 +199,20 @@ Keep files to a reasonable length. There is no hard limit, but when a file start
 When negating a comparison, use `is not` rather than wrapping the comparison in `not`. `val is not 5` is required for bare identifiers (the transpiler rejects `not val is 5`), and the same preference applies even in the cases the transpiler doesn't catch, like `not (a > b) is y` or `not some_func() is y` — reorder these to `(a > b) is not y` and `some_func() is not y` instead.
 
 **Recommended:**
-```
+```deor
 if (a > b) is not y
     ...
 ```
 
 **Avoid:**
-```
+```deor
 if not (a > b) is y
     ...
 ```
 
 Reach for plain `not` only when there's no comparison to reorder around — negating a standalone boolean value or expression:
 
-```
+```deor
 if not done
     ...
 

@@ -9,7 +9,7 @@
 ### Scalar literals
 The type is inferred from the literal value.
 
-```
+```deor
 sum as 0
 label as "Office"
 flag as true
@@ -27,7 +27,7 @@ let rate = 3.14_f64;
 
 A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope.
 
-```
+```deor
 rooms as [kitchen, office, bedroom]    # type inferred from items (all Room)
 ```
 
@@ -37,7 +37,7 @@ let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 
 `[]` is not valid for initializing an empty list — use `empty` with an explicit shape type. `as []` is also a transpiler error because the element type is unknown:
 
-```
+```deor
 roomList result = empty  # correct
 result as []             # transpiler error — element type unknown
 roomList result = []     # transpiler error — use empty instead
@@ -47,7 +47,7 @@ roomList result = []     # transpiler error — use empty instead
 
 A parenthesised field list `(f1, f2, ...)` constructs a struct. All items must be named variables already in scope whose names match the target struct's fields. The struct type is inferred by matching field names against all known structs — no type annotation needed.
 
-```
+```deor
 score as (label, points)    # struct type inferred from field names
 ```
 
@@ -65,7 +65,7 @@ See [Struct Construction](#struct-construction) below for full details and the e
 - **Type annotation** — `as` never takes an explicit type prefix.
 - **Move transfer** — `as` already produces an owned binding, so combining it with `move` is redundant and rejected.
 
-```
+```deor
 area as 9             # transpiler error — int or Squarefeet? use Squarefeet area = 9
 int count as 0        # transpiler error — annotation not allowed with as; use int count = 0
 a as move b           # transpiler error — as already transfers ownership
@@ -79,7 +79,7 @@ Record update (`with`) uses `as` — the type is known from the source struct. S
 
 Structs can be constructed with an explicit type (`Type name = (fields)`) or inferred via `as` (`name as (fields)`). The transpiler matches field names to determine the struct type. Every field must already be a variable in scope matching the field name exactly. No `{}`, no `field: value` pairs.
 
-```
+```deor
 Squarefeet area = 9
 name as "Office"
 occupied as true
@@ -101,7 +101,7 @@ The transpiler matches fields by name — order does not matter. Mirrors destruc
 
 If you need a field name that differs from the variable you have, rename it first:
 
-```
+```deor
 name in other_room
 label = name
 Entry entry = (label)
@@ -113,7 +113,7 @@ Entry entry = (label)
 
 Declaring a variable with a validator type runs the predicate at assignment. The variable is `Option<T>` under the hood — valid (`Some`) if the predicate passes, not valid (`None`) if it fails.
 
-```
+```deor
 Squarefeet area = 9            # valid — predicate passes
 Squarefeet area = -1           # transpiler error — literal fails predicate at compile time
 Roll roll = random(min, max)   # valid or not valid depending on the predicate
@@ -129,7 +129,7 @@ let roll: Option<Roll> = Roll::new(random(min, max));
 
 A validator type variable can be declared without an initial value to start as not valid. It becomes valid once assigned a value that passes the predicate.
 
-```
+```deor
 Roll best
 ```
 
@@ -145,7 +145,7 @@ This is how Deor represents an absent value without a `null`/`undefined` keyword
 
 Reassigning a validator type re-runs the predicate. The variable may transition between valid and not valid.
 
-```
+```deor
 Squarefeet area = 9   # valid
 area = 16             # valid
 int raw = get_user_input()
@@ -160,7 +160,7 @@ area = raw            # valid or not valid — predicate runs at runtime
 
 `const` names must be `SCREAMING_SNAKE_CASE` — all caps, words separated by underscores. This distinguishes constants from regular variables at a glance and signals that the value is fixed for the lifetime of the scope.
 
-```
+```deor
 const string PIPE = "|"
 const int MAX_RETRIES = 3
 ```
@@ -174,7 +174,7 @@ let MAX_RETRIES: i64 = 3;
 
 **`const` vs `as`:** both produce immutable bindings. `const` requires an explicit type; `as` infers the type from the literal. Use `const` when the type must be stated, `as` for simple literals where inference is unambiguous.
 
-```
+```deor
 const string LABEL = "hello"   # explicit type, immutable, SCREAMING_SNAKE required
 label as "hello"               # inferred type, immutable — snake_case name
 int count as 0                 # transpiler error — as never takes a type prefix
@@ -186,7 +186,7 @@ int count as 0                 # transpiler error — as never takes a type pref
 
 Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
 
-```
+```deor
 int val = m_rand_int(min, max)
 string pick = random_room_name(rooms)
 roomList result = empty
@@ -204,7 +204,7 @@ let mut result: Vec<i64> = Vec::new();
 
 ## Reassignment
 
-```
+```deor
 total = total + 1
 ```
 
@@ -218,7 +218,7 @@ total = total + 1;
 
 Underscores may appear anywhere in a numeric literal as a visual separator. They are stripped by the transpiler and have no effect on the value.
 
-```
+```deor
 int population = 1_000_000
 float rate = 0.000_001
 int port = 8_080

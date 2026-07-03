@@ -8,7 +8,7 @@ An `enum` declares a named set of variants. Each variant is a distinct value of 
 ## Declaration
 
 Deor:
-```
+```deor
 enum ColorTag
     Red
     Green
@@ -42,7 +42,7 @@ Any number of variants. Each is a plain name — no associated data.
 ## Assignment
 
 Deor:
-```
+```deor
 ColorTag background = Blue
 ColorTag foreground = White
 ```
@@ -60,7 +60,7 @@ let foreground: ColorTag = ColorTag::White;
 Use `if` / `else if` with `is`. No pattern matching — the same `is` operator used for all equality in Deor.
 
 Deor:
-```
+```deor
 if background is Blue
     msg as "blue background"
     print(msg)
@@ -92,7 +92,7 @@ Exhaustiveness is not enforced — write an `else` branch as a catch-all when ne
 Enums work as struct fields, function parameters, and return types — the same as any other type.
 
 Deor:
-```
+```deor
 struct Theme
     string name
     ColorTag background
@@ -144,7 +144,7 @@ fn describe(color: ColorTag) -> String {
 Sometimes a set of named variants each needs a real backing value — an HTTP status, a priority level with actual ordering. `enum string/int/float/bool Name` gives each variant a literal value of that type, one per line as `Variant = value`:
 
 Deor:
-```
+```deor
 enum string Color
     Red = "Red"
     Green = "Green"
@@ -159,7 +159,7 @@ enum int Priority
 A typed enum has no Rust type behind it at all — it's resolved entirely at compile time. Instead of assigning a variable of that type, you pull a variant's value straight out with `(Variant) in EnumName`, the same destructuring syntax used for structs:
 
 Deor:
-```
+```deor
 (Red) in Color
 print(Red)
 

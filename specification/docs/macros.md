@@ -13,7 +13,7 @@ Macros can be declared at the top level or inside a function body. A top-level m
 
 You can call other macros with `macro_run` from inside a macro body — nesting calls is fully supported. However, defining a `macro` inside another macro body is a compile error. Define all macros at the appropriate scope and call them with `macro_run`.
 
-```
+```deor
 macro say_hello
     print(hello)
 
@@ -37,7 +37,7 @@ Because a macro body is copy-pasted at the call site, any variables it declares 
 Use `block` inside the macro body to create an isolated scope. Variables declared inside `block` do not escape:
 
 Deor:
-```
+```deor
 macro compute_area
     block
         length as 10
@@ -76,7 +76,7 @@ If the macro only reads variables from the caller's scope without declaring any 
 
 There's no dedicated syntax for wrapping arbitrary code between "before" and "after" snippets — just define two macros and call them in sequence, like this:
 
-```
+```deor
 macro timer_start
     int _timer_start = now_ms()
 
@@ -87,7 +87,7 @@ macro timer_end
     print(s_join([_timer_label, _timer_str, _timer_sfx]))
 ```
 
-```
+```deor
 string _timer_label = "[timer] load: "
 macro_run timer_start
 tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)

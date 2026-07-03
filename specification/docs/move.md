@@ -12,7 +12,7 @@ By default Deor clones every value — function arguments, loop elements, and as
 Pass a value into a function without cloning:
 
 Deor:
-```
+```deor
 do_something(move big_list)
 # big_list cannot be used after this point
 ```
@@ -31,7 +31,7 @@ Use this when the function takes the last or only use of a large list or struct 
 Iterate a collection consuming each element rather than cloning:
 
 Deor:
-```
+```deor
 for move (item in collection)
     process(item)
 ```
@@ -52,7 +52,7 @@ The collection itself is consumed — it cannot be used after the loop.
 Extract fields from a struct without cloning them:
 
 Deor:
-```
+```deor
 move (label, points) in score
 ```
 
@@ -71,7 +71,7 @@ let points = score.points;
 Build a struct from fields without cloning them:
 
 Deor:
-```
+```deor
 Score built = move (label, points)
 ```
 
@@ -89,7 +89,7 @@ Fields are moved into the struct rather than cloned. Each source variable is con
 Transfer ownership into a new binding:
 
 Deor:
-```
+```deor
 string new_var = move prev_var
 # prev_var is not accessible here and below
 ```
@@ -105,7 +105,7 @@ let new_var: String = prev_var;
 
 `int`, `float`, and `bool` map to Rust's `i64`/`f64`/`bool`, all of which are `Copy` types — duplicating one is always just a bitwise copy, identical in cost and effect to a `.clone()`. Because of this, `move` on a primitive doesn't actually transfer anything: the codegen difference (skipping the `.clone()` call) is real, but the *behavior* is identical either way. The original variable stays valid and usable after a `move` of a primitive — Rust copies it instead of consuming it, the same way it would for any other use of a `Copy` value.
 
-```
+```deor
 int a = 5
 int b = move a
 print(a)  # still valid — a was never actually consumed
@@ -121,7 +121,7 @@ Using `move` on a primitive isn't wrong — it's just inert, a no-op annotation 
 
 `move` has no effect at all in a `return` statement, for *any* type — not because of `Copy`, but because `return` never clones to begin with. Every other site that defaults to cloning a bare identifier (function call arguments, typed-binding right-hand sides, list literal items) explicitly opts into that behavior; `return` was never one of them.
 
-```
+```deor
 fn string make_label(string prefix)
     string label = prefix
     return label

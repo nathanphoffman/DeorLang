@@ -11,7 +11,7 @@ Deor transpiles to a single Rust file. When Deor cannot express something — a 
 
 A `rust` block is raw Rust inlined directly into the generated output. It is delimited by indentation — everything indented under `rust` is captured verbatim and emitted as-is.
 
-```
+```deor
 fn string read_env(string key)
     rust
         std::env::var(key.as_str()).unwrap_or_default()
@@ -35,7 +35,7 @@ This is deliberate, not just a syntax restriction. The whole point of `raw` is "
 
 So build it once inside a function, and hold the function's return value as `raw`:
 
-```
+```deor
 fn Index build_index()
     rust
         entries.iter()
@@ -56,7 +56,7 @@ Deor has no global scope — every ordinary variable exists only inside the bloc
 
 `lib/map.deor`'s `StringMap` (see [Libs](docs/libs.md#libmapdeor)) is a real example already in the standard library:
 
-```
+```deor
 raw StringMap
 
 rust
@@ -70,7 +70,7 @@ fn StringMap h_make()
 
 Once `StringMap` is registered this way, callers don't even write `raw` again — they just use it like any other declared type:
 
-```
+```deor
 StringMap config = h_make()
 config = h_set(config, "host", "localhost")
 ```
@@ -85,7 +85,7 @@ Only reach for this pattern when you actually need reference-style sharing for p
 
 The recommended pattern is a small rust block inside a Deor function. The Deor function owns the signature and naming; the rust block handles the implementation detail.
 
-```
+```deor
 fn string json_get(string src, string key)
     rust
         let v: serde_json::Value = serde_json::from_str(&src).unwrap_or(serde_json::Value::Null);
@@ -100,7 +100,7 @@ Keep rust blocks small. If a rust block is growing large, it is a signal that th
 
 If you have a large body of Rust code that does not belong inline, you can pull it in with `include!` inside a rust block:
 
-```
+```deor
 rust
     include!("helpers.rs");
 ```

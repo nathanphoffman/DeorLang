@@ -5,7 +5,7 @@
 
 Imports use the `import` keyword followed by a path:
 
-```
+```deor
 import "models/customer.deor"
 ```
 
@@ -29,7 +29,7 @@ The ordering of declarations in the generated Rust output does not affect correc
 
 Order does **not** matter for using a type or function defined in another file, even if that file relies on the caller to have already loaded it and does not import it directly. The registry of structs, shapes, enums, and types is built from the full merged token stream before code generation begins, so a name can be referenced anywhere in the merged output regardless of where it was declared — the same way Rust does not require forward declarations within a module.
 
-```
+```deor
 # imports.deor — order does not matter here
 import "services/billing.deor"   # uses Customer, even if it doesn't import customer.deor itself
 import "models/customer.deor"    # defines Customer
@@ -46,7 +46,7 @@ There are two ways to manage imports in a Deor project. Both are valid.
 Create a single `imports.deor` that lists every file in the project, then import only that file from `main.deor`.
 
 `main.deor`
-```
+```deor
 import "imports.deor"
 
 fn void main()
@@ -54,7 +54,7 @@ fn void main()
 ```
 
 `imports.deor`
-```
+```deor
 import "lib/types.deor"
 import "models/customer.deor"
 import "utility.deor"
@@ -75,7 +75,7 @@ Because the importer is depth-first, you do not need to worry about manually ord
 Each file imports only what it directly needs. The importer's depth-first traversal handles ordering automatically — by the time a file's declarations land in the merged stream, all of its imported dependencies are already there.
 
 `main.deor`
-```
+```deor
 import "services/billing.deor"
 
 fn void main()
@@ -83,7 +83,7 @@ fn void main()
 ```
 
 `services/billing.deor`
-```
+```deor
 import "models/customer.deor"
 import "utility.deor"
 
@@ -92,7 +92,7 @@ fn void process_billing(Customer c)
 ```
 
 `models/customer.deor`
-```
+```deor
 import "lib/types.deor"
 
 struct Customer

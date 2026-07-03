@@ -7,7 +7,7 @@ Sometimes a value can be built just fine but still not make sense — a shape wi
 
 A validator type is declared with `type`:
 
-```
+```deor
 type Positive(int val)
     val > 0
 ```
@@ -22,7 +22,7 @@ This defines `Positive`, built on `int`, with one rule: greater than zero. Assig
 
 The base type must be a primitive (`int`, `float`, `string`, `bool`) — structs, list shapes, and other validator types (including the type referencing itself) are not valid as a validator base type and are transpiler errors:
 
-```
+```deor
 type Foo(int val)          # correct — primitive base type
 type Foo(intList val)      # transpiler error — list shapes cannot be validator base types
 type Foo(Point val)        # transpiler error — structs cannot be validator base types
@@ -31,7 +31,7 @@ type Foo(Foo val)          # transpiler error — a validator type cannot refere
 
 The parameter name cannot shadow the type name or its own base type — both are transpiler errors:
 
-```
+```deor
 type Roll(int Roll)    # transpiler error — parameter name shadows the type name
 type Roll(int int)     # transpiler error — parameter name shadows its base type
 type Roll(int val)     # correct
@@ -43,7 +43,7 @@ Plain primitives and structs can never be "missing" — only validator types car
 
 **Only the full declaration form re-runs the predicate.** `TypeName varName = expr` triggers validation; a later bare reassignment (`varName = expr`) or `as` binding does not, and both are transpiler errors. To re-validate a new value — retrying input in a loop, for example — declare it fresh each time:
 
-```
+```deor
 for if true
     (first) in input()
     Roll attempt = c_string_to_int(first)   # fresh declaration each iteration
@@ -57,7 +57,7 @@ This kind of shadowing across loop iterations is the normal pattern — a fresh 
 
 A slightly more realistic predicate, using values from an earlier calculation:
 
-```
+```deor
 # import lib/math.deor and lib/convert.deor for these functions
 type Squarefeet(int val)
     float flt = c_int_to_float(val)
@@ -68,7 +68,7 @@ type Squarefeet(int val)
 
 `c_int_to_float`, `m_sqrt`, and `m_floor` come from `lib/convert.deor` and `lib/math.deor` (see [Libs](docs/libs.md)). A negative `val` makes `m_sqrt` return NaN, `m_floor` turns that into `0`, and `0 * 0 is val` fails — no separate negative-number guard needed.
 
-```
+```deor
 Squarefeet area = 9     # valid — predicate passes
 Squarefeet area = -1    # transpiles and compiles fine — not valid only at runtime
 ```
@@ -84,7 +84,7 @@ A validator type variable is always **valid** (rule passed) or **not valid** (ru
 
 Check with `is valid` / `is not valid`:
 
-```
+```deor
 Squarefeet sqft = 9
 if sqft is valid
     int val = (avow sqft)
@@ -100,7 +100,7 @@ This is Deor's only concept of null — see [Replacing Null and Undefined](#repl
 
 A validator type variable declared without an initial value starts as not valid. Assign a value later to make it valid.
 
-```
+```deor
 Roll best
 Squarefeet area
 ```
@@ -112,7 +112,7 @@ let mut area: Option<Squarefeet> = None;
 
 `empty` is not valid for validator types and is a transpiler error — not valid is expressed by declaring without a value instead:
 
-```
+```deor
 Roll best = empty    # transpiler error — empty is not valid for validator types
 Roll best            # correct — starts as not valid
 ```
@@ -129,7 +129,7 @@ There are two ways to use a validator type for this. Pick one interpretation per
 
 **Nothing means "not set yet"** — the predicate accepts anything, so the only way to be not valid is to never assign it:
 
-```
+```deor
 type ValidInt(int val)
     true
 
@@ -141,7 +141,7 @@ ValidInt score = 42     # valid — any int satisfies the predicate
 
 **A sentinel means "missing"** — the predicate itself rules out the value that stands for "nothing":
 
-```
+```deor
 type ValidInt(int val)
     val is not 0
 
@@ -161,7 +161,7 @@ ValidInt count = 5      # valid
 
 Pass the variable directly (no `avow`) when a function accepts that validator type; only reach for `avow` when you need the raw primitive. It can be used as a function argument directly too (`show(avow roll)`), no need to capture it first.
 
-```
+```deor
 Roll roll = roll_die(d20)
 if roll is valid
     int val = (avow roll)          # need the raw int — use avow
@@ -183,13 +183,13 @@ Outside an `if` check, `avow` is your explicit assertion that the value is valid
 
 Struct fields typed as a validator type are `Option<T>` under the hood. Extracting them with `in` preserves the Option — the extracted variable must be checked with `is valid` / `is not valid` before use.
 
-```
+```deor
 struct Room
     Squarefeet area
     Roll max_capacity
 ```
 
-```
+```deor
 (area, max_capacity) in room
 if max_capacity is valid
     int cap = (avow max_capacity)
@@ -201,7 +201,7 @@ if max_capacity is valid
 
 A function returning a validator type returns a variable that may or may not be valid. To return a not-valid result, either declare the variable without a value and return it unassigned, or assign a value that fails the predicate. `return empty` and `return none` are both transpiler errors — neither is a Deor keyword in return position.
 
-```
+```deor
 fn Roll find_best(int val)
     Roll best
     if val > 0
@@ -211,7 +211,7 @@ fn Roll find_best(int val)
 
 The caller checks with `is valid`:
 
-```
+```deor
 Roll crit = find_best(val)
 if crit is valid
     int bonus = (avow crit)

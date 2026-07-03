@@ -7,7 +7,7 @@ Deor has no generics — you can't just write "a list of Room" or "a function th
 
 ## Declaration
 
-```
+```deor
 shape roomList = list of Room
 shape filterFunc = func of Room to bool
 ```
@@ -20,7 +20,7 @@ Shapes are declared at the top level of a file, after imports and before structs
 
 A list shape names a specific element type:
 
-```
+```deor
 shape roomList = list of Room
 shape intList = list of int
 shape rollList = list of Roll
@@ -34,7 +34,7 @@ type RollList = Vec<Roll>;
 
 List shape variables are declared and used like any other typed variable:
 
-```
+```deor
 roomList result = empty
 roomList rooms = [kitchen, office, bedroom]
 int cnt = len(rooms)
@@ -48,7 +48,7 @@ let cnt: i64 = rooms.len() as i64;
 
 In function signatures and struct fields, the shape name stands in for the full type:
 
-```
+```deor
 fn roomList occupied_rooms(roomList rooms)
     ...
 
@@ -72,7 +72,7 @@ struct House {
 
 A func shape names a specific function signature. This is the only way to pass functions as values in Deor — no lambdas, no closures, just named top-level functions matched to a declared signature.
 
-```
+```deor
 shape filterFunc = func of Room to bool     # takes Room, returns bool
 shape handlerFunc = func of Error           # takes Error, returns nothing
 shape supplierFunc = func to bool           # no input, returns bool
@@ -98,7 +98,7 @@ When input or output is absent, the corresponding `of`/`to` clause is omitted:
 
 A function matching a func shape can be passed as a regular typed argument. No special syntax at the call site — it is just a named variable of the declared type.
 
-```
+```deor
 shape filterFunc = func of Room to bool
 
 fn roomList filter(roomList items, filterFunc predicate)
@@ -133,7 +133,7 @@ The named-args rule applies: `by_name` must be a named top-level function, not a
 
 Func shapes accept at most one input type and one output type. Multi-input shapes are a transpiler error — bundle context into a struct first:
 
-```
+```deor
 # Transpiler error — multi-input not allowed
 shape badFunc = func of (Room, string) to bool
 
@@ -149,7 +149,7 @@ shape roomQueryFunc = func of RoomQuery to bool
 
 Func shapes cannot be used as struct fields — structs are pure data. A struct carrying a function would be a closure in disguise, which Deor does not allow.
 
-```
+```deor
 # Transpiler error
 struct Filter
     roomList items
@@ -185,7 +185,7 @@ Seeing a camelCase identifier means: this is a shape.
 
 Imports must come first — that is the only ordering the transpiler enforces. Everything else is recommended style. See [Best Practices](docs/best_practices.md#order-of-declaration) for the suggested order.
 
-```
+```deor
 # imports first — required
 import "lib/string.deor"
 
@@ -207,7 +207,7 @@ fn roomList filter(roomList items, filterFunc predicate)
 
 Shapes are importable like any other top-level declaration. Co-locating a shape with the functions that use it is idiomatic:
 
-```
+```deor
 # rooms.deor
 shape roomList = list of Room
 shape filterFunc = func of Room to bool
@@ -216,7 +216,7 @@ fn roomList filter(roomList items, filterFunc predicate)
     ...
 ```
 
-```
+```deor
 # main.deor
 import "rooms.deor"
 ```

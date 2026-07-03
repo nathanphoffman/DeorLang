@@ -7,7 +7,7 @@
 
 Indentation alone opens a block after `fn`, `if`, `for`, `type`, `struct`, `shape`, `enum`, or `rust`. No colon is written.
 
-```
+```deor
 fn int abs(int val)
     if val < 0
         -val
@@ -33,7 +33,7 @@ fn abs(val: i64) -> i64 {
 
 No line continuations except inside delimiters. Long expressions wrap inside `()` or `[]`:
 
-```
+```deor
 Connection conn = Connect(
     host,
     port,
@@ -57,7 +57,7 @@ let conn: Connection = Connect(
 
 `#` starts a line comment. Everything from `#` to end of line is ignored. No block comments.
 
-```
+```deor
 # this is a comment
 int val = 5    # inline comment
 ```

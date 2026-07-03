@@ -15,7 +15,7 @@ None of `print`, `crash`, `len`, `range`, `args`, or `input` are lexer keywords,
 Writes a value to stdout followed by a newline. Accepts any primitive type.
 
 Deor:
-```
+```deor
 print("Hello, world!")
 print(count)
 ```
@@ -29,7 +29,7 @@ println!("{}", count);
 Pass a second argument to replace the trailing newline with a string of your choice — a space, a comma, or even an empty string, useful for building output across multiple `print` calls without a line break. Since this is a 2-argument call, the second argument must be a named variable already in scope (the same rule that applies to `range(start, stop)` — see [Enforced Practices](docs/enforced_practices.md#named-arguments-user-defined-functions-only)).
 
 Deor:
-```
+```deor
 string sep = ", "
 print(first, sep)
 print(second)
@@ -47,7 +47,7 @@ println!("{}", second.clone());
 Returns the number of elements in a list or the number of characters in a string.
 
 Deor:
-```
+```deor
 int size = len(rooms)
 int chars = len(name)
 ```
@@ -77,7 +77,7 @@ Produces an integer sequence for use in `for` loops. Two forms:
 To loop over every element in a list, write the list name directly after `in`. No `range` needed — this is a separate form.
 
 Deor:
-```
+```deor
 shape roomList = list of Room
 
 fn void print_names(roomList rooms)
@@ -104,7 +104,7 @@ Use `range` when you need the index. Use `for item in list` when you only need t
 Terminates the program immediately with a message. A `string` is recommended — it produces the clearest panic output. The transpiler accepts exactly one argument and does not enforce the type.
 
 Deor:
-```
+```deor
 message as "An unknown server problem occurred"
 crash(message)
 ```
@@ -136,7 +136,7 @@ Two built-in forms for reading word-split data into named variables. Both use th
 | `(fields) in args()` | command-line arguments passed at launch |
 | `(fields) in input()` | one line read from stdin |
 
-```
+```deor
 (first, second, third, input_string, input_list) in args()
 (first, second, third, input_string, input_list) in input()
 ```
@@ -152,7 +152,7 @@ Two built-in forms for reading word-split data into named variables. Both use th
 Missing words default to `""` — no crash. Use `if first is ""` to detect absence.
 
 **`args()` example** — reading CLI flags:
-```
+```deor
 (first, second) in args()
 print(first)
 print(second)
@@ -160,7 +160,7 @@ print(second)
 Running `./prog hello world` prints `hello` then `world`.
 
 **`input()` example** — prompting the user:
-```
+```deor
 (first, input_list) in input()
 print(first)
 int count = len(input_list)
