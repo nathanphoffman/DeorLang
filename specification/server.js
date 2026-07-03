@@ -13,6 +13,7 @@ console.log(`newweb → http://localhost:${port}`);
 
 Bun.serve({
   port,
+  hostname: '0.0.0.0',
   async fetch(req) {
     const url = new URL(req.url);
     const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
