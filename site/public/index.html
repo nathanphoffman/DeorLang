@@ -47,6 +47,20 @@
             color: #ff5555;
         }
 
+        .token.boolean {
+            color: #bd93f9;
+        }
+
+        /* SCREAMING_SNAKE_CASE const names */
+        .token.constant {
+            color: #ffb86c;
+        }
+
+        /* user types, shapes, lib types (Room, stringList, TaskPool) */
+        .token.class-name {
+            color: #8be9fd;
+        }
+
         pre[class*="language-"],
         code[class*="language-"] {
             background: transparent !important;
@@ -79,23 +93,23 @@
 </head>
 
 <body class="bg-gray-900">
-    <main class="max-w-[80rem] px-6 text-gray-300 mx-auto text-center text-lg">
+    <main class="max-w-[70rem] px-6 text-gray-300 mx-auto text-center text-md">
         <div
             class="grid grid-cols-[auto_1fr] items-start gap-x-4 [grid-template-areas:'deer_title'_'desc_desc'] sm:[grid-template-areas:'deer_title'_'deer_desc'] m-4 mt-6 mb-6 md:m-8 text-left">
             <img src="reddeer.png" alt="Pixel art of a red deer, the Deor mascot"
                 class="w-16 sm:w-24 md:w-28 [grid-area:deer]" />
             <h1 class="text-7xl font-serif [grid-area:title]">Deor</h1>
             <p class="text-xl mt-4 sm:mt-0 [grid-area:desc] italic">A language for all, transpiled to Rust, as simple as
-                Python, as readable as a Book
+                Python, as procedural as Fortran
             </p>
         </div>
 
-        <p>
+        <p class="text-xl">
             Learn more by reading the <a href=""
                 class="block md:inline p-2 bg-gray-300 hover:bg-gray-100 rounded-sm text-black shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">Documentation</a>
         </p>
 
-        <p class="mt-2 md:mt-8">
+        <p class="mt-2 md:mt-8 text-xl">
             <a href=""
                 class="block md:inline p-2 bg-gray-300 hover:bg-gray-100 rounded-sm text-black shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">Getting
                 Started</a> is the place to go to get
@@ -122,54 +136,54 @@
     # This may look strange, it is a substitution for all T replaces with PiChunk, the main
     #  use of this is setting types for the import, a way of passing a generic
     import "lib/tasks.deor" where T = PiChunk
-        
+
     # structs are data, no methods can be attached to the data; Deor is strongly procedural
     struct PiChunk
     	int min
     	int max
     	float value
-        
+
     # These are validator types that wrap Rust's Option, they return valid (or not valid) if they are 
     #  set to a value that matches the predicate, this is the only way to have a "null/undefined" in Deor
     type SmallPositive(int value)
-    	value > 0 and value <= 16
-        
+    	value > 0 and value <= 32
+
     type LargePositive(int value)
-    	value > 0 and value <= 10_000_000
-        
+    	value > 0 and value <= 100_000
+
     # Shapes are the equivalent to generics in other languages, Deor believes in strong human
     #  readability so we use shapes (not <>) for lists and generic function definitions. piChunkList
     #  here is actually redundant (the tasks import has this shape that is defined with T-substitution):
     #  which brings us to another important point: Deor will simply drop root level items that are clones
     shape piChunkList = func of PiChunk to PiChunk
-        
-        
+
+
     # Macros are ways you can insert code (as seen below with macro_run) as part of the transpiler,
     #  it is as if you had written it that way. Consts can't be global, so this is a useful pattern.
     macro use_print_consts
     	const string SEPARATOR = "): "
     	const string NONE = ""
-        
-        
+
+
     # Because Deor clones all items by default, iteration in loops clones arguments to functions
     #  (which is a problem for a list or large struct), while not true here, macros for organization 
     #  in for loops are not a bad option as many performance issues come from looping over function calls
     macro leibniz_iteration
-        
+
     	# As will allow the compiler to determine the type for you and initialize that variable in one go
     	is_even as (iter % 2 is 0)
     	decimal_iter as c_int_to_float(iter)
     	denom as 1.0 + decimal_iter * 2
-        
+
     	if is_even
     		value = value + 1.0 / denom
     	else
     		value = value - 1.0 / denom
-        
-        
+
+
     # Functions and variables are C style in definition {type} {name}
     fn PiChunk compute_pi_chunk(PiChunk chunk)
-        
+
     	# There is no dot-notation in Deor, con/de(struction) is used to keep variable names consistent
     	(min, max) in chunk
     	# In addition to using as, you can also spell out types, this is recommended as a best practice
@@ -177,121 +191,121 @@
     	float value = perform_liebniz_computation(min, max)
     	# Here we are using a 'with' this clones the struct and replaces the matching field
     	PiChunk chunk_with_value = chunk with (value)
-        
+
     	return chunk_with_value
-        
-        
+
+
     fn float perform_liebniz_computation(int start_iter, int end_iter)
     	float value = 0.0
-        
+
     	# Loops use ranges like other languages such as Python these can be used in various ways, here it
     	#  is going from a start to end value. Note: end is reserved in Deor as a keyword and can't be used
     	for iter in range(start_iter, end_iter)
     		macro_run leibniz_iteration
-        
+
     	return value
-        
-        
+
+
     # Although still well under the limit, functions have a strict limit of three parameters, if passing
     #  more, you must use a struct. Again: the focus here is human readability
     fn piChunkList build_chunk(int max_iterations, int iterations_per_thread)
-        
+
     	# While a list can be assigned literally with [value1,value2] it can't be assigned a [], this
     	#  is because, once again, Deor focuses on readability. As a result, you must assign empty instead
     	piChunkList list_of_chunks = empty
     	float value = 0.0
     	current as 0
-        
+
     	for if current < max_iterations
     		current = current + iterations_per_thread
-        
+
     		int max = current
     		if max > max_iterations
     			max = max_iterations
-        
+
     		min as current - iterations_per_thread
     		PiChunk chunk = (min, max, value)
     		list_of_chunks at end = move chunk
         
     	return list_of_chunks
-        
-        
+
+
     fn int ask_for_threads()
     	macro_run use_print_consts
     	const int DEFAULT = 8
-        
+
     	for if true
-    		# You will notice that prompt is not passed in literally to print, the reason why is Deor as part of 
-    		#  its "Human-Readability" philosophy enforces named-variables for functions with more than 1 argument
+    		# You will notice that prompt is not passed literally, the reason why is Deor as part of the
+    		#  "Human-Readability" philosophy: use named-variables for functions with more than 1 argument
     		prompt as s_join(["How many thread-tasks would you like to run? (default ", c_int_to_string(DEFAULT)])
     		print(prompt, SEPARATOR)
-    		# Inputs split on spacing to provide arguments, first is the first arg, and there is a second, and third.
-    		#  There is also a input_string and input_list that gives you the full string and argument list if you need more
+    		# Inputs split on spacing to provide arguments, first is the first arg, second the second and so on.
+    		#  There is also a input_string and input_list that gives the full string and argument list.
     		(first) in input()
-        
-    		# There are libs included with Deor that wrap rust blocks allowing raw access to rust features, these 
-    		#  libs are always prefixed with a letter, here it is the convert lib c_ to not pollute the global space
+
+    		# Libs are included with Deor that wrap rust blocks allowing raw access to rust features, these 
+    		#  libs are prefixed with a letter, here it is the convert lib c_ to not pollute the global space
+    		# When assigned SmallPositive is validated against its predicate you saw earlier
     		SmallPositive input_value = c_string_to_int(first)
-        
+
     		if first is NONE
     			return DEFAULT
-    		# Above validator types were mentioned, when assigned SmallPositive is validated against its predicate you saw earlier
-    		#  Here the is valid checks it follows that predicate; if it does an 'avow' unwraps the primitive, since we checked
-    		#  we 'avow' the value, if we are wrong it will crash -- hence the strong wording 'avow'.
+    		#  Here the is valid checks that SmallPositive predicate; an 'avow' unwraps the primitive if valid
+    		#  If we are wrong with avow it will crash -- hence the strong wording 'avow'.
     		else if input_value is valid
     			return avow input_value
     		else
     			# Print can take a string or any other primitive, even a literal string if it is 1 argument
-    			print("Incorrect entry, must be >0 and the max is 16")
-        
-        
+    			print("Incorrect entry, must be >0 and the max is 32")
+
+
     fn int ask_for_iterations()
     	macro_run use_print_consts
     	const int DEFAULT = 10
-        
-    	# Something not mentioned yet is that there is no `while`; Deor associates for and only-for with loop, so "for if" = while
+
+    	# Something not mentioned yet is that there is no `while`; for = loop, so "for if" = while
     	for if true
-    		prompt as "How many millions of iterations do you want to run? (default 10 xMILLION"
+    		prompt as "How many MILLIONS of iterations do you want to run? (default 10 xMILLION"
     		print(prompt, SEPARATOR)
     		(first) in input()
-        
+
     		LargePositive iterations = c_string_to_int(first)
-        
+
     		if first is NONE
     			return DEFAULT
     		else if iterations is valid
     			return avow iterations
     		else
-    			print("Incorrect entry, must be >0 and the max is 10 million x MILLION")
-        
-        
-    # Deor is very picky about case as it is key to human readability, as you have seen already consts are SCREAMING_SNAKE
-    #  primitives are one word lowercase, shapes are camelCase, structs PascalCase, functions/variables snake_case, and enums are
-    #  PascalCase, the idea being camel/Pascal is user defined structure with camel being generic, and snake is user defined behavior
+    			print("Incorrect entry, must be >0 and the max is 100000 (in MILLIONS)")
+
+
+    # Deor is picky about case as it is key to readability: consts are SCREAMING_SNAKE, primitives are one  
+    #  word lowercase, shapes are camelCase, structs and enums PascalCase, functions/variables snake_case. 
+    # The idea is logic uses snake_case and structure uses Pascal or camelCase.
     fn float total_final_results(piChunkList results)
     	float net_value = 0.0
-        
+
     	# Here the for loop will iterate over every item in the list
     	for res in results
     		(min, max, value) in res
     		net_value = net_value + value
         
     	return net_value
-        
-        
+
+
     fn void main()
         
     	# Deor supports _ separators for readability in numbers, they can be put anywhere and are dropped
     	const float MILLIONS = 1_000_000.0
     	const float LIEBNIZ_COEFFICIENT = 4
-        
+
     	threads as ask_for_threads()
     	float_threads as c_int_to_float(threads)
     	iterations as ask_for_iterations()
     	float_iterations as c_int_to_float(iterations) * MILLIONS
-        
+
     	iterations_per_thread as m_floor(float_iterations/float_threads)
-        
+
     	total_iterations as iterations_per_thread * threads
     	print("Performing " + c_int_to_string(total_iterations) + " iterations")
         
@@ -305,14 +319,16 @@
     	net_value as total_final_results(move results)
     	float pi_value = LIEBNIZ_COEFFICIENT * net_value
     	print(s_join(["Pi was calculated to be: ", c_float_to_string(pi_value)]))
-        
+
+
+
 
 
         </code>
         </pre>
         </div>
     </main>
-    <footer class="text-gray-500 max-w-[80rem] px-6 mt-10 text-center mx-auto mb-5">
+    <footer class="text-gray-500 max-w-[70rem] px-6 mt-10 text-center mx-auto mb-5">
         <p class="text-gray-500 text-center">
             Deor was created by <a href="https://nathanhoffman.me" class="text-gray-200 underline">Nathan Hoffman</a>, the <a href="https://codingastronomer.dev" class="text-gray-200 underline">Coding Astronomer</a>
         </p>
@@ -332,10 +348,13 @@
                 pattern: /".*?"/,
                 greedy: true
             },
-            'keyword': /\b(fn|for|if|as|in|struct|enum|type|shape|const|of|to)\b/,
-            'type': /\b(int|string|void|list|func)\b/,
+            'keyword': /\b(import|where|fn|struct|enum|type|shape|rust|block|if|else|for|return|avow|break|continue|move|const|private|and|or|not|is|in|as|with|at|end|of|to|using|crash|remove|none)\b/,
+            'type': /\b(int|float|bool|string|bytes|list|func|void|macro|macro_run|raw)\b/,
+            'boolean': /\b(true|false|valid|empty)\b/,
+            'constant': /\b[A-Z][A-Z0-9_]*\b/,
+            'class-name': /\b(?:[A-Z][A-Za-z0-9_]*|[a-z][a-z0-9]*[A-Z][a-zA-Z0-9]*)\b/,
             'function': /\b\w+(?=\s*\()/,
-            'number': /\b\d+\b/,
+            'number': /\b\d[\d_]*(\.[\d_]+)?\b/,
             'operator': /[=<>+\-]/,
         };
         Prism.highlightAll();
