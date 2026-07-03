@@ -1,6 +1,8 @@
 {
+  "packageManager": "bun@1.3.14",
   "engines": {
-    "node": "20"
+    "node": "20",
+    "bun": "1.3.14"
   },
   "name": "newweb",
   "version": "0.1.0",
