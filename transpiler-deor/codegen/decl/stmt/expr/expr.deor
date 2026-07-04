@@ -51,9 +51,11 @@ fn string map_op(string operator)
 # gen_primary for the left operand, then repeatedly folds in right operands as long as
 # the next token is a binary operator. Handles the two-token `is not` operator and
 # string-concatenation: once expr_string_prescan finds a STRING literal anywhere in the
-# current `+` chain, every operand is chained with native Rust `+`/`&` (see
-# expr_string_concat) — a literal leading operand gets `.to_string()` here to become an
-# owned String; everything after the first is borrowed by expr_string_concat.
+# current `+` chain, the whole chain is handed to gen_string_concat_items and compiled
+# to `[op1, op2, ...].concat()` — the same shape `s_join`'s bracket-literal form
+# already produces — instead of a native Rust `+`/`&` chain. `.concat()` only ever
+# borrows its operands (`.as_str()`), so there's no leading-operand-gets-moved problem
+# to guard against and nothing for `move` to opt out of here.
 fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	int token_count = len(tokens)
 
@@ -62,44 +64,28 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 
 	ParseResult primary_r = gen_primary(tokens, pos, ctx)
 	move (code, new_pos) in primary_r
-	left_code as code
-	cur_pos as new_pos
-	Token first_token = tokens at pos
-	(kind) in first_token
+	string left_code = code
+	int cur_pos = new_pos
+
+	# expr_has_str_lit is trivially true for a standalone literal with no `+` after
+	# it (e.g. one item inside `s_join([...])`) — only actually route through the
+	# concat-join codegen when a PLUS really follows, i.e. this is a real chain.
+	bool es_is_concat = false
 	if expr_has_str_lit
-		if kind is "STRING"
-			# A leading literal only needs `.to_string()` when it's actually the start of
-			# a `+` chain (expr_string_concat handles the rest). A standalone literal with
-			# no `+` after it — e.g. one item inside `s_join([...])` — must stay a bare
-			# &str; expr_has_str_lit is trivially true for it (it IS the literal the
-			# prescan found), so that flag alone isn't enough to gate this.
-			Token after_primary_tok = tokens at cur_pos
-			(kind) in after_primary_tok
+		if cur_pos < token_count
+			Token es_next_tok = tokens at cur_pos
+			(kind) in es_next_tok
 			if kind is "PLUS"
-				string ts_sfx = ".to_string()"
-				left_code = s_cat(move left_code, ts_sfx)
-		else if kind is "IDENT"
-			# A bare variable leading a string-concat chain (`nates_string + " hi"`) hits
-			# Rust's `impl Add<&str> for String`, which takes `self` by value — without a
-			# clone here, the chain would silently move the variable instead of borrowing
-			# it, breaking Deor's clone-by-default contract (see move.md). Function calls
-			# and index reads already produce a fresh owned value, so they're excluded the
-			# same way call_args/tb_default exclude them for the single-token case.
-			int es_next_pos = pos + 1
-			bool es_is_call = false
-			bool es_is_idx = false
-			if es_next_pos < token_count
-				Token es_next_tok = tokens at es_next_pos
-				(kind) in es_next_tok
-				es_is_call = kind is "LPAREN"
-				es_is_idx = kind is "KW_AT"
-			if not es_is_call
-				if not es_is_idx
-					Token after_primary_tok = tokens at cur_pos
-					(kind) in after_primary_tok
-					if kind is "PLUS"
-						string cl_sfx = ".clone()"
-						left_code = s_cat(move left_code, cl_sfx)
+				es_is_concat = true
+
+	if es_is_concat
+		ParseResult concat_r = gen_string_concat_items(tokens, pos, ctx)
+		move (code, new_pos) in concat_r
+		left_code = code
+		cur_pos = new_pos
+		string sc_open = "["
+		string sc_close = "].concat()"
+		left_code = s_join([sc_open, left_code, sc_close])
 
 	for if cur_pos < token_count
 		Token operator_token = tokens at cur_pos
@@ -115,7 +101,6 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 		rhs_code as code
 		rhs_pos as new_pos
 		string rust_op = map_op(operator_str)
-		macro_run expr_string_concat
 		string op_sp = " "
 		left_code = s_cat(move left_code, op_sp)
 		left_code = s_cat(move left_code, rust_op)

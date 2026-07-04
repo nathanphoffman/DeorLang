@@ -42,7 +42,7 @@ No other escape sequences are supported in v1. For Unicode escapes or raw byte s
 
 ## Concatenation
 
-`+` joins strings. It works with literals, variables, or any combination:
+`+` joins strings — but it's a convenience for chains that already have a literal in them, not a general-purpose join. It works with literals, variables, or any combination, as long as the chain contains at least one string literal somewhere:
 
 ```deor
 string greeting = "hello " + name
@@ -51,14 +51,20 @@ string full = first + " " + last
 ```
 
 ```rust
-let greeting: String = "hello ".to_string() + &name;
-let line: String = prefix + &content + "\n";
-let full: String = first + " " + &last;
+let greeting: String = ["hello ", name.as_str()].concat();
+let line: String = [prefix.as_str(), content.as_str(), "\n"].concat();
+let full: String = [first.as_str(), " ", last.as_str()].concat();
 ```
 
-Chains of `+` are evaluated left to right and compiled to a native Rust `+`/`&` chain, not `format!`. The first operand becomes an owned `String` (a literal gets `.to_string()`; a variable or call is already owned). Every operand after that is borrowed with `&`, except string literals, which are already `&str` and need no borrow.
+Chains of `+` are evaluated left to right and compiled to `[...].concat()` — the same shape `s_join`'s bracket-literal form produces below — not a native Rust `+`/`&` chain and not `format!`. Every operand is borrowed (`.as_str()`), except string literals, which are already `&str`. Nothing is ever cloned or moved, so every variable in the chain — first or not — stays usable afterward, and `move` has no effect on any of them (see [Move — Move in String Concatenation](docs/move.md#move-in-string-concatenation)).
 
-The transpiler does not check that all operands in a `+` chain are strings — mixing in a non-string operand (e.g. an `int`) is not caught at the Deor level and will fail with a Rust type error instead. Use a `rust` block if you need to format an integer into a string:
+**This only works because a literal is present.** Two plain string variables with no literal anywhere — `full = aaa + bbb` — are not recognized as a concat chain and fail to compile as plain arithmetic. This is a known, accepted gap: `+` is sugar for the literal-mixed case. For joining variables with no literal involved, use `s_join`/`s_join_with` instead (see the table below) — it always works and is the recommended way to join a list of strings in general:
+
+```deor
+string full = s_join([aaa, bbb])
+```
+
+The transpiler does check that operands *directly adjacent* to a `+` aren't mixing a string with a number (`"count: " + count` is caught at the Deor level with a clear error), but that check only looks at each `+`'s immediate neighbors, so it won't catch every possible mismatch in a longer chain — that residual case still surfaces as a Rust type error. Use a `rust` block if you need to format an integer into a string:
 
 ```deor
 fn string int_to_str(int n)
@@ -116,8 +122,7 @@ bool is_pdf = s_ends_with(filename, ext)
 
 | Deor | Rust |
 |---|---|
-| `a + b` (both idents) | `a + &b` |
-| `"lit" + b` | `"lit".to_string() + &b` |
+| `"lit" + b` | `["lit", b.as_str()].concat()` |
 | `s_contains(str, needle)` | `str.contains(needle.as_str())` |
 | `s_starts_with(str, prefix)` | `str.starts_with(prefix.as_str())` |
 | `s_ends_with(str, suffix)` | `str.ends_with(suffix.as_str())` |

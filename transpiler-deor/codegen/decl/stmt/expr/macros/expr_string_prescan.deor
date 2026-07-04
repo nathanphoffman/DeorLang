@@ -2,9 +2,16 @@
 # Pre-scans the current run of `+` operators (stopping at any other binary
 # operator, NEWLINE, EOF, or an unmatched RPAREN) for a STRING literal. If one
 # appears anywhere in the chain, the whole chain is treated as string
-# concatenation rather than arithmetic — see expr_string_concat. Scoped to
-# just the `+` run (unlike expr_float_prescan, which scans the whole
-# expression) because concatenation only ever applies to `+`.
+# concatenation rather than arithmetic — see gen_string_concat_items, which
+# does the actual codegen once this flag is set. Scoped to just the `+` run
+# (unlike expr_float_prescan, which scans the whole expression) because
+# concatenation only ever applies to `+`.
+#
+# Only ever finds a chain when a literal is actually present — two plain string
+# variables with no literal anywhere (`aaa + bbb`) are NOT detected and fall
+# through to plain arithmetic codegen, which won't compile for strings. This is
+# a known, accepted gap: `+` on strings is a convenience for the literal-mixed
+# case, not a guarantee. Use `s_join`/`s_join_with` for joining plain variables.
 macro expr_string_prescan
 	bool expr_has_str_lit = false
 	int estr_scan = pos

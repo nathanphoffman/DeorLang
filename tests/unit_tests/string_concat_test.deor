@@ -5,9 +5,9 @@
 # directly inline (call arg / return / as-binding) rather than pre-bound to a
 # `string` variable first.
 #
-# A bare-identifier leading operand is cloned, matching Deor's clone-by-default
-# contract — the source variable stays usable after the chain (see
-# `reused_lead_var` below), not moved out from under it.
+# Every operand — leading or not — is only ever borrowed (`.as_str()`) into the
+# `[...].concat()` call, never cloned or moved, so the source variable stays
+# usable after the chain (see `reused_lead_var` below).
 
 fn string glue(string aaa, string bbb)
 	return aaa + bbb + "!"

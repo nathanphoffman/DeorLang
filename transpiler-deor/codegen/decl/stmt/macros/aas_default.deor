@@ -1,8 +1,10 @@
 
-# Default as-binding: emits `let [mut] name = expr[.to_string()]` for any `name as expr` form
-# not handled by the other aas macros. Skipped when expr is a binary-op chain (e.g.
+# Default as-binding: emits `let [mut] name = expr[.clone()|.to_string()]` for any `name as expr`
+# form not handled by the other aas macros. Skipped when expr is a binary-op chain (e.g.
 # `x as a + b + "c"`) — a chain already produces a correctly owned value, and this
-# suffix is meant for a single token.
+# suffix is meant for a single token. Mirrors tb_default's suffix logic exactly — `as`
+# always clones, the same as a typed `=` declaration, with no exception for a bare
+# identifier: `saved as lines` clones `lines` rather than moving it.
 macro aas_default
 	(kind) in after_as_token
 	val_pos as after_as
@@ -28,17 +30,26 @@ macro aas_default
 				break
 		aas_scan = aas_scan + 1
 
-	bool aas_is_str = false
-	if not aas_is_chain
-		aas_is_str = kind is "STRING"
 	string var_name = ident_name
 	bool mg_is_mut = list_has(mut_names, var_name)
 	string mut_kw = ""
 	if mg_is_mut
 		mut_kw = "mut "
 	string aas_suffix = ""
-	if aas_is_str
-		aas_suffix = ".to_string()"
+	if not aas_is_chain
+		if kind is "STRING"
+			aas_suffix = ".to_string()"
+		else if kind is "IDENT"
+			# ex: name as other{(}x) — val_pos+1 checks for a call/index after the identifier
+			int aas_next_idx = val_pos + 1
+			if aas_next_idx < token_count
+				Token aas_next_tok = tokens at aas_next_idx
+				(kind) in aas_next_tok
+				bool aas_is_call = kind is "LPAREN"
+				bool aas_is_idx = kind is "KW_AT"
+				if not aas_is_call
+					if not aas_is_idx
+						aas_suffix = ".clone()"
 	string aas_let2 = "let "
 	string aas_eq2 = " = "
 	string aas_sc2 = ";\n"

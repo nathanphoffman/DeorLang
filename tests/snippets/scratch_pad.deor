@@ -1,2 +1,8 @@
 fn void main()
+
+    #const int START as 0
+    int counter = 0
+
     print("hola" + "Hello World!" + "hi")
+    for idx in range(1)
+        print(idx)

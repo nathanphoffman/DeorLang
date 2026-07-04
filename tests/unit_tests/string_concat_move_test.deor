@@ -1,15 +1,16 @@
 # string_concat_move_test.deor
-# Confirms `move` genuinely opts a leading identifier out of the clone that
-# string_concat_test.deor's `reused_lead_var` case relies on — `move` really
-# transfers ownership into the chain, so reusing the variable afterward must
-# be a real Rust "use of moved value" error. Deor's own validator has no way
-# to catch this (the generated Rust is syntactically valid); only rustc's
-# borrow checker can, hence expect-rustc-error instead of expect-error.
+# Confirms `move` is inert inside a `+` string-concat chain — concatenation
+# compiles to `[...].concat()`, which only ever borrows its operands
+# (`.as_str()`), so there's nothing for `move` to opt out of. This is the same
+# kind of inertness `move` already has on a Copy-type primitive (see move.md):
+# writing it isn't wrong, it just doesn't change anything. `nates_string`
+# stays valid after the chain either way.
 
 fn void main()
 	string nates_string = "hello"
 	print(move nates_string + " hi")
 	print(nates_string)
 
-# expect-rustc-error:
-# borrow of moved value: `nates_string`
+# expect:
+# hello hi
+# hello

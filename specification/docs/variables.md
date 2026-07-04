@@ -59,18 +59,18 @@ See [Struct Construction](#struct-construction) below for full details and the e
 
 ### Existing variable
 
-A bare identifier on the right binds directly to an existing variable — this is the one `as` form that does **not** clone. It transfers ownership instead, the same as `move` (see [Move](docs/move.md)).
+A bare identifier on the right binds directly to an existing variable. Like every other `as` form, this clones — the source stays usable afterward.
 
 ```deor
 saved_lines as lines
-# lines is not accessible here and below
+print(lines)   # still valid
 ```
 
 ```rust
-let saved_lines = lines;
+let saved_lines = lines.clone();
 ```
 
-For `Copy` types (`int`, `float`, `bool`) there's nothing to transfer, so the source stays usable. For everything else — `string`, list shapes, structs — the source variable is consumed; using it afterward is a compile error. If you want a real copy instead, use an explicit typed declaration, which always clones: `stringList saved_lines = lines`.
+`as` never moves, for any of its four forms — it's the quick, type-inferred way to get a value, always at the cost of a clone. If you want to transfer ownership instead of cloning, use an explicit typed declaration with `move`: `stringList saved_lines = move lines`. See [Move](docs/move.md).
 
 ---
 
@@ -78,12 +78,12 @@ For `Copy` types (`int`, `float`, `bool`) there's nothing to transfer, so the so
 
 - **Validator type bindings** — `as` can't tell whether you want a plain `int` or a `Squarefeet` validator (predicate run, `Option<T>` result); use explicit `ValidatorType name = value` instead — see [Validator Type Bindings](#validator-type-bindings) below.
 - **Type annotation** — `as` never takes an explicit type prefix.
-- **Move transfer** — for the existing-variable form, `as` already transfers ownership on its own (see [Existing variable](#existing-variable) above), so combining it with `move` is redundant and rejected.
+- **Move transfer** — `as` always clones, so there's nothing for `move` to opt out of; combining them is rejected. Use a typed `=` declaration if you need `move`.
 
 ```deor
 area as 9             # transpiler error — int or Squarefeet? use Squarefeet area = 9
 int count as 0        # transpiler error — annotation not allowed with as; use int count = 0
-a as move b           # transpiler error — as already transfers ownership
+a as move b           # transpiler error — as always clones, move has nothing to do
 ```
 
 Record update (`with`) uses `as` — the type is known from the source struct. See [Immutability](docs/immutability.md).
