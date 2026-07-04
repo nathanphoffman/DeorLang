@@ -12,7 +12,7 @@ Note: While AI helped with some Deor code and documentation, **I have never had 
 
 ```deor
 times_to_say_hello as 10
-should_i_say_hello as true
+i_should_say_hello as true
 fahrenheit as 75.5
 message as "hello, the temperature is "
 ```
@@ -23,23 +23,76 @@ You will see other ways to declare variables in this documentation, but ```as```
 
 
 ## 2. Types of Variables *(Explicit Types)*
-> **Newcomers**: Data types expose the underbelly of computers. They tell the computer how to manage their memory, this was more important back in the day (and remains today for high-performance applications), but even back in the 60s some programming languages like Fortran allowed omitting these, so don't feel bad if you don't like them. These "data types" tell the computer what is expected to be stored in the variable both for safety and memory regulation, and it can matter in some languages where smaller or bigger values were expected. The computer can't know what information is coming from outside, and so it can't know how to prepare storage for it, afterall. By providing computers the type they can both guard against bad data being processed and improve performance by limiting how much memory is reserved for that value. Fahrenheit is obviously never going to be 1,000 trillion, but a computer (and non-Americans ;) ) don't know that! Deor simplifies things by making the default for these types very large, so 99.99% of the time you don't need to worry about it, and for safety the Rust code Deor generates is already safe: so the only real remaining factors are clarity and communicating expectations.
+> **Newcomers**: Data types expose the underbelly of computers. They tell the computer how to manage their memory, this was more important back in the day (and remains today for high-performance applications), but even back in the 60s some programming languages like Fortran allowed omitting these, so don't feel bad if you don't like them. These "data types" tell the computer what is expected to be stored in the variable both for safety and memory regulation, and it can matter in some languages where smaller or bigger values were expected. The computer can't know what information is coming from outside, and so it can't know how to prepare storage for it, afterall. By providing computers the type they can both guard against bad data being processed and improve performance by limiting how much memory is reserved for that value. Fahrenheit is obviously never going to be 1,000 trillion on Earth, but a computer (and non-Americans ;) ) don't know that! Deor simplifies things by making the default for these types very large, so 99.99% of the time you don't need to worry about it, and for safety the Rust code Deor generates is already safe: so the only real remaining factors are clarity and communicating expectations.
 
 ```deor
-int times_to_say_hello = 10
-bool should_i_say_hello = true
+int times_to_say_hello = 7
+bool i_should_say_hello = true
 float fahrenheit = 75.5
 string message = "hello, the temperature is "
 ```
 
-The symbol = is used instead of as, a hold-over from older languages like C to make the convention more familiar to programmers who know what data types are, allowing people who don't care, to use the more friendly `as`
+The symbol = is used instead of as, a hold-over from older languages like C to make the convention more familiar to programmers who know what data types are, allowing newcomers to use the simpler syntax ```as```, or techies to reserve ```as``` when declarations are obvious like our literal values.
 - ```int``` is a whole number (comes from math: integer)
-- ```bool``` a true/false value (comes from George Boole, a founder of logical/discrete mathematics)
+- ```bool``` short for boolean, a true/false value (comes from George Boole, a founder of logical/discrete mathematics)
 - ```float``` is a decimal value (it comes from the name floating-point calculation, basically a storage form of scientific notation) and can be inaccurate to use for extremely heavy amounts of math and financial data over many transactions due to limits of storage and binary accuracy. For regular day applications, you don't need to worry it has an accuracy of ~16 digits.
 - ```string``` a portion of human-text comes from (a string of characters) a hold-over from early languages like C which treated strings as lists of individual characters.
 
+> **Techies**: Floats use Double Precision 64-bit, and Integers use long precision 64-bit. This decision was made due to modern hardware and because it vastly simplifies types, for more explicit types you can use rust blocks. In Rust strings are stored on the heap, which makes them expandable. However, this also means they are reference-types and are the only of these types not to be a copy-type. Deor does its best to disguise this fact by to_string list borrows everytime it is met, this can be an expensive operation as the heap and pointer are both cloned.
 
-> **Techies**: Floats use Double Precision 64-bit, and Integers use long precision 64-bit. This decision was made due to modern hardware and because it vastly simplifies types, for more explicit types you can use rust blocks.
+## 3. Comments
+> **Newcomers**: Time to relax after that nonsense about low level stuff! This is the easiest section of all, comments are just for the coders benefit, they are literally stripped away by the computer, it doesn't care about them at all, which is why most highlighters make them fade into the background!
+```deor
+# this is a comment so I can say whatever I want!
+
+# let us go back to using as for these `primitive` values, they are obvious, and simple!
+times_to_say_hello as 7  # this is a prime number, fun fact!
+i_should_say_hello as true
+fahrenheit as 75.5
+
+# strings can be weird, as we will see, so we will keep explicit typing to differentiate it
+string message = "hello, the temperature is "
+```
+Comments are applied with the # symbol, called "hash".  They can be applied above (Deor best practice) but they can also be put to the side as well.
+> **Techies**: There is no block-comment, just use # for everything
+
+## 4. If Statement (1 of 2)
+> **Newcomers**: We are about to embark on our first bit of logic, code that does something! If statements are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?"
+```deor
+times_to_say_hello as 7
+i_should_say_hello as true
+fahrenheit as 75.5
+
+string message = "hello, the temperature is "
+
+if i_should_say_hello is true
+    print(message)  # prints: hello, the temperature is 
+
+```
+If takes a boolean value, which can also be a comparison (which returns a boolean value) which is what we see here. The equality comparison uses: ```is true``` which asks "is this statement true."  There is also an ```is false``` for the opposite. Like math there is order of operations so you could also have said ```if (i_should_say_hello is true)``` which could be necessary if you had more is and is nots. Additionally ```is true``` is optional here, since our variable is already a boolean (true/false) we could just replace this with ```if i_should_say_hello``` which would do the same thing.
+
+Deor uses tabbed-blocks which just means that when you need to make code a "child" of something else, you tab it below it, everything on that same tab-level lives at the same level of nesting or resides in the same "block".
+
+> **Techies**: If uses the else if / else standard pattern, to not overwhelm new readers it is not mentioned here, proceed to If Statement: Else (2 of 2) for detail.
+
+## 5. Built In Functions
+> **Newcomers**: We haven't discussed what functions are, don't worry about that. Just think of them as little units of work, you will end up defining some of your own soon enough! Built-Ins are, as the name suggests, built into the language as helpers to make your job easier.
+
+```deor
+times_to_say_hello as 7
+i_should_say_hello as true
+fahrenheit as 75.5
+
+string message = "hello, the temperature is "
+print(message) 
+# prints: hello, the temperature is
+
+len(message)
+
+error as "Oh no, the temperature is less than absolute 0!"
+crash(error)
+# crashes the program with the error: Oh no, the temperature is less than absolute 0!
 
 
 
+```
