@@ -6,6 +6,8 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 ---
 ## Working On 
 
+On Dusk new web highlighting is a bit hard to read for () and commas
+
 -
 Finalize syntax highlighting and port over latest new web build
 ---

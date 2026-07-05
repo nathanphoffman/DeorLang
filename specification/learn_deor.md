@@ -22,7 +22,7 @@ You will see other ways to declare variables in this documentation, but ```as```
 > **Techies**: Although these assignments look implicit, they actually are validated by the compiler, and the Rust compiler will hard-fail if it can't determine a good type to assign. All variables also get clone() applied in the Rust output, the Rust compiler will strip away cloned copy-types (so there is no added performance cost for copy-types), but it exists to make dealing with reference-types like Strings, Structs, and Vectors easier for the user at a cost to performance. To avoid this performance hit, the move keyword exists to allow ownership, and rust blocks exist for manual control (more on these later)
 
 
-## 2. Types of Variables *(Explicit Types)*
+## 2. Data Types: Primitives and Strings (1 of 2)
 > **Newcomers**: Data types expose the underbelly of computers. They tell the computer how to manage their memory, this was more important back in the day (and remains today for high-performance applications), but even back in the 60s some programming languages like Fortran allowed omitting these, so don't feel bad if you don't like them. These "data types" tell the computer what is expected to be stored in the variable both for safety and memory regulation, and it can matter in some languages where smaller or bigger values were expected. The computer can't know what information is coming from outside, and so it can't know how to prepare storage for it, afterall. By providing computers the type they can both guard against bad data being processed and improve performance by limiting how much memory is reserved for that value. Fahrenheit is obviously never going to be 1,000 trillion on Earth, but a computer (and non-Americans ;) ) don't know that! Deor simplifies things by making the default for these types very large, so 99.99% of the time you don't need to worry about it, and for safety the Rust code Deor generates is already safe: so the only real remaining factors are clarity and communicating expectations.
 
 ```deor
@@ -57,7 +57,8 @@ Comments are applied with the # symbol, called "hash".  They can be applied abov
 > **Techies**: There is no block-comment, just use # for everything
 
 ## 4. If Statement (1 of 2)
-> **Newcomers**: We are about to embark on our first bit of logic, code that does something! If statements are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?"
+> **Newcomers**: We are about to embark on our first bit of logic, code that does something! If statements are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?" If the statement (the condition to the right of the if) is true, then the code in the block below it runs. If it is false, it is skipped. The block below the code is a "tabbed-block" think of it like a nested level where anything with a tab below it is considered inside of that block, and will run.
+
 ```deor
 times_to_say_hello as 7
 i_should_say_hello as true
@@ -73,10 +74,12 @@ If takes a boolean value, which can also be a comparison (which returns a boolea
 
 Deor uses tabbed-blocks which just means that when you need to make code a "child" of something else, you tab it below it, everything on that same tab-level lives at the same level of nesting or resides in the same "block".
 
+The print you see here, prints to the terminal, and is explained in the next section.
+
 > **Techies**: If uses the else if / else standard pattern, to not overwhelm new readers it is not mentioned here, proceed to If Statement: Else (2 of 2) for detail.
 
-## 5. Built In Functions
-> **Newcomers**: We haven't discussed what functions are, don't worry about that. Just think of them as little units of work, you will end up defining some of your own soon enough! Built-Ins are, as the name suggests, built into the language as helpers to make your job easier.
+## 5. Built In Functions (1 of 2)
+> **Newcomers**: We haven't discussed what functions are, don't worry about that. Just think of them as little units of work, you will end up defining some of your own soon enough! Built-Ins are, as the name suggests, built into the language as helpers to make your job easier. You already saw how print() works, that is one of the built-in functions as seen below.
 
 ```deor
 times_to_say_hello as 7
@@ -92,7 +95,38 @@ len(message)
 error as "Oh no, the temperature is less than absolute 0!"
 crash(error)
 # crashes the program with the error: Oh no, the temperature is less than absolute 0!
-
-
-
 ```
+Built-ins:
+- print() prints the string to the terminal
+- len() outputs an int as to the length of the string (or list, once we get to that section)
+- crash() hard crashes the entire program with the string error message provided
+
+
+
+## Built In Functions (2 of 2)
+Built-ins that will be discussed in the future (you can ignore for now):
+- input() allows input to be taken in from the terminal
+- args() same as input but used for function arguments 
+- range() not yet discussed and specific to for loops, see the for sections for more
+
+
+## 6. Data Types: Structs  (2 of 4)
+> **Newcomers**: So far we have left out only three more data types: structs, lists
+
+## 7. Data Types: Lists and Shapes  (3 of 4)
+> **Newcomers**: So far we have left out only three more data types: structs, lists
+
+Shapes are used to declare what other languages call "generics". These are types that rely on other types. Think about a list. A list is a type, but a list itself doesn't tell us what is inside of it. A shape does, and allows us to alias it with a human readable syntax. 
+
+Shapes can also define func (which are basically functions stored as variables). The func shape is really quite complex, and is covered later on, but I provided the definition here for documentation clarity. Func are an advanced feature and are covered at the very end of this documentation. Most of the times you encounter shapes in this documentation it will be for defining list types.
+
+# 20. You are done the basics! Only Advanced Features Remain
+> **Newcomers**: You did it! Nice, thanks so much for reading, it is an honor of mine to help you learn to code! If I ever had another job, it would be being a programming teacher.  You have greatly honored me by partaking in this journey.
+
+You have completed this documentation page, only one more remains on advanced features if you want to read it, advanced features covers:
+- First Class Functions (Func)
+- Rust Blocks
+- Lib Wrappers / Rust Interop
+- Integration with Cargo
+
+> **Techies**: Let me know what you think of my programming language, and I strongly encourage you to check out the advanced page
