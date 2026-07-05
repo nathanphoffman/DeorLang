@@ -61,6 +61,16 @@ if ($userPath -notlike "*$BinDir*") {
     Write-Host "  Added $BinDir to user PATH"
 }
 
+$InstallExt = Read-Host "Install the Deor VS Code extension? [y/N]"
+if ($InstallExt -match '^[yY]') {
+    if (Get-Command code -ErrorAction SilentlyContinue) {
+        Write-Host "  Installing VS Code extension..."
+        & code --install-extension "$ScriptDir\deor-lang.vsix"
+    } else {
+        Write-Host "  VS Code 'code' command not found in PATH; skipping extension install."
+    }
+}
+
 Write-Host ""
 Write-Host "Done! Restart your terminal for PATH changes to take effect."
 Write-Host ""

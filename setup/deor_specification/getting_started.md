@@ -12,7 +12,6 @@ To get started with Deor you will need to install cargo/rust, then pull the late
 # Install Deor
 
 
-
 ### Unix Install — One Line:
 ```sh
 curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorLang/main/setup/install.sh | sh
@@ -36,11 +35,9 @@ cd DeorLang
 Restart your terminal. The binary is added to your user PATH automatically.
 
 
-
 ## Important things to note
 - Most importantly **deor is in extreme early revision** do not build production apps with it.
 - The /lib folder contains deor-language wrappers of useful rust functions
-- The rust compiler output suppresses warnings (as deor does overly-safe cloning to keep it pure) if you run it manually without the flag provided by just, you will see warnings, this is normal.
-- You can find a vscode extension in the folder that can be installed to give better language highlighting but no syntax-checking and support is early with it.
+- You can find a vscode extension in the folder that can be installed to give better language support for Deor.
 - As a general rule of thumb: for optimal performance use `rust` blocks; otherwise write standard Deor
 

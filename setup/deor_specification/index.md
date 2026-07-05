@@ -2,6 +2,8 @@
 <!-- [Deor Specification Index](index.md) -->
 <!-- themes: dusk -->
 
+[Documentation Homepage](main.md)
+
 ## Index
 
 [Best Practices](docs/best_practices.md) — style recommendations not enforced by the transpiler

@@ -4,7 +4,7 @@
 # Variables
 
 ## `as` — Type-Inferred Bindings
-`as` creates a binding whose type is derived from the right-hand side at compile time. It has three valid forms:
+`as` creates a binding whose type is derived from the right-hand side at compile time. It has four valid forms:
 
 ### Scalar literals
 The type is inferred from the literal value.
@@ -57,18 +57,33 @@ let score = Score { label: label.clone(), points: points.clone() };
 
 See [Struct Construction](#struct-construction) below for full details and the equivalent explicit-type form.
 
+### Existing variable
+
+A bare identifier on the right binds directly to an existing variable. Like every other `as` form, this clones — the source stays usable afterward.
+
+```deor
+saved_lines as lines
+print(lines)   # still valid
+```
+
+```rust
+let saved_lines = lines.clone();
+```
+
+`as` never moves, for any of its four forms — it's the quick, type-inferred way to get a value, always at the cost of a clone. If you want to transfer ownership instead of cloning, use an explicit typed declaration with `move`: `stringList saved_lines = move lines`. See [Move](docs/move.md).
+
 ---
 
 **What `as` is not for:**
 
 - **Validator type bindings** — `as` can't tell whether you want a plain `int` or a `Squarefeet` validator (predicate run, `Option<T>` result); use explicit `ValidatorType name = value` instead — see [Validator Type Bindings](#validator-type-bindings) below.
 - **Type annotation** — `as` never takes an explicit type prefix.
-- **Move transfer** — `as` already produces an owned binding, so combining it with `move` is redundant and rejected.
+- **Move transfer** — `as` always clones, so there's nothing for `move` to opt out of; combining them is rejected. Use a typed `=` declaration if you need `move`.
 
 ```deor
 area as 9             # transpiler error — int or Squarefeet? use Squarefeet area = 9
 int count as 0        # transpiler error — annotation not allowed with as; use int count = 0
-a as move b           # transpiler error — as already transfers ownership
+a as move b           # transpiler error — as always clones, move has nothing to do
 ```
 
 Record update (`with`) uses `as` — the type is known from the source struct. See [Immutability](docs/immutability.md).

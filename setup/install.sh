@@ -18,6 +18,7 @@ if [ -f "$SCRIPT_DIR/out.rs" ] && [ -d "$SCRIPT_DIR/../lib" ]; then
     GITIGNORE_SRC="$SCRIPT_DIR/.gitignore"
     CARGO_SRC="$SCRIPT_DIR/Cargo.toml"
     JUSTFILE_SRC="$SCRIPT_DIR/justfile"
+    VSIX_SRC="$SCRIPT_DIR/deor-lang.vsix"
 else
     echo "  Downloading from GitHub..."
     TMP="$(mktemp -d)"
@@ -31,6 +32,7 @@ else
     GITIGNORE_SRC="$TMP/DeorLang-$BRANCH/setup/.gitignore"
     CARGO_SRC="$TMP/DeorLang-$BRANCH/setup/Cargo.toml"
     JUSTFILE_SRC="$TMP/DeorLang-$BRANCH/setup/justfile"
+    VSIX_SRC="$TMP/DeorLang-$BRANCH/setup/deor-lang.vsix"
 fi
 
 printf "Project name (default: hello): " > /dev/tty
@@ -102,6 +104,19 @@ add_source_line() {
 
 add_source_line "$HOME/.bashrc"
 add_source_line "$HOME/.zshrc"
+
+printf "Install the Deor VS Code extension? [y/N]: " > /dev/tty
+read -r INSTALL_EXT < /dev/tty
+case "$INSTALL_EXT" in
+    [yY]*)
+        if command -v code > /dev/null 2>&1; then
+            echo "  Installing VS Code extension..."
+            code --install-extension "$VSIX_SRC"
+        else
+            echo "  VS Code 'code' command not found in PATH; skipping extension install."
+        fi
+        ;;
+esac
 
 echo ""
 echo "Done! Restart your shell or run:"

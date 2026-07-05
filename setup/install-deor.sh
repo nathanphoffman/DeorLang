@@ -12,6 +12,7 @@ ENV_FILE="$DEOR_HOME/env"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd 2>/dev/null)" || SCRIPT_DIR=""
 if [ -f "$SCRIPT_DIR/out.rs" ]; then
     OUT_RS="$SCRIPT_DIR/out.rs"
+    VSIX_SRC="$SCRIPT_DIR/deor-lang.vsix"
 else
     echo "  Downloading from GitHub..."
     TMP="$(mktemp -d)"
@@ -19,6 +20,7 @@ else
     curl -sL "https://github.com/$REPO/archive/refs/heads/$BRANCH.tar.gz" \
         | tar xz -C "$TMP"
     OUT_RS="$TMP/DeorLang-$BRANCH/setup/out.rs"
+    VSIX_SRC="$TMP/DeorLang-$BRANCH/setup/deor-lang.vsix"
 fi
 
 echo "Installing Deor..."
@@ -46,6 +48,19 @@ add_source_line() {
 
 add_source_line "$HOME/.bashrc"
 add_source_line "$HOME/.zshrc"
+
+printf "Install the Deor VS Code extension? [y/N]: " > /dev/tty
+read -r INSTALL_EXT < /dev/tty
+case "$INSTALL_EXT" in
+    [yY]*)
+        if command -v code > /dev/null 2>&1; then
+            echo "  Installing VS Code extension..."
+            code --install-extension "$VSIX_SRC"
+        else
+            echo "  VS Code 'code' command not found in PATH; skipping extension install."
+        fi
+        ;;
+esac
 
 echo ""
 echo "Done! Restart your shell or run:"

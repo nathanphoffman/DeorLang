@@ -1,5 +1,10 @@
-const dir = import.meta.dir;
-const port = process.env.PORT ? Number(process.env.PORT) : 8070;
+import { createServer } from 'http';
+import { readFile } from 'fs';
+import { extname, join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const dir = dirname(fileURLToPath(import.meta.url));
+const PORT = 8080;
 
 const MIME = {
   '.html': 'text/html',
@@ -9,22 +14,11 @@ const MIME = {
   '.svg':  'image/svg+xml',
 };
 
-console.log(`newweb → http://localhost:${port}`);
-
-Bun.serve({
-  port,
-  hostname: '0.0.0.0',
-  async fetch(req) {
-    const url = new URL(req.url);
-    const pathname = url.pathname === '/' ? '/index.html' : url.pathname;
-    const file = Bun.file(`${dir}${pathname}`);
-
-    if (await file.exists()) {
-      const ext = pathname.slice(pathname.lastIndexOf('.'));
-      const contentType = MIME[ext];
-      return new Response(file, contentType ? { headers: { 'Content-Type': contentType } } : undefined);
-    }
-
-    return new Response('Not Found', { status: 404 });
-  },
-});
+createServer((req, res) => {
+  const filePath = join(dir, req.url === '/' ? 'index.html' : req.url);
+  readFile(filePath, (err, data) => {
+    if (err) { res.writeHead(404); res.end('not found'); return; }
+    res.writeHead(200, { 'Content-Type': MIME[extname(filePath)] || 'application/octet-stream' });
+    res.end(data);
+  });
+}).listen(PORT, () => console.log(`newweb → http://localhost:${PORT}`));

@@ -45,6 +45,9 @@ sync-setup:
     mkdir -p setup/deor_specification
     cp -r specification/. setup/deor_specification/
     rm -rf setup/deor_specification/node_modules setup/deor_specification/railway.json
+    cd deor-vscode && npm install --silent && npm run compile
+    cd deor-vscode && npx --yes vsce package --allow-missing-repository
+    cp "$(ls -t deor-vscode/*.vsix | head -1)" setup/deor-lang.vsix
 
 test-examples:
     DEOR_LIB=lib ./output/out tests/unit_tester.deor output/test_runner.rs
