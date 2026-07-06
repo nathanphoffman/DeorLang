@@ -92,11 +92,13 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 		(kind, value) in operator_token
 		if not is_binary_op(kind)
 			break
+
 		string operator_str = value
 		# ex: left is {right} — cur_pos+1 grabs the right-hand operand after the operator
 		int after_op = cur_pos + 1
 		macro_run expr_is_special
 		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
+		
 		move (code, new_pos) in rhs_r
 		rhs_code as code
 		rhs_pos as new_pos

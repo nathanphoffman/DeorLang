@@ -35,6 +35,11 @@ macro primary_ident_expr
 					string ie_panic_code = s_join([ie_pan_pfx, ie_crash_code, ie_pan_sfx])
 					int ie_after_crash = ie_crash_end + 1
 					return make_result(move ie_panic_code, ie_after_crash)
+
+				# This is solely for optimization, it is rewritten as a .concat() so that no clones happen
+				#  clones happen because deor clones everything by default, and String is one of the few impacted
+				#  as a result, since it is a completely unnecessary wrapper call, it does save some performance to
+				#  replace the function with concat()
 				if ie_func is "s_join"
 					Token sj_arg_tok = tokens at ie_args_pos
 					(kind) in sj_arg_tok
@@ -50,6 +55,7 @@ macro primary_ident_expr
 						string sj_close = "].concat()"
 						string sj_code = s_join([sj_open, sj_items, sj_close])
 						return make_result(move sj_code, sj_after)
+
 				ParseResult ie_args_r = gen_call_args(tokens, ie_args_pos, ctx)
 				move (code, new_pos) in ie_args_r
 				ie_args_code as code
@@ -59,6 +65,7 @@ macro primary_ident_expr
 				string ie_rp = ")"
 				string ie_call_code = s_join([ie_func, ie_lp, ie_args_code, ie_rp])
 				return make_result(move ie_call_code, ie_after)
+				
 			if kind is "KW_AT"
 				# ex: name at {idx} — ie_next+1 grabs the index expression after 'at'
 				int ie_idx_pos = ie_next + 1

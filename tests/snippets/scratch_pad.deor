@@ -7,5 +7,5 @@ fn void main()
     for idx in range(1)
         print(idx)
 
-    string new_counter = move hello
-    print(counter)
+    #string new_counter = move hello
+    #print(counter)

@@ -35,4 +35,5 @@ fn ParseResult gen_struct_decl(TokensRef tokens, int pos)
 	string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
 	string decl = s_join([sdcl_pfx, struct_name, RS_OB, fields_code, RS_CB2])
 	(pos) in cur
+	
 	return make_result(move decl, pos)

@@ -9,19 +9,23 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 	int cur = pos
 	int token_count = len(tokens)
 	macro_run rust_strings
+
 	for if true
 		if cur >= token_count
 			break
 		Token token = tokens at cur
 		(kind) in token
+
 		if kind is "RPAREN"
 			break
 		if kind is "COMMA"
 			cur = cur + 1
 			continue
+
 		bool arg_saved_ctx = float_ctx_get()
 		float_ctx_disable()
 		ParseResult arg_r = gen_expr(tokens, cur, ctx)
+
 		if arg_saved_ctx
 			float_ctx_enable()
 		move (code, new_pos) in arg_r
@@ -30,7 +34,9 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		bool ca_is_chain = false
 		int ca_scan = cur
 		int ca_depth = 0
+		
 		for if ca_scan < arg_pos
+
 			Token ca_scan_tok = tokens at ca_scan
 			(kind) in ca_scan_tok
 			if kind is "LPAREN"
@@ -64,4 +70,5 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		arg_codes at end = arg_code
 		cur = arg_pos
 	string args_str = s_join_with(arg_codes, RS_CSEP)
+
 	return make_result(move args_str, cur)
