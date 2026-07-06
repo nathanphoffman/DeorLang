@@ -1,14 +1,12 @@
 # Learning Deor
 I will spend only a few words in this section, **please skip to the next heading if you are short on time**. 
 
-My name is Nathan Hoffman, I am the creator behind Deor. I want this document to be useful for people coding for the first time and technical people, hence why I am using two blocks that can be ignored by either party "Newcomers" and "Techies". This language also serves as a great starting point for people who struggle learning Rust, as it transpiles to Rust, has some strong Rust similarities, and allows raw rust to be written inside of rust blocks.
+My name is Nathan Hoffman, I am the creator behind Deor. I want this to be useful for both first time coders and technical people, hence why I am using two blocks that can be ignored by either party "Newcomers" and "Techies". This language also serves as a great starting point for people who struggle learning Rust, as it transpiles to Rust, has some strong Rust similarities, and allows raw rust to be written inside of rust blocks.
 
-To give you an idea of why I created Deor, you have to understand my background: I was born into a sea of Commodore Amiga hardware and software in the late 80s through mid-90s when my dad's computer store closed; throughout much of my life, I have loved programming, and anytime I move away from it, I come right back like a boomerang. I began with C and JavaScript the age of 13 in the early 2000s; I moved to PHP for fun in the mid-late 00s, and then finally landed programming as a career starting around 2014, so it would not be an exaggeration to say I have been coding for a quarter century. It wasn't all roses though, in the 2020s I started to have doubts about my programming career due to a series of personal struggles, yet even while questioning it my love was so strong I still did it as a career and for fun. In 2026 everything changed, and my code love grew so strong that it may be the pinnacle of my coding love: so when I say I can stand behind this language, know it does come from enthusiasm that has been building all my life, with an energy helped by AI learning. It takes me back to my days on my dad's Amiga looking at console text scroll across the startup console in wonder.
-
-Note: While AI helped with some Deor code and documentation, **I have never had AI directly generate anything on this page** These are **my words**, thank you for spending the time to read them! :)
+To give you an idea of why I created Deor, you have to understand my background: I was born into a sea of Commodore Amiga hardware and software in the late 80s through mid-90s when my dad's computer store closed; throughout much of my life, I have loved programming, and anytime I move away from it, I come right back like a boomerang. I began with C and JavaScript the age of 13 in the early 2000s; I moved to PHP for fun in the mid-late 00s, and then finally landed programming as a career starting around 2014, so it would not be an exaggeration to say I have been coding for a quarter century. It wasn't all roses though, in the 2020s I started to have doubts about my programming career (a series of personal struggles), yet even so my love for code was so strong I still did it as a career (for some of that period) and for fun (for much of it). But in 2026 everything changed, and my code love grew so strong that it may be the pinnacle of my coding love: so when I say I can stand behind this language, know it does come from enthusiasm that has been building all my life, with an energy helped by AI learning. It takes me back to my days on my dad's Amiga looking at pop-up boot console scroll across in wonder. Note: These are my words, not AI's, I typed all of this manually thanks for reading them!
 
 ## 1. Storing Information: *(Compiler Implicit as)*
-> **Newcomers**: Variables are portions of information, think names, numbers, and lists. If you tell a computer to say hello, it needs to know what hello is, not just how to say it. Variables have names that are used to reference the value in the code. For some values you just type the value (like numbers), for others which are hard for the computer to determine from the context, what are called strings (human writing), you use "" to wrap the string. 
+> **Newcomers**: Variables are portions of information, think names, numbers, and lists. If you tell a computer to say hello, it needs to know what hello is, not just how to say it. Variables have names that are used to reference the value in the code. For some values you just type the value (like numbers), for others which are hard for the computer to determine, such as strings (writing), you use "" to wrap the string. 
 
 ```deor
 times_to_say_hello as 10
@@ -23,7 +21,7 @@ You will see other ways to declare variables in this documentation, but ```as```
 
 
 ## 2. Data Types: Primitives and Strings (1 of 2)
-> **Newcomers**: Data types expose the underbelly of computers. They tell the computer how to manage their memory, this was more important back in the day (and remains today for high-performance applications), but even back in the 60s some programming languages like Fortran allowed omitting these, so don't feel bad if you don't like them. These "data types" tell the computer what is expected to be stored in the variable both for safety and memory regulation, and it can matter in some languages where smaller or bigger values were expected. The computer can't know what information is coming from outside, and so it can't know how to prepare storage for it, afterall. By providing computers the type they can both guard against bad data being processed and improve performance by limiting how much memory is reserved for that value. Fahrenheit is obviously never going to be 1,000 trillion on Earth, but a computer (and non-Americans ;) ) don't know that! Deor simplifies things by making the default for these types very large, so 99.99% of the time you don't need to worry about it, and for safety the Rust code Deor generates is already safe: so the only real remaining factors are clarity and communicating expectations.
+> **Newcomers**: Data types expose the underbelly of computers. They tell the computer how to manage their memory, this was more important back in the day (and remains today for high-performance applications), but even back in the 60s some programming languages like Fortran allowed omitting these, so don't feel bad if you don't like them. These "data types" tell the computer what is expected to be stored in the variable both for safety and memory regulation, and it can matter in some languages where smaller or bigger values were expected. The computer can't know what information is coming from outside, and so it can't know how to prepare storage for it, afterall. By providing computers the type they can both guard against bad data being processed and improve performance by limiting how much memory is reserved for that value. Fahrenheit is obviously never going to be 1,000 trillion on Earth, but a computer (and the rest of the world ;) ) don't know that! Deor simplifies things by making the default for these types very large, so 99.99% of the time you don't need to worry about it, and for safety the Rust code Deor generates is already safe: so the only real remaining factors are clarity and communicating expectations.
 
 ```deor
 int times_to_say_hello = 7
@@ -57,7 +55,7 @@ Comments are applied with the # symbol, called "hash".  They can be applied abov
 > **Techies**: There is no block-comment, just use # for everything
 
 ## 4. If Statement (1 of 2)
-> **Newcomers**: We are about to embark on our first bit of logic, code that does something! If statements are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?" If the statement (the condition to the right of the if) is true, then the code in the block below it runs. If it is false, it is skipped. The block below the code is a "tabbed-block" think of it like a nested level where anything with a tab below it is considered inside of that block, and will run.
+> **Newcomers**: We are about to embark on our first bit of logic, code that does something! If statements are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?" If the statement (the condition to the right of the if) is true, then the code in the block below it runs. If it is false, it is skipped. The block below the code is a "tabbed-block" think of it like a nested level where anything with a tab below it is considered inside of that block, and will run if the statement is true.
 
 ```deor
 times_to_say_hello as 7
@@ -68,15 +66,16 @@ string message = "hello, the temperature is "
 
 if i_should_say_hello is true
     print(message)  # prints: hello, the temperature is 
+    # anything here would run too if it there was stuff here because it is indented!
 
 ```
-If takes a boolean value, which can also be a comparison (which returns a boolean value) which is what we see here. The equality comparison uses: ```is true``` which asks "is this statement true."  There is also an ```is false``` for the opposite. Like math there is order of operations so you could also have said ```if (i_should_say_hello is true)``` which could be necessary if you had more is and is nots. Additionally ```is true``` is optional here, since our variable is already a boolean (true/false) we could just replace this with ```if i_should_say_hello``` which would do the same thing.
+```If``` can be a boolean or a comparison (which returns a boolean value) which is what we see here. The equality comparison uses: ```is true``` which asks "is this statement true."  There is also an ```is false``` for the opposite. Like math there is order of operations so you could also have said ```if (i_should_say_hello is true)```. Additionally ```is true``` is optional here, since our variable is already a boolean (true/false) we could just replace this with ```if i_should_say_hello``` which would do the same thing. 
 
 Deor uses tabbed-blocks which just means that when you need to make code a "child" of something else, you tab it below it, everything on that same tab-level lives at the same level of nesting or resides in the same "block".
 
 The print you see here, prints to the terminal, and is explained in the next section.
 
-> **Techies**: If uses the else if / else standard pattern, to not overwhelm new readers it is not mentioned here, proceed to If Statement: Else (2 of 2) for detail.
+> **Techies**: If uses the else if / else standard pattern, to not overwhelm new readers it is not mentioned here, proceed to If Statement: Else (2 of 2) for detail.  Also: is represents ==  /  is not represents !=
 
 ## 5. Built In Functions (1 of 2)
 > **Newcomers**: We haven't discussed what functions are, don't worry about that. Just think of them as little units of work, you will end up defining some of your own soon enough! Built-Ins are, as the name suggests, built into the language as helpers to make your job easier. You already saw how print() works, that is one of the built-in functions as seen below.
@@ -87,27 +86,36 @@ i_should_say_hello as true
 fahrenheit as 75.5
 
 string message = "hello, the temperature is "
-print(message) 
-# prints: hello, the temperature is
 
-len(message)
+if fahrenheit < -459.67
+    crash("Oh no, the temperature is less than absolute 0! That doesn't seem possible...")
+else if i_should_say_hello
+    print(message)
+    print(fahrenheit)
+else
+    # length of message is 26
+    length_of_message as len(message)
+    print("I wasn't allowed to print your message, but you missed out, it was this long!: ")
+    print(length_of_message)  # would have printed 26
 
-error as "Oh no, the temperature is less than absolute 0!"
-crash(error)
-# crashes the program with the error: Oh no, the temperature is less than absolute 0!
 ```
-Built-ins:
-- print() prints the string to the terminal
+
+Deor has only six built-in functions, three are explained here, three more will be explained later:
 - len() outputs an int as to the length of the string (or list, once we get to that section)
 - crash() hard crashes the entire program with the string error message provided
+- print() prints the string to the terminal
 
 
-
-## Built In Functions (2 of 2)
+## 6. Built In Functions (2 of 2)
 Built-ins that will be discussed in the future (you can ignore for now):
 - input() allows input to be taken in from the terminal
 - args() same as input but used for function arguments 
-- range() not yet discussed and specific to for loops, see the for sections for more
+
+
+The only built-in we haven't talked about is ```range``` which is next!
+
+
+## 7. For Loops (1 of 2)
 
 
 ## 6. Data Types: Structs  (2 of 4)
