@@ -55,7 +55,7 @@ Comments are applied with the # symbol, called "hash".  They can be applied abov
 > **Techies**: There is no block-comment, just use # for everything
 
 ## 4. If Statement (1 of 2)
-> **Newcomers**: We are about to embark on our first bit of logic, code that does something! If statements are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?" If the statement (the condition to the right of the if) is true, then the code in the block below it runs. If it is false, it is skipped. The block below the code is a "tabbed-block" think of it like a nested level where anything with a tab below it is considered inside of that block, and will run if the statement is true.
+> **Newcomers**: We are about to embark on our first bit of logic, code that does something! If statements are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?" When the expression (the condition to the right of the if) is true, then the code in the block below it runs. If it is false, it is skipped. The block below the code is a "tabbed-block" think of it like a nested level where anything with a tab below it is considered inside of that block, and will run if the statement is true.
 
 ```deor
 times_to_say_hello as 7
@@ -64,12 +64,13 @@ fahrenheit as 75.5
 
 string message = "hello, the temperature is "
 
+# since i_should_say_hello is set to true, this is true and runs
 if i_should_say_hello is true
     print(message)  # prints: hello, the temperature is 
     # anything here would run too if it there was stuff here because it is indented!
 
 ```
-```If``` can be a boolean or a comparison (which returns a boolean value) which is what we see here. The equality comparison uses: ```is true``` which asks "is this statement true."  There is also an ```is false``` for the opposite. Like math there is order of operations so you could also have said ```if (i_should_say_hello is true)```. Additionally ```is true``` is optional here, since our variable is already a boolean (true/false) we could just replace this with ```if i_should_say_hello``` which would do the same thing. 
+```If``` can be a boolean or a comparison (which returns a boolean value) which is what we see here. The equality comparison uses: ```is true``` which asks "is this statement true."  There is also an ```is false``` for the opposite. Like math there is order of operations so you could also have said ```if (i_should_say_hello is true)```. Additionally the ```is true``` part at the end is optional here, since our variable is already a boolean (true/false) we could just replace this with ```if i_should_say_hello``` which would do the same thing. 
 
 Deor uses tabbed-blocks which just means that when you need to make code a "child" of something else, you tab it below it, everything on that same tab-level lives at the same level of nesting or resides in the same "block".
 
@@ -78,7 +79,7 @@ The print you see here, prints to the terminal, and is explained in the next sec
 > **Techies**: If uses the else if / else standard pattern, to not overwhelm new readers it is not mentioned here, proceed to If Statement: Else (2 of 2) for detail.  Also: is represents ==  /  is not represents !=
 
 ## 5. Built In Functions (1 of 2)
-> **Newcomers**: We haven't discussed what functions are, don't worry about that. Just think of them as little units of work, you will end up defining some of your own soon enough! Built-Ins are, as the name suggests, built into the language as helpers to make your job easier. You already saw how print() works, that is one of the built-in functions as seen below.
+> **Newcomers**: We haven't discussed what functions are, don't worry about that. Just think of them as little units of work, you will end up defining some of your own soon enough! Built-Ins are, as the name suggests, built into the language as helpers to make your job easier, which means you don't need to know why they work!  You just need to know what they do. You already saw how print() works, that is one of the built-in functions as seen below.
 
 ```deor
 times_to_say_hello as 7
@@ -90,21 +91,25 @@ string message = "hello, the temperature is "
 if fahrenheit < -459.67
     crash("Oh no, the temperature is less than absolute 0! That doesn't seem possible...")
 else if i_should_say_hello
+    # this prints: hello, the temperature is 
+    #  then below that line: 75.7
     print(message)
     print(fahrenheit)
 else
     # length of message is 26
     length_of_message as len(message)
+
     print("I wasn't allowed to print your message, but you missed out, it was this long!: ")
-    print(length_of_message)  # would have printed 26
+    print(length_of_message)  # would have printed 26 below the message just above
 
 ```
 
-Deor has only six built-in functions, three are explained here, three more will be explained later:
-- len() outputs an int as to the length of the string (or list, once we get to that section)
+Deor has only six built-in functions, three are explained in this section which are:
+- len() outputs an int as to the length of the string (the text in "")
 - crash() hard crashes the entire program with the string error message provided
 - print() prints the string to the terminal
 
+> **Techies** Print is in Rust: print!("{}",x), so any data type can be taken so long as it is a string or primitive
 
 ## 6. Built In Functions (2 of 2)
 Built-ins that will be discussed in the future (you can ignore for now):
