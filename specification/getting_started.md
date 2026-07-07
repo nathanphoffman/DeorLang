@@ -1,6 +1,6 @@
 <!-- title: Deor Specification -->
 <!-- [Deor Specification](main.md) -->
-<!-- themes: dusk -->
+<!-- themes: blackboard -->
 
 # Getting Started
 To get started with Deor you will need to install cargo/rust, then pull the latest version from the git repo.

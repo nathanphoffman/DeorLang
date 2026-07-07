@@ -1,6 +1,6 @@
 <!-- title: Deor Specification -->
 <!-- [Deor Specification Index](index.md) -->
-<!-- themes: dusk -->
+<!-- themes: blackboard -->
 # Syntax
 
 ## Block Structure (No Colons)

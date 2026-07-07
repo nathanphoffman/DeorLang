@@ -1,6 +1,6 @@
 <!-- title: Deor Specification -->
 <!-- [Deor Specification](main.md) -->
-<!-- themes: dusk -->
+<!-- themes: blackboard -->
 # Core Principles
 
 ---

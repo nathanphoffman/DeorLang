@@ -1,6 +1,6 @@
 <!-- title: Deor Specification -->
 <!-- [Deor Specification Index](index.md) -->
-<!-- themes: dusk -->
+<!-- themes: blackboard -->
 # Collections
 List operations assume a list shape has already been declared — see [Shapes](docs/shapes.md) for how to declare one and use it in function signatures and struct fields.
 

@@ -1,3 +1,7 @@
+<!-- title: Deor Specification -->
+<!-- [Deor Specification Index](index.md) -->
+<!-- themes: blackboard -->
+
 # Best Practices
 Style recommendations not enforced by the transpiler.
 
@@ -158,11 +162,11 @@ int area = square(side)
 
 **Use a macro — called inside a loop:**
 ```deor
-macro sq(val)
-    val * val
+macro sq
+    int area = sq(val)
 
 for item in items
-    int area = sq(val)
+    macro_run sq
 ```
 
 If the logic is non-trivial, extract it into a function regardless — readability wins over minor call overhead for complex operations.
@@ -192,6 +196,10 @@ Don't `macro_run` the same const-macro twice in one function body — the second
 ## File Length
 
 Keep files to a reasonable length. There is no hard limit, but when a file starts to feel long, consider splitting it. A natural split point is when the file contains multiple distinct concerns — for example, separate structs and their associated functions into their own files.
+
+A quick way to separate concerns is with ```macros```, since code can just be copied and pasted with macros, with no concern for scope (since they exist where injected), they are the fastest way to organize files and give each small code snippet a name.
+
+In the Deor creator's opinion: Smaller functions with well placed macros > Smaller with only functions > Smaller with only macros > Large files of any kind.  Hence, don't avoid macros as a short time powerhouse for organization until areas can be broke into more manageable functions.
 
 ---
 ## Prefer `is not` Over `not ... is`

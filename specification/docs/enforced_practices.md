@@ -1,6 +1,6 @@
 <!-- title: Deor Specification -->
 <!-- [Deor Specification Index](index.md) -->
-<!-- themes: dusk -->
+<!-- themes: blackboard -->
 # Enforced Practices
 These rules are enforced by the transpiler. Violations produce warnings or compile-time errors.
 
