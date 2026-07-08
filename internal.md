@@ -6,7 +6,17 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 ---
 ## Working On 
 
-On Dusk new web highlighting is a bit hard to read for () and commas
+Add enforced ordering using best practices:
+
+Imports - Everything else could use it, relies on nothing else in the file
+Enums - Relies likely on nothing else in the file
+Structs - Reliant on most everything above but still structural (so above functions)
+Shapes - Shapes can reference almost anything above
+Types - Type validators being types must be defined early
+Macros (macros that depend on another must be listed below its dependency)
+Functions - Reliant on everything above
+
+New web crossover: Update black and white editors to have a more clear highlighting syntax
 
 -
 Finalize syntax highlighting and port over latest new web build

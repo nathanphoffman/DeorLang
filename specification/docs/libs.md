@@ -16,7 +16,7 @@ Four of the library files are **parameterized** — they use `where Placeholder 
 
 ## `lib/string.deor`
 
-String utilities beyond the built-in `+` concatenation.
+String utilities. `+` cannot be used with strings — use `s_join`/`s_join_with` for concatenation.
 
 | Function | Signature | Description |
 |---|---|---|

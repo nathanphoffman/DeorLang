@@ -47,7 +47,7 @@ fn ParseResult scan_import_where(tokenList tokens, int pos)
 				# ex: where Placeholder = ConcreteType{\n} — concrete_pos+1 grabs the token after the clause
 				int after_where = concrete_pos + 1
 
-				replace_with as replacement_value + "|" + value
+				replace_with as s_join([replacement_value, "|", value])
 				return make_result(replace_with, after_where)
 	string emp = ""
 	return make_result(emp, pos)

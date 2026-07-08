@@ -1,14 +1,16 @@
 # string_concat_move_test.deor
-# Confirms `move` is inert inside a `+` string-concat chain — concatenation
-# compiles to `[...].concat()`, which only ever borrows its operands
-# (`.as_str()`), so there's nothing for `move` to opt out of. This is the same
-# kind of inertness `move` already has on a Copy-type primitive (see move.md):
-# writing it isn't wrong, it just doesn't change anything. `nates_string`
-# stays valid after the chain either way.
+# Confirms `move` is inert inside s_join's bracket-literal item list — it compiles
+# to `[...].concat()`, which only ever borrows its operands (`.as_str()`), so
+# there's nothing for `move` to opt out of. This is the same kind of inertness
+# `move` already has on a Copy-type primitive (see move.md): writing it isn't
+# wrong, it just doesn't change anything. `nates_string` stays valid after the
+# join either way.
+
+import "lib/string.deor"
 
 fn void main()
 	string nates_string = "hello"
-	print(move nates_string + " hi")
+	print(s_join([move nates_string, " hi"]))
 	print(nates_string)
 
 # expect:

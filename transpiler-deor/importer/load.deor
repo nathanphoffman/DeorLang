@@ -36,6 +36,7 @@ fn tokenList load_file(string path)
 	int pos = 0
 	int depth = 0
 	bool seen_decl = false
+	int decl_phase = 0
 
 	for if true
 
@@ -62,6 +63,35 @@ fn tokenList load_file(string path)
 			continue
 
 		bool at_root_depth = depth is 0
+
+		# Enforces the file-level declaration order documented in best_practices.md:
+		# imports -> structural declarations (struct/enum/type/shape, any order among
+		# themselves) -> macros -> functions. Only checked at root depth — a macro
+		# declared inside a function body is locally scoped and exempt.
+		if at_root_depth
+			bool is_structural_kw = kind is "KW_STRUCT" or kind is "KW_ENUM" or kind is "KW_SHAPE" or kind is "KW_TYPE"
+			if is_structural_kw
+				if decl_phase > 0
+					string err_pre = "[error] "
+					string err_mid = ": struct/enum/type/shape declarations must come before macros and functions"
+					strList err_parts = [err_pre, path, err_mid]
+					string err_msg = s_join(err_parts)
+					print(err_msg)
+					rust
+						std::process::exit(1);
+			if kind is "KW_MACRO"
+				if decl_phase is 2
+					string err_pre = "[error] "
+					string err_mid = ": macros must be declared before functions"
+					strList err_parts = [err_pre, path, err_mid]
+					string err_msg = s_join(err_parts)
+					print(err_msg)
+					rust
+						std::process::exit(1);
+				else if decl_phase < 1
+					decl_phase = 1
+			if kind is "KW_FN"
+				decl_phase = 2
 
 		bool is_new_import = kind is "KW_IMPORT" and at_root_depth
 

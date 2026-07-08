@@ -1,8 +1,8 @@
 
 # Tracks INDENT/DEDENT nesting depth and sets `in_void_fn` when entering a void function body,
 # clearing it when the function's block closes — used to enforce the no-return rule in void fns.
-# Also clears validator_vars, non_bool_var_names, string_var_names, and numeric_var_names at
-# the start of each top-level fn, so a tracked local in one function doesn't leak into matching
+# Also clears validator_vars, non_bool_var_names, and string_var_names at the start of
+# each top-level fn, so a tracked local in one function doesn't leak into matching
 # an unrelated same-named local in the next.
 # This must run before the "fn name" validate_ident check later in the loop, since that check
 # `continue`s past the KW_FN token on a match — anything scheduled after it never sees it.
@@ -19,7 +19,6 @@ macro track_block_scope
 				validator_vars.clear();
 				non_bool_var_names.clear();
 				string_var_names.clear();
-				numeric_var_names.clear();
 		# ex: fn {void} name() — pos+1 grabs the return-type slot
 		int void_check = pos + 1
 		if void_check < token_count

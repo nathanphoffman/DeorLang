@@ -67,7 +67,6 @@ fn void validate_tokens(TokensRef tokens)
 	strList const_var_names = empty
 	strList non_bool_var_names = empty
 	strList string_var_names = empty
-	strList numeric_var_names = empty
 	strList declared_var_names = empty
 	pre_i = 0
 	for if pre_i < token_count
@@ -102,7 +101,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run skip_rust_block
 		macro_run check_not_is_order
 		macro_run check_bare_truthiness
-		macro_run check_mixed_string_concat
+		macro_run check_string_plus_banned
 
 		validate_indent_offset as 1
 

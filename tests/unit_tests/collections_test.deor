@@ -12,7 +12,7 @@ fn int sum_list(intList nums)
 	return total
 
 fn string join_two(string word_a, string word_b)
-	return word_a + " " + word_b
+	return s_join([word_a, " ", word_b])
 
 fn void main()
 	intList scores = [10, 20, 30]
@@ -42,7 +42,7 @@ fn void main()
 	string msg = join_two(hello, world)
 	print(msg)
 
-	string line = "fn " + "main" + "()"
+	string line = s_join(["fn ", "main", "()"])
 	print(line)
 
 	wordList words = ["foo", "bar", "baz"]

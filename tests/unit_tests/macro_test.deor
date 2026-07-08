@@ -6,20 +6,12 @@
 macro say_hello
 	print("Hi There")
 
-fn void greet()
-	macro_run say_hello
-	macro_run say_hello
-
 macro compute_area
 	block
 		length as 10
 		width as 5
 		area as length * width
 		print(area)
-
-fn void run_area_twice()
-	macro_run compute_area
-	macro_run compute_area
 
 macro inner_macro
 	print("inner")
@@ -29,8 +21,20 @@ macro outer_macro
 	macro_run inner_macro
 	print("outer end")
 
+
+fn void greet()
+	macro_run say_hello
+	macro_run say_hello
+
+
+fn void run_area_twice()
+	macro_run compute_area
+	macro_run compute_area
+
+
 fn void run_nested()
 	macro_run outer_macro
+
 
 fn void run_local_macro_scope()
 	macro local_only

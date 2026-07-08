@@ -2,15 +2,20 @@
 # Tracks declared variable types for two downstream checks:
 #   non_bool_var_names — anything except 'bool' and validator types, since only
 #     those two have bare truthiness (see check_bare_truthiness).
-#   string_var_names / numeric_var_names — vars declared 'string' vs 'int'/'float',
-#     so check_mixed_string_concat can catch a numeric operand in a string '+'
-#     chain (or vice versa) instead of letting it fail as an opaque rustc error.
-# Two sources: typed declarations ('Type name = expr', same pattern check_var_decl
-# detects) and function parameters ('fn Ret name(Type1 p1, Type2 p2, ...)').
+#   string_var_names — vars declared 'string', so check_string_plus_banned can
+#     catch '+' touching a string operand instead of letting it fail as an
+#     opaque rustc error.
+# Three sources: typed declarations ('Type name = expr', same pattern check_var_decl
+# detects), function parameters ('fn Ret name(Type1 p1, Type2 p2, ...)'), and
+# `as` bindings whose right-hand side is a STRING literal or another tracked
+# string var ('name as "literal"' / 'name as other_string_var') — `as` bindings
+# have no declared type token to key off, so string_var_names is the only one of
+# the two lists that can pick them up at all (non_bool_var_names has no positive
+# non-string/non-bool signal to go on here, so `as`-bound names are left out of it).
 # Deliberately does NOT track destructured struct fields ('(field) in source') —
 # there's no field-type registry to look up against, so those are left
-# unclassified rather than guessed at; both downstream checks only flag names
-# they can positively confirm.
+# unclassified rather than guessed at; every check here only flags names it can
+# positively confirm.
 macro track_non_bool_vars
 	if cur_kind is "IDENT"
 		# ex: Type {name} = expr — pos+1 grabs the variable name
@@ -34,12 +39,16 @@ macro track_non_bool_vars
 				if cur_val is "string"
 					(value) in tnb_tok1
 					string_var_names at end = value
-				else if cur_val is "int"
-					(value) in tnb_tok1
-					numeric_var_names at end = value
-				else if cur_val is "float"
-					(value) in tnb_tok1
-					numeric_var_names at end = value
+
+			# ex: {name} as "literal" / name as other_str — tnb_next1 is KW_AS, tnb_next2 is the RHS
+			if tnb_k1 is "KW_AS"
+				bool tnb_as_is_str = tnb_k2 is "STRING"
+				if not tnb_as_is_str
+					if tnb_k2 is "IDENT"
+						(value) in tnb_tok2
+						tnb_as_is_str = list_has(string_var_names, value)
+				if tnb_as_is_str
+					string_var_names at end = cur_val
 
 	if cur_kind is "KW_FN"
 		# ex: fn int add{(}left, right) — pos+3 grabs the opening paren
@@ -71,9 +80,5 @@ macro track_non_bool_vars
 										non_bool_var_names at end = value
 								if tnb_param_type is "string"
 									string_var_names at end = value
-								else if tnb_param_type is "int"
-									numeric_var_names at end = value
-								else if tnb_param_type is "float"
-									numeric_var_names at end = value
 								tnb_ps = tnb_pn
 					tnb_ps = tnb_ps + 1

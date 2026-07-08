@@ -1,0 +1,41 @@
+# string_plus_banned_test.deor
+# Exercises check_string_plus_banned: '+' is never valid with a string operand —
+# not string+string, not string+number, in either order. Rust's `String` only
+# implements `Add<&str>`, never `Add<String>`, so both shapes used to compile to
+# broken or opaque-error Rust; now they're a clear Deor-level error pointing at
+# s_join/s_join_with instead.
+
+fn void test_string_plus_int()
+	int count = 5
+	string bad = "count: " + count
+	print(bad)
+
+fn void test_int_plus_string()
+	int count = 5
+	string bad2 = count + "count: "
+	print(bad2)
+
+fn void test_string_plus_float()
+	float ratio = 1.5
+	string bad3 = "ratio: " + ratio
+	print(bad3)
+
+fn void test_string_plus_string_literal()
+	string bad4 = "hello " + "world"
+	print(bad4)
+
+fn void test_string_plus_string_var()
+	greeting as "hi "
+	name as "sam"
+	string bad5 = greeting + name
+	print(bad5)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 10: variable '+' - '+' cannot be used with strings
+# line 15: variable '+' - '+' cannot be used with strings
+# line 20: variable '+' - '+' cannot be used with strings
+# line 24: variable '+' - '+' cannot be used with strings
+# line 30: variable '+' - '+' cannot be used with strings

@@ -30,7 +30,41 @@ There are no exceptions. All runtime identifiers — variables, parameters, fiel
 
 ---
 ## Ordering
-Imports are required to be at the top of a file, however there are no other restrictions, but there are suggestions for [best practices](docs/best_practices.md).
+A file's top-level declarations must appear in this order:
+
+1. Imports
+2. Structural declarations — `enum`, `struct`, `type`, `shape`, in any order relative to each other
+3. Macros
+4. Functions
+
+The transpiler checks group boundaries, not exact placement within a group — any mix of `enum`/`struct`/`type`/`shape` is fine as long as none of them appear after a `macro` or `fn`, and no `macro` appears after a `fn`. See [Best Practices — Order of Declaration](docs/best_practices.md#order-of-declaration) for the recommended order within the structural group.
+
+Local macros declared inside a function body are exempt — this rule only applies to top-level declarations.
+
+**Correct:**
+```deor
+import "lib/string.deor"
+
+struct Room
+    string name
+
+shape roomList = list of Room
+
+macro log_room
+    print("logging")
+
+fn void run()
+    ...
+```
+
+**Incorrect — transpiler error:**
+```deor
+fn void run()
+    ...
+
+struct Room    # transpiler error — struct after a function
+    string name
+```
 
 
 ---

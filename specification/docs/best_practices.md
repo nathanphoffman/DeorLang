@@ -3,17 +3,19 @@
 <!-- themes: blackboard -->
 
 # Best Practices
-Style recommendations not enforced by the transpiler.
+Style recommendations not enforced by the transpiler, except where noted (see [Order of Declaration](#order-of-declaration)).
 
 ---
 ## Order of Declaration
+The transpiler enforces four groups, in this order: imports, structural declarations (`enum`/`struct`/`type`/`shape`), macros, then functions — see [Enforced Practices — Ordering](docs/enforced_practices.md#ordering). Within the structural group, the transpiler accepts any order, but this is the recommended arrangement:
+
 1. Imports - Everything else could use it, relies on nothing else in the file
 2. Enums - Relies likely on nothing else in the file
 3. Structs - Reliant on most everything above but still structural (so above functions)
 4. Types - Type validators being types must be defined early
 5. Shapes - Shapes can reference almost anything above
-6. Macros
-7. Functions - Reliant on everything above
+6. Macros - Enforced to come before functions
+7. Functions - Reliant on everything above - Enforced to be last
 
 ---
 ## Spacing

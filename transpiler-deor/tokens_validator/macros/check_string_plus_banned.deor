@@ -1,0 +1,40 @@
+
+# Flags any '+' with a string-typed operand on either side — a STRING literal, or
+# an identifier declared 'string'. Rust's `+` for `String` only implements
+# `Add<&str>`, never `Add<String>`, so a chain of plain string variables
+# (`aaa + bbb`) doesn't compile, and a chain mixing a string with a number
+# (`"count: " + count`) doesn't either — both used to fall through to whatever
+# cryptic error rustc happens to give, instead of a clear one here. `s_join` /
+# `s_join_with` are the only supported way to join strings; this check only
+# needs to spot a string on one side, it doesn't need to know what's on the
+# other, which is why it also catches operands the old mixed-type check
+# couldn't classify (e.g. a function call that returns 'string').
+# Only checks the two tokens directly adjacent to the '+' — a longer chain
+# still errors, since every '+' in it gets its own check as the scan reaches it.
+macro check_string_plus_banned
+	if cur_kind is "PLUS"
+		if pos > 0
+			int csp_right = pos + 1
+			if csp_right < token_count
+				int csp_left = pos - 1
+				Token csp_left_tok = tokens at csp_left
+				Token csp_right_tok = tokens at csp_right
+				(kind, value) in csp_left_tok
+				string csp_lk = kind
+				string csp_lv = value
+				(kind, value) in csp_right_tok
+				string csp_rk = kind
+				string csp_rv = value
+
+				bool csp_l_str = csp_lk is "STRING"
+				if not csp_l_str
+					if csp_lk is "IDENT"
+						csp_l_str = list_has(string_var_names, csp_lv)
+
+				bool csp_r_str = csp_rk is "STRING"
+				if not csp_r_str
+					if csp_rk is "IDENT"
+						csp_r_str = list_has(string_var_names, csp_rv)
+
+				if csp_l_str or csp_r_str
+					errors at end = val_err(tok, lbl_var, rule_string_plus_banned)

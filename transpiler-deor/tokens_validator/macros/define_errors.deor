@@ -55,7 +55,7 @@ macro define_errors
 	string rule_range_placement = "'range' can only be used as a for-loop's iterator expression ('for var in range(n)' or 'for in range(n)') — it cannot be assigned to a variable or passed as an argument"
 	string rule_bare_truthiness = "only bool and validator types have truthiness — use an explicit comparison ('is not 0', 'is not \"\"', 'is valid', etc.)"
 	string rule_func_shape_multi_param = "func shapes accept at most one input type and one output type — bundle multiple values into a struct instead"
-	string rule_mixed_string_concat = "cannot mix a string and a number in a '+' chain — convert the number to a string first (e.g. with a 'rust' block helper)"
+	string rule_string_plus_banned = "'+' cannot be used with strings — use s_join([a, b, ...]) or s_join_with(list, sep) instead"
 
 	# const rules
 	string rule_const_reassign = "cannot reassign a const variable — const bindings are immutable"

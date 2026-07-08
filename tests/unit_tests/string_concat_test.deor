@@ -1,90 +1,105 @@
 # string_concat_test.deor
-# Regression tests for `+` string-concat chains: chains where the literal that
-# marks the chain as concatenation (rather than arithmetic) isn't the first
-# operand, chains of varying length and literal position, and chains built
-# directly inline (call arg / return / as-binding) rather than pre-bound to a
-# `string` variable first.
+# Regression tests for s_join / s_join_with: varying operand counts, literals
+# mixed with variables in every position, chains built directly inline (call
+# arg / return / as-binding) rather than pre-bound to a `string` variable
+# first, and nested calls.
 #
 # Every operand — leading or not — is only ever borrowed (`.as_str()`) into the
 # `[...].concat()` call, never cloned or moved, so the source variable stays
-# usable after the chain (see `reused_lead_var` below).
+# usable after the join (see `reused_lead_var` below).
+
+import "lib/string.deor"
 
 fn string glue(string aaa, string bbb)
-	return aaa + bbb + "!"
+	return s_join([aaa, bbb, "!"])
 
 fn void main()
 	prefix as "pre-"
 	content as "mid"
 
-	# literal only at the end
-	string chained = prefix + content + "!"
+	string chained = s_join([prefix, content, "!"])
 	print(chained)
 
 	aaa as "a"
 	bbb as "b"
-	string three_deep = aaa + bbb + "-end"
+	string three_deep = s_join([aaa, bbb, "-end"])
 	print(three_deep)
 
 	# all literals
-	string all_literals = "fn " + "main" + "()"
+	string all_literals = s_join(["fn ", "main", "()"])
 	print(all_literals)
 
 	# literal only at the start
 	ccc as "c"
 	ddd as "d"
-	string lead_literal = "Result: " + ccc + ddd
+	string lead_literal = s_join(["Result: ", ccc, ddd])
 	print(lead_literal)
 
 	# literal only in the middle
 	eee as "e"
 	fff as "f"
-	string mid_literal = eee + "-" + fff
+	string mid_literal = s_join([eee, "-", fff])
 	print(mid_literal)
 
 	# two operands, no third
 	ggg as "g"
-	string two_op = "Hi, " + ggg
+	string two_op = s_join(["Hi, ", ggg])
 	print(two_op)
 
 	# four-operand chain
 	hhh as "h"
 	iii as "i"
 	jjj as "j"
-	string four_op = hhh + iii + jjj + "-end"
+	string four_op = s_join([hhh, iii, jjj, "-end"])
 	print(four_op)
 
-	# empty-string literal in the chain
+	# empty-string literal in the join
 	kkk as "k"
-	string with_empty = "" + kkk + "!"
+	string with_empty = s_join(["", kkk, "!"])
 	print(with_empty)
 
-	# chain built directly inline as a call argument, not pre-bound to a variable
+	# join built directly inline as a call argument, not pre-bound to a variable
 	lll as "l-"
 	mmm as "m"
-	print(lll + mmm + "!")
+	print(s_join([lll, mmm, "!"]))
 
-	# chain built directly in a `name as expr` binding
-	xxx as "pre-" + "mid" + "end"
+	# join built directly in a `name as expr` binding
+	xxx as s_join(["pre-", "mid", "end"])
 	print(xxx)
 
-	# chain returned directly from a function
+	# join returned directly from a function
 	nnn as "n"
 	ooo as "o"
 	string returned = glue(nnn, ooo)
 	print(returned)
 
-	# call result used as the leading operand of a further chain
+	# call result used as one item of a further join
 	ppp as "p"
 	qqq as "q"
-	string result_lead = glue(ppp, qqq) + " done"
+	string result_lead = s_join([glue(ppp, qqq), " done"])
 	print(result_lead)
 
-	# leading operand is a bare variable — must be cloned, not moved, so it's
-	# still usable after the chain
+	# leading operand is a bare variable — must be borrowed, not moved, so it's
+	# still usable after the join
 	rrr as "r"
-	string reused_lead_var = rrr + "-tail"
+	string reused_lead_var = s_join([rrr, "-tail"])
 	print(reused_lead_var)
 	print(rrr)
+
+	# s_join_with — separator-joined variant
+	sss as "s1"
+	ttt as "s2"
+	uuu as "s3"
+	sep as ", "
+	string with_sep = s_join_with([sss, ttt, uuu], sep)
+	print(with_sep)
+
+	# s_join on a real strList variable (not an inline bracket literal)
+	vvv as "v1"
+	www as "w1"
+	stringList parts = [vvv, www]
+	string from_list = s_join(parts)
+	print(from_list)
 
 # expect:
 # pre-mid!
@@ -101,3 +116,5 @@ fn void main()
 # pq! done
 # r-tail
 # r
+# s1, s2, s3
+# v1w1

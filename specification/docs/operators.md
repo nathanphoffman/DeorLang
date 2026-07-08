@@ -7,7 +7,7 @@
 
 | Operator | Meaning | Notes |
 |---|---|---|
-| `+` | Addition / string concat | See the Strings doc for string `+` behavior |
+| `+` | Addition (numeric only) | Rejected on strings — see the Strings doc for `s_join`/`s_join_with` |
 | `-` | Subtraction | |
 | `*` | Multiplication | |
 | `/` | Division | Integer division truncates: `5 / 2 = 2` |
