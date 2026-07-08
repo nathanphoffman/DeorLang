@@ -84,8 +84,9 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 		int td_zero = 0
 		int td_last = len(td_body_tokens) - 1
 		strList mut_names = collect_mut_names(td_body_tokens, td_zero, td_last)
+		strList validator_var_reg = collect_validator_var_types(td_body_tokens, type_reg)
 		TokensRef tokens = tokens_wrap(move td_body_tokens)
-		GenCtx td_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg)
+		GenCtx td_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
 		RcCtx td_pred_ctx = make_rctx(move td_ctx_raw)
 
 		int td_depth = 2

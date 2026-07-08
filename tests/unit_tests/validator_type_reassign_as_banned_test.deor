@@ -1,0 +1,15 @@
+# validator_type_reassign_as_banned_test.deor
+# Bare `name as expr` still skips the predicate check entirely (it's a fresh,
+# type-inferred binding, not a re-validated declaration) and stays a
+# transpiler error, even though bare `name = expr` reassignment is now
+# allowed — see validator_type_reassign_test.deor for the allowed form.
+
+type Positive(int val)
+	val > 0
+
+fn void main()
+	Positive good = 5
+	good as 6
+
+# expect-error:
+# cannot reassign a validator type variable with 'as'

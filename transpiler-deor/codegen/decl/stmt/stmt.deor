@@ -20,7 +20,7 @@
 # appropriate function or macro. The IDENT branch dispatches to sub-functions for
 # each identifier-led form so this function stays a clean dispatch table.
 fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, validator_var_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
@@ -91,8 +91,18 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			string assign_suffix = ""
 			if kind is "STRING"
 				assign_suffix = ".to_string()"
-			strList asg_parts = [pad, ident_name, RS_EQ, val_code, assign_suffix, RS_SC]
-			string asgn_code = s_join(asg_parts)
+			# validator-typed reassignment re-runs the predicate: `name = TypeName::new(expr);`
+			# instead of a plain `name = expr;` — see docs/validator_types.md#is-valid-is-not-valid
+			string reassign_type = reg_get(validator_var_reg, ident_name)
+			string asgn_code = ""
+			if not is_empty(reassign_type)
+				string rva_nop = "::new("
+				string rva_sc = ");\n"
+				strList rva_parts = [pad, ident_name, RS_EQ, reassign_type, rva_nop, val_code, rva_sc]
+				asgn_code = s_join(rva_parts)
+			else
+				strList asg_parts = [pad, ident_name, RS_EQ, val_code, assign_suffix, RS_SC]
+				asgn_code = s_join(asg_parts)
 			return make_nl_result(move asgn_code, val_end, tokens)
 
 		# Type name = expr  (typed binding)

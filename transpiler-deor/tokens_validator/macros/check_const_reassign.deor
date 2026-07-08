@@ -3,6 +3,7 @@
 # i.e., a bare reassignment `pipe = "new"` rather than the const declaration itself.
 macro check_const_reassign
 	strList rar_names = const_var_names
+	bool rar_allow_eq = true
 	bool rar_allow_as = false
 	string rar_rule = rule_const_reassign
 	macro_run check_bare_reassign

@@ -23,3 +23,28 @@ fn strList build_type_reg(TokensRef tokens)
 				(value) in param_name_token
 				result at end = value
 	return result
+
+# Scans a function body's token range for `TypeName varName` declarations where TypeName
+# is a known validator type (bare `TypeName varName` or the full `TypeName varName = expr`
+# form both match — only the leading pair matters here). Builds [varName, TypeName] pairs
+# so a later bare reassignment (`varName = expr`) can look up which validator type to
+# re-run the predicate through — see gen_stmt's plain-reassignment branch in stmt.deor.
+fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
+	strList result = empty
+	int token_count = len(tokens)
+	for index in range(token_count)
+		Token token = tokens at index
+		(kind, value) in token
+		if kind is "IDENT"
+			string maybe_type = value
+			bool is_vtype = reg3_has(type_reg, maybe_type)
+			if is_vtype
+				int next_pos = index + 1
+				if next_pos < token_count
+					Token next_tok = tokens at next_pos
+					(kind, value) in next_tok
+					if kind is "IDENT"
+						string var_name = value
+						result at end = var_name
+						result at end = maybe_type
+	return result

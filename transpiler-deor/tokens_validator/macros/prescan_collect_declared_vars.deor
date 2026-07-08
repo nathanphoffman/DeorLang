@@ -28,6 +28,15 @@ macro prescan_collect_declared_vars
 			if kind is "KW_AS"
 				(value) in pre_tok
 				declared_var_names at end = value
+			# ex: Roll {best} — a validator type's bare declaration without '='
+			# (the "not valid until assigned" form) still declares the name, so a
+			# later `best = expr` reassignment isn't flagged as undeclared
+			(value) in pre_tok
+			bool dv_is_vtype = list_has(validator_type_names, value)
+			if dv_is_vtype
+				if kind is "IDENT"
+					(value) in dv_as_tok
+					declared_var_names at end = value
 
 	if kind is "KW_RAW"
 		# ex: raw {name} = expr — pre_i+1 grabs the raw variable name, +2 the equals sign

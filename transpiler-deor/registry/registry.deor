@@ -12,8 +12,9 @@
 
 # Scans the full merged token stream once and builds every top-level registry
 # (structs, shapes, enums/variants, validator types, typed enums/variants) that
-# codegen needs to resolve names it encounters. mut_names starts empty here — it's
-# per-function, populated later by collect_mut_names when each fn body is generated.
+# codegen needs to resolve names it encounters. mut_names and validator_var_reg
+# start empty here — both are per-function, populated later (by collect_mut_names
+# and collect_validator_var_types) when each fn body is generated.
 fn RcCtx build_registry(TokensRef tokens_ref)
 	strList struct_reg = build_struct_reg(tokens_ref)
 	strList shape_reg = build_shape_reg(tokens_ref)
@@ -23,8 +24,9 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 	strList typed_enum_reg = build_typed_enum_reg(tokens_ref)
 	strList typed_variant_reg = build_typed_variant_reg(tokens_ref)
 	strList mut_names = empty
+	strList validator_var_reg = empty
 	tokenList placeholder = empty
 	TokensRef tokens = tokens_wrap(move placeholder)
-	GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg)
+	GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
 	RcCtx ctx = make_rctx(move ctx_raw)
 	return ctx

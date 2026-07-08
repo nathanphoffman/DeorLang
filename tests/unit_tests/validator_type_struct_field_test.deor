@@ -11,6 +11,10 @@ struct Room
 	string name
 	Squarefeet area
 
+struct House
+	string address
+	Room main_room
+
 fn void main()
 	name as "Office"
 	Squarefeet area = 20
@@ -21,5 +25,18 @@ fn void main()
 	else
 		print("should have been valid")
 
+	# one level deeper — a struct nested inside a struct, itself carrying a
+	# validator-type field, exercises resolve_type through two struct layers
+	address as "123 Main St"
+	main_room as room
+	House house = (address, main_room)
+	(main_room) in house
+	(area) in main_room
+	if area is valid
+		print("valid nested area")
+	else
+		print("should have been valid nested")
+
 # expect:
 # valid area
+# valid nested area

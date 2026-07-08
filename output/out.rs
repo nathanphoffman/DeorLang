@@ -35,6 +35,7 @@ struct GenCtx {
     tokens: TokensRef,
     typed_enum_reg: Vec<String>,
     typed_variant_reg: Vec<String>,
+    validator_var_reg: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -2382,7 +2383,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_func_shape_multi_param: String = "func shapes accept at most one input type and one output type — bundle multiple values into a struct instead".to_string();
     let mut rule_string_plus_banned: String = "'+' cannot be used with strings — use s_join([a, b, ...]) or s_join_with(list, sep) instead".to_string();
     let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
-    let mut rule_validator_reassign: String = "cannot reassign a validator type variable with '=' or 'as' — both skip the predicate check; use 'TypeName name = expr' to re-validate".to_string();
+    let mut rule_validator_reassign: String = "cannot reassign a validator type variable with 'as' — it skips the predicate check; use 'name = expr' to re-validate, or 'TypeName name = expr' for a fresh declaration".to_string();
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
     let mut rule_raw_reassign: String = "raw variables cannot be reassigned — declare a new 'raw name = expr' instead".to_string();
     let mut rule_raw_assignment: String = "raw variables can only be assigned from a function call — use 'raw name = some_function()', not a literal or an inline rust block".to_string();
@@ -2594,6 +2595,16 @@ fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
                     let mut value = pre_tok.value.clone();
                     declared_var_names.push(value.clone());
+                }
+                let mut value = pre_tok.value.clone();
+                let mut dv_is_vtype: bool = list_has(validator_type_names.clone(), value.clone());
+                if dv_is_vtype {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
+                    if kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
+                        let mut value = dv_as_tok.value.clone();
+                        declared_var_names.push(value.clone());
+                    }
                 }
             }
         }
@@ -4424,6 +4435,7 @@ fn validate_tokens(tokens: TokensRef) {
             }
             // macro: check_const_reassign (transpiler-deor/tokens_validator/macros/check_const_reassign.deor)
             let mut rar_names: Vec<String> = const_var_names.clone();
+            let mut rar_allow_eq: bool = true;
             let mut rar_allow_as: bool = false;
             let mut rar_rule: String = rule_const_reassign.clone();
             // macro: check_bare_reassign (transpiler-deor/tokens_validator/macros/check_bare_reassign.deor)
@@ -4435,7 +4447,11 @@ fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/check_bare_reassign.deor
                     let mut rar_next_tok: Token = tokens[rar_next_pos as usize].clone();
                     let mut kind = rar_next_tok.kind.clone();
-                    let mut rar_is_eq: bool = kind == "EQUALS";
+                    let mut rar_is_eq: bool = false;
+                    if rar_allow_eq {
+                        // transpiler-deor/tokens_validator/macros/check_bare_reassign.deor
+                        rar_is_eq = kind == "EQUALS";
+                    }
                     let mut rar_is_as: bool = false;
                     if rar_allow_as {
                         // transpiler-deor/tokens_validator/macros/check_bare_reassign.deor
@@ -4460,6 +4476,7 @@ fn validate_tokens(tokens: TokensRef) {
             }
             // macro: check_validator_reassign (transpiler-deor/tokens_validator/macros/check_validator_reassign.deor)
             let mut rar_names: Vec<String> = validator_vars.clone();
+            let mut rar_allow_eq: bool = false;
             let mut rar_allow_as: bool = true;
             let mut rar_rule: String = rule_validator_reassign.clone();
             // macro: check_bare_reassign (transpiler-deor/tokens_validator/macros/check_bare_reassign.deor)
@@ -4471,7 +4488,11 @@ fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/check_bare_reassign.deor
                     let mut rar_next_tok: Token = tokens[rar_next_pos as usize].clone();
                     let mut kind = rar_next_tok.kind.clone();
-                    let mut rar_is_eq: bool = kind == "EQUALS";
+                    let mut rar_is_eq: bool = false;
+                    if rar_allow_eq {
+                        // transpiler-deor/tokens_validator/macros/check_bare_reassign.deor
+                        rar_is_eq = kind == "EQUALS";
+                    }
                     let mut rar_is_as: bool = false;
                     if rar_allow_as {
                         // transpiler-deor/tokens_validator/macros/check_bare_reassign.deor
@@ -5353,6 +5374,40 @@ fn build_type_reg(tokens: TokensRef) -> Vec<String> {
     return result;
 }
 
+fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) -> Vec<String> {
+    // transpiler-deor/registry/validator_type.deor
+    let mut result: Vec<String> = Vec::new();
+    let mut token_count: i64 = (tokens.len() as i64);
+    for index in 0..token_count {
+        // transpiler-deor/registry/validator_type.deor
+        let mut token: Token = tokens[index as usize].clone();
+        let kind = token.kind.clone();
+        let value = token.value.clone();
+        if kind == "IDENT" {
+            // transpiler-deor/registry/validator_type.deor
+            let mut maybe_type: String = value.clone();
+            let mut is_vtype: bool = reg3_has(type_reg.clone(), maybe_type.clone());
+            if is_vtype {
+                // transpiler-deor/registry/validator_type.deor
+                let mut next_pos: i64 = index + 1;
+                if next_pos < token_count {
+                    // transpiler-deor/registry/validator_type.deor
+                    let mut next_tok: Token = tokens[next_pos as usize].clone();
+                    let kind = next_tok.kind.clone();
+                    let value = next_tok.value.clone();
+                    if kind == "IDENT" {
+                        // transpiler-deor/registry/validator_type.deor
+                        let mut var_name: String = value.clone();
+                        result.push(var_name.clone());
+                        result.push(maybe_type.clone());
+                    }
+                }
+            }
+        }
+    }
+    return result;
+}
+
 // transpiler-deor/registry/type_resolve.deor
 fn resolve_type(type_name: String, ctx: RcCtx) -> String {
     // transpiler-deor/registry/type_resolve.deor
@@ -5489,9 +5544,10 @@ fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     let mut typed_enum_reg: Vec<String> = build_typed_enum_reg(tokens_ref.clone());
     let mut typed_variant_reg: Vec<String> = build_typed_variant_reg(tokens_ref.clone());
     let mut mut_names: Vec<String> = Vec::new();
+    let mut validator_var_reg: Vec<String> = Vec::new();
     let mut placeholder: Vec<Token> = Vec::new();
     let mut tokens: TokensRef = tokens_wrap(placeholder);
-    let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg };
+    let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg };
     let mut ctx: RcCtx = make_rctx(ctx_raw);
     return ctx;
 }
@@ -7954,6 +8010,7 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let mut_names = ctx.mut_names.clone();
     let type_reg = ctx.type_reg.clone();
     let tokens = ctx.tokens.clone();
+    let validator_var_reg = ctx.validator_var_reg.clone();
     let mut token_count: i64 = (tokens.len() as i64);
     let mut token: Token = tokens[pos as usize].clone();
     let kind = token.kind.clone();
@@ -8211,8 +8268,19 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 // transpiler-deor/codegen/decl/stmt/stmt.deor
                 assign_suffix = ".to_string()".to_string();
             }
-            let mut asg_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), RS_EQ.clone(), val_code.clone(), assign_suffix.clone(), RS_SC.clone()];
-            let mut asgn_code: String = s_join(asg_parts.clone());
+            let mut reassign_type: String = reg_get(validator_var_reg.clone(), ident_name.clone());
+            let mut asgn_code: String = "".to_string();
+            if !is_empty(reassign_type.clone()) {
+                // transpiler-deor/codegen/decl/stmt/stmt.deor
+                let mut rva_nop: String = "::new(".to_string();
+                let mut rva_sc: String = ");\n".to_string();
+                let mut rva_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), RS_EQ.clone(), reassign_type.clone(), rva_nop.clone(), val_code.clone(), rva_sc.clone()];
+                asgn_code = s_join(rva_parts.clone());
+            } else {
+                // transpiler-deor/codegen/decl/stmt/stmt.deor
+                let mut asg_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), RS_EQ.clone(), val_code.clone(), assign_suffix.clone(), RS_SC.clone()];
+                asgn_code = s_join(asg_parts.clone());
+            }
             return make_nl_result(asgn_code, val_end.clone(), tokens.clone());
         }
         if kind == "IDENT" {
@@ -8599,8 +8667,9 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         let mut td_zero: i64 = 0;
         let mut td_last: i64 = (td_body_tokens.len() as i64) - 1;
         let mut mut_names: Vec<String> = collect_mut_names(td_body_tokens.clone(), td_zero.clone(), td_last.clone());
+        let mut validator_var_reg: Vec<String> = collect_validator_var_types(td_body_tokens.clone(), type_reg.clone());
         let mut tokens: TokensRef = tokens_wrap(td_body_tokens);
-        let mut td_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg };
+        let mut td_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg };
         let mut td_pred_ctx: RcCtx = make_rctx(td_ctx_raw);
         let mut td_depth: i64 = 2;
         let mut td_block_r: ParseResult = gen_block(td_zero.clone(), td_depth.clone(), td_pred_ctx.clone());
@@ -8716,8 +8785,9 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let mut zero: i64 = 0;
     let mut body_last: i64 = body_len - 1;
     let mut mut_names: Vec<String> = collect_mut_names(body_tokens_raw.clone(), zero.clone(), body_last.clone());
+    let mut validator_var_reg: Vec<String> = collect_validator_var_types(body_tokens_raw.clone(), type_reg.clone());
     let mut tokens: TokensRef = tokens_wrap(body_tokens_raw);
-    let mut body_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg };
+    let mut body_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg };
     let mut body_ctx: RcCtx = make_rctx(body_ctx_raw);
     // macro: fn_emit (transpiler-deor/codegen/decl/macros/fn_emit.deor)
     let mut body_pos: i64 = 0;

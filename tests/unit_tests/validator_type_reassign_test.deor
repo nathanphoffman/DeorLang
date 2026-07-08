@@ -1,0 +1,40 @@
+# validator_type_reassign_test.deor
+# A validator-typed variable can be reassigned with bare `name = expr` — the
+# predicate re-runs on every assignment, not just the original declaration
+# (see docs/validator_types.md#is-valid-is-not-valid). Exercises reassignment
+# at the same scope, and the "declare outside, conditionally assign inside a
+# block" pattern from docs/validator_types.md#functions-returning-validator-types,
+# where the full `TypeName name = expr` form would wrongly shadow instead of
+# updating the outer variable.
+
+type Roll(int val)
+	val > 0
+
+fn Roll find_best(int val)
+	Roll best
+	if val > 0
+		best = val
+	return best
+
+fn void show_if_valid(Roll rvar)
+	if rvar is valid
+		print("valid")
+	else
+		print("not valid")
+
+fn void main()
+	Roll num = 5
+	num = 10
+	show_if_valid(num)
+
+	num = 0
+	show_if_valid(num)
+
+	show_if_valid(find_best(5))
+	show_if_valid(find_best(0))
+
+# expect:
+# valid
+# not valid
+# valid
+# not valid

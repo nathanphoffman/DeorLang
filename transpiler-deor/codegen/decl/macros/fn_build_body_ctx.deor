@@ -11,6 +11,7 @@ macro fn_build_body_ctx
 	int zero = 0
 	int body_last = body_len - 1
 	strList mut_names = collect_mut_names(body_tokens_raw, zero, body_last)
+	strList validator_var_reg = collect_validator_var_types(body_tokens_raw, type_reg)
 	TokensRef tokens = tokens_wrap(move body_tokens_raw)
-	GenCtx body_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg)
+	GenCtx body_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
 	RcCtx body_ctx = make_rctx(move body_ctx_raw)

@@ -39,7 +39,7 @@ fn void test_validator_empty()
 
 fn void test_validator_reassign()
 	Positive pos_val = 5
-	pos_val = 6
+	pos_val as 6
 
 fn void test_avow_non_validator()
 	int plain = 5
