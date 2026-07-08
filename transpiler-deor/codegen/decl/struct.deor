@@ -2,8 +2,9 @@
 # Generates a Rust struct definition from a Deor `struct Name` declaration. Emits
 # `#[derive(Clone, PartialEq, Debug)]` automatically — all Deor structs need Clone
 # for the pervasive .clone() calls the transpiler emits, and PartialEq for `is`
-# comparisons. Maps each field's Deor type to its Rust equivalent via render_rust_type.
-fn ParseResult gen_struct_decl(TokensRef tokens, int pos)
+# comparisons. Maps each field's Deor type to its Rust equivalent via resolve_type
+# (Option<T>-wrapping validator-type fields, since those are Option<T> under the hood).
+fn ParseResult gen_struct_decl(TokensRef tokens, int pos, RcCtx ctx)
 	# ex: struct {Point} — pos+1 grabs the struct name
 	int start_pos = pos + 1
 	TokenCursor cur = cur_at_ref(tokens, start_pos)
@@ -28,7 +29,7 @@ fn ParseResult gen_struct_decl(TokensRef tokens, int pos)
 			(current) in cur
 			(value) in current
 			string field_name = value
-			string rust_type = render_rust_type(field_type)
+			string rust_type = resolve_type(field_type, ctx)
 			field_lines at end = s_join([RS_IND, field_name, RS_COL, rust_type, RS_COM])
 			cur = cur_next_ref(cur, tokens)
 	string fields_code = s_join_nl(field_lines)

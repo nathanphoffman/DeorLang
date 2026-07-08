@@ -1,8 +1,15 @@
 
-# Resolves a Deor type name to its full Rust type string. Checks the enum registry first
-# (returning the PascalCase Rust name), then the shape registry (expanding to Vec<T> or
-# fn(T)->U), then falls back to render_rust_type for primitives and user-defined structs.
-fn string resolve_type(string type_name, strList shape_reg, strList enum_reg)
+# Resolves a Deor type name to its full Rust type string. Checks the validator-type
+# registry first (wrapping in Option<T>, since every validator-type variable is
+# Option<T> under the hood — see docs/validator_types.md), then the enum registry
+# (returning the PascalCase Rust name), then the shape registry (expanding to Vec<T>
+# or fn(T)->U), then falls back to render_rust_type for primitives and user-defined structs.
+fn string resolve_type(string type_name, RcCtx ctx)
+	(shape_reg, enum_reg, type_reg) in ctx
+	bool is_validator = reg3_has(type_reg, type_name)
+	if is_validator
+		strList opt_parts = ["Option<", type_name, ">"]
+		return s_join(opt_parts)
 	string enum_rust = reg_get(enum_reg, type_name)
 	if not is_empty(enum_rust)
 		return enum_rust

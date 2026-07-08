@@ -1,0 +1,15 @@
+# decl_order_struct_after_fn_test.deor
+# Exercises the file-level declaration order check: a struct (or enum/type/shape)
+# appearing after a top-level function is a transpiler error.
+
+fn void helper()
+	print("hi")
+
+struct Room
+	string name
+
+fn void main()
+	helper()
+
+# expect-error:
+# struct/enum/type/shape declarations must come before macros and functions

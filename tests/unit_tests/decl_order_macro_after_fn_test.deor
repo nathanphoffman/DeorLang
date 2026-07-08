@@ -1,0 +1,15 @@
+# decl_order_macro_after_fn_test.deor
+# Exercises the file-level declaration order check: a top-level macro appearing
+# after a function is a transpiler error.
+
+fn void helper()
+	print("hi")
+
+macro late_macro
+	print("late")
+
+fn void main()
+	helper()
+
+# expect-error:
+# macros must be declared before functions

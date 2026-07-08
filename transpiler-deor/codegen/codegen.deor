@@ -30,7 +30,7 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 			parts at end = file_comment
 			last_file = file
 		if kind is "KW_STRUCT"
-			ParseResult result = gen_struct_decl(all_ref, pos)
+			ParseResult result = gen_struct_decl(all_ref, pos, ctx)
 			move (code, new_pos) in result
 			parts at end = code
 			pos = new_pos

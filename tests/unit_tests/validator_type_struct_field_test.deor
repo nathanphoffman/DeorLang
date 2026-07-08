@@ -1,0 +1,25 @@
+# validator_type_struct_field_test.deor
+# A validator-typed struct field is Option<T> under the hood (see
+# docs/validator_types.md#validator-types-in-structs). Exercises construction
+# and destructuring of a struct with a validator-type field, then checks it
+# with is valid.
+
+type Squarefeet(int val)
+	val > 0
+
+struct Room
+	string name
+	Squarefeet area
+
+fn void main()
+	name as "Office"
+	Squarefeet area = 20
+	Room room = (name, area)
+	(area) in room
+	if area is valid
+		print("valid area")
+	else
+		print("should have been valid")
+
+# expect:
+# valid area

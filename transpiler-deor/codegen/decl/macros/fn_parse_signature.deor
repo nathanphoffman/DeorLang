@@ -1,12 +1,12 @@
 
 # Walks the cursor through `RetType name(params)`, setting ret_type, fn_name,
-# param_strs, indent_pos, and body_start. Expects: fn_tokens, start_pos,
-# shape_reg, enum_reg in scope from gen_fn_decl.
+# param_strs, indent_pos, and body_start. Expects: fn_tokens, start_pos, ctx
+# in scope from gen_fn_decl.
 macro fn_parse_signature
 	TokenCursor cur = cur_at_ref(fn_tokens, start_pos)
 	(current) in cur
 	(value) in current
-	string ret_type = resolve_type(value, shape_reg, enum_reg)
+	string ret_type = resolve_type(value, ctx)
 	cur = cur_next_ref(cur, fn_tokens)
 	(current) in cur
 	(value) in current
@@ -28,7 +28,7 @@ macro fn_parse_signature
 			(current) in cur
 			(value) in current
 			string param_name = value
-			string rust_param_type = resolve_type(param_type, shape_reg, enum_reg)
+			string rust_param_type = resolve_type(param_type, ctx)
 			string prm_sep = ": "
 			param_strs at end = s_join([param_name, prm_sep, rust_param_type])
 			cur = cur_next_ref(cur, fn_tokens)

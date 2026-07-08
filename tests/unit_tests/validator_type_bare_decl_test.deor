@@ -1,0 +1,17 @@
+# validator_type_bare_decl_test.deor
+# A validator-typed local variable declared without an initial value starts
+# as not valid — Option<T> under the hood, None until assigned. Exercises the
+# bare (no `=`) declaration path.
+
+type Positive(int val)
+	val > 0
+
+fn void main()
+	Positive num
+	if num is not valid
+		print("not valid")
+	else
+		print("should not be valid")
+
+# expect:
+# not valid

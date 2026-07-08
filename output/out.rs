@@ -26,15 +26,15 @@ struct TokenMeta {
 
 #[derive(Clone, PartialEq, Debug)]
 struct GenCtx {
-    variant_reg: StrList,
-    shape_reg: StrList,
-    struct_reg: StrList,
-    enum_reg: StrList,
-    mut_names: StrList,
-    type_reg: StrList,
+    variant_reg: Vec<String>,
+    shape_reg: Vec<String>,
+    struct_reg: Vec<String>,
+    enum_reg: Vec<String>,
+    mut_names: Vec<String>,
+    type_reg: Vec<String>,
     tokens: TokensRef,
-    typed_enum_reg: StrList,
-    typed_variant_reg: StrList,
+    typed_enum_reg: Vec<String>,
+    typed_variant_reg: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -1285,6 +1285,7 @@ fn load_file(path: String) -> Vec<Token> {
     let mut pos: i64 = 0;
     let mut depth: i64 = 0;
     let mut seen_decl: bool = false;
+    let mut decl_phase: i64 = 0;
     loop {
         // transpiler-deor/importer/load.deor
         let is_at_end_of_file = pos >= token_count;
@@ -1313,6 +1314,41 @@ fn load_file(path: String) -> Vec<Token> {
             continue;
         }
         let mut at_root_depth: bool = depth == 0;
+        if at_root_depth {
+            // transpiler-deor/importer/load.deor
+            let mut is_structural_kw: bool = kind == "KW_STRUCT" || kind == "KW_ENUM" || kind == "KW_SHAPE" || kind == "KW_TYPE";
+            if is_structural_kw {
+                // transpiler-deor/importer/load.deor
+                if decl_phase > 0 {
+                    // transpiler-deor/importer/load.deor
+                    let mut err_pre: String = "[error] ".to_string();
+                    let mut err_mid: String = ": struct/enum/type/shape declarations must come before macros and functions".to_string();
+                    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_mid.clone()];
+                    let mut err_msg: String = s_join(err_parts.clone());
+                    println!("{}", err_msg.clone());
+                    std::process::exit(1);
+                }
+            }
+            if kind == "KW_MACRO" {
+                // transpiler-deor/importer/load.deor
+                if decl_phase == 2 {
+                    // transpiler-deor/importer/load.deor
+                    let mut err_pre: String = "[error] ".to_string();
+                    let mut err_mid: String = ": macros must be declared before functions".to_string();
+                    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_mid.clone()];
+                    let mut err_msg: String = s_join(err_parts.clone());
+                    println!("{}", err_msg.clone());
+                    std::process::exit(1);
+                } else if decl_phase < 1 {
+                    // transpiler-deor/importer/load.deor
+                    decl_phase = 1;
+                }
+            }
+            if kind == "KW_FN" {
+                // transpiler-deor/importer/load.deor
+                decl_phase = 2;
+            }
+        }
         let mut is_new_import: bool = kind == "KW_IMPORT" && at_root_depth;
         if is_new_import {
             // transpiler-deor/importer/load.deor
@@ -5318,8 +5354,17 @@ fn build_type_reg(tokens: TokensRef) -> Vec<String> {
 }
 
 // transpiler-deor/registry/type_resolve.deor
-fn resolve_type(type_name: String, shape_reg: Vec<String>, enum_reg: Vec<String>) -> String {
+fn resolve_type(type_name: String, ctx: RcCtx) -> String {
     // transpiler-deor/registry/type_resolve.deor
+    let shape_reg = ctx.shape_reg.clone();
+    let enum_reg = ctx.enum_reg.clone();
+    let type_reg = ctx.type_reg.clone();
+    let mut is_validator: bool = reg3_has(type_reg.clone(), type_name.clone());
+    if is_validator {
+        // transpiler-deor/registry/type_resolve.deor
+        let mut opt_parts: Vec<String> = vec!["Option<".to_string(), type_name.clone(), ">".to_string()];
+        return s_join(opt_parts.clone());
+    }
     let mut enum_rust: String = reg_get(enum_reg.clone(), type_name.clone());
     if !is_empty(enum_rust.clone()) {
         // transpiler-deor/registry/type_resolve.deor
@@ -7615,7 +7660,7 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let mut var_name: String = value.clone();
     let mut eq_pos: i64 = name_pos + 1;
     let mut val_pos: i64 = eq_pos + 1;
-    let mut rust_type: String = resolve_type(var_type.clone(), shape_reg.clone(), variant_reg.clone());
+    let mut rust_type: String = resolve_type(var_type.clone(), ctx.clone());
     let mut val_token: Token = tokens[val_pos as usize].clone();
     let kind = val_token.kind.clone();
     if kind == "KW_EMPTY" {
@@ -8184,12 +8229,12 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             }
             let value = next_token.value.clone();
             let mut bare_var_name: String = value.clone();
-            let mut bare_rust_type: String = resolve_type(ident_name.clone(), shape_reg.clone(), enum_reg.clone());
+            let mut bare_rust_type: String = resolve_type(ident_name.clone(), ctx.clone());
             let mut bare_is_validator: bool = reg3_has(type_reg.clone(), ident_name.clone());
             if bare_is_validator {
                 // transpiler-deor/codegen/decl/stmt/stmt.deor
-                let mut bd_sfx: String = "> = None;\n".to_string();
-                let mut bd_code: String = [pad.as_str(), RS_LETM.as_str(), bare_var_name.as_str(), RS_COL.as_str(), "Option<", bare_rust_type.as_str(), bd_sfx.as_str()].concat();
+                let mut bd_sfx: String = " = None;\n".to_string();
+                let mut bd_code: String = [pad.as_str(), RS_LETM.as_str(), bare_var_name.as_str(), RS_COL.as_str(), bare_rust_type.as_str(), bd_sfx.as_str()].concat();
                 let mut bd_after: i64 = next_pos + 1;
                 return make_nl_result(bd_code, bd_after.clone(), tokens.clone());
             }
@@ -8242,7 +8287,7 @@ fn cur_skip_to_body_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
 }
 
 // transpiler-deor/codegen/decl/struct.deor
-fn gen_struct_decl(tokens: TokensRef, pos: i64) -> ParseResult {
+fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/struct.deor
     let mut start_pos: i64 = pos + 1;
     let mut cur: TokenCursor = cur_at_ref(tokens.clone(), start_pos.clone());
@@ -8294,7 +8339,7 @@ fn gen_struct_decl(tokens: TokensRef, pos: i64) -> ParseResult {
             let current = cur.current.clone();
             let value = current.value.clone();
             let mut field_name: String = value.clone();
-            let mut rust_type: String = render_rust_type(field_type.clone());
+            let mut rust_type: String = resolve_type(field_type.clone(), ctx.clone());
             field_lines.push([RS_IND.as_str(), field_name.as_str(), RS_COL.as_str(), rust_type.as_str(), RS_COM.as_str()].concat().clone());
             cur = cur_next_ref(cur.clone(), tokens.clone());
         }
@@ -8620,7 +8665,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let mut cur: TokenCursor = cur_at_ref(fn_tokens.clone(), start_pos.clone());
     let current = cur.current.clone();
     let value = current.value.clone();
-    let mut ret_type: String = resolve_type(value.clone(), shape_reg.clone(), enum_reg.clone());
+    let mut ret_type: String = resolve_type(value.clone(), ctx.clone());
     cur = cur_next_ref(cur.clone(), fn_tokens.clone());
     let current = cur.current.clone();
     let value = current.value.clone();
@@ -8647,7 +8692,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             let current = cur.current.clone();
             let value = current.value.clone();
             let mut param_name: String = value.clone();
-            let mut rust_param_type: String = resolve_type(param_type.clone(), shape_reg.clone(), enum_reg.clone());
+            let mut rust_param_type: String = resolve_type(param_type.clone(), ctx.clone());
             let mut prm_sep: String = ": ".to_string();
             param_strs.push([param_name.as_str(), prm_sep.as_str(), rust_param_type.as_str()].concat().clone());
             cur = cur_next_ref(cur.clone(), fn_tokens.clone());
@@ -8743,7 +8788,7 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
         }
         if kind == "KW_STRUCT" {
             // transpiler-deor/codegen/codegen.deor
-            let mut result: ParseResult = gen_struct_decl(all_ref.clone(), pos.clone());
+            let mut result: ParseResult = gen_struct_decl(all_ref.clone(), pos.clone(), ctx.clone());
             let code = result.code;
             let new_pos = result.new_pos;
             parts.push(code.clone());

@@ -1,0 +1,20 @@
+# decl_order_local_macro_exempt_test.deor
+# The declaration order check only applies to top-level declarations. A macro
+# declared inside a function body is locally scoped and exempt, even though it
+# textually follows another top-level function.
+
+fn void first()
+	print("first")
+
+fn void second()
+	macro local_only
+		print("local macro ran")
+	macro_run local_only
+
+fn void main()
+	first()
+	second()
+
+# expect:
+# first
+# local macro ran

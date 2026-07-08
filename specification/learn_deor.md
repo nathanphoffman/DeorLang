@@ -91,25 +91,28 @@ string message = "hello, the temperature is "
 if fahrenheit < -459.67
     crash("Oh no, the temperature is less than absolute 0! That doesn't seem possible...")
 else if i_should_say_hello
-    # this prints: hello, the temperature is 
-    #  then below that line: 75.7
+     
+    # this prints: hello, the temperature is
     print(message)
+    
+     # bellow hello... this prints: 75.7
     print(fahrenheit)
 else
-    # length of message is 26
+    # our message is 26 characters long, so this stores 26
     length_of_message as len(message)
 
     print("I wasn't allowed to print your message, but you missed out, it was this long!: ")
-    print(length_of_message)  # would have printed 26 below the message just above
+    print(length_of_message)
 
 ```
 
 Deor has only six built-in functions, three are explained in this section which are:
-- len() outputs an int as to the length of the string (the text in "")
+- len() outputs an int as to the length of the string (the text in "") for ```list``` (not yet discussed) it provides the 
+list length as an int. 
 - crash() hard crashes the entire program with the string error message provided
-- print() prints the string to the terminal
+- print() prints the string to the terminal, can also take in float, int, and bool
 
-> **Techies** Print is in Rust: print!("{}",x), so any data type can be taken so long as it is a string or primitive
+> **Techies** Print is in Rust: print!("{}",x), so it can be replaced with the standard library for low level OS concerns
 
 ## 6. Built In Functions (2 of 2)
 Built-ins that will be discussed in the future (you can ignore for now):

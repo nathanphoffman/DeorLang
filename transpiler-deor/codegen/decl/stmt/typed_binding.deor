@@ -25,7 +25,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	int eq_pos = name_pos + 1
 	# ex: Type name = {val} — eq_pos+1 grabs the value expression after '='
 	int val_pos = eq_pos + 1
-	string rust_type = resolve_type(var_type, shape_reg, variant_reg)
+	string rust_type = resolve_type(var_type, ctx)
 	Token val_token = tokens at val_pos
 	(kind) in val_token
 

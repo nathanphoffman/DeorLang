@@ -16,6 +16,8 @@ Types - Type validators being types must be defined early
 Macros (macros that depend on another must be listed below its dependency)
 Functions - Reliant on everything above
 
+Do we still have block in the deor language?
+
 New web crossover: Update black and white editors to have a more clear highlighting syntax
 
 -

@@ -1,0 +1,22 @@
+# validator_type_fn_param_test.deor
+# A validator type used as a function parameter stays Option<T> under the
+# hood — exercises passing both a valid and a not-valid value through.
+
+type Positive(int val)
+	val > 0
+
+fn void show_if_valid(Positive num)
+	if num is valid
+		print("valid")
+	else
+		print("not valid")
+
+fn void main()
+	Positive good = 5
+	Positive bad = 0
+	show_if_valid(good)
+	show_if_valid(bad)
+
+# expect:
+# valid
+# not valid

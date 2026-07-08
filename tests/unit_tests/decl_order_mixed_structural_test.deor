@@ -1,0 +1,33 @@
+# decl_order_mixed_structural_test.deor
+# The structural group (enum/struct/type/shape) may be declared in any order —
+# only the boundary against macros/functions is enforced. This exercises a
+# struct referencing a shape that's declared after it, plus a type and an enum
+# interleaved in between.
+
+struct Room
+	string name
+	roomList sub_rooms
+
+type Squarefeet(int val)
+	val > 0
+
+shape roomList = list of Room
+
+enum Status
+	Active
+	Inactive
+
+fn void main()
+	name as "Office"
+	roomList sub_rooms = empty
+	Room room = (name, sub_rooms)
+	(name) in room
+	print(name)
+
+	Squarefeet area = 20
+	if area is valid
+		print("valid area")
+
+# expect:
+# Office
+# valid area
