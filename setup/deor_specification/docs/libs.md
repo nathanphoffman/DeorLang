@@ -12,6 +12,26 @@ import "lib/math.deor"
 
 Four of the library files are **parameterized** — they use `where Placeholder = Type` to produce a concrete, type-safe version of the module. `T` is the conventional placeholder name but any valid identifier works. See [Parameterized Imports](#parameterized-imports) below.
 
+## Do Not Edit `lib/` Files
+
+Every file in `lib/` is stamped with a `DO NOT EDIT` header for a reason: `deor update` overwrites the entire `lib/` directory with the latest standard library on every run. Any changes made directly to a file in `lib/` are silently discarded the next time you update.
+
+To add functions to a standard library module, create a sibling file named `lib/<module>_extension.deor` and import it alongside the module it extends:
+
+```deor
+import "lib/string.deor"
+import "lib/string_extension.deor"
+```
+
+`lib/string_extension.deor`
+```deor
+fn string xs_snake_case(string str)
+    rust
+        str.to_lowercase().replace(' ', "_")
+```
+
+The updater only ever writes the standard library's own filenames, so `lib/string_extension.deor` (or `lib/math_extension.deor`, `lib/list_extension.deor`, etc.) is never touched — your additions survive updates indefinitely. Prefix functions with `x` + the module's standard library letter (`xs_` for `string_extension.deor`, `xm_` for `math_extension.deor`) so they're unmistakably non-standard while still reading as part of the same module. See [Naming Convention](#naming-convention) below for the full scheme, including brand-new (non-extension) libs.
+
 ---
 
 ## `lib/string.deor`
@@ -438,7 +458,7 @@ See [Rust Interop](docs/interop.md) for full `rust` block rules.
 
 Follow the same prefix convention as the standard library to keep the global namespace readable:
 
-Standard library prefixes (reserved):
+Standard library prefixes (reserved, one letter):
 
 | Prefix | Module |
 |---|---|
@@ -451,14 +471,15 @@ Standard library prefixes (reserved):
 | `n_` | `lib/time.deor` |
 | `t_` | `lib/tasks.deor`, `lib/taskpool.deor` |
 
-For custom wrappers, use a two-letter prefix — category letter + first letter of the lib filename — to avoid collisions with the standard library and with each other:
+Everything that isn't standard library — extensions to a standard module, brand-new custom libs, cargo crate wrappers, third-party files — gets an `x` prefix followed by the module's letter. One rule covers both "eXtension" and "eXternal":
 
-| Category | Letter | Second letter | Full prefix | Example |
-|---|---|---|---|---|
-| Cargo crate wrapper | `c` | first letter of crate name | `cr_` for `rand.deor` | `cr_rand_int` |
-| External Deor lib | `e` | first letter of lib filename | `en_` for `nates_lib.deor` | `en_format_label` |
+| Prefix | File | Example |
+|---|---|---|
+| `xs_` | `string_extension.deor` (extends `string.deor`) | `xs_snake_case` |
+| `xi_` | `internet.deor` (new custom lib) | `xi_get_ip_address` |
+| `xr_` | `rand.deor` (cargo crate wrapper) | `xr_rand_int` |
 
-`c` stands for **cargo** — thin wrappers around a `Cargo.toml` dependency. `e` stands for **external** — any `.deor` file written outside the standard library, whether personal or third-party.
+Pick the module's letter the same way the standard library does — first letter of the concept the file represents (`s` for string, `i` for internet, `r` for rand). If two unrelated custom libs land on the same letter, pick a different one by hand; there's no automatic collision resolution.
 
 ### I/O
 
@@ -498,11 +519,11 @@ The same pattern works for `ParsedFloat` — swap `i64` for `f64`.
 
 ### Cargo Crates
 
-For anything requiring an external crate, add it to `Cargo.toml` manually and wrap it the same way. The prefix is `c` + the crate's first letter:
+For anything requiring an external crate, add it to `Cargo.toml` manually and wrap it the same way. The prefix is `x` + the crate's first letter:
 
 ```deor
-# rand.deor — wraps the rand crate, prefix cr_
-fn int cr_rand_int(int min, int max)
+# rand.deor — wraps the rand crate, prefix xr_
+fn int xr_rand_int(int min, int max)
     rust
         use rand::Rng;
         rand::thread_rng().gen_range(min..=max)

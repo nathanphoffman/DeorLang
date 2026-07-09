@@ -231,4 +231,6 @@ opposite as not original
 
 ---
 ## Naming External Libs
-Because Deor does not support third-party importing, the standard convention is to copy Deor files into the `lib/` folder, prefixed the same two-letter way as the standard library. See [Libs — Naming Convention](docs/libs.md#naming-convention) for the full prefix scheme and examples.
+Because Deor does not support third-party importing, the standard convention is to copy Deor files into the `lib/` folder, with functions prefixed `x` + the module's letter to mark them as non-standard. See [Libs — Naming Convention](docs/libs.md#naming-convention) for the full prefix scheme and examples.
+
+Never edit a standard library file (`lib/string.deor`, `lib/math.deor`, etc.) directly — `deor update` overwrites all of them, silently discarding any changes. If you want to add functions to an existing module rather than wrap something new, create `lib/<module>_extension.deor` instead. See [Libs — Do Not Edit `lib/` Files](docs/libs.md#do-not-edit-lib-files).
