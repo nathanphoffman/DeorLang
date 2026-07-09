@@ -6,6 +6,8 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 ---
 ## Working On 
 
+We shouldnt deploy railway to other projects, make sure the config is sensible
+
 Check to see if block is supported and if documented?
 
 Check to make sure enforced ordering in docs is covered

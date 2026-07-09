@@ -140,11 +140,11 @@ fn make_label(prefix: String) -> String {
 
 ## Move in String Concatenation
 
-`move` also has no effect inside a `+` string-concat chain, for the opposite reason it's inert on a `Copy` type: concatenation never clones its operands in the first place, so there's nothing to opt out of. `+` chains compile to `[...].concat()`, which only ever borrows (`.as_str()`) — every operand, `move`d or not, stays valid afterward.
+`move` also has no effect inside `s_join`'s bracket-literal item list, for the opposite reason it's inert on a `Copy` type: `s_join([...])` never clones its operands in the first place, so there's nothing to opt out of. It compiles to `[...].concat()`, which only ever borrows (`.as_str()`) — every operand, `move`d or not, stays valid afterward.
 
 ```deor
 string nates_string = "hello"
-print(move nates_string + " hi")
+print(s_join([move nates_string, " hi"]))
 print(nates_string)   # still valid
 ```
 

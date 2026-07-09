@@ -44,6 +44,10 @@ fn string s_char_at(string str, int idx)
 	rust
 		str.chars().nth(idx as usize).map(|c| c.to_string()).unwrap_or_default()
 
+fn stringList s_chars(string str)
+	rust
+		str.chars().map(|c| c.to_string()).collect()
+
 fn int s_index_of(string str, string needle)
 	rust
 		str.find(needle.as_str()).map(|i| i as i64).unwrap_or(-1)
@@ -55,6 +59,14 @@ fn string s_substring(string str, int start, int stop)
 fn string s_repeat(string str, int count)
 	rust
 		str.repeat(count as usize)
+
+fn string s_pad_left(string str, int width)
+	rust
+		format!("{:>width$}", str, width = width as usize)
+
+fn string s_pad_right(string str, int width)
+	rust
+		format!("{:<width$}", str, width = width as usize)
 
 fn string s_trim_start(string str)
 	rust

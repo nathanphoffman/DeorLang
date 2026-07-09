@@ -42,36 +42,37 @@ No other escape sequences are supported in v1. For Unicode escapes or raw byte s
 
 ## Concatenation
 
-`+` joins strings — but it's a convenience for chains that already have a literal in them, not a general-purpose join. It works with literals, variables, or any combination, as long as the chain contains at least one string literal somewhere:
+`+` cannot be used with strings — use `s_join`/`s_join_with` instead. Any `+` with a string literal or a `string`-typed variable on either side is a Deor-level error, regardless of what's on the other side:
 
 ```deor
-string greeting = "hello " + name
-string line = prefix + content + "\n"
-string full = first + " " + last
+string full = "hello " + name    # transpiler error
+string other = aaa + bbb         # transpiler error
+```
+
+Rust's `+` for `String` only implements `Add<&str>`, never `Add<String>` — a chain of plain string variables (`aaa + bbb`) doesn't compile, and mixing a string with a number (`"count: " + count`) doesn't either. An earlier version of Deor tried to paper over this by detecting a literal somewhere in the chain and compiling to `[...].concat()`, but the detection had real gaps (a literal nested inside parens wasn't seen; a function call's return type wasn't classified), so some chains still silently produced broken Rust. Rather than keep patching that detection, `+` on strings is rejected outright — `s_join` covers every case unconditionally and is the only way to join strings:
+
+```deor
+string greeting = s_join(["hello ", name])
+string line = s_join([prefix, content, "\n"])
+string full = s_join([aaa, bbb])
 ```
 
 ```rust
 let greeting: String = ["hello ", name.as_str()].concat();
 let line: String = [prefix.as_str(), content.as_str(), "\n"].concat();
-let full: String = [first.as_str(), " ", last.as_str()].concat();
+let full: String = [aaa.as_str(), bbb.as_str()].concat();
 ```
 
-Chains of `+` are evaluated left to right and compiled to `[...].concat()` — the same shape `s_join`'s bracket-literal form produces below — not a native Rust `+`/`&` chain and not `format!`. Every operand is borrowed (`.as_str()`), except string literals, which are already `&str`. Nothing is ever cloned or moved, so every variable in the chain — first or not — stays usable afterward, and `move` has no effect on any of them (see [Move — Move in String Concatenation](docs/move.md#move-in-string-concatenation)).
+`s_join([...])` (the bracket-literal form) compiles to `[...].concat()`. Every operand is borrowed (`.as_str()`), except string literals, which are already `&str`. Nothing is ever cloned or moved, so every variable in the list — first or not — stays usable afterward, and `move` has no effect on any of them (see [Move — Move in String Concatenation](docs/move.md#move-in-string-concatenation)).
 
-**This only works because a literal is present.** Two plain string variables with no literal anywhere — `full = aaa + bbb` — are not recognized as a concat chain and fail to compile as plain arithmetic. This is a known, accepted gap: `+` is sugar for the literal-mixed case. For joining variables with no literal involved, use `s_join`/`s_join_with` instead (see the table below) — it always works and is the recommended way to join a list of strings in general:
-
-```deor
-string full = s_join([aaa, bbb])
-```
-
-The transpiler does check that operands *directly adjacent* to a `+` aren't mixing a string with a number (`"count: " + count` is caught at the Deor level with a clear error), but that check only looks at each `+`'s immediate neighbors, so it won't catch every possible mismatch in a longer chain — that residual case still surfaces as a Rust type error. Use a `rust` block if you need to format an integer into a string:
+Mixing a string with a number is still rejected the same way — convert the number first, e.g. with a `rust` block helper:
 
 ```deor
 fn string int_to_str(int n)
     rust
         n.to_string()
 
-string msg = "count: " + int_to_str(count)
+string msg = s_join(["count: ", int_to_str(count)])
 ```
 
 ---
@@ -122,7 +123,7 @@ bool is_pdf = s_ends_with(filename, ext)
 
 | Deor | Rust |
 |---|---|
-| `"lit" + b` | `["lit", b.as_str()].concat()` |
+| `s_join(["lit", b])` | `["lit", b.as_str()].concat()` |
 | `s_contains(str, needle)` | `str.contains(needle.as_str())` |
 | `s_starts_with(str, prefix)` | `str.starts_with(prefix.as_str())` |
 | `s_ends_with(str, suffix)` | `str.ends_with(suffix.as_str())` |
