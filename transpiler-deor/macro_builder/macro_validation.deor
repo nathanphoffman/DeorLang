@@ -13,7 +13,7 @@ fn tokenList validate_macros(tokenList raw_tokens)
 	for if pdx < token_count
 		Token tok = raw_tokens at pdx
 		(kind) in tok
-		if kind is "KW_MACRO"
+		if kind is "KW_MACRO" or kind is "KW_MACRO_BLOCK"
 			int nm_pos = pdx + 1
 			if nm_pos < token_count
 				Token nm_tok = raw_tokens at nm_pos

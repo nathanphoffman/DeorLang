@@ -32,6 +32,8 @@ fn void greet()
 
 ## `block` Inside Macros
 
+`block` is a general-purpose scoping keyword — see [Enforced Practices — Variable Shadowing](docs/enforced_practices.md#variable-shadowing) — but it's most often reached for here, inside a macro body.
+
 Because a macro body is copy-pasted at the call site, any variables it declares become part of the caller's scope. If the macro is called more than once, or if its internal variable names conflict with the caller's names, this causes a compile error.
 
 Use `block` inside the macro body to create an isolated scope. Variables declared inside `block` do not escape:
@@ -69,6 +71,28 @@ Rust:
 Without `block`, the second `macro_run` would fail to compile because `length`, `width`, and `area` would already be declared in scope.
 
 If the macro only reads variables from the caller's scope without declaring any of its own, `block` is not needed.
+
+---
+
+## `macro_block`: `block` Applied Automatically
+
+Since wrapping the entire body in `block` is such a common pattern, `macro_block` does it for you — declare with `macro_block` instead of `macro` and the body is automatically treated as if it were wrapped in `block`, with no need to write `block` and indent one level deeper yourself:
+
+```deor
+macro_block compute_area
+    length as 10
+    width as 5
+    area as length * width
+    print(area)
+
+fn void run()
+    macro_run compute_area
+    macro_run compute_area    # safe — same isolation as the hand-wrapped version above
+```
+
+This produces identical output to the hand-wrapped `compute_area` example above — `macro_block` only changes how the definition is written, not how `macro_run` calls it or how it behaves once expanded. Everything else about macros (top-level vs. function-local scoping, nested `macro_run` calls, one `macro`/`macro_block` never definable inside another) applies the same way.
+
+Reach for `macro_block` by default whenever a macro declares its own variables; keep plain `macro` for macros that only read from the caller's scope, where `block` would add a needless layer.
 
 ---
 

@@ -21,8 +21,12 @@ fn tokenList expand_deor_macros(tokenList tokens)
 				macros.retain(|_, (_, def_depth)| *def_depth <= scope_depth);
 			}
 
-			// collect macro definition
-			if kind == "KW_MACRO" {
+			// collect macro definition — 'macro_block' is sugar for 'macro' whose body is
+			// automatically wrapped in a 'block', so it never needs to be written by hand
+			// (see stmt_blocks.deor for what 'block' itself compiles to)
+			if kind == "KW_MACRO" || kind == "KW_MACRO_BLOCK" {
+				let is_block_macro = kind == "KW_MACRO_BLOCK";
+				let def_label = if is_block_macro { "macro_block" } else { "macro" }.to_string();
 				let name_tok = queue.pop_front();
 				let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
 				// skip NEWLINE
@@ -33,7 +37,7 @@ fn tokenList expand_deor_macros(tokenList tokens)
 				let has_body = queue.front().map(|t| t.kind == "INDENT").unwrap_or(false);
 				if !has_body {
 					let err_tok = name_tok.clone().unwrap_or(cur.clone());
-					handle_errors(vec![val_err(err_tok, "macro".to_string(), "must have an indented body — an empty 'macro <name>' with no block is not valid".to_string())]);
+					handle_errors(vec![val_err(err_tok, def_label.clone(), format!("must have an indented body — an empty '{} <name>' with no block is not valid", def_label))]);
 				}
 				// skip INDENT
 				while queue.front().map(|t| t.kind == "INDENT").unwrap_or(false) { queue.pop_front(); }
@@ -44,7 +48,7 @@ fn tokenList expand_deor_macros(tokenList tokens)
 					match queue.pop_front() {
 						None => break,
 						Some(t) => {
-							if t.kind == "KW_MACRO" {
+							if t.kind == "KW_MACRO" || t.kind == "KW_MACRO_BLOCK" {
 								let name_tok = queue.pop_front().unwrap_or(t.clone());
 								handle_errors(vec![val_err(name_tok, "macro".to_string(), "cannot be defined inside another macro body — use macro_run to call an existing macro".to_string())]);
 							} else if t.kind == "INDENT" {
@@ -59,6 +63,19 @@ fn tokenList expand_deor_macros(tokenList tokens)
 							}
 						}
 					}
+				}
+				if is_block_macro {
+					// wrap the body in synthetic 'block' tokens — identical to what the lexer
+					// would produce for a hand-written 'block' as the macro's first statement
+					let wrap_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
+					let mut wrapped: Vec<Token> = vec![
+						Token { kind: "KW_BLOCK".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+						Token { kind: "NEWLINE".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+						Token { kind: "INDENT".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+					];
+					wrapped.extend(body);
+					wrapped.push(Token { kind: "DEDENT".to_string(), value: String::new(), line: 0, file: wrap_file });
+					body = wrapped;
 				}
 				if !name.is_empty() { macros.insert(name, (body, scope_depth)); }
 				// skip trailing NEWLINE after the definition block

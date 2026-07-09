@@ -24,10 +24,13 @@
 #   - followed by '(' — a call target (whether that function exists is a
 #     separate concern this check doesn't take on)
 #   - followed by 'in' — a for-loop variable being declared
-#   - preceded by 'struct'/'enum'/'shape'/'type'/'fn'/'macro'/'macro_run'/'raw' —
-#     the name of that declaration/invocation, not a value being read ('raw' also
-#     covers the bare top-level 'raw TypeName' opaque-type declaration, which has
-#     no '=' for the other exclusion rule to catch)
+#   - preceded by 'struct'/'enum'/'shape'/'type'/'fn'/'macro'/'macro_run'/'macro_block'/
+#     'raw' — the name of that declaration/invocation, not a value being read ('raw'
+#     also covers the bare top-level 'raw TypeName' opaque-type declaration, which
+#     has no '=' for the other exclusion rule to catch). In practice macro/macro_run/
+#     macro_block names never reach this check at all — macro_expander.deor fully
+#     expands and strips them before the validator ever runs — but the exclusion is
+#     kept in case that pipeline ordering ever changes.
 #   - preceded by 'of'/'to' — a shape's element/return type name
 # A typed enum's own name, used as the source of a variant extraction
 # ('(Red) in Color'), is checked against enum_names — it's a compile-time name,
@@ -72,6 +75,8 @@ macro check_undefined_var_read
 		if kind is "KW_MACRO"
 			uvr_skip = true
 		if kind is "KW_MACRO_RUN"
+			uvr_skip = true
+		if kind is "KW_MACRO_BLOCK"
 			uvr_skip = true
 		if kind is "KW_OF"
 			uvr_skip = true

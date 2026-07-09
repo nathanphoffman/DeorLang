@@ -1,0 +1,21 @@
+# macro_block_test.deor — exercises `macro_block`, sugar for `macro` whose body is
+# automatically wrapped in `block`. Calling it twice must not collide, exactly like
+# the hand-written `block`-wrapped macro in macro_test.deor's compute_area, but
+# without writing `block` as the first line ourselves.
+
+macro_block compute_area
+	length as 10
+	width as 5
+	area as length * width
+	print(area)
+
+fn void run_area_twice()
+	macro_run compute_area
+	macro_run compute_area
+
+fn void main()
+	run_area_twice()
+
+# expect:
+# 50
+# 50

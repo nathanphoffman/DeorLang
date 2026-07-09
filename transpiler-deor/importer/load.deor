@@ -79,7 +79,7 @@ fn tokenList load_file(string path)
 					print(err_msg)
 					rust
 						std::process::exit(1);
-			if kind is "KW_MACRO"
+			if kind is "KW_MACRO" or kind is "KW_MACRO_BLOCK"
 				if decl_phase is 2
 					string err_pre = "[error] "
 					string err_mid = ": macros must be declared before functions"

@@ -6,17 +6,11 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 ---
 ## Working On 
 
-Add enforced ordering using best practices:
+Check to see if block is supported and if documented?
 
-Imports - Everything else could use it, relies on nothing else in the file
-Enums - Relies likely on nothing else in the file
-Structs - Reliant on most everything above but still structural (so above functions)
-Shapes - Shapes can reference almost anything above
-Types - Type validators being types must be defined early
-Macros (macros that depend on another must be listed below its dependency)
-Functions - Reliant on everything above
+Check to make sure enforced ordering in docs is covered
 
-Do we still have block in the deor language?
+Check to make sure we cover well that s_join is the way to concat
 
 New web crossover: Update black and white editors to have a more clear highlighting syntax
 

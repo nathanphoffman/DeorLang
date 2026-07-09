@@ -644,6 +644,10 @@ fn word_to_kind(word: String) -> String {
         // transpiler-deor/importer/lexer/word_token.deor
         return "KW_MACRO_RUN".to_string();
     }
+    if word == "macro_block" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_MACRO_BLOCK".to_string();
+    }
     if word == "import" {
         // transpiler-deor/importer/lexer/word_token.deor
         return "KW_IMPORT".to_string();
@@ -1330,7 +1334,7 @@ fn load_file(path: String) -> Vec<Token> {
                     std::process::exit(1);
                 }
             }
-            if kind == "KW_MACRO" {
+            if kind == "KW_MACRO" || kind == "KW_MACRO_BLOCK" {
                 // transpiler-deor/importer/load.deor
                 if decl_phase == 2 {
                     // transpiler-deor/importer/load.deor
@@ -1581,9 +1585,10 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> Vec<Token> {
         let mut is_shape: bool = kind == "KW_SHAPE";
         let mut is_type: bool = kind == "KW_TYPE";
         let mut is_macro: bool = kind == "KW_MACRO";
+        let mut is_macro_block: bool = kind == "KW_MACRO_BLOCK";
         let mut is_raw: bool = kind == "KW_RAW";
         let mut is_rust_blk: bool = kind == "KW_RUST";
-        let mut is_block_decl: bool = is_fn || is_struct || is_enum || is_type || is_macro;
+        let mut is_block_decl: bool = is_fn || is_struct || is_enum || is_type || is_macro || is_macro_block;
         if is_block_decl {
             // macro: dd_handle_block_decl (transpiler-deor/importer/macros/dd_handle_block_decl.deor)
             let mut dn_offset: i64 = 1;
@@ -2183,8 +2188,12 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     		macros.retain(|_, (_, def_depth)| *def_depth <= scope_depth);
     	}
 
-    	// collect macro definition
-    	if kind == "KW_MACRO" {
+    	// collect macro definition — 'macro_block' is sugar for 'macro' whose body is
+    	// automatically wrapped in a 'block', so it never needs to be written by hand
+    	// (see stmt_blocks.deor for what 'block' itself compiles to)
+    	if kind == "KW_MACRO" || kind == "KW_MACRO_BLOCK" {
+    		let is_block_macro = kind == "KW_MACRO_BLOCK";
+    		let def_label = if is_block_macro { "macro_block" } else { "macro" }.to_string();
     		let name_tok = queue.pop_front();
     		let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
     		// skip NEWLINE
@@ -2195,7 +2204,7 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     		let has_body = queue.front().map(|t| t.kind == "INDENT").unwrap_or(false);
     		if !has_body {
     			let err_tok = name_tok.clone().unwrap_or(cur.clone());
-    			handle_errors(vec![val_err(err_tok, "macro".to_string(), "must have an indented body — an empty 'macro <name>' with no block is not valid".to_string())]);
+    			handle_errors(vec![val_err(err_tok, def_label.clone(), format!("must have an indented body — an empty '{} <name>' with no block is not valid", def_label))]);
     		}
     		// skip INDENT
     		while queue.front().map(|t| t.kind == "INDENT").unwrap_or(false) { queue.pop_front(); }
@@ -2206,7 +2215,7 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     			match queue.pop_front() {
     				None => break,
     				Some(t) => {
-    					if t.kind == "KW_MACRO" {
+    					if t.kind == "KW_MACRO" || t.kind == "KW_MACRO_BLOCK" {
     						let name_tok = queue.pop_front().unwrap_or(t.clone());
     						handle_errors(vec![val_err(name_tok, "macro".to_string(), "cannot be defined inside another macro body — use macro_run to call an existing macro".to_string())]);
     					} else if t.kind == "INDENT" {
@@ -2221,6 +2230,19 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
     					}
     				}
     			}
+    		}
+    		if is_block_macro {
+    			// wrap the body in synthetic 'block' tokens — identical to what the lexer
+    			// would produce for a hand-written 'block' as the macro's first statement
+    			let wrap_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
+    			let mut wrapped: Vec<Token> = vec![
+    				Token { kind: "KW_BLOCK".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+    				Token { kind: "NEWLINE".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+    				Token { kind: "INDENT".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+    			];
+    			wrapped.extend(body);
+    			wrapped.push(Token { kind: "DEDENT".to_string(), value: String::new(), line: 0, file: wrap_file });
+    			body = wrapped;
     		}
     		if !name.is_empty() { macros.insert(name, (body, scope_depth)); }
     		// skip trailing NEWLINE after the definition block
@@ -2258,7 +2280,7 @@ fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
         // transpiler-deor/macro_builder/macro_validation.deor
         let mut tok: Token = raw_tokens[pdx as usize].clone();
         let kind = tok.kind.clone();
-        if kind == "KW_MACRO" {
+        if kind == "KW_MACRO" || kind == "KW_MACRO_BLOCK" {
             // transpiler-deor/macro_builder/macro_validation.deor
             let mut nm_pos: i64 = pdx + 1;
             if nm_pos < token_count {
@@ -2478,7 +2500,7 @@ fn validate_tokens(tokens: TokensRef) {
     // transpiler-deor/tokens_validator/tokens_validation.deor
     handle_errors(errors.clone());
     let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
-    let mut reserved_keywords: Vec<String> = vec!["KW_AND".to_string(), "KW_AS".to_string(), "KW_AT".to_string(), "KW_AVOW".to_string(), "KW_BLOCK".to_string(), "KW_BREAK".to_string(), "KW_CONST".to_string(), "KW_CONTINUE".to_string(), "KW_ELSE".to_string(), "KW_EMPTY".to_string(), "KW_ENUM".to_string(), "KW_FALSE".to_string(), "KW_FN".to_string(), "KW_FOR".to_string(), "KW_FUNC".to_string(), "KW_IF".to_string(), "KW_IMPORT".to_string(), "KW_IN".to_string(), "KW_IS".to_string(), "KW_LIST".to_string(), "KW_MACRO".to_string(), "KW_MACRO_RUN".to_string(), "KW_MOVE".to_string(), "KW_NONE".to_string(), "KW_NOT".to_string(), "KW_OF".to_string(), "KW_OR".to_string(), "KW_RAW".to_string(), "KW_REMOVE".to_string(), "KW_RETURN".to_string(), "KW_RUST".to_string(), "KW_SHAPE".to_string(), "KW_STRUCT".to_string(), "KW_TO".to_string(), "KW_TRUE".to_string(), "KW_TYPE".to_string(), "KW_VALID".to_string(), "KW_VOID".to_string(), "KW_WITH".to_string()];
+    let mut reserved_keywords: Vec<String> = vec!["KW_AND".to_string(), "KW_AS".to_string(), "KW_AT".to_string(), "KW_AVOW".to_string(), "KW_BLOCK".to_string(), "KW_BREAK".to_string(), "KW_CONST".to_string(), "KW_CONTINUE".to_string(), "KW_ELSE".to_string(), "KW_EMPTY".to_string(), "KW_ENUM".to_string(), "KW_FALSE".to_string(), "KW_FN".to_string(), "KW_FOR".to_string(), "KW_FUNC".to_string(), "KW_IF".to_string(), "KW_IMPORT".to_string(), "KW_IN".to_string(), "KW_IS".to_string(), "KW_LIST".to_string(), "KW_MACRO".to_string(), "KW_MACRO_RUN".to_string(), "KW_MACRO_BLOCK".to_string(), "KW_MOVE".to_string(), "KW_NONE".to_string(), "KW_NOT".to_string(), "KW_OF".to_string(), "KW_OR".to_string(), "KW_RAW".to_string(), "KW_REMOVE".to_string(), "KW_RETURN".to_string(), "KW_RUST".to_string(), "KW_SHAPE".to_string(), "KW_STRUCT".to_string(), "KW_TO".to_string(), "KW_TRUE".to_string(), "KW_TYPE".to_string(), "KW_VALID".to_string(), "KW_VOID".to_string(), "KW_WITH".to_string()];
     let mut builtin_names: Vec<String> = vec!["print".to_string(), "crash".to_string(), "len".to_string(), "range".to_string(), "args".to_string(), "input".to_string()];
     let mut func_shape_names: Vec<String> = Vec::new();
     let mut validator_type_names: Vec<String> = Vec::new();
@@ -4792,6 +4814,10 @@ fn validate_tokens(tokens: TokensRef) {
                     uvr_skip = true;
                 }
                 if kind == "KW_MACRO_RUN" {
+                    // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
+                    uvr_skip = true;
+                }
+                if kind == "KW_MACRO_BLOCK" {
                     // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
                     uvr_skip = true;
                 }
