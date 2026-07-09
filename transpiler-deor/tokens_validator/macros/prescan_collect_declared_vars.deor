@@ -2,11 +2,14 @@
 # Prescan pass: collects every name introduced by any binding form into
 # declared_var_names, so check_undeclared_reassign can tell a real reassignment
 # (`total = total + 1`, name declared earlier) from a typo'd or never-declared
-# bare `=` (`hello = "world"`, name never introduced anywhere).
+# bare `=` (`hello = "world"`, name never introduced anywhere). Also the backing
+# registry for check_undefined_var_read, which flags any *read* of a name never
+# introduced here (or in enum_variant_names / fn_names).
 # Sources covered: typed decl / const / validator ('Type name = expr'),
 # as-binding ('name as expr'), raw decl ('raw name = expr'), fn params
 # ('fn Ret name(Type1 p1, Type2 p2)'), for-loop vars ('for item in list'),
-# and tuple destructuring ('(f1, f2) in source').
+# tuple destructuring ('(f1, f2) in source'), and a validator type's own
+# predicate parameter ('type Roll(int val)').
 macro prescan_collect_declared_vars
 	if kind is "IDENT"
 		# ex: Type {name} = expr — pre_i+1 grabs the variable name, +2 the equals sign
@@ -51,6 +54,22 @@ macro prescan_collect_declared_vars
 			(kind) in dv_re_tok
 			if dv_rk is "IDENT" and kind is "EQUALS"
 				declared_var_names at end = dv_rv
+
+	if kind is "KW_TYPE"
+		# ex: type Roll({int} val) — pre_i+2 grabs the opening paren, pre_i+4 the
+		# predicate's own parameter name (same fixed offsets check_validator_declaration
+		# uses) — this is the only declaration form check_undefined_var_read couldn't
+		# otherwise see, since the predicate body reads this name like any local var
+		int dv_vt_lp = pre_i + 2
+		int dv_vt_pn = pre_i + 4
+		if dv_vt_pn < token_count
+			Token dv_vt_lp_tok = tokens at dv_vt_lp
+			Token dv_vt_pn_tok = tokens at dv_vt_pn
+			(kind) in dv_vt_lp_tok
+			if kind is "LPAREN"
+				(kind, value) in dv_vt_pn_tok
+				if kind is "IDENT"
+					declared_var_names at end = value
 
 	if kind is "KW_FOR"
 		# ex: for {item} in list — pre_i+1 grabs the loop variable, +2 the 'in' keyword

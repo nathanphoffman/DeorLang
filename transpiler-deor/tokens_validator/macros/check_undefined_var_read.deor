@@ -1,0 +1,94 @@
+
+# Flags a bare IDENT used in a read/value position (RHS of a decl or reassign,
+# call argument, return value, operator operand, list literal item, struct
+# construction / `with` shorthand field, bare enum variant, etc.) that was never
+# introduced by any binding form, isn't a known enum variant, isn't a known
+# function passed bare as a value (satisfying a func shape), and isn't a
+# built-in. Left alone, this reaches codegen as a plain Rust identifier with
+# nothing bound to it — an opaque "cannot find value" from rustc instead of a
+# clear Deor-level error.
+#
+# Reuses declared_var_names (see prescan_collect_declared_vars) — the same
+# registry check_undeclared_reassign checks — plus enum_variant_names, enum_names,
+# and fn_names for the read-only categories that registry doesn't cover.
+#
+# Rather than enumerate every legitimate read context as a positive list (there
+# are too many, and Deor's grammar keeps adding expression positions), this
+# excludes the non-read positions instead, since those are a small, closed set:
+#   - inside a struct or enum body (in_struct_body / in_enum_body) — every
+#     IDENT there is a type, field, or variant name, never a read
+#   - followed by another IDENT — a type-annotation slot ('Type name')
+#   - followed by '=' — a declaration or reassignment target (already covered
+#     by check_var_decl / check_undeclared_reassign)
+#   - followed by 'as' — a fresh as-binding target
+#   - followed by '(' — a call target (whether that function exists is a
+#     separate concern this check doesn't take on)
+#   - followed by 'in' — a for-loop variable being declared
+#   - preceded by 'struct'/'enum'/'shape'/'type'/'fn'/'macro'/'macro_run'/'raw' —
+#     the name of that declaration/invocation, not a value being read ('raw' also
+#     covers the bare top-level 'raw TypeName' opaque-type declaration, which has
+#     no '=' for the other exclusion rule to catch)
+#   - preceded by 'of'/'to' — a shape's element/return type name
+# A typed enum's own name, used as the source of a variant extraction
+# ('(Red) in Color'), is checked against enum_names — it's a compile-time name,
+# not a runtime variable, so declared_var_names would never have it either.
+# A destructure-LHS name ('(f1, f2) in source') falls through to the check like
+# any other read, but is always found — prescan_collect_declared_vars registers
+# it from the very same statement.
+macro check_undefined_var_read
+	bool uvr_skip = in_struct_body
+	if in_enum_body
+		uvr_skip = true
+
+	int uvr_next = pos + 1
+	if uvr_next < token_count
+		Token uvr_next_tok = tokens at uvr_next
+		(kind) in uvr_next_tok
+		if kind is "IDENT"
+			uvr_skip = true
+		if kind is "EQUALS"
+			uvr_skip = true
+		if kind is "KW_AS"
+			uvr_skip = true
+		if kind is "LPAREN"
+			uvr_skip = true
+		if kind is "KW_IN"
+			uvr_skip = true
+
+	if pos > 0
+		int uvr_prev = pos - 1
+		Token uvr_prev_tok = tokens at uvr_prev
+		(kind) in uvr_prev_tok
+		if kind is "KW_STRUCT"
+			uvr_skip = true
+		if kind is "KW_ENUM"
+			uvr_skip = true
+		if kind is "KW_SHAPE"
+			uvr_skip = true
+		if kind is "KW_TYPE"
+			uvr_skip = true
+		if kind is "KW_FN"
+			uvr_skip = true
+		if kind is "KW_MACRO"
+			uvr_skip = true
+		if kind is "KW_MACRO_RUN"
+			uvr_skip = true
+		if kind is "KW_OF"
+			uvr_skip = true
+		if kind is "KW_TO"
+			uvr_skip = true
+		if kind is "KW_RAW"
+			uvr_skip = true
+
+	if not uvr_skip
+		bool uvr_known = list_has(declared_var_names, cur_val)
+		if not uvr_known
+			uvr_known = list_has(enum_variant_names, cur_val)
+		if not uvr_known
+			uvr_known = list_has(enum_names, cur_val)
+		if not uvr_known
+			uvr_known = list_has(fn_names, cur_val)
+		if not uvr_known
+			uvr_known = list_has(builtin_names, cur_val)
+		if not uvr_known
+			errors at end = val_err(tok, lbl_var, rule_undefined_var)

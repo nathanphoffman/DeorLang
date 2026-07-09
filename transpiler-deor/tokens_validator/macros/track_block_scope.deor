@@ -1,6 +1,11 @@
 
 # Tracks INDENT/DEDENT nesting depth and sets `in_void_fn` when entering a void function body,
 # clearing it when the function's block closes — used to enforce the no-return rule in void fns.
+# Also sets in_struct_body / in_enum_body when entering a struct or enum declaration (from the
+# KW_STRUCT/KW_ENUM token itself, so it covers the name and any type keyword before the body
+# even opens), clearing both at the same DEDENT that closes the declaration — every IDENT in
+# either body is a type/field/variant name, never a variable read, so check_undefined_var_read
+# skips the check entirely while either flag is set.
 # Also clears validator_vars, non_bool_var_names, and string_var_names at the start of
 # each top-level fn, so a tracked local in one function doesn't leak into matching
 # an unrelated same-named local in the next.
@@ -13,6 +18,14 @@ macro track_block_scope
 		block_depth = block_depth - 1
 		if block_depth is 0
 			in_void_fn = false
+			in_struct_body = false
+			in_enum_body = false
+	if cur_kind is "KW_STRUCT"
+		if block_depth is 0
+			in_struct_body = true
+	if cur_kind is "KW_ENUM"
+		if block_depth is 0
+			in_enum_body = true
 	if cur_kind is "KW_FN"
 		if block_depth is 0
 			rust

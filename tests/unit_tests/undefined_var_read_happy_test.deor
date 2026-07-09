@@ -1,0 +1,61 @@
+# undefined_var_read_happy_test.deor
+# Happy-path coverage for check_undefined_var_read across the read contexts
+# most likely to be misflagged as an undefined variable: a function passed
+# bare as a value to satisfy a func shape, a validator type's own predicate
+# parameter, a bare untyped-enum variant used as a value, a typed enum's own
+# name used as an extraction source, and `with`-shorthand record update (each
+# of which requires the named variable to already exist in scope).
+
+struct Room
+	int area
+	string name
+
+shape roomFunc = func of Room to bool
+
+enum ColorTag
+	Red
+	Green
+	Blue
+
+enum string Label
+	Foo = "Foo"
+	Bar = "Bar"
+
+type Positive(int val)
+	val > 0
+
+fn bool is_big(Room room)
+	(area) in room
+	return area > 100
+
+fn void main()
+	roomFunc checker = is_big
+	int area = 50
+	string name = "Office"
+	Room office = (area, name)
+	if checker(office)
+		print("big")
+	else
+		print("small")
+
+	ColorTag background = Blue
+	if background is Blue
+		print("blue")
+
+	(Foo) in Label
+	print(Foo)
+
+	Positive score = 5
+	if score is valid
+		print("valid")
+
+	name as "Bigger Office"
+	bigger_office as office with (name)
+	print("done")
+
+# expect:
+# small
+# blue
+# Foo
+# valid
+# done

@@ -1,6 +1,13 @@
 
 # Prescan pass: walks each enum body and validates that all variants are PascalCase,
-# at least 3 chars, and follow the correct syntax for their enum kind.
+# at least 3 chars, and follow the correct syntax for their enum kind. Also
+# registers every variant name into enum_variant_names, so check_undefined_var_read
+# recognizes a bare variant reference (`ColorTag bg = Blue`, `if bg is Blue`) as a
+# known name — untyped variants never enter declared_var_names any other way — and
+# registers the enum's own name into enum_names, so the same check recognizes a
+# typed enum's name where it's used as an extraction source (`(Red) in Color`) —
+# unlike a struct destructure's source, `Color` here is a compile-time enum name,
+# never a runtime variable, so it can't come from declared_var_names either.
 #
 # Untyped enums (enum Name): variants are bare identifiers — no data, no '= value'.
 # Typed enums (enum string/int/float/bool Name): each variant MUST have '= value'.
@@ -22,6 +29,17 @@ macro prescan_check_enum_variants
 			else if value is "bool"
 				ev_is_typed = true
 
+		# ex: enum {ColorTag} (untyped) or enum string {Color} (typed) — the enum's
+		# own name sits one slot further in for a typed enum
+		int ev_name_pos = pre_i + 1
+		if ev_is_typed
+			ev_name_pos = pre_i + 2
+		if ev_name_pos < token_count
+			Token ev_name_tok = tokens at ev_name_pos
+			(kind, value) in ev_name_tok
+			if kind is "IDENT"
+				enum_names at end = value
+
 		# Scan forward to INDENT (works for both typed and untyped)
 		for if ev_pos < token_count
 			Token ev_tok = tokens at ev_pos
@@ -39,6 +57,7 @@ macro prescan_check_enum_variants
 				break
 			if kind is "IDENT"
 				(value) in ev_tok
+				enum_variant_names at end = value
 				if len(value) < 3
 					errors at end = val_err(ev_tok, lbl_variant, rule_min3)
 				if not is_pascal(value)

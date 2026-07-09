@@ -10,6 +10,8 @@ fn void validate_tokens(TokensRef tokens)
 	int paren_depth = 0
 	int block_depth = 0
 	bool in_void_fn = false
+	bool in_struct_body = false
+	bool in_enum_body = false
 
 	# labels
 	string lbl_struct = "struct"
@@ -68,6 +70,9 @@ fn void validate_tokens(TokensRef tokens)
 	strList non_bool_var_names = empty
 	strList string_var_names = empty
 	strList declared_var_names = empty
+	strList fn_names = empty
+	strList enum_variant_names = empty
+	strList enum_names = empty
 	pre_i = 0
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
@@ -75,6 +80,7 @@ fn void validate_tokens(TokensRef tokens)
 		macro_run prescan_collect_shapes
 		macro_run prescan_collect_const_names
 		macro_run prescan_collect_declared_vars
+		macro_run prescan_collect_fn_names
 		macro_run prescan_check_duplicate_decls
 		macro_run prescan_check_struct_fields
 		macro_run prescan_check_enum_variants
@@ -214,6 +220,7 @@ fn void validate_tokens(TokensRef tokens)
 			macro_run check_var_decl
 			macro_run check_bad_stmt
 			macro_run check_undeclared_reassign
+			macro_run check_undefined_var_read
 			macro_run check_bracket_indexing
 			macro_run check_struct_construction
 			macro_run check_range_placement

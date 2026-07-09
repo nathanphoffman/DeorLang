@@ -1,0 +1,15 @@
+
+# Prescan pass: collects every top-level function name into fn_names, so
+# check_undefined_var_read recognizes a bare function reference passed as a
+# value (the only way to satisfy a func shape, e.g. `roomFunc worker =
+# check_room`) as a known name instead of flagging it as an undefined variable.
+macro prescan_collect_fn_names
+	if kind is "KW_FN"
+		# ex: fn int {add_one}(left) — pre_i+2 grabs the fn name, whether the
+		# return-type slot at pre_i+1 is an IDENT type name or the 'void' keyword
+		int fnn_name_pos = pre_i + 2
+		if fnn_name_pos < token_count
+			Token fnn_name_tok = tokens at fnn_name_pos
+			(kind, value) in fnn_name_tok
+			if kind is "IDENT"
+				fn_names at end = value

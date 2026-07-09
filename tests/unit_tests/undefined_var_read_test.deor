@@ -1,0 +1,26 @@
+# undefined_var_read_test.deor
+# Exercises check_undefined_var_read: a read of a name that was never
+# introduced by any binding form, isn't a known enum variant/enum name, isn't
+# a known function passed as a value, and isn't a builtin, should error with a
+# friendly message instead of reaching codegen as an undefined Rust value.
+# See undefined_var_read_happy_test.deor for the legitimate read contexts this
+# check must NOT flag.
+
+fn void test_decl_rhs()
+	int result = this_is_not_anywhere
+	print(result)
+
+fn void test_call_arg()
+	print(also_missing)
+
+fn int test_return_value()
+	return still_missing
+
+fn void main()
+	test_decl_rhs()
+	test_call_arg()
+
+# expect-error:
+# line 10: variable 'this_is_not_anywhere' - used here but never declared anywhere
+# line 14: variable 'also_missing' - used here but never declared anywhere
+# line 17: variable 'still_missing' - used here but never declared anywhere
