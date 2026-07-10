@@ -57,6 +57,7 @@ if not val is 5    # transpiler error
 
 `is empty` and `is not empty` test whether a list has zero elements:
 
+Deor:
 ```deor
 if names is empty
     ...
@@ -64,6 +65,7 @@ if names is not empty
     ...
 ```
 
+Rust:
 ```rust
 if names.is_empty() { ... }
 if !names.is_empty() { ... }

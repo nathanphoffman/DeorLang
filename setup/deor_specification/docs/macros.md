@@ -119,3 +119,9 @@ macro_run timer_end
 ```
 
 `timer_end` freely reads `_timer_start` (declared by `timer_start`) and `_timer_label` (set by the caller) since both live in the same inlined scope. Nothing enforces that `timer_end` actually gets called — that's just the tradeoff of macros inlining into caller scope, same as any other macro.
+
+---
+
+## Limiting Cross-File Macro Nesting
+
+`macro_run` calls can nest across files as freely as within one — there's no restriction by default. If a chain of macros calling macros grows hard to trace because it keeps hopping between files, opt into `ENFORCE_MACRO_FILE_DEPTH` to cap it. Same-file macro calls are always free regardless of the limit; only crossing into a different file counts against it. See [Enforced Practices — Limiting Cross-File Macro Calls](docs/enforced_practices.md#limiting-cross-file-macro-calls) for the pragma and worked example.

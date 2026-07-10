@@ -20,10 +20,6 @@
 
 [Enums](docs/enums.md) — `enum`, variant declaration, checking with `is`
 
-[Examples](docs/examples.md) — full worked example with Rust translation
-
-[Experimental](docs/experimental.md) — features currently in testing
-
 [Functions](docs/functions.md) — `fn`, return rules, void, recursion
 
 [Immutability](docs/immutability.md) — immutability rules, record update (`with`)

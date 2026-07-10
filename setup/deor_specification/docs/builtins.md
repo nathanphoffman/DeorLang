@@ -7,7 +7,8 @@ These functions are wired directly into the transpiler — no import, no wrapper
 
 Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Libs](docs/libs.md) for the standard library and custom wrapper patterns.
 
-None of `print`, `crash`, `len`, `range`, `args`, or `input` are lexer keywords, but none can be used as a variable, parameter, function, struct, or type name either — they cannot be shadowed. See [Syntax — Built-in Function Names](docs/syntax.md#built-in-function-names).
+No built-ins: `print`, `crash`, `len`, `range`, `args`, or `input` are lexer keywords, and none can be used as a variable, parameter, 
+function, struct, or type name either — they cannot be shadowed. See [Syntax — Built-in Function Names](docs/syntax.md#built-in-function-names).
 
 ---
 
@@ -30,8 +31,8 @@ Pass a second argument to replace the trailing newline with a string of your cho
 
 Deor:
 ```deor
-string sep = ", "
-print(first, sep)
+string separator = ", "
+print(first, separator)
 print(second)
 ```
 
