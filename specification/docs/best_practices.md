@@ -65,7 +65,7 @@ Connection conn = Connect(
 ---
 ## Construction and Destructuring
 
-Field order does not matter — all construction and destructuring forms are name-matched. Any subset in any order is valid for destructuring; fields in construction are matched by variable name to struct field name.
+Even though order is not enforced, write fields in the same order they appear in the struct declaration if possible. It makes construction and destructuring sites easier to scan and keeps things consistent across the codebase.
 
 ```deor
 struct Employee
@@ -77,8 +77,6 @@ struct Employee
 Employee emp = (employee_id, first_name, last_name)
 emp as (employee_id, first_name, last_name)
 ```
-
-Even though order is not enforced, write fields in the same order they appear in the struct declaration. It makes construction and destructuring sites easier to scan and keeps things consistent across the codebase.
 
 Additionally, all `in` extractions should appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
 
@@ -171,12 +169,19 @@ for item in items
     macro_run sq
 ```
 
-If the logic is non-trivial, extract it into a function regardless — readability wins over minor call overhead for complex operations.
+In trivial cases, like these inline is probably better anyhow, but in general:
+- When the code is small enough (like these examples since we have limited space): leave it inline
+- When organization is needed and logic separation isn't needed and you need to define new variables: use a ```macro```
+- When organization is needed and logic separation isn't needed and you don't need new variables: use a ```macro_block``` 
+- When logic separation is logical: use a ```function```
 
 ---
 ## Reusable Consts — via Macros
 
-Deor has no global scope, so a `const` can't be declared once and shared across every function that needs it — it only exists inside the block where it's declared. When the same constant values are needed in multiple functions, declare them once inside a `macro` and `macro_run` it wherever they're needed. Because the macro body is inlined at each call site, every function gets its own copy of the same named consts — nothing is shared at runtime, but the names and values stay consistent everywhere they're used.
+Deor has no global scope, so a `const` can't be declared once and shared across every function that needs it — it only exists inside the block 
+where it's declared. When the same constant values are needed in multiple functions, declare them once inside a `macro` or `macro_block` it 
+wherever they're needed. Because the macro body is inlined at each call site, every function gets its own copy of the same named consts — 
+nothing is shared at runtime, but the names and values stay consistent everywhere they're used.
 
 ```deor
 macro use_log_consts
@@ -192,7 +197,9 @@ fn void log_error(string msg)
     print(ERROR_PREFIX + msg)
 ```
 
-Don't `macro_run` the same const-macro twice in one function body — the second inlining redeclares the same variable names in the same scope, which the transpiler always rejects. This is a separate check from [top-level duplicate declarations](enforced_practices.md#duplicate-top-level-names) — variable redeclaration inside a function body is never allowed, regardless of the `ENFORCE_UNIQUE_*` pragmas.
+Don't `macro_run` the same const-macro twice in one function body — the second inlining redeclares the same variable names in the same scope, 
+which the transpiler always rejects. This is a separate check from [top-level duplicate declarations](enforced_practices.md#duplicate-top-level-names) — 
+variable redeclaration inside a function body is never allowed, regardless of the `ENFORCE_UNIQUE_*` pragmas.
 
 ---
 ## File Length
@@ -206,7 +213,9 @@ In the Deor creator's opinion: Smaller functions with well placed macros > Small
 ---
 ## Prefer `is not` Over `not ... is`
 
-When negating a comparison, use `is not` rather than wrapping the comparison in `not`. `val is not 5` is required for bare identifiers (the transpiler rejects `not val is 5`), and the same preference applies even in the cases the transpiler doesn't catch, like `not (a > b) is y` or `not some_func() is y` — reorder these to `(a > b) is not y` and `some_func() is not y` instead.
+When negating a comparison, use `is not` rather than wrapping the comparison in `not`. `val is not 5` is required for bare identifiers 
+(the transpiler rejects `not val is 5`), and the same preference applies even in the cases the transpiler doesn't catch, like `not (a > b) is y` 
+or `not some_func() is y` — reorder these to `(a > b) is not y` and `some_func() is not y` instead.
 
 **Recommended:**
 ```deor
