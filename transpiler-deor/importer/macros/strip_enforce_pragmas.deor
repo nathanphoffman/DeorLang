@@ -1,19 +1,26 @@
 
-# Fortran-IMPLICIT-style opt-in pragmas. If ENFORCE_UNIQUE_FILE_DECLARATIONS and/or
-# ENFORCE_UNIQUE_IMPORT_DECLARATIONS appear as the first statement(s) of fn void main() —
-# in either order, either or both — they're consumed here and never reach validation or
-# codegen. Neither present means fully loose: dedup.deor silently keeps the first
-# declaration of any repeated name, same as it always has.
+# Fortran-IMPLICIT-style opt-in pragmas. If ENFORCE_UNIQUE_FILE_DECLARATIONS,
+# ENFORCE_UNIQUE_IMPORT_DECLARATIONS, and/or ENFORCE_MACRO_FILE_DEPTH appear as the first
+# statement(s) of fn void main() — in any order, any subset — they're consumed here and
+# never reach validation or codegen. Neither of the two unique-decl flags present means
+# fully loose: dedup.deor silently keeps the first declaration of any repeated name, same
+# as it always has.
 #   ENFORCE_UNIQUE_FILE_DECLARATIONS   — error on a name repeated within the same file
 #   ENFORCE_UNIQUE_IMPORT_DECLARATIONS — error on a name repeated across two different files
-# The two are independent: set one, both, or neither.
+#   ENFORCE_MACRO_FILE_DEPTH = N       — captures N as the max allowed macro call depth,
+#                                        counted only in cross-file call boundaries (same-file
+#                                        macro calls are free). 0 means unset/no limit.
+#                                        Parsed and captured here; not yet enforced anywhere.
+# All three are independent: set any subset, in any order.
 # Orchestrates three sub-macros: sep_check_main_signature, sep_copy_main_opener, and
 # sep_scan_pragma_lines — see those files for the token-level detail.
 # Reads: tokens
-# Writes: tokens (pragma lines removed), enforce_unique_file, enforce_unique_import
+# Writes: tokens (pragma lines removed), enforce_unique_file, enforce_unique_import,
+#         enforce_macro_file_depth
 macro strip_enforce_pragmas
 	bool enforce_unique_file = false
 	bool enforce_unique_import = false
+	int enforce_macro_file_depth = 0
 	tokenList sep_result = empty
 	int sep_len = len(tokens)
 	int sep_pos = 0

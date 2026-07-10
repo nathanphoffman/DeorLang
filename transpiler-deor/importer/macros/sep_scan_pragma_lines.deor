@@ -1,8 +1,10 @@
 
 # Repeatedly consumes ENFORCE_UNIQUE_FILE_DECLARATIONS / ENFORCE_UNIQUE_IMPORT_DECLARATIONS
-# pragma lines (IDENT + NEWLINE) starting at sep_pos, setting the matching flag for each one
-# found and advancing past it. Stops at the first token that isn't a recognized pragma line.
-# Reads/writes: tokens, sep_pos, enforce_unique_file, enforce_unique_import
+# pragma lines (IDENT + NEWLINE) and ENFORCE_MACRO_FILE_DEPTH pragma lines
+# (IDENT + EQUALS + INT + NEWLINE) starting at sep_pos, setting the matching flag/value for
+# each one found and advancing past it. Stops at the first token that isn't a recognized
+# pragma line.
+# Reads/writes: tokens, sep_pos, enforce_unique_file, enforce_unique_import, enforce_macro_file_depth
 # Reads: sep_len
 macro sep_scan_pragma_lines
 	bool sep_scanning = true
@@ -13,6 +15,7 @@ macro sep_scan_pragma_lines
 			(kind, value) in prag_tok
 			bool is_file_flag = kind is "IDENT" and value is "ENFORCE_UNIQUE_FILE_DECLARATIONS"
 			bool is_import_flag = kind is "IDENT" and value is "ENFORCE_UNIQUE_IMPORT_DECLARATIONS"
+			bool is_depth_flag = kind is "IDENT" and value is "ENFORCE_MACRO_FILE_DEPTH"
 			if is_file_flag or is_import_flag
 				int sep_nl_pos = sep_pos + 1
 				bool nl_ok = false
@@ -26,4 +29,26 @@ macro sep_scan_pragma_lines
 					else
 						enforce_unique_import = true
 					sep_pos = sep_pos + 2
+					sep_scanning = true
+			else if is_depth_flag
+				int sep_eq_pos = sep_pos + 1
+				int sep_val_pos = sep_pos + 2
+				int sep_depth_nl_pos = sep_pos + 3
+				bool depth_ok = false
+				string sep_depth_str = ""
+				if sep_depth_nl_pos < sep_len
+					Token prag_eq_tok = tokens at sep_eq_pos
+					(kind) in prag_eq_tok
+					bool eq_ok = kind is "EQUALS"
+					Token prag_val_tok = tokens at sep_val_pos
+					(kind, value) in prag_val_tok
+					bool val_ok = kind is "INT"
+					sep_depth_str = value
+					Token prag_depth_nl_tok = tokens at sep_depth_nl_pos
+					(kind) in prag_depth_nl_tok
+					bool depth_nl_ok = kind is "NEWLINE"
+					depth_ok = eq_ok and val_ok and depth_nl_ok
+				if depth_ok
+					enforce_macro_file_depth = n_parse(sep_depth_str)
+					sep_pos = sep_pos + 4
 					sep_scanning = true
