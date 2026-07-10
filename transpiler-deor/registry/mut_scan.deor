@@ -10,7 +10,7 @@ fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 	int result = indent_pos
 	# ex: fn foo()\n{\t}body — indent_pos+1 grabs the first token of the block body
 	int start = indent_pos + 1
-	for raw_i in (start, token_count)
+	for raw_i in range(start, token_count)
 		Token token = tokens at raw_i
 		(kind, value, line) in token
 		if kind is "INDENT"
@@ -30,7 +30,7 @@ fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 	strList result = empty
 	strList const_names = empty
-	for raw_i in (start, end_pos)
+	for raw_i in range(start, end_pos)
 		Token token = tokens at raw_i
 		(kind, value, line) in token
 		if kind is "KW_CONST"

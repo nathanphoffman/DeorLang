@@ -11,7 +11,7 @@ fn ParseResult scan_string_literal(strList chars, int char_index, int char_count
 	string ch_tab = "\t"
 	string ch_bs = "\\"
 	string ch_qt = "\""
-	for string_index in (str_start, char_count)
+	for string_index in range(str_start, char_count)
 		string string_char = chars at string_index
 		if escape_next
 			if string_char is "n"

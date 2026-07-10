@@ -200,6 +200,8 @@ fn void validate_tokens(TokensRef tokens)
 					if list_has(builtin_names, value)
 						errors at end = val_err(fv_tok, lbl_var, rule_builtin_shadow)
 
+		macro_run check_bare_tuple_range
+
 		if cur_kind is "IDENT"
 			bool is_fn_decl_name = false
 			if pos > 1

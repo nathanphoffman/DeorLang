@@ -9,6 +9,7 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 
 Reviewing docs stopped at immutability from the top
 
+fix for numeric range iteration for in x
 
 thing = thing remove at idx   <---- in this case this statement gets totally dropped no validation, just commented in the rust transpiler, it is invalid
   since only thing remove at idx is needed here but bad design

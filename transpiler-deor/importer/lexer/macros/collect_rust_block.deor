@@ -14,7 +14,7 @@ macro collect_rust_block
 	int rust_base = indent + 1
 	strList rust_lines = empty
 	int rli_start = raw_li + 1
-	for rli in (rli_start, n_lines)
+	for rli in range(rli_start, n_lines)
 		string rust_line = lines at rli
 		int rl_indent = count_tabs(rust_line)
 		string rl_stripped = s_trim(rust_line)

@@ -91,7 +91,8 @@ fn tokenList tokenize(string source, string path)
 
 	int final_stack_len = len(indent_stack)
 	TokenMeta tail_meta = make_meta(cur_line, path)
-	for in (1, final_stack_len)
+	int dedent_start = 1
+	for in range(dedent_start, final_stack_len)
 		tokens at end = make_token(kind_dedent, empty_str, tail_meta)
 
 	tokens at end = make_token(kind_eof, empty_str, tail_meta)

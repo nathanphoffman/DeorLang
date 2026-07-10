@@ -9,7 +9,7 @@ fn int sum_to(int num)
 fn int sum_range(int start, int stop)
 
 	total as 0
-	for idx in (start, stop)
+	for idx in range(start, stop)
 		total = total + idx
 
 	return total

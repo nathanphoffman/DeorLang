@@ -103,7 +103,7 @@ fn ParseResult scan_word(strList chars, int char_index, int char_count)
 	string word = s_cat(empty_str, first_char)
 	int word_start = char_index + 1
 	int new_pos = char_index + 1
-	for word_index in (word_start, char_count)
+	for word_index in range(word_start, char_count)
 		string word_char = chars at word_index
 		if c_alnum(word_char)
 			word = s_cat(word, word_char)

@@ -1,0 +1,33 @@
+
+# Flags the bare-tuple range form `for [var] in (start, end)` / `for in (start,
+# end)` — range iteration must go through `range(...)` now, so a paren
+# directly in the iterator-expression slot of a for-header is always invalid.
+# Does not apply to `for if ...` (while-loop form) or `for move (...)`
+# (move-iteration form), which legitimately have other tokens there.
+macro check_bare_tuple_range
+	if cur_kind is "KW_FOR"
+		# ex: for {item} in ... — pos+1 grabs the token after 'for' that decides the loop form
+		int btr_next_pos = pos + 1
+		if btr_next_pos < token_count
+			Token btr_next_tok = tokens at btr_next_pos
+			(kind) in btr_next_tok
+			bool btr_applies = true
+			if kind is "KW_IF"
+				btr_applies = false
+			if kind is "KW_MOVE"
+				btr_applies = false
+			if btr_applies
+				int btr_iter_pos = 0
+				if kind is "KW_IN"
+					# ex: for in {(}low, high) — bare index-free range form
+					btr_iter_pos = btr_next_pos + 1
+				else
+					# ex: for var {in} expr — next token after the loop var should be 'in'
+					int btr_in_pos = btr_next_pos + 1
+					# ex: for var in {expr} — in_pos+1 grabs the iteration expression
+					btr_iter_pos = btr_in_pos + 1
+				if btr_iter_pos < token_count
+					Token btr_iter_tok = tokens at btr_iter_pos
+					(kind) in btr_iter_tok
+					if kind is "LPAREN"
+						errors at end = val_err(btr_iter_tok, lbl_call, rule_bare_tuple_range)

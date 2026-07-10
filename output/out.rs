@@ -998,7 +998,8 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     }
     let mut final_stack_len: i64 = (indent_stack.len() as i64);
     let mut tail_meta: TokenMeta = make_meta(cur_line.clone(), path.clone());
-    for _ in 1..final_stack_len {
+    let mut dedent_start: i64 = 1;
+    for _ in dedent_start..final_stack_len {
         // transpiler-deor/importer/lexer/tokenizer.deor
         tokens.push(make_token(kind_dedent.clone(), empty_str.clone(), tail_meta.clone()).clone());
     }
@@ -2468,6 +2469,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_unmatched_close_bracket: String = "']' has no matching '[' before it — remove the extra ']' or add the missing '['".to_string();
     let mut rule_builtin_shadow: String = "this name belongs to a built-in function (print, crash, len, range, args, input) and cannot be shadowed or redeclared".to_string();
     let mut rule_range_placement: String = "'range' can only be used as a for-loop's iterator expression ('for var in range(n)' or 'for in range(n)') — it cannot be assigned to a variable or passed as an argument".to_string();
+    let mut rule_bare_tuple_range: String = "bare tuple range ('for var in (start, end)') is not valid — use 'for var in range(start, end)' instead".to_string();
     let mut rule_bare_truthiness: String = "only bool and validator types have truthiness — use an explicit comparison ('is not 0', 'is not \"\"', 'is valid', etc.)".to_string();
     let mut rule_func_shape_multi_param: String = "func shapes accept at most one input type and one output type — bundle multiple values into a struct instead".to_string();
     let mut rule_string_plus_banned: String = "'+' cannot be used with strings — use s_join([a, b, ...]) or s_join_with(list, sep) instead".to_string();
@@ -4347,6 +4349,47 @@ fn validate_tokens(tokens: TokensRef) {
                 }
             }
         }
+        // macro: check_bare_tuple_range (transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor)
+        if cur_kind == "KW_FOR" {
+            // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+            let mut btr_next_pos: i64 = pos + 1;
+            if btr_next_pos < token_count {
+                // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+                let mut btr_next_tok: Token = tokens[btr_next_pos as usize].clone();
+                let mut kind = btr_next_tok.kind.clone();
+                let mut btr_applies: bool = true;
+                if kind == "KW_IF" {
+                    // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+                    btr_applies = false;
+                }
+                if kind == "KW_MOVE" {
+                    // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+                    btr_applies = false;
+                }
+                if btr_applies {
+                    // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+                    let mut btr_iter_pos: i64 = 0;
+                    if kind == "KW_IN" {
+                        // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+                        btr_iter_pos = btr_next_pos + 1;
+                    } else {
+                        // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+                        let mut btr_in_pos: i64 = btr_next_pos + 1;
+                        btr_iter_pos = btr_in_pos + 1;
+                    }
+                    if btr_iter_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+                        let mut btr_iter_tok: Token = tokens[btr_iter_pos as usize].clone();
+                        let mut kind = btr_iter_tok.kind.clone();
+                        if kind == "LPAREN" {
+                            // transpiler-deor/tokens_validator/macros/check_bare_tuple_range.deor
+                            errors.push(val_err(btr_iter_tok.clone(), lbl_call.clone(), rule_bare_tuple_range.clone()).clone());
+                        }
+                    }
+                }
+            }
+        }
+        // transpiler-deor/tokens_validator/tokens_validation.deor
         if cur_kind == "IDENT" {
             // transpiler-deor/tokens_validator/tokens_validation.deor
             let mut is_fn_decl_name: bool = false;
@@ -7462,25 +7505,6 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             range_expr = [rng0_pfx.as_str(), val_code.as_str()].concat();
             body_tok_pos = val_end + 1;
         }
-    } else if kind == "LPAREN" {
-        // transpiler-deor/codegen/decl/stmt/macros/for_iter_expr.deor
-        let mut start_pos: i64 = iter_pos + 1;
-        let mut val_pos = start_pos.clone();
-        let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-        let code = ge_r.code;
-        let new_pos = ge_r.new_pos;
-        let val_code = code.clone();
-        let val_end = new_pos.clone();
-        let mut start_code: String = val_code;
-        let mut val_pos: i64 = val_end + 1;
-        let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-        let code = ge_r.code;
-        let new_pos = ge_r.new_pos;
-        let val_code = code.clone();
-        let val_end = new_pos.clone();
-        let mut rng2_dot: String = "..".to_string();
-        range_expr = [start_code.as_str(), rng2_dot.as_str(), val_code.as_str()].concat();
-        body_tok_pos = val_end + 1;
     } else {
         // transpiler-deor/codegen/decl/stmt/macros/for_iter_expr.deor
         let mut val_pos = iter_pos.clone();

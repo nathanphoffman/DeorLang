@@ -14,7 +14,8 @@ for room in rooms
 
 ---
 ## Move Iteration
-Plain `for item in collection` borrows the collection (`for item in &collection`) — `item` is a reference. `for move (item in collection)` consumes the collection instead — `item` is owned, and `collection` cannot be used after the loop.
+Plain `for item in collection` borrows the collection (`for item in &collection`) — `item` is a reference. `for move (item in collection)` 
+consumes the collection instead — `item` is owned, and `collection` cannot be used after the loop.
 
 ```deor
 for move (item in collection)
@@ -44,7 +45,7 @@ for idx in range(start, stop)
 ```
 
 ```rust
-for idx in 0..count {
+for idx in 0..count-1 {
     ...
 }
 for idx in 1..11 {
@@ -56,33 +57,6 @@ for idx in 1..11 {
 
 `range(count)` is shorthand for `range(0, count)`.
 
----
-## Bare Tuple Range
-`(start, end)` is an alternative to `range(start, end)` when both bounds are already named variables in scope. Produces identical Rust output — use whichever reads more clearly.
-
-```deor
-for idx in (low, high)
-    print(idx)
-```
-
-```rust
-for idx in low..high {
-    println!("{}", idx);
-}
-```
-
-The index-free form works too:
-
-```deor
-for in (low, high)
-    do_something()
-```
-
-```rust
-for _ in low..high {
-    do_something();
-}
-```
 
 ---
 ## Repeat Without an Index
@@ -167,8 +141,14 @@ loop {
 }
 ```
 
-`for if true` specifically (the literal condition `true`, not an expression that merely evaluates true) generates a bare `loop { ... }` rather than `while true { ... }`. This matters for functions that return a value: Rust gives `loop` the special "never returns normally" type when it has no reachable `break`, which lets the compiler accept a function whose only return path is inside the loop. `while true { ... }`, even though it runs identically, doesn't get that treatment from Rust — a function ending in `while true { ... }` with no value-producing code after it fails to compile with "expected T, found ()", regardless of whether every branch inside actually returns. Any other condition (`for if cur < token_count`, `for if not done`, etc.) always generates `while`, unaffected by this.
+`for if true` specifically (the literal condition `true`, not an expression that merely evaluates true) generates a 
+bare `loop { ... }` rather than `while true { ... }`. This matters for functions that return a value: Rust gives `loop` the special 
+"never returns normally" type when it has no reachable `break`, which lets the compiler accept a function whose only return path is inside 
+the loop. `while true { ... }`, even though it runs identically, doesn't get that treatment from Rust — a function ending in `while true { ... }` 
+with no value-producing code after it fails to compile with "expected T, found ()", regardless of whether every branch inside actually returns. 
+Any other condition (`for if cur < token_count`, `for if not done`, etc.) always generates `while`, unaffected by this.
 
+Deor:
 ```deor
 fn int ask_until_valid()
     for if true
@@ -177,6 +157,7 @@ fn int ask_until_valid()
             return val
 ```
 
+Rust:
 ```rust
 fn ask_until_valid() -> i64 {
     loop {
@@ -188,7 +169,8 @@ fn ask_until_valid() -> i64 {
 }
 ```
 
-`for if` fits the same keyword as collection and range iteration — `for` is Deor's single loop keyword, and the token after it determines the form: `item in collection`, `in range(n)`, or `if condition`.
+`for if` fits the same keyword as collection and range iteration — `for` is Deor's single loop keyword, and the token 
+after it determines the form: `item in collection`, `in range(n)`, or `if condition`.
 
 ---
 ## `continue` — Skip to Next Iteration
