@@ -1,0 +1,2 @@
+macro macro5
+	print("reached macro5")

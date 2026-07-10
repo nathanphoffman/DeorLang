@@ -1,7 +1,8 @@
 
 # Entry point for the macro pipeline step. Validates all macro_run references against
-# defined macro names, then expands macros inline. Returns the expanded token list
-# ready for validation and codegen.
-fn tokenList build_macros(tokenList raw_tokens)
+# defined macro names, then expands macros inline. `enforce_macro_file_depth` (0 = no
+# limit) caps cross-file macro call nesting during expansion — see expand_deor_macros.
+# Returns the expanded token list ready for validation and codegen.
+fn tokenList build_macros(tokenList raw_tokens, int enforce_macro_file_depth)
 	tokenList validated = validate_macros(raw_tokens)
-	return expand_deor_macros(validated)
+	return expand_deor_macros(validated, enforce_macro_file_depth)

@@ -43,6 +43,13 @@ struct TokenCursor
 	int pos
 	Token current
 
+# Returned by deduplicate_decls: the deduped token stream plus the
+# ENFORCE_MACRO_FILE_DEPTH pragma value captured along the way (0 = unset/no limit),
+# threaded through to build_macros for cross-file macro call depth enforcement.
+struct DedupResult
+	tokenList tokens
+	int enforce_macro_file_depth
+
 rust
 	use std::rc::Rc;
 	type TokensRef = Rc<Vec<Token>>;

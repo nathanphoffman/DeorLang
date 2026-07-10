@@ -1,11 +1,8 @@
+import "tests/snippets/macro.deor"
 
-
-macro_block test
-    should_update = 2
-    int shouldnt_see = 1
 
 fn void main()
-
+    ENFORCE_MACRO_FILE_DEPTH = 1
     int should_update = 0
     macro_run test
     print(should_update)

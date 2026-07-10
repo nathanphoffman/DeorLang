@@ -1,0 +1,18 @@
+# macro_file_depth_within_limit_test.deor
+# Exercises ENFORCE_MACRO_FILE_DEPTH's cross-file-only counting: macro1 (this file, segment
+# 1) -> macro2/macro3/macro4 (fixtures/macro_file_depth_b.deor, same file so free, still
+# segment 1's crossing = segment 2) -> macro5 (fixtures/macro_file_depth_c.deor, segment 3)
+# touches exactly 3 file segments, which a limit of 3 must allow.
+
+import "tests/unit_tests/fixtures/macro_file_depth_b.deor"
+import "tests/unit_tests/fixtures/macro_file_depth_c.deor"
+
+macro macro1
+	macro_run macro2
+
+fn void main()
+	ENFORCE_MACRO_FILE_DEPTH = 3
+	macro_run macro1
+
+# expect:
+# reached macro5

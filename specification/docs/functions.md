@@ -194,15 +194,20 @@ Primitive return types (`fn int`, `fn bool`, etc.) are never valid/not valid —
 
 ## No Lambdas / Closures / Nested Functions
 
-An anonymous function can quietly capture whatever variables happen to be in scope around it — convenient, but it means you can't tell what a function depends on just by reading its signature. Deor avoids that entirely: all callable values are named top-level `fn`s. There is no anonymous-function syntax, and functions may not be defined inside other function bodies. No built-in `filter`, `map`, or `reduce` — write explicit loops instead.
+All callable values are named top-level `fn`s. There 
+is no anonymous-function syntax, and functions may not be defined inside other function bodies. No built-in `filter`, `map`, or `reduce` — 
+write explicit loops instead.
 
-To pass behavior as a value, declare a `func` shape and accept it as a typed parameter. The caller passes a named top-level function by name — this is Deor's equivalent of a lambda. See [Shapes — Func Shapes](docs/shapes.md#func-shapes) for declaration syntax, single-param constraint, and conversion notes.
+To pass behavior as a value, declare a `func` shape and accept it as a typed parameter. The caller passes a named top-level function by name — 
+this is Deor's equivalent of a lambda. See [Shapes — Func Shapes](docs/shapes.md#func-shapes) for declaration syntax, single-param constraint, 
+and conversion notes.
 
 ---
 
 ## Recursion
 
-Functions may call themselves. Recursion follows the same rules as any other function call — arguments must be named variables in scope, and the return type must match.
+Functions may call themselves. Recursion follows the same rules as any other function call — arguments must be named variables in scope, and the 
+return type must match.
 
 Deor:
 ```deor
@@ -282,4 +287,3 @@ fn main() {
 ```
 
 Only one `fn void main()` may exist per project.
-

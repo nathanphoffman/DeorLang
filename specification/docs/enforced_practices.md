@@ -172,6 +172,47 @@ fn void process(string label)    # error only with ENFORCE_UNIQUE_FILE_DECLARATI
 Variable shadowing within function bodies is unrelated to either pragma and is always allowed — see below.
 
 ---
+## Limiting Cross-File Macro Calls
+
+Macros can call other macros with `macro_run`, and those calls can nest arbitrarily — see [Macros](docs/macros.md). Nesting many macros defined in the same file costs nothing to trace, since it's all in one place. Nesting across files is what actually gets hard to follow, since understanding the chain means paging between files. `ENFORCE_MACRO_FILE_DEPTH` caps that specifically, using the same opt-in pragma convention as `ENFORCE_UNIQUE_*` above — set it as one of the first statement(s) of `fn void main()`:
+
+```deor
+fn void main()
+    ENFORCE_MACRO_FILE_DEPTH = 3
+    ...
+```
+
+The count only increases when a `macro_run` call's target macro is defined in a **different file** than the call site. Any number of macros calling each other within the same file costs nothing — the limit only tracks how many distinct file boundaries the chain has crossed, counting the entry file itself as the first one:
+
+```deor
+# file1.deor
+macro macro1
+    macro_run macro2          # crosses into file2.deor — depth 2
+
+fn void main()
+    ENFORCE_MACRO_FILE_DEPTH = 3
+    macro_run macro1          # depth 1 (file1.deor itself)
+
+# file2.deor
+macro macro2
+    macro_run macro3          # same file — still depth 2
+
+macro macro3
+    macro_run macro4          # same file — still depth 2
+
+macro macro4
+    macro_run macro5          # crosses into file3.deor — depth 3, allowed (limit is 3)
+
+# file3.deor
+macro macro5
+    print("done")
+```
+
+If `macro5` called a macro defined in a fourth file, that crossing would be depth 4 and fail — `ENFORCE_MACRO_FILE_DEPTH = 3` only allows a chain to touch 3 distinct files. Re-crossing into a file the chain already left still counts as a new crossing each time — the limit tracks total boundary crossings along the call path, not the count of distinct files touched.
+
+Unset (the default), this is unlimited — no different from today. There's no way to set an unlimited value explicitly once opted in; omit the pragma entirely instead.
+
+---
 ## Variable Shadowing
 
 Variable shadowing is allowed. A new declaration with the same name in the same block or an inner block replaces the binding from that point forward.
@@ -245,7 +286,7 @@ struct Config
 ---
 ## Unified `()` Rule — Named Variables
 
-Everything placed inside `()` must be a named variable already in scope. This rule applies uniformly to:
+Everything placed inside `()` must be a named variable already in scope, with the exception of [Destructuring](docs/destructuring.md). This rule applies uniformly to:
 
 | Context | Example |
 |---|---|
@@ -271,7 +312,7 @@ Room room = (name, area)      # also correct — order doesn't matter for struct
 
 **Incorrect — transpiler error:**
 ```deor
-Room room = ("Office", area)  # literal not allowed — name must be a variable
+Room room = ("Office", area)  # literal not allowed — "Office" must be a field like name
 ```
 
 For struct destructuring with `in`, field names drive the binding — order does not matter and any subset is valid.
@@ -353,7 +394,11 @@ Move all helper functions to the top level of the file and call them by name.
 ---
 ## `raw` — Opaque Values Deor Doesn't Type-Check
 
-A `raw` variable holds a value whose real type Deor doesn't know or track — only Rust does. `raw name = expr` must be assigned from a call to a function — a bare literal or an inline `rust` block on the right of `=` is rejected, and so is `raw name as expr` (it must be `=`, not `as`). Once declared, a raw variable can be passed to functions (as an argument, or captured from what they return) and used freely inside `rust` blocks. It can never be:
+A `raw` variable holds a value whose real type Deor doesn't know or track — only Rust does. `raw name = expr` must be assigned from a call to a function — 
+a bare literal or an inline `rust` block on the right of `=` is rejected, and so is `raw name as expr` (it must be `=`, not `as`). 
+Once declared, a raw variable can be passed to functions (as an argument, or captured from what they return) and used freely inside `rust` blocks. 
+
+It **can never** be:
 
 - given a different type via a typed binding or an `as` rebind
 - reassigned
@@ -376,17 +421,17 @@ fn void run()
 
 **Incorrect — transpiler errors:**
 ```deor
-string val = index              # raw cannot be given another type
-copy as index                   # as-rebinding is still a type capture
-index = build_lookup_table()    # raw cannot be reassigned
-int cnt = len(index)            # len assumes a concrete type
-int total = index + 1           # operators assume a concrete type
+string val = index               # raw cannot be given another type
+copy as index                    # as-rebinding is still a type capture
+index = build_lookup_table()     # raw cannot be reassigned
+int cnt = len(index)             # len assumes a concrete type
+int total = index + 1            # operators assume a concrete type
 
-raw bad1 = 5                    # must be a function call, not a literal
+raw bad1 = 5                     # must be a function call, not a literal
 raw bad2 = rust
-    42                          # must be a function call, not an inline rust block
+    42                           # must be a function call, not an inline rust block
 raw bad3 as build_lookup_table() # must be '=', not 'as'
 
 struct Config
-    raw lookup_table            # raw cannot be a struct field
+    raw lookup_table              # raw cannot be a struct field
 ```

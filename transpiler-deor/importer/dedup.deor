@@ -5,8 +5,9 @@
 # strip_enforce_pragmas), either hard-errors on or silently keeps the first of any
 # fn/struct/enum/shape/type/macro/macro_block/raw name reused in the same file and/or across files.
 # With neither pragma set, every repeat is silently kept-first — the original, fully
-# loose behavior.
-fn tokenList deduplicate_decls(tokenList tokens_in)
+# loose behavior. Also captures ENFORCE_MACRO_FILE_DEPTH (see strip_enforce_pragmas) and
+# returns it alongside the deduped tokens for build_macros to enforce.
+fn DedupResult deduplicate_decls(tokenList tokens_in)
 	tokenList tokens = tokens_in
 	macro_run strip_enforce_pragmas
 	tokenList result = empty
@@ -46,4 +47,6 @@ fn tokenList deduplicate_decls(tokenList tokens_in)
 		else
 			result at end = token
 			pos = pos + 1
-	return result
+	tokens = result
+	DedupResult dedup_out = (tokens, enforce_macro_file_depth)
+	return dedup_out

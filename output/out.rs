@@ -45,6 +45,12 @@ struct TokenCursor {
     current: Token,
 }
 
+#[derive(Clone, PartialEq, Debug)]
+struct DedupResult {
+    tokens: Vec<Token>,
+    enforce_macro_file_depth: i64,
+}
+
 use std::rc::Rc;
 type TokensRef = Rc<Vec<Token>>;
 type RcCtx = Rc<GenCtx>;
@@ -1432,12 +1438,13 @@ fn load_file(path: String) -> Vec<Token> {
 }
 
 // transpiler-deor/importer/dedup.deor
-fn deduplicate_decls(tokens_in: Vec<Token>) -> Vec<Token> {
+fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
     // transpiler-deor/importer/dedup.deor
     let mut tokens: Vec<Token> = tokens_in.clone();
     // macro: strip_enforce_pragmas (transpiler-deor/importer/macros/strip_enforce_pragmas.deor)
     let mut enforce_unique_file: bool = false;
     let mut enforce_unique_import: bool = false;
+    let mut enforce_macro_file_depth: i64 = 0;
     let mut sep_result: Vec<Token> = Vec::new();
     let mut sep_len: i64 = (tokens.len() as i64);
     let mut sep_pos: i64 = 0;
@@ -1519,6 +1526,7 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> Vec<Token> {
                         let value = prag_tok.value.clone();
                         let mut is_file_flag: bool = kind == "IDENT" && value == "ENFORCE_UNIQUE_FILE_DECLARATIONS";
                         let mut is_import_flag: bool = kind == "IDENT" && value == "ENFORCE_UNIQUE_IMPORT_DECLARATIONS";
+                        let mut is_depth_flag: bool = kind == "IDENT" && value == "ENFORCE_MACRO_FILE_DEPTH";
                         if is_file_flag || is_import_flag {
                             // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
                             let mut sep_nl_pos: i64 = sep_pos + 1;
@@ -1539,6 +1547,34 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> Vec<Token> {
                                     enforce_unique_import = true;
                                 }
                                 sep_pos = sep_pos + 2;
+                                sep_scanning = true;
+                            }
+                        } else if is_depth_flag {
+                            // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                            let mut sep_eq_pos: i64 = sep_pos + 1;
+                            let mut sep_val_pos: i64 = sep_pos + 2;
+                            let mut sep_depth_nl_pos: i64 = sep_pos + 3;
+                            let mut depth_ok: bool = false;
+                            let mut sep_depth_str: String = "".to_string();
+                            if sep_depth_nl_pos < sep_len {
+                                // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                                let mut prag_eq_tok: Token = tokens[sep_eq_pos as usize].clone();
+                                let kind = prag_eq_tok.kind.clone();
+                                let mut eq_ok: bool = kind == "EQUALS";
+                                let mut prag_val_tok: Token = tokens[sep_val_pos as usize].clone();
+                                let kind = prag_val_tok.kind.clone();
+                                let value = prag_val_tok.value.clone();
+                                let mut val_ok: bool = kind == "INT";
+                                sep_depth_str = value;
+                                let mut prag_depth_nl_tok: Token = tokens[sep_depth_nl_pos as usize].clone();
+                                let kind = prag_depth_nl_tok.kind.clone();
+                                let mut depth_nl_ok: bool = kind == "NEWLINE";
+                                depth_ok = eq_ok && val_ok && depth_nl_ok;
+                            }
+                            if depth_ok {
+                                // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
+                                enforce_macro_file_depth = n_parse(sep_depth_str.clone());
+                                sep_pos = sep_pos + 4;
                                 sep_scanning = true;
                             }
                         }
@@ -1913,11 +1949,13 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> Vec<Token> {
             pos = pos + 1;
         }
     }
-    return result;
+    tokens = result;
+    let mut dedup_out = DedupResult { tokens: tokens.clone(), enforce_macro_file_depth: enforce_macro_file_depth.clone() };
+    return dedup_out;
 }
 
 // transpiler-deor/importer/importer.deor
-fn collect_all_tokens_with_all_imports(path: String) -> Vec<Token> {
+fn collect_all_tokens_with_all_imports(path: String) -> DedupResult {
     // transpiler-deor/importer/importer.deor
     let mut merged: Vec<Token> = load_file(path.clone());
     return deduplicate_decls(merged.clone());
@@ -2171,12 +2209,14 @@ fn handle_errors(errors: Vec<String>) {
 }
 
 // transpiler-deor/macro_builder/macro_expander.deor
-fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
+fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<Token> {
     // transpiler-deor/macro_builder/macro_expander.deor
     let mut macros: std::collections::HashMap<String, (Vec<Token>, i32)> = std::collections::HashMap::new();
     let mut result: Vec<Token> = vec![];
     let mut queue: std::collections::VecDeque<Token> = tokens.into_iter().collect();
     let mut scope_depth: i32 = 0;
+    let mut depth_stack: Vec<(String, bool)> = vec![];
+    let mut cross_file_depth: i64 = 1;
     while let Some(cur) = queue.pop_front() {
     	let kind = cur.kind.as_str();
 
@@ -2252,14 +2292,38 @@ fn expand_deor_macros(tokens: Vec<Token>) -> Vec<Token> {
 
     	// expand macro_run call site — prepend body to queue for recursive expansion
     	if kind == "KW_MACRO_RUN" {
-    		let name = if let Some(t) = queue.pop_front() { t.value } else { String::new() };
+    		let name_tok = queue.pop_front();
+    		let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
     		// skip trailing NEWLINE after the call
     		if queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
     		// prepend body tokens to front of queue so they are processed next
     		if let Some((body, _)) = macros.get(&name) {
     			let marker_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
+    			let mut did_increment = false;
+    			if enforce_macro_file_depth > 0 {
+    				let context_file = depth_stack.last().map(|e: &(String, bool)| e.0.clone()).unwrap_or_else(|| cur.file.clone());
+    				if marker_file != context_file {
+    					let new_depth = cross_file_depth + 1;
+    					if new_depth > enforce_macro_file_depth {
+    						let err_tok = name_tok.clone().unwrap_or(cur.clone());
+    						handle_errors(vec![val_err(err_tok, "macro_run".to_string(), format!("calling '{}' crosses into '{}', taking the cross-file macro chain to depth {} — exceeds ENFORCE_MACRO_FILE_DEPTH limit of {}", name, marker_file, new_depth, enforce_macro_file_depth))]);
+    					}
+    					cross_file_depth = new_depth;
+    					did_increment = true;
+    				}
+    			}
+    			depth_stack.push((marker_file.clone(), did_increment));
+    			queue.push_front(Token { kind: "MACRO_FRAME_END".to_string(), value: String::new(), line: 0, file: marker_file.clone() });
     			for tok in body.iter().rev() { queue.push_front(tok.clone()); }
     			queue.push_front(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
+    		}
+    		continue;
+    	}
+
+    	// closes the bracket opened above when the spliced macro body is fully consumed
+    	if kind == "MACRO_FRAME_END" {
+    		if let Some((_, did_increment)) = depth_stack.pop() {
+    			if did_increment { cross_file_depth -= 1; }
     		}
     		continue;
     	}
@@ -2327,10 +2391,10 @@ fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
 }
 
 // transpiler-deor/macro_builder/macro_builder.deor
-fn build_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
+fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<Token> {
     // transpiler-deor/macro_builder/macro_builder.deor
     let mut validated: Vec<Token> = validate_macros(raw_tokens.clone());
-    return expand_deor_macros(validated.clone());
+    return expand_deor_macros(validated.clone(), enforce_macro_file_depth.clone());
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
@@ -9149,18 +9213,20 @@ fn main() {
         // macro: timer_start (transpiler-deor/macros/timer.deor)
         let mut _timer_start: i64 = now_ms();
         // transpiler-deor/main.deor
-        let mut raw_tokens: Vec<Token> = collect_all_tokens_with_all_imports(input_path.clone());
+        let mut dedup_r: DedupResult = collect_all_tokens_with_all_imports(input_path.clone());
         // macro: timer_end (transpiler-deor/macros/timer.deor)
         let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
         let mut _timer_sfx: String = "ms".to_string();
         println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
         // transpiler-deor/main.deor
+        let mut tokens = dedup_r.tokens.clone();
+        let enforce_macro_file_depth = dedup_r.enforce_macro_file_depth.clone();
         _timer_label = "[timer] macro-build: ".to_string();
         // macro: timer_start (transpiler-deor/macros/timer.deor)
         let mut _timer_start: i64 = now_ms();
         // transpiler-deor/main.deor
-        let mut tokens: Vec<Token> = build_macros(raw_tokens.clone());
+        tokens = build_macros(tokens.clone(), enforce_macro_file_depth.clone());
         // macro: timer_end (transpiler-deor/macros/timer.deor)
         let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
         let mut _timer_str: String = n_to_str(_timer_elapsed.clone());

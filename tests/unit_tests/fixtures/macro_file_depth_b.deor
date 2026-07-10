@@ -1,0 +1,8 @@
+macro macro2
+	macro_run macro3
+
+macro macro3
+	macro_run macro4
+
+macro macro4
+	macro_run macro5

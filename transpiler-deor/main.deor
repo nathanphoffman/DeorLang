@@ -18,12 +18,13 @@ fn void main()
 
 		string _timer_label = "[timer] load+dedup: "
 		macro_run timer_start
-		tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
+		DedupResult dedup_r = collect_all_tokens_with_all_imports(input_path)
 		macro_run timer_end
+		(tokens, enforce_macro_file_depth) in dedup_r
 
 		_timer_label = "[timer] macro-build: "
 		macro_run timer_start
-		tokenList tokens = build_macros(raw_tokens)
+		tokens = build_macros(tokens, enforce_macro_file_depth)
 		macro_run timer_end
 
 		TokensRef tokens_ref = tokens_wrap(move tokens)

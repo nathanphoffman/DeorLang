@@ -1,0 +1,18 @@
+# macro_file_depth_exceeded_test.deor
+# Same 3-file-segment macro chain as macro_file_depth_within_limit_test.deor, but with the
+# limit set one too low — the crossing from fixtures/macro_file_depth_b.deor into
+# fixtures/macro_file_depth_c.deor (the third segment) must be rejected.
+
+import "tests/unit_tests/fixtures/macro_file_depth_b.deor"
+import "tests/unit_tests/fixtures/macro_file_depth_c.deor"
+
+macro macro1
+	macro_run macro2
+
+fn void main()
+	ENFORCE_MACRO_FILE_DEPTH = 2
+	macro_run macro1
+
+# expect-error:
+# crosses into 'tests/unit_tests/fixtures/macro_file_depth_c.deor'
+# exceeds ENFORCE_MACRO_FILE_DEPTH limit of 2

@@ -8,8 +8,9 @@
 #   importer/dedup.deor       — deduplicate_decls
 
 # Entry point for the import system. Loads the root file and all transitive dependencies
-# via load_file, then deduplicates the merged stream. Returns a single flat token list
-# with every declaration needed to generate the output Rust file.
-fn tokenList collect_all_tokens_with_all_imports(string path)
+# via load_file, then deduplicates the merged stream. Returns the flat token list needed
+# to generate the output Rust file, plus the captured ENFORCE_MACRO_FILE_DEPTH pragma
+# value (see deduplicate_decls / strip_enforce_pragmas).
+fn DedupResult collect_all_tokens_with_all_imports(string path)
 	tokenList merged = load_file(path)
 	return deduplicate_decls(merged)

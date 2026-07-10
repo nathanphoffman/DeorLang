@@ -1,0 +1,8 @@
+
+macro_block test2
+    print("hi")
+
+macro_block test
+    should_update = 2
+    int shouldnt_see = 1
+    #macro_run test2

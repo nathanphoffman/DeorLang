@@ -9,6 +9,7 @@
 ### Scalar literals
 The type is inferred from the literal value.
 
+Deor:
 ```deor
 sum as 0
 label as "Office"
@@ -16,6 +17,7 @@ flag as true
 rate as 3.14
 ```
 
+Rust:
 ```rust
 let sum = 0;
 let label = "Office".to_string();
@@ -27,16 +29,19 @@ let rate = 3.14_f64;
 
 A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope.
 
+Deor:
 ```deor
 rooms as [kitchen, office, bedroom]    # type inferred from items (all Room)
 ```
 
+Rust:
 ```rust
 let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 ```
 
-`[]` is not valid for initializing an empty list — use `empty` with an explicit shape type. `as []` is also a transpiler error because the element type is unknown:
+`[]` is not valid for initializing an empty list — use `empty` with an explicit shape type.
 
+Deor:
 ```deor
 roomList result = empty  # correct
 result as []             # transpiler error — element type unknown
@@ -45,12 +50,15 @@ roomList result = []     # transpiler error — use empty instead
 
 ### Struct construction
 
-A parenthesised field list `(f1, f2, ...)` constructs a struct. All items must be named variables already in scope whose names match the target struct's fields. The struct type is inferred by matching field names against all known structs — no type annotation needed.
+A parenthesised field list `(f1, f2, ...)` constructs a struct. All items must be named variables already in scope whose names match the target 
+struct's fields. The struct type is inferred by matching field names against all known structs — no type annotation needed.
 
+Deor:
 ```deor
 score as (label, points)    # struct type inferred from field names
 ```
 
+Rust:
 ```rust
 let score = Score { label: label.clone(), points: points.clone() };
 ```
@@ -61,6 +69,7 @@ See [Struct Construction](#struct-construction) below for full details and the e
 
 A bare identifier on the right binds directly to an existing variable. Like every other `as` form, this clones — the source stays usable afterward.
 
+Deor
 ```deor
 saved_lines as lines
 print(lines)   # still valid
@@ -250,4 +259,3 @@ Underscore placement is free-form — `1_000_000`, `10_00_00`, and `1000000` are
 Hex literals (`0xFF`) and binary literals (`0b1010`) are deferred to v2. Use a `rust` block for code that requires them.
 
 ---
-

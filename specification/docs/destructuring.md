@@ -81,6 +81,11 @@ println!("{}", name);  // "Alice"
 
 This is normal Rust `let` scoping, not special Deor behavior — a destructure never reaches out to reassign a variable declared in an outer scope.
 
+A **further thought** on shadowing: Deor does not shy away from ```macros```, as a result shadowing is necessary to prevent collision, Deor also 
+accepts its Rust lineage and since Rust supports this it seemed like an obvious feature to keep. This also aligns with the default import philosophy 
+which is to silently swallow same-imports as they are already imported. If you don't want to silently swallow a duplicate definition, the best approach 
+is to use a ```const```, as they will not allow shadowing.
+
 ---
 
 ## Move Destructuring
@@ -89,6 +94,7 @@ This is normal Rust `let` scoping, not special Deor behavior — a destructure n
 Deor:
 ```deor
 move (label, points) in score
+# can't do `(something_else) in score` << will error
 ```
 
 Rust:
