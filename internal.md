@@ -8,6 +8,7 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 
 
 Reviewing docs stopped at immutability from the top
+Variables seems to be incorrect about some immutability
 
 fix for numeric range iteration for in x
 

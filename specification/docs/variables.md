@@ -75,6 +75,7 @@ saved_lines as lines
 print(lines)   # still valid
 ```
 
+Rust:
 ```rust
 let saved_lines = lines.clone();
 ```
@@ -101,8 +102,11 @@ Record update (`with`) uses `as` — the type is known from the source struct. S
 
 ## Struct Construction
 
-Structs can be constructed with an explicit type (`Type name = (fields)`) or inferred via `as` (`name as (fields)`). The transpiler matches field names to determine the struct type. Every field must already be a variable in scope matching the field name exactly. No `{}`, no `field: value` pairs.
+Structs can be constructed with an explicit type (`Type name = (fields)`) or inferred via `as` (`name as (fields)`). 
+The transpiler matches field names to determine the struct type. Every field must already be a variable in scope matching 
+the field name exactly. No `{}`, no `field: value` pairs.
 
+Deor:
 ```deor
 Squarefeet area = 9
 name as "Office"
@@ -110,6 +114,7 @@ occupied as true
 Room room = (area, name, occupied)
 ```
 
+Rust:
 ```rust
 let area = Squarefeet::new(9);
 let name = "Office".to_string();
@@ -137,12 +142,14 @@ Entry entry = (label)
 
 Declaring a variable with a validator type runs the predicate at assignment. The variable is `Option<T>` under the hood — valid (`Some`) if the predicate passes, not valid (`None`) if it fails.
 
+Deor:
 ```deor
 Squarefeet area = 9            # valid — predicate passes
 Squarefeet area = -1           # transpiler error — literal fails predicate at compile time
 Roll roll = random(min, max)   # valid or not valid depending on the predicate
 ```
 
+Rust:
 ```rust
 let area: Option<Squarefeet> = Squarefeet::new(9);
 let area: Option<Squarefeet> = Squarefeet::new(-1);
@@ -153,10 +160,12 @@ let roll: Option<Roll> = Roll::new(random(min, max));
 
 A validator type variable can be declared without an initial value to start as not valid. It becomes valid once assigned a value that passes the predicate.
 
+Deor:
 ```deor
 Roll best
 ```
 
+Rust:
 ```rust
 let mut best: Option<Roll> = None;
 ```
@@ -180,23 +189,29 @@ area = raw            # valid or not valid — predicate runs at runtime
 
 ## `const` — Immutable Typed Bindings
 
-`const` declares a typed binding that is explicitly immutable. The transpiler will never emit `let mut` for a `const` variable, even if the surrounding code would otherwise infer mutability.
+`const` declares a typed binding that is explicitly immutable. The transpiler will never emit `let mut` for a `const` 
+variable, even if the surrounding code would otherwise infer mutability.
 
-`const` names must be `SCREAMING_SNAKE_CASE` — all caps, words separated by underscores. This distinguishes constants from regular variables at a glance and signals that the value is fixed for the lifetime of the scope.
+`const` names must be `SCREAMING_SNAKE_CASE` — all caps, words separated by underscores. This distinguishes constants from regular 
+variables at a glance and signals that the value is fixed for the lifetime of the scope.
 
+Deor:
 ```deor
 const string PIPE = "|"
 const int MAX_RETRIES = 3
 ```
 
+Rust:
 ```rust
 let PIPE: String = "|".to_string();
 let MAX_RETRIES: i64 = 3;
 ```
 
-**`const` vs plain typed binding:** a plain `string pipe = "|"` is also immutable if never reassigned, but `const` makes the intent explicit and guarantees it at the transpiler level. Use `const` for values that should never change.
+**`const` vs plain typed binding:** a plain `string pipe = "|"` is also immutable if never reassigned, but `const` 
+makes the intent explicit and guarantees it at the transpiler level. Use `const` for values that should never change.
 
-**`const` vs `as`:** both produce immutable bindings. `const` requires an explicit type; `as` infers the type from the literal. Use `const` when the type must be stated, `as` for simple literals where inference is unambiguous.
+**`const` vs `as`:** both produce immutable bindings. `const` requires an explicit type; `as` infers the type from the 
+literal. Use `const` when the type must be stated, `as` for simple literals where inference is unambiguous.
 
 ```deor
 const string LABEL = "hello"   # explicit type, immutable, SCREAMING_SNAKE required
@@ -210,12 +225,14 @@ int count as 0                 # transpiler error — as never takes a type pref
 
 Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
 
+Deor:
 ```deor
 int val = m_rand_int(min, max)
 string pick = random_room_name(rooms)
 roomList result = empty
 ```
 
+Rust:
 ```rust
 let val: i64 = m_rand_int(min, max);
 let pick: String = random_room_name(&rooms);
@@ -228,10 +245,12 @@ let mut result: Vec<i64> = Vec::new();
 
 ## Reassignment
 
+Deor:
 ```deor
 total = total + 1
 ```
 
+Rust:
 ```rust
 total = total + 1;
 ```
@@ -242,12 +261,14 @@ total = total + 1;
 
 Underscores may appear anywhere in a numeric literal as a visual separator. They are stripped by the transpiler and have no effect on the value.
 
+Deor:
 ```deor
 int population = 1_000_000
 float rate = 0.000_001
 int port = 8_080
 ```
 
+Rust:
 ```rust
 let population: i64 = 1_000_000;
 let rate: f64 = 0.000_001;
