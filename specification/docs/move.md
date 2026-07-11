@@ -54,6 +54,7 @@ Extract fields from a struct without cloning them:
 Deor:
 ```deor
 move (label, points) in score
+# a later (something_else) in score will error
 ```
 
 Rust:

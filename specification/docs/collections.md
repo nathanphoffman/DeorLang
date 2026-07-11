@@ -11,23 +11,14 @@ To define an empty list use the `empty` keyword. `[]` is never valid for initial
 Deor:
 ```deor
 stringList list_names = empty
-if list_names is empty
-    print("list is empty")
-
-if list_names is not empty
-    print("list is not empty")
 ```
 
 Rust:
 ```rust
 let mut list_names: Vec<String> = Vec::new();
-if list_names.is_empty() {
-    println!("{}", "list is empty");
-}
-if !list_names.is_empty() {
-    println!("{}", "list is not empty");
-}
 ```
+
+Check emptiness with `is empty` / `is not empty` — see [Operators — Comparison](docs/operators.md#comparison).
 
 ---
 ## Index Read

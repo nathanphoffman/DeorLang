@@ -49,7 +49,7 @@ struct Room
 ---
 
 ## Shadowing
-If a name being extracted already exists in scope, the new binding silently shadows it. This is standard Rust `let` rebinding and is intentional in Deor.
+If a name being extracted already exists in scope, the new binding silently shadows it — the same block-scoped shadowing rules apply as anywhere else in Deor. See [Enforced Practices — Variable Shadowing](docs/enforced_practices.md#variable-shadowing) for the full mechanics.
 
 ```deor
 name as "Alice"
@@ -57,29 +57,6 @@ name as "Alice"
 ```
 
 Use this deliberately to "update" a name after processing, or avoid it by choosing distinct names.
-
-**Shadowing is scoped to the block it happens in.** Destructuring inside an `if`, loop, or other nested block only shadows for the rest of that block — it does not change the outer variable. Once the block ends, the outer name is back to its original value.
-
-Deor:
-```deor
-name as "Alice"
-if some_condition
-    (name) in employee    # shadows name, but only inside this if-block
-    print(name)            # employee.name
-print(name)                 # "Alice" — unaffected by the block above
-```
-
-Rust:
-```rust
-let name = "Alice".to_string();
-if some_condition {
-    let name = employee.name.clone();  // scoped to this block
-    println!("{}", name);
-}
-println!("{}", name);  // "Alice"
-```
-
-This is normal Rust `let` scoping, not special Deor behavior — a destructure never reaches out to reassign a variable declared in an outer scope.
 
 A **further thought** on shadowing: Deor does not shy away from ```macros```, as a result shadowing is necessary to prevent collision, Deor also 
 accepts its Rust lineage and since Rust supports this it seemed like an obvious feature to keep. This also aligns with the default import philosophy 
@@ -89,16 +66,4 @@ is to use a ```const```, as they will not allow shadowing.
 ---
 
 ## Move Destructuring
-`move (f1, f2) in source` extracts fields without cloning — each binding takes ownership of the field instead of copying it. `source` cannot be used afterward for any field that was moved out. See [Move](docs/move.md#destructuring) for details.
-
-Deor:
-```deor
-move (label, points) in score
-# can't do `(something_else) in score` << will error
-```
-
-Rust:
-```rust
-let label = score.label;
-let points = score.points;
-```
+`move (f1, f2) in source` extracts fields without cloning, consuming `source` for any field moved out — see [Move — Destructuring](docs/move.md#destructuring) for the full example and rules.

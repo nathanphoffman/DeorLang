@@ -44,14 +44,4 @@ Any number of `else if` chains are allowed. `else` is always last and optional.
 
 Deor has no `match` keyword and no pattern matching syntax. This is intentional: `match` would be a second, structurally different way to branch, with its own nesting and rules to learn. Keeping dispatch on `if`/`else if` with `is` means there's exactly one way to branch in Deor, using the same comparison operator as everywhere else.
 
-Dispatching on enum variants uses `if`/`else if` chains with `is` comparisons — the same operator used for equality everywhere else in Deor:
-
-Deor:
-```deor
-if color is Red
-    print(msg_red)
-else if color is Green
-    print(msg_green)
-else if color is Blue
-    print(msg_blue)
-```
+Dispatching on enum variants follows the same `if`/`else if`/`is` pattern — see [Enums — Checking Variants](docs/enums.md#checking-variants).

@@ -39,13 +39,10 @@ Rust:
 let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 ```
 
-`[]` is not valid for initializing an empty list — use `empty` with an explicit shape type.
+`[]` is never valid for an empty list — `as` can't infer an element type from nothing, so use `empty` with an explicit shape type instead. See [Collections — Empty List](docs/collections.md#empty-list).
 
-Deor:
 ```deor
-roomList result = empty  # correct
-result as []             # transpiler error — element type unknown
-roomList result = []     # transpiler error — use empty instead
+result as []              # transpiler error — element type unknown
 ```
 
 ### Struct construction

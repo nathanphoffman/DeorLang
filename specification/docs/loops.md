@@ -4,6 +4,9 @@
 # Loops
 
 ## Collection Iteration
+Iterating a list borrows it by default — `item` is a reference to each element, and the collection is still usable after the loop. Write the list name directly after `in`; no `range` needed.
+
+Deor:
 ```deor
 for room in rooms
     (name) in room
@@ -12,26 +15,22 @@ for room in rooms
         print(name)
 ```
 
----
-## Move Iteration
-Plain `for item in collection` borrows the collection (`for item in &collection`) — `item` is a reference. `for move (item in collection)` 
-consumes the collection instead — `item` is owned, and `collection` cannot be used after the loop.
-
-Deor
-```deor
-for move (item in collection)
-    process(item)
-```
-
-Rust
+Rust:
 ```rust
-for item in collection {
-    process(item);
+for room in &rooms {
+    let name = room.name.clone();
+    let occupied = room.occupied;
+    if occupied {
+        println!("{}", name);
+    }
 }
 ```
 
-Use this when the loop body needs to actually own each item (e.g. pass it into something that takes ownership, or store it elsewhere) — 
-it avoids having to clone each borrowed item yourself. See [Move](docs/move.md#loop-iteration).
+Use `range` when you need the index — see [Numeric Iteration](#numeric-iteration) below. Use plain collection iteration when you only need the values.
+
+---
+## Move Iteration
+`for move (item in collection)` consumes the collection instead of borrowing it — `item` is owned, and `collection` cannot be used after the loop. See [Move — Loop Iteration](docs/move.md#loop-iteration) for the full example and when to reach for it.
 
 ---
 ## Numeric Iteration
