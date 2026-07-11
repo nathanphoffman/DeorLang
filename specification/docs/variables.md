@@ -119,7 +119,7 @@ let occupied = true;
 let room = Room { area, name, occupied };
 ```
 
-The transpiler matches fields by name — order does not matter. Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in.
+Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in. See [Enforced Practices — Unified `()` Rule](docs/enforced_practices.md#unified-rule-named-variables) for the field-matching/order rule shared across construction, destructuring, and return.
 
 ### Struct Construction as an Expression
 

@@ -149,25 +149,9 @@ rooms at idx = new_room
 
 Rust:
 ```rust
-Deor:
-```deor
-# 1. Read the existing struct
-Room old_room = rooms at idx
-
-# 2. Build the updated version
-Squarefeet area = 25
-int ceiling_height = 10
-Room new_room = old_room with (area, ceiling_height)
-
-# 3. Write back
-rooms at idx = new_room
-```
-
-Rust:
-```rust
-  let old_room: Room = rooms[idx as usize].clone();
-  let area: Option<Squarefeet> = Squarefeet::new(25);
-  let ceiling_height: i64 = 10;
-  let new_room: Room = Room { area, ceiling_height, ..old_room.clone() };
-  rooms[idx as usize] = new_room;
+let old_room: Room = rooms[idx as usize].clone();
+let area: Option<Squarefeet> = Squarefeet::new(25);
+let ceiling_height: i64 = 10;
+let new_room: Room = Room { area, ceiling_height, ..old_room.clone() };
+rooms[idx as usize] = new_room;
 ```

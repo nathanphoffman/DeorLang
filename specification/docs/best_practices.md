@@ -178,10 +178,7 @@ In trivial cases, like these inline is probably better anyhow, but in general:
 ---
 ## Reusable Consts — via Macros
 
-Deor has no global scope, so a `const` can't be declared once and shared across every function that needs it — it only exists inside the block 
-where it's declared. When the same constant values are needed in multiple functions, declare them once inside a `macro` or `macro_block` it 
-wherever they're needed. Because the macro body is inlined at each call site, every function gets its own copy of the same named consts — 
-nothing is shared at runtime, but the names and values stay consistent everywhere they're used.
+Deor has no global scope, so a `const` can't be shared across functions directly. Put shared constants in a `macro`/`macro_block` and call it from each function — the macro is inlined, so every call site gets its own copy with the same names and values.
 
 ```deor
 macro use_log_consts

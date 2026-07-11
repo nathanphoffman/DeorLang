@@ -7,7 +7,7 @@ These rules are enforced by the transpiler. Violations produce warnings or compi
 ---
 ## Naming Conventions
 - enums, structs, and custom types (type validators) MUST be PascalCase — bold and structural, distinct from the code around it
-- shapes must be camelCase — aliasing, distinct but blends in more than PascalCase
+- shapes must be camelCase — see [Shapes — Naming Convention](docs/shapes.md#naming-convention) for the rationale
 - variable and function names must be snake_case — the most common case, kept plain and readable
 - `const` variable names must be SCREAMING_SNAKE_CASE — signals a fixed, never-reassigned value at a glance
 ---

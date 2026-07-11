@@ -90,7 +90,7 @@ fn void run()
     macro_run compute_area    # safe — same isolation as the hand-wrapped version above
 ```
 
-This produces identical output to the hand-wrapped `compute_area` example above — `macro_block` only changes how the definition is written, not how `macro_run` calls it or how it behaves once expanded. Everything else about macros (top-level vs. function-local scoping, nested `macro_run` calls, one `macro`/`macro_block` never definable inside another) applies the same way.
+Identical output to the hand-wrapped version — `macro_block` only changes how the definition is written, not its scoping, nesting, or other behavior.
 
 Reach for `macro_block` by default whenever a macro declares its own variables; keep plain `macro` for macros that only read from the caller's scope, where `block` would add a needless layer.
 

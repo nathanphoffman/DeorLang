@@ -48,8 +48,7 @@ for more complex ones, same rules as a function body.
 
 Plain primitives and structs can never be "missing" — only validator types carry that possibility, and only because the predicate runs on assignment.
 
-**Only the full declaration form re-runs the predicate.** `TypeName varName = expr` triggers validation; a later bare 
-reassignment (`varName = expr`) or `as` binding does not, and both are transpiler errors. To re-validate a new value — retrying input in a loop, for example — declare it fresh each time:
+**The predicate re-runs on every validating assignment.** `TypeName varName = expr` triggers it, and so does a later bare reassignment (`varName = expr`) — the variable can flip between valid and not valid each time. Only reassigning with `as` is rejected. See [Variables — Reassignment](docs/variables.md#reassignment) for the general case.
 
 ```deor
 for if true

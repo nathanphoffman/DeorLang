@@ -4,9 +4,7 @@
 # Destructuring
 `in` extracts one or more fields from a struct into the current scope. This is the only way to access struct fields — there is no dot syntax in source, so every field a block of code touches is named up front in one place, instead of scattered across dot-chains wherever they happen to get used.
 
-Parentheses are always required, even for a single field. Deor calls this **bagging** for readability: you show the dumping of the bag (in this case) and the 
-putting items into the bag (for construction, not shown here). Just like the real world, objects that fall out of a bag are still themselves hence 
-why there is no aliasing, you get it as the field name that it existed as inside the bag.
+Parentheses are always required, even for a single field. Deor calls this **bagging**: items come out of (or go into) the struct under their original field name — there is no aliasing.
 
 ## Single Field
 Deor:
