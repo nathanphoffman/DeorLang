@@ -18,15 +18,6 @@ const MIME = {
   '.webp': 'image/webp',
 };
 
-// true for a real top-level browser navigation (address bar, link click, refresh) —
-// false for the SPA's own fetch() calls, which never set Sec-Fetch-Mode: navigate
-// and don't ask for text/html
-function isNavigationRequest(req) {
-  const mode = req.headers.get('sec-fetch-mode');
-  if (mode) return mode === 'navigate';
-  return (req.headers.get('accept') || '').includes('text/html');
-}
-
 function fileType(path) {
   try {
     const stat = statSync(path);
@@ -61,18 +52,13 @@ const server = Bun.serve({
 
     if (pathname === '/') return serveFile(join(dir, 'index.html'));
 
-    const navigating = isNavigationRequest(req);
-
-    // direct navigation to a raw .md file — redirect to the pretty, extension-less path
-    if (pathname.endsWith('.md') && navigating) {
-      return Response.redirect(pathname.slice(0, -3), 301);
-    }
-
-    // real file on disk (assets, or the SPA's own fetch() of a .md file) — serve as-is
+    // real file on disk — serve as-is
     if (fileType(filePath) === 'file') return serveFile(filePath);
 
-    // pretty path with no extension — if it maps to a real page, hand back the SPA shell
-    if (fileType(filePath + '.md') === 'file') return serveFile(join(dir, 'index.html'));
+    // folder with its own index.html — e.g. /pico -> public/pico/index.html
+    if (fileType(join(filePath, 'index.html')) === 'file') {
+      return serveFile(join(filePath, 'index.html'));
+    }
 
     return new Response('not found', { status: 404 });
   },

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pico</title>
+    <link rel="icon" href="/reddeer.png" type="image/png">
+    <link rel="stylesheet" href="/styles.css">
+
+ <style>
+        img.logo {
+            image-rendering: pixelated;
+        }
+    </style>
+
+</head>
+
+<body class="bg-gray-900">
+   
+    <main class="max-w-[70rem] px-6 text-gray-300 mx-auto text-center text-md">
+        <div
+            class="grid grid-cols-[auto_1fr] items-start gap-x-4 [grid-template-areas:'deer_title'_'desc_desc'] sm:[grid-template-areas:'deer_title'_'deer_desc'] m-4 mt-6 mb-6 md:m-8 text-left">
+            <img src="pico/deorterm.png" alt="Pixel art of a retro terminal with a deer, the D-Pico mascot"
+                class="logo w-16 sm:w-24 md:w-28 [grid-area:deer]" />
+            <h1 class="text-7xl font-serif [grid-area:title]">D-Pico</h1>
+            <p class="text-xl mt-4 sm:mt-0 [grid-area:desc] italic">A terminal editor built in Deor and Rust
+            </p>
+        </div>
+
+        <p class="text-xl">
+            If you like the terminal try out the deor language! <a href="https://deor.dev"
+                class="block md:inline p-2 bg-gray-300 hover:bg-gray-100 rounded-sm text-black shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">Deor Lang</a>
+        </p>
+
+      
+
+        <h2 class="mt-11 text-4xl font-serif">Get Started Today!</h2>
+
+        <h3>Linux</h3> (Official Support) / other Unix systems like Mac (Untested):
+
+        Quick install (requires git and Rust/cargo already installed):
+        <div class="bg-gray-800 mt-2 rounded-3xl shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)]">
+            <div class="text-left pt-8 pb-2 top-0 z-10 bg-gray-800 rounded-3xl">
+            <pre class="bg-gray-800 text-left rounded-b-3xl">
+
+            <code>
+ 
+                
+        curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorPico/main/setup/install.sh | sh
+
+    Windows (Unofficial Support, PowerShell):
+
+    Requires git and Rust/cargo already installed (get Rust from https://rustup.rs -- accept the default install, which includes the Visual Studio C++ Build Tools it needs to link).
+
+    Quick install -- open PowerShell (no need to run it as Administrator) and run:
+
+        irm https://raw.githubusercontent.com/nathanphoffman/DeorPico/main/setup/install.ps1 | iex
+
+
+            </code>
+            </pre>
+            </div>
+        </div>
+         <h2 class="mt-11 text-4xl font-serif">Screenshots</h2>
+          <img class="max-w-xs" src="pico/screenshot.png">
+
+        <div>
+            
+        </div>
+
+    
+    </main>
+</body>
+
+</html>
