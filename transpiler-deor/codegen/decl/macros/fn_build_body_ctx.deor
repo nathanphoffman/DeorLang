@@ -2,7 +2,7 @@
 # Slices the body token range, pre-scans for mutable variable names, and builds
 # the per-function GenCtx. Expects: fn_tokens, indent_pos, body_start,
 # variant_reg, shape_reg, struct_reg, enum_reg, type_reg in scope from gen_fn_decl.
-macro fn_build_body_ctx
+unsafe_macro fn_build_body_ctx
 	(typed_enum_reg, typed_variant_reg) in ctx
 	int body_end_pos = find_block_end_ref(fn_tokens, indent_pos)
 	int body_slice_end = body_end_pos + 1

@@ -213,6 +213,37 @@ If `macro5` called a macro defined in a fourth file, that crossing would be dept
 Unset (the default), this is unlimited — no different from today. There's no way to set an unlimited value explicitly once opted in; omit the pragma entirely instead.
 
 ---
+## Unsafe Macro Nesting
+
+A plain `macro`'s body is always contained (see [Macros — Macro Bodies Are Contained](docs/macros.md#macro-bodies-are-contained)), so it can never introduce a variable that escapes into its caller. `unsafe_macro` is the one construct allowed to do that — see [Macros — `unsafe_macro`](docs/macros.md#unsafe_macro-deliberately-leaking-state).
+
+Because an `unsafe_macro` body has no `block` around it, an `unsafe_macro` calling — or being called from inside — another `unsafe_macro` would let a leak travel an unbounded distance up the call chain, always a transpiler error:
+
+```deor
+unsafe_macro outer_leak
+    int outer_val = 1
+    macro_run inner_leak      # transpiler error — unsafe_macro cannot call another unsafe_macro
+
+unsafe_macro inner_leak
+    int inner_val = 2
+```
+
+An `unsafe_macro` can freely call, or be called by, an ordinary `macro`, though — that macro's own `block` wrap contains anything spliced into it, so the leak is stopped there regardless of which side is unsafe:
+
+```deor
+unsafe_macro outer_leak
+    int outer_val = 1
+    macro_run helper           # fine — helper is an ordinary, contained macro
+
+macro helper
+    macro_run inner_leak       # also fine — helper's block wrap contains inner_leak's leak
+    print("done")
+
+unsafe_macro inner_leak
+    int inner_val = 2
+```
+
+---
 ## Variable Shadowing
 
 Variable shadowing is allowed. A new declaration with the same name in the same block or an inner block replaces the binding from that point forward.

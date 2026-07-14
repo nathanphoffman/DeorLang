@@ -17,7 +17,7 @@
 # Reads: tokens
 # Writes: tokens (pragma lines removed), enforce_unique_file, enforce_unique_import,
 #         enforce_macro_file_depth
-macro strip_enforce_pragmas
+unsafe_macro strip_enforce_pragmas
 	bool enforce_unique_file = false
 	bool enforce_unique_import = false
 	int enforce_macro_file_depth = 0
@@ -31,6 +31,7 @@ macro strip_enforce_pragmas
 		if kind is "KW_FN"
 			macro_run sep_check_main_signature
 		if sep_is_main
+			bool sep_opener_ok = false
 			macro_run sep_copy_main_opener
 			if sep_opener_ok
 				macro_run sep_scan_pragma_lines

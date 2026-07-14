@@ -171,15 +171,15 @@ for item in items
 
 In trivial cases, like these inline is probably better anyhow, but in general:
 - When the code is small enough (like these examples since we have limited space): leave it inline
-- When organization is needed and logic separation isn't needed and you need to define new variables: use a ```macro```
-- When organization is needed and logic separation isn't needed and you don't need new variables: use a ```macro_block``` 
+- When organization is needed and logic separation isn't needed: use a ```macro``` — its body is contained on its own, so there's no extra decision to make about whether it declares new variables
 - When logic separation is logical: use a ```function```
+- When a macro genuinely needs to hand a *new* variable to its caller (not just assign into one the caller already declared) — a start/end pair sharing state being the main case — reach for ```unsafe_macro``` instead, see [Macros — `unsafe_macro`](docs/macros.md#unsafe_macro-deliberately-leaking-state)
 
 ---
 ## Reusable Consts — via Macros
 
 Deor has no global scope, so a `const` can't be declared once and shared across every function that needs it — it only exists inside the block 
-where it's declared. When the same constant values are needed in multiple functions, declare them once inside a `macro` or `macro_block` it 
+where it's declared. When the same constant values are needed in multiple functions, declare them once inside a `macro` and call it 
 wherever they're needed. Because the macro body is inlined at each call site, every function gets its own copy of the same named consts — 
 nothing is shared at runtime, but the names and values stay consistent everywhere they're used.
 

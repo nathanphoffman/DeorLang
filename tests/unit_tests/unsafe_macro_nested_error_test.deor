@@ -1,0 +1,18 @@
+# unsafe_macro_nested_error_test.deor — an unsafe_macro cannot call another
+# unsafe_macro directly: neither side has a block around it, so the leak would
+# propagate an unbounded distance up the call chain. See
+# docs/enforced_practices.md#unsafe-macro-nesting.
+
+unsafe_macro outer_leak
+	int outer_val = 1
+	macro_run inner_leak
+
+unsafe_macro inner_leak
+	int inner_val = 2
+
+fn void main()
+	macro_run outer_leak
+	print(outer_val)
+
+# expect-error:
+# unsafe_macro 'inner_leak' - cannot be called here

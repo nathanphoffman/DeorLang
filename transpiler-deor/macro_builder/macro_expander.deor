@@ -1,9 +1,28 @@
 
 # Single-pass Deor macro expander. Runs on the merged token list before validation
-# and codegen. Collects `macro name` definitions as it encounters them, removes their
-# tokens from the output, and splices the body tokens back into the front of the
-# processing queue so that any macro_run calls within a macro body are expanded in
-# the same pass. macro definitions inside another macro body are a validation error.
+# and codegen. Collects `macro name` / `unsafe_macro name` definitions as it encounters
+# them, removes their tokens from the output, and splices the body tokens back into the
+# front of the processing queue so that any macro_run calls within a macro body are
+# expanded in the same pass. macro definitions inside another macro body are a
+# validation error.
+#
+# `macro` bodies are always wrapped in a synthetic 'block' (identical to what the lexer
+# produces for a hand-written 'block' as the macro's first statement — see
+# stmt_blocks.deor for what 'block' itself compiles to), so a plain `macro` can never
+# introduce a binding that escapes into whatever called it — only `unsafe_macro` bodies
+# skip this wrap and are allowed to leak new declarations into the caller.
+#
+# Because an unwrapped `unsafe_macro` body has no block to contain a leak, chaining two
+# of them together would let that leak propagate an unbounded distance up the call
+# chain — the exact "unclear what scope a macro can touch" problem this design exists to
+# prevent. So `unsafe_macro` may not call, or be called from inside, another
+# `unsafe_macro`. It's fine on either side of an ordinary `macro`, though: that macro's
+# own block wrap already contains anything spliced into it, so the leak dies right there
+# regardless of what called it or what it calls. unsafe_open/scope_depth below detect
+# this: an unsafe frame records the scope_depth it opened at, and a new unsafe frame is
+# only rejected if the nearest still-open unsafe frame is at that *same* scope_depth —
+# meaning no block (real or synthetic) has been entered since it opened, so nothing
+# would shield the leak.
 #
 # `enforce_macro_file_depth` (0 = unset/no limit, from ENFORCE_MACRO_FILE_DEPTH) caps
 # cross-file macro call nesting: same-file macro_run calls are free, but each call whose
@@ -14,12 +33,13 @@
 # already-nested structure of macro_run calls within macro_run calls.
 fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 	rust
-		let mut macros: std::collections::HashMap<String, (Vec<Token>, i32)> = std::collections::HashMap::new();
+		let mut macros: std::collections::HashMap<String, (Vec<Token>, i32, bool)> = std::collections::HashMap::new();
 		let mut result: Vec<Token> = vec![];
 		let mut queue: std::collections::VecDeque<Token> = tokens.into_iter().collect();
 		let mut scope_depth: i32 = 0;
-		let mut depth_stack: Vec<(String, bool)> = vec![];
+		let mut depth_stack: Vec<(String, bool, bool)> = vec![];
 		let mut cross_file_depth: i64 = 1;
+		let mut unsafe_open: Vec<i32> = vec![];
 		while let Some(cur) = queue.pop_front() {
 			let kind = cur.kind.as_str();
 
@@ -28,15 +48,14 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 			if kind == "DEDENT" {
 				scope_depth -= 1;
 				// remove any macros defined at the depth we are leaving
-				macros.retain(|_, (_, def_depth)| *def_depth <= scope_depth);
+				macros.retain(|_, (_, def_depth, _)| *def_depth <= scope_depth);
 			}
 
-			// collect macro definition — 'macro_block' is sugar for 'macro' whose body is
-			// automatically wrapped in a 'block', so it never needs to be written by hand
-			// (see stmt_blocks.deor for what 'block' itself compiles to)
-			if kind == "KW_MACRO" || kind == "KW_MACRO_BLOCK" {
-				let is_block_macro = kind == "KW_MACRO_BLOCK";
-				let def_label = if is_block_macro { "macro_block" } else { "macro" }.to_string();
+			// collect macro definition
+			if kind == "KW_MACRO" || kind == "KW_UNSAFE_MACRO" {
+				let is_unsafe = kind == "KW_UNSAFE_MACRO";
+				let is_block_macro = !is_unsafe;
+				let def_label = if is_unsafe { "unsafe_macro" } else { "macro" }.to_string();
 				let name_tok = queue.pop_front();
 				let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
 				// skip NEWLINE
@@ -58,7 +77,7 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 					match queue.pop_front() {
 						None => break,
 						Some(t) => {
-							if t.kind == "KW_MACRO" || t.kind == "KW_MACRO_BLOCK" {
+							if t.kind == "KW_MACRO" || t.kind == "KW_UNSAFE_MACRO" {
 								let name_tok = queue.pop_front().unwrap_or(t.clone());
 								handle_errors(vec![val_err(name_tok, "macro".to_string(), "cannot be defined inside another macro body — use macro_run to call an existing macro".to_string())]);
 							} else if t.kind == "INDENT" {
@@ -87,7 +106,7 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 					wrapped.push(Token { kind: "DEDENT".to_string(), value: String::new(), line: 0, file: wrap_file });
 					body = wrapped;
 				}
-				if !name.is_empty() { macros.insert(name, (body, scope_depth)); }
+				if !name.is_empty() { macros.insert(name, (body, scope_depth, is_unsafe)); }
 				// skip trailing NEWLINE after the definition block
 				while queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
 				continue;
@@ -100,11 +119,20 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 				// skip trailing NEWLINE after the call
 				if queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
 				// prepend body tokens to front of queue so they are processed next
-				if let Some((body, _)) = macros.get(&name) {
+				if let Some((body, _, target_is_unsafe)) = macros.get(&name) {
+					let target_is_unsafe = *target_is_unsafe;
+					if target_is_unsafe {
+						if let Some(open_depth) = unsafe_open.last() {
+							if *open_depth == scope_depth {
+								let err_tok = name_tok.clone().unwrap_or(cur.clone());
+								handle_errors(vec![val_err(err_tok, "unsafe_macro".to_string(), "cannot be called here — an unsafe_macro cannot call, or be called from inside, another unsafe_macro".to_string())]);
+							}
+						}
+					}
 					let marker_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
 					let mut did_increment = false;
 					if enforce_macro_file_depth > 0 {
-						let context_file = depth_stack.last().map(|e: &(String, bool)| e.0.clone()).unwrap_or_else(|| cur.file.clone());
+						let context_file = depth_stack.last().map(|e: &(String, bool, bool)| e.0.clone()).unwrap_or_else(|| cur.file.clone());
 						if marker_file != context_file {
 							let new_depth = cross_file_depth + 1;
 							if new_depth > enforce_macro_file_depth {
@@ -115,7 +143,8 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 							did_increment = true;
 						}
 					}
-					depth_stack.push((marker_file.clone(), did_increment));
+					depth_stack.push((marker_file.clone(), did_increment, target_is_unsafe));
+					if target_is_unsafe { unsafe_open.push(scope_depth); }
 					queue.push_front(Token { kind: "MACRO_FRAME_END".to_string(), value: String::new(), line: 0, file: marker_file.clone() });
 					for tok in body.iter().rev() { queue.push_front(tok.clone()); }
 					queue.push_front(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
@@ -125,8 +154,9 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 
 			// closes the bracket opened above when the spliced macro body is fully consumed
 			if kind == "MACRO_FRAME_END" {
-				if let Some((_, did_increment)) = depth_stack.pop() {
+				if let Some((_, did_increment, was_unsafe)) = depth_stack.pop() {
 					if did_increment { cross_file_depth -= 1; }
+					if was_unsafe { unsafe_open.pop(); }
 				}
 				continue;
 			}

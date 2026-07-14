@@ -5,7 +5,7 @@
 # scan for pragma lines.
 # Reads/writes: tokens, sep_pos, sep_result
 # Reads: sep_len
-# Writes: sep_opener_ok
+# Assigns (caller must predeclare): sep_opener_ok
 macro sep_copy_main_opener
 	int sep_copy_idx = 0
 	for if sep_copy_idx < 5
@@ -13,7 +13,6 @@ macro sep_copy_main_opener
 		sep_result at end = c_tok
 		sep_copy_idx = sep_copy_idx + 1
 	sep_pos = sep_pos + 5
-	bool sep_opener_ok = false
 	bool sep_nl_present = false
 	if sep_pos < sep_len
 		Token nl_tok = tokens at sep_pos

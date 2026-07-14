@@ -91,8 +91,8 @@ Open an indented block when followed by a newline.
 | `enum` | Enum declaration — named variant type |
 | `rust` | Inline Rust block |
 | `block` | Scoped block — variables declared inside do not escape into the surrounding scope |
-| `macro` | Named block of code inlined at every `macro_run` call site — see [Macros](docs/macros.md) |
-| `macro_block` | Same as `macro`, but the body is automatically wrapped in `block` — see [Macros — `macro_block`](docs/macros.md#macro_block-block-applied-automatically) |
+| `macro` | Named block of code inlined at every `macro_run` call site, body always contained (like `block`) — see [Macros](docs/macros.md) |
+| `unsafe_macro` | Same as `macro`, but the body is **not** contained — declared variables leak into the caller. Cannot call, or be called from inside, another `unsafe_macro` — see [Macros — `unsafe_macro`](docs/macros.md#unsafe_macro-deliberately-leaking-state) |
 
 ### Statement Keywords
 
@@ -104,7 +104,7 @@ Open an indented block when followed by a newline.
 | `continue` | Skip to the next loop iteration |
 | `move` | Transfer ownership instead of cloning — argument, loop, or assignment |
 | `const` | Explicitly non-mutable typed binding — emits `let` instead of `let mut`; name must be `SCREAMING_SNAKE_CASE` |
-| `macro_run` | Inlines a `macro`/`macro_block` definition's body at this call site — see [Macros](docs/macros.md) |
+| `macro_run` | Inlines a `macro`/`unsafe_macro` definition's body at this call site — see [Macros](docs/macros.md) |
 
 ### Operators and Expression Keywords
 

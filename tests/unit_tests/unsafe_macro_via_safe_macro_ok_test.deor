@@ -1,0 +1,24 @@
+# unsafe_macro_via_safe_macro_ok_test.deor — an unsafe_macro calling, or being
+# called from inside, an ordinary macro is fine on either side: that macro's own
+# implicit block wrap contains anything spliced into it, so the leak never reaches
+# past it. Only unsafe_macro-touching-unsafe_macro directly is rejected (see
+# unsafe_macro_nested_error_test.deor).
+
+unsafe_macro outer_leak
+	int outer_val = 1
+	macro_run helper
+
+macro helper
+	macro_run inner_leak
+	print("helper done")
+
+unsafe_macro inner_leak
+	int inner_val = 2
+
+fn void main()
+	macro_run outer_leak
+	print(outer_val)
+
+# expect:
+# helper done
+# 1

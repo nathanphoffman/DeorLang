@@ -1,0 +1,13 @@
+# unsafe_macro_leak_test.deor — unlike a plain `macro` (see
+# macro_contained_by_default_test.deor), an `unsafe_macro` body is not wrapped in
+# `block`, so a variable it declares is still visible to the caller after the call.
+
+unsafe_macro set_greeting
+	string greeting = "hello unsafe"
+
+fn void main()
+	macro_run set_greeting
+	print(greeting)
+
+# expect:
+# hello unsafe

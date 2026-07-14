@@ -4,7 +4,7 @@
 # assembles Rust source — eliminates one-off local declarations like
 # `string indent = "    "` scattered across every file.
 
-macro rust_strings
+unsafe_macro rust_strings
 	const string RS_IND    = "    "
 	const string RS_NL     = "\n"
 	const string RS_SC     = ";\n"

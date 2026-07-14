@@ -1,5 +1,5 @@
 
-macro timer_start
+unsafe_macro timer_start
 	int _timer_start = now_ms()
 
 macro timer_end

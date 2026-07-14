@@ -1,5 +1,5 @@
 # Declares all validation error message strings used across the token validator macros.
-macro define_errors
+unsafe_macro define_errors
 
 	# naming rules
 	string rule_min3 = "name must be at least 3 characters"

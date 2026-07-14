@@ -7,8 +7,6 @@ A macro is a named block of code that is inlined at every `macro_run` call site 
 
 Macros are useful because they avoid the clone overhead of function calls while still letting you organize repetitive logic. This matters most inside tight loops where calling helper functions repeatedly introduces unnecessary cloning. Unlike Rust macros, Deor macros need no parameter declarations and require no special syntax — they benefit from Rust's compile-time checks because the inlined code goes through the same transpile and compile pipeline.
 
-Because macro bodies are inlined, any variables they declare pollute the caller's scope. Use the `block` keyword inside a macro body to contain variables that should not escape.
-
 Macros can be declared at the top level or inside a function body. A top-level macro is available to any file that imports the file it is defined in — no special import syntax needed. A macro declared inside a function body is locally scoped: it exists only within that block and is not visible outside it.
 
 You can call other macros with `macro_run` from inside a macro body — nesting calls is fully supported. However, defining a `macro` inside another macro body is a compile error. Define all macros at the appropriate scope and call them with `macro_run`.
@@ -30,26 +28,20 @@ fn void greet()
 
 ---
 
-## `block` Inside Macros
+## Macro Bodies Are Contained
 
-`block` is a general-purpose scoping keyword — see [Enforced Practices — Variable Shadowing](docs/enforced_practices.md#variable-shadowing) — but it's most often reached for here, inside a macro body.
+A `macro` body is always inlined as if it were wrapped in Deor's `block` scoping keyword — automatically, with nothing extra to write. That means any variable a macro declares is local to that one inlining and never escapes into whatever called it. Call the same macro twice in a row and there's no collision:
 
-Because a macro body is copy-pasted at the call site, any variables it declares become part of the caller's scope. If the macro is called more than once, or if its internal variable names conflict with the caller's names, this causes a compile error.
-
-Use `block` inside the macro body to create an isolated scope. Variables declared inside `block` do not escape:
-
-Deor:
 ```deor
 macro compute_area
-    block
-        length as 10
-        width as 5
-        area as length * width
-        print(area)
+    length as 10
+    width as 5
+    area as length * width
+    print(area)
 
 fn void run()
     macro_run compute_area
-    macro_run compute_area    # safe — block variables do not leak between calls
+    macro_run compute_area    # safe — compute_area's own variables don't leak between calls
 ```
 
 Rust:
@@ -68,40 +60,43 @@ Rust:
 }
 ```
 
-Without `block`, the second `macro_run` would fail to compile because `length`, `width`, and `area` would already be declared in scope.
-
-If the macro only reads variables from the caller's scope without declaring any of its own, `block` is not needed.
-
----
-
-## `macro_block`: `block` Applied Automatically
-
-Since wrapping the entire body in `block` is such a common pattern, `macro_block` does it for you — declare with `macro_block` instead of `macro` and the body is automatically treated as if it were wrapped in `block`, with no need to write `block` and indent one level deeper yourself:
+A macro can still read and assign to variables already declared in the caller's scope — containment only stops it from introducing *new* names that outlive the call. If you want to hand a computed value back to the caller, have the caller declare the variable first and let the macro assign into it:
 
 ```deor
-macro_block compute_area
-    length as 10
-    width as 5
-    area as length * width
-    print(area)
+macro double_into_result
+    result = value * 2
 
-fn void run()
-    macro_run compute_area
-    macro_run compute_area    # safe — same isolation as the hand-wrapped version above
+fn int double(int value)
+    int result = 0
+    macro_run double_into_result
+    return result
 ```
 
-Identical output to the hand-wrapped version — `macro_block` only changes how the definition is written, not its scoping, nesting, or other behavior.
-
-Reach for `macro_block` by default whenever a macro declares its own variables; keep plain `macro` for macros that only read from the caller's scope, where `block` would add a needless layer.
+The one construct that's allowed to declare a variable that escapes into the caller is `unsafe_macro` — see below.
 
 ---
 
-## Convention: Wrapping a Body With a Start/End Pair
+## `block` Inside Macros
 
-There's no dedicated syntax for wrapping arbitrary code between "before" and "after" snippets — just define two macros and call them in sequence, like this:
+`block` is a general-purpose scoping keyword — see [Enforced Practices — Variable Shadowing](docs/enforced_practices.md#variable-shadowing). Since a macro body is already contained on its own, you rarely need it *inside* a macro purely to stop a leak into the caller — that's automatic now. It's still useful if you want to scope off a subset of a macro's own variables from the rest of its body, exactly as `block` works anywhere else in Deor:
 
 ```deor
-macro timer_start
+macro process_batch
+    block
+        temp as compute_intermediate()
+        print(temp)
+    # temp is gone here, even though we're still inside the same macro body
+    finalize()
+```
+
+---
+
+## `unsafe_macro` — Deliberately Leaking State
+
+Sometimes a macro needs to hand a *new* variable to its caller — not assign into one the caller already declared, but introduce one that didn't exist before. The canonical case is a start/end pair that brackets a piece of code, where the start half has to introduce state the end half will read later:
+
+```deor
+unsafe_macro timer_start
     int _timer_start = now_ms()
 
 macro timer_end
@@ -118,7 +113,17 @@ tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
 macro_run timer_end
 ```
 
-`timer_end` freely reads `_timer_start` (declared by `timer_start`) and `_timer_label` (set by the caller) since both live in the same inlined scope. Nothing enforces that `timer_end` actually gets called — that's just the tradeoff of macros inlining into caller scope, same as any other macro.
+Only `timer_start` needs `unsafe_macro` — it introduces `_timer_start`, which `timer_end` then reads from a completely separate `macro_run` call later in the same function. `timer_end` itself doesn't need to leak anything (it only reads `_timer_start`/`_timer_label` and uses its own locals internally), so it stays a plain, contained `macro`.
+
+`unsafe_macro` behaves like `macro` in every way except one: its body is **not** automatically wrapped in `block`, so any variable it declares becomes part of the caller's scope, exactly like every macro worked before containment became the default. The name is deliberate friction — reach for it only when a macro genuinely needs to introduce new state for something else to read later, and prefer the caller-predeclares-it/macro-assigns-into-it pattern shown above whenever that's enough.
+
+**Restriction:** an `unsafe_macro` cannot call, or be called from inside, another `unsafe_macro`. Two unwrapped leaking macros chained together would let a leak travel an unbounded distance up the call chain — the exact "unclear what scope a macro can touch" problem containment exists to prevent. This is the only restriction — an `unsafe_macro` can freely call, or be called by, an ordinary `macro`, since that macro's own `block` wrap already contains anything spliced into it; the leak dies right there regardless of which side is unsafe. See [Enforced Practices — Unsafe Macro Nesting](docs/enforced_practices.md#unsafe-macro-nesting) for the compile-time check and a worked example of the error.
+
+---
+
+## Convention: Wrapping a Body With a Start/End Pair
+
+There's no dedicated syntax for wrapping arbitrary code between "before" and "after" snippets — just define two macros and call them in sequence, as in the `timer_start`/`timer_end` example above.
 
 ---
 

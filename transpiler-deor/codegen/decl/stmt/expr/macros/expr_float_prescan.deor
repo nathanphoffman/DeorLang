@@ -3,7 +3,7 @@
 # int literals in the expression auto-promote (e.g. 3 → 3.0). Stops at NEWLINE, EOF, or
 # an unmatched RPAREN. Records the prior float context in `pre_ctx_was` so the caller can
 # restore it after the expression is generated.
-macro expr_float_prescan
+unsafe_macro expr_float_prescan
 	bool pre_ctx_was = float_ctx_get()
 	bool expr_has_float = false
 	int pre_scan = pos

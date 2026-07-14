@@ -1,0 +1,21 @@
+# macro_contained_by_default_test.deor — a plain `macro` body is always implicitly
+# wrapped in `block`, so calling it twice must not collide even without writing
+# `block` by hand — exactly like the hand-wrapped `compute_area` in macro_test.deor,
+# but relying on the automatic containment instead.
+
+macro compute_area
+	length as 10
+	width as 5
+	area as length * width
+	print(area)
+
+fn void run_area_twice()
+	macro_run compute_area
+	macro_run compute_area
+
+fn void main()
+	run_area_twice()
+
+# expect:
+# 50
+# 50

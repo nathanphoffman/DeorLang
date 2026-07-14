@@ -1,4 +1,4 @@
-macro gen_expr_r
+unsafe_macro gen_expr_r
 	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
 	move (code, new_pos) in ge_r
 	val_code as code

@@ -3,7 +3,7 @@
 # repeated across files, always kept silent — see dd_handle_rust_block) and, depending on
 # the ENFORCE_UNIQUE_* pragmas declared at the top of fn void main() (see
 # strip_enforce_pragmas), either hard-errors on or silently keeps the first of any
-# fn/struct/enum/shape/type/macro/macro_block/raw name reused in the same file and/or across files.
+# fn/struct/enum/shape/type/macro/unsafe_macro/raw name reused in the same file and/or across files.
 # With neither pragma set, every repeat is silently kept-first — the original, fully
 # loose behavior. Also captures ENFORCE_MACRO_FILE_DEPTH (see strip_enforce_pragmas) and
 # returns it alongside the deduped tokens for build_macros to enforce.
@@ -32,10 +32,10 @@ fn DedupResult deduplicate_decls(tokenList tokens_in)
 		bool is_shape = kind is "KW_SHAPE"
 		bool is_type = kind is "KW_TYPE"
 		bool is_macro = kind is "KW_MACRO"
-		bool is_macro_block = kind is "KW_MACRO_BLOCK"
+		bool is_unsafe_macro = kind is "KW_UNSAFE_MACRO"
 		bool is_raw = kind is "KW_RAW"
 		bool is_rust_blk = kind is "KW_RUST"
-		bool is_block_decl = is_fn or is_struct or is_enum or is_type or is_macro or is_macro_block
+		bool is_block_decl = is_fn or is_struct or is_enum or is_type or is_macro or is_unsafe_macro
 		if is_block_decl
 			macro_run dd_handle_block_decl
 		else if is_shape

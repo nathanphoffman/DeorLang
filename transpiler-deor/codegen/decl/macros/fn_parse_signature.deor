@@ -2,7 +2,7 @@
 # Walks the cursor through `RetType name(params)`, setting ret_type, fn_name,
 # param_strs, indent_pos, and body_start. Expects: fn_tokens, start_pos, ctx
 # in scope from gen_fn_decl.
-macro fn_parse_signature
+unsafe_macro fn_parse_signature
 	TokenCursor cur = cur_at_ref(fn_tokens, start_pos)
 	(current) in cur
 	(value) in current

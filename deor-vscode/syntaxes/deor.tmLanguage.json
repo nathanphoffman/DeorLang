@@ -150,7 +150,7 @@
     },
     "builtin-types": {
       "name": "support.type.deor",
-      "match": "\\b(int|float|bool|string|bytes|list|func|void|macro|macro_run|raw)\\b"
+      "match": "\\b(int|float|bool|string|bytes|list|func|void|macro|unsafe_macro|macro_run|raw)\\b"
     },
     "constants": {
       "name": "constant.language.deor",
