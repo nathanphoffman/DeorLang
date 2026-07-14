@@ -104,7 +104,8 @@ Open an indented block when followed by a newline.
 | `continue` | Skip to the next loop iteration |
 | `move` | Transfer ownership instead of cloning — argument, loop, or assignment |
 | `const` | Explicitly non-mutable typed binding — emits `let` instead of `let mut`; name must be `SCREAMING_SNAKE_CASE` |
-| `macro_run` | Inlines a `macro`/`unsafe_macro` definition's body at this call site — see [Macros](docs/macros.md) |
+| `macro_run` | Inlines a `macro` definition's body at this call site — transpiler error if the target is an `unsafe_macro` — see [Macros](docs/macros.md) |
+| `unsafe_macro_run` | Inlines an `unsafe_macro` definition's body at this call site — transpiler error if the target is a plain `macro` — see [Macros — `unsafe_macro`](docs/macros.md#unsafe_macro-deliberately-leaking-state) |
 
 ### Operators and Expression Keywords
 

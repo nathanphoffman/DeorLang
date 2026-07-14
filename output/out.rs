@@ -650,6 +650,10 @@ fn word_to_kind(word: String) -> String {
         // transpiler-deor/importer/lexer/word_token.deor
         return "KW_MACRO_RUN".to_string();
     }
+    if word == "unsafe_macro_run" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "KW_UNSAFE_MACRO_RUN".to_string();
+    }
     if word == "unsafe_macro" {
         // transpiler-deor/importer/lexer/word_token.deor
         return "KW_UNSAFE_MACRO".to_string();
@@ -2331,8 +2335,13 @@ fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<
     		continue;
     	}
 
-    	// expand macro_run call site — prepend body to queue for recursive expansion
-    	if kind == "KW_MACRO_RUN" {
+    	// expand macro_run / unsafe_macro_run call site — prepend body to queue for
+    	// recursive expansion. The call-site keyword must match the target macro's
+    	// own kind: macro_run for an ordinary macro, unsafe_macro_run for an
+    	// unsafe_macro — so a reader never has to look up the definition to know
+    	// whether a call site can leak.
+    	if kind == "KW_MACRO_RUN" || kind == "KW_UNSAFE_MACRO_RUN" {
+    		let is_unsafe_call = kind == "KW_UNSAFE_MACRO_RUN";
     		let name_tok = queue.pop_front();
     		let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
     		// skip trailing NEWLINE after the call
@@ -2340,6 +2349,14 @@ fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<
     		// prepend body tokens to front of queue so they are processed next
     		if let Some((body, _, target_is_unsafe)) = macros.get(&name) {
     			let target_is_unsafe = *target_is_unsafe;
+    			if target_is_unsafe && !is_unsafe_call {
+    				let err_tok = name_tok.clone().unwrap_or(cur.clone());
+    				handle_errors(vec![val_err(err_tok, "macro_run".to_string(), "calls an unsafe_macro — use unsafe_macro_run instead".to_string())]);
+    			}
+    			if !target_is_unsafe && is_unsafe_call {
+    				let err_tok = name_tok.clone().unwrap_or(cur.clone());
+    				handle_errors(vec![val_err(err_tok, "unsafe_macro_run".to_string(), "calls an ordinary macro, not an unsafe_macro — use macro_run instead".to_string())]);
+    			}
     			if target_is_unsafe {
     				if let Some(open_depth) = unsafe_open.last() {
     					if *open_depth == scope_depth {
@@ -2419,7 +2436,7 @@ fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
         // transpiler-deor/macro_builder/macro_validation.deor
         let mut tok: Token = raw_tokens[mdx as usize].clone();
         let kind = tok.kind.clone();
-        if kind == "KW_MACRO_RUN" {
+        if kind == "KW_MACRO_RUN" || kind == "KW_UNSAFE_MACRO_RUN" {
             // transpiler-deor/macro_builder/macro_validation.deor
             let mut nm_pos: i64 = mdx + 1;
             if nm_pos < token_count {
@@ -2623,7 +2640,7 @@ fn validate_tokens(tokens: TokensRef) {
     // transpiler-deor/tokens_validator/tokens_validation.deor
     handle_errors(errors.clone());
     let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_UNSAFE_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
-    let mut reserved_keywords: Vec<String> = vec!["KW_AND".to_string(), "KW_AS".to_string(), "KW_AT".to_string(), "KW_AVOW".to_string(), "KW_BLOCK".to_string(), "KW_BREAK".to_string(), "KW_CONST".to_string(), "KW_CONTINUE".to_string(), "KW_ELSE".to_string(), "KW_EMPTY".to_string(), "KW_ENUM".to_string(), "KW_FALSE".to_string(), "KW_FN".to_string(), "KW_FOR".to_string(), "KW_FUNC".to_string(), "KW_IF".to_string(), "KW_IMPORT".to_string(), "KW_IN".to_string(), "KW_IS".to_string(), "KW_LIST".to_string(), "KW_MACRO".to_string(), "KW_MACRO_RUN".to_string(), "KW_UNSAFE_MACRO".to_string(), "KW_MOVE".to_string(), "KW_NONE".to_string(), "KW_NOT".to_string(), "KW_OF".to_string(), "KW_OR".to_string(), "KW_RAW".to_string(), "KW_REMOVE".to_string(), "KW_RETURN".to_string(), "KW_RUST".to_string(), "KW_SHAPE".to_string(), "KW_STRUCT".to_string(), "KW_TO".to_string(), "KW_TRUE".to_string(), "KW_TYPE".to_string(), "KW_VALID".to_string(), "KW_VOID".to_string(), "KW_WITH".to_string()];
+    let mut reserved_keywords: Vec<String> = vec!["KW_AND".to_string(), "KW_AS".to_string(), "KW_AT".to_string(), "KW_AVOW".to_string(), "KW_BLOCK".to_string(), "KW_BREAK".to_string(), "KW_CONST".to_string(), "KW_CONTINUE".to_string(), "KW_ELSE".to_string(), "KW_EMPTY".to_string(), "KW_ENUM".to_string(), "KW_FALSE".to_string(), "KW_FN".to_string(), "KW_FOR".to_string(), "KW_FUNC".to_string(), "KW_IF".to_string(), "KW_IMPORT".to_string(), "KW_IN".to_string(), "KW_IS".to_string(), "KW_LIST".to_string(), "KW_MACRO".to_string(), "KW_MACRO_RUN".to_string(), "KW_UNSAFE_MACRO".to_string(), "KW_UNSAFE_MACRO_RUN".to_string(), "KW_MOVE".to_string(), "KW_NONE".to_string(), "KW_NOT".to_string(), "KW_OF".to_string(), "KW_OR".to_string(), "KW_RAW".to_string(), "KW_REMOVE".to_string(), "KW_RETURN".to_string(), "KW_RUST".to_string(), "KW_SHAPE".to_string(), "KW_STRUCT".to_string(), "KW_TO".to_string(), "KW_TRUE".to_string(), "KW_TYPE".to_string(), "KW_VALID".to_string(), "KW_VOID".to_string(), "KW_WITH".to_string()];
     let mut builtin_names: Vec<String> = vec!["print".to_string(), "crash".to_string(), "len".to_string(), "range".to_string(), "args".to_string(), "input".to_string()];
     let mut func_shape_names: Vec<String> = Vec::new();
     let mut validator_type_names: Vec<String> = Vec::new();
@@ -5145,6 +5162,10 @@ fn validate_tokens(tokens: TokensRef) {
                         uvr_skip = true;
                     }
                     if kind == "KW_MACRO_RUN" {
+                        // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
+                        uvr_skip = true;
+                    }
+                    if kind == "KW_UNSAFE_MACRO_RUN" {
                         // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
                         uvr_skip = true;
                     }

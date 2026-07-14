@@ -1,0 +1,13 @@
+# macro_run_on_unsafe_target_error_test.deor — calling an unsafe_macro with plain
+# macro_run is a transpiler error; unsafe_macro_run is required so a call site's
+# leak potential is visible without checking the definition.
+
+unsafe_macro set_greeting
+	string greeting = "hi"
+
+fn void main()
+	macro_run set_greeting
+	print(greeting)
+
+# expect-error:
+# macro_run 'set_greeting' - calls an unsafe_macro — use unsafe_macro_run instead

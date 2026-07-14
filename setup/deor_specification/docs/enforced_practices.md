@@ -217,12 +217,23 @@ Unset (the default), this is unlimited — no different from today. There's no w
 
 A plain `macro`'s body is always contained (see [Macros — Macro Bodies Are Contained](docs/macros.md#macro-bodies-are-contained)), so it can never introduce a variable that escapes into its caller. `unsafe_macro` is the one construct allowed to do that — see [Macros — `unsafe_macro`](docs/macros.md#unsafe_macro-deliberately-leaking-state).
 
+An `unsafe_macro` must always be called with `unsafe_macro_run`, never plain `macro_run` — and a plain `macro` must always be called with `macro_run`, never `unsafe_macro_run`. Using the wrong one is a transpiler error either direction, so a call site's leak potential is always visible without checking the definition:
+
+```deor
+unsafe_macro set_greeting
+    string greeting = "hi"
+
+fn void main()
+    macro_run set_greeting          # transpiler error — set_greeting is unsafe_macro, use unsafe_macro_run
+    unsafe_macro_run set_greeting   # correct
+```
+
 Because an `unsafe_macro` body has no `block` around it, an `unsafe_macro` calling — or being called from inside — another `unsafe_macro` would let a leak travel an unbounded distance up the call chain, always a transpiler error:
 
 ```deor
 unsafe_macro outer_leak
     int outer_val = 1
-    macro_run inner_leak      # transpiler error — unsafe_macro cannot call another unsafe_macro
+    unsafe_macro_run inner_leak      # transpiler error — unsafe_macro cannot call another unsafe_macro
 
 unsafe_macro inner_leak
     int inner_val = 2
@@ -236,7 +247,7 @@ unsafe_macro outer_leak
     macro_run helper           # fine — helper is an ordinary, contained macro
 
 macro helper
-    macro_run inner_leak       # also fine — helper's block wrap contains inner_leak's leak
+    unsafe_macro_run inner_leak  # also fine — helper's block wrap contains inner_leak's leak
     print("done")
 
 unsafe_macro inner_leak

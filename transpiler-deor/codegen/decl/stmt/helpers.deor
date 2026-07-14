@@ -3,7 +3,7 @@
 # String literals need `.to_string()`, identifiers need `.clone()`. Expressions
 # produced by calls or arithmetic are already owned and pass through unchanged.
 fn string emit_val(string val_code, string val_kind)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	if val_kind is "STRING"
 		return s_join([val_code, RS_TOS])
 	if val_kind is "IDENT"

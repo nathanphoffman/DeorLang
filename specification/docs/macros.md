@@ -108,14 +108,16 @@ macro timer_end
 
 ```deor
 string _timer_label = "[timer] load: "
-macro_run timer_start
+unsafe_macro_run timer_start
 tokenList raw_tokens = collect_all_tokens_with_all_imports(input_path)
 macro_run timer_end
 ```
 
-Only `timer_start` needs `unsafe_macro` — it introduces `_timer_start`, which `timer_end` then reads from a completely separate `macro_run` call later in the same function. `timer_end` itself doesn't need to leak anything (it only reads `_timer_start`/`_timer_label` and uses its own locals internally), so it stays a plain, contained `macro`.
+Only `timer_start` needs `unsafe_macro` — it introduces `_timer_start`, which `timer_end` then reads from a completely separate `macro_run` call later in the same function. `timer_end` itself doesn't need to leak anything (it only reads `_timer_start`/`_timer_label` and uses its own locals internally), so it stays a plain, contained `macro`, called with plain `macro_run`.
 
 `unsafe_macro` behaves like `macro` in every way except one: its body is **not** automatically wrapped in `block`, so any variable it declares becomes part of the caller's scope, exactly like every macro worked before containment became the default. The name is deliberate friction — reach for it only when a macro genuinely needs to introduce new state for something else to read later, and prefer the caller-predeclares-it/macro-assigns-into-it pattern shown above whenever that's enough.
+
+**Call it with `unsafe_macro_run`, not `macro_run`.** An `unsafe_macro` must be called with `unsafe_macro_run`, and a plain `macro` must be called with `macro_run` — using the wrong one is a transpiler error either direction. That way whether a given call site can leak a new variable into the surrounding code is visible right there, without needing to look up how the macro was declared.
 
 **Restriction:** an `unsafe_macro` cannot call, or be called from inside, another `unsafe_macro`. Two unwrapped leaking macros chained together would let a leak travel an unbounded distance up the call chain — the exact "unclear what scope a macro can touch" problem containment exists to prevent. This is the only restriction — an `unsafe_macro` can freely call, or be called by, an ordinary `macro`, since that macro's own `block` wrap already contains anything spliced into it; the leak dies right there regardless of which side is unsafe. See [Enforced Practices — Unsafe Macro Nesting](docs/enforced_practices.md#unsafe-macro-nesting) for the compile-time check and a worked example of the error.
 

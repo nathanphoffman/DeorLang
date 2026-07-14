@@ -6,7 +6,7 @@ unsafe_macro set_greeting
 	string greeting = "hello unsafe"
 
 fn void main()
-	macro_run set_greeting
+	unsafe_macro_run set_greeting
 	print(greeting)
 
 # expect:

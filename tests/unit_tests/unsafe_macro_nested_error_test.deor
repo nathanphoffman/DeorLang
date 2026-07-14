@@ -5,13 +5,13 @@
 
 unsafe_macro outer_leak
 	int outer_val = 1
-	macro_run inner_leak
+	unsafe_macro_run inner_leak
 
 unsafe_macro inner_leak
 	int inner_val = 2
 
 fn void main()
-	macro_run outer_leak
+	unsafe_macro_run outer_leak
 	print(outer_val)
 
 # expect-error:

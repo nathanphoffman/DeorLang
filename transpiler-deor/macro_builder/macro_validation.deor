@@ -22,14 +22,14 @@ fn tokenList validate_macros(tokenList raw_tokens)
 					macro_names at end = value
 		pdx = pdx + 1
 
-	# pass 2: verify every macro_run references a collected name
+	# pass 2: verify every macro_run/unsafe_macro_run references a collected name
 	string lbl_macro = "macro_run"
 	string rule_macro_run = "macro is not defined — check the name or add a 'macro <name>' definition"
 	int mdx = 0
 	for if mdx < token_count
 		Token tok = raw_tokens at mdx
 		(kind) in tok
-		if kind is "KW_MACRO_RUN"
+		if kind is "KW_MACRO_RUN" or kind is "KW_UNSAFE_MACRO_RUN"
 			int nm_pos = mdx + 1
 			if nm_pos < token_count
 				Token nm_tok = raw_tokens at nm_pos

@@ -22,7 +22,7 @@ macro gen_input_check
 	if gic_nm_ok
 		macro_run gic_match_parens
 	if gic_matched
-		macro_run rust_strings
+		unsafe_macro_run rust_strings
 		string gic_pad = s_repeat(RS_IND, depth)
 		strList gic_out = empty
 		macro_run gic_emit_header

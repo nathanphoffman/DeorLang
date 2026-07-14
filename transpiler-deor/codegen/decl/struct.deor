@@ -13,7 +13,7 @@ fn ParseResult gen_struct_decl(TokensRef tokens, int pos, RcCtx ctx)
 	string struct_name = value
 	cur = cur_next_ref(cur, tokens)
 	cur = cur_skip_to_body_ref(cur, tokens)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	strList field_lines = empty
 	for if not c_at_end(cur)
 		(current) in cur

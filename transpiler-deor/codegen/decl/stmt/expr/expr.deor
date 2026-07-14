@@ -56,7 +56,7 @@ fn string map_op(string operator)
 fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	int token_count = len(tokens)
 
-	macro_run expr_float_prescan
+	unsafe_macro_run expr_float_prescan
 
 	ParseResult primary_r = gen_primary(tokens, pos, ctx)
 	move (code, new_pos) in primary_r

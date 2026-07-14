@@ -26,7 +26,7 @@ fn void validate_tokens(TokensRef tokens)
 	string lbl_field = "struct field"
 	string lbl_variant = "enum variant"
 
-	macro_run define_errors
+	unsafe_macro_run define_errors
 
 	# Checked first and short-circuited on: an unmatched paren corrupts every
 	# other paren_depth-dependent check for the remainder of the file (see
@@ -44,7 +44,7 @@ fn void validate_tokens(TokensRef tokens)
 	# rather than one keyword at a time. KW_END is excluded: `list at end = val`
 	# is legitimate (end immediately followed by EQUALS), and check_end_placement
 	# already handles that keyword's one legitimate position precisely.
-	strList reserved_keywords = ["KW_AND", "KW_AS", "KW_AT", "KW_AVOW", "KW_BLOCK", "KW_BREAK", "KW_CONST", "KW_CONTINUE", "KW_ELSE", "KW_EMPTY", "KW_ENUM", "KW_FALSE", "KW_FN", "KW_FOR", "KW_FUNC", "KW_IF", "KW_IMPORT", "KW_IN", "KW_IS", "KW_LIST", "KW_MACRO", "KW_MACRO_RUN", "KW_UNSAFE_MACRO", "KW_MOVE", "KW_NONE", "KW_NOT", "KW_OF", "KW_OR", "KW_RAW", "KW_REMOVE", "KW_RETURN", "KW_RUST", "KW_SHAPE", "KW_STRUCT", "KW_TO", "KW_TRUE", "KW_TYPE", "KW_VALID", "KW_VOID", "KW_WITH"]
+	strList reserved_keywords = ["KW_AND", "KW_AS", "KW_AT", "KW_AVOW", "KW_BLOCK", "KW_BREAK", "KW_CONST", "KW_CONTINUE", "KW_ELSE", "KW_EMPTY", "KW_ENUM", "KW_FALSE", "KW_FN", "KW_FOR", "KW_FUNC", "KW_IF", "KW_IMPORT", "KW_IN", "KW_IS", "KW_LIST", "KW_MACRO", "KW_MACRO_RUN", "KW_UNSAFE_MACRO", "KW_UNSAFE_MACRO_RUN", "KW_MOVE", "KW_NONE", "KW_NOT", "KW_OF", "KW_OR", "KW_RAW", "KW_REMOVE", "KW_RETURN", "KW_RUST", "KW_SHAPE", "KW_STRUCT", "KW_TO", "KW_TRUE", "KW_TYPE", "KW_VALID", "KW_VOID", "KW_WITH"]
 
 	# built-in function names — not lexer keywords, just plain IDENTs with special
 	# codegen meaning, but they must never be shadowed (see docs/syntax.md#built-in-function-names)

@@ -8,8 +8,8 @@ fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 	cond_code as code
 	cond_end as new_pos
 	int blk_start = skip_to_body_ref(tokens, cond_end)
-	macro_run gen_block_r
-	macro_run rust_strings
+	unsafe_macro_run gen_block_r
+	unsafe_macro_run rust_strings
 	string combined = s_join([cond_code, RS_OB, blk_code])
 	return make_result(move combined, blk_end)
 
@@ -18,7 +18,7 @@ fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 	(tokens) in ctx
 	int token_count = len(tokens)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 	# ex: if {cond} — pos+1 grabs the condition expression after 'if'
 	int if_cond_pos = pos + 1
@@ -60,7 +60,7 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 			cur = new_pos
 		else
 			int blk_start = skip_to_body_ref(tokens, after_else)
-			macro_run gen_block_r
+			unsafe_macro_run gen_block_r
 			string els_kw = " else {\n"
 			string els_cl = "}"
 			result_code = s_cat(move result_code, els_kw)

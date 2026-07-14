@@ -3,7 +3,7 @@
 # when the field appears in mut_names because it is reassigned later in the function.
 fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 
-	macro_run initialize_gen_destructure
+	unsafe_macro_run initialize_gen_destructure
 	macro_run for_collect_fields_into_fields_list
 	macro_run gen_input_check
 
@@ -11,11 +11,11 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 	macro_run gen_enum_extract_check
 
 	int val_pos = cur + 1
-	macro_run gen_expr_r
+	unsafe_macro_run gen_expr_r
 
 	strList dest_lines = empty
 
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 
 	string field_suffix = ".clone();"
@@ -32,15 +32,15 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 # cloning. Source becomes unavailable after. Safe when source is not used afterward.
 fn ParseResult gen_move_destructure(int pos, int depth, RcCtx ctx)
 
-	macro_run initialize_gen_destructure
+	unsafe_macro_run initialize_gen_destructure
 	macro_run for_collect_fields_into_fields_list
 
 	int val_pos = cur + 1
-	macro_run gen_expr_r
+	unsafe_macro_run gen_expr_r
 
 	strList dest_lines = empty
 	int field_count = len(fields)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 
 	string field_suffix = ";"

@@ -9,7 +9,7 @@
 fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	(tokens, struct_reg, mut_names) in ctx
 	int token_count = len(tokens)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 	Token name_token = tokens at pos
 	(value) in name_token

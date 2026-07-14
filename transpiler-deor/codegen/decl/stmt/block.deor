@@ -8,7 +8,7 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 	int cur = pos
 	int token_count = len(tokens)
 	string last_file = ""
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 	for if true
 		if cur >= token_count

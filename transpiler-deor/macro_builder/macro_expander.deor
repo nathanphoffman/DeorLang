@@ -24,6 +24,10 @@
 # meaning no block (real or synthetic) has been entered since it opened, so nothing
 # would shield the leak.
 #
+# Call sites must name the right kind: `macro_run` for an ordinary macro, `unsafe_macro_run`
+# for an `unsafe_macro` — using the wrong one is a validation error, so whether a given
+# call site can leak is visible without looking up the definition.
+#
 # `enforce_macro_file_depth` (0 = unset/no limit, from ENFORCE_MACRO_FILE_DEPTH) caps
 # cross-file macro call nesting: same-file macro_run calls are free, but each call whose
 # target macro is defined in a different file than the current call site counts as one
@@ -112,8 +116,13 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 				continue;
 			}
 
-			// expand macro_run call site — prepend body to queue for recursive expansion
-			if kind == "KW_MACRO_RUN" {
+			// expand macro_run / unsafe_macro_run call site — prepend body to queue for
+			// recursive expansion. The call-site keyword must match the target macro's
+			// own kind: macro_run for an ordinary macro, unsafe_macro_run for an
+			// unsafe_macro — so a reader never has to look up the definition to know
+			// whether a call site can leak.
+			if kind == "KW_MACRO_RUN" || kind == "KW_UNSAFE_MACRO_RUN" {
+				let is_unsafe_call = kind == "KW_UNSAFE_MACRO_RUN";
 				let name_tok = queue.pop_front();
 				let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
 				// skip trailing NEWLINE after the call
@@ -121,6 +130,14 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 				// prepend body tokens to front of queue so they are processed next
 				if let Some((body, _, target_is_unsafe)) = macros.get(&name) {
 					let target_is_unsafe = *target_is_unsafe;
+					if target_is_unsafe && !is_unsafe_call {
+						let err_tok = name_tok.clone().unwrap_or(cur.clone());
+						handle_errors(vec![val_err(err_tok, "macro_run".to_string(), "calls an unsafe_macro — use unsafe_macro_run instead".to_string())]);
+					}
+					if !target_is_unsafe && is_unsafe_call {
+						let err_tok = name_tok.clone().unwrap_or(cur.clone());
+						handle_errors(vec![val_err(err_tok, "unsafe_macro_run".to_string(), "calls an ordinary macro, not an unsafe_macro — use macro_run instead".to_string())]);
+					}
 					if target_is_unsafe {
 						if let Some(open_depth) = unsafe_open.last() {
 							if *open_depth == scope_depth {

@@ -7,7 +7,7 @@
 fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	(tokens) in ctx
 	int token_count = len(tokens)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 	# ex: for {if} cond — pos+1 grabs the token after 'for' that decides the loop form
 	int next_pos = pos + 1
@@ -42,7 +42,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	macro_run for_iter_expr
 
 	int blk_start = skip_to_body_ref(tokens, body_tok_pos)
-	macro_run gen_block_r
+	unsafe_macro_run gen_block_r
 
 	string frc_kw = "for "
 	string frc_in = " in "

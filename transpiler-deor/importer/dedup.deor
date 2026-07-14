@@ -9,7 +9,7 @@
 # returns it alongside the deduped tokens for build_macros to enforce.
 fn DedupResult deduplicate_decls(tokenList tokens_in)
 	tokenList tokens = tokens_in
-	macro_run strip_enforce_pragmas
+	unsafe_macro_run strip_enforce_pragmas
 	tokenList result = empty
 	strList seen = empty
 	strList seen_files = empty

@@ -17,30 +17,30 @@ fn void main()
 		string output_path = cli_args at 1
 
 		string _timer_label = "[timer] load+dedup: "
-		macro_run timer_start
+		unsafe_macro_run timer_start
 		DedupResult dedup_r = collect_all_tokens_with_all_imports(input_path)
 		macro_run timer_end
 		(tokens, enforce_macro_file_depth) in dedup_r
 
 		_timer_label = "[timer] macro-build: "
-		macro_run timer_start
+		unsafe_macro_run timer_start
 		tokens = build_macros(tokens, enforce_macro_file_depth)
 		macro_run timer_end
 
 		TokensRef tokens_ref = tokens_wrap(move tokens)
 
 		_timer_label = "[timer] validate: "
-		macro_run timer_start
+		unsafe_macro_run timer_start
 		validate_tokens(tokens_ref)
 		macro_run timer_end
 
 		_timer_label = "[timer] registry: "
-		macro_run timer_start
+		unsafe_macro_run timer_start
 		ctx as build_registry(tokens_ref)
 		macro_run timer_end
 
 		_timer_label = "[timer] total-codegen: "
-		macro_run timer_start
+		unsafe_macro_run timer_start
 		string rust_code = generate_rust_from_tokens(tokens_ref, ctx)
 		macro_run timer_end
 

@@ -1,0 +1,12 @@
+# unsafe_macro_run_on_safe_target_error_test.deor — calling an ordinary, contained
+# macro with unsafe_macro_run is also a transpiler error, not just the reverse —
+# the call-site keyword must always match the target's real kind.
+
+macro say_hello
+	print("hi")
+
+fn void main()
+	unsafe_macro_run say_hello
+
+# expect-error:
+# unsafe_macro_run 'say_hello' - calls an ordinary macro, not an unsafe_macro — use macro_run instead

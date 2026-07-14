@@ -6,7 +6,7 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 	strList item_codes = empty
 	int cur = pos
 	int token_count = len(tokens)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	for if true
 		if cur >= token_count
 			break
@@ -38,7 +38,7 @@ fn ParseResult gen_join_items(TokensRef tokens, int pos, RcCtx ctx)
 	strList item_codes = empty
 	int cur = pos
 	int token_count = len(tokens)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	for if true
 		if cur >= token_count
 			break

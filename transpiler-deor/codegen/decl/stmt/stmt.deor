@@ -24,7 +24,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	(kind, value, line) in token
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 
 	macro_run stmt_flow
@@ -40,9 +40,9 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		# ex: raw name = {val} — raw_name_pos+2 skips the name and '=' to grab the value expr
 		int val_pos = raw_name_pos + 2
 		
-		macro_run gen_expr_r
+		unsafe_macro_run gen_expr_r
 		string var_name = raw_var_name
-		macro_run mut_guard
+		unsafe_macro_run mut_guard
 
 		strList raw_parts = [pad, RS_LET, mut_kw, raw_var_name, RS_EQ, val_code, RS_SC]
 		string raw_code = s_join(raw_parts)
@@ -87,7 +87,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			int val_pos = next_pos + 1
 			Token eq_val_token = tokens at val_pos
 			(kind) in eq_val_token
-			macro_run gen_expr_r
+			unsafe_macro_run gen_expr_r
 			string assign_suffix = ""
 			if kind is "STRING"
 				assign_suffix = ".to_string()"

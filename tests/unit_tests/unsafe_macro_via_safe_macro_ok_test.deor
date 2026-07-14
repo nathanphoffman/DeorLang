@@ -9,14 +9,14 @@ unsafe_macro outer_leak
 	macro_run helper
 
 macro helper
-	macro_run inner_leak
+	unsafe_macro_run inner_leak
 	print("helper done")
 
 unsafe_macro inner_leak
 	int inner_val = 2
 
 fn void main()
-	macro_run outer_leak
+	unsafe_macro_run outer_leak
 	print(outer_val)
 
 # expect:

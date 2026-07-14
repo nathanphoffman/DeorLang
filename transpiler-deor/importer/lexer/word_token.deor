@@ -71,6 +71,8 @@ fn string word_to_kind(string word)
 		return "KW_MACRO"
 	if word is "macro_run"
 		return "KW_MACRO_RUN"
+	if word is "unsafe_macro_run"
+		return "KW_UNSAFE_MACRO_RUN"
 	if word is "unsafe_macro"
 		return "KW_UNSAFE_MACRO"
 	if word is "import"

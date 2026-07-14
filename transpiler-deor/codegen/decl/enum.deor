@@ -31,7 +31,7 @@ fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 	string rust_name = s_pascal(enum_name)
 	cur = cur_next_ref(cur, tokens)
 	cur = cur_skip_to_body_ref(cur, tokens)
-	macro_run rust_strings
+	unsafe_macro_run rust_strings
 	strList variant_lines = empty
 	for if not c_at_end(cur)
 		(current) in cur

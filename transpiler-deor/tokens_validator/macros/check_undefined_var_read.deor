@@ -25,10 +25,10 @@
 #     separate concern this check doesn't take on)
 #   - followed by 'in' — a for-loop variable being declared
 #   - preceded by 'struct'/'enum'/'shape'/'type'/'fn'/'macro'/'macro_run'/'unsafe_macro'/
-#     'raw' — the name of that declaration/invocation, not a value being read ('raw'
-#     also covers the bare top-level 'raw TypeName' opaque-type declaration, which
-#     has no '=' for the other exclusion rule to catch). In practice macro/macro_run/
-#     unsafe_macro names never reach this check at all — macro_expander.deor fully
+#     'unsafe_macro_run'/'raw' — the name of that declaration/invocation, not a value
+#     being read ('raw' also covers the bare top-level 'raw TypeName' opaque-type
+#     declaration, which has no '=' for the other exclusion rule to catch). In practice
+#     macro/macro_run/unsafe_macro/unsafe_macro_run names never reach this check at all — macro_expander.deor fully
 #     expands and strips them before the validator ever runs — but the exclusion is
 #     kept in case that pipeline ordering ever changes.
 #   - preceded by 'of'/'to' — a shape's element/return type name
@@ -75,6 +75,8 @@ macro check_undefined_var_read
 		if kind is "KW_MACRO"
 			uvr_skip = true
 		if kind is "KW_MACRO_RUN"
+			uvr_skip = true
+		if kind is "KW_UNSAFE_MACRO_RUN"
 			uvr_skip = true
 		if kind is "KW_UNSAFE_MACRO"
 			uvr_skip = true

@@ -26,7 +26,7 @@ macro gen_enum_extract_check
 					if not is_empty(geec_val_type)
 						geec_matched = true
 						string geec_enum = value
-						macro_run rust_strings
+						unsafe_macro_run rust_strings
 						string geec_pad = s_repeat(RS_IND, depth)
 						strList geec_out = empty
 						for geec_fi in range(field_count)
