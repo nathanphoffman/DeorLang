@@ -178,10 +178,7 @@ In trivial cases, like these inline is probably better anyhow, but in general:
 ---
 ## Reusable Consts — via Macros
 
-Deor has no global scope, so a `const` can't be declared once and shared across every function that needs it — it only exists inside the block 
-where it's declared. When the same constant values are needed in multiple functions, declare them once inside a `macro` and call it 
-wherever they're needed. Because the macro body is inlined at each call site, every function gets its own copy of the same named consts — 
-nothing is shared at runtime, but the names and values stay consistent everywhere they're used.
+Deor has no global scope, so a `const` can't be shared across functions directly. Put shared constants in a `macro` and call it from each function — the macro is inlined, so every call site gets its own copy with the same names and values.
 
 ```deor
 macro use_log_consts
@@ -213,9 +210,7 @@ In the Deor creator's opinion: Smaller functions with well placed macros > Small
 ---
 ## Prefer `is not` Over `not ... is`
 
-When negating a comparison, use `is not` rather than wrapping the comparison in `not`. `val is not 5` is required for bare identifiers 
-(the transpiler rejects `not val is 5`), and the same preference applies even in the cases the transpiler doesn't catch, like `not (a > b) is y` 
-or `not some_func() is y` — reorder these to `(a > b) is not y` and `some_func() is not y` instead.
+The transpiler enforces `is not` over `not ... is` for bare identifiers — see [Operators — Logical](docs/operators.md#logical). The same preference applies even in cases the transpiler doesn't catch, like `not (a > b) is y` or `not some_func() is y` — reorder these to `(a > b) is not y` and `some_func() is not y` instead.
 
 **Recommended:**
 ```deor
@@ -227,15 +222,6 @@ if (a > b) is not y
 ```deor
 if not (a > b) is y
     ...
-```
-
-Reach for plain `not` only when there's no comparison to reorder around — negating a standalone boolean value or expression:
-
-```deor
-if not done
-    ...
-
-opposite as not original
 ```
 
 ---

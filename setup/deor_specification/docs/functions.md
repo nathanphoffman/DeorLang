@@ -163,32 +163,7 @@ fn abs(val: i64) -> i64 {
 
 ## Validator Type Returns
 
-A function returning a validator type returns a variable that may or may not be valid. To return a not-valid result, declare the variable without a value and return it unassigned, or assign a value that fails the predicate. `empty` and `none` are both transpiler errors in return position.
-
-Deor:
-```deor
-shape rollList = list of Roll
-
-fn Roll find_best(rollList rolls)
-    Roll best
-
-    for roll in rolls
-        if roll is valid
-            best = roll
-
-    return best    # not valid if rolls is empty or all not valid
-```
-
-When the result depends entirely on the predicate, just assign and return:
-
-Deor:
-```deor
-fn Positive get_positive(int num)
-    Positive result = num    # not valid if num fails the predicate
-    return result
-```
-
-Primitive return types (`fn int`, `fn bool`, etc.) are never valid/not valid — they always have a value.
+A function may return a validator type, which the caller checks with `is valid` — see [Validator Types — Functions Returning Validator Types](docs/validator_types.md#functions-returning-validator-types) for the pattern and rules. Primitive return types (`fn int`, `fn bool`, etc.) are never valid/not valid — they always have a value.
 
 ---
 
@@ -237,7 +212,7 @@ No tail-call optimization is guaranteed — deep recursion can stack-overflow ju
 
 ## Parameters
 
-Functions accept at most **3 parameters**. If more context is needed, bundle values into a struct first. This is enforced by the transpiler.
+Functions accept at most **3 parameters**. If more context is needed, bundle values into a struct first. This is enforced by the transpiler. `func` shape parameters count toward the limit the same as data parameters.
 
 Deor:
 ```deor

@@ -3,7 +3,9 @@
 <!-- themes: blackboard -->
 # Validator Types
 
-Sometimes a value can be built just fine but still not make sense — a shape with a negative area, a dice roll outside its range. Deor's answer is the **validator type**: a type with its own built-in rule for what counts as valid. Write the rule once, and every place that type is used, the rule runs automatically — there's no way to hold one of these values without it having been checked.
+Sometimes a value can be built just fine but still not make sense — a shape with a negative area, a dice roll outside its range. 
+Deor's answer is the **validator type**: a type with its own built-in rule for what counts as valid. Write the rule once, and every place 
+that type is used, the rule runs automatically — there's no way to hold one of these values without it having been checked.
 
 A validator type is declared with `type`:
 
@@ -12,15 +14,19 @@ type Positive(int val)
     val > 0
 ```
 
-This defines `Positive`, built on `int`, with one rule: greater than zero. Assigning an `int` runs the rule — pass, and you have a valid `Positive`; fail, and instead of a crash or a garbage value, you get a `Positive` that's explicitly **not valid**, which the language forces you to check before use.
+This defines `Positive`, built on `int`, with one rule: greater than zero. Assigning an `int` runs the rule — pass, and you have a valid `Positive`; 
+fail, and instead of a crash or a garbage value, you get a `Positive` that's explicitly **not valid**, which the language forces you to check before use.
 
-(Rust readers: under the hood this is `Option<T>` — valid is `Some`, not valid is `None`.) See [Types](docs/types.md) for primitives, `raw` variables, and structs.
+(Rust readers: under the hood this is `Option<T>` — valid is `Some`, not valid is `None`.) See [Types](docs/types.md) for primitives, `raw` 
+variables, and structs.
 
 ## Declaration
 
-**The predicate body is mandatory** — a `type` with no rule means nothing more than its base type, so the transpiler rejects an empty body. Just use the base type directly if you don't need a check.
+**The predicate body is mandatory** — a `type` with no rule means nothing more than its base type, so the transpiler rejects an empty body. 
+Just use the base type directly if you don't need a check.
 
-The base type must be a primitive (`int`, `float`, `string`, `bool`) — structs, list shapes, and other validator types (including the type referencing itself) are not valid as a validator base type and are transpiler errors:
+The base type must be a primitive (`int`, `float`, `string`, `bool`) — structs, list shapes, and other validator types (including the type 
+referencing itself) are not valid as a validator base type and are transpiler errors:
 
 ```deor
 type Foo(int val)          # correct — primitive base type
@@ -37,11 +43,12 @@ type Roll(int int)     # transpiler error — parameter name shadows its base ty
 type Roll(int val)     # correct
 ```
 
-The body evaluates to a `bool` — a single expression for simple predicates, or intermediate bindings followed by a final bool expression for more complex ones, same rules as a function body.
+The body evaluates to a `bool` — a single expression for simple predicates, or intermediate bindings followed by a final bool expression 
+for more complex ones, same rules as a function body.
 
 Plain primitives and structs can never be "missing" — only validator types carry that possibility, and only because the predicate runs on assignment.
 
-**Only the full declaration form re-runs the predicate.** `TypeName varName = expr` triggers validation; a later bare reassignment (`varName = expr`) or `as` binding does not, and both are transpiler errors. To re-validate a new value — retrying input in a loop, for example — declare it fresh each time:
+**The predicate re-runs on every validating assignment.** `TypeName varName = expr` triggers it, and so does a later bare reassignment (`varName = expr`) — the variable can flip between valid and not valid each time. Only reassigning with `as` is rejected. See [Variables — Reassignment](docs/variables.md#reassignment) for the general case.
 
 ```deor
 for if true
@@ -66,7 +73,8 @@ type Squarefeet(int val)
     return root_i * root_i is val
 ```
 
-`c_int_to_float`, `m_sqrt`, and `m_floor` come from `lib/convert.deor` and `lib/math.deor` (see [Libs](docs/libs.md)). A negative `val` makes `m_sqrt` return NaN, `m_floor` turns that into `0`, and `0 * 0 is val` fails — no separate negative-number guard needed.
+`c_int_to_float`, `m_sqrt`, and `m_floor` come from `lib/convert.deor` and `lib/math.deor` (see [Libs](docs/libs.md)). A negative `val` 
+makes `m_sqrt` return NaN, `m_floor` turns that into `0`, and `0 * 0 is val` fails — no separate negative-number guard needed.
 
 ```deor
 Squarefeet area = 9     # valid — predicate passes
@@ -77,7 +85,8 @@ Squarefeet area = -1    # transpiles and compiles fine — not valid only at run
 
 ## `is valid` / `is not valid`
 
-A validator type variable is always **valid** (rule passed) or **not valid** (rule failed, or nothing assigned yet) — `Some`/`None` for Rust readers. There's no keyword to force an invalid state; it happens in exactly two ways:
+A validator type variable is always **valid** (rule passed) or **not valid** (rule failed, or nothing assigned yet) — `Some`/`None` for 
+Rust readers. There's no keyword to force an invalid state; it happens in exactly two ways:
 
 - Declared without a value: `Squarefeet sqft` — not valid until assigned
 - Assigned a value that fails the predicate: `Squarefeet sqft = -10` — predicate fails, not valid
@@ -123,7 +132,11 @@ List shapes use `empty` instead — see [Variables — List Construction](docs/v
 
 ## Replacing Null and Undefined
 
-Older, C-style code marks "this might not be set" with a comment and a sentinel — a `-1`, a `NULL`, a `0` that quietly means "unset" — enforced by nothing but the reader remembering. Rust replaces that with `Option<T>`, fully enforced but asking you to learn and thread pattern-matching through code that, most of the time, never needed to hold "nothing" at all. Deor sits in between: most values can't be missing at all, and the rare ones that can require naming the concept as a `type` and writing its invalidity rule as real, checked code — the C comment, formalized, without Rust's full `Option` machinery.
+Older, C-style code marks "this might not be set" with a comment and a sentinel — a `-1`, a `NULL`, a `0` that quietly means "unset" — enforced by 
+nothing but the reader remembering. Rust replaces that with `Option<T>`, fully enforced but asking you to learn and thread pattern-matching through code 
+that, most of the time, never needed to hold "nothing" at all. Deor sits in between: most values can't be missing at all, and the rare ones that can 
+require naming the concept as a `type` and writing its invalidity rule as real, checked code — the C comment, formalized, without Rust's full `Option` 
+machinery.
 
 There are two ways to use a validator type for this. Pick one interpretation per type — a real project wouldn't declare `ValidInt` both ways.
 
@@ -149,17 +162,21 @@ ValidInt count = 0      # not valid — 0 means "no count"
 ValidInt count = 5      # valid
 ```
 
-**Note:** It is always ideal to avoid making a generic validator type like this, as most types do have actual names like Temperature, which do have valid numbers they can't be (and are not always true), but for the rare case you actually need a generic nullable-ish type, this is the way to do it.
+**Note:** It is always ideal to avoid making a generic validator type like this, as most types do have actual names like Temperature, which do have 
+valid numbers they can't be (and are not always true), but for the rare case you actually need a generic nullable-ish type, this is the way to do it.
 
 ---
 
 ## Forced Unwrap — `avow`
 
-`avow val` (or `(avow val)`) pulls the raw value out of a validator type — the plain `int` inside a `Roll`. It panics at runtime if the value isn't actually valid, so use it only when you're sure — typically right after an `if val is valid` check. (Rust readers: this is `.unwrap()`.) Using it on a non-validator-type variable is a transpiler error.
+`avow val` (or `(avow val)`) pulls the raw value out of a validator type — the plain `int` inside a `Roll`. It panics at runtime if the value isn't 
+actually valid, so use it only when you're sure — typically right after an `if val is valid` check. (Rust readers: this is `.unwrap()`.) Using it on a 
+non-validator-type variable is a transpiler error.
 
 `avow` binds only to the next primary (identifier, literal, or parenthesized group) — same rule as `move` — so `avow val + 2` always parses as `(avow val) + 2`. Parens are a readability choice, not required.
 
-Pass the variable directly (no `avow`) when a function accepts that validator type; only reach for `avow` when you need the raw primitive. It can be used as a function argument directly too (`show(avow roll)`), no need to capture it first.
+Pass the variable directly (no `avow`) when a function accepts that validator type; only reach for `avow` when you need the raw primitive. It can be used 
+as a function argument directly too (`show(avow roll)`), no need to capture it first.
 
 ```deor
 Roll roll = roll_die(d20)

@@ -75,29 +75,7 @@ Produces an integer sequence for use in `for` loops. Two forms:
 
 ## Iterating Over a List
 
-To loop over every element in a list, write the list name directly after `in`. No `range` needed — this is a separate form.
-
-Deor:
-```deor
-shape roomList = list of Room
-
-fn void print_names(roomList rooms)
-    for room in rooms
-        (name) in room
-        print(name)
-```
-
-Rust:
-```rust
-fn print_names(rooms: Vec<Room>) {
-    for room in &rooms {
-        let name = room.name.clone();
-        println!("{}", name);
-    }
-}
-```
-
-Use `range` when you need the index. Use `for item in list` when you only need the values. See [Loops](docs/loops.md) for the full set of loop forms.
+To loop over every element in a list, write the list name directly after `in` — see [Loops — Collection Iteration](docs/loops.md#collection-iteration).
 
 ---
 

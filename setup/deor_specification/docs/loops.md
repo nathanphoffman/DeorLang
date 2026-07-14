@@ -4,6 +4,9 @@
 # Loops
 
 ## Collection Iteration
+Iterating a list borrows it by default — `item` is a reference to each element, and the collection is still usable after the loop. Write the list name directly after `in`; no `range` needed.
+
+Deor:
 ```deor
 for room in rooms
     (name) in room
@@ -12,28 +15,29 @@ for room in rooms
         print(name)
 ```
 
----
-## Move Iteration
-Plain `for item in collection` borrows the collection (`for item in &collection`) — `item` is a reference. `for move (item in collection)` 
-consumes the collection instead — `item` is owned, and `collection` cannot be used after the loop.
-
-```deor
-for move (item in collection)
-    process(item)
-```
-
+Rust:
 ```rust
-for item in collection {
-    process(item);
+for room in &rooms {
+    let name = room.name.clone();
+    let occupied = room.occupied;
+    if occupied {
+        println!("{}", name);
+    }
 }
 ```
 
-Use this when the loop body needs to actually own each item (e.g. pass it into something that takes ownership, or store it elsewhere) — it avoids having to clone each borrowed item yourself. See [Move](docs/move.md#loop-iteration).
+Use `range` when you need the index — see [Numeric Iteration](#numeric-iteration) below. Use plain collection iteration when you only need the values.
+
+---
+## Move Iteration
+`for move (item in collection)` consumes the collection instead of borrowing it — `item` is owned, and `collection` cannot be used after the loop. See [Move — Loop Iteration](docs/move.md#loop-iteration) for the full example and when to reach for it.
 
 ---
 ## Numeric Iteration
-`range(count)` produces values from `0` to `count - 1`. `range(a_start_num, an_end_num)` produces values from `a_start_num` up to but not including `an_end_num`. `range` is a built-in, so literals are valid directly.
+`range(count)` produces values from `0` to `count - 1`. `range(a_start_num, an_end_num)` produces values from `a_start_num` 
+up to but not including `an_end_num`. `range` is a built-in, so literals are valid directly.
 
+Deor:
 ```deor
 for idx in range(count)
     ...
@@ -44,6 +48,7 @@ for idx in range(start, stop)
     print(idx)    # prints 1 through 10
 ```
 
+Rust:
 ```rust
 for idx in 0..count-1 {
     ...
@@ -53,7 +58,8 @@ for idx in 1..11 {
 }
 ```
 
-**Note:** `range` with two bounds requires both to be named variables — the same rule as any multi-argument call. `end` is a reserved keyword; the conventional names for range bounds are `start` and `stop`.
+**Note:** `range` with two bounds requires both to be named variables — the same rule as any multi-argument call. `end` 
+is a reserved keyword; the conventional names for range bounds are `start` and `stop`.
 
 `range(count)` is shorthand for `range(0, count)`.
 
@@ -112,12 +118,14 @@ for room in &rooms {
 ## Condition-Based Loops — `for if`
 `for if condition` is Deor's while loop. It loops as long as the condition is true.
 
+Deor:
 ```deor
 for if cur < token_count
     # process token at cur
     cur = cur + 1
 ```
 
+Rust:
 ```rust
 while cur < token_count {
     // process token at cur
@@ -127,6 +135,7 @@ while cur < token_count {
 
 `for if true` is the infinite loop form — use with `break` to exit:
 
+Deor:
 ```deor
 for if true
     if done
@@ -134,6 +143,7 @@ for if true
     do_work()
 ```
 
+Rust:
 ```rust
 loop {
     if done { break; }
@@ -177,6 +187,7 @@ after it determines the form: `item in collection`, `in range(n)`, or `if condit
 
 `continue` skips the rest of the current loop body and moves to the next iteration.
 
+Deor:
 ```deor
 for item in items
     (active) in item
@@ -185,6 +196,7 @@ for item in items
     process(item)
 ```
 
+Rust:
 ```rust
 for item in &items {
     let active = item.active;

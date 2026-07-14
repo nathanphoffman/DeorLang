@@ -183,26 +183,18 @@ Seeing a camelCase identifier means: this is a shape.
 
 ## File Ordering
 
-The transpiler enforces imports first, then structural declarations (`enum`/`struct`/`type`/`shape`, in any order among themselves), then macros, then functions — see [Enforced Practices — Ordering](docs/enforced_practices.md#ordering). Within the structural group, shapes and structs may reference each other freely (a list shape can name a struct; a struct field can be a shape), so their relative order doesn't matter to the transpiler. See [Best Practices](docs/best_practices.md#order-of-declaration) for the suggested arrangement within that group.
+Shapes belong to the structural declarations group — see [Enforced Practices — Ordering](docs/enforced_practices.md#ordering) for the enforced group order. Shapes and structs may reference each other freely (a list shape can name a struct; a struct field can be a shape), so their relative order doesn't matter to the transpiler. See [Best Practices](docs/best_practices.md#order-of-declaration) for the suggested arrangement within that group.
 
 ```deor
-# imports first — required
-import "lib/string.deor"
-
-# structural declarations — order among these is not enforced
 struct Room
     string name
 
-shape roomList = list of Room
+shape roomList = list of Room    # references Room, declared above
 shape filterFunc = func of Room to bool
 
 struct House
     string address
-    roomList rooms
-
-# functions — enforced to come after structural declarations
-fn roomList filter(roomList items, filterFunc predicate)
-    ...
+    roomList rooms               # references roomList, declared above
 ```
 
 ---

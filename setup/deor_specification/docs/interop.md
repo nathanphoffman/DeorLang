@@ -29,6 +29,33 @@ Use a rust block when Deor cannot express what you need — crate calls, closure
 
 The `raw` type exists for passing opaque Rust values through Deor code. It is the right pattern when you need to build something once in Rust and use it repeatedly — a HashMap built from a list, a compiled regex, a connection pool handle. `raw name = expr` must be assigned from a function call — a bare literal or an inline `rust` block on the right of `=` is a transpiler error (and so is `raw name as expr` — it must be `=`, not `as`).
 
+Once declared, a raw variable can be passed to functions (as an argument, or captured from what they return) and used freely inside `rust` blocks. It **can never** be:
+
+- given a different type via a typed binding or an `as` rebind
+- reassigned
+- used as an operand of a Deor operator (`+`, `is`, `and`, ...)
+- passed to `len`, `crash`, or the bracket-literal form of `s_join` — these assume a concrete type
+- declared as a struct field
+
+Each of the above is a transpiler error. Passing a raw variable into an ordinary function call is fine — Rust's own compiler is what checks that value is used correctly there.
+
+**Incorrect — transpiler errors:**
+```deor
+string val = index               # raw cannot be given another type
+copy as index                    # as-rebinding is still a type capture
+index = build_lookup_table()     # raw cannot be reassigned
+int cnt = len(index)             # len assumes a concrete type
+int total = index + 1            # operators assume a concrete type
+
+raw bad1 = 5                     # must be a function call, not a literal
+raw bad2 = rust
+    42                           # must be a function call, not an inline rust block
+raw bad3 as build_lookup_table() # must be '=', not 'as'
+
+struct Config
+    raw lookup_table              # raw cannot be a struct field
+```
+
 This is deliberate, not just a syntax restriction. The whole point of `raw` is "Deor can't see inside this value" — but a literal like `5` isn't opaque to Deor at all, it's a plain `int` Deor already understands fully. Only a function call can actually hand back something Deor genuinely can't inspect (typically a `rust`-block-backed value). Requiring the function call keeps `raw` meaningful: if you see `raw x = build_index()`, you know `x` is really opaque. If literals were allowed, `raw x = 5` would just be a relabeled plain value, and the `raw` marker would stop telling readers anything true.
 
 `as` is rejected for the same reason, from the other direction. `x as some_fn()` is Deor's ordinary binding form, used everywhere for normal values — nothing about it signals that `x` is special. If `raw` allowed `as` as an alternate separator, `x as some_fn()` and `raw x = some_fn()` would produce the same opaque value, but only one of them would visibly warn a reader that `x` can't be used in Deor expressions, passed to `len`/`crash`/`s_join`, or reassigned. The explicit `raw` keyword at the declaration site is what makes that unmistakable — so `raw` is only ever spelled one way: `raw name = expr`.
