@@ -1,3 +1,12 @@
+# Work in Progress
+This is still a heavy work in progress, I highly recommend just going to the [Documentation Index](index) to learn Deor until this is done.
+
+---
+---
+Work in Progress Follows
+---
+---
+
 # Learning Deor
 I will spend only a few words in this section, **please skip to the next heading if you are short on time**. 
 
