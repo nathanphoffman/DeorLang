@@ -176,39 +176,7 @@ let bigger_office = Room { area, name, ..office.clone() };
 
 ## Move Variants
 
-### Move Destructuring
-
-`move (f1, f2) in source` extracts fields without cloning, consuming `source` for any field moved out.
-
-Deor:
-```deor
-move (label, points) in score
-# a later (something_else) in score will error
-```
-
-Rust:
-```rust
-let label = score.label;
-let points = score.points;
-```
-
-`score` cannot be used afterward for any field that was moved out. See [Move](docs/move.md) for the general `move` keyword and its interaction with `Copy` types.
-
-### Move Construction
-
-`Type name = move (fields)` builds a struct from fields without cloning them.
-
-Deor:
-```deor
-Score built = move (label, points)
-```
-
-Rust:
-```rust
-let built = Score { label, points };
-```
-
-Fields are moved into the struct rather than cloned. Each source variable is consumed and cannot be used after the construction.
+`move (f1, f2) in source` destructures without cloning, and `Type name = move (fields)` constructs without cloning — both consume the source variables. See [Move — Destructuring](docs/move.md#destructuring) and [Move — Struct Construction](docs/move.md#struct-construction) for the full examples and rules.
 
 ---
 

@@ -1,7 +1,108 @@
 <!-- title: Deor Specification -->
 <!-- [Deor Specification Index](index.md) -->
 <!-- themes: blackboard -->
-# Variables
+# Variables and Data Types
+
+## Primitive Types
+
+Deor's built-in primitive types and their Rust equivalents:
+
+| Deor | Rust | Notes |
+|---|---|---|
+| `int` | `i64` | General-purpose integer |
+| `float` | `f64` | General-purpose decimal |
+| `bool` | `bool` | |
+| `string` | `String` | Owned; available as `&str` via `.as_str()` in `rust` blocks |
+
+For raw binary data (HTTP bodies, files, crypto, pixel buffers) use a `raw` variable and handle it entirely inside `rust` blocks. See [`raw` Variables](#raw-variables) below.
+
+Integer literals may contain underscores as visual separators — see [Numeric Literals](#numeric-literals) below.
+
+---
+
+## `raw` Variables
+
+Some things are awkward to build in Deor at all — a `HashMap`, a compiled regex, a connection pool. `raw` is the escape hatch: a `rust` block builds the thing once, hands it back as an opaque value, and Deor carries that value around without needing to understand what's inside it. Because Deor can't see inside a `raw`, it also can't validate it — a `raw` has no type annotation, no Deor operators, and can't appear in Deor expressions or struct fields. It's only ever produced by a function call and only ever consumed inside a `rust` block.
+
+```deor
+fn Index build_index()
+    rust
+        entries.iter()
+            .map(|e| (e.key.clone(), e.value.clone()))
+            .collect::<std::collections::HashMap<String, String>>()
+
+raw index = build_index()
+```
+
+See [Rust Interop](docs/interop.md) for full documentation, rules, the build-once pattern, and how a top-level `raw TypeName` declaration is used to share a reference-counted value across functions (Deor's only global-like pattern).
+
+---
+
+## Validator Types (`type`)
+
+A type that carries its own "is this actually valid?" check, for values that can be built fine but still not make sense — a negative area, an out-of-range roll,
+or simply nothing assigned yet (Deor's stand-in for `null`/`undefined`). This is a large enough feature to have its own page: see [Validator Types](docs/validator_types.md)
+for how it works, declaration rules, `is valid`/`is not valid`, `avow`, struct fields, and function returns.
+
+---
+
+## Truthiness
+
+Implicit truthiness hides a decision — is `if my_int` checking for nonzero, or for "was this ever set"? Deor makes you write the comparison you actually mean. **Only `bool` and validator types have a presence check.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — use explicit comparisons:
+
+```deor
+if len(my_list) > 0    # correct — explicit non-empty check
+if my_list             # transpiler error — list has no truthiness
+
+if my_int is not 0     # correct
+if my_int              # transpiler error
+
+if my_string is not "" # correct
+if my_string           # transpiler error
+```
+
+Validator types use `is valid` / `is not valid` — not bare truthiness. See [Validator Types — is valid / is not valid](docs/validator_types.md#is-valid-is-not-valid).
+
+```deor
+if sqft is valid        # correct
+if sqft is not valid    # correct
+if sqft                 # transpiler error — use is valid/is not valid
+```
+
+```rust
+if area.is_some() {
+    let val: i64 = area.unwrap().0;
+}
+if area.is_none() {
+    // not valid
+}
+```
+
+---
+
+## Structs (`struct`)
+
+Struct declaration, construction, destructuring, and record update all live on their own page — see [Structs](docs/structs.md).
+
+---
+
+## Explicit Typing — Runtime Values
+
+Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
+
+Deor:
+```deor
+int val = m_rand_int(min, max)
+string pick = random_room_name(rooms)
+roomList result = empty
+```
+
+Rust:
+```rust
+let val: i64 = m_rand_int(min, max);
+let pick: String = random_room_name(&rooms);
+let mut result: Vec<i64> = Vec::new();
+```
 
 ## `as` — Type-Inferred Bindings
 `as` creates a binding whose type is derived from the right-hand side at compile time. It has four valid forms:
@@ -25,6 +126,24 @@ let flag = true;
 let rate = 3.14_f64;
 ```
 
+
+**What `as` is not for:**
+
+- **Validator type bindings** — `as` can't tell whether you want a plain `int` or a `Squarefeet` validator (predicate run, `Option<T>` result); use explicit `ValidatorType name = value` instead — see [Validator Type Bindings](#validator-type-bindings) below.
+- **Type annotation** — `as` never takes an explicit type prefix.
+- **Move transfer** — `as` always clones, so there's nothing for `move` to opt out of; combining them is rejected. Use a typed `=` declaration if you need `move`.
+
+```deor
+area as 9             # transpiler error — int or Squarefeet? use Squarefeet area = 9
+int count as 0        # transpiler error — annotation not allowed with as; use int count = 0
+a as move b           # transpiler error — as always clones, move has nothing to do
+```
+
+Record update (`with`) uses `as` — the type is known from the source struct. See [Structs — Record Update](docs/structs.md#record-update-with).
+
+Struct construction and destructuring are documented in full on their own page — see [Structs](docs/structs.md).
+
+
 ### List construction
 
 A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope.
@@ -43,54 +162,8 @@ let rooms = vec![kitchen.clone(), office.clone(), bedroom.clone()];
 
 ```deor
 result as []              # transpiler error — element type unknown
+result as empty           # correct usage
 ```
-
-### Struct construction
-
-A parenthesised field list `(f1, f2, ...)` constructs a struct. See [Structs — Struct Construction](docs/structs.md#struct-construction) for the full rules and the equivalent explicit-type form.
-
-Deor:
-```deor
-score as (label, points)    # struct type inferred from field names
-```
-
-Rust:
-```rust
-let score = Score { label: label.clone(), points: points.clone() };
-```
-
-### Existing variable
-
-A bare identifier on the right binds directly to an existing variable. Like every other `as` form, this clones — the source stays usable afterward.
-
-Deor
-```deor
-saved_lines as lines
-print(lines)   # still valid
-```
-
-Rust:
-```rust
-let saved_lines = lines.clone();
-```
-
----
-
-**What `as` is not for:**
-
-- **Validator type bindings** — `as` can't tell whether you want a plain `int` or a `Squarefeet` validator (predicate run, `Option<T>` result); use explicit `ValidatorType name = value` instead — see [Validator Type Bindings](#validator-type-bindings) below.
-- **Type annotation** — `as` never takes an explicit type prefix.
-- **Move transfer** — `as` always clones, so there's nothing for `move` to opt out of; combining them is rejected. Use a typed `=` declaration if you need `move`.
-
-```deor
-area as 9             # transpiler error — int or Squarefeet? use Squarefeet area = 9
-int count as 0        # transpiler error — annotation not allowed with as; use int count = 0
-a as move b           # transpiler error — as always clones, move has nothing to do
-```
-
-Record update (`with`) uses `as` — the type is known from the source struct. See [Structs — Record Update](docs/structs.md#record-update-with).
-
-Struct construction and destructuring are documented in full on their own page — see [Structs](docs/structs.md).
 
 ---
 
@@ -126,9 +199,7 @@ Rust:
 let mut best: Option<Roll> = None;
 ```
 
-(List shapes use `empty` the same way — see [List Construction](#list-construction) above.)
-
-This is how Deor represents an absent value without a `null`/`undefined` keyword — see [Validator Types — Replacing Null and Undefined](docs/validator_types.md#replacing-null-and-undefined).
+No value assignment can replicate a `null`/`undefined` keyword — see [Validator Types — Replacing Null and Undefined](docs/validator_types.md#replacing-null-and-undefined).
 
 ### Reassignment
 
@@ -176,24 +247,6 @@ int count as 0                 # transpiler error — as never takes a type pref
 ```
 
 ---
-
-## Explicit Typing — Runtime Values
-
-Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
-
-Deor:
-```deor
-int val = m_rand_int(min, max)
-string pick = random_room_name(rooms)
-roomList result = empty
-```
-
-Rust:
-```rust
-let val: i64 = m_rand_int(min, max);
-let pick: String = random_room_name(&rooms);
-let mut result: Vec<i64> = Vec::new();
-```
 
 **Conversion notes:** a list binding that's later appended to must be emitted as `let mut` — the transpiler infers `mut` from usage.
 

@@ -44,8 +44,6 @@
 
 [Syntax](docs/syntax.md) — block structure, keywords, comments
 
-[Types](docs/types.md) — primitives, `raw` variables, truthiness
-
 [Validator Types](docs/validator_types.md) — `type`, `is valid`/`is not valid`, `avow`, struct fields, function returns
 
-[Variables](docs/variables.md) — `as`, explicit typing, reassignment
+[Variables and Data Types](docs/variables.md) — primitives, `raw` variables, truthiness, `as`, explicit typing, reassignment

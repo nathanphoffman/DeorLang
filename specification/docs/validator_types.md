@@ -17,7 +17,7 @@ type Positive(int val)
 This defines `Positive`, built on `int`, with one rule: greater than zero. Assigning an `int` runs the rule — pass, and you have a valid `Positive`; 
 fail, and instead of a crash or a garbage value, you get a `Positive` that's explicitly **not valid**, which the language forces you to check before use.
 
-(Rust readers: under the hood this is `Option<T>` — valid is `Some`, not valid is `None`.) See [Types](docs/types.md) for primitives, `raw` 
+(Rust readers: under the hood this is `Option<T>` — valid is `Some`, not valid is `None`.) See [Variables and Data Types](docs/variables.md) for primitives, `raw` 
 variables, and structs.
 
 ## Declaration
