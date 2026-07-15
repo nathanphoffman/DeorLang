@@ -3,6 +3,7 @@
 <!-- themes: blackboard -->
 # Variables and Data Types
 
+
 ## Primitive Types
 
 Deor's built-in primitive types and their Rust equivalents:
@@ -17,6 +18,25 @@ Deor's built-in primitive types and their Rust equivalents:
 For raw binary data (HTTP bodies, files, crypto, pixel buffers) use a `raw` variable and handle it entirely inside `rust` blocks. See [`raw` Variables](#raw-variables) below.
 
 Integer literals may contain underscores as visual separators — see [Numeric Literals](#numeric-literals) below.
+
+
+## Explicit Typing — Runtime Values
+
+Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
+
+Deor:
+```deor
+int val = m_rand_int(min, max)
+string pick = random_room_name(rooms)
+roomList result = empty
+```
+
+Rust:
+```rust
+let val: i64 = m_rand_int(min, max);
+let pick: String = random_room_name(&rooms);
+let mut result: Vec<i64> = Vec::new();
+```
 
 ---
 
@@ -35,14 +55,6 @@ raw index = build_index()
 ```
 
 See [Rust Interop](docs/interop.md) for full documentation, rules, the build-once pattern, and how a top-level `raw TypeName` declaration is used to share a reference-counted value across functions (Deor's only global-like pattern).
-
----
-
-## Validator Types (`type`)
-
-A type that carries its own "is this actually valid?" check, for values that can be built fine but still not make sense — a negative area, an out-of-range roll,
-or simply nothing assigned yet (Deor's stand-in for `null`/`undefined`). This is a large enough feature to have its own page: see [Validator Types](docs/validator_types.md)
-for how it works, declaration rules, `is valid`/`is not valid`, `avow`, struct fields, and function returns.
 
 ---
 
@@ -86,24 +98,6 @@ Struct declaration, construction, destructuring, and record update all live on t
 
 ---
 
-## Explicit Typing — Runtime Values
-
-Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
-
-Deor:
-```deor
-int val = m_rand_int(min, max)
-string pick = random_room_name(rooms)
-roomList result = empty
-```
-
-Rust:
-```rust
-let val: i64 = m_rand_int(min, max);
-let pick: String = random_room_name(&rooms);
-let mut result: Vec<i64> = Vec::new();
-```
-
 ## `as` — Type-Inferred Bindings
 `as` creates a binding whose type is derived from the right-hand side at compile time. It has four valid forms:
 
@@ -141,9 +135,6 @@ a as move b           # transpiler error — as always clones, move has nothing 
 
 Record update (`with`) uses `as` — the type is known from the source struct. See [Structs — Record Update](docs/structs.md#record-update-with).
 
-Struct construction and destructuring are documented in full on their own page — see [Structs](docs/structs.md).
-
-
 ### List construction
 
 A list literal `[item1, item2, ...]` constructs a list. All items must be named variables of the same type already in scope.
@@ -167,41 +158,18 @@ result as empty           # correct usage
 
 ---
 
-## Validator Type Bindings
+## Validator Types (`type`)
 
-Declaring a variable with a validator type runs the predicate at assignment. The variable is `Option<T>` under the hood — valid (`Some`) if the predicate passes, not valid (`None`) if it fails.
+A type that carries its own "is this actually valid?" check, for values that can be built fine but still not make sense — a negative area, an out-of-range roll,
+or simply nothing assigned yet (Deor's stand-in for `null`/`undefined`). This is a large enough feature to have its own page: see [Validator Types](docs/validator_types.md)
+for how it works, declaration rules, `is valid`/`is not valid`, `avow`, struct fields, and function returns.
 
-Deor:
-```deor
-Squarefeet area = 9            # valid — predicate passes
-Squarefeet area = -1           # transpiler error — literal fails predicate at compile time
-Roll roll = random(min, max)   # valid or not valid depending on the predicate
-```
-
-Rust:
-```rust
-let area: Option<Squarefeet> = Squarefeet::new(9);
-let area: Option<Squarefeet> = Squarefeet::new(-1);
-let roll: Option<Roll> = Roll::new(random(min, max));
-```
-
-### Declaring Without a Value
-
-A validator type variable can be declared without an initial value to start as not valid. It becomes valid once assigned a value that passes the predicate.
+Validator types are the only types that can be assigned no value, this is the closest to null/undefined as exists in Deor.
 
 Deor:
 ```deor
 Roll best
 ```
-
-Rust:
-```rust
-let mut best: Option<Roll> = None;
-```
-
-No value assignment can replicate a `null`/`undefined` keyword — see [Validator Types — Replacing Null and Undefined](docs/validator_types.md#replacing-null-and-undefined).
-
-### Reassignment
 
 Reassigning a validator type re-runs the predicate. The variable may transition between valid and not valid.
 
@@ -210,6 +178,13 @@ Squarefeet area = 9   # valid
 area = 16             # valid
 int raw = get_user_input()
 area = raw            # valid or not valid — predicate runs at runtime
+```
+
+Reassignment can also be done to any type, including itself (for increment/decrement)
+
+Deor:
+```deor
+total = total + 1
 ```
 
 ---
@@ -239,30 +214,6 @@ makes the intent explicit and guarantees it at the transpiler level. Use `const`
 
 **`const` vs `as`:** both produce immutable bindings. `const` requires an explicit type; `as` infers the type from the 
 literal. Use `const` when the type must be stated, `as` for simple literals where inference is unambiguous.
-
-```deor
-const string LABEL = "hello"   # explicit type, immutable, SCREAMING_SNAKE required
-label as "hello"               # inferred type, immutable — snake_case name
-int count as 0                 # transpiler error — as never takes a type prefix
-```
-
----
-
-**Conversion notes:** a list binding that's later appended to must be emitted as `let mut` — the transpiler infers `mut` from usage.
-
----
-
-## Reassignment
-
-Deor:
-```deor
-total = total + 1
-```
-
-Rust:
-```rust
-total = total + 1;
-```
 
 ---
 
