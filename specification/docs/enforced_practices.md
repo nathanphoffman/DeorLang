@@ -286,7 +286,7 @@ Struct fields must be data types — primitives, validator types, other structs,
 ---
 ## Unified `()` Rule — Named Variables
 
-Everything placed inside `()` must be a named variable already in scope, with the exception of [Destructuring](docs/destructuring.md). This rule applies uniformly to:
+Everything placed inside `()` must be a named variable already in scope, with the exception of [Destructuring](docs/structs.md#destructuring-in). This rule applies uniformly to:
 
 | Context | Example |
 |---|---|

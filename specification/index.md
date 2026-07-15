@@ -14,15 +14,13 @@
 
 [Conditionals](docs/conditionals.md) — `if`, `else if`, `else`
 
-[Destructuring](docs/destructuring.md) — field extraction with `in`
-
 [Enforced Practices](docs/enforced_practices.md) — naming and ordering rules the transpiler enforces
 
 [Enums](docs/enums.md) — `enum`, variant declaration, checking with `is`
 
 [Functions](docs/functions.md) — `fn`, return rules, void, recursion
 
-[Immutability](docs/immutability.md) — immutability rules, record update (`with`)
+[Immutability](docs/immutability.md) — immutability rules, structural equality
 
 [Imports](docs/imports.md) — local module imports
 
@@ -42,10 +40,12 @@
 
 [Strings](docs/strings.md) — concatenation, escape sequences, string built-ins
 
+[Structs](docs/structs.md) — declaration, construction, destructuring (`in`), record update (`with`)
+
 [Syntax](docs/syntax.md) — block structure, keywords, comments
 
-[Types](docs/types.md) — primitives, `raw` variables, truthiness, structs (`struct`)
+[Types](docs/types.md) — primitives, `raw` variables, truthiness
 
 [Validator Types](docs/validator_types.md) — `type`, `is valid`/`is not valid`, `avow`, struct fields, function returns
 
-[Variables](docs/variables.md) — `as`, explicit typing, struct construction, reassignment
+[Variables](docs/variables.md) — `as`, explicit typing, reassignment

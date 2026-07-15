@@ -65,36 +65,8 @@ Connection conn = Connect(
 ---
 ## Construction and Destructuring
 
-Even though order is not enforced, write fields in the same order they appear in the struct declaration if possible. It makes construction and destructuring sites easier to scan and keeps things consistent across the codebase.
+Field-ordering and `in`-placement conventions for structs now live on their own page — see [Structs — Field Ordering](docs/structs.md#field-ordering).
 
-```deor
-struct Employee
-    int employee_id
-    string first_name
-    string last_name
-
-(employee_id, first_name, last_name) in employee
-Employee emp = (employee_id, first_name, last_name)
-emp as (employee_id, first_name, last_name)
-```
-
-Additionally, all `in` extractions should appear before any logic (assignments, expressions, control flow) within their block. Applies to function bodies, loop bodies, and if/else bodies.
-
-**Correct:**
-```deor
-fn RollResult roll_die(Die die)
-
-    (sides, label) in die
-
-    min as 1
-    int raw = m_rand_int(min, sides)
-
-    Roll value = raw
-    string source = label
-    RollResult result = (value, source)
-
-    return result
-```
 ---
 ## avow
 

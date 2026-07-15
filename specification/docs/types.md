@@ -82,24 +82,4 @@ if area.is_none() {
 
 ## Structs (`struct`)
 
-```deor
-struct Room
-    Squarefeet area
-    string name
-    bool occupied
-```
-
-```rust
-#[derive(Clone, PartialEq, Debug)]
-struct Room {
-    area: Option<Squarefeet>,
-    name: String,
-    occupied: bool,
-}
-```
-
-Struct fields may be primitives, validator types, list shapes, or other structs. Func shapes as struct fields are a transpiler error — structs are pure data. See [Shapes — Func Shapes in Structs](docs/shapes.md#func-shapes-in-structs).
-
-**Caveat:** field *name* rules (min length, snake_case) and the func-shape rejection above are checked at validation time. The field *type* itself is not — if you misspell a type name or reference one that was never declared, the transpiler doesn't catch it. It silently passes through to codegen, which emits the bogus name as-is, and the failure only shows up as a confusing `rustc` error against the generated `.rs` file (e.g. "cannot find type `Bogs` in this scope") rather than a clear message pointing at your `.deor` source. Double-check field type spelling by hand.
-
-There are no per-field visibility modifiers — all fields are always accessible via destructuring whenever the struct itself is in scope.
+Struct declaration, construction, destructuring, and record update all live on their own page — see [Structs](docs/structs.md).

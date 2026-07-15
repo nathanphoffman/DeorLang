@@ -6,7 +6,6 @@ Upcoming features, mostly an internal markdown file used by the creator Nathan H
 ---
 ## Working On 
 
-
 Reviewing docs stopped at immutability from the top
 Variables seems to be incorrect about some immutability
 

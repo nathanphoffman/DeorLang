@@ -47,8 +47,7 @@ result as []              # transpiler error — element type unknown
 
 ### Struct construction
 
-A parenthesised field list `(f1, f2, ...)` constructs a struct. All items must be named variables already in scope whose names match the target 
-struct's fields. The struct type is inferred by matching field names against all known structs — no type annotation needed.
+A parenthesised field list `(f1, f2, ...)` constructs a struct. See [Structs — Struct Construction](docs/structs.md#struct-construction) for the full rules and the equivalent explicit-type form.
 
 Deor:
 ```deor
@@ -59,8 +58,6 @@ Rust:
 ```rust
 let score = Score { label: label.clone(), points: points.clone() };
 ```
-
-See [Struct Construction](#struct-construction) below for full details and the equivalent explicit-type form.
 
 ### Existing variable
 
@@ -77,8 +74,6 @@ Rust:
 let saved_lines = lines.clone();
 ```
 
-`as` never moves, for any of its four forms — it's the quick, type-inferred way to get a value, always at the cost of a clone. If you want to transfer ownership instead of cloning, use an explicit typed declaration with `move`: `stringList saved_lines = move lines`. See [Move](docs/move.md).
-
 ---
 
 **What `as` is not for:**
@@ -93,45 +88,9 @@ int count as 0        # transpiler error — annotation not allowed with as; use
 a as move b           # transpiler error — as always clones, move has nothing to do
 ```
 
-Record update (`with`) uses `as` — the type is known from the source struct. See [Immutability](docs/immutability.md).
+Record update (`with`) uses `as` — the type is known from the source struct. See [Structs — Record Update](docs/structs.md#record-update-with).
 
----
-
-## Struct Construction
-
-Structs can be constructed with an explicit type (`Type name = (fields)`) or inferred via `as` (`name as (fields)`). 
-The transpiler matches field names to determine the struct type. Every field must already be a variable in scope matching 
-the field name exactly. No `{}`, no `field: value` pairs.
-
-Deor:
-```deor
-Squarefeet area = 9
-name as "Office"
-occupied as true
-Room room = (area, name, occupied)
-```
-
-Rust:
-```rust
-let area = Squarefeet::new(9);
-let name = "Office".to_string();
-let occupied = true;
-let room = Room { area, name, occupied };
-```
-
-Mirrors destructuring: `in` pulls fields out of a struct, `= (fields)` pushes variables in. See [Enforced Practices — Unified `()` Rule](docs/enforced_practices.md#unified-rule-named-variables) for the field-matching/order rule shared across construction, destructuring, and return.
-
-### Struct Construction as an Expression
-
-`(fields)` can also appear as a bare expression in return position — no type annotation needed, since the function's declared return type already determines which struct is expected. See [Functions — Multiple return values](docs/functions.md#multiple-return-values) for the full worked example (`DivResult`/`divmod`).
-
-If you need a field name that differs from the variable you have, rename it first:
-
-```deor
-name in other_room
-label = name
-Entry entry = (label)
-```
+Struct construction and destructuring are documented in full on their own page — see [Structs](docs/structs.md).
 
 ---
 

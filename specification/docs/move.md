@@ -47,41 +47,9 @@ The collection itself is consumed — it cannot be used after the loop.
 
 ---
 
-## Destructuring
+## Destructuring and Struct Construction
 
-Extract fields from a struct without cloning them:
-
-Deor:
-```deor
-move (label, points) in score
-# a later (something_else) in score will error
-```
-
-Rust:
-```rust
-let label = score.label;
-let points = score.points;
-```
-
-`score` cannot be used afterward for any field that was moved out. See [Destructuring](docs/destructuring.md#move-destructuring).
-
----
-
-## Struct Construction
-
-Build a struct from fields without cloning them:
-
-Deor:
-```deor
-Score built = move (label, points)
-```
-
-Rust:
-```rust
-let built = Score { label, points };
-```
-
-Fields are moved into the struct rather than cloned. Each source variable is consumed and cannot be used after the construction.
+`move` also applies to pulling fields out of a struct (`move (f1, f2) in source`) and building one (`Type name = move (fields)`) — both skip the clone and consume the source variables instead. See [Structs — Move Variants](docs/structs.md#move-variants) for the full examples and rules.
 
 ---
 
