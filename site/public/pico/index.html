@@ -12,6 +12,22 @@
         img.logo {
             image-rendering: pixelated;
         }
+
+        html {
+            overflow-y: scroll;
+        }
+
+        /* hides scrollbar to prevent weirdness on expansion animation */
+        pre::-webkit-scrollbar {
+            display: none;
+        }
+
+        pre {
+            scrollbar-width: none;
+            overflow-x: auto;
+        }
+
+
     </style>
 
 </head>
@@ -24,7 +40,7 @@
             <img src="pico/deorterm.png" alt="Pixel art of a retro terminal with a deer, the D-Pico mascot"
                 class="logo w-16 sm:w-24 md:w-28 [grid-area:deer]" />
             <h1 class="text-7xl font-serif [grid-area:title]">D-Pico</h1>
-            <p class="text-xl mt-4 sm:mt-0 [grid-area:desc] italic">A terminal editor built in <a href="https://deor.dev" class="underline">Deor</a> and Rust
+            <p class="text-xl mt-4 sm:mt-0 [grid-area:desc] italic">A terminal editor built in <a href="https://deor.dev" class="underline">Deor</a> and Rust, by Nathan Hoffman
             </p>
         </div>
 
@@ -36,19 +52,32 @@
         <h2 class="mt-11 text-4xl font-serif">Get Started Today!</h2>
         <div class="bg-gray-800 mt-2 rounded-3xl shadow-[inset_0_2px_6px_rgba(0,0,0,0.35)]">
 
-            <pre class="bg-gray-800 text-left max-h-0 rounded-b-3xl">
-            <code class="language-deor">
+            <pre class="bg-gray-800 text-left rounded-3xl p-6 overflow-x-auto">
+            <code>
+    Unix Install: Linux (Official), Mac (Untested)
+    curl -sSf https://raw.githubusercontent.com/nathanphoffman/DeorPico/main/setup/install.sh | sh
 
-            This is a test
-
+    Windows Installer (Experimental)
+    irm https://raw.githubusercontent.com/nathanphoffman/DeorPico/main/setup/install.ps1 | iex
             </code>
             </pre>
-            </div>
         </div>
 
-      
-    
+
+     
     </main>
+    <footer class="flex !justify-center items-center w-full gap-2 mt-3">
+
+       <a href="https://github.com/nathanphoffman/DeorPico"
+                class="block md:inline p-2 bg-gray-300 hover:bg-gray-100 rounded-sm text-black shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">GitHub Repository</a>
+
+       <a href="https://deor.dev"
+                class="block md:inline p-2 bg-gray-300 hover:bg-gray-100 rounded-sm text-black shadow-[inset_0_1px_3px_rgba(0,0,0,0.15)]">The Deor Language</a>
+
+
+    </footer>
+
+    
 </body>
 
 </html>
