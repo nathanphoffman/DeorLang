@@ -42,7 +42,9 @@ let mut result: Vec<i64> = Vec::new();
 
 ## `raw` Variables
 
-Some things are awkward to build in Deor at all — a `HashMap`, a compiled regex, a connection pool. `raw` is the escape hatch: a `rust` block builds the thing once, hands it back as an opaque value, and Deor carries that value around without needing to understand what's inside it. Because Deor can't see inside a `raw`, it also can't validate it — a `raw` has no type annotation, no Deor operators, and can't appear in Deor expressions or struct fields. It's only ever produced by a function call and only ever consumed inside a `rust` block.
+Some things are awkward to build in Deor — a `HashMap`, a compiled regex, a connection pool, etc. The "type" `raw` is the escape hatch: a `rust` block builds the thing once, hands 
+it back as an opaque value, and Deor carries that value around without needing to understand what's inside it.  `raw` has no type annotation, no Deor operators, 
+and can't appear in Deor expressions or struct fields. It's only ever produced by a function call and only ever consumed inside a `rust` block.
 
 ```deor
 fn Index build_index()
@@ -54,17 +56,20 @@ fn Index build_index()
 raw index = build_index()
 ```
 
-See [Rust Interop](docs/interop.md) for full documentation, rules, the build-once pattern, and how a top-level `raw TypeName` declaration is used to share a reference-counted value across functions (Deor's only global-like pattern).
+See [Rust Interop](docs/interop.md) for full documentation, rules, the build-once pattern, and how a top-level `raw TypeName` declaration is used to share a reference-counted value 
+across functions (Deor's only global-like pattern).
 
 ---
 
 ## Truthiness
 
-Implicit truthiness hides a decision — is `if my_int` checking for nonzero, or for "was this ever set"? Deor makes you write the comparison you actually mean. **Only `bool` and validator types have a presence check.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — use explicit comparisons:
+Implicit truthiness hides a decision — is `if my_int` checking for nonzero, or for "was this ever set"? Deor makes you write the comparison you actually mean. 
+**Only `bool` has a presence check.** Plain `int`, `float`, `string`, `list`, and structs are never truthy or falsy on their own — use explicit comparisons:
 
 ```deor
 if len(my_list) > 0    # correct — explicit non-empty check
 if my_list             # transpiler error — list has no truthiness
+if my_bool             # correct - booleans are the only type where this is valid
 
 if my_int is not 0     # correct
 if my_int              # transpiler error

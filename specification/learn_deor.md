@@ -139,8 +139,6 @@ The only built-in we haven't talked about is ```range``` which is next!
 > **Newcomers**: So far we have left out only three more data types: structs, lists
 
 ## 7. Data Types: Lists and Shapes  (3 of 4)
-> **Newcomers**: So far we have left out only three more data types: structs, lists
-
 Shapes are used to declare what other languages call "generics". These are types that rely on other types. Think about a list. A list is a type, but a list itself doesn't tell us what is inside of it. A shape does, and allows us to alias it with a human readable syntax. 
 
 Shapes can also define func (which are basically functions stored as variables). The func shape is really quite complex, and is covered later on, but I provided the definition here for documentation clarity. Func are an advanced feature and are covered at the very end of this documentation. Most of the times you encounter shapes in this documentation it will be for defining list types.
