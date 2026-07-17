@@ -10,12 +10,12 @@ Work in Progress Follows
 # Learning Deor
 I will spend only a few words in this section, **please skip to the next heading if you are short on time**. 
 
-My name is Nathan Hoffman, I am the creator behind Deor. I want this to be useful for both first time coders and technical people, hence why you will find three sections: the main one (in the middle), the newcomers block (above) and the techies block (below). This doc also serves as a great starting point for people who struggle learning Rust: Deor transpiles to Rust, has some strong Rust similarities, and allows raw rust to be written inside of rust blocks.
+My name is Nathan Hoffman, I am the creator behind Deor. I want this to be useful for both first time coders and technical people, hence why you will find three sections for each chapter below: the main one (in the middle), the newcomers block (above) and the techies block (below). This doc also serves as a great starting point for people who struggle learning Rust: Deor transpiles to Rust, has some strong Rust similarities, and allows raw rust to be written inside of rust blocks.
 
-To give you an idea of why I created Deor, you have to understand my background: I was born into a sea of Commodore Amiga hardware and software in the late 80s through mid-90s when my dad's computer store closed; throughout much of my life, I have loved programming, and anytime I move away from it, I end up coming back to it. I began with C and JavaScript the age of 13 in the early 2000s; I moved to PHP for fun in the mid-late 00s, and then finally landed programming as a career starting around 2014, so it would not be an exaggeration to say I have been coding around about a quarter of a century. It wasn't all roses though, in the 2020s I started to have doubts about my programming career (a series of personal struggles), yet even so my love for code was so strong I still did it as a career (for some of that period) and for fun (for much of it). But in as of the year of writing this (2026) everything has changed, and my code love has grown so strong that coding may be at its pinnacle for me: so when I say I adore this language, I really do, it has been one of the chief outputs so far for me this year. I want you to know that I thought extremely long and hard about the design decisions made here. All this time coding has taken me back to my days on my dad's Amiga looking at pop-up boot console scroll across in wonder. Note: Everything on this page are my own human words (not AI).
+To give you an idea of why I created Deor, you have to understand my background: I was born into a sea of Commodore Amiga hardware and software in the late 80s through mid-90s when my dad's computer store closed; throughout much of my life, I have loved programming, and anytime I move away from it, I end up coming back to it. I began with C and JavaScript the age of 13 in the early 2000s; I moved to PHP for fun in the mid-late 00s, and then finally landed programming as a career starting around 2014, so it would not be an exaggeration to say I have been coding around about a quarter of a century. It wasn't all roses though, in the 2020s I started to have doubts about my programming career (a series of personal struggles), yet even so my love for code was so strong I still did it as a career (for some of that period) and for fun (for much of it). But as of writing this (2026) everything has changed, and my code love has grown so strong that coding may be at its pinnacle for me: so when I say I adore this language, I really do, it has been one of the chief outputs so far for me this year. I want you to know that I thought extremely long and hard about the design decisions made here. All this time coding has taken me back to my days on my dad's Amiga looking at pop-up boot console scroll across in wonder. Note: Everything on this page are my own human words (not AI).
 
 ## 1. Storing Information: *(Compiler Implicit as)*
-> **Newcomers**: Variables are portions of information, think names, numbers, and lists. If you tell a computer to say hello, it needs to know what hello is, not just how to say it. Variables have names that are used to reference the value in the code. For some values you just type the value (like numbers), for others which are hard for the computer to determine, such as strings (writing), you use "" to wrap the string. 
+> **Newcomers**: Variables are portions of information, think names, numbers, and lists. If you tell a computer to say hello, it needs to know what hello is, not just how to say it. Variables have names that are used to reference their value in the code. For some variables you just enter the bare value (like numbers), for others which are hard for the computer to determine, such as strings (bits of writing), you use "" to wrap the string. 
 
 ```deor
 times_to_say_hello as 10
@@ -39,13 +39,13 @@ float fahrenheit = 75.5
 string message = "hello, the temperature is "
 ```
 
-The symbol = is used instead of as, a hold-over from older languages like C to make the convention more familiar to programmers who know what data types are, allowing newcomers to use the simpler syntax ```as```, or techies to reserve ```as``` when declarations are obvious like our literal values.
+The form {type} {name} = is used for explicit variable declarations, a hold-over from older languages like C to make the convention more familiar to programmers who know what data types are, allowing newcomers to use the simpler syntax ```as```, or techies to reserve ```as``` when declarations are obvious like our literal values.
 - ```int``` is a whole number (comes from math: integer)
 - ```bool``` short for boolean, a true/false value (comes from George Boole, a founder of logical/discrete mathematics)
-- ```float``` is a decimal (fractional eg. 1.56) value (it comes from the name floating-point calculation, basically a storage form of scientific notation) and can be inaccurate to use for extremely heavy amounts of math and financial data over many transactions due to limits of storage and binary accuracy. For regular day applications, you don't need to worry it has an accuracy of ~16 digits.
+- ```float``` is a decimal (fractional eg. 1.56) value (it comes from the name floating-point calculation, basically a storage form of scientific notation) and can be inaccurate to use for extremely heavy amounts of math and financial data over many transactions due to limits of storage and binary accuracy. For regular day applications, you don't need to worry, as it has an accuracy of ~16 digits.
 - ```string``` a portion of human-text comes from (a string of characters) a hold-over from early languages like C which treated strings as lists of individual characters.
 
-> **Techies**: Floats use Double Precision 64-bit, and Integers use long precision 64-bit. This decision was made due to modern hardware and because it vastly simplifies types, for more explicit types you can use rust blocks. In Rust strings are stored on the heap, which makes them expandable. However, this also means they are reference-types and are the only of these types not to be a copy-type. Deor does its best to disguise this fact by to_string list borrows everytime it is met, this can be an expensive operation as the heap and pointer are both cloned.
+> **Techies**: Floats use Double Precision 64-bit, and Integers use long precision 64-bit. This decision was made due to modern hardware and because it vastly simplifies types, for more explicit types you can use rust blocks. In Rust strings are stored on the heap, which makes them expandable. However, this also means they are reference-types and are the only of these types not to be a copy-type. Deor does its best to disguise this fact by using to_string everytime it is met, this can be an expensive operation as the heap and pointer are both cloned.
 
 ## 3. Comments
 > **Newcomers**: Time to relax after that nonsense about low level stuff! This is the easiest section of all, comments are just for the coders benefit, they are literally stripped away by the computer, it doesn't care about them at all, which is why most highlighters make them fade into the background!
@@ -60,11 +60,11 @@ fahrenheit as 75.5
 # strings can be weird, as we will see, so we will keep explicit typing to differentiate it
 string message = "hello, the temperature is "
 ```
-Comments are applied with the # symbol called "pound" or "hash".  They can be applied above (Deor best practice) but they can also be put to the side as well.
+Comments are applied with the # symbol called "pound" or "hash".  They can be applied above the line (Deor best practice) but they can also be put to the side as well.
 > **Techies**: There is no block-comment, just use # for everything
 
 ## 4. If Statement (1 of 2)
-> **Newcomers**: We are about to embark on our first bit of logic, code that does something! "If statements" are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?" When the expression (the condition to the right of the if) is true, then the code in the block below it runs. If it is false, it is skipped. The block below the code is a "tabbed-block" think of it like a nested level where anything with a tab below it is considered inside of that block, and will run if the statement is true.
+> **Newcomers**: We are about to embark on our first bit of logic, code that does something! "If statements" are logical conditions, just as they read in english.  If statements are essential in programming languages for asking "should this code actually run?" When the expression (the condition to the right of the if) is true, then the code in the block below it (the tabbed code section) runs. If it is false, it is skipped. The block below the code is a "tabbed-block" think of it like a nested level where anything with a tab below it is considered inside of that block, and will run if the statement is true.
 
 ```deor
 times_to_say_hello as 7
@@ -79,7 +79,7 @@ if i_should_say_hello is true
     # anything here would run too if it there was stuff here because it is indented!
 
 ```
-```If``` can be a boolean or a comparison (which returns a boolean value) which is what we see here. The equality comparison uses: ```is true``` which asks "is this statement true."  There is also an ```is false``` for the opposite. Like math there is order of operations so you could also have said ```if (i_should_say_hello is true)```. Additionally the ```is true``` part at the end is optional here, since our variable is already a boolean (true/false) we could just replace this with ```if i_should_say_hello``` which would do the same thing. 
+```If``` can be a boolean or a comparison (which returns a boolean value) which is what we see here. The equality comparison uses: ```is true``` which asks "is this statement true."  There is also an ```is false``` for the opposite. Like math there is order of operations so you could also have said ```if (i_should_say_hello is true)```. 
 
 Deor uses tabbed-blocks which just means that when you need to make code a "child" of something else, you tab it below it, everything on that same tab-level lives at the same level of nesting or resides in the same "block".
 
@@ -87,8 +87,8 @@ The print you see here, prints to the terminal, and is explained in the next sec
 
 > **Techies**: If uses the else if / else standard pattern, to not overwhelm new readers it is not mentioned here, proceed to If Statement: Else (2 of 2) for detail.  Also: is represents ==  /  is not represents !=
 
-## 5. Built In Functions (1 of 2)
-> **Newcomers**: We haven't discussed what functions are, don't worry about that. Just think of them as little units of work, you will end up defining some of your own soon enough! Built-Ins are, as the name suggests, built into the language as helpers to make your job easier, which means you don't need to know why they work!  You just need to know what they do. You already saw how print() works, that is one of the built-in functions as seen below.
+## 5. Built In Functions: Basics
+> **Newcomers**: We haven't discussed what functions are, don't worry about that. Just think of them as little units of work, you will end up defining some of your own soon enough! Built-Ins are, as the name suggests, built in units of work (functions) that serve as helpers to make your job easier, which means you don't need to know why they work!  You just need to know what they do. You already saw how print() works, that is one of the built-in functions as seen below.
 
 ```deor
 times_to_say_hello as 7
@@ -99,12 +99,12 @@ string message = "hello, the temperature is "
 
 if fahrenheit < -459.67
     crash("Oh no, the temperature is less than absolute 0! That doesn't seem possible...")
-else if i_should_say_hello
+else if i_should_say_hello is true
      
     # this prints: hello, the temperature is
     print(message)
     
-     # bellow hello... this prints: 75.7
+     # this prints: 75.7 (right below the first message)
     print(fahrenheit)
 else
     # our message is 26 characters long, so this stores 26
@@ -116,14 +116,30 @@ else
 ```
 
 Deor has only six built-in functions, three are explained in this section which are:
-- len() outputs an int as to the length of the string (the text in "") for ```list``` (not yet discussed) it provides the 
-list length as an int. 
-- crash() hard crashes the entire program with the string error message provided
-- print() prints the string to the terminal, can also take in float, int, and bool
+- len() outputs an int using the length of the string (the length of the text in "") for ```list``` (not yet discussed) it provides the list length as an int. 
+- crash() hard crashes the entire program with the string error message provided, use this as a last resort if your internal logic can no longer resolve the problem.
+- print() prints the string to the terminal, it can also take in float, int, or bool.
 
-> **Techies** Print is in Rust: print!("{}",x), so it can be replaced with the standard library for low level OS concerns
+> **Techies** Print is translated to rust as print!("{}",x), so it can be replaced with the standard library for low level OS concerns
 
-## 6. Built In Functions (2 of 2)
+## For Loops
+> **Newcomers** So far we have seen "times_to_say_hello" go unused. In programs, we often need to loop (we call this iterate) certain items like lists, mathematical formulas like summations, or repeating processes.  Below we complete our program 
+
+```
+times_to_say_hello as 7
+i_should_say_hello as true
+fahrenheit as 75.5
+
+string message = "hello, the temperature is "
+
+# prints "hello, the temperature is 75.5"  x7 times
+for in range(times_to_say_hello)
+    print(message)
+    print(fahrenheit)
+```
+
+
+## 6. Built In Functions: Inputs
 Built-ins that will be discussed in the future (you can ignore for now):
 - input() allows input to be taken in from the terminal
 - args() same as input but used for function arguments 
