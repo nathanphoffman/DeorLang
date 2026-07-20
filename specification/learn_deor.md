@@ -26,7 +26,7 @@ message as "hello, the temperature is "
 
 You will see other ways to declare variables in this documentation, but ```as``` is best when the context of the value is obvious (like it is above) but when assigning things from outside as we will see later, it can be less obvious, in which case it is better to use the explicit type (covered next!)
 
-> **Techies**: Although these assignments look implicit, they actually are validated by the compiler, and the Rust compiler will hard-fail if it can't determine a good type to assign. All variables also get clone() applied in the Rust output, the Rust compiler will strip away cloned copy-types (so there is no added performance cost for copy-types), but it exists to make dealing with reference-types like Strings, Structs, and Vectors easier for the user at a cost to performance. To avoid this performance hit, the move keyword exists to allow ownership, and rust blocks exist for manual control (more on these later)
+> **Techies**: Although these assignments look dynamic, they actually are validated and assigned types by the compiler, and the Rust compiler will hard-fail if it can't determine a good type to assign. All variables also get clone() applied in the Rust output, the Rust compiler will strip away cloned copy-types (so there is no added performance cost for copy-types), but it exists to make dealing with reference-types like Strings, Structs, and Vectors easier for the user at a cost to performance. To avoid this performance hit, the move keyword exists to allow ownership, and rust blocks exist for manual control (more on these later)
 
 
 ## 2. Data Types: Primitives and Strings (1 of 2)
