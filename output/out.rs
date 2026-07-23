@@ -2851,6 +2851,35 @@ fn validate_tokens(tokens: TokensRef) {
                         declared_var_names.push(dv_fv.clone());
                     }
                 }
+                let mut dv_fmv: i64 = pre_i + 1;
+                if dv_fmv < token_count {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
+                    let mut dv_fmv_tok: Token = tokens[dv_fmv as usize].clone();
+                    let mut kind = dv_fmv_tok.kind.clone();
+                    if kind == "KW_MOVE" {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
+                        let mut dv_fmlp: i64 = pre_i + 2;
+                        let mut dv_fmv1: i64 = pre_i + 3;
+                        let mut dv_fmv2: i64 = pre_i + 4;
+                        if dv_fmv2 < token_count {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
+                            let mut dv_fmlp_tok: Token = tokens[dv_fmlp as usize].clone();
+                            let mut dv_fmv1_tok: Token = tokens[dv_fmv1 as usize].clone();
+                            let mut dv_fmv2_tok: Token = tokens[dv_fmv2 as usize].clone();
+                            let mut kind = dv_fmlp_tok.kind.clone();
+                            let mut dv_fm_lp_ok: bool = kind == "LPAREN";
+                            let mut kind = dv_fmv1_tok.kind.clone();
+                            let mut value = dv_fmv1_tok.value.clone();
+                            let mut dv_fmk: String = kind.clone();
+                            let mut dv_fmn: String = value.clone();
+                            let mut kind = dv_fmv2_tok.kind.clone();
+                            if dv_fm_lp_ok && dv_fmk == "IDENT" && kind == "KW_IN" {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
+                                declared_var_names.push(dv_fmn.clone());
+                            }
+                        }
+                    }
+                }
             }
             if kind == "KW_FN" {
                 // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor

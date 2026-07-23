@@ -85,6 +85,30 @@ macro prescan_collect_declared_vars
 			if dv_fk is "IDENT" and kind is "KW_IN"
 				declared_var_names at end = dv_fv
 
+		# ex: for move ({item} in collection) — pre_i+1 is KW_MOVE, +2 is LPAREN,
+		# +3 the loop variable, +4 the 'in' keyword. A separate shape from the
+		# plain form above, so it needs its own offsets rather than reusing them.
+		int dv_fmv = pre_i + 1
+		if dv_fmv < token_count
+			Token dv_fmv_tok = tokens at dv_fmv
+			(kind) in dv_fmv_tok
+			if kind is "KW_MOVE"
+				int dv_fmlp = pre_i + 2
+				int dv_fmv1 = pre_i + 3
+				int dv_fmv2 = pre_i + 4
+				if dv_fmv2 < token_count
+					Token dv_fmlp_tok = tokens at dv_fmlp
+					Token dv_fmv1_tok = tokens at dv_fmv1
+					Token dv_fmv2_tok = tokens at dv_fmv2
+					(kind) in dv_fmlp_tok
+					bool dv_fm_lp_ok = kind is "LPAREN"
+					(kind, value) in dv_fmv1_tok
+					string dv_fmk = kind
+					string dv_fmn = value
+					(kind) in dv_fmv2_tok
+					if dv_fm_lp_ok and dv_fmk is "IDENT" and kind is "KW_IN"
+						declared_var_names at end = dv_fmn
+
 	if kind is "KW_FN"
 		# ex: fn int add{(}left, right) — pre_i+3 grabs the opening paren
 		int dv_lp = pre_i + 3

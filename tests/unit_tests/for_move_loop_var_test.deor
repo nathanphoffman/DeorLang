@@ -1,0 +1,19 @@
+# for_move_loop_var_test.deor
+# Exercises prescan_collect_declared_vars' KW_FOR + KW_MOVE branch: the loop
+# variable in `for move (item in collection)` — a different token shape from
+# plain `for item in collection` — must be registered in declared_var_names
+# so reading it inside the loop body doesn't trip check_undefined_var_read
+# with a false "used here but never declared anywhere".
+
+shape numList = list of int
+
+fn void main()
+	numList nums = [10, 20, 30]
+	for move (num in nums)
+		int doubled = num * 2
+		print(doubled)
+
+# expect:
+# 20
+# 40
+# 60
