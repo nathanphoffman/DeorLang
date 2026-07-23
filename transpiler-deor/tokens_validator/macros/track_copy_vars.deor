@@ -1,0 +1,64 @@
+
+# Tracks declared variable names whose type is one of Deor's Copy primitives
+# (int, float, bool) into copy_var_names — backing registry for
+# check_use_after_move, which must not flag a re-read of a `move`d primitive:
+# per docs/move.md, `move` on a Copy type is an inert no-op (Rust copies
+# instead of consuming), so the original stays valid and usable afterward.
+# Two sources: typed declarations ('Type name = expr') and function
+# parameters ('fn Ret name(Type1 p1, Type2 p2, ...)') — same shape
+# track_non_bool_vars already scans, mirrored here for the positive
+# int/float/bool set instead of the "everything but bool" set.
+macro track_copy_vars
+	if cur_kind is "IDENT"
+		bool tcv_is_copy_kw = cur_val is "int"
+		if not tcv_is_copy_kw
+			tcv_is_copy_kw = cur_val is "float"
+		if not tcv_is_copy_kw
+			tcv_is_copy_kw = cur_val is "bool"
+		if tcv_is_copy_kw
+			# ex: Type {name} = expr — pos+1 grabs the variable name
+			int tcv_next1 = pos + 1
+			# ex: Type name {=} expr — pos+2 grabs the equals sign
+			int tcv_next2 = pos + 2
+			if tcv_next2 < token_count
+				Token tcv_tok1 = tokens at tcv_next1
+				Token tcv_tok2 = tokens at tcv_next2
+				(kind) in tcv_tok1
+				string tcv_k1 = kind
+				(kind) in tcv_tok2
+				if tcv_k1 is "IDENT" and kind is "EQUALS"
+					(value) in tcv_tok1
+					copy_var_names at end = value
+
+	if cur_kind is "KW_FN"
+		# ex: fn int add{(}left, right) — pos+3 grabs the opening paren
+		int tcv_lp = pos + 3
+		if tcv_lp < token_count
+			Token tcv_lp_tok = tokens at tcv_lp
+			(kind) in tcv_lp_tok
+			if kind is "LPAREN"
+				int tcv_ps = tcv_lp + 1
+				for if tcv_ps < token_count
+					Token tcv_ps_tok = tokens at tcv_ps
+					(kind, value) in tcv_ps_tok
+					if kind is "RPAREN"
+						break
+					if kind is "COMMA"
+						tcv_ps = tcv_ps + 1
+						continue
+					if kind is "IDENT"
+						string tcv_param_type = value
+						bool tcv_p_is_copy = tcv_param_type is "int"
+						if not tcv_p_is_copy
+							tcv_p_is_copy = tcv_param_type is "float"
+						if not tcv_p_is_copy
+							tcv_p_is_copy = tcv_param_type is "bool"
+						int tcv_pn = tcv_ps + 1
+						if tcv_pn < token_count
+							Token tcv_pn_tok = tokens at tcv_pn
+							(kind, value) in tcv_pn_tok
+							if kind is "IDENT"
+								if tcv_p_is_copy
+									copy_var_names at end = value
+								tcv_ps = tcv_pn
+					tcv_ps = tcv_ps + 1

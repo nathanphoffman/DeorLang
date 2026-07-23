@@ -32,6 +32,8 @@ macro track_block_scope
 				validator_vars.clear();
 				non_bool_var_names.clear();
 				string_var_names.clear();
+				copy_var_names.clear();
+				moved_vars.clear();
 		# ex: fn {void} name() — pos+1 grabs the return-type slot
 		int void_check = pos + 1
 		if void_check < token_count

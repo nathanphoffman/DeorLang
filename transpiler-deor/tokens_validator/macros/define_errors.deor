@@ -42,6 +42,8 @@ unsafe_macro define_errors
 	string rule_bracket_index = "bracket indexing is not valid in Deor — use 'name at index' instead"
 	string rule_empty_bracket = "use 'empty' to initialize an empty list — [] is only valid with items inside"
 	string rule_move = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid"
+	string rule_use_after_move = "used here but already moved earlier in this block — the value was consumed by an earlier 'move' and cannot be read again"
+	string rule_double_move = "already moved earlier in this block — 'move' cannot consume the same variable twice"
 	string rule_not_is = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves"
 	string rule_kw_in_parens = "reserved keyword cannot be used as a name — choose a different variable name"
 	string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"

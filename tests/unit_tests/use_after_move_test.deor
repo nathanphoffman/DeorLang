@@ -1,0 +1,25 @@
+# use_after_move_test.deor
+# Exercises check_use_after_move: reading a variable after `move` has already
+# consumed it, and moving the same variable twice in a row, should both error
+# with a friendly Deor-level message instead of reaching codegen as a raw
+# rustc "use of moved value" on generated Rust the user never sees.
+# See use_after_move_happy_test.deor for the legitimate patterns this check
+# must NOT flag.
+
+fn void test_read_after_move()
+	string message = "hello"
+	string taken = move message
+	print(message)
+
+fn void test_double_move()
+	string first_val = "hello"
+	string second_val = move first_val
+	string third_val = move first_val
+
+fn void main()
+	test_read_after_move()
+	test_double_move()
+
+# expect-error:
+# line 12: variable 'message' - used here but already moved earlier in this block
+# line 17: variable 'first_val' - already moved earlier in this block

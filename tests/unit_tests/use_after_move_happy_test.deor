@@ -1,0 +1,66 @@
+# use_after_move_happy_test.deor
+# Confirms check_use_after_move does not flag legitimate patterns easily
+# mistaken for use-after-move: moving a Copy-type primitive (a documented
+# no-op, see docs/move.md), moving inside s_join's bracket-literal list
+# (also inert — concat only ever borrows), the "name = f(move name)"
+# self-reassign idiom, moving in one if/else arm while reading in the other
+# (this check is deliberately same-block only, so branches never conflict),
+# and a for-move loop that fully consumes its collection with no read after.
+# See use_after_move_test.deor for the cases this check DOES flag.
+
+import "lib/string.deor"
+
+shape wordList = list of string
+
+fn string append_str(string base_val, string suffix)
+	return s_join([base_val, suffix])
+
+fn void test_copy_move()
+	int count = 5
+	int doubled = move count
+	print(count)
+
+fn void test_sjoin_move()
+	string greeting = "hello"
+	print(s_join([move greeting, " there"]))
+	print(greeting)
+
+fn void test_self_reassign()
+	string built = "a"
+	string next_b = "b"
+	string next_c = "c"
+	built = append_str(move built, next_b)
+	built = append_str(move built, next_c)
+	print(built)
+
+fn void test_branch_independent()
+	string label = "x"
+	if true
+		string taken = move label
+	else
+		print(label)
+
+fn void test_for_move()
+	wordList items = ["one", "two"]
+	# Note: only checking that `items` isn't falsely flagged as already-moved
+	# here — reading the loop var itself (`item`) inside a `for move` body hits
+	# an unrelated, pre-existing gap in prescan_collect_declared_vars (the loop
+	# var from this parenthesized form is never registered), which is out of
+	# scope for this check.
+	for move (item in items)
+		print("tick")
+
+fn void main()
+	test_copy_move()
+	test_sjoin_move()
+	test_self_reassign()
+	test_branch_independent()
+	test_for_move()
+
+# expect:
+# 5
+# hello there
+# hello
+# abc
+# tick
+# tick
