@@ -4,32 +4,299 @@
 # generated code the user never sees. Also catches moving the same variable
 # twice in a row.
 #
-# Scope of this pass — deliberately conservative, straight-line only:
-# moved_vars is cleared on every INDENT, DEDENT, and KW_ELSE, so tracking never
-# crosses a branch or block boundary. This means a move inside one arm of an
-# if/else (or inside a for/if body) is never flagged after that block closes —
-# a real gap versus rustc's full flow analysis — but it also means this check
-# can never produce a false positive from two branches being mutually
-# exclusive (e.g. `move x` in the `if` arm, a valid read of `x` in the `else`
-# arm). Recall over precision: catching the same-block case is still strictly
-# better than catching nothing, and a false positive here would block a
-# previously-valid program from compiling at all.
+# Flow-sensitive across if/else-if/else chains: a move inside one arm is
+# tracked via a small snapshot stack (one UamFrame per open chain, keyed by
+# block_depth). Reading the moved variable in a *different* arm of the same
+# chain is fine — branches are mutually exclusive, so each arm starts from
+# the same pre-chain snapshot. Reading it *after* the whole chain closes IS
+# flagged, because the arm that moved it is a reachable path — the same rule
+# rustc itself applies. See the KW_IF / KW_ELSE / DEDENT handling below.
 #
-# Not handled yet (left to rustc, same as before this check existed):
-# `move (f1, f2) in source` partial-move destructuring — Deor structs have no
-# per-field access outside destructure, so a later `(f3) in source` for an
-# untouched field is legal and this pass has no per-field tracking to tell that
-# apart from a genuine reuse of an already-moved field.
+# Every other block boundary (for/fn bodies, plain nesting) is straight-line
+# now: nothing is cleared on INDENT/DEDENT anymore, so a move followed by a
+# read in later code at any depth is caught, as long as no branch sits
+# between them.
+#
+# Also tracks partial-move destructuring (`move (f1, f2) in source`) at the
+# field level, via moved_fields ("source.field" keys). A later `(f1) in
+# source` re-destructuring an already-moved field is flagged; `(f3) in
+# source` for an untouched field is left alone. This half of the check is
+# same-block only (moved_fields clears on INDENT/DEDENT/KW_ELSE) — it does
+# not yet flag the whole struct being used by value after a partial move,
+# only a repeat destructure of a field that's already gone.
 macro check_use_after_move
+	# KW_IF opens a new if/else-if/else chain frame — unless this IF is the
+	# "if" half of an "else if", which belongs to the chain already on the
+	# stack (else and if are two flat tokens on the same line, not a nested
+	# if inside an else block — see docs/conditionals.md).
+	if cur_kind is "KW_IF"
+		bool uam_is_elseif = false
+		if pos > 0
+			int uam_pif_pos = pos - 1
+			Token uam_pif_tok = tokens at uam_pif_pos
+			(kind) in uam_pif_tok
+			if kind is "KW_ELSE"
+				uam_is_elseif = true
+		if not uam_is_elseif
+			int uam_depth = block_depth
+			strList uam_pre_vars = moved_vars
+			strList uam_acc_vars = moved_vars
+			UamFrame uam_new_frame = (uam_depth, uam_pre_vars, uam_acc_vars)
+			move_if_stack at end = uam_new_frame
+
+	# KW_ELSE — the arm that just closed (its DEDENT ran immediately before
+	# this token) is folded into the chain's accumulator — unless that arm's
+	# last statement is KW_RETURN/KW_BREAK/KW_CONTINUE, in which case it never
+	# falls through to code after the chain at all, so its moves must not be
+	# treated as reachable there (the extremely common "if kind is X: return
+	# ..." dispatch idiom throughout this codebase relies on this). Either
+	# way, moved_vars is restored to the pre-chain snapshot so the next arm
+	# starts from the same base as every other arm, not from what the
+	# previous arm moved.
+	if cur_kind is "KW_ELSE"
+		int uam_efs_len = len(move_if_stack)
+		if uam_efs_len > 0
+			int uam_etop_idx = uam_efs_len - 1
+			UamFrame uam_etop = move_if_stack at uam_etop_idx
+			(uam_depth, uam_pre_vars, uam_acc_vars) in uam_etop
+			if uam_depth is block_depth
+				bool uam_e_terminal = false
+				int uam_et_scan = pos - 1
+				for if uam_et_scan >= 0
+					Token uam_et_tok = tokens at uam_et_scan
+					(kind) in uam_et_tok
+					if kind is "NEWLINE"
+						uam_et_scan = uam_et_scan - 1
+					else
+						break
+				int uam_et_line_end = uam_et_scan
+				for if uam_et_scan >= 0
+					Token uam_et_tok2 = tokens at uam_et_scan
+					(kind) in uam_et_tok2
+					if kind is "NEWLINE"
+						break
+					if kind is "INDENT"
+						break
+					if kind is "DEDENT"
+						break
+					uam_et_scan = uam_et_scan - 1
+				int uam_et_line_start = uam_et_scan + 1
+				if uam_et_line_start <= uam_et_line_end
+					Token uam_et_first = tokens at uam_et_line_start
+					(kind) in uam_et_first
+					if kind is "KW_RETURN"
+						uam_e_terminal = true
+					if kind is "KW_BREAK"
+						uam_e_terminal = true
+					if kind is "KW_CONTINUE"
+						uam_e_terminal = true
+				if not uam_e_terminal
+					int uam_ei = 0
+					int uam_en = len(moved_vars)
+					for if uam_ei < uam_en
+						string uam_ev = moved_vars at uam_ei
+						bool uam_e_has = list_has(uam_acc_vars, uam_ev)
+						if not uam_e_has
+							uam_acc_vars at end = uam_ev
+						uam_ei = uam_ei + 1
+				move_if_stack remove at uam_etop_idx
+				UamFrame uam_updated = (uam_depth, uam_pre_vars, uam_acc_vars)
+				move_if_stack at end = uam_updated
+				moved_vars = uam_pre_vars
+
+	# DEDENT — only acts when it closes the last arm of a tracked chain (the
+	# next token isn't KW_ELSE, so no more arms follow). Folds this final arm
+	# into the accumulator (unless it's terminal — see the KW_ELSE comment
+	# above, same reasoning) and that union becomes moved_vars going forward.
+	# Every other DEDENT (closing a for/fn body, or a chain arm followed by
+	# another else) is a no-op — nothing is cleared, so a move followed by a
+	# read in later straight-line code is still caught.
+	if cur_kind is "DEDENT"
+		int uam_dfs_len = len(move_if_stack)
+		if uam_dfs_len > 0
+			int uam_dtop_idx = uam_dfs_len - 1
+			UamFrame uam_dtop = move_if_stack at uam_dtop_idx
+			(uam_depth, uam_acc_vars) in uam_dtop
+			if uam_depth is block_depth
+				bool uam_next_is_else = false
+				int uam_after_dedent = pos + 1
+				if uam_after_dedent < token_count
+					Token uam_ad_tok = tokens at uam_after_dedent
+					(kind) in uam_ad_tok
+					if kind is "KW_ELSE"
+						uam_next_is_else = true
+				if not uam_next_is_else
+					bool uam_d_terminal = false
+					int uam_dt_scan = pos - 1
+					for if uam_dt_scan >= 0
+						Token uam_dt_tok = tokens at uam_dt_scan
+						(kind) in uam_dt_tok
+						if kind is "NEWLINE"
+							uam_dt_scan = uam_dt_scan - 1
+						else
+							break
+					int uam_dt_line_end = uam_dt_scan
+					for if uam_dt_scan >= 0
+						Token uam_dt_tok2 = tokens at uam_dt_scan
+						(kind) in uam_dt_tok2
+						if kind is "NEWLINE"
+							break
+						if kind is "INDENT"
+							break
+						if kind is "DEDENT"
+							break
+						uam_dt_scan = uam_dt_scan - 1
+					int uam_dt_line_start = uam_dt_scan + 1
+					if uam_dt_line_start <= uam_dt_line_end
+						Token uam_dt_first = tokens at uam_dt_line_start
+						(kind) in uam_dt_first
+						if kind is "KW_RETURN"
+							uam_d_terminal = true
+						if kind is "KW_BREAK"
+							uam_d_terminal = true
+						if kind is "KW_CONTINUE"
+							uam_d_terminal = true
+					if not uam_d_terminal
+						int uam_di = 0
+						int uam_dn = len(moved_vars)
+						for if uam_di < uam_dn
+							string uam_dv = moved_vars at uam_di
+							bool uam_d_has = list_has(uam_acc_vars, uam_dv)
+							if not uam_d_has
+								uam_acc_vars at end = uam_dv
+							uam_di = uam_di + 1
+					move_if_stack remove at uam_dtop_idx
+					moved_vars = uam_acc_vars
+
+	# moved_fields (partial-move destructure tracking) stays same-block only —
+	# see the macro header for why this half isn't flow-sensitive.
 	if cur_kind is "INDENT"
 		rust
-			moved_vars.clear();
+			moved_fields.clear();
 	if cur_kind is "DEDENT"
 		rust
-			moved_vars.clear();
+			moved_fields.clear();
 	if cur_kind is "KW_ELSE"
 		rust
-			moved_vars.clear();
+			moved_fields.clear();
+
+	# move (f1, f2) in source — partial-move destructuring. Collect the field
+	# names, then the source identifier, and mark each field as moved on that
+	# source. Does not touch moved_vars: `source` itself is not fully
+	# consumed, only the named fields are, so a later `(other_field) in
+	# source` for an untouched field must stay legal.
+	if cur_kind is "KW_MOVE"
+		int uam_pm_next = pos + 1
+		if uam_pm_next < token_count
+			Token uam_pm_next_tok = tokens at uam_pm_next
+			(kind) in uam_pm_next_tok
+			if kind is "LPAREN"
+				strList uam_pm_fields = empty
+				int uam_pm_scan = uam_pm_next + 1
+				bool uam_pm_scanning = true
+				for if uam_pm_scanning
+					if uam_pm_scan < token_count
+						Token uam_pm_scan_tok = tokens at uam_pm_scan
+						(kind, value) in uam_pm_scan_tok
+						if kind is "IDENT"
+							uam_pm_fields at end = value
+						if kind is "RPAREN"
+							uam_pm_scanning = false
+						uam_pm_scan = uam_pm_scan + 1
+					else
+						uam_pm_scanning = false
+				# uam_pm_scan now sits just past the RPAREN — ex: move (f1, f2) {in} source
+				if uam_pm_scan < token_count
+					Token uam_pm_in_tok = tokens at uam_pm_scan
+					(kind) in uam_pm_in_tok
+					if kind is "KW_IN"
+						int uam_pm_src_pos = uam_pm_scan + 1
+						if uam_pm_src_pos < token_count
+							Token uam_pm_src_tok = tokens at uam_pm_src_pos
+							(kind, value) in uam_pm_src_tok
+							if kind is "IDENT"
+								string uam_pm_src = value
+								(line, file) in uam_pm_src_tok
+								string uam_pm_line_str = n_to_str(line)
+								int uam_pm_fi = 0
+								int uam_pm_fn = len(uam_pm_fields)
+								for if uam_pm_fi < uam_pm_fn
+									string uam_pm_field = uam_pm_fields at uam_pm_fi
+									string uam_pm_key = s_join([uam_pm_src, ".", uam_pm_field])
+									bool uam_pm_already = list_has(moved_fields, uam_pm_key)
+									if uam_pm_already
+										strList uam_pm_msg_parts = ["[validation] ", file, " line ", uam_pm_line_str, ": ", lbl_var, " '", uam_pm_key, "' - ", rule_double_move]
+										errors at end = s_join(uam_pm_msg_parts)
+									else
+										moved_fields at end = uam_pm_key
+									uam_pm_fi = uam_pm_fi + 1
+
+	# (f1, f2) in source / move (f1, f2) in source — the read side. Only
+	# bagged destructures reach here: the token right before KW_IN must be
+	# RPAREN, which a bare `for item in collection` header never has (see
+	# docs/loops.md — no parens on the plain form), so this can't misfire on
+	# a for-loop header. Walk back to the matching '(' to collect the field
+	# list, then check each field against moved_fields. Skipped entirely when
+	# this destructure is itself the `move (...) in source` that just marked
+	# the fields — that's the transition to moved, not a use of it.
+	if cur_kind is "KW_IN"
+		if pos > 0
+			int uam_pmr_prev = pos - 1
+			Token uam_pmr_prev_tok = tokens at uam_pmr_prev
+			(kind) in uam_pmr_prev_tok
+			if kind is "RPAREN"
+				int uam_pmr_next = pos + 1
+				if uam_pmr_next < token_count
+					Token uam_pmr_next_tok = tokens at uam_pmr_next
+					(kind, value) in uam_pmr_next_tok
+					if kind is "IDENT"
+						int uam_pmr_after = uam_pmr_next + 1
+						bool uam_pmr_bare = true
+						if uam_pmr_after < token_count
+							Token uam_pmr_after_tok = tokens at uam_pmr_after
+							(kind) in uam_pmr_after_tok
+							if kind is "LPAREN"
+								uam_pmr_bare = false
+						if uam_pmr_bare
+							string uam_pmr_src = value
+							strList uam_pmr_fields = empty
+							int uam_pmr_scan = pos - 2
+							int uam_pmr_pdepth = 0
+							for if uam_pmr_scan >= 0
+								Token uam_pmr_scan_tok = tokens at uam_pmr_scan
+								(kind, value) in uam_pmr_scan_tok
+								if kind is "RPAREN"
+									uam_pmr_pdepth = uam_pmr_pdepth + 1
+								else if kind is "LPAREN"
+									if uam_pmr_pdepth is 0
+										break
+									uam_pmr_pdepth = uam_pmr_pdepth - 1
+								else if kind is "IDENT"
+									if uam_pmr_pdepth is 0
+										uam_pmr_fields at end = value
+								uam_pmr_scan = uam_pmr_scan - 1
+
+							bool uam_pmr_is_move_stmt = false
+							if uam_pmr_scan > 0
+								int uam_pmr_before_lp = uam_pmr_scan - 1
+								Token uam_pmr_blp_tok = tokens at uam_pmr_before_lp
+								(kind) in uam_pmr_blp_tok
+								if kind is "KW_MOVE"
+									uam_pmr_is_move_stmt = true
+
+							if not uam_pmr_is_move_stmt
+								int uam_pmr_fi = 0
+								int uam_pmr_fn = len(uam_pmr_fields)
+								for if uam_pmr_fi < uam_pmr_fn
+									string uam_pmr_field = uam_pmr_fields at uam_pmr_fi
+									string uam_pmr_key = s_join([uam_pmr_src, ".", uam_pmr_field])
+									bool uam_pmr_was_moved = list_has(moved_fields, uam_pmr_key)
+									if uam_pmr_was_moved
+										(line, file) in uam_pmr_next_tok
+										string uam_pmr_line_str = n_to_str(line)
+										strList uam_pmr_msg_parts = ["[validation] ", file, " line ", uam_pmr_line_str, ": ", lbl_var, " '", uam_pmr_key, "' - ", rule_use_after_move]
+										errors at end = s_join(uam_pmr_msg_parts)
+									uam_pmr_fi = uam_pmr_fi + 1
 
 	# for move (item in collection) — collection is fully consumed once the loop
 	# is entered. ex: for {move} (item in collection) — pos+1 is KW_MOVE
@@ -163,10 +430,17 @@ macro check_use_after_move
 				uam_is_binding = true
 
 		if uam_is_binding
-			# a fresh value now occupies this name — it's no longer moved
+			# a fresh value now occupies this name — it's no longer moved,
+			# and any partial-move field tracking from a PRIOR value that
+			# happened to share this name (e.g. a macro like gen_expr_r
+			# inlined twice in the same block, each declaring its own fresh
+			# `ge_r`) no longer applies either — the old "name.field" keys
+			# belonged to a different instance.
 			string name = cur_val
+			string uam_field_pfx = s_join([name, "."])
 			rust
 				moved_vars.retain(|x| x != &name);
+				moved_fields.retain(|x| !x.starts_with(&uam_field_pfx));
 		else
 			bool uam_skip = in_struct_body
 			if in_enum_body

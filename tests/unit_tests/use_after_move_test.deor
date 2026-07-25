@@ -2,9 +2,15 @@
 # Exercises check_use_after_move: reading a variable after `move` has already
 # consumed it, and moving the same variable twice in a row, should both error
 # with a friendly Deor-level message instead of reaching codegen as a raw
-# rustc "use of moved value" on generated Rust the user never sees.
+# rustc "use of moved value" on generated Rust the user never sees. Also
+# covers the flow-sensitive if/else cases (a move in one arm reachable at the
+# point of a later read) and partial-move destructuring re-reads.
 # See use_after_move_happy_test.deor for the legitimate patterns this check
 # must NOT flag.
+
+struct Score
+	string label
+	int points
 
 fn void test_read_after_move()
 	string message = "hello"
@@ -16,10 +22,37 @@ fn void test_double_move()
 	string second_val = move first_val
 	string third_val = move first_val
 
+fn void test_move_in_bare_if_then_read()
+	string val_a = "a"
+	if true
+		string taken_a = move val_a
+	print(val_a)
+
+fn void test_move_in_one_arm_then_read_after_chain()
+	string val_b = "b"
+	if true
+		string taken_b = move val_b
+	else
+		print(val_b)
+	print(val_b)
+
+fn void test_redestructure_moved_field()
+	label as "x"
+	points as 5
+	Score score = (label, points)
+	move (label, points) in score
+	move (label) in score
+
 fn void main()
 	test_read_after_move()
 	test_double_move()
+	test_move_in_bare_if_then_read()
+	test_move_in_one_arm_then_read_after_chain()
+	test_redestructure_moved_field()
 
 # expect-error:
-# line 12: variable 'message' - used here but already moved earlier in this block
-# line 17: variable 'first_val' - already moved earlier in this block
+# line 18: variable 'message' - used here but already moved earlier
+# line 23: variable 'first_val' - already moved earlier
+# line 29: variable 'val_a' - used here but already moved earlier
+# line 37: variable 'val_b' - used here but already moved earlier
+# line 44: variable 'score.label' - already moved earlier

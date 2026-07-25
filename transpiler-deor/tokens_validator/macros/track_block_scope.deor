@@ -34,6 +34,7 @@ macro track_block_scope
 				string_var_names.clear();
 				copy_var_names.clear();
 				moved_vars.clear();
+				moved_fields.clear();
 		# ex: fn {void} name() — pos+1 grabs the return-type slot
 		int void_check = pos + 1
 		if void_check < token_count

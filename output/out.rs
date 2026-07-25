@@ -2469,6 +2469,15 @@ fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<To
 // transpiler-deor/tokens_validator/tokens_validation.deor
 type FnTestRule = fn(String);
 
+#[derive(Clone, PartialEq, Debug)]
+struct UamFrame {
+    uam_depth: i64,
+    uam_pre_vars: Vec<String>,
+    uam_acc_vars: Vec<String>,
+}
+
+type FrameStack = Vec<UamFrame>;
+
 fn validate_tokens(tokens: TokensRef) {
     // transpiler-deor/tokens_validator/tokens_validation.deor
     let mut token_count: i64 = (tokens.len() as i64);
@@ -2525,8 +2534,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_bracket_index: String = "bracket indexing is not valid in Deor — use 'name at index' instead".to_string();
     let mut rule_empty_bracket: String = "use 'empty' to initialize an empty list — [] is only valid with items inside".to_string();
     let mut rule_move: String = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid".to_string();
-    let mut rule_use_after_move: String = "used here but already moved earlier in this block — the value was consumed by an earlier 'move' and cannot be read again".to_string();
-    let mut rule_double_move: String = "already moved earlier in this block — 'move' cannot consume the same variable twice".to_string();
+    let mut rule_use_after_move: String = "used here but already moved earlier — the value was consumed by an earlier 'move' and cannot be read again".to_string();
+    let mut rule_double_move: String = "already moved earlier — 'move' cannot consume the same variable twice".to_string();
     let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
     let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
     let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
@@ -2708,6 +2717,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut string_var_names: Vec<String> = Vec::new();
     let mut copy_var_names: Vec<String> = Vec::new();
     let mut moved_vars: Vec<String> = Vec::new();
+    let mut moved_fields: Vec<String> = Vec::new();
+    let mut move_if_stack: Vec<UamFrame> = Vec::new();
     let mut declared_var_names: Vec<String> = Vec::new();
     let mut fn_names: Vec<String> = Vec::new();
     let mut enum_variant_names: Vec<String> = Vec::new();
@@ -3434,6 +3445,7 @@ fn validate_tokens(tokens: TokensRef) {
                     string_var_names.clear();
                     copy_var_names.clear();
                     moved_vars.clear();
+                    moved_fields.clear();
                 }
                 let mut void_check: i64 = pos + 1;
                 if void_check < token_count {
@@ -3593,17 +3605,390 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: check_use_after_move (transpiler-deor/tokens_validator/macros/check_use_after_move.deor)
         {
             // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
-            if cur_kind == "INDENT" {
+            if cur_kind == "KW_IF" {
                 // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
-                moved_vars.clear();
-            }
-            if cur_kind == "DEDENT" {
-                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
-                moved_vars.clear();
+                let mut uam_is_elseif: bool = false;
+                if pos > 0 {
+                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                    let mut uam_pif_pos: i64 = pos - 1;
+                    let mut uam_pif_tok: Token = tokens[uam_pif_pos as usize].clone();
+                    let mut kind = uam_pif_tok.kind.clone();
+                    if kind == "KW_ELSE" {
+                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                        uam_is_elseif = true;
+                    }
+                }
+                if !uam_is_elseif {
+                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                    let mut uam_depth: i64 = block_depth.clone();
+                    let mut uam_pre_vars: Vec<String> = moved_vars.clone();
+                    let mut uam_acc_vars: Vec<String> = moved_vars.clone();
+                    let mut uam_new_frame = UamFrame { uam_depth: uam_depth.clone(), uam_pre_vars: uam_pre_vars.clone(), uam_acc_vars: uam_acc_vars.clone() };
+                    move_if_stack.push(uam_new_frame.clone());
+                }
             }
             if cur_kind == "KW_ELSE" {
                 // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
-                moved_vars.clear();
+                let mut uam_efs_len: i64 = (move_if_stack.len() as i64);
+                if uam_efs_len > 0 {
+                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                    let mut uam_etop_idx: i64 = uam_efs_len - 1;
+                    let mut uam_etop: UamFrame = move_if_stack[uam_etop_idx as usize].clone();
+                    let mut uam_depth = uam_etop.uam_depth.clone();
+                    let mut uam_pre_vars = uam_etop.uam_pre_vars.clone();
+                    let mut uam_acc_vars = uam_etop.uam_acc_vars.clone();
+                    if uam_depth == block_depth {
+                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                        let mut uam_e_terminal: bool = false;
+                        let mut uam_et_scan: i64 = pos - 1;
+                        while uam_et_scan >= 0 {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            let mut uam_et_tok: Token = tokens[uam_et_scan as usize].clone();
+                            let mut kind = uam_et_tok.kind.clone();
+                            if kind == "NEWLINE" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                uam_et_scan = uam_et_scan - 1;
+                            } else {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                break;
+                            }
+                        }
+                        let mut uam_et_line_end: i64 = uam_et_scan.clone();
+                        while uam_et_scan >= 0 {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            let mut uam_et_tok2: Token = tokens[uam_et_scan as usize].clone();
+                            let mut kind = uam_et_tok2.kind.clone();
+                            if kind == "NEWLINE" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                break;
+                            }
+                            if kind == "INDENT" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                break;
+                            }
+                            if kind == "DEDENT" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                break;
+                            }
+                            uam_et_scan = uam_et_scan - 1;
+                        }
+                        let mut uam_et_line_start: i64 = uam_et_scan + 1;
+                        if uam_et_line_start <= uam_et_line_end {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            let mut uam_et_first: Token = tokens[uam_et_line_start as usize].clone();
+                            let mut kind = uam_et_first.kind.clone();
+                            if kind == "KW_RETURN" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                uam_e_terminal = true;
+                            }
+                            if kind == "KW_BREAK" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                uam_e_terminal = true;
+                            }
+                            if kind == "KW_CONTINUE" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                uam_e_terminal = true;
+                            }
+                        }
+                        if !uam_e_terminal {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            let mut uam_ei: i64 = 0;
+                            let mut uam_en: i64 = (moved_vars.len() as i64);
+                            while uam_ei < uam_en {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                let mut uam_ev: String = moved_vars[uam_ei as usize].clone();
+                                let mut uam_e_has: bool = list_has(uam_acc_vars.clone(), uam_ev.clone());
+                                if !uam_e_has {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    uam_acc_vars.push(uam_ev.clone());
+                                }
+                                uam_ei = uam_ei + 1;
+                            }
+                        }
+                        move_if_stack.remove(uam_etop_idx as usize);
+                        let mut uam_updated = UamFrame { uam_depth: uam_depth.clone(), uam_pre_vars: uam_pre_vars.clone(), uam_acc_vars: uam_acc_vars.clone() };
+                        move_if_stack.push(uam_updated.clone());
+                        moved_vars = uam_pre_vars;
+                    }
+                }
+            }
+            if cur_kind == "DEDENT" {
+                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                let mut uam_dfs_len: i64 = (move_if_stack.len() as i64);
+                if uam_dfs_len > 0 {
+                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                    let mut uam_dtop_idx: i64 = uam_dfs_len - 1;
+                    let mut uam_dtop: UamFrame = move_if_stack[uam_dtop_idx as usize].clone();
+                    let mut uam_depth = uam_dtop.uam_depth.clone();
+                    let mut uam_acc_vars = uam_dtop.uam_acc_vars.clone();
+                    if uam_depth == block_depth {
+                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                        let mut uam_next_is_else: bool = false;
+                        let mut uam_after_dedent: i64 = pos + 1;
+                        if uam_after_dedent < token_count {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            let mut uam_ad_tok: Token = tokens[uam_after_dedent as usize].clone();
+                            let mut kind = uam_ad_tok.kind.clone();
+                            if kind == "KW_ELSE" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                uam_next_is_else = true;
+                            }
+                        }
+                        if !uam_next_is_else {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            let mut uam_d_terminal: bool = false;
+                            let mut uam_dt_scan: i64 = pos - 1;
+                            while uam_dt_scan >= 0 {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                let mut uam_dt_tok: Token = tokens[uam_dt_scan as usize].clone();
+                                let mut kind = uam_dt_tok.kind.clone();
+                                if kind == "NEWLINE" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    uam_dt_scan = uam_dt_scan - 1;
+                                } else {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    break;
+                                }
+                            }
+                            let mut uam_dt_line_end: i64 = uam_dt_scan.clone();
+                            while uam_dt_scan >= 0 {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                let mut uam_dt_tok2: Token = tokens[uam_dt_scan as usize].clone();
+                                let mut kind = uam_dt_tok2.kind.clone();
+                                if kind == "NEWLINE" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    break;
+                                }
+                                if kind == "INDENT" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    break;
+                                }
+                                if kind == "DEDENT" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    break;
+                                }
+                                uam_dt_scan = uam_dt_scan - 1;
+                            }
+                            let mut uam_dt_line_start: i64 = uam_dt_scan + 1;
+                            if uam_dt_line_start <= uam_dt_line_end {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                let mut uam_dt_first: Token = tokens[uam_dt_line_start as usize].clone();
+                                let mut kind = uam_dt_first.kind.clone();
+                                if kind == "KW_RETURN" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    uam_d_terminal = true;
+                                }
+                                if kind == "KW_BREAK" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    uam_d_terminal = true;
+                                }
+                                if kind == "KW_CONTINUE" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    uam_d_terminal = true;
+                                }
+                            }
+                            if !uam_d_terminal {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                let mut uam_di: i64 = 0;
+                                let mut uam_dn: i64 = (moved_vars.len() as i64);
+                                while uam_di < uam_dn {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    let mut uam_dv: String = moved_vars[uam_di as usize].clone();
+                                    let mut uam_d_has: bool = list_has(uam_acc_vars.clone(), uam_dv.clone());
+                                    if !uam_d_has {
+                                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                        uam_acc_vars.push(uam_dv.clone());
+                                    }
+                                    uam_di = uam_di + 1;
+                                }
+                            }
+                            move_if_stack.remove(uam_dtop_idx as usize);
+                            moved_vars = uam_acc_vars;
+                        }
+                    }
+                }
+            }
+            if cur_kind == "INDENT" {
+                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                moved_fields.clear();
+            }
+            if cur_kind == "DEDENT" {
+                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                moved_fields.clear();
+            }
+            if cur_kind == "KW_ELSE" {
+                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                moved_fields.clear();
+            }
+            if cur_kind == "KW_MOVE" {
+                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                let mut uam_pm_next: i64 = pos + 1;
+                if uam_pm_next < token_count {
+                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                    let mut uam_pm_next_tok: Token = tokens[uam_pm_next as usize].clone();
+                    let mut kind = uam_pm_next_tok.kind.clone();
+                    if kind == "LPAREN" {
+                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                        let mut uam_pm_fields: Vec<String> = Vec::new();
+                        let mut uam_pm_scan: i64 = uam_pm_next + 1;
+                        let mut uam_pm_scanning: bool = true;
+                        while uam_pm_scanning {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            if uam_pm_scan < token_count {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                let mut uam_pm_scan_tok: Token = tokens[uam_pm_scan as usize].clone();
+                                let mut kind = uam_pm_scan_tok.kind.clone();
+                                let mut value = uam_pm_scan_tok.value.clone();
+                                if kind == "IDENT" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    uam_pm_fields.push(value.clone());
+                                }
+                                if kind == "RPAREN" {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    uam_pm_scanning = false;
+                                }
+                                uam_pm_scan = uam_pm_scan + 1;
+                            } else {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                uam_pm_scanning = false;
+                            }
+                        }
+                        if uam_pm_scan < token_count {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            let mut uam_pm_in_tok: Token = tokens[uam_pm_scan as usize].clone();
+                            let mut kind = uam_pm_in_tok.kind.clone();
+                            if kind == "KW_IN" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                let mut uam_pm_src_pos: i64 = uam_pm_scan + 1;
+                                if uam_pm_src_pos < token_count {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    let mut uam_pm_src_tok: Token = tokens[uam_pm_src_pos as usize].clone();
+                                    let mut kind = uam_pm_src_tok.kind.clone();
+                                    let mut value = uam_pm_src_tok.value.clone();
+                                    if kind == "IDENT" {
+                                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                        let mut uam_pm_src: String = value.clone();
+                                        let mut line = uam_pm_src_tok.line.clone();
+                                        let mut file = uam_pm_src_tok.file.clone();
+                                        let mut uam_pm_line_str: String = n_to_str(line.clone());
+                                        let mut uam_pm_fi: i64 = 0;
+                                        let mut uam_pm_fn: i64 = (uam_pm_fields.len() as i64);
+                                        while uam_pm_fi < uam_pm_fn {
+                                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                            let mut uam_pm_field: String = uam_pm_fields[uam_pm_fi as usize].clone();
+                                            let mut uam_pm_key: String = [uam_pm_src.as_str(), ".", uam_pm_field.as_str()].concat();
+                                            let mut uam_pm_already: bool = list_has(moved_fields.clone(), uam_pm_key.clone());
+                                            if uam_pm_already {
+                                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                                let mut uam_pm_msg_parts: Vec<String> = vec!["[validation] ".to_string(), file.clone(), " line ".to_string(), uam_pm_line_str.clone(), ": ".to_string(), lbl_var.clone(), " '".to_string(), uam_pm_key.clone(), "' - ".to_string(), rule_double_move.clone()];
+                                                errors.push(s_join(uam_pm_msg_parts.clone()).clone());
+                                            } else {
+                                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                                moved_fields.push(uam_pm_key.clone());
+                                            }
+                                            uam_pm_fi = uam_pm_fi + 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if cur_kind == "KW_IN" {
+                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                if pos > 0 {
+                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                    let mut uam_pmr_prev: i64 = pos - 1;
+                    let mut uam_pmr_prev_tok: Token = tokens[uam_pmr_prev as usize].clone();
+                    let mut kind = uam_pmr_prev_tok.kind.clone();
+                    if kind == "RPAREN" {
+                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                        let mut uam_pmr_next: i64 = pos + 1;
+                        if uam_pmr_next < token_count {
+                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                            let mut uam_pmr_next_tok: Token = tokens[uam_pmr_next as usize].clone();
+                            let mut kind = uam_pmr_next_tok.kind.clone();
+                            let mut value = uam_pmr_next_tok.value.clone();
+                            if kind == "IDENT" {
+                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                let mut uam_pmr_after: i64 = uam_pmr_next + 1;
+                                let mut uam_pmr_bare: bool = true;
+                                if uam_pmr_after < token_count {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    let mut uam_pmr_after_tok: Token = tokens[uam_pmr_after as usize].clone();
+                                    let mut kind = uam_pmr_after_tok.kind.clone();
+                                    if kind == "LPAREN" {
+                                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                        uam_pmr_bare = false;
+                                    }
+                                }
+                                if uam_pmr_bare {
+                                    // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                    let mut uam_pmr_src: String = value.clone();
+                                    let mut uam_pmr_fields: Vec<String> = Vec::new();
+                                    let mut uam_pmr_scan: i64 = pos - 2;
+                                    let mut uam_pmr_pdepth: i64 = 0;
+                                    while uam_pmr_scan >= 0 {
+                                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                        let mut uam_pmr_scan_tok: Token = tokens[uam_pmr_scan as usize].clone();
+                                        let mut kind = uam_pmr_scan_tok.kind.clone();
+                                        let mut value = uam_pmr_scan_tok.value.clone();
+                                        if kind == "RPAREN" {
+                                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                            uam_pmr_pdepth = uam_pmr_pdepth + 1;
+                                        } else if kind == "LPAREN" {
+                                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                            if uam_pmr_pdepth == 0 {
+                                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                                break;
+                                            }
+                                            uam_pmr_pdepth = uam_pmr_pdepth - 1;
+                                        } else if kind == "IDENT" {
+                                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                            if uam_pmr_pdepth == 0 {
+                                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                                uam_pmr_fields.push(value.clone());
+                                            }
+                                        }
+                                        uam_pmr_scan = uam_pmr_scan - 1;
+                                    }
+                                    let mut uam_pmr_is_move_stmt: bool = false;
+                                    if uam_pmr_scan > 0 {
+                                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                        let mut uam_pmr_before_lp: i64 = uam_pmr_scan - 1;
+                                        let mut uam_pmr_blp_tok: Token = tokens[uam_pmr_before_lp as usize].clone();
+                                        let mut kind = uam_pmr_blp_tok.kind.clone();
+                                        if kind == "KW_MOVE" {
+                                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                            uam_pmr_is_move_stmt = true;
+                                        }
+                                    }
+                                    if !uam_pmr_is_move_stmt {
+                                        // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                        let mut uam_pmr_fi: i64 = 0;
+                                        let mut uam_pmr_fn: i64 = (uam_pmr_fields.len() as i64);
+                                        while uam_pmr_fi < uam_pmr_fn {
+                                            // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                            let mut uam_pmr_field: String = uam_pmr_fields[uam_pmr_fi as usize].clone();
+                                            let mut uam_pmr_key: String = [uam_pmr_src.as_str(), ".", uam_pmr_field.as_str()].concat();
+                                            let mut uam_pmr_was_moved: bool = list_has(moved_fields.clone(), uam_pmr_key.clone());
+                                            if uam_pmr_was_moved {
+                                                // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
+                                                let mut line = uam_pmr_next_tok.line.clone();
+                                                let mut file = uam_pmr_next_tok.file.clone();
+                                                let mut uam_pmr_line_str: String = n_to_str(line.clone());
+                                                let mut uam_pmr_msg_parts: Vec<String> = vec!["[validation] ".to_string(), file.clone(), " line ".to_string(), uam_pmr_line_str.clone(), ": ".to_string(), lbl_var.clone(), " '".to_string(), uam_pmr_key.clone(), "' - ".to_string(), rule_use_after_move.clone()];
+                                                errors.push(s_join(uam_pmr_msg_parts.clone()).clone());
+                                            }
+                                            uam_pmr_fi = uam_pmr_fi + 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
             if cur_kind == "KW_FOR" {
                 // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
@@ -3794,7 +4179,9 @@ fn validate_tokens(tokens: TokensRef) {
                 if uam_is_binding {
                     // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
                     let mut name: String = cur_val.clone();
+                    let mut uam_field_pfx: String = [name.as_str(), "."].concat();
                     moved_vars.retain(|x| x != &name);
+                    moved_fields.retain(|x| !x.starts_with(&uam_field_pfx));
                 } else {
                     // transpiler-deor/tokens_validator/macros/check_use_after_move.deor
                     let mut uam_skip: bool = in_struct_body.clone();

@@ -1,6 +1,16 @@
 
 shape fnTestRule = func of string to bool
 
+# One snapshot per currently-open if/else-if/else chain, used by
+# check_use_after_move to track moves flow-sensitively across branches. See
+# docs on that macro for the mechanism.
+struct UamFrame
+	int uam_depth
+	strList uam_pre_vars
+	strList uam_acc_vars
+
+shape frameStack = list of UamFrame
+
 # Walks the merged token list and enforces naming conventions before codegen runs.
 # Prints all violations and exits with code 1 if any are found.
 fn void validate_tokens(TokensRef tokens)
@@ -71,6 +81,8 @@ fn void validate_tokens(TokensRef tokens)
 	strList string_var_names = empty
 	strList copy_var_names = empty
 	strList moved_vars = empty
+	strList moved_fields = empty
+	frameStack move_if_stack = empty
 	strList declared_var_names = empty
 	strList fn_names = empty
 	strList enum_variant_names = empty

@@ -6,7 +6,9 @@ Two tracks. Track A is worth doing regardless of backend. Track B only matters i
 
 ## Track A — Useful even if we stay on Rust
 
-1. **[DONE] Move checker in the Deor frontend.** `check_use_after_move.deor` + `track_copy_vars.deor` in `tokens_validator/`. Deliberately conservative — same-block only (clears on INDENT/DEDENT/`KW_ELSE`), so it never false-positives across a branch, but also won't catch a move-then-read that spans an if/else. Known gap: `move (f1, f2) in source` partial-move destructuring isn't tracked. Self-hosting confirmed clean (68/68 tests, transpiler recompiles itself with the check active).
+1. **[DONE] Move checker in the Deor frontend.** `check_use_after_move.deor` + `track_copy_vars.deor` in `tokens_validator/`. Flow-sensitive across if/else-if/else chains (snapshot stack keyed by block depth, correctly excludes arms that end in `return`/`break`/`continue`), and tracks partial-move destructuring (`move (f1, f2) in source`) per field via `moved_fields`. Self-hosting confirmed clean and stable across repeated build cycles (71/71 tests).
+   - **Why this had to move past "diagnostics nicety":** on the Rust backend, anything this checker misses is still caught by rustc's own borrow checker — an ugly error, but never a bad binary. QBE has no such backstop (see Track B #5), so before QBE ships this checker's remaining gaps become real memory-safety bugs (use-after-free, double-free) in compiled output, not compile errors. It needed to become sound, not just conservative-and-good-enough.
+   - **Remaining known gap:** doesn't flag the whole struct being used by value after a partial move (only a repeat destructure of an already-moved field) — see the header comment in `check_use_after_move.deor`.
 2. **Formalize `raw` (Rc/Arc) lifecycle.** Currently hand-written per `rust` block. Document/standardize the pattern so it's consistent, ahead of ever needing to reimplement it manually.
 3. **Diagnostics pass groundwork.** Anything built for #1 (scope tracking, binding lifetime) is reusable infrastructure for better error messages generally, independent of backend.
 
@@ -15,7 +17,7 @@ Two tracks. Track A is worth doing regardless of backend. Track B only matters i
 ## Track B — Only needed for QBE
 
 4. **Spike: minimal QBE codegen path.** Parallel codegen module (alongside `codegen/codegen.deor`) emitting QBE IL for a tiny subset (ints, functions, print) to prove the pipeline: Deor → QBE IL → qbe → asm → cc/ld → binary.
-5. **Memory strategy for clone-default path.** No aliasing happens outside `move`/`raw`/`rust`, so this is scope-exit frees (stack or arena) — no borrow checker needed. Design and implement this allocator discipline.
+5. **Memory strategy for clone-default path.** Move/raw/rust aren't the only aliasing outside clone-default: `for item in collection` borrows by default (`item` is a reference, collection stays usable — see `docs/loops.md`), which rustc's borrow checker currently keeps safe for free (no mutation of the collection during iteration, no escaping the loop body). QBE has no such checker, so this needs its own explicit rule, enforced by the compiler itself. Once that's covered, ownership elsewhere is single-owner (scope-exit frees, stack or arena — no borrow checker needed for the rest). Design and implement this allocator discipline.
 6. **Manual refcounting for `raw`.** No more borrowing Rust's `Rc`/`Arc` — implement our own refcount inc/dec around clone/drop of `raw`-wrapped values.
 7. **Replacement for `rust` blocks.** This is the big one — currently the escape hatch for anything hard (dicts, bytes, cargo crates). Needs a real answer: raw QBE block, or C FFI. Nothing else in this plan matters if this isn't solved.
 8. **Runtime library.** No Rust std. Reimplement what `lib/*.deor` currently gets for free from Rust wrappers — strings, list growth/resize, formatting, I/O — as a small C or hand-written runtime linked into every binary.
