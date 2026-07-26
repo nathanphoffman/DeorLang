@@ -10041,6 +10041,7 @@ fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
             in_type = value;
             let mut t6_pos: i64 = pos + 6;
             let mut t6_token: Token = tokens[t6_pos as usize].clone();
+            let kind = t6_token.kind.clone();
             let value = t6_token.value.clone();
             let mut t6_is_to: bool = kind == "KW_TO";
             func_end = t6_pos;

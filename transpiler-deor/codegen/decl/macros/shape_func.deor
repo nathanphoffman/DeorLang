@@ -21,7 +21,7 @@ macro shape_func
 		# ex: shape Foo = func of T {to} U — pos+6 grabs KW_TO (or nothing, if no output)
 		int t6_pos = pos + 6
 		Token t6_token = tokens at t6_pos
-		(value) in t6_token
+		(kind, value) in t6_token
 		bool t6_is_to = kind is "KW_TO"
 		func_end = t6_pos
 		if t6_is_to

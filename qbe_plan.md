@@ -8,7 +8,10 @@ Two tracks. Track A is worth doing regardless of backend. Track B only matters i
 
 1. **[DONE] Move checker in the Deor frontend.** `check_use_after_move.deor` + `track_copy_vars.deor` in `tokens_validator/`. Flow-sensitive across if/else-if/else chains (snapshot stack keyed by block depth, correctly excludes arms that end in `return`/`break`/`continue`), and tracks partial-move destructuring (`move (f1, f2) in source`) per field via `moved_fields`. Self-hosting confirmed clean and stable across repeated build cycles (71/71 tests).
    - **Why this had to move past "diagnostics nicety":** on the Rust backend, anything this checker misses is still caught by rustc's own borrow checker — an ugly error, but never a bad binary. QBE has no such backstop (see Track B #5), so before QBE ships this checker's remaining gaps become real memory-safety bugs (use-after-free, double-free) in compiled output, not compile errors. It needed to become sound, not just conservative-and-good-enough.
-   - **Remaining known gap:** doesn't flag the whole struct being used by value after a partial move (only a repeat destructure of an already-moved field) — see the header comment in `check_use_after_move.deor`.
+   - **Remaining known gaps (undocumented as of this pass, not yet fixed):**
+     - **False positive, highest priority:** `(f1, f2) in source` destructure targets don't clear prior moved-status the way `f1 = expr` does. Move a name, then re-bind it via destructure, then read it — falsely flagged as already-moved. Breaks the checker's own "never false-positive" rule; can reject a valid program.
+     - **False negative:** doesn't flag the whole struct being used by value after a partial move (only a repeat destructure of an already-moved field).
+     - **False negative:** single textual pass, not a real loop simulation — a move at the end of a loop body followed by a read at the start of the same body (a real use-after-move on the second iteration) isn't caught.
 2. **Formalize `raw` (Rc/Arc) lifecycle.** Currently hand-written per `rust` block. Document/standardize the pattern so it's consistent, ahead of ever needing to reimplement it manually.
 3. **Diagnostics pass groundwork.** Anything built for #1 (scope tracking, binding lifetime) is reusable infrastructure for better error messages generally, independent of backend.
 
