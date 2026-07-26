@@ -922,6 +922,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut op_val_rb: String = "]".to_string();
                 let mut op_kind_cm: String = "COMMA".to_string();
                 let mut op_val_cm: String = ",".to_string();
+                let mut op_invalid_chars: Vec<String> = vec!["&".to_string(), "|".to_string(), "^".to_string(), "!".to_string(), "{".to_string(), "}".to_string()];
                 let mut op_peek_idx: i64 = char_index + 1;
                 let mut op_peek: String = "".to_string();
                 if op_peek_idx < char_count {
@@ -979,27 +980,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 } else if character == "," {
                     // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
                     tokens.push(make_token(op_kind_cm.clone(), op_val_cm.clone(), meta.clone()).clone());
-                } else if character == "&" {
-                    // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
-                    let mut op_kind_inv: String = "INVALID".to_string();
-                    tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
-                } else if character == "|" {
-                    // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
-                    let mut op_kind_inv: String = "INVALID".to_string();
-                    tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
-                } else if character == "^" {
-                    // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
-                    let mut op_kind_inv: String = "INVALID".to_string();
-                    tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
-                } else if character == "!" {
-                    // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
-                    let mut op_kind_inv: String = "INVALID".to_string();
-                    tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
-                } else if character == "{" {
-                    // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
-                    let mut op_kind_inv: String = "INVALID".to_string();
-                    tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
-                } else if character == "}" {
+                } else if list_has(op_invalid_chars.clone(), character.clone()) {
                     // transpiler-deor/importer/lexer/macros/emit_operator_token.deor
                     let mut op_kind_inv: String = "INVALID".to_string();
                     tokens.push(make_token(op_kind_inv.clone(), character.clone(), meta.clone()).clone());
