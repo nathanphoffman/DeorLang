@@ -1,16 +1,8 @@
 
 # Enforces that crash() is called with exactly one argument.
 macro check_crash_args
-	if cur_kind is "IDENT"
-		bool is_crash = cur_val is "crash"
-		if is_crash
-			# ex: crash{(}"msg") — pos+1 grabs the opening paren
-			int crash_lp = pos + 1
-			if crash_lp < token_count
-				Token crash_lp_tok = tokens at crash_lp
-				(kind) in crash_lp_tok
-				if kind is "LPAREN"
-					int crash_arg_count = count_call_args(tokens, crash_lp)
-					bool wrong_count = crash_arg_count is not 1
-					if wrong_count
-						errors at end = val_err(tok, lbl_call, rule_crash)
+	string bac_name = "crash"
+	int bac_min = 1
+	int bac_max = 1
+	string bac_rule = rule_crash
+	macro_run check_builtin_arg_count

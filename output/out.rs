@@ -5150,23 +5150,31 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: check_crash_args (transpiler-deor/tokens_validator/macros/check_crash_args.deor)
         {
             // transpiler-deor/tokens_validator/macros/check_crash_args.deor
-            if cur_kind == "IDENT" {
-                // transpiler-deor/tokens_validator/macros/check_crash_args.deor
-                let mut is_crash: bool = cur_val == "crash";
-                if is_crash {
-                    // transpiler-deor/tokens_validator/macros/check_crash_args.deor
-                    let mut crash_lp: i64 = pos + 1;
-                    if crash_lp < token_count {
-                        // transpiler-deor/tokens_validator/macros/check_crash_args.deor
-                        let mut crash_lp_tok: Token = tokens[crash_lp as usize].clone();
-                        let mut kind = crash_lp_tok.kind.clone();
-                        if kind == "LPAREN" {
-                            // transpiler-deor/tokens_validator/macros/check_crash_args.deor
-                            let mut crash_arg_count: i64 = count_call_args(tokens.clone(), crash_lp.clone());
-                            let mut wrong_count: bool = crash_arg_count != 1;
-                            if wrong_count {
-                                // transpiler-deor/tokens_validator/macros/check_crash_args.deor
-                                errors.push(val_err(tok.clone(), lbl_call.clone(), rule_crash.clone()).clone());
+            let mut bac_name: String = "crash".to_string();
+            let mut bac_min: i64 = 1;
+            let mut bac_max: i64 = 1;
+            let mut bac_rule: String = rule_crash.clone();
+            // macro: check_builtin_arg_count (transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                if cur_kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                    let mut bac_is_target: bool = cur_val == bac_name;
+                    if bac_is_target {
+                        // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                        let mut bac_lp: i64 = pos + 1;
+                        if bac_lp < token_count {
+                            // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                            let mut bac_lp_tok: Token = tokens[bac_lp as usize].clone();
+                            let mut kind = bac_lp_tok.kind.clone();
+                            if kind == "LPAREN" {
+                                // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                                let mut bac_count: i64 = count_call_args(tokens.clone(), bac_lp.clone());
+                                let mut bac_ok: bool = bac_count >= bac_min && bac_count <= bac_max;
+                                if !bac_ok {
+                                    // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                                    errors.push(val_err(tok.clone(), lbl_call.clone(), bac_rule.clone()).clone());
+                                }
                             }
                         }
                     }
@@ -5176,26 +5184,30 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: check_print_args (transpiler-deor/tokens_validator/macros/check_print_args.deor)
         {
             // transpiler-deor/tokens_validator/macros/check_print_args.deor
-            if cur_kind == "IDENT" {
-                // transpiler-deor/tokens_validator/macros/check_print_args.deor
-                let mut is_print: bool = cur_val == "print";
-                if is_print {
-                    // transpiler-deor/tokens_validator/macros/check_print_args.deor
-                    let mut print_lp: i64 = pos + 1;
-                    if print_lp < token_count {
-                        // transpiler-deor/tokens_validator/macros/check_print_args.deor
-                        let mut print_lp_tok: Token = tokens[print_lp as usize].clone();
-                        let mut kind = print_lp_tok.kind.clone();
-                        if kind == "LPAREN" {
-                            // transpiler-deor/tokens_validator/macros/check_print_args.deor
-                            let mut print_arg_count: i64 = count_call_args(tokens.clone(), print_lp.clone());
-                            let mut is_one: bool = print_arg_count == 1;
-                            let mut is_two: bool = print_arg_count == 2;
-                            if !is_one {
-                                // transpiler-deor/tokens_validator/macros/check_print_args.deor
-                                if !is_two {
-                                    // transpiler-deor/tokens_validator/macros/check_print_args.deor
-                                    errors.push(val_err(tok.clone(), lbl_call.clone(), rule_print_args.clone()).clone());
+            let mut bac_name: String = "print".to_string();
+            let mut bac_min: i64 = 1;
+            let mut bac_max: i64 = 2;
+            let mut bac_rule: String = rule_print_args.clone();
+            // macro: check_builtin_arg_count (transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                if cur_kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                    let mut bac_is_target: bool = cur_val == bac_name;
+                    if bac_is_target {
+                        // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                        let mut bac_lp: i64 = pos + 1;
+                        if bac_lp < token_count {
+                            // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                            let mut bac_lp_tok: Token = tokens[bac_lp as usize].clone();
+                            let mut kind = bac_lp_tok.kind.clone();
+                            if kind == "LPAREN" {
+                                // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                                let mut bac_count: i64 = count_call_args(tokens.clone(), bac_lp.clone());
+                                let mut bac_ok: bool = bac_count >= bac_min && bac_count <= bac_max;
+                                if !bac_ok {
+                                    // transpiler-deor/tokens_validator/macros/check_builtin_arg_count.deor
+                                    errors.push(val_err(tok.clone(), lbl_call.clone(), bac_rule.clone()).clone());
                                 }
                             }
                         }

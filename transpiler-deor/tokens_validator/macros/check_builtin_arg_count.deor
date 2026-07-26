@@ -1,0 +1,19 @@
+
+# Shared detector for "known builtin called with wrong argument count" — used by
+# check_crash_args (crash, exactly 1 arg) and check_print_args (print, 1-2 args).
+# Parameterized via bac_name, bac_min, bac_max, bac_rule — set these immediately
+# before `macro_run check_builtin_arg_count`.
+macro check_builtin_arg_count
+	if cur_kind is "IDENT"
+		bool bac_is_target = cur_val is bac_name
+		if bac_is_target
+			# ex: crash{(}"msg") — pos+1 grabs the opening paren
+			int bac_lp = pos + 1
+			if bac_lp < token_count
+				Token bac_lp_tok = tokens at bac_lp
+				(kind) in bac_lp_tok
+				if kind is "LPAREN"
+					int bac_count = count_call_args(tokens, bac_lp)
+					bool bac_ok = bac_count >= bac_min and bac_count <= bac_max
+					if not bac_ok
+						errors at end = val_err(tok, lbl_call, bac_rule)
