@@ -42,7 +42,7 @@ unsafe_macro dd_check_duplicate
 		else
 			should_error = enforce_unique_import
 		if should_error
-			macro_run dd_error_duplicate
+			dd_error_duplicate(decl_name, dn_tok, origin_file)
 	else
 		seen at end = dd_lookup_name
 		(file) in dn_tok

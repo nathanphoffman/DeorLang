@@ -2,8 +2,7 @@
 # Reports a duplicate top-level declaration as a fatal import-time error and exits.
 # Fires for any name reused anywhere in the project, same file or a different one —
 # there is no more silent "first one wins" for cross-file collisions.
-# Reads: decl_name, dn_tok, origin_file
-macro dd_error_duplicate
+fn void dd_error_duplicate(string decl_name, Token dn_tok, string origin_file)
 	(file, line) in dn_tok
 	string line_str = n_to_str(line)
 	string err_pre = "[error] "
