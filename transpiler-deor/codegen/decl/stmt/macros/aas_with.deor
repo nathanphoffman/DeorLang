@@ -30,10 +30,7 @@ macro aas_with
 			string aas_wsep = ", "
 			string aas_wfields = s_join_with(aas_ovr, aas_wsep)
 			string var_name = ident_name
-			bool mg_is_mut = list_has(mut_names, var_name)
-			string mut_kw = ""
-			if mg_is_mut
-				mut_kw = "mut "
+			unsafe_macro_run mut_guard
 			string aas_wlet = "let "
 			string aas_weq = " = "
 			string aas_wob = " { "

@@ -5,10 +5,7 @@ macro tb_validator
 	move (code, new_pos) in ge_r
 	val_code as code
 	val_end as new_pos
-	bool mg_is_mut = list_has(mut_names, var_name)
-	string mut_kw = ""
-	if mg_is_mut
-		mut_kw = "mut "
+	unsafe_macro_run mut_guard
 	string vld_let = "let "
 	string vld_opt = ": Option<"
 	string vld_new = "> = "

@@ -34,10 +34,7 @@ macro tb_paren
 				field_pairs at end = s_join([tb_fname, sfp_sep, tb_fname, sfp_cln])
 			string sep = ", "
 			string fields_code = s_join_with(field_pairs, sep)
-			bool mg_is_mut = list_has(mut_names, var_name)
-			string mut_kw = ""
-			if mg_is_mut
-				mut_kw = "mut "
+			unsafe_macro_run mut_guard
 			string scc_let = "let "
 			string scc_eq = " = "
 			string scc_ob = " { "

@@ -31,10 +31,7 @@ macro aas_default
 		aas_scan = aas_scan + 1
 
 	string var_name = ident_name
-	bool mg_is_mut = list_has(mut_names, var_name)
-	string mut_kw = ""
-	if mg_is_mut
-		mut_kw = "mut "
+	unsafe_macro_run mut_guard
 	string aas_suffix = ""
 	if not aas_is_chain
 		if kind is "STRING"

@@ -33,10 +33,7 @@ macro aas_struct
 				aas_fend = aas_fend + 1
 		string aas_struct = find_struct_for_fields(struct_reg, aas_fields)
 		string var_name = ident_name
-		bool mg_is_mut = list_has(mut_names, var_name)
-		string mut_kw = ""
-		if mg_is_mut
-			mut_kw = "mut "
+		unsafe_macro_run mut_guard
 		int aas_fcount = len(aas_fields)
 		strList aas_pairs = empty
 		for aas_fi in range(aas_fcount)

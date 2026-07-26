@@ -30,10 +30,7 @@ macro tb_with
 					tb_wend = tb_wend + 1
 			string tb_wsep = ", "
 			string tb_wfields = s_join_with(tb_ovr, tb_wsep)
-			bool mg_is_mut = list_has(mut_names, var_name)
-			string mut_kw = ""
-			if mg_is_mut
-				mut_kw = "mut "
+			unsafe_macro_run mut_guard
 			string tb_wlet = "let "
 			string tb_weq = " = "
 			string tb_wob = " { "
