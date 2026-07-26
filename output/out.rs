@@ -6999,34 +6999,7 @@ fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         let new_pos = arg_r.new_pos;
         let mut arg_code = code.clone();
         let arg_pos = new_pos.clone();
-        let mut ca_is_chain: bool = false;
-        let mut ca_scan: i64 = cur.clone();
-        let mut ca_depth: i64 = 0;
-        while ca_scan < arg_pos {
-            // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
-            let mut ca_scan_tok: Token = tokens[ca_scan as usize].clone();
-            let kind = ca_scan_tok.kind.clone();
-            if kind == "LPAREN" {
-                // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
-                ca_depth = ca_depth + 1;
-            }
-            if kind == "RPAREN" {
-                // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
-                if ca_depth > 0 {
-                    // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
-                    ca_depth = ca_depth - 1;
-                }
-            }
-            if ca_depth == 0 {
-                // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
-                if is_binary_op(kind.clone()) {
-                    // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
-                    ca_is_chain = true;
-                    break;
-                }
-            }
-            ca_scan = ca_scan + 1;
-        }
+        let mut ca_is_chain: bool = is_expr_chain(tokens.clone(), cur.clone(), arg_pos.clone());
         let mut start_token: Token = tokens[cur as usize].clone();
         let kind = start_token.kind.clone();
         if !ca_is_chain {
@@ -7765,6 +7738,37 @@ fn emit_val(val_code: String, val_kind: String) -> String {
         return [val_code.as_str(), RS_CLN.as_str()].concat();
     }
     return val_code;
+}
+
+fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
+    // transpiler-deor/codegen/decl/stmt/helpers.deor
+    let mut depth: i64 = 0;
+    let mut scan: i64 = start.clone();
+    while scan < stop {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        let mut scan_tok: Token = tokens[scan as usize].clone();
+        let kind = scan_tok.kind.clone();
+        if kind == "LPAREN" {
+            // transpiler-deor/codegen/decl/stmt/helpers.deor
+            depth = depth + 1;
+        }
+        if kind == "RPAREN" {
+            // transpiler-deor/codegen/decl/stmt/helpers.deor
+            if depth > 0 {
+                // transpiler-deor/codegen/decl/stmt/helpers.deor
+                depth = depth - 1;
+            }
+        }
+        if depth == 0 {
+            // transpiler-deor/codegen/decl/stmt/helpers.deor
+            if is_binary_op(kind.clone()) {
+                // transpiler-deor/codegen/decl/stmt/helpers.deor
+                return true;
+            }
+        }
+        scan = scan + 1;
+    }
+    return false;
 }
 
 // transpiler-deor/codegen/decl/stmt/destructure.deor
@@ -8805,34 +8809,7 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         let new_pos = ge_r.new_pos;
         let val_code = code.clone();
         let val_end = new_pos.clone();
-        let mut aas_is_chain: bool = false;
-        let mut aas_scan: i64 = val_pos.clone();
-        let mut aas_depth: i64 = 0;
-        while aas_scan < val_end {
-            // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
-            let mut aas_scan_tok: Token = tokens[aas_scan as usize].clone();
-            let kind = aas_scan_tok.kind.clone();
-            if kind == "LPAREN" {
-                // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
-                aas_depth = aas_depth + 1;
-            }
-            if kind == "RPAREN" {
-                // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
-                if aas_depth > 0 {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
-                    aas_depth = aas_depth - 1;
-                }
-            }
-            if aas_depth == 0 {
-                // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
-                if is_binary_op(kind.clone()) {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
-                    aas_is_chain = true;
-                    break;
-                }
-            }
-            aas_scan = aas_scan + 1;
-        }
+        let mut aas_is_chain: bool = is_expr_chain(tokens.clone(), val_pos.clone(), val_end.clone());
         let mut var_name: String = ident_name.clone();
         // macro: mut_guard (transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor)
         let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
@@ -9345,34 +9322,7 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             mut_kw = "mut ".to_string();
         }
         // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
-        let mut tb_is_chain: bool = false;
-        let mut tb_scan: i64 = val_pos.clone();
-        let mut tb_depth: i64 = 0;
-        while tb_scan < val_end {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
-            let mut tb_scan_tok: Token = tokens[tb_scan as usize].clone();
-            let kind = tb_scan_tok.kind.clone();
-            if kind == "LPAREN" {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
-                tb_depth = tb_depth + 1;
-            }
-            if kind == "RPAREN" {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
-                if tb_depth > 0 {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
-                    tb_depth = tb_depth - 1;
-                }
-            }
-            if tb_depth == 0 {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
-                if is_binary_op(kind.clone()) {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
-                    tb_is_chain = true;
-                    break;
-                }
-            }
-            tb_scan = tb_scan + 1;
-        }
+        let mut tb_is_chain: bool = is_expr_chain(tokens.clone(), val_pos.clone(), val_end.clone());
         let mut suffix: String = "".to_string();
         if !tb_is_chain {
             // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
@@ -9456,34 +9406,7 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let new_pos = sf_val_r.new_pos;
             let sf_val_code = code.clone();
             let sf_val_end = new_pos.clone();
-            let mut sf_is_chain: bool = false;
-            let mut sf_scan: i64 = sf_val_pos.clone();
-            let mut sf_depth: i64 = 0;
-            while sf_scan < sf_val_end {
-                // transpiler-deor/codegen/decl/stmt/macros/stmt_flow.deor
-                let mut sf_scan_tok: Token = tokens[sf_scan as usize].clone();
-                let kind = sf_scan_tok.kind.clone();
-                if kind == "LPAREN" {
-                    // transpiler-deor/codegen/decl/stmt/macros/stmt_flow.deor
-                    sf_depth = sf_depth + 1;
-                }
-                if kind == "RPAREN" {
-                    // transpiler-deor/codegen/decl/stmt/macros/stmt_flow.deor
-                    if sf_depth > 0 {
-                        // transpiler-deor/codegen/decl/stmt/macros/stmt_flow.deor
-                        sf_depth = sf_depth - 1;
-                    }
-                }
-                if sf_depth == 0 {
-                    // transpiler-deor/codegen/decl/stmt/macros/stmt_flow.deor
-                    if is_binary_op(kind.clone()) {
-                        // transpiler-deor/codegen/decl/stmt/macros/stmt_flow.deor
-                        sf_is_chain = true;
-                        break;
-                    }
-                }
-                sf_scan = sf_scan + 1;
-            }
+            let mut sf_is_chain: bool = is_expr_chain(tokens.clone(), sf_val_pos.clone(), sf_val_end.clone());
             let mut sf_suffix: String = "".to_string();
             if !sf_is_chain {
                 // transpiler-deor/codegen/decl/stmt/macros/stmt_flow.deor

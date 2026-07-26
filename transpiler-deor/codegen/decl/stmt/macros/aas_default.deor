@@ -13,22 +13,7 @@ macro aas_default
 	val_code as code
 	val_end as new_pos
 
-	bool aas_is_chain = false
-	int aas_scan = val_pos
-	int aas_depth = 0
-	for if aas_scan < val_end
-		Token aas_scan_tok = tokens at aas_scan
-		(kind) in aas_scan_tok
-		if kind is "LPAREN"
-			aas_depth = aas_depth + 1
-		if kind is "RPAREN"
-			if aas_depth > 0
-				aas_depth = aas_depth - 1
-		if aas_depth is 0
-			if is_binary_op(kind)
-				aas_is_chain = true
-				break
-		aas_scan = aas_scan + 1
+	bool aas_is_chain = is_expr_chain(tokens, val_pos, val_end)
 
 	string var_name = ident_name
 	unsafe_macro_run mut_guard

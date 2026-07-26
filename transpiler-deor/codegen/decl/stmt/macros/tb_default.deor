@@ -17,22 +17,7 @@ macro tb_default
 	val_end as new_pos
 	unsafe_macro_run mut_guard
 
-	bool tb_is_chain = false
-	int tb_scan = val_pos
-	int tb_depth = 0
-	for if tb_scan < val_end
-		Token tb_scan_tok = tokens at tb_scan
-		(kind) in tb_scan_tok
-		if kind is "LPAREN"
-			tb_depth = tb_depth + 1
-		if kind is "RPAREN"
-			if tb_depth > 0
-				tb_depth = tb_depth - 1
-		if tb_depth is 0
-			if is_binary_op(kind)
-				tb_is_chain = true
-				break
-		tb_scan = tb_scan + 1
+	bool tb_is_chain = is_expr_chain(tokens, val_pos, val_end)
 
 	string suffix = ""
 	if not tb_is_chain

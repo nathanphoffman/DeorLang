@@ -31,24 +31,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		move (code, new_pos) in arg_r
 		arg_code as code
 		arg_pos as new_pos
-		bool ca_is_chain = false
-		int ca_scan = cur
-		int ca_depth = 0
-		
-		for if ca_scan < arg_pos
-
-			Token ca_scan_tok = tokens at ca_scan
-			(kind) in ca_scan_tok
-			if kind is "LPAREN"
-				ca_depth = ca_depth + 1
-			if kind is "RPAREN"
-				if ca_depth > 0
-					ca_depth = ca_depth - 1
-			if ca_depth is 0
-				if is_binary_op(kind)
-					ca_is_chain = true
-					break
-			ca_scan = ca_scan + 1
+		bool ca_is_chain = is_expr_chain(tokens, cur, arg_pos)
 
 		Token start_token = tokens at cur
 		(kind) in start_token

@@ -9,3 +9,25 @@ fn string emit_val(string val_code, string val_kind)
 	if val_kind is "IDENT"
 		return s_join([val_code, RS_CLN])
 	return val_code
+
+# Returns true if the token range [start, stop) contains a top-level binary operator —
+# i.e. the expression is a binary-op chain (`a + b + "c"`) rather than a single bare
+# token/call. Paren depth is tracked so a nested call's internal operators don't
+# count. Used to skip the ownership-coercion suffix (.clone()/.to_string()), which
+# assumes a single token and would otherwise land on the chain's last operand.
+fn bool is_expr_chain(TokensRef tokens, int start, int stop)
+	int depth = 0
+	int scan = start
+	for if scan < stop
+		Token scan_tok = tokens at scan
+		(kind) in scan_tok
+		if kind is "LPAREN"
+			depth = depth + 1
+		if kind is "RPAREN"
+			if depth > 0
+				depth = depth - 1
+		if depth is 0
+			if is_binary_op(kind)
+				return true
+		scan = scan + 1
+	return false
