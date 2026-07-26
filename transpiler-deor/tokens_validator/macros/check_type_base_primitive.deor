@@ -8,11 +8,7 @@ macro check_type_base_primitive
 		if tbp_pos < token_count
 			Token tbp_tok = tokens at tbp_pos
 			(value) in tbp_tok
-			bool tbp_is_int = value is "int"
-			bool tbp_is_float = value is "float"
-			bool tbp_is_string = value is "string"
-			bool tbp_is_bool = value is "bool"
-			bool tbp_is_primitive = tbp_is_int or tbp_is_float or tbp_is_string or tbp_is_bool
+			bool tbp_is_primitive = list_has(primitive_type_names, value)
 			if not tbp_is_primitive
 				# ex: type {Foo}(intList value) — pos+1 grabs the type name
 				int tbp_name_pos = pos + 1

@@ -20,14 +20,7 @@ macro prescan_check_enum_variants
 		if ev_pos < token_count
 			Token ev_type_tok = tokens at ev_pos
 			(value) in ev_type_tok
-			if value is "string"
-				ev_is_typed = true
-			else if value is "int"
-				ev_is_typed = true
-			else if value is "float"
-				ev_is_typed = true
-			else if value is "bool"
-				ev_is_typed = true
+			ev_is_typed = list_has(primitive_type_names, value)
 
 		# ex: enum {ColorTag} (untyped) or enum string {Color} (typed) — the enum's
 		# own name sits one slot further in for a typed enum

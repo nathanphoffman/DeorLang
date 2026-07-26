@@ -144,14 +144,7 @@ macro prescan_collect_declared_vars
 			(kind, value) in dv_ep_tok
 			bool dv_e_typed = false
 			if kind is "IDENT"
-				if value is "string"
-					dv_e_typed = true
-				else if value is "int"
-					dv_e_typed = true
-				else if value is "float"
-					dv_e_typed = true
-				else if value is "bool"
-					dv_e_typed = true
+				dv_e_typed = list_has(primitive_type_names, value)
 			if dv_e_typed
 				# find the INDENT that opens this enum's variant block
 				int dv_iscan = dv_ep + 2

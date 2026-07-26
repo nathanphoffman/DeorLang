@@ -60,6 +60,11 @@ fn void validate_tokens(TokensRef tokens)
 	# codegen meaning, but they must never be shadowed (see docs/syntax.md#built-in-function-names)
 	strList builtin_names = ["print", "crash", "len", "range", "args", "input"]
 
+	# primitive type keywords — these are plain IDENTs (not lexer keywords), checked
+	# by value wherever a typed enum / validator base type / shape needs to tell a
+	# primitive apart from a user-defined type name
+	strList primitive_type_names = ["string", "int", "float", "bool"]
+
 	# first pre-scan: collect names that later prescan passes depend on
 	strList func_shape_names = empty
 	strList validator_type_names = empty
@@ -145,13 +150,7 @@ fn void validate_tokens(TokensRef tokens)
 			if ev_type_pos < token_count
 				Token ev_type_tok = tokens at ev_type_pos
 				(value) in ev_type_tok
-				if value is "string"
-					ev_name_offset = 2
-				else if value is "int"
-					ev_name_offset = 2
-				else if value is "float"
-					ev_name_offset = 2
-				else if value is "bool"
+				if list_has(primitive_type_names, value)
 					ev_name_offset = 2
 		validate_indent_offset as ev_name_offset
 		macro_run validate_ident

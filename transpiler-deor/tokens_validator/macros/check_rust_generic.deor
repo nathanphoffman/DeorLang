@@ -1,12 +1,7 @@
 
 # Flags direct use of Rust generic types (Option, Vec, Box, Rc, Arc, Result) as IDENT tokens — use Deor shapes or validator types instead.
 macro check_rust_generic
-	bool is_option = cur_val is "Option"
-	bool is_vec = cur_val is "Vec"
-	bool is_box = cur_val is "Box"
-	bool is_rc = cur_val is "Rc"
-	bool is_arc = cur_val is "Arc"
-	bool is_result = cur_val is "Result"
-	bool is_rust_generic = is_option or is_vec or is_box or is_rc or is_arc or is_result
+	strList rust_generic_names = ["Option", "Vec", "Box", "Rc", "Arc", "Result"]
+	bool is_rust_generic = list_has(rust_generic_names, cur_val)
 	if is_rust_generic
 		errors at end = val_err(tok, lbl_rust, rule_no_option)

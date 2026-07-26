@@ -2653,6 +2653,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_UNSAFE_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
     let mut reserved_keywords: Vec<String> = vec!["KW_AND".to_string(), "KW_AS".to_string(), "KW_AT".to_string(), "KW_AVOW".to_string(), "KW_BLOCK".to_string(), "KW_BREAK".to_string(), "KW_CONST".to_string(), "KW_CONTINUE".to_string(), "KW_ELSE".to_string(), "KW_EMPTY".to_string(), "KW_ENUM".to_string(), "KW_FALSE".to_string(), "KW_FN".to_string(), "KW_FOR".to_string(), "KW_FUNC".to_string(), "KW_IF".to_string(), "KW_IMPORT".to_string(), "KW_IN".to_string(), "KW_IS".to_string(), "KW_LIST".to_string(), "KW_MACRO".to_string(), "KW_MACRO_RUN".to_string(), "KW_UNSAFE_MACRO".to_string(), "KW_UNSAFE_MACRO_RUN".to_string(), "KW_MOVE".to_string(), "KW_NONE".to_string(), "KW_NOT".to_string(), "KW_OF".to_string(), "KW_OR".to_string(), "KW_RAW".to_string(), "KW_REMOVE".to_string(), "KW_RETURN".to_string(), "KW_RUST".to_string(), "KW_SHAPE".to_string(), "KW_STRUCT".to_string(), "KW_TO".to_string(), "KW_TRUE".to_string(), "KW_TYPE".to_string(), "KW_VALID".to_string(), "KW_VOID".to_string(), "KW_WITH".to_string()];
     let mut builtin_names: Vec<String> = vec!["print".to_string(), "crash".to_string(), "len".to_string(), "range".to_string(), "args".to_string(), "input".to_string()];
+    let mut primitive_type_names: Vec<String> = vec!["string".to_string(), "int".to_string(), "float".to_string(), "bool".to_string()];
     let mut func_shape_names: Vec<String> = Vec::new();
     let mut validator_type_names: Vec<String> = Vec::new();
     let mut pre_i: i64 = 0;
@@ -2932,19 +2933,7 @@ fn validate_tokens(tokens: TokensRef) {
                     let mut dv_e_typed: bool = false;
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        if value == "string" {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            dv_e_typed = true;
-                        } else if value == "int" {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            dv_e_typed = true;
-                        } else if value == "float" {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            dv_e_typed = true;
-                        } else if value == "bool" {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            dv_e_typed = true;
-                        }
+                        dv_e_typed = list_has(primitive_type_names.clone(), value.clone());
                     }
                     if dv_e_typed {
                         // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
@@ -3095,20 +3084,7 @@ fn validate_tokens(tokens: TokensRef) {
                     let mut value = dn_tok.value.clone();
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                        let mut dn_is_typed_kw: bool = false;
-                        if value == "string" {
-                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                            dn_is_typed_kw = true;
-                        } else if value == "int" {
-                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                            dn_is_typed_kw = true;
-                        } else if value == "float" {
-                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                            dn_is_typed_kw = true;
-                        } else if value == "bool" {
-                            // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
-                            dn_is_typed_kw = true;
-                        }
+                        let mut dn_is_typed_kw: bool = list_has(primitive_type_names.clone(), value.clone());
                         if is_kw_enum {
                             // transpiler-deor/tokens_validator/macros/prescan_check_duplicate_decls.deor
                             if dn_is_typed_kw {
@@ -3273,19 +3249,7 @@ fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
                     let mut ev_type_tok: Token = tokens[ev_pos as usize].clone();
                     let mut value = ev_type_tok.value.clone();
-                    if value == "string" {
-                        // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
-                        ev_is_typed = true;
-                    } else if value == "int" {
-                        // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
-                        ev_is_typed = true;
-                    } else if value == "float" {
-                        // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
-                        ev_is_typed = true;
-                    } else if value == "bool" {
-                        // transpiler-deor/tokens_validator/macros/prescan_check_enum_variants.deor
-                        ev_is_typed = true;
-                    }
+                    ev_is_typed = list_has(primitive_type_names.clone(), value.clone());
                 }
                 let mut ev_name_pos: i64 = pre_i + 1;
                 if ev_is_typed {
@@ -4632,16 +4596,7 @@ fn validate_tokens(tokens: TokensRef) {
                 // transpiler-deor/tokens_validator/tokens_validation.deor
                 let mut ev_type_tok: Token = tokens[ev_type_pos as usize].clone();
                 let mut value = ev_type_tok.value.clone();
-                if value == "string" {
-                    // transpiler-deor/tokens_validator/tokens_validation.deor
-                    ev_name_offset = 2;
-                } else if value == "int" {
-                    // transpiler-deor/tokens_validator/tokens_validation.deor
-                    ev_name_offset = 2;
-                } else if value == "float" {
-                    // transpiler-deor/tokens_validator/tokens_validation.deor
-                    ev_name_offset = 2;
-                } else if value == "bool" {
+                if list_has(primitive_type_names.clone(), value.clone()) {
                     // transpiler-deor/tokens_validator/tokens_validation.deor
                     ev_name_offset = 2;
                 }
@@ -4795,11 +4750,7 @@ fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/check_type_base_primitive.deor
                     let mut tbp_tok: Token = tokens[tbp_pos as usize].clone();
                     let mut value = tbp_tok.value.clone();
-                    let mut tbp_is_int: bool = value == "int";
-                    let mut tbp_is_float: bool = value == "float";
-                    let mut tbp_is_string: bool = value == "string";
-                    let mut tbp_is_bool: bool = value == "bool";
-                    let mut tbp_is_primitive: bool = tbp_is_int || tbp_is_float || tbp_is_string || tbp_is_bool;
+                    let mut tbp_is_primitive: bool = list_has(primitive_type_names.clone(), value.clone());
                     if !tbp_is_primitive {
                         // transpiler-deor/tokens_validator/macros/check_type_base_primitive.deor
                         let mut tbp_name_pos: i64 = pos + 1;
@@ -5480,13 +5431,8 @@ fn validate_tokens(tokens: TokensRef) {
             // macro: check_rust_generic (transpiler-deor/tokens_validator/macros/check_rust_generic.deor)
             {
                 // transpiler-deor/tokens_validator/macros/check_rust_generic.deor
-                let mut is_option: bool = cur_val == "Option";
-                let mut is_vec: bool = cur_val == "Vec";
-                let mut is_box: bool = cur_val == "Box";
-                let mut is_rc: bool = cur_val == "Rc";
-                let mut is_arc: bool = cur_val == "Arc";
-                let mut is_result: bool = cur_val == "Result";
-                let mut is_rust_generic: bool = is_option || is_vec || is_box || is_rc || is_arc || is_result;
+                let mut rust_generic_names: Vec<String> = vec!["Option".to_string(), "Vec".to_string(), "Box".to_string(), "Rc".to_string(), "Arc".to_string(), "Result".to_string()];
+                let mut is_rust_generic: bool = list_has(rust_generic_names.clone(), cur_val.clone());
                 if is_rust_generic {
                     // transpiler-deor/tokens_validator/macros/check_rust_generic.deor
                     errors.push(val_err(tok.clone(), lbl_rust.clone(), rule_no_option.clone()).clone());
@@ -5613,10 +5559,8 @@ fn validate_tokens(tokens: TokensRef) {
                 // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
                 if cur_kind == "IDENT" {
                     // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
-                    let mut rsb_is_len: bool = cur_val == "len";
-                    let mut rsb_is_crash: bool = cur_val == "crash";
-                    let mut rsb_is_sjoin: bool = cur_val == "s_join";
-                    let mut rsb_is_target: bool = rsb_is_len || rsb_is_crash || rsb_is_sjoin;
+                    let mut rsb_target_names: Vec<String> = vec!["len".to_string(), "crash".to_string(), "s_join".to_string()];
+                    let mut rsb_is_target: bool = list_has(rsb_target_names.clone(), cur_val.clone());
                     if rsb_is_target {
                         // transpiler-deor/tokens_validator/macros/check_raw_in_special_builtin.deor
                         let mut rsb_lp: i64 = pos + 1;
