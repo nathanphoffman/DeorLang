@@ -1634,44 +1634,47 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
             // macro: dd_handle_block_decl (transpiler-deor/importer/macros/dd_handle_block_decl.deor)
             {
                 // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                let mut dd_key_prefix: String = "".to_string();
+                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dd_check_duplicate.deor)
                 let mut dn_offset: i64 = 1;
                 if is_fn {
-                    // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     dn_offset = 2;
                 }
                 let mut dn_pos: i64 = pos + dn_offset;
                 let mut decl_name: String = "".to_string();
                 let mut dn_tok: Token = tokens[pos as usize].clone();
                 if dn_pos < token_count {
-                    // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     dn_tok = tokens[dn_pos as usize].clone();
                     let value = dn_tok.value.clone();
                     decl_name = value;
                 }
+                let mut dd_lookup_name: String = [dd_key_prefix.as_str(), decl_name.as_str()].concat();
                 let mut already_seen: bool = false;
                 let mut dup_idx: i64 = 0;
                 let mut cs_len: i64 = (seen.len() as i64);
                 for cs_i in 0..cs_len {
-                    // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     let mut cs_val: String = seen[cs_i as usize].clone();
-                    if cs_val == decl_name {
-                        // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                    if cs_val == dd_lookup_name {
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         already_seen = true;
                         dup_idx = cs_i;
                         break;
                     }
                 }
                 if already_seen {
-                    // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     let mut origin_file: String = seen_files[dup_idx as usize].clone();
                     let file = dn_tok.file.clone();
                     let mut is_same_file: bool = origin_file == file;
                     let mut should_error: bool = false;
                     if is_same_file {
-                        // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         should_error = enforce_unique_file;
                     } else {
-                        // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         should_error = enforce_unique_import;
                     }
                     if should_error {
@@ -1692,11 +1695,12 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                         }
                     }
                 } else {
-                    // transpiler-deor/importer/macros/dd_handle_block_decl.deor
-                    seen.push(decl_name.clone());
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    seen.push(dd_lookup_name.clone());
                     let file = dn_tok.file.clone();
                     seen_files.push(file.clone());
                 }
+                // transpiler-deor/importer/macros/dd_handle_block_decl.deor
                 let mut fbe_cur: i64 = pos.clone();
                 let mut fbe_depth: i64 = 0;
                 let mut fbe_entered: bool = false;
@@ -1731,44 +1735,47 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
             // macro: dd_handle_shape (transpiler-deor/importer/macros/dd_handle_shape.deor)
             {
                 // transpiler-deor/importer/macros/dd_handle_shape.deor
+                let mut dd_key_prefix: String = "".to_string();
+                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dd_check_duplicate.deor)
                 let mut dn_offset: i64 = 1;
                 if is_fn {
-                    // transpiler-deor/importer/macros/dd_handle_shape.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     dn_offset = 2;
                 }
                 let mut dn_pos: i64 = pos + dn_offset;
                 let mut decl_name: String = "".to_string();
                 let mut dn_tok: Token = tokens[pos as usize].clone();
                 if dn_pos < token_count {
-                    // transpiler-deor/importer/macros/dd_handle_shape.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     dn_tok = tokens[dn_pos as usize].clone();
                     let value = dn_tok.value.clone();
                     decl_name = value;
                 }
+                let mut dd_lookup_name: String = [dd_key_prefix.as_str(), decl_name.as_str()].concat();
                 let mut already_seen: bool = false;
                 let mut dup_idx: i64 = 0;
                 let mut cs_len: i64 = (seen.len() as i64);
                 for cs_i in 0..cs_len {
-                    // transpiler-deor/importer/macros/dd_handle_shape.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     let mut cs_val: String = seen[cs_i as usize].clone();
-                    if cs_val == decl_name {
-                        // transpiler-deor/importer/macros/dd_handle_shape.deor
+                    if cs_val == dd_lookup_name {
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         already_seen = true;
                         dup_idx = cs_i;
                         break;
                     }
                 }
                 if already_seen {
-                    // transpiler-deor/importer/macros/dd_handle_shape.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     let mut origin_file: String = seen_files[dup_idx as usize].clone();
                     let file = dn_tok.file.clone();
                     let mut is_same_file: bool = origin_file == file;
                     let mut should_error: bool = false;
                     if is_same_file {
-                        // transpiler-deor/importer/macros/dd_handle_shape.deor
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         should_error = enforce_unique_file;
                     } else {
-                        // transpiler-deor/importer/macros/dd_handle_shape.deor
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         should_error = enforce_unique_import;
                     }
                     if should_error {
@@ -1789,86 +1796,87 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                         }
                     }
                 } else {
-                    // transpiler-deor/importer/macros/dd_handle_shape.deor
-                    seen.push(decl_name.clone());
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    seen.push(dd_lookup_name.clone());
                     let file = dn_tok.file.clone();
                     seen_files.push(file.clone());
                 }
-                let mut fse_cur: i64 = pos.clone();
-                while fse_cur < token_count {
-                    // transpiler-deor/importer/macros/dd_handle_shape.deor
-                    let mut fse_tok: Token = tokens[fse_cur as usize].clone();
-                    let kind = fse_tok.kind.clone();
-                    fse_cur = fse_cur + 1;
-                    if kind == "NEWLINE" {
-                        // transpiler-deor/importer/macros/dd_handle_shape.deor
-                        break;
+                // macro: dd_copy_single_line_decl (transpiler-deor/importer/macros/dd_copy_single_line_decl.deor)
+                {
+                    // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                    let mut fse_cur: i64 = pos.clone();
+                    while fse_cur < token_count {
+                        // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                        let mut fse_tok: Token = tokens[fse_cur as usize].clone();
+                        let kind = fse_tok.kind.clone();
+                        fse_cur = fse_cur + 1;
+                        if kind == "NEWLINE" {
+                            // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                            break;
+                        }
                     }
-                }
-                let mut end_pos: i64 = fse_cur.clone();
-                if !already_seen {
-                    // transpiler-deor/importer/macros/dd_handle_shape.deor
-                    let mut copy_len: i64 = end_pos - pos;
-                    for copy_idx in 0..copy_len {
-                        // transpiler-deor/importer/macros/dd_handle_shape.deor
-                        let mut tok_pos: i64 = pos + copy_idx;
-                        let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                        result.push(copy_tok.clone());
+                    let mut end_pos: i64 = fse_cur.clone();
+                    if !already_seen {
+                        // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                        let mut copy_len: i64 = end_pos - pos;
+                        for copy_idx in 0..copy_len {
+                            // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                            let mut tok_pos: i64 = pos + copy_idx;
+                            let mut copy_tok: Token = tokens[tok_pos as usize].clone();
+                            result.push(copy_tok.clone());
+                        }
                     }
+                    pos = end_pos;
                 }
-                pos = end_pos;
             }
         } else if is_raw {
             // macro: dd_handle_raw (transpiler-deor/importer/macros/dd_handle_raw.deor)
             {
                 // transpiler-deor/importer/macros/dd_handle_raw.deor
+                let mut dd_key_prefix: String = "_raw_".to_string();
+                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dd_check_duplicate.deor)
                 let mut dn_offset: i64 = 1;
                 if is_fn {
-                    // transpiler-deor/importer/macros/dd_handle_raw.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     dn_offset = 2;
                 }
                 let mut dn_pos: i64 = pos + dn_offset;
                 let mut decl_name: String = "".to_string();
                 let mut dn_tok: Token = tokens[pos as usize].clone();
                 if dn_pos < token_count {
-                    // transpiler-deor/importer/macros/dd_handle_raw.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     dn_tok = tokens[dn_pos as usize].clone();
                     let value = dn_tok.value.clone();
                     decl_name = value;
                 }
-                let mut raw_display_name: String = decl_name.clone();
-                let mut raw_pfx: String = "_raw_".to_string();
-                let mut raw_key_parts: Vec<String> = vec![raw_pfx.clone(), decl_name.clone()];
-                decl_name = s_join(raw_key_parts.clone());
+                let mut dd_lookup_name: String = [dd_key_prefix.as_str(), decl_name.as_str()].concat();
                 let mut already_seen: bool = false;
                 let mut dup_idx: i64 = 0;
                 let mut cs_len: i64 = (seen.len() as i64);
                 for cs_i in 0..cs_len {
-                    // transpiler-deor/importer/macros/dd_handle_raw.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     let mut cs_val: String = seen[cs_i as usize].clone();
-                    if cs_val == decl_name {
-                        // transpiler-deor/importer/macros/dd_handle_raw.deor
+                    if cs_val == dd_lookup_name {
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         already_seen = true;
                         dup_idx = cs_i;
                         break;
                     }
                 }
                 if already_seen {
-                    // transpiler-deor/importer/macros/dd_handle_raw.deor
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
                     let mut origin_file: String = seen_files[dup_idx as usize].clone();
                     let file = dn_tok.file.clone();
                     let mut is_same_file: bool = origin_file == file;
                     let mut should_error: bool = false;
                     if is_same_file {
-                        // transpiler-deor/importer/macros/dd_handle_raw.deor
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         should_error = enforce_unique_file;
                     } else {
-                        // transpiler-deor/importer/macros/dd_handle_raw.deor
+                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
                         should_error = enforce_unique_import;
                     }
                     if should_error {
-                        // transpiler-deor/importer/macros/dd_handle_raw.deor
-                        decl_name = raw_display_name;
                         // macro: dd_error_duplicate (transpiler-deor/importer/macros/dd_error_duplicate.deor)
                         {
                             // transpiler-deor/importer/macros/dd_error_duplicate.deor
@@ -1886,34 +1894,38 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                         }
                     }
                 } else {
-                    // transpiler-deor/importer/macros/dd_handle_raw.deor
-                    seen.push(decl_name.clone());
+                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    seen.push(dd_lookup_name.clone());
                     let file = dn_tok.file.clone();
                     seen_files.push(file.clone());
                 }
-                let mut fse_cur: i64 = pos.clone();
-                while fse_cur < token_count {
-                    // transpiler-deor/importer/macros/dd_handle_raw.deor
-                    let mut fse_tok: Token = tokens[fse_cur as usize].clone();
-                    let kind = fse_tok.kind.clone();
-                    fse_cur = fse_cur + 1;
-                    if kind == "NEWLINE" {
-                        // transpiler-deor/importer/macros/dd_handle_raw.deor
-                        break;
+                // macro: dd_copy_single_line_decl (transpiler-deor/importer/macros/dd_copy_single_line_decl.deor)
+                {
+                    // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                    let mut fse_cur: i64 = pos.clone();
+                    while fse_cur < token_count {
+                        // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                        let mut fse_tok: Token = tokens[fse_cur as usize].clone();
+                        let kind = fse_tok.kind.clone();
+                        fse_cur = fse_cur + 1;
+                        if kind == "NEWLINE" {
+                            // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                            break;
+                        }
                     }
-                }
-                let mut end_pos: i64 = fse_cur.clone();
-                if !already_seen {
-                    // transpiler-deor/importer/macros/dd_handle_raw.deor
-                    let mut copy_len: i64 = end_pos - pos;
-                    for copy_idx in 0..copy_len {
-                        // transpiler-deor/importer/macros/dd_handle_raw.deor
-                        let mut tok_pos: i64 = pos + copy_idx;
-                        let mut copy_tok: Token = tokens[tok_pos as usize].clone();
-                        result.push(copy_tok.clone());
+                    let mut end_pos: i64 = fse_cur.clone();
+                    if !already_seen {
+                        // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                        let mut copy_len: i64 = end_pos - pos;
+                        for copy_idx in 0..copy_len {
+                            // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                            let mut tok_pos: i64 = pos + copy_idx;
+                            let mut copy_tok: Token = tokens[tok_pos as usize].clone();
+                            result.push(copy_tok.clone());
+                        }
                     }
+                    pos = end_pos;
                 }
-                pos = end_pos;
             }
         } else if is_rust_blk {
             // macro: dd_handle_rust_block (transpiler-deor/importer/macros/dd_handle_rust_block.deor)

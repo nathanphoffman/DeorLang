@@ -6,57 +6,6 @@
 # otherwise keeps the first and drops the repeat. Copies the single-line declaration to
 # result and advances pos.
 macro dd_handle_raw
-	int dn_offset = 1
-	if is_fn
-		dn_offset = 2
-	int dn_pos = pos + dn_offset
-	string decl_name = ""
-	Token dn_tok = tokens at pos
-	if dn_pos < token_count
-		dn_tok = tokens at dn_pos
-		(value) in dn_tok
-		decl_name = value
-	string raw_display_name = decl_name
-	string raw_pfx = "_raw_"
-	strList raw_key_parts = [raw_pfx, decl_name]
-	decl_name = s_join(raw_key_parts)
-	bool already_seen = false
-	int dup_idx = 0
-	int cs_len = len(seen)
-	for cs_i in range(cs_len)
-		string cs_val = seen at cs_i
-		if cs_val is decl_name
-			already_seen = true
-			dup_idx = cs_i
-			break
-	if already_seen
-		string origin_file = seen_files at dup_idx
-		(file) in dn_tok
-		bool is_same_file = origin_file is file
-		bool should_error = false
-		if is_same_file
-			should_error = enforce_unique_file
-		else
-			should_error = enforce_unique_import
-		if should_error
-			decl_name = raw_display_name
-			macro_run dd_error_duplicate
-	else
-		seen at end = decl_name
-		(file) in dn_tok
-		seen_files at end = file
-	int fse_cur = pos
-	for if fse_cur < token_count
-		Token fse_tok = tokens at fse_cur
-		(kind) in fse_tok
-		fse_cur = fse_cur + 1
-		if kind is "NEWLINE"
-			break
-	int end_pos = fse_cur
-	if not already_seen
-		int copy_len = end_pos - pos
-		for copy_idx in range(copy_len)
-			int tok_pos = pos + copy_idx
-			Token copy_tok = tokens at tok_pos
-			result at end = copy_tok
-	pos = end_pos
+	string dd_key_prefix = "_raw_"
+	unsafe_macro_run dd_check_duplicate
+	macro_run dd_copy_single_line_decl
