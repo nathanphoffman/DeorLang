@@ -2467,7 +2467,7 @@ fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<To
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
-type FnTestRule = fn(String);
+type FnTestRule = fn(String) -> bool;
 
 #[derive(Clone, PartialEq, Debug)]
 struct UamFrame {
@@ -2708,7 +2708,6 @@ fn validate_tokens(tokens: TokensRef) {
         // transpiler-deor/tokens_validator/tokens_validation.deor
         pre_i = pre_i + 1;
     }
-    let mut shape_names: Vec<String> = Vec::new();
     let mut struct_field_reg: Vec<String> = Vec::new();
     let mut validator_vars: Vec<String> = Vec::new();
     let mut raw_var_names: Vec<String> = Vec::new();
@@ -2728,20 +2727,6 @@ fn validate_tokens(tokens: TokensRef) {
         // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut pre_tok: Token = tokens[pre_i as usize].clone();
         let mut kind = pre_tok.kind.clone();
-        // macro: prescan_collect_shapes (transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor)
-        {
-            // transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor
-            if kind == "KW_SHAPE" {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor
-                let mut sn_pos: i64 = pre_i + 1;
-                if sn_pos < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_shapes.deor
-                    let mut sn_tok: Token = tokens[sn_pos as usize].clone();
-                    let mut value = sn_tok.value.clone();
-                    shape_names.push(value.clone());
-                }
-            }
-        }
         // macro: prescan_collect_const_names (transpiler-deor/tokens_validator/macros/prescan_collect_const_names.deor)
         {
             // transpiler-deor/tokens_validator/macros/prescan_collect_const_names.deor

@@ -72,7 +72,6 @@ fn void validate_tokens(TokensRef tokens)
 		pre_i = pre_i + 1
 
 	# second pre-scan: collect remaining names + validate members
-	strList shape_names = empty
 	strList struct_field_reg = empty
 	strList validator_vars = empty
 	strList raw_var_names = empty
@@ -91,7 +90,6 @@ fn void validate_tokens(TokensRef tokens)
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
 		(kind) in pre_tok
-		macro_run prescan_collect_shapes
 		macro_run prescan_collect_const_names
 		macro_run prescan_collect_declared_vars
 		macro_run prescan_collect_fn_names
