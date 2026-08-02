@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build *)",
+      "Bash(../transpiler/bin/deor ../examples/hello.deor ../output/hello.rs)",
+      "Bash(npm install *)",
+      "Bash(just run-ts *)",
+      "Bash(git -C /home/nate/Code/DeorLang status --short)",
+      "Bash(npm run *)",
+      "WebSearch",
+      "Bash(npx vsce *)",
+      "Bash(code --install-extension deor-lang-0.0.5.vsix --force)",
+      "Bash(rustc output/out.rs -o output/out)",
+      "Bash(grep -h \"^##\\\\|^###\\\\|^-\\\\|^|\\\\|^|---|^| \\\\`\" /home/nate/Code/DeorLang/specification/docs/builtins.md)",
+      "Bash(grep -E \"^## |^### |\\\\`\")",
+      "Bash(./output/out examples/hello.deor /tmp/hello.rs)",
+      "Bash(rustc /tmp/hello.rs -o /tmp/hello)",
+      "Bash(/tmp/hello)",
+      "Bash(grep -E '\\\\.\\(md|deor|rs|toml\\)$')",
+      "Bash(rustc *)",
+      "Bash(just run-deor *)",
+      "Bash(cat)",
+      "Bash(./output/out /tmp/test_giveup.deor /tmp/test_giveup.rs)",
+      "Read(//tmp/**)",
+      "Bash(/tmp/test_giveup)",
+      "Bash(cargo run *)",
+      "Bash(./output/out transpiler-deor/main.deor output/out.rs)",
+      "Bash(./output/out examples/hello.deor output/run.rs)",
+      "Bash(./output/run)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"rustc exit: $?\")",
+      "Bash(./output/out transpiler-deor/main.deor /dev/null)",
+      "Bash(./output/out /tmp/test_macro2.deor /tmp/test_macro2.rs)",
+      "Bash(/tmp/test_macro2)",
+      "Bash(vsce package *)",
+      "Bash(just run-cargo-test *)",
+      "Bash(./output/out transpiler-deor/main.deor /tmp/out2.rs)",
+      "Bash(just build-transpiler *)"
+    ]
+  }
+}
