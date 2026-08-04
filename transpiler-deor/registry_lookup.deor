@@ -1,0 +1,46 @@
+
+# === Registry: flat pairs (stride=2) or triplets (stride=3) ===
+
+# Internal engine for flat-list registry lookups. Registries store key-value or
+# key-value1-value2 entries in a plain strList. `stride` is 2 for pairs or 3 for
+# triplets. Steps `stride` positions at a time, comparing the slot at each key
+# position. Returns the element immediately after the matched key, or "" if not found.
+fn string reg_get_stride(strList pairs, string key, int stride)
+	int pairs_count = len(pairs)
+	int index = 0
+	for if index < pairs_count
+		string current_key = pairs at index
+		if current_key is key
+			int val_index = index + 1
+			return pairs at val_index
+		index = index + stride
+	return ""
+
+# Like reg_get_stride but returns a boolean. Used when only existence matters —
+# e.g., checking whether a type name is a known enum before deciding how to render it.
+fn bool reg_has_stride(strList pairs, string key, int stride)
+	int pairs_count = len(pairs)
+	int index = 0
+	for if index < pairs_count
+		string current_key = pairs at index
+		if current_key is key
+			return true
+		index = index + stride
+	return false
+
+# Looks up a key in a stride-2 registry (name → value pairs). Used for struct fields,
+# enum names, and shape elem types.
+fn string reg_get(strList pairs, string key)
+	int two = 2
+	return reg_get_stride(pairs, key, two)
+
+# Checks existence in a stride-2 registry. Used to guard shape-based type resolution.
+fn bool reg_has(strList pairs, string key)
+	int two = 2
+	return reg_has_stride(pairs, key, two)
+
+# Checks existence in a stride-3 registry. Used to detect user-defined validator types
+# so the code generator can emit `TypeName::new(val)` instead of a plain let binding.
+fn bool reg3_has(strList pairs, string key)
+	int thr = 3
+	return reg_has_stride(pairs, key, thr)

@@ -8,6 +8,8 @@ import "transpiler-deor/lib/num.deor"
 import "transpiler-deor/lib/file.deor"
 import "transpiler-deor/lib/list.deor"
 import "transpiler-deor/utils.deor"
+import "transpiler-deor/registry_lookup.deor"
+import "transpiler-deor/global_flags.deor"
 
 # core infrastructure
 import "transpiler-deor/deor_helpers.deor"
@@ -141,7 +143,6 @@ import "transpiler-deor/tokens_validator/macros/check_closing_token_rules.deor"
 import "transpiler-deor/tokens_validator/tokens_validation.deor"
 
 # utility macros
-import "transpiler-deor/utility_macros.deor"
 import "transpiler-deor/macros/timer.deor"
 
 # registry and codegen

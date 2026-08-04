@@ -222,57 +222,6 @@ fn is_empty(source: String) -> bool {
     return length == 0;
 }
 
-fn reg_get_stride(pairs: Vec<String>, key: String, stride: i64) -> String {
-    // transpiler-deor/utils.deor
-    let mut pairs_count: i64 = (pairs.len() as i64);
-    let mut index: i64 = 0;
-    while index < pairs_count {
-        // transpiler-deor/utils.deor
-        let mut current_key: String = pairs[index as usize].clone();
-        if current_key == key {
-            // transpiler-deor/utils.deor
-            let mut val_index: i64 = index + 1;
-            return pairs[val_index as usize].clone();
-        }
-        index = index + stride;
-    }
-    return "".to_string();
-}
-
-fn reg_has_stride(pairs: Vec<String>, key: String, stride: i64) -> bool {
-    // transpiler-deor/utils.deor
-    let mut pairs_count: i64 = (pairs.len() as i64);
-    let mut index: i64 = 0;
-    while index < pairs_count {
-        // transpiler-deor/utils.deor
-        let mut current_key: String = pairs[index as usize].clone();
-        if current_key == key {
-            // transpiler-deor/utils.deor
-            return true;
-        }
-        index = index + stride;
-    }
-    return false;
-}
-
-fn reg_get(pairs: Vec<String>, key: String) -> String {
-    // transpiler-deor/utils.deor
-    let mut two: i64 = 2;
-    return reg_get_stride(pairs.clone(), key.clone(), two.clone());
-}
-
-fn reg_has(pairs: Vec<String>, key: String) -> bool {
-    // transpiler-deor/utils.deor
-    let mut two: i64 = 2;
-    return reg_has_stride(pairs.clone(), key.clone(), two.clone());
-}
-
-fn reg3_has(pairs: Vec<String>, key: String) -> bool {
-    // transpiler-deor/utils.deor
-    let mut thr: i64 = 3;
-    return reg_has_stride(pairs.clone(), key.clone(), thr.clone());
-}
-
 fn list_has(items: Vec<String>, val: String) -> bool {
     // transpiler-deor/utils.deor
     let mut item_count: i64 = (items.len() as i64);
@@ -287,6 +236,59 @@ fn list_has(items: Vec<String>, val: String) -> bool {
     return false;
 }
 
+// transpiler-deor/registry_lookup.deor
+fn reg_get_stride(pairs: Vec<String>, key: String, stride: i64) -> String {
+    // transpiler-deor/registry_lookup.deor
+    let mut pairs_count: i64 = (pairs.len() as i64);
+    let mut index: i64 = 0;
+    while index < pairs_count {
+        // transpiler-deor/registry_lookup.deor
+        let mut current_key: String = pairs[index as usize].clone();
+        if current_key == key {
+            // transpiler-deor/registry_lookup.deor
+            let mut val_index: i64 = index + 1;
+            return pairs[val_index as usize].clone();
+        }
+        index = index + stride;
+    }
+    return "".to_string();
+}
+
+fn reg_has_stride(pairs: Vec<String>, key: String, stride: i64) -> bool {
+    // transpiler-deor/registry_lookup.deor
+    let mut pairs_count: i64 = (pairs.len() as i64);
+    let mut index: i64 = 0;
+    while index < pairs_count {
+        // transpiler-deor/registry_lookup.deor
+        let mut current_key: String = pairs[index as usize].clone();
+        if current_key == key {
+            // transpiler-deor/registry_lookup.deor
+            return true;
+        }
+        index = index + stride;
+    }
+    return false;
+}
+
+fn reg_get(pairs: Vec<String>, key: String) -> String {
+    // transpiler-deor/registry_lookup.deor
+    let mut two: i64 = 2;
+    return reg_get_stride(pairs.clone(), key.clone(), two.clone());
+}
+
+fn reg_has(pairs: Vec<String>, key: String) -> bool {
+    // transpiler-deor/registry_lookup.deor
+    let mut two: i64 = 2;
+    return reg_has_stride(pairs.clone(), key.clone(), two.clone());
+}
+
+fn reg3_has(pairs: Vec<String>, key: String) -> bool {
+    // transpiler-deor/registry_lookup.deor
+    let mut thr: i64 = 3;
+    return reg_has_stride(pairs.clone(), key.clone(), thr.clone());
+}
+
+// transpiler-deor/global_flags.deor
 // float literal context flag
 thread_local! {
 	static FLOAT_CTX: std::cell::Cell<bool> = std::cell::Cell::new(false);
@@ -302,27 +304,27 @@ thread_local! {
 fn _verbose_get() -> bool { VERBOSE.with(|f| f.get()) }
 fn _verbose_set(v: bool) { VERBOSE.with(|f| f.set(v)); }
 fn float_ctx_get() -> bool {
-    // transpiler-deor/utils.deor
+    // transpiler-deor/global_flags.deor
     _float_ctx_get()
 }
 
 fn float_ctx_enable() {
-    // transpiler-deor/utils.deor
+    // transpiler-deor/global_flags.deor
     _float_ctx_set(true)
 }
 
 fn float_ctx_disable() {
-    // transpiler-deor/utils.deor
+    // transpiler-deor/global_flags.deor
     _float_ctx_set(false)
 }
 
 fn verbose_get() -> bool {
-    // transpiler-deor/utils.deor
+    // transpiler-deor/global_flags.deor
     _verbose_get()
 }
 
 fn verbose_enable() {
-    // transpiler-deor/utils.deor
+    // transpiler-deor/global_flags.deor
     _verbose_set(true)
 }
 

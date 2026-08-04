@@ -7,52 +7,6 @@ fn bool is_empty(string source)
 	int length = len(source)
 	return length is 0
 
-# === Registry: flat pairs (stride=2) or triplets (stride=3) ===
-
-# Internal engine for flat-list registry lookups. Registries store key-value or
-# key-value1-value2 entries in a plain strList. `stride` is 2 for pairs or 3 for
-# triplets. Steps `stride` positions at a time, comparing the slot at each key
-# position. Returns the element immediately after the matched key, or "" if not found.
-fn string reg_get_stride(strList pairs, string key, int stride)
-	int pairs_count = len(pairs)
-	int index = 0
-	for if index < pairs_count
-		string current_key = pairs at index
-		if current_key is key
-			int val_index = index + 1
-			return pairs at val_index
-		index = index + stride
-	return ""
-
-# Like reg_get_stride but returns a boolean. Used when only existence matters —
-# e.g., checking whether a type name is a known enum before deciding how to render it.
-fn bool reg_has_stride(strList pairs, string key, int stride)
-	int pairs_count = len(pairs)
-	int index = 0
-	for if index < pairs_count
-		string current_key = pairs at index
-		if current_key is key
-			return true
-		index = index + stride
-	return false
-
-# Looks up a key in a stride-2 registry (name → value pairs). Used for struct fields,
-# enum names, and shape elem types.
-fn string reg_get(strList pairs, string key)
-	int two = 2
-	return reg_get_stride(pairs, key, two)
-
-# Checks existence in a stride-2 registry. Used to guard shape-based type resolution.
-fn bool reg_has(strList pairs, string key)
-	int two = 2
-	return reg_has_stride(pairs, key, two)
-
-# Checks existence in a stride-3 registry. Used to detect user-defined validator types
-# so the code generator can emit `TypeName::new(val)` instead of a plain let binding.
-fn bool reg3_has(strList pairs, string key)
-	int thr = 3
-	return reg_has_stride(pairs, key, thr)
-
 # Linear scan checking whether a strList contains a specific string. Used throughout
 # validation and codegen — e.g. checking mutable variable names, built-in-name shadowing,
 # and reserved keywords. Not used by dedup.deor's own `seen` list: that uses a direct
@@ -64,50 +18,3 @@ fn bool list_has(strList items, string val)
 		if item is val
 			return true
 	return false
-rust
-	// float literal context flag
-	thread_local! {
-		static FLOAT_CTX: std::cell::Cell<bool> = std::cell::Cell::new(false);
-	}
-	fn _float_ctx_get() -> bool { FLOAT_CTX.with(|f| f.get()) }
-	fn _float_ctx_set(v: bool) { FLOAT_CTX.with(|f| f.set(v)); }
-
-	// verbose diagnostics flag — off by default, turned on by main() when
-	// --verbose/-v is passed on the command line
-	thread_local! {
-		static VERBOSE: std::cell::Cell<bool> = std::cell::Cell::new(false);
-	}
-	fn _verbose_get() -> bool { VERBOSE.with(|f| f.get()) }
-	fn _verbose_set(v: bool) { VERBOSE.with(|f| f.set(v)); }
-
-# Returns whether float-literal context is currently active (see FLOAT_CTX above) —
-# i.e. whether a bare numeric literal like `5` in the current expression should be
-# rendered as a Rust float (`5.0`) rather than an int.
-fn bool float_ctx_get()
-	rust
-		_float_ctx_get()
-
-# Turns on float-literal context. Set by callers (e.g. a `float` typed binding's RHS)
-# before generating an expression so bare numeric literals inside it render as floats.
-fn void float_ctx_enable()
-	rust
-		_float_ctx_set(true)
-
-# Turns off float-literal context, restoring the default int rendering for bare
-# numeric literals. Called after leaving a float-typed expression context.
-fn void float_ctx_disable()
-	rust
-		_float_ctx_set(false)
-
-# Returns whether verbose diagnostics are enabled for this run (see VERBOSE above).
-# Checked before printing internal pipeline diagnostics — token counts, per-phase
-# timings — so a normal build stays quiet and only `--verbose`/`-v` opts into them.
-fn bool verbose_get()
-	rust
-		_verbose_get()
-
-# Enables verbose diagnostics for the remainder of this run. Called once by main()
-# after parsing CLI args, before the pipeline starts.
-fn void verbose_enable()
-	rust
-		_verbose_set(true)
