@@ -1,0 +1,25 @@
+# The batch of checks that run unconditionally on every token, before any
+# declaration-name or IDENT-specific handling below it in the main loop —
+# state trackers (paren depth, block scope, copy vars) and general per-token
+# rules (move tracking, keyword placement, casing order, banned operators).
+# Each call is independently gated on cur_kind inside its own file; order
+# between most of them doesn't matter, except track_copy_vars must run
+# before check_use_after_move (a move of a Copy-typed variable is exempt from
+# tracking) — preserve this relative order if adding to the list.
+macro check_common_token_rules
+	macro_run track_paren_depth
+	macro_run track_block_scope
+	macro_run check_void_return
+	macro_run check_return_invalid
+	macro_run check_move_target
+	macro_run track_copy_vars
+	macro_run check_use_after_move
+	macro_run check_keyword_in_parens
+	macro_run check_kw_as_name
+	macro_run check_destructure_binding_kw
+	macro_run check_with_parens
+	macro_run check_empty_parens
+	macro_run skip_rust_block
+	macro_run check_not_is_order
+	macro_run check_bare_truthiness
+	macro_run check_string_plus_banned

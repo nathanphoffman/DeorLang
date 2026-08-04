@@ -1,0 +1,8 @@
+# struct name: PascalCase, min 3
+macro check_struct_decl
+	int validate_indent_offset = 1
+	string keyword = "KW_STRUCT"
+	string lbl = lbl_struct
+	string rule = rule_pascal
+	fnTestRule test_rule = is_pascal
+	macro_run validate_ident

@@ -1,6 +1,20 @@
 # Declares all validation error message strings used across the token validator macros.
 unsafe_macro define_errors
 
+	# category labels — identify what kind of thing an error is about, paired
+	# with a rule_* string to form a full message (val_err(tok, lbl_X, rule_Y))
+	string lbl_struct = "struct"
+	string lbl_enum = "enum"
+	string lbl_shape = "shape"
+	string lbl_type = "type"
+	string lbl_fn = "fn"
+	string lbl_var = "variable"
+	string lbl_call = "call to"
+	string lbl_rust = "identifier"
+	string lbl_decl = "declaration"
+	string lbl_field = "struct field"
+	string lbl_variant = "enum variant"
+
 	# naming rules
 	string rule_min3 = "name must be at least 3 characters"
 	string rule_no_option = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types"

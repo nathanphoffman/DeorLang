@@ -1,0 +1,15 @@
+# First pre-scan pass: collects the two name sets that the second pre-scan
+# pass (prescan_declared_state) and the main token loop depend on already
+# being populated — func shape names and validator type names. Must run to
+# completion before anything downstream reads func_shape_names or
+# validator_type_names, hence its own full pass over every token.
+unsafe_macro prescan_shapes_and_validator_types
+	strList func_shape_names = empty
+	strList validator_type_names = empty
+	int pre_i = 0
+	for if pre_i < token_count
+		Token pre_tok = tokens at pre_i
+		(kind) in pre_tok
+		macro_run prescan_collect_func_shapes
+		macro_run prescan_collect_validator_types
+		pre_i = pre_i + 1

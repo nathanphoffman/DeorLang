@@ -1,0 +1,30 @@
+# Checks scoped to IDENT tokens only — call-arg shape, raw-value misuse,
+# const/validator reassignment, declaration/reassignment rules, bracket
+# indexing, struct construction, and range placement. check_call_args is
+# skipped when this IDENT is itself a fn declaration's name (two tokens
+# after KW_FN), since that position is a name being declared, not a call.
+macro check_ident_token_rules
+	if cur_kind is "IDENT"
+		bool is_fn_decl_name = false
+		if pos > 1
+			# ex: {fn} int add(...) — pos-2 checks two tokens back for the fn keyword to identify this IDENT as the fn name
+			int prev2_p = pos - 2
+			Token prev2_tok = tokens at prev2_p
+			(kind) in prev2_tok
+			is_fn_decl_name = kind is "KW_FN"
+		if not is_fn_decl_name
+			macro_run check_call_args
+		macro_run check_rust_generic
+		macro_run check_raw_in_binding
+		macro_run check_raw_reassign
+		macro_run check_raw_operator_use
+		macro_run check_raw_in_special_builtin
+		macro_run check_const_reassign
+		macro_run check_validator_reassign
+		macro_run check_var_decl
+		macro_run check_bad_stmt
+		macro_run check_undeclared_reassign
+		macro_run check_undefined_var_read
+		macro_run check_bracket_indexing
+		macro_run check_struct_construction
+		macro_run check_range_placement

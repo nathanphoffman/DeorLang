@@ -1,0 +1,14 @@
+# Assorted per-token checks that aren't tied to a declaration name: raw-value
+# handling, built-in call argument shapes, validator/bracket literal rules,
+# for-loop variable naming, and the bare-tuple-range form.
+macro check_misc_token_rules
+	macro_run check_invalid_char
+	macro_run check_raw_assignment
+	macro_run track_validator_vars
+	macro_run check_crash_args
+	macro_run check_print_args
+	macro_run check_avow_target
+	macro_run check_validator_empty
+	macro_run check_empty_bracket
+	macro_run check_for_loop_var_name
+	macro_run check_bare_tuple_range

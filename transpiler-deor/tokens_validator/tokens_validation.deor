@@ -23,19 +23,6 @@ fn void validate_tokens(TokensRef tokens)
 	bool in_struct_body = false
 	bool in_enum_body = false
 
-	# labels
-	string lbl_struct = "struct"
-	string lbl_enum = "enum"
-	string lbl_shape = "shape"
-	string lbl_type = "type"
-	string lbl_fn = "fn"
-	string lbl_var = "variable"
-	string lbl_call = "call to"
-	string lbl_rust = "identifier"
-	string lbl_decl = "declaration"
-	string lbl_field = "struct field"
-	string lbl_variant = "enum variant"
-
 	unsafe_macro_run define_errors
 
 	# Checked first and short-circuited on: an unmatched paren corrupts every
@@ -45,63 +32,13 @@ fn void validate_tokens(TokensRef tokens)
 	macro_run check_bracket_balance
 	handle_errors(errors)
 
-	strList forbidden_in_parens = ["KW_LIST", "KW_STRUCT", "KW_SHAPE", "KW_ENUM", "KW_TYPE", "KW_FN", "KW_OF", "KW_FOR", "KW_IF", "KW_ELSE", "KW_RETURN", "KW_BREAK", "KW_CONTINUE", "KW_REMOVE", "KW_RUST", "KW_IMPORT", "KW_MACRO", "KW_UNSAFE_MACRO", "KW_VOID", "KW_RAW"]
+	unsafe_macro_run define_lookup_tables
 
-	# Every reserved keyword kind except KW_END — used by check_kw_as_name to flag
-	# any of them appearing in a declaration/binding name slot (`Type keyword =
-	# expr` or `keyword as expr`). Keywords silently corrupt codegen when they end
-	# up in a name position instead of erroring, so this is checked universally
-	# rather than one keyword at a time. KW_END is excluded: `list at end = val`
-	# is legitimate (end immediately followed by EQUALS), and check_end_placement
-	# already handles that keyword's one legitimate position precisely.
-	strList reserved_keywords = ["KW_AND", "KW_AS", "KW_AT", "KW_AVOW", "KW_BLOCK", "KW_BREAK", "KW_CONST", "KW_CONTINUE", "KW_ELSE", "KW_EMPTY", "KW_ENUM", "KW_FALSE", "KW_FN", "KW_FOR", "KW_FUNC", "KW_IF", "KW_IMPORT", "KW_IN", "KW_IS", "KW_LIST", "KW_MACRO", "KW_MACRO_RUN", "KW_UNSAFE_MACRO", "KW_UNSAFE_MACRO_RUN", "KW_MOVE", "KW_NONE", "KW_NOT", "KW_OF", "KW_OR", "KW_RAW", "KW_REMOVE", "KW_RETURN", "KW_RUST", "KW_SHAPE", "KW_STRUCT", "KW_TO", "KW_TRUE", "KW_TYPE", "KW_VALID", "KW_VOID", "KW_WITH"]
-
-	# built-in function names — not lexer keywords, just plain IDENTs with special
-	# codegen meaning, but they must never be shadowed (see docs/syntax.md#built-in-function-names)
-	strList builtin_names = ["print", "crash", "len", "range", "args", "input"]
-
-	# primitive type keywords — these are plain IDENTs (not lexer keywords), checked
-	# by value wherever a typed enum / validator base type / shape needs to tell a
-	# primitive apart from a user-defined type name
-	strList primitive_type_names = ["string", "int", "float", "bool"]
-
-	# first pre-scan: collect names that later prescan passes depend on
-	strList func_shape_names = empty
-	strList validator_type_names = empty
-	int pre_i = 0
-	for if pre_i < token_count
-		Token pre_tok = tokens at pre_i
-		(kind) in pre_tok
-		macro_run prescan_collect_func_shapes
-		macro_run prescan_collect_validator_types
-		pre_i = pre_i + 1
+	# first pre-scan: collect names that the second pre-scan pass depends on
+	unsafe_macro_run prescan_shapes_and_validator_types
 
 	# second pre-scan: collect remaining names + validate members
-	strList struct_field_reg = empty
-	strList validator_vars = empty
-	strList raw_var_names = empty
-	strList const_var_names = empty
-	strList non_bool_var_names = empty
-	strList string_var_names = empty
-	strList copy_var_names = empty
-	strList moved_vars = empty
-	strList moved_fields = empty
-	frameStack move_if_stack = empty
-	strList declared_var_names = empty
-	strList fn_names = empty
-	strList enum_variant_names = empty
-	strList enum_names = empty
-	pre_i = 0
-	for if pre_i < token_count
-		Token pre_tok = tokens at pre_i
-		(kind) in pre_tok
-		macro_run prescan_collect_const_names
-		macro_run prescan_collect_declared_vars
-		macro_run prescan_collect_fn_names
-		macro_run prescan_check_duplicate_decls
-		macro_run prescan_check_struct_fields
-		macro_run prescan_check_enum_variants
-		pre_i = pre_i + 1
+	unsafe_macro_run prescan_declared_state
 
 	for if pos < token_count
 		Token tok = tokens at pos
@@ -111,138 +48,18 @@ fn void validate_tokens(TokensRef tokens)
 		int cur_line = line
 		string cur_file = file
 
-		macro_run track_paren_depth
-		macro_run track_block_scope
-		macro_run check_void_return
-		macro_run check_return_invalid
-		macro_run check_move_target
-		macro_run track_copy_vars
-		macro_run check_use_after_move
-		macro_run check_keyword_in_parens
-		macro_run check_kw_as_name
-		macro_run check_destructure_binding_kw
-		macro_run check_with_parens
-		macro_run check_empty_parens
-		macro_run skip_rust_block
-		macro_run check_not_is_order
-		macro_run check_bare_truthiness
-		macro_run check_string_plus_banned
+		macro_run check_common_token_rules
 
-		validate_indent_offset as 1
-
-		# struct name: PascalCase, min 3
-		string keyword = "KW_STRUCT"
-		string lbl = lbl_struct
-		string rule = rule_pascal
-		fnTestRule test_rule = is_pascal
-		macro_run validate_ident
-
-		# enum name: PascalCase, min 3
-		# typed enums (enum string/int/float/bool Name) have an extra type token before the name
-		string keyword = "KW_ENUM"
-		string lbl = lbl_enum
-		string rule = rule_pascal
-		fnTestRule test_rule = is_pascal
-		int ev_name_offset = 1
-		if cur_kind is "KW_ENUM"
-			# ex: enum {string} Color — pos+1 grabs the token after enum to check for a type keyword
-			int ev_type_pos = pos + 1
-			if ev_type_pos < token_count
-				Token ev_type_tok = tokens at ev_type_pos
-				(value) in ev_type_tok
-				if list_has(primitive_type_names, value)
-					ev_name_offset = 2
-		validate_indent_offset as ev_name_offset
-		macro_run validate_ident
-		validate_indent_offset as 1
-
-		macro_run check_func_shape_multi_param
-
-		# shape name: camelCase, min 3
-		string keyword = "KW_SHAPE"
-		string lbl = lbl_shape
-		string rule = rule_camel
-		fnTestRule test_rule = is_camel
-		macro_run validate_ident
-
-		# type name: PascalCase, min 3
-		# check_type_base_primitive / check_validator_declaration are both gated on
-		# KW_TYPE and must run BEFORE validate_ident below — validate_ident does an
-		# unconditional `pos = pos + 1; continue` on a keyword match, which would
-		# otherwise skip both checks every time (as it did, silently, until this fix).
-		macro_run check_type_base_primitive
-		macro_run check_validator_declaration
-
-		string keyword = "KW_TYPE"
-		string lbl = lbl_type
-		string rule = rule_pascal
-		fnTestRule test_rule = is_pascal
-		macro_run validate_ident
-
-		macro_run check_fn_declaration
+		macro_run check_struct_decl
+		macro_run check_enum_decl
+		macro_run check_shape_decl
+		macro_run check_type_decl
 		macro_run track_non_bool_vars
+		macro_run check_fn_decl
 
-		# fn name: snake_case, min 3
-		string keyword = "KW_FN"
-		string lbl = lbl_fn
-		string rule = rule_snake
-		fnTestRule test_rule = is_snake
-		int validate_indent_offset = 2
-		macro_run validate_ident
-
-		macro_run check_invalid_char
-		macro_run check_raw_assignment
-		macro_run track_validator_vars
-		macro_run check_crash_args
-		macro_run check_print_args
-		macro_run check_avow_target
-		macro_run check_validator_empty
-		macro_run check_empty_bracket
-
-		if cur_kind is "KW_FOR"
-			# ex: for {item} in list — pos+1 grabs the loop variable name
-			int fv_pos = pos + 1
-			if fv_pos < token_count
-				Token fv_tok = tokens at fv_pos
-				(kind, value) in fv_tok
-				if kind is "IDENT"
-					if len(value) < 3
-						errors at end = val_err(fv_tok, lbl_var, rule_min3)
-					if not is_snake(value)
-						errors at end = val_err(fv_tok, lbl_var, rule_snake)
-					if list_has(builtin_names, value)
-						errors at end = val_err(fv_tok, lbl_var, rule_builtin_shadow)
-
-		macro_run check_bare_tuple_range
-
-		if cur_kind is "IDENT"
-			bool is_fn_decl_name = false
-			if pos > 1
-				# ex: {fn} int add(...) — pos-2 checks two tokens back for the fn keyword to identify this IDENT as the fn name
-				int prev2_p = pos - 2
-				Token prev2_tok = tokens at prev2_p
-				(kind) in prev2_tok
-				is_fn_decl_name = kind is "KW_FN"
-			if not is_fn_decl_name
-				macro_run check_call_args
-			macro_run check_rust_generic
-			macro_run check_raw_in_binding
-			macro_run check_raw_reassign
-			macro_run check_raw_operator_use
-			macro_run check_raw_in_special_builtin
-			macro_run check_const_reassign
-			macro_run check_validator_reassign
-			macro_run check_var_decl
-			macro_run check_bad_stmt
-			macro_run check_undeclared_reassign
-			macro_run check_undefined_var_read
-			macro_run check_bracket_indexing
-			macro_run check_struct_construction
-			macro_run check_range_placement
-
-		macro_run check_void_var
-		macro_run check_valid_placement
-		macro_run check_end_placement
+		macro_run check_misc_token_rules
+		macro_run check_ident_token_rules
+		macro_run check_closing_token_rules
 
 		pos = pos + 1
 

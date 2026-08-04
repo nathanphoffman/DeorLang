@@ -1,0 +1,32 @@
+# Second pre-scan pass: collects every other name set the main token loop's
+# checks depend on (declared vars, fn names, const names, enum names/variants,
+# struct fields, and the move-tracking accumulators check_use_after_move
+# reads/writes), and validates struct/enum members. Runs after
+# prescan_shapes_and_validator_types, whose func_shape_names and
+# validator_type_names some of these checks consult.
+unsafe_macro prescan_declared_state
+	strList struct_field_reg = empty
+	strList validator_vars = empty
+	strList raw_var_names = empty
+	strList const_var_names = empty
+	strList non_bool_var_names = empty
+	strList string_var_names = empty
+	strList copy_var_names = empty
+	strList moved_vars = empty
+	strList moved_fields = empty
+	frameStack move_if_stack = empty
+	strList declared_var_names = empty
+	strList fn_names = empty
+	strList enum_variant_names = empty
+	strList enum_names = empty
+	int pre_i = 0
+	for if pre_i < token_count
+		Token pre_tok = tokens at pre_i
+		(kind) in pre_tok
+		macro_run prescan_collect_const_names
+		macro_run prescan_collect_declared_vars
+		macro_run prescan_collect_fn_names
+		macro_run prescan_check_duplicate_decls
+		macro_run prescan_check_struct_fields
+		macro_run prescan_check_enum_variants
+		pre_i = pre_i + 1

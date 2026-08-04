@@ -1,0 +1,10 @@
+# shape name: camelCase, min 3, plus the func-shape single-param constraint
+macro check_shape_decl
+	macro_run check_func_shape_multi_param
+
+	string keyword = "KW_SHAPE"
+	string lbl = lbl_shape
+	string rule = rule_camel
+	fnTestRule test_rule = is_camel
+	int validate_indent_offset = 1
+	macro_run validate_ident

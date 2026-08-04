@@ -1,0 +1,6 @@
+# Final per-token checks for this loop iteration: void used as a variable
+# type, 'valid' placement, and 'end' placement.
+macro check_closing_token_rules
+	macro_run check_void_var
+	macro_run check_valid_placement
+	macro_run check_end_placement

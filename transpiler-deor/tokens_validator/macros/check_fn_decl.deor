@@ -1,0 +1,11 @@
+# fn name: snake_case, min 3, plus fn-declaration-specific rules (param
+# count/shadowing, return type presence, top-level-only placement).
+macro check_fn_decl
+	macro_run check_fn_declaration
+
+	string keyword = "KW_FN"
+	string lbl = lbl_fn
+	string rule = rule_snake
+	fnTestRule test_rule = is_snake
+	int validate_indent_offset = 2
+	macro_run validate_ident
