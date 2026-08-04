@@ -9,9 +9,17 @@ fn void too_many_params(int first, int second, int third, int fourth)
 fn missing_return_type()
 	print("no return type")
 
+fn void test_short_param(int ab)
+	print(ab)
+
+fn void test_bad_case_param(int badCase)
+	print(badCase)
+
 fn void main()
 	print("should never reach here")
 
 # expect-error:
 # line 6: fn 'too_many_params' - functions may have at most 3 parameters
 # line 9: fn 'missing_return_type' - missing return type
+# line 12: fn 'ab' - name must be at least 3 characters
+# line 15: fn 'badCase' - name must be lower_snake_case

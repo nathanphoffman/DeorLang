@@ -22,6 +22,26 @@ fn int count_down(int num)
 		result = result + idx
 	return result
 
+fn int count_up_while(int limit)
+	result as 0
+	for if result < limit
+		result = result + 1
+	return result
+
+fn int loop_true_break()
+	counter as 0
+	for if true
+		counter = counter + 1
+		if counter is 5
+			break
+	return counter
+
+fn int bare_range_count(int num)
+	total as 0
+	for in range(num)
+		total = total + 1
+	return total
+
 fn void main()
 	int total1 = sum_to(5)
 	print(total1)
@@ -36,9 +56,28 @@ fn void main()
 		print("no")
 	else
 		print("yes")
+	int total4 = count_up_while(4)
+	print(total4)
+	int total5 = loop_true_break()
+	print(total5)
+	int total6 = bare_range_count(6)
+	print(total6)
+
+	# print's legitimate 2-arg form: the second arg replaces the trailing
+	# newline (print! instead of println!), so this line and the next print's
+	# output land concatenated on the same stdout line — see call_args_test.deor
+	# for the error-path arg-count checks this form must still satisfy.
+	prefix as "prefix-"
+	suffix as "suffix"
+	print(prefix, suffix)
+	print("end")
 
 # expect:
 # 10
 # 18
 # 9
 # yes
+# 4
+# 5
+# 6
+# prefix-suffixend

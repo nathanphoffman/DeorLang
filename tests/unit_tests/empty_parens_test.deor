@@ -6,6 +6,12 @@ struct Room
 	int area
 	string name
 
+# A validator type's parens are never allowed to be empty, unlike a zero-param
+# fn declaration or call — check_empty_parens' ep_is_type_decl branch exists
+# specifically to keep this case from being wrongly exempted alongside those.
+type EmptyValidator()
+	true
+
 fn void greet()
 	print("hi")
 
@@ -24,6 +30,7 @@ fn void main()
 	greet()
 
 # expect-error:
-# line 14: variable '(' - '()' is not valid
-# line 17: variable '(' - '()' is not valid
-# line 21: variable '(' - '()' is not valid
+# line 12: variable '(' - '()' is not valid
+# line 20: variable '(' - '()' is not valid
+# line 23: variable '(' - '()' is not valid
+# line 27: variable '(' - '()' is not valid

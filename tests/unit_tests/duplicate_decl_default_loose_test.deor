@@ -11,6 +11,15 @@ struct Player
 struct Player
 	string label
 
+# Same loose-keep-first behavior, exercised for dedup.deor's shape path
+# (dd_handle_shape) — a separate function from the struct/enum/fn path above.
+# The second definition uses a different element type; if dedup ever let the
+# second definition win instead of dropping it, `[1, 2, 3]` below would fail
+# to type-check against `list of string`.
+shape intList = list of int
+
+shape intList = list of string
+
 fn Player make_player_objayer(string name, int score)
 	player_objayer as (name, score)
 	return player_objayer
@@ -22,5 +31,9 @@ fn void main()
 	(name, score) in player_obj
 	print(score)
 
+	intList nums = [1, 2, 3]
+	print(len(nums))
+
 # expect:
 # 5
+# 3

@@ -30,6 +30,9 @@ type BadStructValidator(Point vals)
 type SelfValidator(SelfValidator vals)
 	true
 
+type BuiltinShadowValidator(int print)
+	print > 0
+
 fn void test_const_reassign()
 	const string PIPE = "|"
 	PIPE = "/"
@@ -57,7 +60,8 @@ fn void main()
 # line 24: type 'BadValidator' - validator base type must be a primitive
 # line 27: type 'BadStructValidator' - validator base type must be a primitive
 # line 30: type 'SelfValidator' - validator base type must be a primitive
-# line 35: variable 'PIPE' - cannot reassign a const variable
-# line 38: variable 'empty' - empty is not valid for validator types
-# line 42: variable 'pos_val' - cannot reassign a validator type variable
-# line 46: variable 'plain' - avow can only be used on a validator type variable
+# line 33: type 'print' - this name belongs to a built-in function
+# line 38: variable 'PIPE' - cannot reassign a const variable
+# line 41: variable 'empty' - empty is not valid for validator types
+# line 45: variable 'pos_val' - cannot reassign a validator type variable
+# line 49: variable 'plain' - avow can only be used on a validator type variable

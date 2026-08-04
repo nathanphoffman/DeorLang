@@ -6,6 +6,11 @@
 
 shape intList = list of int
 
+shape range = list of int
+
+enum string print
+	Foo = "Foo"
+
 struct Item
 	int range
 
@@ -35,9 +40,11 @@ fn void main()
 	test_destructure()
 
 # expect-error:
-# line 10: struct field 'range' - this name belongs to a built-in function
-# line 12: declaration 'crash' - this name belongs to a built-in function
-# line 16: variable 'print' - this name belongs to a built-in function
-# line 18: fn 'len' - this name belongs to a built-in function
-# line 23: variable 'input' - this name belongs to a built-in function
-# line 28: variable 'args' - this name belongs to a built-in function
+# line 9: declaration 'range' - this name belongs to a built-in function
+# line 11: declaration 'print' - this name belongs to a built-in function
+# line 15: struct field 'range' - this name belongs to a built-in function
+# line 17: declaration 'crash' - this name belongs to a built-in function
+# line 21: variable 'print' - this name belongs to a built-in function
+# line 23: fn 'len' - this name belongs to a built-in function
+# line 28: variable 'input' - this name belongs to a built-in function
+# line 33: variable 'args' - this name belongs to a built-in function

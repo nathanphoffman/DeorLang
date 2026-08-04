@@ -52,6 +52,14 @@ fn void test_bare_truthiness()
 fn void test_rust_generic()
 	Option bad_type = 5
 
+fn void test_bare_tuple_range()
+	for idx2 in (1, 5)
+		print(idx2)
+
+fn void test_bare_tuple_range_no_var()
+	for in (1, 5)
+		print("iter")
+
 fn void main()
 	print("should never reach here")
 
@@ -66,3 +74,5 @@ fn void main()
 # line 45: call to 'range' - 'range' can only be used as a for-loop's iterator expression
 # line 49: variable 'my_count' - only bool and validator types have truthiness
 # line 53: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
+# line 56: call to '(' - bare tuple range
+# line 60: call to '(' - bare tuple range

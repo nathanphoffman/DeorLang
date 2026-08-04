@@ -30,6 +30,15 @@ fn void test_string_plus_string_var()
 	string bad5 = greeting + name
 	print(bad5)
 
+# Mixes a tracked string variable (resolved via string_var_names) with a bare
+# STRING literal on the other side — check_string_plus_banned resolves each
+# operand independently, and every other string+string case above is either
+# literal+literal or var+var, never one of each.
+fn void test_string_var_plus_string_literal()
+	label2 as "hi "
+	string bad6 = label2 + "world"
+	print(bad6)
+
 fn void main()
 	print("should never reach here")
 
@@ -39,3 +48,4 @@ fn void main()
 # line 20: variable '+' - '+' cannot be used with strings
 # line 24: variable '+' - '+' cannot be used with strings
 # line 30: variable '+' - '+' cannot be used with strings
+# line 39: variable '+' - '+' cannot be used with strings

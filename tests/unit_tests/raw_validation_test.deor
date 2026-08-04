@@ -62,6 +62,29 @@ fn void test_raw_sjoin()
 	raw good_g = make_thing()
 	string joined = s_join([good_g, "x"])
 
+# -----------------------------------------------------------------------
+# 6. raw assignment RHS must be a call — a bare ident (no parens) is also
+#    rejected, not just a literal or rust block.
+# -----------------------------------------------------------------------
+fn void test_raw_assignment_bare_ident()
+	int some_var = 5
+	raw bad_c = some_var
+
+# -----------------------------------------------------------------------
+# 7. raw reassignment via 'as' is rejected the same as '='.
+# -----------------------------------------------------------------------
+fn void test_raw_reassign_as()
+	raw good_h = make_thing()
+	good_h as make_thing()
+
+# -----------------------------------------------------------------------
+# 8. raw operator use beyond '+' — 'is' comparison between two raw vars.
+# -----------------------------------------------------------------------
+fn void test_raw_is_operator()
+	raw good_i = make_thing()
+	raw good_j = make_thing()
+	bool flag_x = good_i is good_j
+
 fn void main()
 	print("should never reach here")
 
@@ -76,3 +99,7 @@ fn void main()
 # line 55: variable 'good_e' - raw variables cannot be used in Deor operators, builtins, or rebindings
 # line 59: variable 'good_f' - raw variables cannot be used in Deor operators, builtins, or rebindings
 # line 63: variable 'good_g' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 71: variable 'bad_c' - raw variables can only be assigned from a function call
+# line 78: variable 'good_h' - raw variables cannot be reassigned
+# line 86: variable 'good_i' - raw variables cannot be used in Deor operators, builtins, or rebindings
+# line 86: variable 'good_j' - raw variables cannot be used in Deor operators, builtins, or rebindings

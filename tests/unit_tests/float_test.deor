@@ -14,8 +14,12 @@ fn void main()
 	else
 		print(phi)
 
+	float mixed = 1 + 2.5
+	print(mixed)
+
 # expect:
 # 1.618
 # 3.14159
 # 1000000
 # 3.14159
+# 3.5

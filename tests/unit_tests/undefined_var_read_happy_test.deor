@@ -12,6 +12,14 @@ struct Room
 
 shape roomFunc = func of Room to bool
 
+# Void-output and no-input-type func shapes — see func_shape_test.deor for the
+# invalid multi-type-on-either-side forms; these legitimate forms need a real
+# compile+run to exercise gen_func_shape_code's is_empty(rust_out) branch and
+# the no-input-type rendering, not just a clean transpile.
+shape sinkFunc = func of Room to void
+
+shape counterFunc = func to int
+
 enum ColorTag
 	Red
 	Green
@@ -27,6 +35,13 @@ type Positive(int val)
 fn bool is_big(Room room)
 	(area) in room
 	return area > 100
+
+fn void log_room(Room room)
+	(area) in room
+	print(area)
+
+fn int get_count()
+	return 7
 
 fn void main()
 	roomFunc checker = is_big
@@ -53,9 +68,17 @@ fn void main()
 	bigger_office as office with (name)
 	print("done")
 
+	sinkFunc logger = log_room
+	logger(office)
+
+	counterFunc counter = get_count
+	print(counter())
+
 # expect:
 # small
 # blue
 # Foo
 # valid
 # done
+# 50
+# 7

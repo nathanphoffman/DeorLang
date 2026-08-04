@@ -36,6 +36,16 @@ fn void test_move_in_one_arm_then_read_after_chain()
 		print(val_b)
 	print(val_b)
 
+fn void test_move_in_elseif_arm_then_read_after_chain()
+	string val_c = "c"
+	if false
+		print(val_c)
+	else if true
+		string taken_c = move val_c
+	else
+		print(val_c)
+	print(val_c)
+
 fn void test_redestructure_moved_field()
 	label as "x"
 	points as 5
@@ -48,6 +58,7 @@ fn void main()
 	test_double_move()
 	test_move_in_bare_if_then_read()
 	test_move_in_one_arm_then_read_after_chain()
+	test_move_in_elseif_arm_then_read_after_chain()
 	test_redestructure_moved_field()
 
 # expect-error:
@@ -55,4 +66,5 @@ fn void main()
 # line 23: variable 'first_val' - already moved earlier
 # line 29: variable 'val_a' - used here but already moved earlier
 # line 37: variable 'val_b' - used here but already moved earlier
-# line 44: variable 'score.label' - already moved earlier
+# line 47: variable 'val_c' - used here but already moved earlier
+# line 54: variable 'score.label' - already moved earlier

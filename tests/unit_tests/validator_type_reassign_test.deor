@@ -10,6 +10,13 @@
 type Roll(int val)
 	val > 0
 
+# Multi-statement predicate: an intermediate binding before the final `return`,
+# parsed via gen_block and wrapped in an IIFE closure instead of the single-
+# expression inline path (see codegen/decl/validator_type.deor).
+type Even(int val)
+	int remainder = val % 2
+	return remainder is 0
+
 fn Roll find_best(int val)
 	Roll best
 	if val > 0
@@ -22,6 +29,12 @@ fn void show_if_valid(Roll rvar)
 	else
 		print("not valid")
 
+fn void show_if_even(Even evar)
+	if evar is valid
+		print("even")
+	else
+		print("not even")
+
 fn void main()
 	Roll num = 5
 	num = 10
@@ -33,8 +46,15 @@ fn void main()
 	show_if_valid(find_best(5))
 	show_if_valid(find_best(0))
 
+	Even four = 4
+	show_if_even(four)
+	Even five_var = 5
+	show_if_even(five_var)
+
 # expect:
 # valid
 # not valid
 # valid
 # not valid
+# even
+# not even

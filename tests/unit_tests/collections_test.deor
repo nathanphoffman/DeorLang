@@ -37,6 +37,14 @@ fn void main()
 	int after_remove = len(scores)
 	print(after_remove)
 
+	# Untyped `as empty` list init (aas_empty) — distinct codegen path from the
+	# typed-decl `= empty` form (tb_empty) exercised by `scores` above.
+	built_list as empty
+	built_list at end = 7
+	built_list at end = 14
+	int built_len = len(built_list)
+	print(built_len)
+
 	string hello = "hello"
 	string world = "world"
 	string msg = join_two(hello, world)
@@ -63,6 +71,7 @@ fn void main()
 # 149
 # 4
 # 3
+# 2
 # hello world
 # fn main()
 # bar

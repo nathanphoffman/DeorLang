@@ -8,8 +8,20 @@ struct badname
 
 shape BadShape = list of int
 
+enum badenum
+	Alpha
+	Beta
+
 fn void test_const_screaming()
 	const string bad_name = "x"
+
+fn void test_for_var_short()
+	for ab in [1, 2, 3]
+		print(ab)
+
+fn void test_for_var_bad_case()
+	for myVar in [1, 2, 3]
+		print(myVar)
 
 fn void main()
 	print("should never reach here")
@@ -17,4 +29,7 @@ fn void main()
 # expect-error:
 # line 6: struct 'badname' - name must be PascalCase
 # line 9: shape 'BadShape' - name must be camelCase
-# line 12: variable 'bad_name' - const name must be SCREAMING_SNAKE_CASE
+# line 11: enum 'badenum' - name must be PascalCase
+# line 16: variable 'bad_name' - const name must be SCREAMING_SNAKE_CASE
+# line 19: variable 'ab' - name must be at least 3 characters
+# line 23: variable 'myVar' - name must be lower_snake_case
