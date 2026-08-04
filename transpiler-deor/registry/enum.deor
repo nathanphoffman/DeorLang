@@ -6,6 +6,31 @@
 # typed_enum_reg:    [enumName, valueType] pairs for typed enums (enum string/int/float/bool Name)
 # typed_variant_reg: ["EnumName.VariantName", literalValue] pairs for typed enum variants
 
+# Small (pairs, new_pos) return used only by the two variant-body scanners below — the
+# variant list of a single enum, never the whole-program registry, so returning it from
+# a function is a bounded, one-off cost rather than the per-token clone that returning
+# the big accumulator lists themselves would be.
+struct PairsScan
+	strList pairs
+	int new_pos
+
+# Scans a single `enum Name` or `enum baseType Name` declaration starting at a KW_ENUM
+# token, covering all four enum registries in one walk of the declaration (previously
+# four separate full-token-stream scans: build_enum_reg, build_variant_reg,
+# build_typed_enum_reg, build_typed_variant_reg). Called once per KW_ENUM hit from
+# build_registry's single-pass dispatch loop (registry.deor). `is_typed` tells the
+# caller which pair of registries `name`/`rust_name`/`val_type`/`pairs` belong to:
+# untyped -> (enum_reg: name+rust_name, variant_reg: pairs); typed -> (typed_enum_reg:
+# name+val_type, typed_variant_reg: pairs).
+struct EnumScan
+	bool matched
+	bool is_typed
+	string name
+	string rust_name
+	string val_type
+	strList pairs
+	int new_pos
+
 fn bool is_typed_enum_type(string word)
 	if word is "string"
 		return true
@@ -17,142 +42,116 @@ fn bool is_typed_enum_type(string word)
 		return true
 	return false
 
-fn strList build_enum_reg(TokensRef tokens)
-	strList result = empty
+# Named accessors for PairsScan (Deor has no dot-access syntax) — used inside
+# try_enum_entry, which already has its own locals named `pairs`/`new_pos` in scope, so
+# destructuring a PairsScan there directly would collide with them.
+fn strList ps_pairs(PairsScan scan)
+	rust
+		scan.pairs
+
+fn int ps_new_pos(PairsScan scan)
+	rust
+		scan.new_pos
+
+# Scans an untyped enum's variant list (already positioned at its opening INDENT) into
+# [variantName, rustEnumName] pairs.
+fn PairsScan collect_variant_pairs(TokensRef tokens, int start, string rust_name)
 	int token_count = len(tokens)
-	for index in range(token_count)
-		Token token = tokens at index
-		(kind, value, line) in token
-		if kind is "KW_ENUM"
-			# ex: enum {Color} — index+1 grabs the enum name (or type keyword if typed)
-			int name_pos = index + 1
-			if name_pos < token_count
-				Token name_token = tokens at name_pos
-				(value) in name_token
-				bool be_is_typed = is_typed_enum_type(value)
-				if not be_is_typed
-					string enum_name = value
-					string rust_name = s_pascal(enum_name)
-					result at end = enum_name
-					result at end = rust_name
+	strList pairs = empty
+	int new_pos = start
+	bool scanning = true
+	for if scanning
+		if new_pos >= token_count
+			scanning = false
+		else
+			Token var_tok = tokens at new_pos
+			(kind, value) in var_tok
+			new_pos = new_pos + 1
+			if kind is "DEDENT"
+				scanning = false
+			else if kind is "IDENT"
+				pairs at end = value
+				pairs at end = rust_name
+	PairsScan result = (pairs, new_pos)
 	return result
 
-fn strList build_variant_reg(TokensRef tokens, strList enum_reg)
-	strList result = empty
+# Scans a typed enum's variant list (already positioned at its opening INDENT) into
+# ["EnumName.VariantName", literalValue] pairs.
+fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enum_name)
 	int token_count = len(tokens)
-	int raw_i = 0
-	for if raw_i < token_count
-		Token token = tokens at raw_i
-		(kind, value, line) in token
-		if kind is "KW_ENUM"
-			# ex: enum {Color} — raw_i+1 grabs the enum name (or type keyword if typed)
-			int name_pos = raw_i + 1
-			if name_pos < token_count
-				Token name_token = tokens at name_pos
-				(value) in name_token
-				bool bvr_is_typed = is_typed_enum_type(value)
-				if not bvr_is_typed
-					string enum_name = value
-					string rust_name = reg_get(enum_reg, enum_name)
-					raw_i = name_pos + 1
-					for if raw_i < token_count
-						Token skip_token = tokens at raw_i
-						(kind) in skip_token
-						raw_i = raw_i + 1
-						if kind is "INDENT"
-							break
-					for if raw_i < token_count
-						Token variant_token = tokens at raw_i
-						(kind, value) in variant_token
-						raw_i = raw_i + 1
-						if kind is "DEDENT"
-							break
-						else if kind is "IDENT"
-							result at end = value
-							result at end = rust_name
-				else
-					raw_i = raw_i + 1
-			continue
-		raw_i = raw_i + 1
+	strList pairs = empty
+	int new_pos = start
+	bool scanning = true
+	for if scanning
+		if new_pos >= token_count
+			scanning = false
+		else
+			Token var_tok = tokens at new_pos
+			(kind, value) in var_tok
+			new_pos = new_pos + 1
+			if kind is "DEDENT"
+				scanning = false
+			else if kind is "IDENT"
+				string vname = value
+				if new_pos < token_count
+					Token eq_tok = tokens at new_pos
+					(kind) in eq_tok
+					new_pos = new_pos + 1
+					if kind is "EQUALS"
+						if new_pos < token_count
+							Token lit_tok = tokens at new_pos
+							(value) in lit_tok
+							new_pos = new_pos + 1
+							string dot = "."
+							string vkey = s_join([enum_name, dot, vname])
+							pairs at end = vkey
+							pairs at end = value
+	PairsScan result = (pairs, new_pos)
 	return result
 
-fn strList build_typed_enum_reg(TokensRef tokens)
-	strList result = empty
+fn EnumScan try_enum_entry(TokensRef tokens, int pos)
 	int token_count = len(tokens)
-	for index in range(token_count)
-		Token token = tokens at index
-		(kind) in token
-		if kind is "KW_ENUM"
-			# ex: enum {int} Status — index+1 grabs the value-type keyword
-			int type_pos = index + 1
-			if type_pos < token_count
-				Token type_tok = tokens at type_pos
-				(kind, value) in type_tok
-				if kind is "IDENT"
-					bool bte_is_typed = is_typed_enum_type(value)
-					if bte_is_typed
-						string val_type = value
-						# ex: enum int {Status} — type_pos+1 grabs the enum name
-						int name_pos = type_pos + 1
-						if name_pos < token_count
-							Token name_tok = tokens at name_pos
-							(value) in name_tok
-							result at end = value
-							result at end = val_type
-	return result
+	bool matched = false
+	bool is_typed = false
+	string name = ""
+	string rust_name = ""
+	string val_type = ""
+	strList pairs = empty
+	int new_pos = pos + 1
 
-fn strList build_typed_variant_reg(TokensRef tokens)
-	strList result = empty
-	int token_count = len(tokens)
-	int raw_i = 0
-	for if raw_i < token_count
-		Token token = tokens at raw_i
-		(kind) in token
-		if kind is "KW_ENUM"
-			# ex: enum {int} Status — raw_i+1 grabs the value-type keyword
-			int btvr_type_pos = raw_i + 1
-			bool btvr_typed = false
-			if btvr_type_pos < token_count
-				Token btvr_type_tok = tokens at btvr_type_pos
-				(kind, value) in btvr_type_tok
-				btvr_typed = is_typed_enum_type(value)
-			if btvr_typed
-				# ex: enum int {Status} — raw_i+2 grabs the enum name
-				int btvr_name_pos = raw_i + 2
-				if btvr_name_pos < token_count
-					Token btvr_name_tok = tokens at btvr_name_pos
-					(value) in btvr_name_tok
-					string btvr_enum = value
-					raw_i = btvr_name_pos + 1
-					for if raw_i < token_count
-						Token btvr_skip = tokens at raw_i
-						(kind) in btvr_skip
-						raw_i = raw_i + 1
-						if kind is "INDENT"
-							break
-					for if raw_i < token_count
-						Token btvr_var = tokens at raw_i
-						(kind, value) in btvr_var
-						raw_i = raw_i + 1
-						if kind is "DEDENT"
-							break
-						if kind is "IDENT"
-							string btvr_vname = value
-							if raw_i < token_count
-								Token btvr_eq = tokens at raw_i
-								(kind) in btvr_eq
-								raw_i = raw_i + 1
-								if kind is "EQUALS"
-									if raw_i < token_count
-										Token btvr_lit = tokens at raw_i
-										(value) in btvr_lit
-										raw_i = raw_i + 1
-										string dot = "."
-										string btvr_key = s_join([btvr_enum, dot, btvr_vname])
-										result at end = btvr_key
-										result at end = value
+	# ex: enum {Color} — pos+1 grabs the enum name (or type keyword if typed)
+	int type_pos = pos + 1
+	if type_pos < token_count
+		Token type_tok = tokens at type_pos
+		(kind, value) in type_tok
+		if kind is "IDENT"
+			bool ee_is_typed = is_typed_enum_type(value)
+			if ee_is_typed
+				matched = true
+				is_typed = true
+				val_type = value
+				# ex: enum int {Status} — type_pos+1 grabs the enum name
+				int name_pos = type_pos + 1
+				if name_pos < token_count
+					Token name_tok = tokens at name_pos
+					(value) in name_tok
+					name = value
+					int body_start = name_pos + 1
+					ParseResult block_r = skip_to_block_start(tokens, body_start)
+					int scan_start = pr_pos(block_r)
+					PairsScan pairs_r = collect_typed_variant_pairs(tokens, scan_start, name)
+					pairs = ps_pairs(pairs_r)
+					new_pos = ps_new_pos(pairs_r)
 			else
-				raw_i = raw_i + 1
-			continue
-		raw_i = raw_i + 1
+				matched = true
+				is_typed = false
+				name = value
+				rust_name = s_pascal(name)
+				int body_start = type_pos + 1
+				ParseResult block_r = skip_to_block_start(tokens, body_start)
+				int scan_start = pr_pos(block_r)
+				PairsScan pairs_r = collect_variant_pairs(tokens, scan_start, rust_name)
+				pairs = ps_pairs(pairs_r)
+				new_pos = ps_new_pos(pairs_r)
+	EnumScan result = (matched, is_typed, name, rust_name, val_type, pairs, new_pos)
 	return result

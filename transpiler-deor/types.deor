@@ -16,6 +16,26 @@ struct ParseResult
 	string code
 	int new_pos
 
+# Returned by a registry try_*_entry scan (see registry/*.deor) for a declaration whose
+# registry entry is a single key/value pair — struct name+fields, shape name+form, raw
+# name+"raw:". `matched` is false when the token at the scanned position wasn't the
+# expected declaration shape; callers still advance to `new_pos` either way so the
+# single-pass registry loop in registry.deor never stalls.
+struct Reg2Scan
+	bool matched
+	string key
+	string val
+	int new_pos
+
+# Same as Reg2Scan but for a registry whose entry is a key plus two values — currently
+# just the validator-type registry ([Name, baseType, paramName] triplets).
+struct Reg3Scan
+	bool matched
+	string key
+	string val
+	string val2
+	int new_pos
+
 # Code-generation context threaded through all gen_* functions. Holds every pre-built
 # registry so generators can look up struct fields, enum variants, shape aliases,
 # and validator types without re-scanning the token stream on each call.

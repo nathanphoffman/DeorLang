@@ -19,6 +19,23 @@ struct ParseResult {
 }
 
 #[derive(Clone, PartialEq, Debug)]
+struct Reg2Scan {
+    matched: bool,
+    key: String,
+    val: String,
+    new_pos: i64,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+struct Reg3Scan {
+    matched: bool,
+    key: String,
+    val: String,
+    val2: String,
+    new_pos: i64,
+}
+
+#[derive(Clone, PartialEq, Debug)]
 struct TokenMeta {
     line: i64,
     file: String,
@@ -6300,144 +6317,157 @@ fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
     return make_result(fields_joined.clone(), cur.clone());
 }
 
-fn build_struct_reg(tokens: TokensRef) -> Vec<String> {
+fn try_struct_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     // transpiler-deor/registry/struct.deor
-    let mut result: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
-    let mut raw_i: i64 = 0;
-    while raw_i < token_count {
+    let mut matched: bool = false;
+    let mut key: String = "".to_string();
+    let mut val: String = "".to_string();
+    let mut new_pos: i64 = pos + 1;
+    let mut name_pos: i64 = pos + 1;
+    if name_pos < token_count {
         // transpiler-deor/registry/struct.deor
-        let mut token: Token = tokens[raw_i as usize].clone();
-        let kind = token.kind.clone();
-        let value = token.value.clone();
-        let line = token.line.clone();
-        if kind == "KW_STRUCT" {
+        let mut name_token: Token = tokens[name_pos as usize].clone();
+        let kind = name_token.kind.clone();
+        let value = name_token.value.clone();
+        if kind == "IDENT" {
             // transpiler-deor/registry/struct.deor
-            let mut name_pos: i64 = raw_i + 1;
-            if name_pos < token_count {
-                // transpiler-deor/registry/struct.deor
-                let mut name_token: Token = tokens[name_pos as usize].clone();
-                let kind = name_token.kind.clone();
-                let value = name_token.value.clone();
-                if kind == "IDENT" {
-                    // transpiler-deor/registry/struct.deor
-                    let mut blk_start: i64 = name_pos + 1;
-                    let mut block_r: ParseResult = skip_to_block_start(tokens.clone(), blk_start.clone());
-                    let mut fld_start: i64 = pr_pos(block_r.clone());
-                    let mut fields_r: ParseResult = collect_struct_fields(tokens.clone(), fld_start.clone());
-                    result.push(value.clone());
-                    result.push(pr_code(fields_r.clone()).clone());
-                    raw_i = pr_pos(fields_r.clone());
-                    continue;
-                }
-            }
+            matched = true;
+            key = value;
+            let mut blk_start: i64 = name_pos + 1;
+            let mut block_r: ParseResult = skip_to_block_start(tokens.clone(), blk_start.clone());
+            let mut fld_start: i64 = pr_pos(block_r.clone());
+            let mut fields_r: ParseResult = collect_struct_fields(tokens.clone(), fld_start.clone());
+            val = pr_code(fields_r.clone());
+            new_pos = pr_pos(fields_r.clone());
         }
-        raw_i = raw_i + 1;
     }
+    let mut result = Reg2Scan { matched: matched.clone(), key: key.clone(), val: val.clone(), new_pos: new_pos.clone() };
     return result;
 }
 
 // transpiler-deor/registry/shape.deor
-fn build_shape_reg(tokens: TokensRef) -> Vec<String> {
+fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     // transpiler-deor/registry/shape.deor
-    let mut result: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
-    for index in 0..token_count {
+    let mut matched: bool = false;
+    let mut key: String = "".to_string();
+    let mut val: String = "".to_string();
+    let mut new_pos: i64 = pos + 1;
+    let mut name_pos: i64 = pos + 1;
+    let mut form_pos: i64 = pos + 3;
+    let mut t4_pos: i64 = pos + 4;
+    if t4_pos < token_count {
         // transpiler-deor/registry/shape.deor
-        let mut token: Token = tokens[index as usize].clone();
-        let kind = token.kind.clone();
-        let value = token.value.clone();
-        let line = token.line.clone();
-        if kind == "KW_SHAPE" {
+        let mut name_token: Token = tokens[name_pos as usize].clone();
+        let mut form_token: Token = tokens[form_pos as usize].clone();
+        let value = name_token.value.clone();
+        let mut shape_name: String = value.clone();
+        let kind = form_token.kind.clone();
+        if kind == "KW_LIST" {
             // transpiler-deor/registry/shape.deor
-            let mut name_pos: i64 = index + 1;
-            let mut form_pos: i64 = index + 3;
-            let mut t4_pos: i64 = index + 4;
-            if t4_pos < token_count {
+            let mut elem_pos: i64 = pos + 5;
+            if elem_pos < token_count {
                 // transpiler-deor/registry/shape.deor
-                let mut name_token: Token = tokens[name_pos as usize].clone();
-                let mut form_token: Token = tokens[form_pos as usize].clone();
-                let value = name_token.value.clone();
-                let mut shape_name: String = value.clone();
-                let kind = form_token.kind.clone();
-                if kind == "KW_LIST" {
+                let mut elem_token: Token = tokens[elem_pos as usize].clone();
+                let value = elem_token.value.clone();
+                matched = true;
+                key = shape_name;
+                val = value;
+            }
+        } else {
+            // transpiler-deor/registry/shape.deor
+            let mut t4_token: Token = tokens[t4_pos as usize].clone();
+            let kind = t4_token.kind.clone();
+            let value = t4_token.value.clone();
+            let mut t4_is_of: bool = kind == "KW_OF";
+            let mut t4_is_to: bool = kind == "KW_TO";
+            let mut in_type: String = "".to_string();
+            let mut out_type: String = "".to_string();
+            if t4_is_of {
+                // transpiler-deor/registry/shape.deor
+                let mut t5_pos: i64 = pos + 5;
+                if t5_pos < token_count {
                     // transpiler-deor/registry/shape.deor
-                    let mut elem_pos: i64 = index + 5;
-                    if elem_pos < token_count {
-                        // transpiler-deor/registry/shape.deor
-                        let mut elem_token: Token = tokens[elem_pos as usize].clone();
-                        let value = elem_token.value.clone();
-                        result.push(shape_name.clone());
-                        result.push(value.clone());
-                    }
-                } else {
+                    let mut t5_token: Token = tokens[t5_pos as usize].clone();
+                    let value = t5_token.value.clone();
+                    in_type = value;
+                }
+                let mut t6_pos: i64 = pos + 6;
+                if t6_pos < token_count {
                     // transpiler-deor/registry/shape.deor
-                    let mut t4_token: Token = tokens[t4_pos as usize].clone();
-                    let kind = t4_token.kind.clone();
-                    let value = t4_token.value.clone();
-                    let mut t4_is_of: bool = kind == "KW_OF";
-                    let mut t4_is_to: bool = kind == "KW_TO";
-                    let mut in_type: String = "".to_string();
-                    let mut out_type: String = "".to_string();
-                    if t4_is_of {
+                    let mut t6_token: Token = tokens[t6_pos as usize].clone();
+                    let kind = t6_token.kind.clone();
+                    let value = t6_token.value.clone();
+                    let mut t6_is_to: bool = kind == "KW_TO";
+                    if t6_is_to {
                         // transpiler-deor/registry/shape.deor
-                        let mut t5_pos: i64 = index + 5;
-                        if t5_pos < token_count {
+                        let mut t7_pos: i64 = pos + 7;
+                        if t7_pos < token_count {
                             // transpiler-deor/registry/shape.deor
-                            let mut t5_token: Token = tokens[t5_pos as usize].clone();
-                            let value = t5_token.value.clone();
-                            in_type = value;
-                        }
-                        let mut t6_pos: i64 = index + 6;
-                        if t6_pos < token_count {
-                            // transpiler-deor/registry/shape.deor
-                            let mut t6_token: Token = tokens[t6_pos as usize].clone();
-                            let kind = t6_token.kind.clone();
-                            let value = t6_token.value.clone();
-                            let mut t6_is_to: bool = kind == "KW_TO";
-                            if t6_is_to {
-                                // transpiler-deor/registry/shape.deor
-                                let mut t7_pos: i64 = index + 7;
-                                if t7_pos < token_count {
-                                    // transpiler-deor/registry/shape.deor
-                                    let mut t7_token: Token = tokens[t7_pos as usize].clone();
-                                    let value = t7_token.value.clone();
-                                    out_type = value;
-                                }
-                            }
-                        }
-                    } else if t4_is_to {
-                        // transpiler-deor/registry/shape.deor
-                        let mut t5_pos: i64 = index + 5;
-                        if t5_pos < token_count {
-                            // transpiler-deor/registry/shape.deor
-                            let mut t5_token: Token = tokens[t5_pos as usize].clone();
-                            let value = t5_token.value.clone();
+                            let mut t7_token: Token = tokens[t7_pos as usize].clone();
+                            let value = t7_token.value.clone();
                             out_type = value;
                         }
                     }
-                    result.push(shape_name.clone());
-                    let mut fn_parts: Vec<String> = vec!["fn:".to_string(), in_type.clone(), ":".to_string(), out_type.clone()];
-                    result.push(s_join(fn_parts.clone()).clone());
+                }
+            } else if t4_is_to {
+                // transpiler-deor/registry/shape.deor
+                let mut t5_pos: i64 = pos + 5;
+                if t5_pos < token_count {
+                    // transpiler-deor/registry/shape.deor
+                    let mut t5_token: Token = tokens[t5_pos as usize].clone();
+                    let value = t5_token.value.clone();
+                    out_type = value;
                 }
             }
-        }
-        if kind == "KW_RAW" {
-            // transpiler-deor/registry/shape.deor
-            let mut name_pos: i64 = index + 1;
-            if name_pos < token_count {
-                // transpiler-deor/registry/shape.deor
-                let mut name_token: Token = tokens[name_pos as usize].clone();
-                let value = name_token.value.clone();
-                result.push(value.clone());
-                result.push("raw:".to_string());
-            }
+            matched = true;
+            key = shape_name;
+            val = ["fn:", in_type.as_str(), ":", out_type.as_str()].concat();
         }
     }
+    let mut result = Reg2Scan { matched: matched.clone(), key: key.clone(), val: val.clone(), new_pos: new_pos.clone() };
+    return result;
+}
+
+fn try_raw_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
+    // transpiler-deor/registry/shape.deor
+    let mut token_count: i64 = (tokens.len() as i64);
+    let mut matched: bool = false;
+    let mut key: String = "".to_string();
+    let mut val: String = "".to_string();
+    let mut new_pos: i64 = pos + 1;
+    let mut name_pos: i64 = pos + 1;
+    if name_pos < token_count {
+        // transpiler-deor/registry/shape.deor
+        let mut name_token: Token = tokens[name_pos as usize].clone();
+        let value = name_token.value.clone();
+        matched = true;
+        key = value;
+        val = "raw:".to_string();
+    }
+    let mut result = Reg2Scan { matched: matched.clone(), key: key.clone(), val: val.clone(), new_pos: new_pos.clone() };
     return result;
 }
 
 // transpiler-deor/registry/enum.deor
+#[derive(Clone, PartialEq, Debug)]
+struct PairsScan {
+    pairs: Vec<String>,
+    new_pos: i64,
+}
+
+#[derive(Clone, PartialEq, Debug)]
+struct EnumScan {
+    matched: bool,
+    is_typed: bool,
+    name: String,
+    rust_name: String,
+    val_type: String,
+    pairs: Vec<String>,
+    new_pos: i64,
+}
+
 fn is_typed_enum_type(word: String) -> bool {
     // transpiler-deor/registry/enum.deor
     if word == "string" {
@@ -6459,251 +6489,178 @@ fn is_typed_enum_type(word: String) -> bool {
     return false;
 }
 
-fn build_enum_reg(tokens: TokensRef) -> Vec<String> {
+fn ps_pairs(scan: PairsScan) -> Vec<String> {
     // transpiler-deor/registry/enum.deor
-    let mut result: Vec<String> = Vec::new();
+    scan.pairs
+}
+
+fn ps_new_pos(scan: PairsScan) -> i64 {
+    // transpiler-deor/registry/enum.deor
+    scan.new_pos
+}
+
+fn collect_variant_pairs(tokens: TokensRef, start: i64, rust_name: String) -> PairsScan {
+    // transpiler-deor/registry/enum.deor
     let mut token_count: i64 = (tokens.len() as i64);
-    for index in 0..token_count {
+    let mut pairs: Vec<String> = Vec::new();
+    let mut new_pos: i64 = start.clone();
+    let mut scanning: bool = true;
+    while scanning {
         // transpiler-deor/registry/enum.deor
-        let mut token: Token = tokens[index as usize].clone();
-        let kind = token.kind.clone();
-        let value = token.value.clone();
-        let line = token.line.clone();
-        if kind == "KW_ENUM" {
+        if new_pos >= token_count {
             // transpiler-deor/registry/enum.deor
-            let mut name_pos: i64 = index + 1;
-            if name_pos < token_count {
+            scanning = false;
+        } else {
+            // transpiler-deor/registry/enum.deor
+            let mut var_tok: Token = tokens[new_pos as usize].clone();
+            let kind = var_tok.kind.clone();
+            let value = var_tok.value.clone();
+            new_pos = new_pos + 1;
+            if kind == "DEDENT" {
                 // transpiler-deor/registry/enum.deor
-                let mut name_token: Token = tokens[name_pos as usize].clone();
-                let value = name_token.value.clone();
-                let mut be_is_typed: bool = is_typed_enum_type(value.clone());
-                if !be_is_typed {
-                    // transpiler-deor/registry/enum.deor
-                    let mut enum_name: String = value.clone();
-                    let mut rust_name: String = s_pascal(enum_name.clone());
-                    result.push(enum_name.clone());
-                    result.push(rust_name.clone());
-                }
+                scanning = false;
+            } else if kind == "IDENT" {
+                // transpiler-deor/registry/enum.deor
+                pairs.push(value.clone());
+                pairs.push(rust_name.clone());
             }
         }
     }
+    let mut result = PairsScan { pairs: pairs.clone(), new_pos: new_pos.clone() };
     return result;
 }
 
-fn build_variant_reg(tokens: TokensRef, enum_reg: Vec<String>) -> Vec<String> {
+fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: String) -> PairsScan {
     // transpiler-deor/registry/enum.deor
-    let mut result: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
-    let mut raw_i: i64 = 0;
-    while raw_i < token_count {
+    let mut pairs: Vec<String> = Vec::new();
+    let mut new_pos: i64 = start.clone();
+    let mut scanning: bool = true;
+    while scanning {
         // transpiler-deor/registry/enum.deor
-        let mut token: Token = tokens[raw_i as usize].clone();
-        let kind = token.kind.clone();
-        let value = token.value.clone();
-        let line = token.line.clone();
-        if kind == "KW_ENUM" {
+        if new_pos >= token_count {
             // transpiler-deor/registry/enum.deor
-            let mut name_pos: i64 = raw_i + 1;
-            if name_pos < token_count {
-                // transpiler-deor/registry/enum.deor
-                let mut name_token: Token = tokens[name_pos as usize].clone();
-                let value = name_token.value.clone();
-                let mut bvr_is_typed: bool = is_typed_enum_type(value.clone());
-                if !bvr_is_typed {
-                    // transpiler-deor/registry/enum.deor
-                    let mut enum_name: String = value.clone();
-                    let mut rust_name: String = reg_get(enum_reg.clone(), enum_name.clone());
-                    raw_i = name_pos + 1;
-                    while raw_i < token_count {
-                        // transpiler-deor/registry/enum.deor
-                        let mut skip_token: Token = tokens[raw_i as usize].clone();
-                        let kind = skip_token.kind.clone();
-                        raw_i = raw_i + 1;
-                        if kind == "INDENT" {
-                            // transpiler-deor/registry/enum.deor
-                            break;
-                        }
-                    }
-                    while raw_i < token_count {
-                        // transpiler-deor/registry/enum.deor
-                        let mut variant_token: Token = tokens[raw_i as usize].clone();
-                        let kind = variant_token.kind.clone();
-                        let value = variant_token.value.clone();
-                        raw_i = raw_i + 1;
-                        if kind == "DEDENT" {
-                            // transpiler-deor/registry/enum.deor
-                            break;
-                        } else if kind == "IDENT" {
-                            // transpiler-deor/registry/enum.deor
-                            result.push(value.clone());
-                            result.push(rust_name.clone());
-                        }
-                    }
-                } else {
-                    // transpiler-deor/registry/enum.deor
-                    raw_i = raw_i + 1;
-                }
-            }
-            continue;
-        }
-        raw_i = raw_i + 1;
-    }
-    return result;
-}
-
-fn build_typed_enum_reg(tokens: TokensRef) -> Vec<String> {
-    // transpiler-deor/registry/enum.deor
-    let mut result: Vec<String> = Vec::new();
-    let mut token_count: i64 = (tokens.len() as i64);
-    for index in 0..token_count {
-        // transpiler-deor/registry/enum.deor
-        let mut token: Token = tokens[index as usize].clone();
-        let kind = token.kind.clone();
-        if kind == "KW_ENUM" {
+            scanning = false;
+        } else {
             // transpiler-deor/registry/enum.deor
-            let mut type_pos: i64 = index + 1;
-            if type_pos < token_count {
+            let mut var_tok: Token = tokens[new_pos as usize].clone();
+            let kind = var_tok.kind.clone();
+            let value = var_tok.value.clone();
+            new_pos = new_pos + 1;
+            if kind == "DEDENT" {
                 // transpiler-deor/registry/enum.deor
-                let mut type_tok: Token = tokens[type_pos as usize].clone();
-                let kind = type_tok.kind.clone();
-                let value = type_tok.value.clone();
-                if kind == "IDENT" {
+                scanning = false;
+            } else if kind == "IDENT" {
+                // transpiler-deor/registry/enum.deor
+                let mut vname: String = value.clone();
+                if new_pos < token_count {
                     // transpiler-deor/registry/enum.deor
-                    let mut bte_is_typed: bool = is_typed_enum_type(value.clone());
-                    if bte_is_typed {
+                    let mut eq_tok: Token = tokens[new_pos as usize].clone();
+                    let kind = eq_tok.kind.clone();
+                    new_pos = new_pos + 1;
+                    if kind == "EQUALS" {
                         // transpiler-deor/registry/enum.deor
-                        let mut val_type: String = value.clone();
-                        let mut name_pos: i64 = type_pos + 1;
-                        if name_pos < token_count {
+                        if new_pos < token_count {
                             // transpiler-deor/registry/enum.deor
-                            let mut name_tok: Token = tokens[name_pos as usize].clone();
-                            let value = name_tok.value.clone();
-                            result.push(value.clone());
-                            result.push(val_type.clone());
+                            let mut lit_tok: Token = tokens[new_pos as usize].clone();
+                            let value = lit_tok.value.clone();
+                            new_pos = new_pos + 1;
+                            let mut dot: String = ".".to_string();
+                            let mut vkey: String = [enum_name.as_str(), dot.as_str(), vname.as_str()].concat();
+                            pairs.push(vkey.clone());
+                            pairs.push(value.clone());
                         }
                     }
                 }
             }
         }
     }
+    let mut result = PairsScan { pairs: pairs.clone(), new_pos: new_pos.clone() };
     return result;
 }
 
-fn build_typed_variant_reg(tokens: TokensRef) -> Vec<String> {
+fn try_enum_entry(tokens: TokensRef, pos: i64) -> EnumScan {
     // transpiler-deor/registry/enum.deor
-    let mut result: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
-    let mut raw_i: i64 = 0;
-    while raw_i < token_count {
+    let mut matched: bool = false;
+    let mut is_typed: bool = false;
+    let mut name: String = "".to_string();
+    let mut rust_name: String = "".to_string();
+    let mut val_type: String = "".to_string();
+    let mut pairs: Vec<String> = Vec::new();
+    let mut new_pos: i64 = pos + 1;
+    let mut type_pos: i64 = pos + 1;
+    if type_pos < token_count {
         // transpiler-deor/registry/enum.deor
-        let mut token: Token = tokens[raw_i as usize].clone();
-        let kind = token.kind.clone();
-        if kind == "KW_ENUM" {
+        let mut type_tok: Token = tokens[type_pos as usize].clone();
+        let kind = type_tok.kind.clone();
+        let value = type_tok.value.clone();
+        if kind == "IDENT" {
             // transpiler-deor/registry/enum.deor
-            let mut btvr_type_pos: i64 = raw_i + 1;
-            let mut btvr_typed: bool = false;
-            if btvr_type_pos < token_count {
+            let mut ee_is_typed: bool = is_typed_enum_type(value.clone());
+            if ee_is_typed {
                 // transpiler-deor/registry/enum.deor
-                let mut btvr_type_tok: Token = tokens[btvr_type_pos as usize].clone();
-                let kind = btvr_type_tok.kind.clone();
-                let value = btvr_type_tok.value.clone();
-                btvr_typed = is_typed_enum_type(value.clone());
-            }
-            if btvr_typed {
-                // transpiler-deor/registry/enum.deor
-                let mut btvr_name_pos: i64 = raw_i + 2;
-                if btvr_name_pos < token_count {
+                matched = true;
+                is_typed = true;
+                val_type = value;
+                let mut name_pos: i64 = type_pos + 1;
+                if name_pos < token_count {
                     // transpiler-deor/registry/enum.deor
-                    let mut btvr_name_tok: Token = tokens[btvr_name_pos as usize].clone();
-                    let value = btvr_name_tok.value.clone();
-                    let mut btvr_enum: String = value.clone();
-                    raw_i = btvr_name_pos + 1;
-                    while raw_i < token_count {
-                        // transpiler-deor/registry/enum.deor
-                        let mut btvr_skip: Token = tokens[raw_i as usize].clone();
-                        let kind = btvr_skip.kind.clone();
-                        raw_i = raw_i + 1;
-                        if kind == "INDENT" {
-                            // transpiler-deor/registry/enum.deor
-                            break;
-                        }
-                    }
-                    while raw_i < token_count {
-                        // transpiler-deor/registry/enum.deor
-                        let mut btvr_var: Token = tokens[raw_i as usize].clone();
-                        let kind = btvr_var.kind.clone();
-                        let value = btvr_var.value.clone();
-                        raw_i = raw_i + 1;
-                        if kind == "DEDENT" {
-                            // transpiler-deor/registry/enum.deor
-                            break;
-                        }
-                        if kind == "IDENT" {
-                            // transpiler-deor/registry/enum.deor
-                            let mut btvr_vname: String = value.clone();
-                            if raw_i < token_count {
-                                // transpiler-deor/registry/enum.deor
-                                let mut btvr_eq: Token = tokens[raw_i as usize].clone();
-                                let kind = btvr_eq.kind.clone();
-                                raw_i = raw_i + 1;
-                                if kind == "EQUALS" {
-                                    // transpiler-deor/registry/enum.deor
-                                    if raw_i < token_count {
-                                        // transpiler-deor/registry/enum.deor
-                                        let mut btvr_lit: Token = tokens[raw_i as usize].clone();
-                                        let value = btvr_lit.value.clone();
-                                        raw_i = raw_i + 1;
-                                        let mut dot: String = ".".to_string();
-                                        let mut btvr_key: String = [btvr_enum.as_str(), dot.as_str(), btvr_vname.as_str()].concat();
-                                        result.push(btvr_key.clone());
-                                        result.push(value.clone());
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    let mut name_tok: Token = tokens[name_pos as usize].clone();
+                    let value = name_tok.value.clone();
+                    name = value;
+                    let mut body_start: i64 = name_pos + 1;
+                    let mut block_r: ParseResult = skip_to_block_start(tokens.clone(), body_start.clone());
+                    let mut scan_start: i64 = pr_pos(block_r.clone());
+                    let mut pairs_r: PairsScan = collect_typed_variant_pairs(tokens.clone(), scan_start.clone(), name.clone());
+                    pairs = ps_pairs(pairs_r.clone());
+                    new_pos = ps_new_pos(pairs_r.clone());
                 }
             } else {
                 // transpiler-deor/registry/enum.deor
-                raw_i = raw_i + 1;
+                matched = true;
+                is_typed = false;
+                name = value;
+                rust_name = s_pascal(name.clone());
+                let mut body_start: i64 = type_pos + 1;
+                let mut block_r: ParseResult = skip_to_block_start(tokens.clone(), body_start.clone());
+                let mut scan_start: i64 = pr_pos(block_r.clone());
+                let mut pairs_r: PairsScan = collect_variant_pairs(tokens.clone(), scan_start.clone(), rust_name.clone());
+                pairs = ps_pairs(pairs_r.clone());
+                new_pos = ps_new_pos(pairs_r.clone());
             }
-            continue;
         }
-        raw_i = raw_i + 1;
     }
+    let mut result = EnumScan { matched: matched.clone(), is_typed: is_typed.clone(), name: name.clone(), rust_name: rust_name.clone(), val_type: val_type.clone(), pairs: pairs.clone(), new_pos: new_pos.clone() };
     return result;
 }
 
 // transpiler-deor/registry/validator_type.deor
-fn build_type_reg(tokens: TokensRef) -> Vec<String> {
+fn try_type_entry(tokens: TokensRef, pos: i64) -> Reg3Scan {
     // transpiler-deor/registry/validator_type.deor
-    let mut result: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
-    for index in 0..token_count {
+    let mut matched: bool = false;
+    let mut key: String = "".to_string();
+    let mut val: String = "".to_string();
+    let mut val2: String = "".to_string();
+    let mut new_pos: i64 = pos + 1;
+    let mut name_pos: i64 = pos + 1;
+    let mut param_type_pos: i64 = pos + 3;
+    let mut param_name_pos: i64 = pos + 4;
+    if param_name_pos < token_count {
         // transpiler-deor/registry/validator_type.deor
-        let mut token: Token = tokens[index as usize].clone();
-        let kind = token.kind.clone();
-        let value = token.value.clone();
-        let line = token.line.clone();
-        if kind == "KW_TYPE" {
-            // transpiler-deor/registry/validator_type.deor
-            let mut name_pos: i64 = index + 1;
-            let mut param_type_pos: i64 = index + 3;
-            let mut param_name_pos: i64 = index + 4;
-            if param_name_pos < token_count {
-                // transpiler-deor/registry/validator_type.deor
-                let mut name_token: Token = tokens[name_pos as usize].clone();
-                let mut param_type_token: Token = tokens[param_type_pos as usize].clone();
-                let mut param_name_token: Token = tokens[param_name_pos as usize].clone();
-                let value = name_token.value.clone();
-                result.push(value.clone());
-                let value = param_type_token.value.clone();
-                result.push(value.clone());
-                let value = param_name_token.value.clone();
-                result.push(value.clone());
-            }
-        }
+        let mut name_token: Token = tokens[name_pos as usize].clone();
+        let mut param_type_token: Token = tokens[param_type_pos as usize].clone();
+        let mut param_name_token: Token = tokens[param_name_pos as usize].clone();
+        matched = true;
+        let value = name_token.value.clone();
+        key = value;
+        let value = param_type_token.value.clone();
+        val = value;
+        let value = param_name_token.value.clone();
+        val2 = value;
     }
+    let mut result = Reg3Scan { matched: matched.clone(), key: key.clone(), val: val.clone(), val2: val2.clone(), new_pos: new_pos.clone() };
     return result;
 }
 
@@ -6869,13 +6826,118 @@ fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<String
 // transpiler-deor/registry/registry.deor
 fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     // transpiler-deor/registry/registry.deor
-    let mut struct_reg: Vec<String> = build_struct_reg(tokens_ref.clone());
-    let mut shape_reg: Vec<String> = build_shape_reg(tokens_ref.clone());
-    let mut enum_reg: Vec<String> = build_enum_reg(tokens_ref.clone());
-    let mut variant_reg: Vec<String> = build_variant_reg(tokens_ref.clone(), enum_reg.clone());
-    let mut type_reg: Vec<String> = build_type_reg(tokens_ref.clone());
-    let mut typed_enum_reg: Vec<String> = build_typed_enum_reg(tokens_ref.clone());
-    let mut typed_variant_reg: Vec<String> = build_typed_variant_reg(tokens_ref.clone());
+    let mut struct_reg: Vec<String> = Vec::new();
+    let mut shape_reg: Vec<String> = Vec::new();
+    let mut enum_reg: Vec<String> = Vec::new();
+    let mut variant_reg: Vec<String> = Vec::new();
+    let mut type_reg: Vec<String> = Vec::new();
+    let mut typed_enum_reg: Vec<String> = Vec::new();
+    let mut typed_variant_reg: Vec<String> = Vec::new();
+    let mut token_count: i64 = (tokens_ref.len() as i64);
+    let mut pos: i64 = 0;
+    while pos < token_count {
+        // transpiler-deor/registry/registry.deor
+        let mut token: Token = tokens_ref[pos as usize].clone();
+        let kind = token.kind.clone();
+        if kind == "KW_STRUCT" {
+            // transpiler-deor/registry/registry.deor
+            let mut scan: Reg2Scan = try_struct_entry(tokens_ref.clone(), pos.clone());
+            let matched = scan.matched;
+            let key = scan.key;
+            let val = scan.val;
+            let new_pos = scan.new_pos;
+            if matched {
+                // transpiler-deor/registry/registry.deor
+                struct_reg.push(key.clone());
+                struct_reg.push(val.clone());
+            }
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_SHAPE" {
+            // transpiler-deor/registry/registry.deor
+            let mut scan: Reg2Scan = try_shape_entry(tokens_ref.clone(), pos.clone());
+            let matched = scan.matched;
+            let key = scan.key;
+            let val = scan.val;
+            let new_pos = scan.new_pos;
+            if matched {
+                // transpiler-deor/registry/registry.deor
+                shape_reg.push(key.clone());
+                shape_reg.push(val.clone());
+            }
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_RAW" {
+            // transpiler-deor/registry/registry.deor
+            let mut scan: Reg2Scan = try_raw_entry(tokens_ref.clone(), pos.clone());
+            let matched = scan.matched;
+            let key = scan.key;
+            let val = scan.val;
+            let new_pos = scan.new_pos;
+            if matched {
+                // transpiler-deor/registry/registry.deor
+                shape_reg.push(key.clone());
+                shape_reg.push(val.clone());
+            }
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_TYPE" {
+            // transpiler-deor/registry/registry.deor
+            let mut scan: Reg3Scan = try_type_entry(tokens_ref.clone(), pos.clone());
+            let matched = scan.matched;
+            let key = scan.key;
+            let val = scan.val;
+            let val2 = scan.val2;
+            let new_pos = scan.new_pos;
+            if matched {
+                // transpiler-deor/registry/registry.deor
+                type_reg.push(key.clone());
+                type_reg.push(val.clone());
+                type_reg.push(val2.clone());
+            }
+            pos = new_pos;
+            continue;
+        }
+        if kind == "KW_ENUM" {
+            // transpiler-deor/registry/registry.deor
+            let mut scan: EnumScan = try_enum_entry(tokens_ref.clone(), pos.clone());
+            let matched = scan.matched;
+            let is_typed = scan.is_typed;
+            let name = scan.name;
+            let rust_name = scan.rust_name;
+            let val_type = scan.val_type;
+            let pairs = scan.pairs;
+            let new_pos = scan.new_pos;
+            if matched {
+                // transpiler-deor/registry/registry.deor
+                if is_typed {
+                    // transpiler-deor/registry/registry.deor
+                    typed_enum_reg.push(name.clone());
+                    typed_enum_reg.push(val_type.clone());
+                    let mut tv_len: i64 = (pairs.len() as i64);
+                    for tv_i in 0..tv_len {
+                        // transpiler-deor/registry/registry.deor
+                        typed_variant_reg.push(pairs[tv_i as usize].clone().clone());
+                    }
+                } else {
+                    // transpiler-deor/registry/registry.deor
+                    enum_reg.push(name.clone());
+                    enum_reg.push(rust_name.clone());
+                    let mut v_len: i64 = (pairs.len() as i64);
+                    for v_i in 0..v_len {
+                        // transpiler-deor/registry/registry.deor
+                        variant_reg.push(pairs[v_i as usize].clone().clone());
+                    }
+                }
+            }
+            pos = new_pos;
+            continue;
+        }
+        pos = pos + 1;
+    }
     let mut mut_names: Vec<String> = Vec::new();
     let mut validator_var_reg: Vec<String> = Vec::new();
     let mut placeholder: Vec<Token> = Vec::new();

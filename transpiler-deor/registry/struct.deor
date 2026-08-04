@@ -1,6 +1,7 @@
 
-# Builds the struct registry: a flat strList of [structName, "field1,field2,..."] pairs.
-# Helpers walk a struct body to collect field names joined by commas.
+# Struct registry: a flat strList of [structName, "field1,field2,..."] pairs, built one
+# KW_STRUCT hit at a time by try_struct_entry below. Helpers walk a struct body to
+# collect field names joined by commas.
 
 fn ParseResult skip_to_block_start(TokensRef tokens, int start)
 	int token_count = len(tokens)
@@ -37,28 +38,29 @@ fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 	string fields_joined = s_join_with(fields, comma)
 	return make_result(fields_joined, cur)
 
-fn strList build_struct_reg(TokensRef tokens)
-	strList result = empty
+# Scans a single `struct Name\n\tfield decls...` declaration starting at a KW_STRUCT
+# token. Called once per KW_STRUCT hit from build_registry's single-pass dispatch loop
+# (registry.deor) rather than each registry running its own full scan over every token.
+fn Reg2Scan try_struct_entry(TokensRef tokens, int pos)
 	int token_count = len(tokens)
-	int raw_i = 0
-	for if raw_i < token_count
-		Token token = tokens at raw_i
-		(kind, value, line) in token
-		if kind is "KW_STRUCT"
-			# ex: struct {Point} — raw_i+1 grabs the struct name
-			int name_pos = raw_i + 1
-			if name_pos < token_count
-				Token name_token = tokens at name_pos
-				(kind, value) in name_token
-				if kind is "IDENT"
-					# ex: struct Point{\n}\tint x — name_pos+1 grabs the token after the struct name
-					int blk_start = name_pos + 1
-					ParseResult block_r = skip_to_block_start(tokens, blk_start)
-					int fld_start = pr_pos(block_r)
-					ParseResult fields_r = collect_struct_fields(tokens, fld_start)
-					result at end = value
-					result at end = pr_code(fields_r)
-					raw_i = pr_pos(fields_r)
-					continue
-		raw_i = raw_i + 1
+	bool matched = false
+	string key = ""
+	string val = ""
+	int new_pos = pos + 1
+	# ex: struct {Point} — pos+1 grabs the struct name
+	int name_pos = pos + 1
+	if name_pos < token_count
+		Token name_token = tokens at name_pos
+		(kind, value) in name_token
+		if kind is "IDENT"
+			matched = true
+			key = value
+			# ex: struct Point{\n}\tint x — name_pos+1 grabs the token after the struct name
+			int blk_start = name_pos + 1
+			ParseResult block_r = skip_to_block_start(tokens, blk_start)
+			int fld_start = pr_pos(block_r)
+			ParseResult fields_r = collect_struct_fields(tokens, fld_start)
+			val = pr_code(fields_r)
+			new_pos = pr_pos(fields_r)
+	Reg2Scan result = (matched, key, val, new_pos)
 	return result

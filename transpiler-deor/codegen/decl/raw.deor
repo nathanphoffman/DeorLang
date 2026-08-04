@@ -1,6 +1,6 @@
 
 # Consumes a `raw TypeName` declaration and emits nothing into the Rust output.
-# The type is registered in shape_reg (with "raw:" marker) by build_shape_reg so
+# The type is registered in shape_reg (with "raw:" marker) by try_raw_entry so
 # resolve_type can return its name as-is. At code-gen time there is nothing to emit —
 # the actual Rust type must be defined in an adjacent `rust` block.
 fn ParseResult gen_raw_decl(TokensRef tokens, int pos)
