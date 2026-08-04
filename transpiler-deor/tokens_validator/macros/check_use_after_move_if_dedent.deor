@@ -1,0 +1,69 @@
+
+# DEDENT — only acts when it closes the last arm of a tracked chain (the
+# next token isn't KW_ELSE, so no more arms follow). Folds this final arm
+# into the accumulator (unless it's terminal — see check_use_after_move_if_else,
+# same reasoning) and that union becomes moved_vars going forward.
+# Every other DEDENT (closing a for/fn body, or a chain arm followed by
+# another else) is a no-op — nothing is cleared, so a move followed by a
+# read in later straight-line code is still caught. Part of the
+# check_use_after_move flow-sensitive chain tracking — see that macro's
+# header comment for the full mechanism.
+# Reads: cur_kind, pos, tokens, token_count, block_depth, move_if_stack, moved_vars.
+# Writes: move_if_stack, moved_vars.
+macro check_use_after_move_if_dedent
+	if cur_kind is "DEDENT"
+		int uam_dfs_len = len(move_if_stack)
+		if uam_dfs_len > 0
+			int uam_dtop_idx = uam_dfs_len - 1
+			UamFrame uam_dtop = move_if_stack at uam_dtop_idx
+			(uam_depth, uam_acc_vars) in uam_dtop
+			if uam_depth is block_depth
+				bool uam_next_is_else = false
+				int uam_after_dedent = pos + 1
+				if uam_after_dedent < token_count
+					Token uam_ad_tok = tokens at uam_after_dedent
+					(kind) in uam_ad_tok
+					if kind is "KW_ELSE"
+						uam_next_is_else = true
+				if not uam_next_is_else
+					bool uam_d_terminal = false
+					int uam_dt_scan = pos - 1
+					for if uam_dt_scan >= 0
+						Token uam_dt_tok = tokens at uam_dt_scan
+						(kind) in uam_dt_tok
+						if kind is "NEWLINE"
+							uam_dt_scan = uam_dt_scan - 1
+						else
+							break
+					int uam_dt_line_end = uam_dt_scan
+					for if uam_dt_scan >= 0
+						Token uam_dt_tok2 = tokens at uam_dt_scan
+						(kind) in uam_dt_tok2
+						if kind is "NEWLINE"
+							break
+						if kind is "INDENT"
+							break
+						if kind is "DEDENT"
+							break
+						uam_dt_scan = uam_dt_scan - 1
+					int uam_dt_line_start = uam_dt_scan + 1
+					if uam_dt_line_start <= uam_dt_line_end
+						Token uam_dt_first = tokens at uam_dt_line_start
+						(kind) in uam_dt_first
+						if kind is "KW_RETURN"
+							uam_d_terminal = true
+						if kind is "KW_BREAK"
+							uam_d_terminal = true
+						if kind is "KW_CONTINUE"
+							uam_d_terminal = true
+					if not uam_d_terminal
+						int uam_di = 0
+						int uam_dn = len(moved_vars)
+						for if uam_di < uam_dn
+							string uam_dv = moved_vars at uam_di
+							bool uam_d_has = list_has(uam_acc_vars, uam_dv)
+							if not uam_d_has
+								uam_acc_vars at end = uam_dv
+							uam_di = uam_di + 1
+					move_if_stack remove at uam_dtop_idx
+					moved_vars = uam_acc_vars

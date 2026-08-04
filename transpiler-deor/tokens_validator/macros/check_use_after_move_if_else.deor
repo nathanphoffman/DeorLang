@@ -1,0 +1,64 @@
+
+# KW_ELSE — the arm that just closed (its DEDENT ran immediately before
+# this token) is folded into the chain's accumulator — unless that arm's
+# last statement is KW_RETURN/KW_BREAK/KW_CONTINUE, in which case it never
+# falls through to code after the chain at all, so its moves must not be
+# treated as reachable there (the extremely common "if kind is X: return
+# ..." dispatch idiom throughout this codebase relies on this). Either
+# way, moved_vars is restored to the pre-chain snapshot so the next arm
+# starts from the same base as every other arm, not from what the
+# previous arm moved. Part of the check_use_after_move flow-sensitive
+# chain tracking — see that macro's header comment for the full mechanism.
+# Reads: cur_kind, pos, tokens, token_count, block_depth, move_if_stack, moved_vars.
+# Writes: move_if_stack, moved_vars.
+macro check_use_after_move_if_else
+	if cur_kind is "KW_ELSE"
+		int uam_efs_len = len(move_if_stack)
+		if uam_efs_len > 0
+			int uam_etop_idx = uam_efs_len - 1
+			UamFrame uam_etop = move_if_stack at uam_etop_idx
+			(uam_depth, uam_pre_vars, uam_acc_vars) in uam_etop
+			if uam_depth is block_depth
+				bool uam_e_terminal = false
+				int uam_et_scan = pos - 1
+				for if uam_et_scan >= 0
+					Token uam_et_tok = tokens at uam_et_scan
+					(kind) in uam_et_tok
+					if kind is "NEWLINE"
+						uam_et_scan = uam_et_scan - 1
+					else
+						break
+				int uam_et_line_end = uam_et_scan
+				for if uam_et_scan >= 0
+					Token uam_et_tok2 = tokens at uam_et_scan
+					(kind) in uam_et_tok2
+					if kind is "NEWLINE"
+						break
+					if kind is "INDENT"
+						break
+					if kind is "DEDENT"
+						break
+					uam_et_scan = uam_et_scan - 1
+				int uam_et_line_start = uam_et_scan + 1
+				if uam_et_line_start <= uam_et_line_end
+					Token uam_et_first = tokens at uam_et_line_start
+					(kind) in uam_et_first
+					if kind is "KW_RETURN"
+						uam_e_terminal = true
+					if kind is "KW_BREAK"
+						uam_e_terminal = true
+					if kind is "KW_CONTINUE"
+						uam_e_terminal = true
+				if not uam_e_terminal
+					int uam_ei = 0
+					int uam_en = len(moved_vars)
+					for if uam_ei < uam_en
+						string uam_ev = moved_vars at uam_ei
+						bool uam_e_has = list_has(uam_acc_vars, uam_ev)
+						if not uam_e_has
+							uam_acc_vars at end = uam_ev
+						uam_ei = uam_ei + 1
+				move_if_stack remove at uam_etop_idx
+				UamFrame uam_updated = (uam_depth, uam_pre_vars, uam_acc_vars)
+				move_if_stack at end = uam_updated
+				moved_vars = uam_pre_vars
