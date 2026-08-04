@@ -28,6 +28,28 @@ rust
 		path
 	}
 
+# Prints `msg` and exits with status 1. The single exit point every fatal_* helper
+# below routes through, so load_file's guards don't each re-derive their own
+# print + process::exit boilerplate.
+fn void fatal(string msg)
+	print(msg)
+	rust
+		std::process::exit(1);
+
+# Fatal error scoped to a file being loaded: "[error] path: msg". Used by load_file's
+# declaration-order guards (imports before decls, structural decls before macros,
+# macros before functions).
+fn void fatal_at(string path, string msg)
+	string err_pre = "[error] "
+	string err_sep = ": "
+	strList err_parts = [err_pre, path, err_sep, msg]
+	fatal(s_join(err_parts))
+
+# Fatal error for an import path that doesn't resolve to an existing file.
+fn void fatal_missing_import(string imp_path)
+	string err_pre = "[error] cannot find import: "
+	fatal(s_cat(err_pre, imp_path))
+
 fn tokenList load_file(string path)
 	string source = f_read(path)
 	tokenList tok_raw = tokenize(source, path)
@@ -72,22 +94,12 @@ fn tokenList load_file(string path)
 			bool is_structural_kw = kind is "KW_STRUCT" or kind is "KW_ENUM" or kind is "KW_SHAPE" or kind is "KW_TYPE"
 			if is_structural_kw
 				if decl_phase > 0
-					string err_pre = "[error] "
-					string err_mid = ": struct/enum/type/shape declarations must come before macros and functions"
-					strList err_parts = [err_pre, path, err_mid]
-					string err_msg = s_join(err_parts)
-					print(err_msg)
-					rust
-						std::process::exit(1);
+					string struct_order_msg = "struct/enum/type/shape declarations must come before macros and functions"
+					fatal_at(path, struct_order_msg)
 			if kind is "KW_MACRO" or kind is "KW_UNSAFE_MACRO"
 				if decl_phase is 2
-					string err_pre = "[error] "
-					string err_mid = ": macros must be declared before functions"
-					strList err_parts = [err_pre, path, err_mid]
-					string err_msg = s_join(err_parts)
-					print(err_msg)
-					rust
-						std::process::exit(1);
+					string macro_order_msg = "macros must be declared before functions"
+					fatal_at(path, macro_order_msg)
 				else if decl_phase < 1
 					decl_phase = 1
 			if kind is "KW_FN"
@@ -116,13 +128,8 @@ fn tokenList load_file(string path)
 			imp_path = resolve_lib_path(imp_path)
 			if not is_empty(imp_path)
 				if seen_decl
-					string err_pre = "[error] "
-					string err_mid = ": imports must appear at the top of the file before any declarations"
-					strList err_parts = [err_pre, path, err_mid]
-					string err_msg = s_join(err_parts)
-					print(err_msg)
-					rust
-						std::process::exit(1);
+					string import_order_msg = "imports must appear at the top of the file before any declarations"
+					fatal_at(path, import_order_msg)
 				string dedup_key = imp_path
 				if not is_empty(imp_t_concrete)
 					dedup_key = s_join([imp_path, "|", imp_t_placeholder, "=", imp_t_concrete])
@@ -130,11 +137,7 @@ fn tokenList load_file(string path)
 				if is_new
 					bool exists = f_exists(imp_path)
 					if not exists
-						string err_pre = "[error] cannot find import: "
-						string err_msg = s_cat(err_pre, imp_path)
-						print(err_msg)
-						rust
-							std::process::exit(1);
+						fatal_missing_import(imp_path)
 					tokenList imp_tokens = load_file(imp_path)
 					if not is_empty(imp_t_concrete)
 						imp_tokens = apply_t_substitution(imp_tokens, imp_t_placeholder, imp_t_concrete)

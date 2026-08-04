@@ -1300,6 +1300,26 @@ fn resolve_lib_path(path: String) -> String {
 	}
 	path
 }
+fn fatal(msg: String) {
+    // transpiler-deor/importer/load.deor
+    println!("{}", msg.clone());
+    std::process::exit(1);
+}
+
+fn fatal_at(path: String, msg: String) {
+    // transpiler-deor/importer/load.deor
+    let mut err_pre: String = "[error] ".to_string();
+    let mut err_sep: String = ": ".to_string();
+    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_sep.clone(), msg.clone()];
+    fatal(s_join(err_parts.clone()));
+}
+
+fn fatal_missing_import(imp_path: String) {
+    // transpiler-deor/importer/load.deor
+    let mut err_pre: String = "[error] cannot find import: ".to_string();
+    fatal(s_cat(err_pre.clone(), imp_path.clone()));
+}
+
 fn load_file(path: String) -> Vec<Token> {
     // transpiler-deor/importer/load.deor
     let mut source: String = f_read(path.clone());
@@ -1345,24 +1365,16 @@ fn load_file(path: String) -> Vec<Token> {
                 // transpiler-deor/importer/load.deor
                 if decl_phase > 0 {
                     // transpiler-deor/importer/load.deor
-                    let mut err_pre: String = "[error] ".to_string();
-                    let mut err_mid: String = ": struct/enum/type/shape declarations must come before macros and functions".to_string();
-                    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_mid.clone()];
-                    let mut err_msg: String = s_join(err_parts.clone());
-                    println!("{}", err_msg.clone());
-                    std::process::exit(1);
+                    let mut struct_order_msg: String = "struct/enum/type/shape declarations must come before macros and functions".to_string();
+                    fatal_at(path.clone(), struct_order_msg.clone());
                 }
             }
             if kind == "KW_MACRO" || kind == "KW_UNSAFE_MACRO" {
                 // transpiler-deor/importer/load.deor
                 if decl_phase == 2 {
                     // transpiler-deor/importer/load.deor
-                    let mut err_pre: String = "[error] ".to_string();
-                    let mut err_mid: String = ": macros must be declared before functions".to_string();
-                    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_mid.clone()];
-                    let mut err_msg: String = s_join(err_parts.clone());
-                    println!("{}", err_msg.clone());
-                    std::process::exit(1);
+                    let mut macro_order_msg: String = "macros must be declared before functions".to_string();
+                    fatal_at(path.clone(), macro_order_msg.clone());
                 } else if decl_phase < 1 {
                     // transpiler-deor/importer/load.deor
                     decl_phase = 1;
@@ -1396,12 +1408,8 @@ fn load_file(path: String) -> Vec<Token> {
                 // transpiler-deor/importer/load.deor
                 if seen_decl {
                     // transpiler-deor/importer/load.deor
-                    let mut err_pre: String = "[error] ".to_string();
-                    let mut err_mid: String = ": imports must appear at the top of the file before any declarations".to_string();
-                    let mut err_parts: Vec<String> = vec![err_pre.clone(), path.clone(), err_mid.clone()];
-                    let mut err_msg: String = s_join(err_parts.clone());
-                    println!("{}", err_msg.clone());
-                    std::process::exit(1);
+                    let mut import_order_msg: String = "imports must appear at the top of the file before any declarations".to_string();
+                    fatal_at(path.clone(), import_order_msg.clone());
                 }
                 let mut dedup_key: String = imp_path.clone();
                 if !is_empty(imp_t_concrete.clone()) {
@@ -1414,10 +1422,7 @@ fn load_file(path: String) -> Vec<Token> {
                     let mut exists: bool = f_exists(imp_path.clone());
                     if !exists {
                         // transpiler-deor/importer/load.deor
-                        let mut err_pre: String = "[error] cannot find import: ".to_string();
-                        let mut err_msg: String = s_cat(err_pre.clone(), imp_path.clone());
-                        println!("{}", err_msg.clone());
-                        std::process::exit(1);
+                        fatal_missing_import(imp_path.clone());
                     }
                     let mut imp_tokens: Vec<Token> = load_file(imp_path.clone());
                     if !is_empty(imp_t_concrete.clone()) {
