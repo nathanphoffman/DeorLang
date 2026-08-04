@@ -1,0 +1,142 @@
+
+# Partial-move destructuring (`move (f1, f2) in source`), tracked at the
+# field level via moved_fields ("source.field" keys) — separate from the
+# whole-variable move_if_stack machinery in check_use_after_move_chain.
+# Same-block only: moved_fields clears at every block boundary rather than
+# being flow-sensitive across if/else-if/else, so this half does not yet
+# flag the whole struct being used by value after a partial move, only a
+# repeat destructure of a field that's already gone. Part of
+# check_use_after_move — see that macro's header for the full picture.
+# Reads: cur_kind, pos, tokens, token_count, moved_fields, lbl_var,
+#   rule_double_move, rule_use_after_move.
+# Writes: moved_fields, errors.
+macro check_use_after_move_field
+	# moved_fields resets at every block boundary — see the macro header for
+	# why this half isn't flow-sensitive like moved_vars.
+	if cur_kind is "INDENT"
+		rust
+			moved_fields.clear();
+	if cur_kind is "DEDENT"
+		rust
+			moved_fields.clear();
+	if cur_kind is "KW_ELSE"
+		rust
+			moved_fields.clear();
+
+	# move (f1, f2) in source — the mark side. Collect the field names, then
+	# the source identifier, and mark each field as moved on that source.
+	# Does not touch moved_vars: `source` itself is not fully consumed, only
+	# the named fields are, so a later `(other_field) in source` for an
+	# untouched field must stay legal.
+	if cur_kind is "KW_MOVE"
+		int uam_pm_next = pos + 1
+		if uam_pm_next < token_count
+			Token uam_pm_next_tok = tokens at uam_pm_next
+			(kind) in uam_pm_next_tok
+			if kind is "LPAREN"
+				strList uam_pm_fields = empty
+				int uam_pm_scan = uam_pm_next + 1
+				bool uam_pm_scanning = true
+				for if uam_pm_scanning
+					if uam_pm_scan < token_count
+						Token uam_pm_scan_tok = tokens at uam_pm_scan
+						(kind, value) in uam_pm_scan_tok
+						if kind is "IDENT"
+							uam_pm_fields at end = value
+						if kind is "RPAREN"
+							uam_pm_scanning = false
+						uam_pm_scan = uam_pm_scan + 1
+					else
+						uam_pm_scanning = false
+				# uam_pm_scan now sits just past the RPAREN — ex: move (f1, f2) {in} source
+				if uam_pm_scan < token_count
+					Token uam_pm_in_tok = tokens at uam_pm_scan
+					(kind) in uam_pm_in_tok
+					if kind is "KW_IN"
+						int uam_pm_src_pos = uam_pm_scan + 1
+						if uam_pm_src_pos < token_count
+							Token uam_pm_src_tok = tokens at uam_pm_src_pos
+							(kind, value) in uam_pm_src_tok
+							if kind is "IDENT"
+								string uam_pm_src = value
+								(line, file) in uam_pm_src_tok
+								string uam_pm_line_str = n_to_str(line)
+								int uam_pm_fi = 0
+								int uam_pm_fn = len(uam_pm_fields)
+								for if uam_pm_fi < uam_pm_fn
+									string uam_pm_field = uam_pm_fields at uam_pm_fi
+									string uam_pm_key = s_join([uam_pm_src, ".", uam_pm_field])
+									bool uam_pm_already = list_has(moved_fields, uam_pm_key)
+									if uam_pm_already
+										strList uam_pm_msg_parts = ["[validation] ", file, " line ", uam_pm_line_str, ": ", lbl_var, " '", uam_pm_key, "' - ", rule_double_move]
+										errors at end = s_join(uam_pm_msg_parts)
+									else
+										moved_fields at end = uam_pm_key
+									uam_pm_fi = uam_pm_fi + 1
+
+	# (f1, f2) in source / move (f1, f2) in source — the read side. Only
+	# bagged destructures reach here: the token right before KW_IN must be
+	# RPAREN, which a bare `for item in collection` header never has (see
+	# docs/loops.md — no parens on the plain form), so this can't misfire on
+	# a for-loop header. Walk back to the matching '(' to collect the field
+	# list, then check each field against moved_fields. Skipped entirely when
+	# this destructure is itself the `move (...) in source` above that just
+	# marked the fields — that's the transition to moved, not a use of it.
+	if cur_kind is "KW_IN"
+		if pos > 0
+			int uam_pmr_prev = pos - 1
+			Token uam_pmr_prev_tok = tokens at uam_pmr_prev
+			(kind) in uam_pmr_prev_tok
+			if kind is "RPAREN"
+				int uam_pmr_next = pos + 1
+				if uam_pmr_next < token_count
+					Token uam_pmr_next_tok = tokens at uam_pmr_next
+					(kind, value) in uam_pmr_next_tok
+					if kind is "IDENT"
+						int uam_pmr_after = uam_pmr_next + 1
+						bool uam_pmr_bare = true
+						if uam_pmr_after < token_count
+							Token uam_pmr_after_tok = tokens at uam_pmr_after
+							(kind) in uam_pmr_after_tok
+							if kind is "LPAREN"
+								uam_pmr_bare = false
+						if uam_pmr_bare
+							string uam_pmr_src = value
+							strList uam_pmr_fields = empty
+							int uam_pmr_scan = pos - 2
+							int uam_pmr_pdepth = 0
+							for if uam_pmr_scan >= 0
+								Token uam_pmr_scan_tok = tokens at uam_pmr_scan
+								(kind, value) in uam_pmr_scan_tok
+								if kind is "RPAREN"
+									uam_pmr_pdepth = uam_pmr_pdepth + 1
+								else if kind is "LPAREN"
+									if uam_pmr_pdepth is 0
+										break
+									uam_pmr_pdepth = uam_pmr_pdepth - 1
+								else if kind is "IDENT"
+									if uam_pmr_pdepth is 0
+										uam_pmr_fields at end = value
+								uam_pmr_scan = uam_pmr_scan - 1
+
+							bool uam_pmr_is_move_stmt = false
+							if uam_pmr_scan > 0
+								int uam_pmr_before_lp = uam_pmr_scan - 1
+								Token uam_pmr_blp_tok = tokens at uam_pmr_before_lp
+								(kind) in uam_pmr_blp_tok
+								if kind is "KW_MOVE"
+									uam_pmr_is_move_stmt = true
+
+							if not uam_pmr_is_move_stmt
+								int uam_pmr_fi = 0
+								int uam_pmr_fn = len(uam_pmr_fields)
+								for if uam_pmr_fi < uam_pmr_fn
+									string uam_pmr_field = uam_pmr_fields at uam_pmr_fi
+									string uam_pmr_key = s_join([uam_pmr_src, ".", uam_pmr_field])
+									bool uam_pmr_was_moved = list_has(moved_fields, uam_pmr_key)
+									if uam_pmr_was_moved
+										(line, file) in uam_pmr_next_tok
+										string uam_pmr_line_str = n_to_str(line)
+										strList uam_pmr_msg_parts = ["[validation] ", file, " line ", uam_pmr_line_str, ": ", lbl_var, " '", uam_pmr_key, "' - ", rule_use_after_move]
+										errors at end = s_join(uam_pmr_msg_parts)
+									uam_pmr_fi = uam_pmr_fi + 1

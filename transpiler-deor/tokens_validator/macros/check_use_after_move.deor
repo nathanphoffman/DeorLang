@@ -10,7 +10,7 @@
 # chain is fine — branches are mutually exclusive, so each arm starts from
 # the same pre-chain snapshot. Reading it *after* the whole chain closes IS
 # flagged, because the arm that moved it is a reachable path — the same rule
-# rustc itself applies. See check_use_after_move_if_open / _if_else / _if_dedent.
+# rustc itself applies. See check_use_after_move_chain.
 #
 # Every other block boundary (for/fn bodies, plain nesting) is straight-line
 # now: nothing is cleared on INDENT/DEDENT anymore, so a move followed by a
@@ -23,27 +23,16 @@
 # source` for an untouched field is left alone. This half of the check is
 # same-block only (moved_fields clears on INDENT/DEDENT/KW_ELSE) — it does
 # not yet flag the whole struct being used by value after a partial move,
-# only a repeat destructure of a field that's already gone.
+# only a repeat destructure of a field that's already gone. See
+# check_use_after_move_field.
 #
-# Split across one sub-macro per token kind handled — each is independent
-# and order between them doesn't matter, since every section is gated on
-# its own `if cur_kind is "..."` check:
-#   check_use_after_move_if_open    — KW_IF: opens a chain frame
-#   check_use_after_move_if_else    — KW_ELSE: folds the closed arm in
-#   check_use_after_move_if_dedent  — DEDENT: closes a chain, unions moved_vars
-#   check_use_after_move_field_reset — INDENT/DEDENT/KW_ELSE: clears moved_fields
-#   check_use_after_move_partial_mark — KW_MOVE (f1, f2) in source: marks fields moved
-#   check_use_after_move_partial_read — KW_IN: flags reads of already-moved fields
-#   check_use_after_move_for        — KW_FOR move (item in collection): marks collection moved
-#   check_use_after_move_single     — KW_MOVE name: marks a single variable moved
-#   check_use_after_move_read       — IDENT: flags reads, clears state on fresh bindings
+# Split into three concept-sized sub-macros, each independent and order
+# between them doesn't matter — every section inside each is gated on its
+# own `if cur_kind is "..."` check:
+#   check_use_after_move_chain — if/else-if/else flow-sensitive move tracking
+#   check_use_after_move_field — partial-move destructure tracking
+#   check_use_after_move_var   — whole-variable move marking + read checks
 macro check_use_after_move
-	macro_run check_use_after_move_if_open
-	macro_run check_use_after_move_if_else
-	macro_run check_use_after_move_if_dedent
-	macro_run check_use_after_move_field_reset
-	macro_run check_use_after_move_partial_mark
-	macro_run check_use_after_move_partial_read
-	macro_run check_use_after_move_for
-	macro_run check_use_after_move_single
-	macro_run check_use_after_move_read
+	macro_run check_use_after_move_chain
+	macro_run check_use_after_move_field
+	macro_run check_use_after_move_var
