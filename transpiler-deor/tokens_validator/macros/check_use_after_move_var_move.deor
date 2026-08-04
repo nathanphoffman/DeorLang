@@ -1,0 +1,99 @@
+
+# Whole-variable move tracking, `move name` case (the single-target form):
+# marks the named variable moved unless it's Copy, used inertly inside a
+# s_join([...]) bracket-literal, or immediately self-reassigned
+# (`name = f(move name)`), and flags a double-move if it's already moved.
+# Part of check_use_after_move_var — see that macro's header for the full
+# picture of whole-variable move tracking, and check_use_after_move's header
+# for how this fits into the larger use-after-move check.
+# Reads: cur_kind, pos, tokens, token_count, moved_vars, copy_var_names,
+#   lbl_var, rule_double_move.
+# Writes: moved_vars, errors.
+macro check_use_after_move_var_move
+	# move name — single-target form. ex: {move} name
+	if cur_kind is "KW_MOVE"
+		int uam_next = pos + 1
+		if uam_next < token_count
+			Token uam_next_tok = tokens at uam_next
+			(kind, value) in uam_next_tok
+			if kind is "IDENT"
+				# move is inert inside s_join([...])'s bracket-literal item list —
+				# it compiles to [...].concat(), which only ever borrows its
+				# operands, so there's nothing for move to consume here (see
+				# docs/move.md#move-in-string-concatenation). Find the nearest
+				# enclosing '[' by bracket depth and check it opens 's_join('.
+				bool uam_in_sjoin = false
+				int uam_scan = pos - 1
+				int uam_bdepth = 0
+				for if uam_scan >= 0
+					Token uam_scan_tok = tokens at uam_scan
+					(kind) in uam_scan_tok
+					if kind is "RBRACKET"
+						uam_bdepth = uam_bdepth + 1
+					else if kind is "LBRACKET"
+						if uam_bdepth is 0
+							if uam_scan >= 2
+								int uam_lp = uam_scan - 1
+								int uam_fn = uam_scan - 2
+								Token uam_lp_tok = tokens at uam_lp
+								Token uam_fn_tok = tokens at uam_fn
+								(kind) in uam_lp_tok
+								bool uam_lp_ok = kind is "LPAREN"
+								(kind, value) in uam_fn_tok
+								if uam_lp_ok
+									if kind is "IDENT"
+										if value is "s_join"
+											uam_in_sjoin = true
+							break
+						else
+							uam_bdepth = uam_bdepth - 1
+					uam_scan = uam_scan - 1
+
+				(value) in uam_next_tok
+				string uam_move_name = value
+
+				# name = f(move name) — a very common idiom in this codebase
+				# (`result_code = s_cat(move result_code, ...)`): the old value
+				# is consumed to build the new one, and a completely fresh value
+				# occupies `name` once the statement finishes, so marking it
+				# moved here would be wrong — it's usable again immediately
+				# after. Detect by walking back to this line's first token and
+				# checking for '<same name> ='.
+				bool uam_self_reassign = false
+				int uam_lstart = pos - 1
+				for if uam_lstart >= 0
+					Token uam_lstart_tok = tokens at uam_lstart
+					(kind) in uam_lstart_tok
+					if kind is "NEWLINE"
+						break
+					if kind is "INDENT"
+						break
+					if kind is "DEDENT"
+						break
+					uam_lstart = uam_lstart - 1
+				int uam_line_first = uam_lstart + 1
+				if uam_line_first < pos
+					Token uam_lf_tok = tokens at uam_line_first
+					(kind, value) in uam_lf_tok
+					if kind is "IDENT"
+						string uam_lf_name = value
+						int uam_lf_next = uam_line_first + 1
+						if uam_lf_next < token_count
+							Token uam_lf_next_tok = tokens at uam_lf_next
+							(kind) in uam_lf_next_tok
+							if kind is "EQUALS"
+								if uam_lf_name is uam_move_name
+									uam_self_reassign = true
+
+				(value) in uam_next_tok
+				bool uam_is_copy = list_has(copy_var_names, value)
+				if uam_in_sjoin
+					uam_is_copy = true
+				if uam_self_reassign
+					uam_is_copy = true
+				if not uam_is_copy
+					bool uam_already2 = list_has(moved_vars, value)
+					if uam_already2
+						errors at end = val_err(uam_next_tok, lbl_var, rule_double_move)
+					else
+						moved_vars at end = value
