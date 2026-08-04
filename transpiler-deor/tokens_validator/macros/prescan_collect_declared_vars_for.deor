@@ -1,0 +1,47 @@
+
+# Declared-var collection, for-loop variable forms: the plain loop var
+# ('for item in list') and the move-destructure header
+# ('for move (item in collection)') — a separate token shape from the plain
+# form, so it needs its own fixed offsets rather than reusing them. Part of
+# prescan_collect_declared_vars — see that macro's header for the full list
+# of binding forms this prescan pass covers and what it feeds.
+# Reads: pre_i, tokens, token_count.
+# Writes: declared_var_names.
+macro prescan_collect_declared_vars_for
+	if kind is "KW_FOR"
+		# ex: for {item} in list — pre_i+1 grabs the loop variable, +2 the 'in' keyword
+		int dv_fv1 = pre_i + 1
+		int dv_fv2 = pre_i + 2
+		if dv_fv2 < token_count
+			Token dv_fv1_tok = tokens at dv_fv1
+			Token dv_fv2_tok = tokens at dv_fv2
+			(kind, value) in dv_fv1_tok
+			string dv_fk = kind
+			string dv_fv = value
+			(kind) in dv_fv2_tok
+			if dv_fk is "IDENT" and kind is "KW_IN"
+				declared_var_names at end = dv_fv
+
+		# ex: for move ({item} in collection) — pre_i+1 is KW_MOVE, +2 is LPAREN,
+		# +3 the loop variable, +4 the 'in' keyword. A separate shape from the
+		# plain form above, so it needs its own offsets rather than reusing them.
+		int dv_fmv = pre_i + 1
+		if dv_fmv < token_count
+			Token dv_fmv_tok = tokens at dv_fmv
+			(kind) in dv_fmv_tok
+			if kind is "KW_MOVE"
+				int dv_fmlp = pre_i + 2
+				int dv_fmv1 = pre_i + 3
+				int dv_fmv2 = pre_i + 4
+				if dv_fmv2 < token_count
+					Token dv_fmlp_tok = tokens at dv_fmlp
+					Token dv_fmv1_tok = tokens at dv_fmv1
+					Token dv_fmv2_tok = tokens at dv_fmv2
+					(kind) in dv_fmlp_tok
+					bool dv_fm_lp_ok = kind is "LPAREN"
+					(kind, value) in dv_fmv1_tok
+					string dv_fmk = kind
+					string dv_fmn = value
+					(kind) in dv_fmv2_tok
+					if dv_fm_lp_ok and dv_fmk is "IDENT" and kind is "KW_IN"
+						declared_var_names at end = dv_fmn

@@ -1,0 +1,25 @@
+
+# Declared-var collection, validator type predicate parameter
+# ('type Roll(int val)'). The only declaration form check_undefined_var_read
+# couldn't otherwise see, since the predicate body reads this name like any
+# other local var. Part of prescan_collect_declared_vars — see that macro's
+# header for the full list of binding forms this prescan pass covers and
+# what it feeds.
+# Reads: pre_i, tokens, token_count.
+# Writes: declared_var_names.
+macro prescan_collect_declared_vars_validator_param
+	if kind is "KW_TYPE"
+		# ex: type Roll({int} val) — pre_i+2 grabs the opening paren, pre_i+4 the
+		# predicate's own parameter name (same fixed offsets check_validator_declaration
+		# uses) — this is the only declaration form check_undefined_var_read couldn't
+		# otherwise see, since the predicate body reads this name like any local var
+		int dv_vt_lp = pre_i + 2
+		int dv_vt_pn = pre_i + 4
+		if dv_vt_pn < token_count
+			Token dv_vt_lp_tok = tokens at dv_vt_lp
+			Token dv_vt_pn_tok = tokens at dv_vt_pn
+			(kind) in dv_vt_lp_tok
+			if kind is "LPAREN"
+				(kind, value) in dv_vt_pn_tok
+				if kind is "IDENT"
+					declared_var_names at end = value

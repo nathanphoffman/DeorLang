@@ -1,0 +1,33 @@
+
+# Declared-var collection, fn param form ('fn Ret name(Type1 p1, Type2 p2)').
+# Part of prescan_collect_declared_vars — see that macro's header for the
+# full list of binding forms this prescan pass covers and what it feeds.
+# Reads: pre_i, tokens, token_count.
+# Writes: declared_var_names.
+macro prescan_collect_declared_vars_fn_params
+	if kind is "KW_FN"
+		# ex: fn int add{(}left, right) — pre_i+3 grabs the opening paren
+		int dv_lp = pre_i + 3
+		if dv_lp < token_count
+			Token dv_lp_tok = tokens at dv_lp
+			(kind) in dv_lp_tok
+			if kind is "LPAREN"
+				int dv_ps = dv_lp + 1
+				for if dv_ps < token_count
+					Token dv_ps_tok = tokens at dv_ps
+					(kind, value) in dv_ps_tok
+					if kind is "RPAREN"
+						break
+					if kind is "COMMA"
+						dv_ps = dv_ps + 1
+						continue
+					if kind is "IDENT"
+						# ex: {Type} name — dv_ps+1 grabs the param name after its type
+						int dv_pn = dv_ps + 1
+						if dv_pn < token_count
+							Token dv_pn_tok = tokens at dv_pn
+							(kind, value) in dv_pn_tok
+							if kind is "IDENT"
+								declared_var_names at end = value
+								dv_ps = dv_pn
+					dv_ps = dv_ps + 1

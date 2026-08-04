@@ -1,0 +1,49 @@
+
+# Declared-var collection, tuple destructuring form ('(f1, f2) in source').
+# Only a parenthesized group immediately followed by KW_IN counts — a bare
+# call like `f(a, b)` is excluded via the "previous token is IDENT" check.
+# Part of prescan_collect_declared_vars — see that macro's header for the
+# full list of binding forms this prescan pass covers and what it feeds.
+# Reads: pre_i, tokens, token_count.
+# Writes: declared_var_names.
+macro prescan_collect_declared_vars_destructure
+	if kind is "LPAREN"
+		bool dv_is_call = false
+		if pre_i > 0
+			int dv_prev = pre_i - 1
+			Token dv_prev_tok = tokens at dv_prev
+			(kind) in dv_prev_tok
+			dv_is_call = kind is "IDENT"
+		if not dv_is_call
+			int dv_scan = pre_i + 1
+			int dv_depth = 1
+			for if dv_scan < token_count
+				Token dv_dtok = tokens at dv_scan
+				(kind) in dv_dtok
+				if kind is "LPAREN"
+					dv_depth = dv_depth + 1
+				else if kind is "RPAREN"
+					dv_depth = dv_depth - 1
+					if dv_depth is 0
+						break
+				dv_scan = dv_scan + 1
+			# ex: (f1, f2){)} in source — dv_scan+1 checks the token after the matched close paren for KW_IN
+			int dv_after = dv_scan + 1
+			bool dv_is_destructure = false
+			if dv_after < token_count
+				Token dv_after_tok = tokens at dv_after
+				(kind) in dv_after_tok
+				dv_is_destructure = kind is "KW_IN"
+			if dv_is_destructure
+				int dv_name_pos = pre_i + 1
+				bool dv_at_name_slot = true
+				for if dv_name_pos < dv_scan
+					Token dv_name_tok = tokens at dv_name_pos
+					(kind, value) in dv_name_tok
+					if kind is "COMMA"
+						dv_at_name_slot = true
+					else if dv_at_name_slot
+						if kind is "IDENT"
+							declared_var_names at end = value
+						dv_at_name_slot = false
+					dv_name_pos = dv_name_pos + 1

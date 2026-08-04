@@ -2764,298 +2764,325 @@ fn validate_tokens(tokens: TokensRef) {
         }
         // macro: prescan_collect_declared_vars (transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor)
         {
-            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-            if kind == "IDENT" {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                let mut dv_n1: i64 = pre_i + 1;
-                let mut dv_n2: i64 = pre_i + 2;
-                if dv_n2 < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_t1: Token = tokens[dv_n1 as usize].clone();
-                    let mut dv_t2: Token = tokens[dv_n2 as usize].clone();
-                    let mut kind = dv_t1.kind.clone();
-                    let mut value = dv_t1.value.clone();
-                    let mut dv_k1: String = kind.clone();
-                    let mut dv_v1: String = value.clone();
-                    let mut kind = dv_t2.kind.clone();
-                    if dv_k1 == "IDENT" && kind == "EQUALS" {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        declared_var_names.push(dv_v1.clone());
+            // macro: prescan_collect_declared_vars_binding (transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor
+                if kind == "IDENT" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor
+                    let mut dv_n1: i64 = pre_i + 1;
+                    let mut dv_n2: i64 = pre_i + 2;
+                    if dv_n2 < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor
+                        let mut dv_t1: Token = tokens[dv_n1 as usize].clone();
+                        let mut dv_t2: Token = tokens[dv_n2 as usize].clone();
+                        let mut kind = dv_t1.kind.clone();
+                        let mut value = dv_t1.value.clone();
+                        let mut dv_k1: String = kind.clone();
+                        let mut dv_v1: String = value.clone();
+                        let mut kind = dv_t2.kind.clone();
+                        if dv_k1 == "IDENT" && kind == "EQUALS" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor
+                            declared_var_names.push(dv_v1.clone());
+                        }
                     }
-                }
-                if dv_n1 < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_as_tok: Token = tokens[dv_n1 as usize].clone();
-                    let mut kind = dv_as_tok.kind.clone();
-                    if kind == "KW_AS" {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
+                    if dv_n1 < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor
+                        let mut dv_as_tok: Token = tokens[dv_n1 as usize].clone();
+                        let mut kind = dv_as_tok.kind.clone();
+                        if kind == "KW_AS" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor
+                            let mut value = pre_tok.value.clone();
+                            declared_var_names.push(value.clone());
+                        }
                         let mut value = pre_tok.value.clone();
-                        declared_var_names.push(value.clone());
-                    }
-                    let mut value = pre_tok.value.clone();
-                    let mut dv_is_vtype: bool = list_has(validator_type_names.clone(), value.clone());
-                    if dv_is_vtype {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        if kind == "IDENT" {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            let mut value = dv_as_tok.value.clone();
-                            declared_var_names.push(value.clone());
-                        }
-                    }
-                }
-            }
-            if kind == "KW_RAW" {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                let mut dv_rn: i64 = pre_i + 1;
-                let mut dv_re: i64 = pre_i + 2;
-                if dv_re < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_rn_tok: Token = tokens[dv_rn as usize].clone();
-                    let mut dv_re_tok: Token = tokens[dv_re as usize].clone();
-                    let mut kind = dv_rn_tok.kind.clone();
-                    let mut value = dv_rn_tok.value.clone();
-                    let mut dv_rk: String = kind.clone();
-                    let mut dv_rv: String = value.clone();
-                    let mut kind = dv_re_tok.kind.clone();
-                    if dv_rk == "IDENT" && kind == "EQUALS" {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        declared_var_names.push(dv_rv.clone());
-                    }
-                }
-            }
-            if kind == "KW_TYPE" {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                let mut dv_vt_lp: i64 = pre_i + 2;
-                let mut dv_vt_pn: i64 = pre_i + 4;
-                if dv_vt_pn < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_vt_lp_tok: Token = tokens[dv_vt_lp as usize].clone();
-                    let mut dv_vt_pn_tok: Token = tokens[dv_vt_pn as usize].clone();
-                    let mut kind = dv_vt_lp_tok.kind.clone();
-                    if kind == "LPAREN" {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        let mut kind = dv_vt_pn_tok.kind.clone();
-                        let mut value = dv_vt_pn_tok.value.clone();
-                        if kind == "IDENT" {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            declared_var_names.push(value.clone());
-                        }
-                    }
-                }
-            }
-            if kind == "KW_FOR" {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                let mut dv_fv1: i64 = pre_i + 1;
-                let mut dv_fv2: i64 = pre_i + 2;
-                if dv_fv2 < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_fv1_tok: Token = tokens[dv_fv1 as usize].clone();
-                    let mut dv_fv2_tok: Token = tokens[dv_fv2 as usize].clone();
-                    let mut kind = dv_fv1_tok.kind.clone();
-                    let mut value = dv_fv1_tok.value.clone();
-                    let mut dv_fk: String = kind.clone();
-                    let mut dv_fv: String = value.clone();
-                    let mut kind = dv_fv2_tok.kind.clone();
-                    if dv_fk == "IDENT" && kind == "KW_IN" {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        declared_var_names.push(dv_fv.clone());
-                    }
-                }
-                let mut dv_fmv: i64 = pre_i + 1;
-                if dv_fmv < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_fmv_tok: Token = tokens[dv_fmv as usize].clone();
-                    let mut kind = dv_fmv_tok.kind.clone();
-                    if kind == "KW_MOVE" {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        let mut dv_fmlp: i64 = pre_i + 2;
-                        let mut dv_fmv1: i64 = pre_i + 3;
-                        let mut dv_fmv2: i64 = pre_i + 4;
-                        if dv_fmv2 < token_count {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            let mut dv_fmlp_tok: Token = tokens[dv_fmlp as usize].clone();
-                            let mut dv_fmv1_tok: Token = tokens[dv_fmv1 as usize].clone();
-                            let mut dv_fmv2_tok: Token = tokens[dv_fmv2 as usize].clone();
-                            let mut kind = dv_fmlp_tok.kind.clone();
-                            let mut dv_fm_lp_ok: bool = kind == "LPAREN";
-                            let mut kind = dv_fmv1_tok.kind.clone();
-                            let mut value = dv_fmv1_tok.value.clone();
-                            let mut dv_fmk: String = kind.clone();
-                            let mut dv_fmn: String = value.clone();
-                            let mut kind = dv_fmv2_tok.kind.clone();
-                            if dv_fm_lp_ok && dv_fmk == "IDENT" && kind == "KW_IN" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                declared_var_names.push(dv_fmn.clone());
-                            }
-                        }
-                    }
-                }
-            }
-            if kind == "KW_FN" {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                let mut dv_lp: i64 = pre_i + 3;
-                if dv_lp < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_lp_tok: Token = tokens[dv_lp as usize].clone();
-                    let mut kind = dv_lp_tok.kind.clone();
-                    if kind == "LPAREN" {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        let mut dv_ps: i64 = dv_lp + 1;
-                        while dv_ps < token_count {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            let mut dv_ps_tok: Token = tokens[dv_ps as usize].clone();
-                            let mut kind = dv_ps_tok.kind.clone();
-                            let mut value = dv_ps_tok.value.clone();
-                            if kind == "RPAREN" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                break;
-                            }
-                            if kind == "COMMA" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                dv_ps = dv_ps + 1;
-                                continue;
-                            }
+                        let mut dv_is_vtype: bool = list_has(validator_type_names.clone(), value.clone());
+                        if dv_is_vtype {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor
                             if kind == "IDENT" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                let mut dv_pn: i64 = dv_ps + 1;
-                                if dv_pn < token_count {
-                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                    let mut dv_pn_tok: Token = tokens[dv_pn as usize].clone();
-                                    let mut kind = dv_pn_tok.kind.clone();
-                                    let mut value = dv_pn_tok.value.clone();
-                                    if kind == "IDENT" {
-                                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                        declared_var_names.push(value.clone());
-                                        dv_ps = dv_pn;
-                                    }
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_binding.deor
+                                let mut value = dv_as_tok.value.clone();
+                                declared_var_names.push(value.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            // macro: prescan_collect_declared_vars_raw (transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_raw.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_raw.deor
+                if kind == "KW_RAW" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_raw.deor
+                    let mut dv_rn: i64 = pre_i + 1;
+                    let mut dv_re: i64 = pre_i + 2;
+                    if dv_re < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_raw.deor
+                        let mut dv_rn_tok: Token = tokens[dv_rn as usize].clone();
+                        let mut dv_re_tok: Token = tokens[dv_re as usize].clone();
+                        let mut kind = dv_rn_tok.kind.clone();
+                        let mut value = dv_rn_tok.value.clone();
+                        let mut dv_rk: String = kind.clone();
+                        let mut dv_rv: String = value.clone();
+                        let mut kind = dv_re_tok.kind.clone();
+                        if dv_rk == "IDENT" && kind == "EQUALS" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_raw.deor
+                            declared_var_names.push(dv_rv.clone());
+                        }
+                    }
+                }
+            }
+            // macro: prescan_collect_declared_vars_validator_param (transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_validator_param.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_validator_param.deor
+                if kind == "KW_TYPE" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_validator_param.deor
+                    let mut dv_vt_lp: i64 = pre_i + 2;
+                    let mut dv_vt_pn: i64 = pre_i + 4;
+                    if dv_vt_pn < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_validator_param.deor
+                        let mut dv_vt_lp_tok: Token = tokens[dv_vt_lp as usize].clone();
+                        let mut dv_vt_pn_tok: Token = tokens[dv_vt_pn as usize].clone();
+                        let mut kind = dv_vt_lp_tok.kind.clone();
+                        if kind == "LPAREN" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_validator_param.deor
+                            let mut kind = dv_vt_pn_tok.kind.clone();
+                            let mut value = dv_vt_pn_tok.value.clone();
+                            if kind == "IDENT" {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_validator_param.deor
+                                declared_var_names.push(value.clone());
+                            }
+                        }
+                    }
+                }
+            }
+            // macro: prescan_collect_declared_vars_for (transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor
+                if kind == "KW_FOR" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor
+                    let mut dv_fv1: i64 = pre_i + 1;
+                    let mut dv_fv2: i64 = pre_i + 2;
+                    if dv_fv2 < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor
+                        let mut dv_fv1_tok: Token = tokens[dv_fv1 as usize].clone();
+                        let mut dv_fv2_tok: Token = tokens[dv_fv2 as usize].clone();
+                        let mut kind = dv_fv1_tok.kind.clone();
+                        let mut value = dv_fv1_tok.value.clone();
+                        let mut dv_fk: String = kind.clone();
+                        let mut dv_fv: String = value.clone();
+                        let mut kind = dv_fv2_tok.kind.clone();
+                        if dv_fk == "IDENT" && kind == "KW_IN" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor
+                            declared_var_names.push(dv_fv.clone());
+                        }
+                    }
+                    let mut dv_fmv: i64 = pre_i + 1;
+                    if dv_fmv < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor
+                        let mut dv_fmv_tok: Token = tokens[dv_fmv as usize].clone();
+                        let mut kind = dv_fmv_tok.kind.clone();
+                        if kind == "KW_MOVE" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor
+                            let mut dv_fmlp: i64 = pre_i + 2;
+                            let mut dv_fmv1: i64 = pre_i + 3;
+                            let mut dv_fmv2: i64 = pre_i + 4;
+                            if dv_fmv2 < token_count {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor
+                                let mut dv_fmlp_tok: Token = tokens[dv_fmlp as usize].clone();
+                                let mut dv_fmv1_tok: Token = tokens[dv_fmv1 as usize].clone();
+                                let mut dv_fmv2_tok: Token = tokens[dv_fmv2 as usize].clone();
+                                let mut kind = dv_fmlp_tok.kind.clone();
+                                let mut dv_fm_lp_ok: bool = kind == "LPAREN";
+                                let mut kind = dv_fmv1_tok.kind.clone();
+                                let mut value = dv_fmv1_tok.value.clone();
+                                let mut dv_fmk: String = kind.clone();
+                                let mut dv_fmn: String = value.clone();
+                                let mut kind = dv_fmv2_tok.kind.clone();
+                                if dv_fm_lp_ok && dv_fmk == "IDENT" && kind == "KW_IN" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_for.deor
+                                    declared_var_names.push(dv_fmn.clone());
                                 }
                             }
-                            dv_ps = dv_ps + 1;
                         }
                     }
                 }
             }
-            if kind == "KW_ENUM" {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                let mut dv_ep: i64 = pre_i + 1;
-                if dv_ep < token_count {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_ep_tok: Token = tokens[dv_ep as usize].clone();
-                    let mut kind = dv_ep_tok.kind.clone();
-                    let mut value = dv_ep_tok.value.clone();
-                    let mut dv_e_typed: bool = false;
-                    if kind == "IDENT" {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        dv_e_typed = list_has(primitive_type_names.clone(), value.clone());
-                    }
-                    if dv_e_typed {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        let mut dv_iscan: i64 = dv_ep + 2;
-                        while dv_iscan < token_count {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            let mut dv_itok: Token = tokens[dv_iscan as usize].clone();
-                            let mut kind = dv_itok.kind.clone();
-                            if kind == "INDENT" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                break;
-                            }
-                            dv_iscan = dv_iscan + 1;
-                        }
-                        let mut dv_body: i64 = dv_iscan + 1;
-                        let mut dv_edepth: i64 = 1;
-                        while dv_body < token_count {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            let mut dv_body_tok: Token = tokens[dv_body as usize].clone();
-                            let mut kind = dv_body_tok.kind.clone();
-                            let mut value = dv_body_tok.value.clone();
-                            if kind == "INDENT" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                dv_edepth = dv_edepth + 1;
-                            } else if kind == "DEDENT" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                dv_edepth = dv_edepth - 1;
-                                if dv_edepth == 0 {
-                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
+            // macro: prescan_collect_declared_vars_fn_params (transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                if kind == "KW_FN" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                    let mut dv_lp: i64 = pre_i + 3;
+                    if dv_lp < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                        let mut dv_lp_tok: Token = tokens[dv_lp as usize].clone();
+                        let mut kind = dv_lp_tok.kind.clone();
+                        if kind == "LPAREN" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                            let mut dv_ps: i64 = dv_lp + 1;
+                            while dv_ps < token_count {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                                let mut dv_ps_tok: Token = tokens[dv_ps as usize].clone();
+                                let mut kind = dv_ps_tok.kind.clone();
+                                let mut value = dv_ps_tok.value.clone();
+                                if kind == "RPAREN" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
                                     break;
                                 }
-                            } else if kind == "IDENT" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                let mut dv_bn: i64 = dv_body + 1;
-                                if dv_bn < token_count {
-                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                    let mut dv_bn_tok: Token = tokens[dv_bn as usize].clone();
-                                    let mut kind = dv_bn_tok.kind.clone();
-                                    if kind == "EQUALS" {
-                                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                        declared_var_names.push(value.clone());
+                                if kind == "COMMA" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                                    dv_ps = dv_ps + 1;
+                                    continue;
+                                }
+                                if kind == "IDENT" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                                    let mut dv_pn: i64 = dv_ps + 1;
+                                    if dv_pn < token_count {
+                                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                                        let mut dv_pn_tok: Token = tokens[dv_pn as usize].clone();
+                                        let mut kind = dv_pn_tok.kind.clone();
+                                        let mut value = dv_pn_tok.value.clone();
+                                        if kind == "IDENT" {
+                                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_fn_params.deor
+                                            declared_var_names.push(value.clone());
+                                            dv_ps = dv_pn;
+                                        }
                                     }
                                 }
+                                dv_ps = dv_ps + 1;
                             }
-                            dv_body = dv_body + 1;
                         }
                     }
                 }
             }
-            if kind == "LPAREN" {
-                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                let mut dv_is_call: bool = false;
-                if pre_i > 0 {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_prev: i64 = pre_i - 1;
-                    let mut dv_prev_tok: Token = tokens[dv_prev as usize].clone();
-                    let mut kind = dv_prev_tok.kind.clone();
-                    dv_is_call = kind == "IDENT";
-                }
-                if !dv_is_call {
-                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                    let mut dv_scan: i64 = pre_i + 1;
-                    let mut dv_depth: i64 = 1;
-                    while dv_scan < token_count {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        let mut dv_dtok: Token = tokens[dv_scan as usize].clone();
-                        let mut kind = dv_dtok.kind.clone();
-                        if kind == "LPAREN" {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            dv_depth = dv_depth + 1;
-                        } else if kind == "RPAREN" {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            dv_depth = dv_depth - 1;
-                            if dv_depth == 0 {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                break;
+            // macro: prescan_collect_declared_vars_enum (transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                if kind == "KW_ENUM" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                    let mut dv_ep: i64 = pre_i + 1;
+                    if dv_ep < token_count {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                        let mut dv_ep_tok: Token = tokens[dv_ep as usize].clone();
+                        let mut kind = dv_ep_tok.kind.clone();
+                        let mut value = dv_ep_tok.value.clone();
+                        let mut dv_e_typed: bool = false;
+                        if kind == "IDENT" {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                            dv_e_typed = list_has(primitive_type_names.clone(), value.clone());
+                        }
+                        if dv_e_typed {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                            let mut dv_iscan: i64 = dv_ep + 2;
+                            while dv_iscan < token_count {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                let mut dv_itok: Token = tokens[dv_iscan as usize].clone();
+                                let mut kind = dv_itok.kind.clone();
+                                if kind == "INDENT" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                    break;
+                                }
+                                dv_iscan = dv_iscan + 1;
+                            }
+                            let mut dv_body: i64 = dv_iscan + 1;
+                            let mut dv_edepth: i64 = 1;
+                            while dv_body < token_count {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                let mut dv_body_tok: Token = tokens[dv_body as usize].clone();
+                                let mut kind = dv_body_tok.kind.clone();
+                                let mut value = dv_body_tok.value.clone();
+                                if kind == "INDENT" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                    dv_edepth = dv_edepth + 1;
+                                } else if kind == "DEDENT" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                    dv_edepth = dv_edepth - 1;
+                                    if dv_edepth == 0 {
+                                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                        break;
+                                    }
+                                } else if kind == "IDENT" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                    let mut dv_bn: i64 = dv_body + 1;
+                                    if dv_bn < token_count {
+                                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                        let mut dv_bn_tok: Token = tokens[dv_bn as usize].clone();
+                                        let mut kind = dv_bn_tok.kind.clone();
+                                        if kind == "EQUALS" {
+                                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_enum.deor
+                                            declared_var_names.push(value.clone());
+                                        }
+                                    }
+                                }
+                                dv_body = dv_body + 1;
                             }
                         }
-                        dv_scan = dv_scan + 1;
                     }
-                    let mut dv_after: i64 = dv_scan + 1;
-                    let mut dv_is_destructure: bool = false;
-                    if dv_after < token_count {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        let mut dv_after_tok: Token = tokens[dv_after as usize].clone();
-                        let mut kind = dv_after_tok.kind.clone();
-                        dv_is_destructure = kind == "KW_IN";
+                }
+            }
+            // macro: prescan_collect_declared_vars_destructure (transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                if kind == "LPAREN" {
+                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                    let mut dv_is_call: bool = false;
+                    if pre_i > 0 {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                        let mut dv_prev: i64 = pre_i - 1;
+                        let mut dv_prev_tok: Token = tokens[dv_prev as usize].clone();
+                        let mut kind = dv_prev_tok.kind.clone();
+                        dv_is_call = kind == "IDENT";
                     }
-                    if dv_is_destructure {
-                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                        let mut dv_name_pos: i64 = pre_i + 1;
-                        let mut dv_at_name_slot: bool = true;
-                        while dv_name_pos < dv_scan {
-                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                            let mut dv_name_tok: Token = tokens[dv_name_pos as usize].clone();
-                            let mut kind = dv_name_tok.kind.clone();
-                            let mut value = dv_name_tok.value.clone();
-                            if kind == "COMMA" {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                dv_at_name_slot = true;
-                            } else if dv_at_name_slot {
-                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                if kind == "IDENT" {
-                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars.deor
-                                    declared_var_names.push(value.clone());
+                    if !dv_is_call {
+                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                        let mut dv_scan: i64 = pre_i + 1;
+                        let mut dv_depth: i64 = 1;
+                        while dv_scan < token_count {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                            let mut dv_dtok: Token = tokens[dv_scan as usize].clone();
+                            let mut kind = dv_dtok.kind.clone();
+                            if kind == "LPAREN" {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                                dv_depth = dv_depth + 1;
+                            } else if kind == "RPAREN" {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                                dv_depth = dv_depth - 1;
+                                if dv_depth == 0 {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                                    break;
                                 }
-                                dv_at_name_slot = false;
                             }
-                            dv_name_pos = dv_name_pos + 1;
+                            dv_scan = dv_scan + 1;
+                        }
+                        let mut dv_after: i64 = dv_scan + 1;
+                        let mut dv_is_destructure: bool = false;
+                        if dv_after < token_count {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                            let mut dv_after_tok: Token = tokens[dv_after as usize].clone();
+                            let mut kind = dv_after_tok.kind.clone();
+                            dv_is_destructure = kind == "KW_IN";
+                        }
+                        if dv_is_destructure {
+                            // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                            let mut dv_name_pos: i64 = pre_i + 1;
+                            let mut dv_at_name_slot: bool = true;
+                            while dv_name_pos < dv_scan {
+                                // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                                let mut dv_name_tok: Token = tokens[dv_name_pos as usize].clone();
+                                let mut kind = dv_name_tok.kind.clone();
+                                let mut value = dv_name_tok.value.clone();
+                                if kind == "COMMA" {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                                    dv_at_name_slot = true;
+                                } else if dv_at_name_slot {
+                                    // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                                    if kind == "IDENT" {
+                                        // transpiler-deor/tokens_validator/macros/prescan_collect_declared_vars_destructure.deor
+                                        declared_var_names.push(value.clone());
+                                    }
+                                    dv_at_name_slot = false;
+                                }
+                                dv_name_pos = dv_name_pos + 1;
+                            }
                         }
                     }
                 }

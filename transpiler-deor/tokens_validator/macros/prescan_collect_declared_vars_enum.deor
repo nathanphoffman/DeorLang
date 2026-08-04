@@ -1,0 +1,48 @@
+
+# Declared-var collection, typed enum variant form ('enum string Color\n\tRed
+# = "Red"') — a typed enum's variants are themselves declared names, unlike
+# an untyped enum's. Part of prescan_collect_declared_vars — see that
+# macro's header for the full list of binding forms this prescan pass
+# covers and what it feeds.
+# Reads: pre_i, tokens, token_count, primitive_type_names.
+# Writes: declared_var_names.
+macro prescan_collect_declared_vars_enum
+	if kind is "KW_ENUM"
+		# ex: enum {string} Color — pre_i+1 grabs the type keyword slot of a typed enum
+		int dv_ep = pre_i + 1
+		if dv_ep < token_count
+			Token dv_ep_tok = tokens at dv_ep
+			(kind, value) in dv_ep_tok
+			bool dv_e_typed = false
+			if kind is "IDENT"
+				dv_e_typed = list_has(primitive_type_names, value)
+			if dv_e_typed
+				# find the INDENT that opens this enum's variant block
+				int dv_iscan = dv_ep + 2
+				for if dv_iscan < token_count
+					Token dv_itok = tokens at dv_iscan
+					(kind) in dv_itok
+					if kind is "INDENT"
+						break
+					dv_iscan = dv_iscan + 1
+				# ex: enum string Color\n{\t}Red = "Red" — dv_iscan+1 grabs the first variant name
+				int dv_body = dv_iscan + 1
+				int dv_edepth = 1
+				for if dv_body < token_count
+					Token dv_body_tok = tokens at dv_body
+					(kind, value) in dv_body_tok
+					if kind is "INDENT"
+						dv_edepth = dv_edepth + 1
+					else if kind is "DEDENT"
+						dv_edepth = dv_edepth - 1
+						if dv_edepth is 0
+							break
+					else if kind is "IDENT"
+						# ex: Red {=} "Red" — dv_body+1 grabs the equals sign after a variant name
+						int dv_bn = dv_body + 1
+						if dv_bn < token_count
+							Token dv_bn_tok = tokens at dv_bn
+							(kind) in dv_bn_tok
+							if kind is "EQUALS"
+								declared_var_names at end = value
+					dv_body = dv_body + 1

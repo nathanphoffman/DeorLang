@@ -1,0 +1,40 @@
+
+# Declared-var collection, IDENT-led binding forms: typed decl / const /
+# validator ('Type name = expr'), as-binding ('name as expr'), and a
+# validator type's own bare declaration without '=' ('Roll best' — the "not
+# valid until assigned" form, which still declares the name so a later
+# `best = expr` reassignment isn't flagged as undeclared). Part of
+# prescan_collect_declared_vars — see that macro's header for the full list
+# of binding forms this prescan pass covers and what it feeds.
+# Reads: pre_i, pre_tok, tokens, token_count, validator_type_names.
+# Writes: declared_var_names.
+macro prescan_collect_declared_vars_binding
+	if kind is "IDENT"
+		# ex: Type {name} = expr — pre_i+1 grabs the variable name, +2 the equals sign
+		int dv_n1 = pre_i + 1
+		int dv_n2 = pre_i + 2
+		if dv_n2 < token_count
+			Token dv_t1 = tokens at dv_n1
+			Token dv_t2 = tokens at dv_n2
+			(kind, value) in dv_t1
+			string dv_k1 = kind
+			string dv_v1 = value
+			(kind) in dv_t2
+			if dv_k1 is "IDENT" and kind is "EQUALS"
+				declared_var_names at end = dv_v1
+		if dv_n1 < token_count
+			# ex: {name} as expr — dv_n1 grabs the 'as' keyword slot
+			Token dv_as_tok = tokens at dv_n1
+			(kind) in dv_as_tok
+			if kind is "KW_AS"
+				(value) in pre_tok
+				declared_var_names at end = value
+			# ex: Roll {best} — a validator type's bare declaration without '='
+			# (the "not valid until assigned" form) still declares the name, so a
+			# later `best = expr` reassignment isn't flagged as undeclared
+			(value) in pre_tok
+			bool dv_is_vtype = list_has(validator_type_names, value)
+			if dv_is_vtype
+				if kind is "IDENT"
+					(value) in dv_as_tok
+					declared_var_names at end = value

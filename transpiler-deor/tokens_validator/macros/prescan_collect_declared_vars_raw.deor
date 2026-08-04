@@ -1,0 +1,20 @@
+
+# Declared-var collection, raw decl form ('raw name = expr'). Part of
+# prescan_collect_declared_vars — see that macro's header for the full list
+# of binding forms this prescan pass covers and what it feeds.
+# Reads: pre_i, tokens, token_count.
+# Writes: declared_var_names.
+macro prescan_collect_declared_vars_raw
+	if kind is "KW_RAW"
+		# ex: raw {name} = expr — pre_i+1 grabs the raw variable name, +2 the equals sign
+		int dv_rn = pre_i + 1
+		int dv_re = pre_i + 2
+		if dv_re < token_count
+			Token dv_rn_tok = tokens at dv_rn
+			Token dv_re_tok = tokens at dv_re
+			(kind, value) in dv_rn_tok
+			string dv_rk = kind
+			string dv_rv = value
+			(kind) in dv_re_tok
+			if dv_rk is "IDENT" and kind is "EQUALS"
+				declared_var_names at end = dv_rv
