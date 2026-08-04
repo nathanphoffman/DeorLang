@@ -72,6 +72,14 @@ rust
 	fn _float_ctx_get() -> bool { FLOAT_CTX.with(|f| f.get()) }
 	fn _float_ctx_set(v: bool) { FLOAT_CTX.with(|f| f.set(v)); }
 
+	// verbose diagnostics flag — off by default, turned on by main() when
+	// --verbose/-v is passed on the command line
+	thread_local! {
+		static VERBOSE: std::cell::Cell<bool> = std::cell::Cell::new(false);
+	}
+	fn _verbose_get() -> bool { VERBOSE.with(|f| f.get()) }
+	fn _verbose_set(v: bool) { VERBOSE.with(|f| f.set(v)); }
+
 # Returns whether float-literal context is currently active (see FLOAT_CTX above) —
 # i.e. whether a bare numeric literal like `5` in the current expression should be
 # rendered as a Rust float (`5.0`) rather than an int.
@@ -90,3 +98,16 @@ fn void float_ctx_enable()
 fn void float_ctx_disable()
 	rust
 		_float_ctx_set(false)
+
+# Returns whether verbose diagnostics are enabled for this run (see VERBOSE above).
+# Checked before printing internal pipeline diagnostics — token counts, per-phase
+# timings — so a normal build stays quiet and only `--verbose`/`-v` opts into them.
+fn bool verbose_get()
+	rust
+		_verbose_get()
+
+# Enables verbose diagnostics for the remainder of this run. Called once by main()
+# after parsing CLI args, before the pipeline starts.
+fn void verbose_enable()
+	rust
+		_verbose_set(true)

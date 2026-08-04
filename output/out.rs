@@ -276,6 +276,14 @@ thread_local! {
 }
 fn _float_ctx_get() -> bool { FLOAT_CTX.with(|f| f.get()) }
 fn _float_ctx_set(v: bool) { FLOAT_CTX.with(|f| f.set(v)); }
+
+// verbose diagnostics flag — off by default, turned on by main() when
+// --verbose/-v is passed on the command line
+thread_local! {
+	static VERBOSE: std::cell::Cell<bool> = std::cell::Cell::new(false);
+}
+fn _verbose_get() -> bool { VERBOSE.with(|f| f.get()) }
+fn _verbose_set(v: bool) { VERBOSE.with(|f| f.set(v)); }
 fn float_ctx_get() -> bool {
     // transpiler-deor/utils.deor
     _float_ctx_get()
@@ -289,6 +297,16 @@ fn float_ctx_enable() {
 fn float_ctx_disable() {
     // transpiler-deor/utils.deor
     _float_ctx_set(false)
+}
+
+fn verbose_get() -> bool {
+    // transpiler-deor/utils.deor
+    _verbose_get()
+}
+
+fn verbose_enable() {
+    // transpiler-deor/utils.deor
+    _verbose_set(true)
 }
 
 // transpiler-deor/deor_helpers.deor
@@ -10156,7 +10174,10 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     // transpiler-deor/codegen/codegen.deor
     let mut parts: Vec<String> = Vec::new();
     let mut token_count: i64 = (all_ref.len() as i64);
-    println!("{}", ["[diag] token_count: ", n_to_str(token_count.clone()).as_str()].concat());
+    if verbose_get() {
+        // transpiler-deor/codegen/codegen.deor
+        println!("{}", ["[diag] token_count: ", n_to_str(token_count.clone()).as_str()].concat());
+    }
     let mut pos: i64 = 0;
     let mut last_file: String = "".to_string();
     let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
@@ -10261,9 +10282,12 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     {
         // transpiler-deor/macros/timer.deor
         let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
-        let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-        let mut _timer_sfx: String = "ms".to_string();
-        println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+        if verbose_get() {
+            // transpiler-deor/macros/timer.deor
+            let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+            let mut _timer_sfx: String = "ms".to_string();
+            println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+        }
     }
     // transpiler-deor/codegen/codegen.deor
     return s_join(parts.clone());
@@ -10272,11 +10296,31 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
 // transpiler-deor/main.deor
 fn main() {
     // transpiler-deor/main.deor
-    let mut cli_args: Vec<String> = f_args();
+    let mut raw_args: Vec<String> = f_args();
+    let mut verbose_long: String = "--verbose".to_string();
+    let mut verbose_short: String = "-v".to_string();
+    let mut verbose: bool = list_has(raw_args.clone(), verbose_long.clone()) || list_has(raw_args.clone(), verbose_short.clone());
+    if verbose {
+        // transpiler-deor/main.deor
+        verbose_enable();
+    }
+    let mut cli_args: Vec<String> = Vec::new();
+    let mut raw_count: i64 = (raw_args.len() as i64);
+    let mut raw_i: i64 = 0;
+    while raw_i < raw_count {
+        // transpiler-deor/main.deor
+        let mut raw_arg: String = raw_args[raw_i as usize].clone();
+        let mut is_verbose_flag: bool = raw_arg == verbose_long || raw_arg == verbose_short;
+        if !is_verbose_flag {
+            // transpiler-deor/main.deor
+            cli_args.push(raw_arg.clone());
+        }
+        raw_i = raw_i + 1;
+    }
     let mut arg_count: i64 = (cli_args.len() as i64);
     if arg_count < 2 {
         // transpiler-deor/main.deor
-        println!("{}", "usage: deor input.deor output.rs".to_string());
+        println!("{}", "usage: deor input.deor output.rs [--verbose|-v]".to_string());
     } else {
         // transpiler-deor/main.deor
         let mut input_path: String = cli_args[0 as usize].clone();
@@ -10290,9 +10334,12 @@ fn main() {
         {
             // transpiler-deor/macros/timer.deor
             let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
-            let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-            let mut _timer_sfx: String = "ms".to_string();
-            println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            if verbose_get() {
+                // transpiler-deor/macros/timer.deor
+                let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+                let mut _timer_sfx: String = "ms".to_string();
+                println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            }
         }
         // transpiler-deor/main.deor
         let mut tokens = dedup_r.tokens.clone();
@@ -10306,9 +10353,12 @@ fn main() {
         {
             // transpiler-deor/macros/timer.deor
             let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
-            let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-            let mut _timer_sfx: String = "ms".to_string();
-            println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            if verbose_get() {
+                // transpiler-deor/macros/timer.deor
+                let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+                let mut _timer_sfx: String = "ms".to_string();
+                println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            }
         }
         // transpiler-deor/main.deor
         let mut tokens_ref: TokensRef = tokens_wrap(tokens);
@@ -10321,9 +10371,12 @@ fn main() {
         {
             // transpiler-deor/macros/timer.deor
             let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
-            let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-            let mut _timer_sfx: String = "ms".to_string();
-            println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            if verbose_get() {
+                // transpiler-deor/macros/timer.deor
+                let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+                let mut _timer_sfx: String = "ms".to_string();
+                println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            }
         }
         // transpiler-deor/main.deor
         _timer_label = "[timer] registry: ".to_string();
@@ -10335,9 +10388,12 @@ fn main() {
         {
             // transpiler-deor/macros/timer.deor
             let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
-            let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-            let mut _timer_sfx: String = "ms".to_string();
-            println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            if verbose_get() {
+                // transpiler-deor/macros/timer.deor
+                let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+                let mut _timer_sfx: String = "ms".to_string();
+                println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            }
         }
         // transpiler-deor/main.deor
         _timer_label = "[timer] total-codegen: ".to_string();
@@ -10349,9 +10405,12 @@ fn main() {
         {
             // transpiler-deor/macros/timer.deor
             let mut _timer_elapsed: i64 = elapsed_ms(_timer_start.clone());
-            let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
-            let mut _timer_sfx: String = "ms".to_string();
-            println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            if verbose_get() {
+                // transpiler-deor/macros/timer.deor
+                let mut _timer_str: String = n_to_str(_timer_elapsed.clone());
+                let mut _timer_sfx: String = "ms".to_string();
+                println!("{}", [_timer_label.as_str(), _timer_str.as_str(), _timer_sfx.as_str()].concat());
+            }
         }
         // transpiler-deor/main.deor
         let mut allow_warnings: String = "#![allow(warnings)]\n".to_string();

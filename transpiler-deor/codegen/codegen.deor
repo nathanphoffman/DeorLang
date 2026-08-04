@@ -5,7 +5,8 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 
 	strList parts = empty
 	int token_count = len(all_ref)
-	print(s_join(["[diag] token_count: ", n_to_str(token_count)]))
+	if verbose_get()
+		print(s_join(["[diag] token_count: ", n_to_str(token_count)]))
 	int pos = 0
 	string last_file = ""
 	string _timer_label = "[timer]   codegen-loop: "

@@ -4,6 +4,7 @@ unsafe_macro timer_start
 
 macro timer_end
 	int _timer_elapsed = elapsed_ms(_timer_start)
-	string _timer_str = n_to_str(_timer_elapsed)
-	string _timer_sfx = "ms"
-	print(s_join([_timer_label, _timer_str, _timer_sfx]))
+	if verbose_get()
+		string _timer_str = n_to_str(_timer_elapsed)
+		string _timer_sfx = "ms"
+		print(s_join([_timer_label, _timer_str, _timer_sfx]))

@@ -7,11 +7,27 @@ import "transpiler-deor/macros/timer.deor"
 fn void main()
 	ENFORCE_UNIQUE_FILE_DECLARATIONS
 
-	strList cli_args = f_args()
+	strList raw_args = f_args()
+	string verbose_long = "--verbose"
+	string verbose_short = "-v"
+	bool verbose = list_has(raw_args, verbose_long) or list_has(raw_args, verbose_short)
+	if verbose
+		verbose_enable()
+
+	strList cli_args = empty
+	int raw_count = len(raw_args)
+	int raw_i = 0
+	for if raw_i < raw_count
+		string raw_arg = raw_args at raw_i
+		bool is_verbose_flag = raw_arg is verbose_long or raw_arg is verbose_short
+		if not is_verbose_flag
+			cli_args at end = raw_arg
+		raw_i = raw_i + 1
+
 	int arg_count = len(cli_args)
 
 	if arg_count < 2
-		print("usage: deor input.deor output.rs")
+		print("usage: deor input.deor output.rs [--verbose|-v]")
 	else
 		string input_path = cli_args at 0
 		string output_path = cli_args at 1
