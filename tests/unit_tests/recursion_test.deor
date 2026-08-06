@@ -1,0 +1,20 @@
+# recursion_test.deor
+# A function calling itself — documented in specification/docs/functions.md
+# (factorial example) but no existing test file exercises it. Confirms
+# codegen and the use-after-move/declared-vars checkers handle a function
+# name appearing inside its own body.
+
+fn int factorial(int num)
+	if num <= 1
+		return 1
+	prev as num - 1
+	int prev_result = factorial(prev)
+	return num * prev_result
+
+fn void main()
+	five as 5
+	int result = factorial(five)
+	print(result)
+
+# expect:
+# 120

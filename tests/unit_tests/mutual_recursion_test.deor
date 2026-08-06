@@ -1,0 +1,32 @@
+# mutual_recursion_test.deor
+# Two functions that call each other — is_even calls is_odd before is_odd is
+# declared in the file. specification/docs/enforced_practices.md notes fn
+# declarations have no intra-group order enforcement; this confirms that
+# forward reference actually codegens and validates cleanly (prescan_collect_
+# fn_names collects every top-level fn name before the main validation loop
+# runs, so order shouldn't matter — this is what proves it).
+
+fn bool is_even(int num)
+	if num is 0
+		return true
+	prev as num - 1
+	return is_odd(prev)
+
+fn bool is_odd(int num)
+	if num is 0
+		return false
+	prev as num - 1
+	return is_even(prev)
+
+fn void main()
+	four as 4
+	bool four_even = is_even(four)
+	print(four_even)
+
+	five as 5
+	bool five_even = is_even(five)
+	print(five_even)
+
+# expect:
+# true
+# false

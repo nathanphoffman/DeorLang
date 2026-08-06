@@ -1,0 +1,19 @@
+# negative_literal_test.deor
+# Documents a real, currently-existing gap: unary minus has no handling in
+# codegen/decl/stmt/expr/macros/prefix_ops.deor (only move/avow/not are
+# handled there), so a negative literal falls all the way through to
+# primary.deor's "/* unknown_primary */" fallback. The Deor-level validator
+# doesn't catch this — it transpiles "successfully" — but the generated Rust
+# is `let mut val: i64 = /* unknown_primary */;` with the actual "5" left
+# over as a stray unhandled token, which rustc then rejects. This test
+# captures that actual behavior so a future fix (or a regression making it
+# worse) shows up here instead of going unnoticed. If unary minus ever gets
+# real codegen support, this test should be rewritten as `# expect:` with
+# the correct negative value printed.
+
+fn void main()
+	int val = -5
+	print(val)
+
+# expect-rustc-error:
+# expected expression, found `;`

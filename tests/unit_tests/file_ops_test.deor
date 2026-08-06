@@ -1,0 +1,52 @@
+# file_ops_test.deor
+# Exercises lib/file.deor's write/read/append/exists/lines/delete round-trip
+# (distinct from input_test.deor, which only covers stdin via input()).
+
+import "lib/file.deor"
+
+fn void main()
+	string path = "output/test_scratch/file_ops_scratch_data.txt"
+
+	bool existed_before = f_exists(path)
+	print(existed_before)
+
+	first_content as "line one"
+	bool wrote_ok = f_write(path, first_content)
+	print(wrote_ok)
+
+	bool exists_after_write = f_exists(path)
+	print(exists_after_write)
+
+	string content = f_read(path)
+	print(content)
+
+	appended_content as "\nline two"
+	bool appended_ok = f_append(path, appended_content)
+	print(appended_ok)
+
+	stringList lines = f_lines(path)
+	int line_count = len(lines)
+	print(line_count)
+
+	string first_line = lines at 0
+	print(first_line)
+	string second_line = lines at 1
+	print(second_line)
+
+	bool deleted_ok = f_delete(path)
+	print(deleted_ok)
+
+	bool exists_after_delete = f_exists(path)
+	print(exists_after_delete)
+
+# expect:
+# false
+# true
+# true
+# line one
+# true
+# 2
+# line one
+# line two
+# true
+# false

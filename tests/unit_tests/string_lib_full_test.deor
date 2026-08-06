@@ -1,0 +1,101 @@
+# string_lib_full_test.deor
+# Exercises lib/string.deor functions beyond s_join/s_join_with/s_contains/
+# s_to_upper (already touched by collections_test.deor / string_concat_test.deor):
+# s_trim_start/s_trim_end/s_to_lower/s_starts_with/s_ends_with/s_index_of/
+# s_replace/s_substring/s_char_at/s_repeat/s_split/s_pad_left/s_pad_right/
+# s_split_whitespace/s_chars. Whitespace-bearing results are compared via
+# equality checks rather than printed raw, since the harness only trims the
+# outer edges of the whole stdout blob, not each line.
+
+import "lib/string.deor"
+
+fn void main()
+	padded as "  hello  "
+	string trimmed_start = s_trim_start(padded)
+	expected_start as "hello  "
+	bool trim_start_ok = trimmed_start is expected_start
+	print(trim_start_ok)
+
+	string trimmed_end = s_trim_end(padded)
+	expected_end as "  hello"
+	bool trim_end_ok = trimmed_end is expected_end
+	print(trim_end_ok)
+
+	mixed_case as "Hello World"
+	string lowered = s_to_lower(mixed_case)
+	print(lowered)
+
+	greeting as "hello world"
+	prefix as "hello"
+	bool starts_ok = s_starts_with(greeting, prefix)
+	print(starts_ok)
+	suffix as "world"
+	bool ends_ok = s_ends_with(greeting, suffix)
+	print(ends_ok)
+
+	needle as "wor"
+	int idx = s_index_of(greeting, needle)
+	print(idx)
+
+	from_word as "world"
+	to_word as "there"
+	string replaced = s_replace(greeting, from_word, to_word)
+	print(replaced)
+
+	sub_start as 0
+	sub_stop as 5
+	string sub = s_substring(greeting, sub_start, sub_stop)
+	print(sub)
+
+	char_idx as 6
+	string char_at_result = s_char_at(greeting, char_idx)
+	print(char_at_result)
+
+	repeat_count as 3
+	base as "ab"
+	string repeated = s_repeat(base, repeat_count)
+	print(repeated)
+
+	delim as ","
+	csv as "a,b,c"
+	stringList parts = s_split(csv, delim)
+	int parts_len = len(parts)
+	print(parts_len)
+
+	pad_width as 6
+	narrow as "x"
+	string left_padded = s_pad_left(narrow, pad_width)
+	expected_left_pad as "     x"
+	bool left_pad_ok = left_padded is expected_left_pad
+	print(left_pad_ok)
+
+	string right_padded = s_pad_right(narrow, pad_width)
+	expected_right_pad as "x     "
+	bool right_pad_ok = right_padded is expected_right_pad
+	print(right_pad_ok)
+
+	whitespace_str as "  foo   bar  baz "
+	stringList ws_parts = s_split_whitespace(whitespace_str)
+	int ws_parts_len = len(ws_parts)
+	print(ws_parts_len)
+
+	stringList char_list = s_chars(narrow)
+	int char_list_len = len(char_list)
+	print(char_list_len)
+
+# expect:
+# true
+# true
+# hello world
+# true
+# true
+# 6
+# hello there
+# hello
+# w
+# ababab
+# 3
+# true
+# true
+# 3
+# 1

@@ -1,0 +1,26 @@
+# deeply_nested_control_flow_test.deor
+# Stresses indentation/block-nesting codegen beyond what any single existing
+# test does: a for-loop containing an if/else, where one branch contains a
+# second for-loop containing its own if/else (4 levels of nesting).
+
+fn int nested_count(int outer_limit, int inner_limit)
+	total as 0
+	for outer_idx in range(outer_limit)
+		if outer_idx > 0
+			for inner_idx in range(inner_limit)
+				if inner_idx > 0
+					total = total + 1
+				else
+					total = total + 2
+		else
+			total = total + 100
+	return total
+
+fn void main()
+	outer as 3
+	inner as 3
+	int result = nested_count(outer, inner)
+	print(result)
+
+# expect:
+# 108

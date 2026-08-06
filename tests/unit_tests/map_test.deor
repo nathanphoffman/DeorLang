@@ -1,0 +1,58 @@
+# map_test.deor
+# Exercises lib/map.deor's StringMap lifecycle: h_make/h_set/h_get/h_has/
+# h_remove/h_size/h_keys/h_values.
+
+import "lib/map.deor"
+
+fn void main()
+	StringMap my_map = h_make()
+	key_name as "name"
+	val_ada as "Ada"
+	key_role as "role"
+	val_engineer as "engineer"
+	key_missing as "missing"
+
+	my_map = h_set(my_map, key_name, val_ada)
+	my_map = h_set(my_map, key_role, val_engineer)
+
+	int size_after_insert = h_size(my_map)
+	print(size_after_insert)
+
+	string name_val = h_get(my_map, key_name)
+	print(name_val)
+
+	bool has_name = h_has(my_map, key_name)
+	print(has_name)
+	bool has_missing = h_has(my_map, key_missing)
+	print(has_missing)
+
+	string missing_val = h_get(my_map, key_missing)
+	empty_str as ""
+	bool missing_is_empty = missing_val is empty_str
+	print(missing_is_empty)
+
+	stringList keys_list = h_keys(my_map)
+	int keys_count = len(keys_list)
+	print(keys_count)
+
+	stringList values_list = h_values(my_map)
+	int values_count = len(values_list)
+	print(values_count)
+
+	my_map = h_remove(my_map, key_role)
+	int size_after_remove = h_size(my_map)
+	print(size_after_remove)
+
+	bool has_role_after_remove = h_has(my_map, key_role)
+	print(has_role_after_remove)
+
+# expect:
+# 2
+# Ada
+# true
+# false
+# true
+# 2
+# 2
+# 1
+# false

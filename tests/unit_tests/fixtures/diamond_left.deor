@@ -1,0 +1,7 @@
+# Fixture for diamond_import_test.deor — one of two files that both import
+# diamond_common.deor, forming a diamond dependency with diamond_right.deor.
+import "tests/unit_tests/fixtures/diamond_common.deor"
+
+fn int point_sum(Point point_val)
+	(pos_x, pos_y) in point_val
+	return pos_x + pos_y

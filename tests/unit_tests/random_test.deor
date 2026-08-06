@@ -1,0 +1,25 @@
+# random_test.deor
+# Exercises lib/random.deor. Results are non-deterministic, so this checks
+# bounds/type invariants instead of exact values.
+
+import "lib/random.deor"
+
+fn void main()
+	lo_bound as 1
+	hi_bound as 10
+	rand_val as m_rand_int(lo_bound, hi_bound)
+	bool in_range = rand_val >= lo_bound and rand_val <= hi_bound
+	print(in_range)
+
+	rand_f as m_rand_float()
+	bool rand_f_in_range = rand_f >= 0.0 and rand_f < 1.0
+	print(rand_f_in_range)
+
+	rand_b as m_rand_bool()
+	bool rand_b_is_bool = rand_b is true or rand_b is false
+	print(rand_b_is_bool)
+
+# expect:
+# true
+# true
+# true

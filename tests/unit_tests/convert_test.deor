@@ -1,0 +1,53 @@
+# convert_test.deor
+# Exercises lib/convert.deor: int/float/string/bool conversions, including the
+# documented "unparseable input silently becomes the zero value" behavior for
+# c_string_to_int/c_string_to_float/c_string_to_bool.
+
+import "lib/convert.deor"
+
+fn void main()
+	float f_from_int = c_int_to_float(5)
+	print(f_from_int)
+
+	int i_from_float = c_float_to_int(5.9)
+	print(i_from_float)
+
+	string s_from_int = c_int_to_string(42)
+	print(s_from_int)
+
+	string s_from_float = c_float_to_string(3.5)
+	print(s_from_float)
+
+	string s_from_bool = c_bool_to_string(true)
+	print(s_from_bool)
+
+	int i_from_str = c_string_to_int("123")
+	print(i_from_str)
+
+	float f_from_str = c_string_to_float("2.5")
+	print(f_from_str)
+
+	bool b_from_str = c_string_to_bool("true")
+	print(b_from_str)
+
+	int bad_int = c_string_to_int("not a number")
+	print(bad_int)
+
+	float bad_float = c_string_to_float("nope")
+	print(bad_float)
+
+	bool bad_bool = c_string_to_bool("nope")
+	print(bad_bool)
+
+# expect:
+# 5
+# 5
+# 42
+# 3.5
+# true
+# 123
+# 2.5
+# true
+# 0
+# 0
+# false

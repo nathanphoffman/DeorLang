@@ -1,0 +1,11 @@
+# Fixture for diamond_import_test.deor — the other of two files that both
+# import diamond_common.deor, forming a diamond dependency with
+# diamond_left.deor.
+import "tests/unit_tests/fixtures/diamond_common.deor"
+
+fn Point point_scale(Point point_val, int factor)
+	(pos_x, pos_y) in point_val
+	pos_x = pos_x * factor
+	pos_y = pos_y * factor
+	Point result = move (pos_x, pos_y)
+	return result

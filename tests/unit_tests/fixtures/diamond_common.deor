@@ -1,0 +1,5 @@
+# Fixture for diamond_import_test.deor — imported transitively by both
+# diamond_left.deor and diamond_right.deor, forming a diamond dependency.
+struct Point
+	int pos_x
+	int pos_y

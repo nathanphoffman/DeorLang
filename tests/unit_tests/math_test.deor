@@ -1,0 +1,51 @@
+# math_test.deor
+# Exercises lib/math.deor's integer operations: m_abs, m_sign, m_min, m_max,
+# m_clamp, m_pow. Negative values are built via subtraction (zero - five)
+# rather than a negative literal — see negative_literal_test.deor for that.
+
+import "lib/math.deor"
+
+fn void main()
+	int zero = 0
+	int five = 5
+	int neg_five = zero - five
+
+	int abs_val = m_abs(neg_five)
+	print(abs_val)
+
+	int sign_neg = m_sign(neg_five)
+	print(sign_neg)
+	int sign_pos = m_sign(five)
+	print(sign_pos)
+	int sign_zero = m_sign(zero)
+	print(sign_zero)
+
+	int min_val = m_min(five, neg_five)
+	print(min_val)
+	int max_val = m_max(five, neg_five)
+	print(max_val)
+
+	int clamped_low = m_clamp(neg_five, zero, five)
+	print(clamped_low)
+	int ten = 10
+	int clamped_high = m_clamp(ten, zero, five)
+	print(clamped_high)
+	int three = 3
+	int clamped_mid = m_clamp(three, zero, five)
+	print(clamped_mid)
+
+	int two = 2
+	int powered = m_pow(two, five)
+	print(powered)
+
+# expect:
+# 5
+# -1
+# 1
+# 0
+# -5
+# 5
+# 0
+# 5
+# 3
+# 32

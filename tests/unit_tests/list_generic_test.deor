@@ -1,0 +1,80 @@
+# list_generic_test.deor
+# Exercises lib/list.deor's T-parameterized helpers for two different
+# concrete types imported side by side (dedup keys parameterized imports by
+# "path|T=concrete", so both instantiations coexist — see t_substitute.deor).
+
+import "lib/list.deor" where T = int
+import "lib/list.deor" where T = string
+
+fn void main()
+	intList nums = [10, 20, 30]
+
+	int first_val = l_int_first(nums)
+	print(first_val)
+	int last_val = l_int_last(nums)
+	print(last_val)
+	bool empty_check = l_int_is_empty(nums)
+	print(empty_check)
+
+	intList reversed = l_int_reverse(nums)
+	int rev_first = l_int_first(reversed)
+	print(rev_first)
+
+	slice_start as 1
+	slice_stop as 3
+	intList sliced = l_int_slice(nums, slice_start, slice_stop)
+	int sliced_len = len(sliced)
+	print(sliced_len)
+
+	intList extra = [40, 50]
+	intList combined = l_int_concat(nums, extra)
+	int combined_len = len(combined)
+	print(combined_len)
+
+	needle as 20
+	bool has_20 = l_int_contains(nums, needle)
+	print(has_20)
+	int idx_of_20 = l_int_index_of(nums, needle)
+	print(idx_of_20)
+
+	take_count as 2
+	intList taken = l_int_take(nums, take_count)
+	int taken_len = len(taken)
+	print(taken_len)
+
+	drop_count as 2
+	intList dropped = l_int_drop(nums, drop_count)
+	int dropped_len = len(dropped)
+	print(dropped_len)
+
+	ninety as 90
+	intList pushed = l_int_push(nums, ninety)
+	int pushed_len = len(pushed)
+	print(pushed_len)
+
+	intList popped = l_int_pop(nums)
+	int popped_len = len(popped)
+	print(popped_len)
+
+	stringList words = ["alpha", "beta", "gamma"]
+	string first_word = l_string_first(words)
+	print(first_word)
+	beta as "beta"
+	bool has_beta = l_string_contains(words, beta)
+	print(has_beta)
+
+# expect:
+# 10
+# 30
+# false
+# 30
+# 2
+# 5
+# true
+# 1
+# 2
+# 1
+# 4
+# 2
+# alpha
+# true

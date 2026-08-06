@@ -1,0 +1,33 @@
+# nested_list_of_list_test.deor
+# A shape whose element type is itself a list shape (`shape rowList = list of
+# intList`). gen_shape_decl PascalCases both the alias being defined and any
+# reference to it (codegen/decl/shape.deor / codegen/type_map.deor), so
+# `type RowList = Vec<IntList>;` correctly references the earlier
+# `type IntList = Vec<i64>;` — this documents that nested list shapes work,
+# including a nested list literal as the initializer.
+
+shape intList = list of int
+shape rowList = list of intList
+
+fn void main()
+	rowList grid = [[1, 2], [3, 4], [5, 6]]
+
+	int row_count = len(grid)
+	print(row_count)
+
+	intList first_row = grid at 0
+	int first_row_len = len(first_row)
+	print(first_row_len)
+
+	int first_val = first_row at 0
+	print(first_val)
+
+	intList last_row = grid at 2
+	int last_val = last_row at 1
+	print(last_val)
+
+# expect:
+# 3
+# 2
+# 1
+# 6

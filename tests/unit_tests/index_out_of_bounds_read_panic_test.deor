@@ -1,0 +1,16 @@
+# index_out_of_bounds_read_panic_test.deor
+# `list at idx` compiles straight to Rust `list[idx as usize]` — out-of-bounds
+# access is a documented runtime panic (specification/docs/collections.md,
+# "Index Read"), distinct from the crash()-triggered panic crash_test.deor
+# covers.
+
+shape intList = list of int
+
+fn void main()
+	intList nums = [1, 2, 3]
+	bad_index as 10
+	int val = nums at bad_index
+	print(val)
+
+# expect-panic:
+# index out of bounds

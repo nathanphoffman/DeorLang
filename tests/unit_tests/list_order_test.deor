@@ -1,0 +1,36 @@
+# list_order_test.deor
+# Exercises lib/list_order.deor's l_T_sort/l_T_unique, safe for int and string
+# per the module's own comment (not float — no total ordering/hash).
+
+import "lib/list.deor" where T = int
+import "lib/list.deor" where T = string
+import "lib/list_order.deor" where T = int
+import "lib/list_order.deor" where T = string
+
+fn void main()
+	intList nums = [3, 1, 2, 1, 3]
+	intList sorted_nums = l_int_sort(nums)
+	int first_sorted = l_int_first(sorted_nums)
+	print(first_sorted)
+	int last_sorted = l_int_last(sorted_nums)
+	print(last_sorted)
+
+	intList unique_nums = l_int_unique(nums)
+	int unique_len = len(unique_nums)
+	print(unique_len)
+
+	stringList words = ["banana", "apple", "banana", "cherry"]
+	stringList sorted_words = l_string_sort(words)
+	string first_sorted_word = l_string_first(sorted_words)
+	print(first_sorted_word)
+
+	stringList unique_words = l_string_unique(words)
+	int unique_words_len = len(unique_words)
+	print(unique_words_len)
+
+# expect:
+# 1
+# 3
+# 3
+# apple
+# 3

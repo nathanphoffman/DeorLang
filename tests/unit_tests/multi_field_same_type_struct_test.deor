@@ -1,0 +1,33 @@
+# multi_field_same_type_struct_test.deor
+# A struct with 4 fields of the identical primitive type, beyond the 2-field
+# same-type case already in struct_test.deor's Point. Also exercises
+# destructuring the same struct twice with a different field subset each time
+# (a partial, non-move destructure is a read, not a consume — repeatable).
+# Struct construction requires the provided variable names to exactly match
+# the struct's field names (check_struct_construction), hence width/height/
+# depth/weight below rather than shorter throwaway names.
+
+struct Rectangle
+	int width
+	int height
+	int depth
+	int weight
+
+fn int volume(Rectangle rect)
+	(width, height, depth) in rect
+	return width * height * depth
+
+fn void main()
+	width as 2
+	height as 3
+	depth as 4
+	weight as 5
+	Rectangle rect = (width, height, depth, weight)
+	int vol = volume(rect)
+	print(vol)
+	(width, height, depth, weight) in rect
+	print(weight)
+
+# expect:
+# 24
+# 5

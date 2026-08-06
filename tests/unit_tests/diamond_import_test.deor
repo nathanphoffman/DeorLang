@@ -1,0 +1,28 @@
+# diamond_import_test.deor
+# A "diamond" dependency: this file imports two fixtures that each
+# transitively import a shared common file declaring 'Point'. No
+# ENFORCE_UNIQUE_* pragma is set, so this must resolve cleanly via the
+# default loose dedup, keeping the single shared 'Point' definition rather
+# than erroring or double-declaring it — distinct from
+# duplicate_decl_cross_file_test.deor, which covers two files that
+# genuinely conflict rather than transitively sharing one dependency.
+
+import "tests/unit_tests/fixtures/diamond_left.deor"
+import "tests/unit_tests/fixtures/diamond_right.deor"
+
+fn void main()
+	pos_x as 3
+	pos_y as 4
+	Point point_val = (pos_x, pos_y)
+
+	int total = point_sum(point_val)
+	print(total)
+
+	factor as 2
+	Point scaled = point_scale(point_val, factor)
+	int scaled_total = point_sum(scaled)
+	print(scaled_total)
+
+# expect:
+# 7
+# 14

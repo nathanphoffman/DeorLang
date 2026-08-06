@@ -1,0 +1,61 @@
+# math_float_test.deor
+# Exercises lib/math.deor's float operations. Expected values are chosen to be
+# exact under IEEE-754 (whole numbers, or log/log2/log10 of 1.0) to avoid
+# floating-point-precision flakiness in an exact-stdout-match test.
+
+import "lib/math.deor"
+
+fn void main()
+	float zero = 0.0
+	float five = 5.0
+	float neg_five = zero - five
+
+	float abs_val = m_absf(neg_five)
+	print(abs_val)
+
+	float min_val = m_minf(five, neg_five)
+	print(min_val)
+	float max_val = m_maxf(five, neg_five)
+	print(max_val)
+
+	float ten = 10.0
+	float clamped = m_clampf(ten, zero, five)
+	print(clamped)
+
+	float two = 2.0
+	float powered = m_powf(two, five)
+	print(powered)
+
+	float four = 4.0
+	float sqrt_val = m_sqrt(four)
+	print(sqrt_val)
+
+	float frac = 3.7
+	int floored = m_floor(frac)
+	print(floored)
+	int ceiled = m_ceil(frac)
+	print(ceiled)
+	int rounded = m_round(frac)
+	print(rounded)
+
+	float one = 1.0
+	float log_val = m_log(one)
+	print(log_val)
+	float log2_val = m_log2(one)
+	print(log2_val)
+	float log10_val = m_log10(one)
+	print(log10_val)
+
+# expect:
+# 5
+# -5
+# 5
+# 5
+# 32
+# 2
+# 3
+# 4
+# 4
+# 0
+# 0
+# 0

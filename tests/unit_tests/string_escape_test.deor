@@ -1,0 +1,51 @@
+# string_escape_test.deor
+# Exercises the lexer's escape handling for \n, \t, \\, \" (scan_string_literal
+# in transpiler-deor/importer/lexer/string_literal.deor). Checked via length
+# and s_contains rather than printing the raw characters, since an actual
+# embedded newline/tab in stdout would break the single-line comment-based
+# expected-output format this harness uses.
+
+import "lib/string.deor"
+
+fn void main()
+	newline_str as "a\nb"
+	int newline_len = len(newline_str)
+	print(newline_len)
+
+	tab_str as "a\tb"
+	int tab_len = len(tab_str)
+	print(tab_len)
+
+	backslash_str as "a\\b"
+	int backslash_len = len(backslash_str)
+	print(backslash_len)
+
+	quote_str as "a\"b"
+	int quote_len = len(quote_str)
+	print(quote_len)
+
+	needle_nl as "\n"
+	bool has_real_newline = s_contains(newline_str, needle_nl)
+	print(has_real_newline)
+
+	needle_tab as "\t"
+	bool has_real_tab = s_contains(tab_str, needle_tab)
+	print(has_real_tab)
+
+	needle_bs as "\\"
+	bool has_real_backslash = s_contains(backslash_str, needle_bs)
+	print(has_real_backslash)
+
+	needle_qt as "\""
+	bool has_real_quote = s_contains(quote_str, needle_qt)
+	print(has_real_quote)
+
+# expect:
+# 3
+# 3
+# 3
+# 3
+# true
+# true
+# true
+# true

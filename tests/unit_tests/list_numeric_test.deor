@@ -1,0 +1,27 @@
+# list_numeric_test.deor
+# Exercises lib/list_numeric.deor's l_T_sum/l_T_min/l_T_max for T=int, per the
+# module's own documented intent. (l_T_min/l_T_max use Rust's Iterator::min()/
+# max(), which requires Ord — f64 only implements PartialOrd, so a T=float
+# instantiation would very likely fail to compile despite the module comment
+# claiming float support; left uninvestigated here to avoid conflating two
+# different findings in one file.)
+
+import "lib/list.deor" where T = int
+import "lib/list_numeric.deor" where T = int
+
+fn void main()
+	intList nums = [4, 9, 2, 7]
+
+	int total = l_int_sum(nums)
+	print(total)
+
+	int lowest = l_int_min(nums)
+	print(lowest)
+
+	int highest = l_int_max(nums)
+	print(highest)
+
+# expect:
+# 22
+# 2
+# 9

@@ -1,0 +1,16 @@
+# index_out_of_bounds_write_panic_test.deor
+# `list at idx = val` compiles straight to Rust `list[idx as usize] = val` —
+# out-of-bounds assignment is a separately documented runtime panic
+# (specification/docs/collections.md, "Index Write").
+
+shape intList = list of int
+
+fn void main()
+	intList nums = [1, 2, 3]
+	bad_index as 10
+	replacement as 99
+	nums at bad_index = replacement
+	print("unreachable")
+
+# expect-panic:
+# index out of bounds

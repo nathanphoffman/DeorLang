@@ -1,0 +1,30 @@
+# time_test.deor
+# Exercises lib/time.deor. Values are wall-clock and non-deterministic, so
+# this checks invariants (positive, non-negative elapsed) rather than exact
+# values.
+
+import "lib/time.deor"
+
+fn void main()
+	int start = n_now()
+	float start_ms = n_now_ms()
+
+	bool now_positive = start > 0
+	print(now_positive)
+
+	bool now_ms_positive = start_ms > 0.0
+	print(now_ms_positive)
+
+	int elapsed = n_elapsed(start)
+	bool elapsed_non_negative = elapsed >= 0
+	print(elapsed_non_negative)
+
+	float elapsed_ms = n_elapsed_ms(start_ms)
+	bool elapsed_ms_non_negative = elapsed_ms >= 0.0
+	print(elapsed_ms_non_negative)
+
+# expect:
+# true
+# true
+# true
+# true
