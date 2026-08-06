@@ -1474,9 +1474,9 @@ fn load_file(path: String) -> Vec<Token> {
     return result;
 }
 
-// transpiler-deor/importer/macros/dd_error_duplicate.deor
+// transpiler-deor/importer/macros/dedup/dd_error_duplicate.deor
 fn dd_error_duplicate(decl_name: String, dn_tok: Token, origin_file: String) {
-    // transpiler-deor/importer/macros/dd_error_duplicate.deor
+    // transpiler-deor/importer/macros/dedup/dd_error_duplicate.deor
     let file = dn_tok.file.clone();
     let line = dn_tok.line.clone();
     let mut line_str: String = n_to_str(line.clone());
@@ -1689,21 +1689,21 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
         let mut is_rust_blk: bool = kind == "KW_RUST";
         let mut is_block_decl: bool = is_fn || is_struct || is_enum || is_type || is_macro || is_unsafe_macro;
         if is_block_decl {
-            // macro: dd_handle_block_decl (transpiler-deor/importer/macros/dd_handle_block_decl.deor)
+            // macro: dd_handle_block_decl (transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor)
             {
-                // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
                 let mut dd_key_prefix: String = "".to_string();
-                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dd_check_duplicate.deor)
+                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor)
                 let mut dn_offset: i64 = 1;
                 if is_fn {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     dn_offset = 2;
                 }
                 let mut dn_pos: i64 = pos + dn_offset;
                 let mut decl_name: String = "".to_string();
                 let mut dn_tok: Token = tokens[pos as usize].clone();
                 if dn_pos < token_count {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     dn_tok = tokens[dn_pos as usize].clone();
                     let value = dn_tok.value.clone();
                     decl_name = value;
@@ -1713,63 +1713,63 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 let mut dup_idx: i64 = 0;
                 let mut cs_len: i64 = (seen.len() as i64);
                 for cs_i in 0..cs_len {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     let mut cs_val: String = seen[cs_i as usize].clone();
                     if cs_val == dd_lookup_name {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         already_seen = true;
                         dup_idx = cs_i;
                         break;
                     }
                 }
                 if already_seen {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     let mut origin_file: String = seen_files[dup_idx as usize].clone();
                     let file = dn_tok.file.clone();
                     let mut is_same_file: bool = origin_file == file;
                     let mut should_error: bool = false;
                     if is_same_file {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         should_error = enforce_unique_file;
                     } else {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         should_error = enforce_unique_import;
                     }
                     if should_error {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         dd_error_duplicate(decl_name.clone(), dn_tok.clone(), origin_file.clone());
                     }
                 } else {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     seen.push(dd_lookup_name.clone());
                     let file = dn_tok.file.clone();
                     seen_files.push(file.clone());
                 }
-                // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
                 let mut fbe_cur: i64 = pos.clone();
                 let mut fbe_depth: i64 = 0;
                 let mut fbe_entered: bool = false;
                 while fbe_cur < token_count {
-                    // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                    // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
                     let mut fbe_tok: Token = tokens[fbe_cur as usize].clone();
                     let kind = fbe_tok.kind.clone();
                     fbe_cur = fbe_cur + 1;
                     if kind == "INDENT" {
-                        // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                        // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
                         fbe_depth = fbe_depth + 1;
                         fbe_entered = true;
                     } else if kind == "DEDENT" {
-                        // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                        // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
                         fbe_depth = fbe_depth - 1;
                         if fbe_depth == 0 && fbe_entered {
-                            // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                            // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
                             break;
                         }
                     }
                 }
                 let mut end_pos: i64 = fbe_cur.clone();
                 if !already_seen {
-                    // transpiler-deor/importer/macros/dd_handle_block_decl.deor
+                    // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
                     for i in (pos as usize)..(end_pos as usize) {
                     	result.push(tokens[i].clone());
                     }
@@ -1777,21 +1777,21 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 pos = end_pos;
             }
         } else if is_shape {
-            // macro: dd_handle_shape (transpiler-deor/importer/macros/dd_handle_shape.deor)
+            // macro: dd_handle_shape (transpiler-deor/importer/macros/dedup/dd_handle_shape.deor)
             {
-                // transpiler-deor/importer/macros/dd_handle_shape.deor
+                // transpiler-deor/importer/macros/dedup/dd_handle_shape.deor
                 let mut dd_key_prefix: String = "".to_string();
-                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dd_check_duplicate.deor)
+                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor)
                 let mut dn_offset: i64 = 1;
                 if is_fn {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     dn_offset = 2;
                 }
                 let mut dn_pos: i64 = pos + dn_offset;
                 let mut decl_name: String = "".to_string();
                 let mut dn_tok: Token = tokens[pos as usize].clone();
                 if dn_pos < token_count {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     dn_tok = tokens[dn_pos as usize].clone();
                     let value = dn_tok.value.clone();
                     decl_name = value;
@@ -1801,58 +1801,58 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 let mut dup_idx: i64 = 0;
                 let mut cs_len: i64 = (seen.len() as i64);
                 for cs_i in 0..cs_len {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     let mut cs_val: String = seen[cs_i as usize].clone();
                     if cs_val == dd_lookup_name {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         already_seen = true;
                         dup_idx = cs_i;
                         break;
                     }
                 }
                 if already_seen {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     let mut origin_file: String = seen_files[dup_idx as usize].clone();
                     let file = dn_tok.file.clone();
                     let mut is_same_file: bool = origin_file == file;
                     let mut should_error: bool = false;
                     if is_same_file {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         should_error = enforce_unique_file;
                     } else {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         should_error = enforce_unique_import;
                     }
                     if should_error {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         dd_error_duplicate(decl_name.clone(), dn_tok.clone(), origin_file.clone());
                     }
                 } else {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     seen.push(dd_lookup_name.clone());
                     let file = dn_tok.file.clone();
                     seen_files.push(file.clone());
                 }
-                // macro: dd_copy_single_line_decl (transpiler-deor/importer/macros/dd_copy_single_line_decl.deor)
+                // macro: dd_copy_single_line_decl (transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor)
                 {
-                    // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                    // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                     let mut fse_cur: i64 = pos.clone();
                     while fse_cur < token_count {
-                        // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                        // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                         let mut fse_tok: Token = tokens[fse_cur as usize].clone();
                         let kind = fse_tok.kind.clone();
                         fse_cur = fse_cur + 1;
                         if kind == "NEWLINE" {
-                            // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                            // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                             break;
                         }
                     }
                     let mut end_pos: i64 = fse_cur.clone();
                     if !already_seen {
-                        // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                        // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                         let mut copy_len: i64 = end_pos - pos;
                         for copy_idx in 0..copy_len {
-                            // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                            // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                             let mut tok_pos: i64 = pos + copy_idx;
                             let mut copy_tok: Token = tokens[tok_pos as usize].clone();
                             result.push(copy_tok.clone());
@@ -1862,21 +1862,21 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 }
             }
         } else if is_raw {
-            // macro: dd_handle_raw (transpiler-deor/importer/macros/dd_handle_raw.deor)
+            // macro: dd_handle_raw (transpiler-deor/importer/macros/dedup/dd_handle_raw.deor)
             {
-                // transpiler-deor/importer/macros/dd_handle_raw.deor
+                // transpiler-deor/importer/macros/dedup/dd_handle_raw.deor
                 let mut dd_key_prefix: String = "_raw_".to_string();
-                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dd_check_duplicate.deor)
+                // macro: dd_check_duplicate (transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor)
                 let mut dn_offset: i64 = 1;
                 if is_fn {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     dn_offset = 2;
                 }
                 let mut dn_pos: i64 = pos + dn_offset;
                 let mut decl_name: String = "".to_string();
                 let mut dn_tok: Token = tokens[pos as usize].clone();
                 if dn_pos < token_count {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     dn_tok = tokens[dn_pos as usize].clone();
                     let value = dn_tok.value.clone();
                     decl_name = value;
@@ -1886,58 +1886,58 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 let mut dup_idx: i64 = 0;
                 let mut cs_len: i64 = (seen.len() as i64);
                 for cs_i in 0..cs_len {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     let mut cs_val: String = seen[cs_i as usize].clone();
                     if cs_val == dd_lookup_name {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         already_seen = true;
                         dup_idx = cs_i;
                         break;
                     }
                 }
                 if already_seen {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     let mut origin_file: String = seen_files[dup_idx as usize].clone();
                     let file = dn_tok.file.clone();
                     let mut is_same_file: bool = origin_file == file;
                     let mut should_error: bool = false;
                     if is_same_file {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         should_error = enforce_unique_file;
                     } else {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         should_error = enforce_unique_import;
                     }
                     if should_error {
-                        // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                        // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                         dd_error_duplicate(decl_name.clone(), dn_tok.clone(), origin_file.clone());
                     }
                 } else {
-                    // transpiler-deor/importer/macros/dd_check_duplicate.deor
+                    // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     seen.push(dd_lookup_name.clone());
                     let file = dn_tok.file.clone();
                     seen_files.push(file.clone());
                 }
-                // macro: dd_copy_single_line_decl (transpiler-deor/importer/macros/dd_copy_single_line_decl.deor)
+                // macro: dd_copy_single_line_decl (transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor)
                 {
-                    // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                    // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                     let mut fse_cur: i64 = pos.clone();
                     while fse_cur < token_count {
-                        // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                        // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                         let mut fse_tok: Token = tokens[fse_cur as usize].clone();
                         let kind = fse_tok.kind.clone();
                         fse_cur = fse_cur + 1;
                         if kind == "NEWLINE" {
-                            // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                            // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                             break;
                         }
                     }
                     let mut end_pos: i64 = fse_cur.clone();
                     if !already_seen {
-                        // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                        // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                         let mut copy_len: i64 = end_pos - pos;
                         for copy_idx in 0..copy_len {
-                            // transpiler-deor/importer/macros/dd_copy_single_line_decl.deor
+                            // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                             let mut tok_pos: i64 = pos + copy_idx;
                             let mut copy_tok: Token = tokens[tok_pos as usize].clone();
                             result.push(copy_tok.clone());
@@ -1947,15 +1947,15 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 }
             }
         } else if is_rust_blk {
-            // macro: dd_handle_rust_block (transpiler-deor/importer/macros/dd_handle_rust_block.deor)
+            // macro: dd_handle_rust_block (transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor)
             {
-                // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                 let mut rust_nl_pos: i64 = pos + 1;
                 let mut rust_content_pos: i64 = pos + 2;
                 let mut rust_is_block: bool = false;
                 let mut block_value: String = "".to_string();
                 if rust_content_pos < token_count {
-                    // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                    // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                     let mut rust_nl_tok: Token = tokens[rust_nl_pos as usize].clone();
                     let mut rust_tok: Token = tokens[rust_content_pos as usize].clone();
                     let kind = rust_nl_tok.kind.clone();
@@ -1967,26 +1967,26 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     block_value = value;
                 }
                 if rust_is_block {
-                    // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                    // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                     let mut rk_pfx: String = "_rust_".to_string();
                     let mut rk_parts: Vec<String> = vec![rk_pfx.clone(), block_value.clone()];
                     let mut decl_name: String = s_join(rk_parts.clone());
                     let mut already_seen: bool = false;
                     let mut cs_len: i64 = (seen.len() as i64);
                     for cs_i in 0..cs_len {
-                        // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                        // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                         let mut cs_val: String = seen[cs_i as usize].clone();
                         if cs_val == decl_name {
-                            // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                            // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                             already_seen = true;
                             break;
                         }
                     }
                     if !already_seen {
-                        // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                        // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                         seen.push(decl_name.clone());
                         for copy_idx in 0..3 {
-                            // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                            // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                             let mut tok_pos: i64 = pos + copy_idx;
                             let mut copy_tok: Token = tokens[tok_pos as usize].clone();
                             result.push(copy_tok.clone());
@@ -1994,7 +1994,7 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     }
                     pos = pos + 3;
                 } else {
-                    // transpiler-deor/importer/macros/dd_handle_rust_block.deor
+                    // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                     let mut rb_fallback_tok: Token = tokens[pos as usize].clone();
                     result.push(rb_fallback_tok.clone());
                     pos = pos + 1;
@@ -2479,7 +2479,7 @@ fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<To
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
-type FnTestRule = fn(String) -> bool;
+type FnTestRule = fn(String);
 
 #[derive(Clone, PartialEq, Debug)]
 struct UamFrame {
@@ -7942,87 +7942,87 @@ fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let mut token_count: i64 = (tokens.len() as i64);
     let mut fields: Vec<String> = Vec::new();
     let mut cur: i64 = pos + 1;
-    // macro: for_collect_fields_into_fields_list (transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor)
+    // macro: for_collect_fields_into_fields_list (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+        // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
         while cur < token_count {
-            // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
             let mut field_token: Token = tokens[cur as usize].clone();
             let kind = field_token.kind.clone();
             let value = field_token.value.clone();
             if kind == "RPAREN" {
-                // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 cur = cur + 1;
                 break;
             } else if kind == "COMMA" {
-                // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 cur = cur + 1;
             } else if kind == "IDENT" {
-                // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 fields.push(value.clone());
                 cur = cur + 1;
             } else {
-                // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 cur = cur + 1;
             }
         }
     }
-    // macro: gen_input_check (transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor)
+    // macro: gen_input_check (transpiler-deor/codegen/decl/stmt/macros/input_destructure/gen_input_check.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gen_input_check.deor
         let mut gic_matched: bool = false;
         let mut gic_is_args: bool = false;
         let mut gic_nm_ok: bool = false;
         let mut gic_lp: i64 = 0;
-        // macro: gic_match_kw_and_name (transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor)
+        // macro: gic_match_kw_and_name (transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
+            // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
             let mut gic_in_tok: Token = tokens[cur as usize].clone();
             let kind = gic_in_tok.kind.clone();
             if kind == "KW_IN" {
-                // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
+                // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                 let mut gic_nm_pos: i64 = cur + 1;
                 if gic_nm_pos < token_count {
-                    // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                     let mut gic_nm_tok: Token = tokens[gic_nm_pos as usize].clone();
                     let kind = gic_nm_tok.kind.clone();
                     let value = gic_nm_tok.value.clone();
                     if kind == "IDENT" {
-                        // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                         if value == "input" {
-                            // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                             gic_nm_ok = true;
                         } else if value == "args" {
-                            // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                             gic_nm_ok = true;
                             gic_is_args = true;
                         }
                         if gic_nm_ok {
-                            // transpiler-deor/codegen/decl/stmt/macros/gic_match_kw_and_name.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                             gic_lp = gic_nm_pos + 1;
                         }
                     }
                 }
             }
         }
-        // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gen_input_check.deor
         if gic_nm_ok {
-            // macro: gic_match_parens (transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor)
+            // macro: gic_match_parens (transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor)
             {
-                // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+                // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                 if gic_lp < token_count {
-                    // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                     let mut gic_lp_tok: Token = tokens[gic_lp as usize].clone();
                     let kind = gic_lp_tok.kind.clone();
                     if kind == "LPAREN" {
-                        // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                         let mut gic_rp: i64 = gic_lp + 1;
                         if gic_rp < token_count {
-                            // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                             let mut gic_rp_tok: Token = tokens[gic_rp as usize].clone();
                             let kind = gic_rp_tok.kind.clone();
                             if kind == "RPAREN" {
-                                // transpiler-deor/codegen/decl/stmt/macros/gic_match_parens.deor
+                                // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                                 gic_matched = true;
                             }
                         }
@@ -8053,19 +8053,19 @@ fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let RS_CB_SC: String = " };\n".to_string();
             let RS_CLN: String = ".clone()".to_string();
             let RS_TOS: String = ".to_string()".to_string();
-            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gen_input_check.deor
             let mut gic_pad: String = s_repeat(RS_IND.clone(), depth.clone());
             let mut gic_out: Vec<String> = Vec::new();
-            // macro: gic_emit_header (transpiler-deor/codegen/decl/stmt/macros/gic_emit_header.deor)
+            // macro: gic_emit_header (transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_header.deor)
             {
-                // transpiler-deor/codegen/decl/stmt/macros/gic_emit_header.deor
+                // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_header.deor
                 if gic_is_args {
-                    // transpiler-deor/codegen/decl/stmt/macros/gic_emit_header.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_header.deor
                     let mut gic_hdr: String = "let _deor_args: Vec<String> = std::env::args().skip(1).collect();".to_string();
                     let mut gic_hdr_line: String = [gic_pad.as_str(), gic_hdr.as_str(), RS_NL.as_str()].concat();
                     gic_out.push(gic_hdr_line.clone());
                 } else {
-                    // transpiler-deor/codegen/decl/stmt/macros/gic_emit_header.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_header.deor
                     let mut gic_raw_decl: String = "let mut _deor_raw: String = String::new();".to_string();
                     let mut gic_raw_line: String = [gic_pad.as_str(), gic_raw_decl.as_str(), RS_NL.as_str()].concat();
                     gic_out.push(gic_raw_line.clone());
@@ -8080,38 +8080,38 @@ fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                     gic_out.push(gic_split_line.clone());
                 }
             }
-            // macro: gic_emit_bindings (transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor)
+            // macro: gic_emit_bindings (transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor)
             {
-                // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
+                // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor
                 let mut gic_fc: i64 = (fields.len() as i64);
                 for gic_i in 0..gic_fc {
-                    // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor
                     let mut gic_fname: String = fields[gic_i as usize].clone();
                     let mut gic_bind: String = "".to_string();
                     if gic_fname == "first" {
-                        // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor
                         gic_bind = "let first: String = _deor_args.get(0).cloned().unwrap_or_default();".to_string();
                     } else if gic_fname == "second" {
-                        // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor
                         gic_bind = "let second: String = _deor_args.get(1).cloned().unwrap_or_default();".to_string();
                     } else if gic_fname == "third" {
-                        // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor
                         gic_bind = "let third: String = _deor_args.get(2).cloned().unwrap_or_default();".to_string();
                     } else if gic_fname == "input_string" {
-                        // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor
                         gic_bind = "let input_string: String = _deor_args.join(\" \");".to_string();
                     } else if gic_fname == "input_list" {
-                        // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor
                         gic_bind = "let input_list: Vec<String> = _deor_args.clone();".to_string();
                     }
                     if !is_empty(gic_bind.clone()) {
-                        // transpiler-deor/codegen/decl/stmt/macros/gic_emit_bindings.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_emit_bindings.deor
                         let mut gic_line: String = [gic_pad.as_str(), gic_bind.as_str(), RS_NL.as_str()].concat();
                         gic_out.push(gic_line.clone());
                     }
                 }
             }
-            // transpiler-deor/codegen/decl/stmt/macros/gen_input_check.deor
+            // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gen_input_check.deor
             let mut gic_code: String = s_join(gic_out.clone());
             let mut gic_past: i64 = cur + 4;
             return make_nl_result(gic_code, gic_past.clone(), tokens.clone());
@@ -8237,16 +8237,16 @@ fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/destructure.deor
     let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
     let mut field_suffix: String = ".clone();".to_string();
-    // macro: for_build_fields (transpiler-deor/codegen/decl/stmt/macros/for_build_fields.deor)
+    // macro: for_build_fields (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_build_fields.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/macros/for_build_fields.deor
+        // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_build_fields.deor
         for field_index in 0..field_count {
-            // transpiler-deor/codegen/decl/stmt/macros/for_build_fields.deor
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_build_fields.deor
             let mut field: String = fields[field_index as usize].clone();
             let mut is_mut: bool = list_has(mut_names.clone(), field.clone());
             let mut mut_kw: String = "".to_string();
             if is_mut {
-                // transpiler-deor/codegen/decl/stmt/macros/for_build_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_build_fields.deor
                 mut_kw = "mut ".to_string();
             }
             let mut dst_let: String = "let ".to_string();
@@ -8274,27 +8274,27 @@ fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let mut token_count: i64 = (tokens.len() as i64);
     let mut fields: Vec<String> = Vec::new();
     let mut cur: i64 = pos + 1;
-    // macro: for_collect_fields_into_fields_list (transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor)
+    // macro: for_collect_fields_into_fields_list (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+        // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
         while cur < token_count {
-            // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
             let mut field_token: Token = tokens[cur as usize].clone();
             let kind = field_token.kind.clone();
             let value = field_token.value.clone();
             if kind == "RPAREN" {
-                // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 cur = cur + 1;
                 break;
             } else if kind == "COMMA" {
-                // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 cur = cur + 1;
             } else if kind == "IDENT" {
-                // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 fields.push(value.clone());
                 cur = cur + 1;
             } else {
-                // transpiler-deor/codegen/decl/stmt/macros/for_collect_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 cur = cur + 1;
             }
         }
@@ -8335,16 +8335,16 @@ fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/destructure.deor
     let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
     let mut field_suffix: String = ";".to_string();
-    // macro: for_build_fields (transpiler-deor/codegen/decl/stmt/macros/for_build_fields.deor)
+    // macro: for_build_fields (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_build_fields.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/macros/for_build_fields.deor
+        // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_build_fields.deor
         for field_index in 0..field_count {
-            // transpiler-deor/codegen/decl/stmt/macros/for_build_fields.deor
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_build_fields.deor
             let mut field: String = fields[field_index as usize].clone();
             let mut is_mut: bool = list_has(mut_names.clone(), field.clone());
             let mut mut_kw: String = "".to_string();
             if is_mut {
-                // transpiler-deor/codegen/decl/stmt/macros/for_build_fields.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_build_fields.deor
                 mut_kw = "mut ".to_string();
             }
             let mut dst_let: String = "let ".to_string();
@@ -8627,9 +8627,9 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let mut next_token: Token = tokens[next_pos as usize].clone();
     let kind = next_token.kind.clone();
     if kind == "KW_IF" {
-        // macro: for_while (transpiler-deor/codegen/decl/stmt/macros/for_while.deor)
+        // macro: for_while (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_while.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/for_while.deor
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_while.deor
             let mut cond_pos: i64 = next_pos + 1;
             let mut val_pos = cond_pos.clone();
             let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -8647,7 +8647,7 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let mut whl_kw: String = "while ".to_string();
             let mut fw_head: String = [whl_kw.as_str(), val_code.as_str()].concat();
             if val_code == "true" {
-                // transpiler-deor/codegen/decl/stmt/macros/for_while.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_while.deor
                 fw_head = "loop".to_string();
             }
             let mut while_code: String = [pad.as_str(), fw_head.as_str(), RS_OB.as_str(), blk_code.as_str(), pad.as_str(), RS_CB.as_str()].concat();
@@ -8655,9 +8655,9 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         }
     }
     if kind == "KW_MOVE" {
-        // macro: for_move (transpiler-deor/codegen/decl/stmt/macros/for_move.deor)
+        // macro: for_move (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_move.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/for_move.deor
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_move.deor
             let mut lparen_pos: i64 = next_pos + 1;
             let mut var_pos: i64 = lparen_pos + 1;
             let mut var_tok: Token = tokens[var_pos as usize].clone();
@@ -8702,11 +8702,11 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let value = iter_token.value.clone();
     let mut range_expr: String = "".to_string();
     let mut body_tok_pos: i64 = 0;
-    // macro: for_iter_expr (transpiler-deor/codegen/decl/stmt/macros/for_iter_expr.deor)
+    // macro: for_iter_expr (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/macros/for_iter_expr.deor
+        // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
         if kind == "IDENT" && value == "range" {
-            // transpiler-deor/codegen/decl/stmt/macros/for_iter_expr.deor
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
             let mut lparen: i64 = iter_pos + 1;
             let mut first_pos: i64 = lparen + 1;
             let mut val_pos = first_pos.clone();
@@ -8719,7 +8719,7 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let kind = comma_token.kind.clone();
             let mut has_start: bool = kind == "COMMA";
             if has_start {
-                // transpiler-deor/codegen/decl/stmt/macros/for_iter_expr.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
                 let mut first_code: String = val_code;
                 let mut val_pos: i64 = val_end + 1;
                 let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -8731,13 +8731,13 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 range_expr = [first_code.as_str(), rng_dot.as_str(), val_code.as_str()].concat();
                 body_tok_pos = val_end + 1;
             } else {
-                // transpiler-deor/codegen/decl/stmt/macros/for_iter_expr.deor
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
                 let mut rng0_pfx: String = "0..".to_string();
                 range_expr = [rng0_pfx.as_str(), val_code.as_str()].concat();
                 body_tok_pos = val_end + 1;
             }
         } else {
-            // transpiler-deor/codegen/decl/stmt/macros/for_iter_expr.deor
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
             let mut val_pos = iter_pos.clone();
             let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
             let code = ge_r.code;
@@ -8807,26 +8807,26 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let value = after_as_token.value.clone();
     let mut after_as_value: String = value.clone();
     if kind == "LPAREN" {
-        // macro: aas_struct (transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor)
+        // macro: aas_struct (transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+            // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
             let mut aas_is_struct: bool = true;
             let mut aas_peek: i64 = after_as + 1;
             while aas_peek < token_count {
-                // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                 let mut aas_peek_tok: Token = tokens[aas_peek as usize].clone();
                 let kind = aas_peek_tok.kind.clone();
                 if kind == "RPAREN" {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                     break;
                 }
                 if kind == "IDENT" {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                     aas_peek = aas_peek + 1;
                     continue;
                 }
                 if kind == "COMMA" {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                     aas_peek = aas_peek + 1;
                     continue;
                 }
@@ -8834,23 +8834,23 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 break;
             }
             if aas_is_struct {
-                // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                 let mut aas_fields: Vec<String> = Vec::new();
                 let mut aas_fend: i64 = after_as + 1;
                 while aas_fend < token_count {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                     let mut aas_field_tok: Token = tokens[aas_fend as usize].clone();
                     let kind = aas_field_tok.kind.clone();
                     let value = aas_field_tok.value.clone();
                     if kind == "RPAREN" {
-                        // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                         aas_fend = aas_fend + 1;
                         break;
                     } else if kind == "COMMA" {
-                        // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                         aas_fend = aas_fend + 1;
                     } else if kind == "IDENT" {
-                        // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                         aas_fields.push(value.clone());
                         aas_fend = aas_fend + 1;
                     }
@@ -8864,11 +8864,11 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                     // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
                     mut_kw = "mut ".to_string();
                 }
-                // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                 let mut aas_fcount: i64 = (aas_fields.len() as i64);
                 let mut aas_pairs: Vec<String> = Vec::new();
                 for aas_fi in 0..aas_fcount {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_struct.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                     let mut aas_fname: String = aas_fields[aas_fi as usize].clone();
                     let mut aas_fp_sep: String = ": ".to_string();
                     let mut aas_fp_cln: String = ".clone()".to_string();
@@ -8886,9 +8886,9 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         }
     }
     if kind == "KW_EMPTY" {
-        // macro: aas_empty (transpiler-deor/codegen/decl/stmt/macros/aas_empty.deor)
+        // macro: aas_empty (transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_empty.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/aas_empty.deor
+            // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_empty.deor
             let mut aas_emp_pfx: String = "let mut ".to_string();
             let mut aas_emp_sfx: String = " = Vec::new();\n".to_string();
             let mut aas_empty_code: String = [pad.as_str(), aas_emp_pfx.as_str(), ident_name.as_str(), aas_emp_sfx.as_str()].concat();
@@ -8897,37 +8897,37 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         }
     }
     if kind == "IDENT" {
-        // macro: aas_with (transpiler-deor/codegen/decl/stmt/macros/aas_with.deor)
+        // macro: aas_with (transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/aas_with.deor
+            // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
             let mut aas_with_pos: i64 = after_as + 1;
             if aas_with_pos < token_count {
-                // transpiler-deor/codegen/decl/stmt/macros/aas_with.deor
+                // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                 let mut aas_with_tok: Token = tokens[aas_with_pos as usize].clone();
                 let kind = aas_with_tok.kind.clone();
                 if kind == "KW_WITH" {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_with.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                     let mut aas_src: String = after_as_value.clone();
                     let mut aas_lp: i64 = aas_with_pos + 1;
                     let mut aas_ovr: Vec<String> = Vec::new();
                     let mut aas_wend: i64 = aas_lp + 1;
                     while aas_wend < token_count {
-                        // transpiler-deor/codegen/decl/stmt/macros/aas_with.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                         let mut aas_wtok: Token = tokens[aas_wend as usize].clone();
                         let kind = aas_wtok.kind.clone();
                         let value = aas_wtok.value.clone();
                         if kind == "RPAREN" {
-                            // transpiler-deor/codegen/decl/stmt/macros/aas_with.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                             aas_wend = aas_wend + 1;
                             break;
                         }
                         if kind == "COMMA" {
-                            // transpiler-deor/codegen/decl/stmt/macros/aas_with.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                             aas_wend = aas_wend + 1;
                             continue;
                         }
                         if kind == "IDENT" {
-                            // transpiler-deor/codegen/decl/stmt/macros/aas_with.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                             aas_ovr.push(value.clone());
                             aas_wend = aas_wend + 1;
                         }
@@ -8944,7 +8944,7 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                         // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
                         mut_kw = "mut ".to_string();
                     }
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_with.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                     let mut aas_wlet: String = "let ".to_string();
                     let mut aas_weq: String = " = ".to_string();
                     let mut aas_wob: String = " { ".to_string();
@@ -8957,9 +8957,9 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             }
         }
     }
-    // macro: aas_default (transpiler-deor/codegen/decl/stmt/macros/aas_default.deor)
+    // macro: aas_default (transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
+        // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor
         let kind = after_as_token.kind.clone();
         let val_pos = after_as.clone();
         let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -8976,26 +8976,26 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
             mut_kw = "mut ".to_string();
         }
-        // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
+        // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor
         let mut aas_suffix: String = "".to_string();
         if !aas_is_chain {
-            // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
+            // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor
             if kind == "STRING" {
-                // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
+                // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor
                 aas_suffix = ".to_string()".to_string();
             } else if kind == "IDENT" {
-                // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
+                // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor
                 let mut aas_next_idx: i64 = val_pos + 1;
                 if aas_next_idx < token_count {
-                    // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor
                     let mut aas_next_tok: Token = tokens[aas_next_idx as usize].clone();
                     let kind = aas_next_tok.kind.clone();
                     let mut aas_is_call: bool = kind == "LPAREN";
                     let mut aas_is_idx: bool = kind == "KW_AT";
                     if !aas_is_call {
-                        // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor
                         if !aas_is_idx {
-                            // transpiler-deor/codegen/decl/stmt/macros/aas_default.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_default.deor
                             aas_suffix = ".clone()".to_string();
                         }
                     }
@@ -9232,14 +9232,14 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let mut val_token: Token = tokens[val_pos as usize].clone();
     let kind = val_token.kind.clone();
     if kind == "KW_EMPTY" {
-        // macro: tb_empty (transpiler-deor/codegen/decl/stmt/macros/tb_empty.deor)
+        // macro: tb_empty (transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_empty.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_empty.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_empty.deor
             let mut is_shape: bool = reg_has(shape_reg.clone(), var_type.clone());
             let mut val_next_pos: i64 = val_pos + 1;
             let mut after_empty: i64 = adv_nl_ref(val_next_pos.clone(), tokens.clone());
             if is_shape {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_empty.deor
+                // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_empty.deor
                 let mut sh_pfx: String = "let mut ".to_string();
                 let mut sh_mid: String = ": ".to_string();
                 let mut sh_sfx: String = " = Vec::new();\n".to_string();
@@ -9252,45 +9252,45 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         }
     }
     if kind == "LPAREN" {
-        // macro: tb_paren (transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor)
+        // macro: tb_paren (transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
             let mut peek_pos: i64 = val_pos + 1;
             let mut peek_token: Token = tokens[peek_pos as usize].clone();
             let kind = peek_token.kind.clone();
             let mut is_avow_expr: bool = kind == "KW_AVOW";
             let mut is_struct_type: bool = reg_has(struct_reg.clone(), var_type.clone());
             if !is_avow_expr {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                 if is_struct_type {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                     let mut tb_fields: Vec<String> = Vec::new();
                     let mut tb_fend: i64 = val_pos + 1;
                     while tb_fend < token_count {
-                        // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                         let mut tb_field_tok: Token = tokens[tb_fend as usize].clone();
                         let kind = tb_field_tok.kind.clone();
                         let value = tb_field_tok.value.clone();
                         if kind == "RPAREN" {
-                            // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                             tb_fend = tb_fend + 1;
                             break;
                         } else if kind == "COMMA" {
-                            // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                             tb_fend = tb_fend + 1;
                         } else if kind == "IDENT" {
-                            // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                             tb_fields.push(value.clone());
                             tb_fend = tb_fend + 1;
                         } else {
-                            // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                             tb_fend = tb_fend + 1;
                         }
                     }
                     let mut field_pairs: Vec<String> = Vec::new();
                     let mut tb_fcount: i64 = (tb_fields.len() as i64);
                     for tb_fi in 0..tb_fcount {
-                        // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                         let mut tb_fname: String = tb_fields[tb_fi as usize].clone();
                         let mut sfp_sep: String = ": ".to_string();
                         let mut sfp_cln: String = ".clone()".to_string();
@@ -9305,7 +9305,7 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                         // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
                         mut_kw = "mut ".to_string();
                     }
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                     let mut scc_let: String = "let ".to_string();
                     let mut scc_eq: String = " = ".to_string();
                     let mut scc_ob: String = " { ".to_string();
@@ -9315,7 +9315,7 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 }
             }
             if is_avow_expr {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                 let mut inner_pos: i64 = peek_pos + 1;
                 let mut val_pos = inner_pos.clone();
                 let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
@@ -9328,19 +9328,19 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 let mut suf_unwrap0: String = ".unwrap().0".to_string();
                 let mut unwrap_expr: String = s_cat(val_code.clone(), suf_unwrap.clone());
                 if var_type == "int" {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                     unwrap_expr = s_cat(val_code.clone(), suf_unwrap0.clone());
                 }
                 if var_type == "string" {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                     unwrap_expr = s_cat(val_code.clone(), suf_unwrap0.clone());
                 }
                 if var_type == "bool" {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                     unwrap_expr = s_cat(val_code.clone(), suf_unwrap0.clone());
                 }
                 if var_type == "float" {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_paren.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                     unwrap_expr = s_cat(val_code.clone(), suf_unwrap0.clone());
                 }
                 let mut awc_let: String = "let ".to_string();
@@ -9353,9 +9353,9 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         }
     }
     if kind == "LBRACKET" {
-        // macro: tb_list_literal (transpiler-deor/codegen/decl/stmt/macros/tb_list_literal.deor)
+        // macro: tb_list_literal (transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_list_literal.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_list_literal.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_list_literal.deor
             let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
             let code = ge_r.code;
             let new_pos = ge_r.new_pos;
@@ -9370,38 +9370,38 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         }
     }
     if kind == "IDENT" {
-        // macro: tb_with (transpiler-deor/codegen/decl/stmt/macros/tb_with.deor)
+        // macro: tb_with (transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
             let mut tb_with_pos: i64 = val_pos + 1;
             if tb_with_pos < token_count {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                 let mut tb_with_tok: Token = tokens[tb_with_pos as usize].clone();
                 let kind = tb_with_tok.kind.clone();
                 if kind == "KW_WITH" {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                     let value = val_token.value.clone();
                     let mut tb_src: String = value.clone();
                     let mut tb_lp: i64 = tb_with_pos + 1;
                     let mut tb_ovr: Vec<String> = Vec::new();
                     let mut tb_wend: i64 = tb_lp + 1;
                     while tb_wend < token_count {
-                        // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                         let mut tb_wtok: Token = tokens[tb_wend as usize].clone();
                         let kind = tb_wtok.kind.clone();
                         let value = tb_wtok.value.clone();
                         if kind == "RPAREN" {
-                            // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                             tb_wend = tb_wend + 1;
                             break;
                         }
                         if kind == "COMMA" {
-                            // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                             tb_wend = tb_wend + 1;
                             continue;
                         }
                         if kind == "IDENT" {
-                            // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                             tb_ovr.push(value.clone());
                             tb_wend = tb_wend + 1;
                         }
@@ -9415,7 +9415,7 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                         // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
                         mut_kw = "mut ".to_string();
                     }
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_with.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                     let mut tb_wlet: String = "let ".to_string();
                     let mut tb_weq: String = " = ".to_string();
                     let mut tb_wob: String = " { ".to_string();
@@ -9430,9 +9430,9 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     }
     let mut is_validator: bool = reg3_has(type_reg.clone(), var_type.clone());
     if is_validator {
-        // macro: tb_validator (transpiler-deor/codegen/decl/stmt/macros/tb_validator.deor)
+        // macro: tb_validator (transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_validator.deor)
         {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_validator.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_validator.deor
             let mut ge_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
             let code = ge_r.code;
             let new_pos = ge_r.new_pos;
@@ -9445,7 +9445,7 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
                 mut_kw = "mut ".to_string();
             }
-            // transpiler-deor/codegen/decl/stmt/macros/tb_validator.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_validator.deor
             let mut vld_let: String = "let ".to_string();
             let mut vld_opt: String = ": Option<".to_string();
             let mut vld_new: String = "> = ".to_string();
@@ -9455,17 +9455,17 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             return make_nl_result(vld_code, val_end.clone(), tokens.clone());
         }
     }
-    // macro: tb_default (transpiler-deor/codegen/decl/stmt/macros/tb_default.deor)
+    // macro: tb_default (transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+        // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
         let mut tb_is_float: bool = var_type == "float";
         if tb_is_float {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
             float_ctx_enable();
         }
         let mut val_r: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
         if tb_is_float {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
             float_ctx_disable();
         }
         let code = val_r.code;
@@ -9479,27 +9479,27 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
             mut_kw = "mut ".to_string();
         }
-        // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+        // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
         let mut tb_is_chain: bool = is_expr_chain(tokens.clone(), val_pos.clone(), val_end.clone());
         let mut suffix: String = "".to_string();
         if !tb_is_chain {
-            // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
             if kind == "STRING" {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+                // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
                 suffix = ".to_string()".to_string();
             } else if kind == "IDENT" {
-                // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+                // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
                 let mut val_next_idx: i64 = val_pos + 1;
                 if val_next_idx < token_count {
-                    // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
                     let mut next_val_tok: Token = tokens[val_next_idx as usize].clone();
                     let kind = next_val_tok.kind.clone();
                     let mut val_is_call: bool = kind == "LPAREN";
                     let mut val_is_idx: bool = kind == "KW_AT";
                     if !val_is_call {
-                        // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+                        // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
                         if !val_is_idx {
-                            // transpiler-deor/codegen/decl/stmt/macros/tb_default.deor
+                            // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
                             suffix = ".clone()".to_string();
                         }
                     }
