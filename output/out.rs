@@ -2479,7 +2479,7 @@ fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<To
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
-type FnTestRule = fn(String);
+type FnTestRule = fn(String) -> bool;
 
 #[derive(Clone, PartialEq, Debug)]
 struct UamFrame {
