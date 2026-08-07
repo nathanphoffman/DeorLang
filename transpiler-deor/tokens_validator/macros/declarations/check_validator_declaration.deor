@@ -30,3 +30,22 @@ macro check_validator_declaration
 						errors at end = val_err(vd_pname_tok, lbl_type, rule_param_shadow)
 					if list_has(builtin_names, value)
 						errors at end = val_err(vd_pname_tok, lbl_type, rule_builtin_shadow)
+
+				# ex: type Roll(int val){\n}{\t}return val > 0 — pos+6 is the header's
+				# NEWLINE and pos+7 must be the INDENT opening the predicate body; if the
+				# body is empty there's no INDENT here (codegen would otherwise read past
+				# the header into whatever token happens to follow, or off the end of the
+				# token stream entirely).
+				int vd_nl_pos = pos + 6
+				int vd_body_pos = pos + 7
+				bool vd_has_body = false
+				if vd_body_pos < token_count
+					Token vd_nl_tok = tokens at vd_nl_pos
+					(kind) in vd_nl_tok
+					if kind is "NEWLINE"
+						Token vd_body_tok = tokens at vd_body_pos
+						(kind) in vd_body_tok
+						if kind is "INDENT"
+							vd_has_body = true
+				if not vd_has_body
+					errors at end = val_err(vd_name_tok, lbl_type, rule_validator_missing_body)

@@ -14,6 +14,7 @@ Severity key:
 
 ## Critical code bugs
 
+Fixed:
 1. **Empty validator predicate body can crash the transpiler itself.** `type Foo(int val)`
    with no predicate body doesn't just fail to validate — depending on position in the file
    it can panic the transpiler process with an internal `index out of bounds` error (exit
@@ -21,6 +22,8 @@ Severity key:
    (`codegen/decl/validator_type.deor`; docs/validator_types.md claims this is rejected —
    it is not, in either failure mode.)
 
+
+In Progress:
 2. **`==` is not actually rejected**, though `docs/operators.md` (lines 117-127) lists it
    alongside `!=`/`&&`/`||` as a banned symbolic operator that's a transpiler error. `!=`,
    `&&`, `||` really do fail (their characters are invalid outside strings — see

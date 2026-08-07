@@ -2524,6 +2524,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_typed_enum_eq: String = "typed enum variant must have a value — add '= value' after the variant name".to_string();
     let mut rule_untyped_enum_eq: String = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants".to_string();
     let mut rule_non_primitive_validator: String = "validator base type must be a primitive (int, float, string, bool) — structs, list shapes, and other validator types cannot be used".to_string();
+    let mut rule_validator_missing_body: String = "validator type is missing a predicate body — add an indented block that returns a bool, e.g. 'return val > 0'".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
     let mut rule_type_param_shadow: String = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num'".to_string();
@@ -4876,6 +4877,27 @@ fn validate_tokens(tokens: TokensRef) {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
                                     errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_builtin_shadow.clone()).clone());
                                 }
+                            }
+                            let mut vd_nl_pos: i64 = pos + 6;
+                            let mut vd_body_pos: i64 = pos + 7;
+                            let mut vd_has_body: bool = false;
+                            if vd_body_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+                                let mut vd_nl_tok: Token = tokens[vd_nl_pos as usize].clone();
+                                let mut kind = vd_nl_tok.kind.clone();
+                                if kind == "NEWLINE" {
+                                    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+                                    let mut vd_body_tok: Token = tokens[vd_body_pos as usize].clone();
+                                    let mut kind = vd_body_tok.kind.clone();
+                                    if kind == "INDENT" {
+                                        // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+                                        vd_has_body = true;
+                                    }
+                                }
+                            }
+                            if !vd_has_body {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+                                errors.push(val_err(vd_name_tok.clone(), lbl_type.clone(), rule_validator_missing_body.clone()).clone());
                             }
                         }
                     }
