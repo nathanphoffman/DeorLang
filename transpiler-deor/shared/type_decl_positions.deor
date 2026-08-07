@@ -1,0 +1,22 @@
+
+# Token offsets for a `type Name(baseType paramName)` declaration header, counted
+# from the position of the KW_TYPE token itself. Layout:
+#   +0 KW_TYPE  +1 name  +2 LPAREN  +3 base type  +4 param name  +5 RPAREN
+#   +6 NEWLINE  +7 INDENT (first token of the predicate body, if one exists)
+fn int locate_type_name(int kw_pos)
+	return kw_pos + 1
+
+fn int locate_left_paren(int kw_pos)
+	return kw_pos + 2
+
+fn int locate_param_type(int kw_pos)
+	return kw_pos + 3
+
+fn int locate_param_name(int kw_pos)
+	return kw_pos + 4
+
+fn int locate_newline(int kw_pos)
+	return kw_pos + 6
+
+fn int locate_body(int kw_pos)
+	return kw_pos + 7

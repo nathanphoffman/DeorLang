@@ -388,6 +388,37 @@ fn make_nl_result(code: String, pos: i64, tokens: TokensRef) -> ParseResult {
     return make_result(code, next_pos.clone());
 }
 
+// transpiler-deor/shared/type_decl_positions.deor
+fn locate_type_name(kw_pos: i64) -> i64 {
+    // transpiler-deor/shared/type_decl_positions.deor
+    return kw_pos + 1;
+}
+
+fn locate_left_paren(kw_pos: i64) -> i64 {
+    // transpiler-deor/shared/type_decl_positions.deor
+    return kw_pos + 2;
+}
+
+fn locate_param_type(kw_pos: i64) -> i64 {
+    // transpiler-deor/shared/type_decl_positions.deor
+    return kw_pos + 3;
+}
+
+fn locate_param_name(kw_pos: i64) -> i64 {
+    // transpiler-deor/shared/type_decl_positions.deor
+    return kw_pos + 4;
+}
+
+fn locate_newline(kw_pos: i64) -> i64 {
+    // transpiler-deor/shared/type_decl_positions.deor
+    return kw_pos + 6;
+}
+
+fn locate_body(kw_pos: i64) -> i64 {
+    // transpiler-deor/shared/type_decl_positions.deor
+    return kw_pos + 7;
+}
+
 // transpiler-deor/importer/lexer/token_factory.deor
 fn make_meta(line: i64, file: String) -> TokenMeta {
     // transpiler-deor/importer/lexer/token_factory.deor
@@ -2476,37 +2507,6 @@ fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<To
     // transpiler-deor/macro_builder/macro_builder.deor
     let mut validated: Vec<Token> = validate_macros(raw_tokens.clone());
     return expand_deor_macros(validated.clone(), enforce_macro_file_depth.clone());
-}
-
-// transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-fn locate_type_name(kw_pos: i64) -> i64 {
-    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-    return kw_pos + 1;
-}
-
-fn locate_left_paren(kw_pos: i64) -> i64 {
-    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-    return kw_pos + 2;
-}
-
-fn locate_param_type(kw_pos: i64) -> i64 {
-    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-    return kw_pos + 3;
-}
-
-fn locate_param_name(kw_pos: i64) -> i64 {
-    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-    return kw_pos + 4;
-}
-
-fn locate_newline(kw_pos: i64) -> i64 {
-    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-    return kw_pos + 6;
-}
-
-fn locate_body(kw_pos: i64) -> i64 {
-    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-    return kw_pos + 7;
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
