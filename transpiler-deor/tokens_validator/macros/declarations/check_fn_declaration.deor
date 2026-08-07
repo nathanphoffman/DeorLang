@@ -6,62 +6,58 @@
 macro check_fn_declaration
 	if cur_kind is "KW_FN"
 		if block_depth > 0
-			# ex: fn int {inner}(val) — pos+2 grabs func name
-			int nf_name_pos = pos + 2
-			Token nf_name_tok = tokens at nf_name_pos
-			errors at end = val_err(nf_name_tok, lbl_fn, rule_nested_fn)
-		# ex: fn int add{(}left, right) — pos+3 grabs opening paren
-		int lp_pos = pos + 3
-		if lp_pos < token_count
-			Token lp_tok = tokens at lp_pos
-			(kind) in lp_tok
+			int name_pos = locate_fn_name(pos)
+			Token name_token = tokens at name_pos
+			errors at end = val_err(name_token, lbl_fn, rule_nested_fn)
+		int left_paren_pos = locate_fn_left_paren(pos)
+		if left_paren_pos < token_count
+			Token left_paren_token = tokens at left_paren_pos
+			(kind) in left_paren_token
 			if kind is "LPAREN"
-				int param_count = count_call_args(tokens, lp_pos)
+				int param_count = count_call_args(tokens, left_paren_pos)
 				if param_count > 3
-					# ex: fn int {add}(left, right) — pos+2 grabs func name
-					int fn_name_pos = pos + 2
-					Token fn_name_tok = tokens at fn_name_pos
-					errors at end = val_err(fn_name_tok, lbl_fn, rule_max_params)
-				int ps_pos = lp_pos + 1
-				for if ps_pos < token_count
-					Token ps_tok = tokens at ps_pos
-					(kind, value) in ps_tok
+					int name_pos = locate_fn_name(pos)
+					Token name_token = tokens at name_pos
+					errors at end = val_err(name_token, lbl_fn, rule_max_params)
+				int param_scan_pos = left_paren_pos + 1
+				for if param_scan_pos < token_count
+					Token param_scan_token = tokens at param_scan_pos
+					(kind, value) in param_scan_token
 					if kind is "RPAREN"
 						break
 					if kind is "COMMA"
-						ps_pos = ps_pos + 1
+						param_scan_pos = param_scan_pos + 1
 						continue
 					if kind is "IDENT"
 						string param_type_val = value
-						int pn_pos = ps_pos + 1
-						if pn_pos < token_count
-							Token pn_tok = tokens at pn_pos
-							(kind, value) in pn_tok
+						int param_name_pos = param_scan_pos + 1
+						if param_name_pos < token_count
+							Token param_name_token = tokens at param_name_pos
+							(kind, value) in param_name_token
 							if kind is "IDENT"
 								if value is param_type_val
-									errors at end = val_err(pn_tok, lbl_fn, rule_param_shadow)
+									errors at end = val_err(param_name_token, lbl_fn, rule_param_shadow)
 								if len(value) < 3
-									errors at end = val_err(pn_tok, lbl_fn, rule_min3)
+									errors at end = val_err(param_name_token, lbl_fn, rule_min3)
 								if not is_snake(value)
-									errors at end = val_err(pn_tok, lbl_fn, rule_snake)
+									errors at end = val_err(param_name_token, lbl_fn, rule_snake)
 								if list_has(builtin_names, value)
-									errors at end = val_err(pn_tok, lbl_fn, rule_builtin_shadow)
-								ps_pos = pn_pos
+									errors at end = val_err(param_name_token, lbl_fn, rule_builtin_shadow)
+								param_scan_pos = param_name_pos
 							else if list_has(reserved_keywords, kind)
-								errors at end = val_err(pn_tok, lbl_fn, rule_kw_in_parens)
-								ps_pos = pn_pos
-					ps_pos = ps_pos + 1
-		# ex: fn {int} add(left, right) — pos+1 grabs the return-type slot
-		int ret_pos = pos + 1
-		# ex: fn name{(}left, right) — pos+2 lands on '(' when the return
-		# type is missing, i.e. the "return-type slot" was really the fn name
-		int lp2_pos = pos + 2
-		if lp2_pos < token_count
-			Token ret_tok = tokens at ret_pos
-			Token lp2_tok = tokens at lp2_pos
-			(kind) in ret_tok
-			string ret_kind = kind
-			(kind) in lp2_tok
-			if ret_kind is "IDENT"
+								errors at end = val_err(param_name_token, lbl_fn, rule_kw_in_parens)
+								param_scan_pos = param_name_pos
+					param_scan_pos = param_scan_pos + 1
+		int return_type_pos = locate_fn_return_type(pos)
+		# Same slot as locate_fn_name — checked again here, but as "is this actually
+		# an LPAREN" rather than "is this the fn's name", to catch a missing return type.
+		int after_return_type_pos = locate_fn_name(pos)
+		if after_return_type_pos < token_count
+			Token return_type_token = tokens at return_type_pos
+			Token after_return_type_token = tokens at after_return_type_pos
+			(kind) in return_type_token
+			string return_type_kind = kind
+			(kind) in after_return_type_token
+			if return_type_kind is "IDENT"
 				if kind is "LPAREN"
-					errors at end = val_err(ret_tok, lbl_fn, rule_no_ret)
+					errors at end = val_err(return_type_token, lbl_fn, rule_no_ret)

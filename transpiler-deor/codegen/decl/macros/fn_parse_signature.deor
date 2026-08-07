@@ -1,9 +1,9 @@
 
 # Walks the cursor through `RetType name(params)`, setting ret_type, fn_name,
-# param_strs, indent_pos, and body_start. Expects: fn_tokens, start_pos, ctx
+# param_strs, indent_pos, and body_start. Expects: fn_tokens, return_type_pos, ctx
 # in scope from gen_fn_decl.
 unsafe_macro fn_parse_signature
-	TokenCursor cur = cur_at_ref(fn_tokens, start_pos)
+	TokenCursor cur = cur_at_ref(fn_tokens, return_type_pos)
 	(current) in cur
 	(value) in current
 	string ret_type = resolve_type(value, ctx)
@@ -29,8 +29,8 @@ unsafe_macro fn_parse_signature
 			(value) in current
 			string param_name = value
 			string rust_param_type = resolve_type(param_type, ctx)
-			string prm_sep = ": "
-			param_strs at end = s_join([param_name, prm_sep, rust_param_type])
+			string param_separator = ": "
+			param_strs at end = s_join([param_name, param_separator, rust_param_type])
 			cur = cur_next_ref(cur, fn_tokens)
 		else
 			cur = cur_next_ref(cur, fn_tokens)

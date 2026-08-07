@@ -12,10 +12,9 @@
 #                          predicate's `return` exits the closure, not the constructor.
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	(variant_reg, shape_reg, struct_reg, enum_reg, type_reg, typed_enum_reg, typed_variant_reg) in ctx
-	# ex: type {Positive}(int val) — pos+1 grabs the validator type's name
-	int start_pos = pos + 1
+	int type_name_pos = locate_type_name(pos)
 
-	TokenCursor cur = cur_at_ref(tokens, start_pos)
+	TokenCursor cur = cur_at_ref(tokens, type_name_pos)
 	(current) in cur
 	(value) in current
 	string type_name = value
@@ -34,9 +33,9 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 	cur = cur_next_ref(cur, tokens)   # RPAREN
 	cur = cur_next_ref(cur, tokens)   # NEWLINE
-	# ex: type Positive(int val)\n{\t}return val > 0 — pos is the NEWLINE, pos+1 grabs the INDENT starting the predicate body
+	# pos is now the header's NEWLINE — pos+1 grabs the INDENT starting the predicate body
 	(pos) in cur
-	int td_indent_pos = pos + 1
+	int indent_pos = pos + 1
 	cur = cur_skip_to_body_ref(cur, tokens)
 
 	(pos) in cur
@@ -49,69 +48,69 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 	# Peek past the parsed expression: if a (possibly absent) DEDENT follows
 	# immediately, the predicate was a single line and pred_code is already correct.
-	TokenCursor td_peek = cur_at_ref(tokens, pred_end)
-	for if not c_at_end(td_peek)
-		(current) in td_peek
+	TokenCursor peek = cur_at_ref(tokens, pred_end)
+	for if not c_at_end(peek)
+		(current) in peek
 		(kind) in current
 		if kind is "NEWLINE"
-			td_peek = cur_next_ref(td_peek, tokens)
+			peek = cur_next_ref(peek, tokens)
 			continue
 		break
 
-	bool td_is_single = true
-	if not c_at_end(td_peek)
-		(current) in td_peek
+	bool is_single = true
+	if not c_at_end(peek)
+		(current) in peek
 		(kind) in current
-		td_is_single = kind is "DEDENT"
+		is_single = kind is "DEDENT"
 
 	string final_pred_code = pred_code
 	int final_pos = 0
 
-	if td_is_single
-		TokenCursor td_scan = cur_at_ref(tokens, pred_end)
-		for if not c_at_end(td_scan)
-			(current) in td_scan
+	if is_single
+		TokenCursor scan = cur_at_ref(tokens, pred_end)
+		for if not c_at_end(scan)
+			(current) in scan
 			(kind) in current
-			td_scan = cur_next_ref(td_scan, tokens)
+			scan = cur_next_ref(scan, tokens)
 			if kind is "DEDENT"
 				break
-		(pos) in td_scan
+		(pos) in scan
 		final_pos = pos
 	else
-		int body_end_pos = find_block_end_ref(tokens, td_indent_pos)
+		int body_end_pos = find_block_end_ref(tokens, indent_pos)
 		int body_slice_end = body_end_pos + 1
-		tokenList td_body_tokens = l_slice_ref(tokens, body_start, body_slice_end)
-		int td_zero = 0
-		int td_last = len(td_body_tokens) - 1
-		strList mut_names = collect_mut_names(td_body_tokens, td_zero, td_last)
-		strList validator_var_reg = collect_validator_var_types(td_body_tokens, type_reg)
-		TokensRef tokens = tokens_wrap(move td_body_tokens)
-		GenCtx td_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
-		RcCtx td_pred_ctx = make_rctx(move td_ctx_raw)
+		tokenList body_tokens = l_slice_ref(tokens, body_start, body_slice_end)
+		int zero = 0
+		int last = len(body_tokens) - 1
+		strList mut_names = collect_mut_names(body_tokens, zero, last)
+		strList validator_var_reg = collect_validator_var_types(body_tokens, type_reg)
+		TokensRef tokens = tokens_wrap(move body_tokens)
+		GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
+		RcCtx pred_ctx = make_rctx(move ctx_raw)
 
-		int td_depth = 2
-		ParseResult td_block_r = gen_block(td_zero, td_depth, td_pred_ctx)
-		move (code, new_pos) in td_block_r
-		td_block_code as code
-		td_block_new_pos as new_pos
+		int block_depth = 2
+		ParseResult block_r = gen_block(zero, block_depth, pred_ctx)
+		move (code, new_pos) in block_r
+		block_code as code
+		block_new_pos as new_pos
 
-		string td_clo_open = "(|| -> bool {\n"
-		string td_clo_close = "        })()"
-		final_pred_code = s_join([td_clo_open, td_block_code, td_clo_close])
-		final_pos = body_start + td_block_new_pos
+		string closure_open = "(|| -> bool {\n"
+		string closure_close = "        })()"
+		final_pred_code = s_join([closure_open, block_code, closure_close])
+		final_pos = body_start + block_new_pos
 
-	string tsc_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
-	string tsc_op = "("
-	string tsc_sfx = ");\n\n"
-	string struct_code = s_join([tsc_pfx, type_name, tsc_op, rust_param_type, tsc_sfx])
-	string imp_pfx = "impl "
-	string imp_fn = " {\n    fn new("
-	string imp_col = ": "
-	string imp_ret = ") -> Option<Self> {\n        if "
-	string imp_som = " {\n            Some("
-	string imp_inn = "("
-	string imp_sfx = "))\n        } else {\n            None\n        }\n    }\n}\n\n"
-	string impl_code = s_join([imp_pfx, type_name, imp_fn, param_name, imp_col, rust_param_type, imp_ret, final_pred_code, imp_som, type_name, imp_inn, param_name, imp_sfx])
+	string struct_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
+	string struct_paren_open = "("
+	string struct_suffix = ");\n\n"
+	string struct_code = s_join([struct_prefix, type_name, struct_paren_open, rust_param_type, struct_suffix])
+	string impl_prefix = "impl "
+	string impl_fn_new_open = " {\n    fn new("
+	string impl_colon = ": "
+	string impl_return_if_open = ") -> Option<Self> {\n        if "
+	string impl_some_open = " {\n            Some("
+	string impl_inner_paren_open = "("
+	string impl_suffix = "))\n        } else {\n            None\n        }\n    }\n}\n\n"
+	string impl_code = s_join([impl_prefix, type_name, impl_fn_new_open, param_name, impl_colon, rust_param_type, impl_return_if_open, final_pred_code, impl_some_open, type_name, impl_inner_paren_open, param_name, impl_suffix])
 	string type_code = s_cat(move struct_code, move impl_code)
 
 	return make_result(move type_code, final_pos)

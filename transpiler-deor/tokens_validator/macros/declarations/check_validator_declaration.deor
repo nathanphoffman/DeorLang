@@ -4,9 +4,9 @@
 macro check_validator_declaration
 	if cur_kind is "KW_TYPE"
 		int type_name_pos = locate_type_name(pos)
-		int left_paren_pos = locate_left_paren(pos)
-		int param_type_pos = locate_param_type(pos)
-		int param_name_pos = locate_param_name(pos)
+		int left_paren_pos = locate_type_left_paren(pos)
+		int param_type_pos = locate_type_param_type(pos)
+		int param_name_pos = locate_type_param_name(pos)
 		if param_name_pos < token_count
 			Token type_name_token = tokens at type_name_pos
 			Token left_paren_token = tokens at left_paren_pos
@@ -30,8 +30,8 @@ macro check_validator_declaration
 				# If the body is empty there's no INDENT after the header's NEWLINE
 				# (codegen would otherwise read past the header into whatever token
 				# happens to follow, or off the end of the token stream entirely).
-				int newline_pos = locate_newline(pos)
-				int body_pos = locate_body(pos)
+				int newline_pos = locate_type_newline(pos)
+				int body_pos = locate_type_body(pos)
 				bool has_body = false
 				if body_pos < token_count
 					Token newline_token = tokens at newline_pos
