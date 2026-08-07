@@ -3,49 +3,65 @@
 # and param name shadowing its own base type (type Roll(int int)).
 macro check_validator_declaration
 	if cur_kind is "KW_TYPE"
-		# ex: type {Roll}(int Roll) — pos+1 grabs the type name
-		int vd_name_pos = pos + 1
-		# ex: type Roll{(}int Roll) — pos+2 grabs the opening paren
-		int vd_lp_pos = pos + 2
-		# ex: type Roll({int} Roll) — pos+3 grabs the param's base type
-		int vd_ptype_pos = pos + 3
-		# ex: type Roll(int {Roll}) — pos+4 grabs the param name
-		int vd_pname_pos = pos + 4
-		if vd_pname_pos < token_count
-			Token vd_name_tok = tokens at vd_name_pos
-			Token vd_lp_tok = tokens at vd_lp_pos
-			Token vd_ptype_tok = tokens at vd_ptype_pos
-			Token vd_pname_tok = tokens at vd_pname_pos
-			(kind, value) in vd_name_tok
+		int vd_name_pos = type_decl_name_pos(pos)
+		int vd_left_paren_pos = type_decl_left_paren_pos(pos)
+		int vd_param_type_pos = type_decl_param_type_pos(pos)
+		int vd_param_name_pos = type_decl_param_name_pos(pos)
+		if vd_param_name_pos < token_count
+			Token vd_name_token = tokens at vd_name_pos
+			Token vd_left_paren_token = tokens at vd_left_paren_pos
+			Token vd_param_type_token = tokens at vd_param_type_pos
+			Token vd_param_name_token = tokens at vd_param_name_pos
+			(kind, value) in vd_name_token
 			string vd_type_name = value
-			(kind) in vd_lp_tok
+			(kind) in vd_left_paren_token
 			if kind is "LPAREN"
-				(value) in vd_ptype_tok
+				(value) in vd_param_type_token
 				string vd_param_type = value
-				(kind, value) in vd_pname_tok
+				(kind, value) in vd_param_name_token
 				if kind is "IDENT"
 					if value is vd_type_name
-						errors at end = val_err(vd_pname_tok, lbl_type, rule_type_param_shadow)
+						errors at end = val_err(vd_param_name_token, lbl_type, rule_type_param_shadow)
 					if value is vd_param_type
-						errors at end = val_err(vd_pname_tok, lbl_type, rule_param_shadow)
+						errors at end = val_err(vd_param_name_token, lbl_type, rule_param_shadow)
 					if list_has(builtin_names, value)
-						errors at end = val_err(vd_pname_tok, lbl_type, rule_builtin_shadow)
+						errors at end = val_err(vd_param_name_token, lbl_type, rule_builtin_shadow)
 
-				# ex: type Roll(int val){\n}{\t}return val > 0 — pos+6 is the header's
-				# NEWLINE and pos+7 must be the INDENT opening the predicate body; if the
-				# body is empty there's no INDENT here (codegen would otherwise read past
-				# the header into whatever token happens to follow, or off the end of the
-				# token stream entirely).
-				int vd_nl_pos = pos + 6
-				int vd_body_pos = pos + 7
+				# If the body is empty there's no INDENT after the header's NEWLINE
+				# (codegen would otherwise read past the header into whatever token
+				# happens to follow, or off the end of the token stream entirely).
+				int vd_newline_pos = type_decl_newline_pos(pos)
+				int vd_body_pos = type_decl_body_pos(pos)
 				bool vd_has_body = false
 				if vd_body_pos < token_count
-					Token vd_nl_tok = tokens at vd_nl_pos
-					(kind) in vd_nl_tok
+					Token vd_newline_token = tokens at vd_newline_pos
+					(kind) in vd_newline_token
 					if kind is "NEWLINE"
-						Token vd_body_tok = tokens at vd_body_pos
-						(kind) in vd_body_tok
+						Token vd_body_token = tokens at vd_body_pos
+						(kind) in vd_body_token
 						if kind is "INDENT"
 							vd_has_body = true
 				if not vd_has_body
-					errors at end = val_err(vd_name_tok, lbl_type, rule_validator_missing_body)
+					errors at end = val_err(vd_name_token, lbl_type, rule_validator_missing_body)
+
+# Token offsets for a `type Name(baseType paramName)` declaration header, counted
+# from the position of the KW_TYPE token itself. Layout:
+#   +0 KW_TYPE  +1 name  +2 LPAREN  +3 base type  +4 param name  +5 RPAREN
+#   +6 NEWLINE  +7 INDENT (first token of the predicate body, if one exists)
+fn int type_decl_name_pos(int kw_pos)
+	return kw_pos + 1
+
+fn int type_decl_left_paren_pos(int kw_pos)
+	return kw_pos + 2
+
+fn int type_decl_param_type_pos(int kw_pos)
+	return kw_pos + 3
+
+fn int type_decl_param_name_pos(int kw_pos)
+	return kw_pos + 4
+
+fn int type_decl_newline_pos(int kw_pos)
+	return kw_pos + 6
+
+fn int type_decl_body_pos(int kw_pos)
+	return kw_pos + 7

@@ -2478,6 +2478,37 @@ fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<To
     return expand_deor_macros(validated.clone(), enforce_macro_file_depth.clone());
 }
 
+// transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+fn type_decl_name_pos(kw_pos: i64) -> i64 {
+    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+    return kw_pos + 1;
+}
+
+fn type_decl_left_paren_pos(kw_pos: i64) -> i64 {
+    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+    return kw_pos + 2;
+}
+
+fn type_decl_param_type_pos(kw_pos: i64) -> i64 {
+    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+    return kw_pos + 3;
+}
+
+fn type_decl_param_name_pos(kw_pos: i64) -> i64 {
+    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+    return kw_pos + 4;
+}
+
+fn type_decl_newline_pos(kw_pos: i64) -> i64 {
+    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+    return kw_pos + 6;
+}
+
+fn type_decl_body_pos(kw_pos: i64) -> i64 {
+    // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+    return kw_pos + 7;
+}
+
 // transpiler-deor/tokens_validator/tokens_validation.deor
 type FnTestRule = fn(String) -> bool;
 
@@ -4843,52 +4874,52 @@ fn validate_tokens(tokens: TokensRef) {
                 // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
                 if cur_kind == "KW_TYPE" {
                     // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                    let mut vd_name_pos: i64 = pos + 1;
-                    let mut vd_lp_pos: i64 = pos + 2;
-                    let mut vd_ptype_pos: i64 = pos + 3;
-                    let mut vd_pname_pos: i64 = pos + 4;
-                    if vd_pname_pos < token_count {
+                    let mut vd_name_pos: i64 = type_decl_name_pos(pos.clone());
+                    let mut vd_left_paren_pos: i64 = type_decl_left_paren_pos(pos.clone());
+                    let mut vd_param_type_pos: i64 = type_decl_param_type_pos(pos.clone());
+                    let mut vd_param_name_pos: i64 = type_decl_param_name_pos(pos.clone());
+                    if vd_param_name_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                        let mut vd_name_tok: Token = tokens[vd_name_pos as usize].clone();
-                        let mut vd_lp_tok: Token = tokens[vd_lp_pos as usize].clone();
-                        let mut vd_ptype_tok: Token = tokens[vd_ptype_pos as usize].clone();
-                        let mut vd_pname_tok: Token = tokens[vd_pname_pos as usize].clone();
-                        let mut kind = vd_name_tok.kind.clone();
-                        let mut value = vd_name_tok.value.clone();
+                        let mut vd_name_token: Token = tokens[vd_name_pos as usize].clone();
+                        let mut vd_left_paren_token: Token = tokens[vd_left_paren_pos as usize].clone();
+                        let mut vd_param_type_token: Token = tokens[vd_param_type_pos as usize].clone();
+                        let mut vd_param_name_token: Token = tokens[vd_param_name_pos as usize].clone();
+                        let mut kind = vd_name_token.kind.clone();
+                        let mut value = vd_name_token.value.clone();
                         let mut vd_type_name: String = value.clone();
-                        let mut kind = vd_lp_tok.kind.clone();
+                        let mut kind = vd_left_paren_token.kind.clone();
                         if kind == "LPAREN" {
                             // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                            let mut value = vd_ptype_tok.value.clone();
+                            let mut value = vd_param_type_token.value.clone();
                             let mut vd_param_type: String = value.clone();
-                            let mut kind = vd_pname_tok.kind.clone();
-                            let mut value = vd_pname_tok.value.clone();
+                            let mut kind = vd_param_name_token.kind.clone();
+                            let mut value = vd_param_name_token.value.clone();
                             if kind == "IDENT" {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
                                 if value == vd_type_name {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                                    errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_type_param_shadow.clone()).clone());
+                                    errors.push(val_err(vd_param_name_token.clone(), lbl_type.clone(), rule_type_param_shadow.clone()).clone());
                                 }
                                 if value == vd_param_type {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                                    errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_param_shadow.clone()).clone());
+                                    errors.push(val_err(vd_param_name_token.clone(), lbl_type.clone(), rule_param_shadow.clone()).clone());
                                 }
                                 if list_has(builtin_names.clone(), value.clone()) {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                                    errors.push(val_err(vd_pname_tok.clone(), lbl_type.clone(), rule_builtin_shadow.clone()).clone());
+                                    errors.push(val_err(vd_param_name_token.clone(), lbl_type.clone(), rule_builtin_shadow.clone()).clone());
                                 }
                             }
-                            let mut vd_nl_pos: i64 = pos + 6;
-                            let mut vd_body_pos: i64 = pos + 7;
+                            let mut vd_newline_pos: i64 = type_decl_newline_pos(pos.clone());
+                            let mut vd_body_pos: i64 = type_decl_body_pos(pos.clone());
                             let mut vd_has_body: bool = false;
                             if vd_body_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                                let mut vd_nl_tok: Token = tokens[vd_nl_pos as usize].clone();
-                                let mut kind = vd_nl_tok.kind.clone();
+                                let mut vd_newline_token: Token = tokens[vd_newline_pos as usize].clone();
+                                let mut kind = vd_newline_token.kind.clone();
                                 if kind == "NEWLINE" {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                                    let mut vd_body_tok: Token = tokens[vd_body_pos as usize].clone();
-                                    let mut kind = vd_body_tok.kind.clone();
+                                    let mut vd_body_token: Token = tokens[vd_body_pos as usize].clone();
+                                    let mut kind = vd_body_token.kind.clone();
                                     if kind == "INDENT" {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
                                         vd_has_body = true;
@@ -4897,7 +4928,7 @@ fn validate_tokens(tokens: TokensRef) {
                             }
                             if !vd_has_body {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                                errors.push(val_err(vd_name_tok.clone(), lbl_type.clone(), rule_validator_missing_body.clone()).clone());
+                                errors.push(val_err(vd_name_token.clone(), lbl_type.clone(), rule_validator_missing_body.clone()).clone());
                             }
                         }
                     }
