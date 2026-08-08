@@ -1,8 +1,8 @@
 
 # Enforces that print() is called with 1 or 2 arguments.
 macro check_print_args
-	string bac_name = "print"
-	int bac_min = 1
-	int bac_max = 2
-	string bac_rule = rule_print_args
+	string builtin_name = "print"
+	int min_args = 1
+	int max_args = 2
+	string arg_count_rule = rule_print_args
 	macro_run check_builtin_arg_count

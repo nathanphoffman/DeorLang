@@ -12,29 +12,37 @@
 # Only checks the two tokens directly adjacent to the '+' — a longer chain
 # still errors, since every '+' in it gets its own check as the scan reaches it.
 macro check_string_plus_banned
+	# ex: left {+} right — kw_pos+1 grabs the right-hand operand
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	# ex: {left} + right — kw_pos-1 grabs the left-hand operand
+	fn int locate_prev_token(int kw_pos)
+		return kw_pos - 1
+
 	if cur_kind is "PLUS"
 		if pos > 0
-			int csp_right = pos + 1
-			if csp_right < token_count
-				int csp_left = pos - 1
-				Token csp_left_tok = tokens at csp_left
-				Token csp_right_tok = tokens at csp_right
-				(kind, value) in csp_left_tok
-				string csp_lk = kind
-				string csp_lv = value
-				(kind, value) in csp_right_tok
-				string csp_rk = kind
-				string csp_rv = value
+			int right_pos = locate_next_token(pos)
+			if right_pos < token_count
+				int left_pos = locate_prev_token(pos)
+				Token left_token = tokens at left_pos
+				Token right_token = tokens at right_pos
+				(kind, value) in left_token
+				string left_kind = kind
+				string left_value = value
+				(kind, value) in right_token
+				string right_kind = kind
+				string right_value = value
 
-				bool csp_l_str = csp_lk is "STRING"
-				if not csp_l_str
-					if csp_lk is "IDENT"
-						csp_l_str = list_has(string_var_names, csp_lv)
+				bool left_is_str = left_kind is "STRING"
+				if not left_is_str
+					if left_kind is "IDENT"
+						left_is_str = list_has(string_var_names, left_value)
 
-				bool csp_r_str = csp_rk is "STRING"
-				if not csp_r_str
-					if csp_rk is "IDENT"
-						csp_r_str = list_has(string_var_names, csp_rv)
+				bool right_is_str = right_kind is "STRING"
+				if not right_is_str
+					if right_kind is "IDENT"
+						right_is_str = list_has(string_var_names, right_value)
 
-				if csp_l_str or csp_r_str
+				if left_is_str or right_is_str
 					errors at end = val_err(tok, lbl_var, rule_string_plus_banned)

@@ -5,6 +5,6 @@
 # otherwise keeps the first and drops the repeat. Copies the single-line declaration to
 # result and advances pos.
 macro dd_handle_shape
-	string dd_key_prefix = ""
+	string key_prefix = ""
 	unsafe_macro_run dd_check_duplicate
 	macro_run dd_copy_single_line_decl

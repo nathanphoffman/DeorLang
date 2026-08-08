@@ -39,63 +39,72 @@
 # any other read, but is always found — prescan_collect_declared_vars registers
 # it from the very same statement.
 macro check_undefined_var_read
-	bool uvr_skip = in_struct_body
-	if in_enum_body
-		uvr_skip = true
+	# ex: name{=} / name{(} / name{ as} — kw_pos+1 grabs the token that decides
+	# whether this IDENT is a read
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
 
-	int uvr_next = pos + 1
-	if uvr_next < token_count
-		Token uvr_next_tok = tokens at uvr_next
-		(kind) in uvr_next_tok
+	# ex: {struct} Name — kw_pos-1 checks the token before for a declaration keyword
+	fn int locate_prev_token(int kw_pos)
+		return kw_pos - 1
+
+	bool skip = in_struct_body
+	if in_enum_body
+		skip = true
+
+	int next_pos = locate_next_token(pos)
+	if next_pos < token_count
+		Token next_token = tokens at next_pos
+		(kind) in next_token
 		if kind is "IDENT"
-			uvr_skip = true
+			skip = true
 		if kind is "EQUALS"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_AS"
-			uvr_skip = true
+			skip = true
 		if kind is "LPAREN"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_IN"
-			uvr_skip = true
+			skip = true
 
 	if pos > 0
-		int uvr_prev = pos - 1
-		Token uvr_prev_tok = tokens at uvr_prev
-		(kind) in uvr_prev_tok
+		int prev_pos = locate_prev_token(pos)
+		Token prev_token = tokens at prev_pos
+		(kind) in prev_token
 		if kind is "KW_STRUCT"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_ENUM"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_SHAPE"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_TYPE"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_FN"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_MACRO"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_MACRO_RUN"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_UNSAFE_MACRO_RUN"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_UNSAFE_MACRO"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_OF"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_TO"
-			uvr_skip = true
+			skip = true
 		if kind is "KW_RAW"
-			uvr_skip = true
+			skip = true
 
-	if not uvr_skip
-		bool uvr_known = list_has(declared_var_names, cur_val)
-		if not uvr_known
-			uvr_known = list_has(enum_variant_names, cur_val)
-		if not uvr_known
-			uvr_known = list_has(enum_names, cur_val)
-		if not uvr_known
-			uvr_known = list_has(fn_names, cur_val)
-		if not uvr_known
-			uvr_known = list_has(builtin_names, cur_val)
-		if not uvr_known
+	if not skip
+		bool known = list_has(declared_var_names, cur_val)
+		if not known
+			known = list_has(enum_variant_names, cur_val)
+		if not known
+			known = list_has(enum_names, cur_val)
+		if not known
+			known = list_has(fn_names, cur_val)
+		if not known
+			known = list_has(builtin_names, cur_val)
+		if not known
 			errors at end = val_err(tok, lbl_var, rule_undefined_var)

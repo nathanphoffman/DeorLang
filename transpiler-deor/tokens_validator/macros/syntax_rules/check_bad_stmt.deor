@@ -2,27 +2,33 @@
 # Flags invalid statement patterns starting with an IDENT: `name ident literal` (literal should be in a variable),
 # `name as Type` (typed as-bindings are unsupported), and `name as move` (`as` already transfers ownership).
 macro check_bad_stmt
+	# ex: total {value} 5 — kw_pos+1 grabs the second identifier in a bad stmt
+	fn int locate_second_token(int kw_pos)
+		return kw_pos + 1
+
+	# ex: total value {5} — kw_pos+2 grabs the literal/'as'-keyword that follows
+	fn int locate_third_token(int kw_pos)
+		return kw_pos + 2
+
 	if paren_depth is 0
-		# ex: total {value} 5 — pos+1 grabs the second identifier in a bad stmt
-		int next1 = pos + 1
-		# ex: total value {5} — pos+2 grabs the literal/'as'-keyword that follows
-		int next2 = pos + 2
-		if next2 < token_count
-			Token tok_one = tokens at next1
-			Token tok_two = tokens at next2
-			(kind) in tok_one
-			string one_kind = kind
-			(kind) in tok_two
-			string two_kind = kind
-			if one_kind is "IDENT"
-				bool two_is_str = two_kind is "STRING"
-				bool two_is_int = two_kind is "INT"
-				bool two_is_flt = two_kind is "FLOAT"
-				bool two_is_lit = two_is_str or two_is_int or two_is_flt
-				if two_is_lit
+		int second_pos = locate_second_token(pos)
+		int third_pos = locate_third_token(pos)
+		if third_pos < token_count
+			Token second_token = tokens at second_pos
+			Token third_token = tokens at third_pos
+			(kind) in second_token
+			string second_kind = kind
+			(kind) in third_token
+			string third_kind = kind
+			if second_kind is "IDENT"
+				bool third_is_str = third_kind is "STRING"
+				bool third_is_int = third_kind is "INT"
+				bool third_is_flt = third_kind is "FLOAT"
+				bool third_is_lit = third_is_str or third_is_int or third_is_flt
+				if third_is_lit
 					errors at end = val_err(tok, lbl_var, rule_bad_stmt)
-				if two_kind is "KW_AS"
+				if third_kind is "KW_AS"
 					errors at end = val_err(tok, lbl_var, rule_typed_as)
-			if one_kind is "KW_AS"
-				if two_kind is "KW_MOVE"
+			if second_kind is "KW_AS"
+				if third_kind is "KW_MOVE"
 					errors at end = val_err(tok, lbl_var, rule_as_move)

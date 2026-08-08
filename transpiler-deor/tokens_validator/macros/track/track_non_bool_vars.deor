@@ -17,68 +17,77 @@
 # unclassified rather than guessed at; every check here only flags names it can
 # positively confirm.
 macro track_non_bool_vars
+	# ex: Type {name} = expr — kw_pos+1 grabs the variable name
+	fn int locate_var_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: Type name {=} expr — kw_pos+2 grabs the equals sign
+	fn int locate_equals(int kw_pos)
+		return kw_pos + 2
+
+	# ex: fn int add{(}left, right) — kw_pos+3 grabs the opening paren
+	fn int locate_left_paren(int kw_pos)
+		return kw_pos + 3
+
 	if cur_kind is "IDENT"
-		# ex: Type {name} = expr — pos+1 grabs the variable name
-		int tnb_next1 = pos + 1
-		# ex: Type name {=} expr — pos+2 grabs the equals sign
-		int tnb_next2 = pos + 2
-		if tnb_next2 < token_count
-			Token tnb_tok1 = tokens at tnb_next1
-			Token tnb_tok2 = tokens at tnb_next2
-			(kind) in tnb_tok1
-			string tnb_k1 = kind
-			(kind) in tnb_tok2
-			string tnb_k2 = kind
-			if tnb_k1 is "IDENT" and tnb_k2 is "EQUALS"
-				bool tnb_is_bool = cur_val is "bool"
-				bool tnb_is_vtype = list_has(validator_type_names, cur_val)
-				if not tnb_is_bool
-					if not tnb_is_vtype
-						(value) in tnb_tok1
+		int name_pos = locate_var_name(pos)
+		int equals_pos = locate_equals(pos)
+		if equals_pos < token_count
+			Token name_token = tokens at name_pos
+			Token equals_token = tokens at equals_pos
+			(kind) in name_token
+			string name_kind = kind
+			(kind) in equals_token
+			string equals_kind = kind
+			if name_kind is "IDENT" and equals_kind is "EQUALS"
+				bool is_bool = cur_val is "bool"
+				bool is_vtype = list_has(validator_type_names, cur_val)
+				if not is_bool
+					if not is_vtype
+						(value) in name_token
 						non_bool_var_names at end = value
 				if cur_val is "string"
-					(value) in tnb_tok1
+					(value) in name_token
 					string_var_names at end = value
 
-			# ex: {name} as "literal" / name as other_str — tnb_next1 is KW_AS, tnb_next2 is the RHS
-			if tnb_k1 is "KW_AS"
-				bool tnb_as_is_str = tnb_k2 is "STRING"
-				if not tnb_as_is_str
-					if tnb_k2 is "IDENT"
-						(value) in tnb_tok2
-						tnb_as_is_str = list_has(string_var_names, value)
-				if tnb_as_is_str
+			# ex: {name} as "literal" / name as other_str — name_kind is KW_AS, equals_kind is the RHS
+			if name_kind is "KW_AS"
+				bool as_is_str = equals_kind is "STRING"
+				if not as_is_str
+					if equals_kind is "IDENT"
+						(value) in equals_token
+						as_is_str = list_has(string_var_names, value)
+				if as_is_str
 					string_var_names at end = cur_val
 
 	if cur_kind is "KW_FN"
-		# ex: fn int add{(}left, right) — pos+3 grabs the opening paren
-		int tnb_lp = pos + 3
-		if tnb_lp < token_count
-			Token tnb_lp_tok = tokens at tnb_lp
-			(kind) in tnb_lp_tok
+		int left_paren_pos = locate_left_paren(pos)
+		if left_paren_pos < token_count
+			Token left_paren_token = tokens at left_paren_pos
+			(kind) in left_paren_token
 			if kind is "LPAREN"
-				int tnb_ps = tnb_lp + 1
-				for if tnb_ps < token_count
-					Token tnb_ps_tok = tokens at tnb_ps
-					(kind, value) in tnb_ps_tok
+				int param_scan_pos = left_paren_pos + 1
+				for if param_scan_pos < token_count
+					Token param_scan_token = tokens at param_scan_pos
+					(kind, value) in param_scan_token
 					if kind is "RPAREN"
 						break
 					if kind is "COMMA"
-						tnb_ps = tnb_ps + 1
+						param_scan_pos = param_scan_pos + 1
 						continue
 					if kind is "IDENT"
-						string tnb_param_type = value
-						int tnb_pn = tnb_ps + 1
-						if tnb_pn < token_count
-							Token tnb_pn_tok = tokens at tnb_pn
-							(kind, value) in tnb_pn_tok
+						string param_type = value
+						int param_name_pos = param_scan_pos + 1
+						if param_name_pos < token_count
+							Token param_name_token = tokens at param_name_pos
+							(kind, value) in param_name_token
 							if kind is "IDENT"
-								bool tnb_p_is_bool = tnb_param_type is "bool"
-								bool tnb_p_is_vtype = list_has(validator_type_names, tnb_param_type)
-								if not tnb_p_is_bool
-									if not tnb_p_is_vtype
+								bool param_is_bool = param_type is "bool"
+								bool param_is_vtype = list_has(validator_type_names, param_type)
+								if not param_is_bool
+									if not param_is_vtype
 										non_bool_var_names at end = value
-								if tnb_param_type is "string"
+								if param_type is "string"
 									string_var_names at end = value
-								tnb_ps = tnb_pn
-					tnb_ps = tnb_ps + 1
+								param_scan_pos = param_name_pos
+					param_scan_pos = param_scan_pos + 1

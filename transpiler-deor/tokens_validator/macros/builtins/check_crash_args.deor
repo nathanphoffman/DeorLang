@@ -1,8 +1,8 @@
 
 # Enforces that crash() is called with exactly one argument.
 macro check_crash_args
-	string bac_name = "crash"
-	int bac_min = 1
-	int bac_max = 1
-	string bac_rule = rule_crash
+	string builtin_name = "crash"
+	int min_args = 1
+	int max_args = 1
+	string arg_count_rule = rule_crash
 	macro_run check_builtin_arg_count

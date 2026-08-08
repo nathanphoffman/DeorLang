@@ -1,34 +1,35 @@
 
-# Copies the 5-token "fn void main()" signature into sep_result and advances sep_pos, then
+# Copies the 5-token "fn void main()" signature into result_tokens and advances scan_pos, then
 # checks for a following NEWLINE + INDENT and copies those too if both are present. Only
-# when sep_opener_ok ends up true is sep_pos positioned right after the INDENT, ready to
+# when opener_ok ends up true is scan_pos positioned right after the INDENT, ready to
 # scan for pragma lines.
-# Reads/writes: tokens, sep_pos, sep_result
-# Reads: sep_len
-# Assigns (caller must predeclare): sep_opener_ok
+# Reads/writes: tokens, scan_pos, result_tokens
+# Reads: token_count
+# Assigns (caller must predeclare): opener_ok
 macro sep_copy_main_opener
-	int sep_copy_idx = 0
-	for if sep_copy_idx < 5
-		Token c_tok = tokens at (sep_pos + sep_copy_idx)
-		sep_result at end = c_tok
-		sep_copy_idx = sep_copy_idx + 1
-	sep_pos = sep_pos + 5
-	bool sep_nl_present = false
-	if sep_pos < sep_len
-		Token nl_tok = tokens at sep_pos
-		(kind) in nl_tok
-		sep_nl_present = kind is "NEWLINE"
-	if sep_nl_present
-		Token nl_tok2 = tokens at sep_pos
-		sep_result at end = nl_tok2
-		sep_pos = sep_pos + 1
-		bool sep_indent_present = false
-		if sep_pos < sep_len
-			Token ind_tok = tokens at sep_pos
-			(kind) in ind_tok
-			sep_indent_present = kind is "INDENT"
-		if sep_indent_present
-			Token ind_tok2 = tokens at sep_pos
-			sep_result at end = ind_tok2
-			sep_pos = sep_pos + 1
-			sep_opener_ok = true
+	int copy_index = 0
+	for if copy_index < 5
+		int copy_pos = scan_pos + copy_index
+		Token copy_token = tokens at copy_pos
+		result_tokens at end = copy_token
+		copy_index = copy_index + 1
+	scan_pos = scan_pos + 5
+	bool newline_present = false
+	if scan_pos < token_count
+		Token newline_token = tokens at scan_pos
+		(kind) in newline_token
+		newline_present = kind is "NEWLINE"
+	if newline_present
+		Token newline_token2 = tokens at scan_pos
+		result_tokens at end = newline_token2
+		scan_pos = scan_pos + 1
+		bool indent_present = false
+		if scan_pos < token_count
+			Token indent_token = tokens at scan_pos
+			(kind) in indent_token
+			indent_present = kind is "INDENT"
+		if indent_present
+			Token indent_token2 = tokens at scan_pos
+			result_tokens at end = indent_token2
+			scan_pos = scan_pos + 1
+			opener_ok = true

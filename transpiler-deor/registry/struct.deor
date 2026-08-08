@@ -12,8 +12,8 @@ fn ParseResult skip_to_block_start(TokensRef tokens, int start)
 		cur = skip_index + 1
 		if kind is "INDENT"
 			break
-	string emp = ""
-	return make_result(emp, cur)
+	string empty_str = ""
+	return make_result(empty_str, cur)
 
 fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 	int token_count = len(tokens)
@@ -27,13 +27,13 @@ fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 			break
 		else if kind is "IDENT"
 			# ex: int {x} — field_index+1 grabs the field name after its type
-			int fname_pos = field_index + 1
-			if fname_pos < token_count
-				Token fname_token = tokens at fname_pos
-				(kind, value) in fname_token
+			int field_name_pos = field_index + 1
+			if field_name_pos < token_count
+				Token field_name_token = tokens at field_name_pos
+				(kind, value) in field_name_token
 				if kind is "IDENT"
 					fields at end = value
-					cur = fname_pos + 1
+					cur = field_name_pos + 1
 	string comma = ","
 	string fields_joined = s_join_with(fields, comma)
 	return make_result(fields_joined, cur)
@@ -42,25 +42,31 @@ fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 # token. Called once per KW_STRUCT hit from build_registry's single-pass dispatch loop
 # (registry.deor) rather than each registry running its own full scan over every token.
 fn Reg2Scan try_struct_entry(TokensRef tokens, int pos)
+	# ex: struct {Point} — kw_pos+1 grabs the struct name
+	fn int locate_struct_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: struct Point{\n}\tint x — kw_pos+2 grabs the token after the struct name
+	fn int locate_struct_body_start(int kw_pos)
+		return kw_pos + 2
+
 	int token_count = len(tokens)
 	bool matched = false
 	string key = ""
 	string val = ""
-	int new_pos = pos + 1
-	# ex: struct {Point} — pos+1 grabs the struct name
-	int name_pos = pos + 1
+	int new_pos = locate_struct_name(pos)
+	int name_pos = locate_struct_name(pos)
 	if name_pos < token_count
 		Token name_token = tokens at name_pos
 		(kind, value) in name_token
 		if kind is "IDENT"
 			matched = true
 			key = value
-			# ex: struct Point{\n}\tint x — name_pos+1 grabs the token after the struct name
-			int blk_start = name_pos + 1
-			ParseResult block_r = skip_to_block_start(tokens, blk_start)
-			int fld_start = pr_pos(block_r)
-			ParseResult fields_r = collect_struct_fields(tokens, fld_start)
-			val = pr_code(fields_r)
-			new_pos = pr_pos(fields_r)
+			int block_start = locate_struct_body_start(pos)
+			ParseResult block_result = skip_to_block_start(tokens, block_start)
+			int field_start = pr_pos(block_result)
+			ParseResult fields_result = collect_struct_fields(tokens, field_start)
+			val = pr_code(fields_result)
+			new_pos = pr_pos(fields_result)
 	Reg2Scan result = (matched, key, val, new_pos)
 	return result

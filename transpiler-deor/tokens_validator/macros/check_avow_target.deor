@@ -2,13 +2,16 @@
 # Enforces that avow is only used on a validator type variable.
 # avow appears inside parens: (avow x) — the token after KW_AVOW is the target.
 macro check_avow_target
+	# ex: (avow {x}) — kw_pos+1 grabs the avow target
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "KW_AVOW"
-		# ex: (avow {x}) — pos+1 grabs the avow target
-		int avow_next = pos + 1
-		if avow_next < token_count
-			Token avow_target = tokens at avow_next
-			(kind, value) in avow_target
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token target_token = tokens at next_pos
+			(kind, value) in target_token
 			if kind is "IDENT"
-				bool avow_is_valid = list_has(validator_vars, value)
-				if not avow_is_valid
-					errors at end = val_err(avow_target, lbl_var, rule_avow)
+				bool is_valid = list_has(validator_vars, value)
+				if not is_valid
+					errors at end = val_err(target_token, lbl_var, rule_avow)

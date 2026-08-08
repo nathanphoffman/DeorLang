@@ -1,4 +1,3 @@
-
 # Builds the enum and variant registries.
 # enum_reg:    [deorName, RustName] pairs (deorName lowercase, RustName PascalCase)
 # variant_reg: [variantName, rustEnumName] pairs for every variant of every untyped enum
@@ -64,8 +63,8 @@ fn PairsScan collect_variant_pairs(TokensRef tokens, int start, string rust_name
 		if new_pos >= token_count
 			scanning = false
 		else
-			Token var_tok = tokens at new_pos
-			(kind, value) in var_tok
+			Token variant_token = tokens at new_pos
+			(kind, value) in variant_token
 			new_pos = new_pos + 1
 			if kind is "DEDENT"
 				scanning = false
@@ -86,30 +85,46 @@ fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enu
 		if new_pos >= token_count
 			scanning = false
 		else
-			Token var_tok = tokens at new_pos
-			(kind, value) in var_tok
+			Token variant_token = tokens at new_pos
+			(kind, value) in variant_token
 			new_pos = new_pos + 1
 			if kind is "DEDENT"
 				scanning = false
 			else if kind is "IDENT"
-				string vname = value
+				string variant_name = value
 				if new_pos < token_count
-					Token eq_tok = tokens at new_pos
-					(kind) in eq_tok
+					Token equals_token = tokens at new_pos
+					(kind) in equals_token
 					new_pos = new_pos + 1
 					if kind is "EQUALS"
 						if new_pos < token_count
-							Token lit_tok = tokens at new_pos
-							(value) in lit_tok
+							Token literal_token = tokens at new_pos
+							(value) in literal_token
 							new_pos = new_pos + 1
 							string dot = "."
-							string vkey = s_join([enum_name, dot, vname])
-							pairs at end = vkey
+							string variant_key = s_join([enum_name, dot, variant_name])
+							pairs at end = variant_key
 							pairs at end = value
 	PairsScan result = (pairs, new_pos)
 	return result
 
 fn EnumScan try_enum_entry(TokensRef tokens, int pos)
+	# ex: enum {Color} — kw_pos+1 grabs the enum name (or type keyword if typed)
+	fn int locate_type_or_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: enum int {Status} — kw_pos+2 grabs the enum name, when typed
+	fn int locate_typed_name(int kw_pos)
+		return kw_pos + 2
+
+	# ex: enum int Status{\n}    ... — kw_pos+3 grabs the token that starts the body scan, when typed
+	fn int locate_typed_body_start(int kw_pos)
+		return kw_pos + 3
+
+	# ex: enum ColorTag{\n}    ... — kw_pos+2 grabs the token that starts the body scan, when untyped
+	fn int locate_untyped_body_start(int kw_pos)
+		return kw_pos + 2
+
 	int token_count = len(tokens)
 	bool matched = false
 	bool is_typed = false
@@ -117,41 +132,39 @@ fn EnumScan try_enum_entry(TokensRef tokens, int pos)
 	string rust_name = ""
 	string val_type = ""
 	strList pairs = empty
-	int new_pos = pos + 1
+	int new_pos = locate_type_or_name(pos)
 
-	# ex: enum {Color} — pos+1 grabs the enum name (or type keyword if typed)
-	int type_pos = pos + 1
+	int type_pos = locate_type_or_name(pos)
 	if type_pos < token_count
-		Token type_tok = tokens at type_pos
-		(kind, value) in type_tok
+		Token type_token = tokens at type_pos
+		(kind, value) in type_token
 		if kind is "IDENT"
-			bool ee_is_typed = is_typed_enum_type(value)
-			if ee_is_typed
+			bool word_is_typed = is_typed_enum_type(value)
+			if word_is_typed
 				matched = true
 				is_typed = true
 				val_type = value
-				# ex: enum int {Status} — type_pos+1 grabs the enum name
-				int name_pos = type_pos + 1
+				int name_pos = locate_typed_name(pos)
 				if name_pos < token_count
-					Token name_tok = tokens at name_pos
-					(value) in name_tok
+					Token name_token = tokens at name_pos
+					(value) in name_token
 					name = value
-					int body_start = name_pos + 1
-					ParseResult block_r = skip_to_block_start(tokens, body_start)
-					int scan_start = pr_pos(block_r)
-					PairsScan pairs_r = collect_typed_variant_pairs(tokens, scan_start, name)
-					pairs = ps_pairs(pairs_r)
-					new_pos = ps_new_pos(pairs_r)
+					int body_start = locate_typed_body_start(pos)
+					ParseResult block_result = skip_to_block_start(tokens, body_start)
+					int scan_start = pr_pos(block_result)
+					PairsScan pairs_result = collect_typed_variant_pairs(tokens, scan_start, name)
+					pairs = ps_pairs(pairs_result)
+					new_pos = ps_new_pos(pairs_result)
 			else
 				matched = true
 				is_typed = false
 				name = value
 				rust_name = s_pascal(name)
-				int body_start = type_pos + 1
-				ParseResult block_r = skip_to_block_start(tokens, body_start)
-				int scan_start = pr_pos(block_r)
-				PairsScan pairs_r = collect_variant_pairs(tokens, scan_start, rust_name)
-				pairs = ps_pairs(pairs_r)
-				new_pos = ps_new_pos(pairs_r)
+				int body_start = locate_untyped_body_start(pos)
+				ParseResult block_result = skip_to_block_start(tokens, body_start)
+				int scan_start = pr_pos(block_result)
+				PairsScan pairs_result = collect_variant_pairs(tokens, scan_start, rust_name)
+				pairs = ps_pairs(pairs_result)
+				new_pos = ps_new_pos(pairs_result)
 	EnumScan result = (matched, is_typed, name, rust_name, val_type, pairs, new_pos)
 	return result

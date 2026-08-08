@@ -2,39 +2,39 @@
 # Shared "extract decl name + duplicate check + register-or-error" logic used by
 # dd_handle_shape, dd_handle_raw, and dd_handle_block_decl. Reads: pos, is_fn, tokens,
 # token_count, seen, seen_files, enforce_unique_file, enforce_unique_import, and
-# dd_key_prefix (set by the caller immediately before `unsafe_macro_run dd_check_duplicate` —
+# key_prefix (set by the caller immediately before `unsafe_macro_run dd_check_duplicate` —
 # empty string for shape/block decls, "_raw_" for raw decls, so a raw name can't
 # collide with a same-named regular declaration in the seen/seen_files registry).
 # decl_name itself is always left as the plain, un-prefixed name, since only the
 # internal lookup key is prefixed — dd_error_duplicate's message is unaffected either way.
 # unsafe_macro (not macro) because already_seen must leak into the caller's scope for
 # the follow-up copy step (dd_copy_single_line_decl, or the block-decl tail) to read.
-# Writes: decl_name, dn_tok, already_seen. Copying the declaration to result is the
+# Writes: decl_name, name_token, already_seen. Copying the declaration to result is the
 # caller's job (see dd_copy_single_line_decl for the shape/raw case).
 unsafe_macro dd_check_duplicate
-	int dn_offset = 1
+	int name_offset = 1
 	if is_fn
-		dn_offset = 2
-	int dn_pos = pos + dn_offset
+		name_offset = 2
+	int name_pos = pos + name_offset
 	string decl_name = ""
-	Token dn_tok = tokens at pos
-	if dn_pos < token_count
-		dn_tok = tokens at dn_pos
-		(value) in dn_tok
+	Token name_token = tokens at pos
+	if name_pos < token_count
+		name_token = tokens at name_pos
+		(value) in name_token
 		decl_name = value
-	string dd_lookup_name = s_join([dd_key_prefix, decl_name])
+	string lookup_name = s_join([key_prefix, decl_name])
 	bool already_seen = false
-	int dup_idx = 0
-	int cs_len = len(seen)
-	for cs_i in range(cs_len)
-		string cs_val = seen at cs_i
-		if cs_val is dd_lookup_name
+	int dup_index = 0
+	int seen_len = len(seen)
+	for seen_index in range(seen_len)
+		string seen_val = seen at seen_index
+		if seen_val is lookup_name
 			already_seen = true
-			dup_idx = cs_i
+			dup_index = seen_index
 			break
 	if already_seen
-		string origin_file = seen_files at dup_idx
-		(file) in dn_tok
+		string origin_file = seen_files at dup_index
+		(file) in name_token
 		bool is_same_file = origin_file is file
 		bool should_error = false
 		if is_same_file
@@ -42,8 +42,8 @@ unsafe_macro dd_check_duplicate
 		else
 			should_error = enforce_unique_import
 		if should_error
-			dd_error_duplicate(decl_name, dn_tok, origin_file)
+			dd_error_duplicate(decl_name, name_token, origin_file)
 	else
-		seen at end = dd_lookup_name
-		(file) in dn_tok
+		seen at end = lookup_name
+		(file) in name_token
 		seen_files at end = file

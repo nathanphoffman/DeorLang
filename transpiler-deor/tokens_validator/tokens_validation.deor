@@ -5,9 +5,9 @@ shape fnTestRule = func of string to bool
 # check_use_after_move to track moves flow-sensitively across branches. See
 # docs on that macro for the mechanism.
 struct UamFrame
-	int uam_depth
-	strList uam_pre_vars
-	strList uam_acc_vars
+	int chain_depth
+	strList pre_vars
+	strList acc_vars
 
 shape frameStack = list of UamFrame
 
@@ -15,8 +15,8 @@ shape frameStack = list of UamFrame
 # in_void_fn correctly when a nested fn's body closes back into its enclosing
 # fn (which may have a different void-ness than the nested one).
 struct VoidFnFrame
-	int vff_depth
-	bool vff_prev_void
+	int depth
+	bool prev_void
 
 shape voidFrameStack = list of VoidFnFrame
 

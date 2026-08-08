@@ -58,8 +58,8 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 
 	unsafe_macro_run expr_float_prescan
 
-	ParseResult primary_r = gen_primary(tokens, pos, ctx)
-	move (code, new_pos) in primary_r
+	ParseResult primary_result = gen_primary(tokens, pos, ctx)
+	move (code, new_pos) in primary_result
 	string left_code = code
 	int cur_pos = new_pos
 
@@ -73,16 +73,16 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 		# ex: left is {right} — cur_pos+1 grabs the right-hand operand after the operator
 		int after_op = cur_pos + 1
 		macro_run expr_is_special
-		ParseResult rhs_r = gen_primary(tokens, after_op, ctx)
-		
-		move (code, new_pos) in rhs_r
+		ParseResult rhs_result = gen_primary(tokens, after_op, ctx)
+
+		move (code, new_pos) in rhs_result
 		rhs_code as code
 		rhs_pos as new_pos
 		string rust_op = map_op(operator_str)
-		string op_sp = " "
-		left_code = s_cat(move left_code, op_sp)
+		string operator_space = " "
+		left_code = s_cat(move left_code, operator_space)
 		left_code = s_cat(move left_code, rust_op)
-		left_code = s_cat(move left_code, op_sp)
+		left_code = s_cat(move left_code, operator_space)
 		left_code = s_cat(move left_code, rhs_code)
 		cur_pos = rhs_pos
 

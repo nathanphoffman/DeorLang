@@ -9,22 +9,54 @@
 # build_registry's single-pass dispatch loop (registry.deor) rather than each registry
 # running its own full scan over every token.
 fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
+	# ex: shape {Foo} = list of T — kw_pos+1 grabs the shape name
+	fn int locate_shape_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: shape Foo = {list} of T — kw_pos+3 grabs the form keyword (list/func)
+	fn int locate_shape_form(int kw_pos)
+		return kw_pos + 3
+
+	# ex: shape Foo = func {of} T to U — kw_pos+4 grabs KW_OF/KW_TO (or nothing, if bare func)
+	fn int locate_func_of_or_to(int kw_pos)
+		return kw_pos + 4
+
+	# ex: shape Foo = list of {T} — kw_pos+5 grabs the element type
+	fn int locate_list_elem(int kw_pos)
+		return kw_pos + 5
+
+	# ex: shape Foo = func of {T} to U — kw_pos+5 grabs the input type
+	fn int locate_func_in_type(int kw_pos)
+		return kw_pos + 5
+
+	# ex: shape Foo = func of T {to} U — kw_pos+6 grabs KW_TO (or nothing, if no output)
+	fn int locate_func_to_after_of(int kw_pos)
+		return kw_pos + 6
+
+	# ex: shape Foo = func of T to {U} — kw_pos+7 grabs the output type
+	fn int locate_func_out_type_after_of(int kw_pos)
+		return kw_pos + 7
+
+	# ex: shape Foo = func to {U} — kw_pos+5 grabs the output type (no of-clause)
+	fn int locate_func_out_type_after_to(int kw_pos)
+		return kw_pos + 5
+
 	int token_count = len(tokens)
 	bool matched = false
 	string key = ""
 	string val = ""
-	int new_pos = pos + 1
-	int name_pos = pos + 1
-	int form_pos = pos + 3
-	int t4_pos = pos + 4
-	if t4_pos < token_count
+	int new_pos = locate_shape_name(pos)
+	int name_pos = locate_shape_name(pos)
+	int form_pos = locate_shape_form(pos)
+	int of_or_to_pos = locate_func_of_or_to(pos)
+	if of_or_to_pos < token_count
 		Token name_token = tokens at name_pos
 		Token form_token = tokens at form_pos
 		(value) in name_token
 		string shape_name = value
 		(kind) in form_token
 		if kind is "KW_LIST"
-			int elem_pos = pos + 5
+			int elem_pos = locate_list_elem(pos)
 			if elem_pos < token_count
 				Token elem_token = tokens at elem_pos
 				(value) in elem_token
@@ -32,34 +64,34 @@ fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
 				key = shape_name
 				val = value
 		else
-			Token t4_token = tokens at t4_pos
-			(kind, value) in t4_token
-			bool t4_is_of = kind is "KW_OF"
-			bool t4_is_to = kind is "KW_TO"
+			Token of_or_to_token = tokens at of_or_to_pos
+			(kind, value) in of_or_to_token
+			bool is_of = kind is "KW_OF"
+			bool is_to = kind is "KW_TO"
 			string in_type = ""
 			string out_type = ""
-			if t4_is_of
-				int t5_pos = pos + 5
-				if t5_pos < token_count
-					Token t5_token = tokens at t5_pos
-					(value) in t5_token
+			if is_of
+				int in_type_pos = locate_func_in_type(pos)
+				if in_type_pos < token_count
+					Token in_type_token = tokens at in_type_pos
+					(value) in in_type_token
 					in_type = value
-				int t6_pos = pos + 6
-				if t6_pos < token_count
-					Token t6_token = tokens at t6_pos
-					(kind, value) in t6_token
-					bool t6_is_to = kind is "KW_TO"
-					if t6_is_to
-						int t7_pos = pos + 7
-						if t7_pos < token_count
-							Token t7_token = tokens at t7_pos
-							(value) in t7_token
+				int to_pos = locate_func_to_after_of(pos)
+				if to_pos < token_count
+					Token to_token = tokens at to_pos
+					(kind, value) in to_token
+					bool has_to = kind is "KW_TO"
+					if has_to
+						int out_type_pos = locate_func_out_type_after_of(pos)
+						if out_type_pos < token_count
+							Token out_type_token = tokens at out_type_pos
+							(value) in out_type_token
 							out_type = value
-			else if t4_is_to
-				int t5_pos = pos + 5
-				if t5_pos < token_count
-					Token t5_token = tokens at t5_pos
-					(value) in t5_token
+			else if is_to
+				int out_type_pos = locate_func_out_type_after_to(pos)
+				if out_type_pos < token_count
+					Token out_type_token = tokens at out_type_pos
+					(value) in out_type_token
 					out_type = value
 			matched = true
 			key = shape_name
@@ -70,12 +102,16 @@ fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
 # Scans a single `raw TypeName` declaration starting at a KW_RAW token. Called once per
 # KW_RAW hit from build_registry's single-pass dispatch loop (registry.deor).
 fn Reg2Scan try_raw_entry(TokensRef tokens, int pos)
+	# ex: raw {TypeName} — kw_pos+1 grabs the raw type's name
+	fn int locate_raw_name(int kw_pos)
+		return kw_pos + 1
+
 	int token_count = len(tokens)
 	bool matched = false
 	string key = ""
 	string val = ""
-	int new_pos = pos + 1
-	int name_pos = pos + 1
+	int new_pos = locate_raw_name(pos)
+	int name_pos = locate_raw_name(pos)
 	if name_pos < token_count
 		Token name_token = tokens at name_pos
 		(value) in name_token

@@ -6,40 +6,46 @@
 # block-introducing statement) is copied through as a single ordinary token
 # instead of misreading an unrelated token as the block's content.
 macro dd_handle_rust_block
-	# ex: rust {\n}"fn foo() {}" — pos+1 grabs the NEWLINE after KW_RUST
-	int rust_nl_pos = pos + 1
-	# ex: rust\n{"fn foo() {}"} — pos+2 grabs the RUST_BLOCK content token
-	int rust_content_pos = pos + 2
-	bool rust_is_block = false
+	# ex: rust {\n}"fn foo() {}" — kw_pos+1 grabs the NEWLINE after KW_RUST
+	fn int locate_newline(int kw_pos)
+		return kw_pos + 1
+
+	# ex: rust\n{"fn foo() {}"} — kw_pos+2 grabs the RUST_BLOCK content token
+	fn int locate_content(int kw_pos)
+		return kw_pos + 2
+
+	int newline_pos = locate_newline(pos)
+	int content_pos = locate_content(pos)
+	bool is_block = false
 	string block_value = ""
-	if rust_content_pos < token_count
-		Token rust_nl_tok = tokens at rust_nl_pos
-		Token rust_tok = tokens at rust_content_pos
-		(kind) in rust_nl_tok
-		bool rust_nl_ok = kind is "NEWLINE"
-		(kind, value) in rust_tok
-		bool rust_block_ok = kind is "RUST_BLOCK"
-		rust_is_block = rust_nl_ok and rust_block_ok
+	if content_pos < token_count
+		Token newline_token = tokens at newline_pos
+		Token content_token = tokens at content_pos
+		(kind) in newline_token
+		bool newline_ok = kind is "NEWLINE"
+		(kind, value) in content_token
+		bool block_ok = kind is "RUST_BLOCK"
+		is_block = newline_ok and block_ok
 		block_value = value
-	if rust_is_block
-		string rk_pfx = "_rust_"
-		strList rk_parts = [rk_pfx, block_value]
-		string decl_name = s_join(rk_parts)
+	if is_block
+		string rust_key_prefix = "_rust_"
+		strList key_parts = [rust_key_prefix, block_value]
+		string decl_name = s_join(key_parts)
 		bool already_seen = false
-		int cs_len = len(seen)
-		for cs_i in range(cs_len)
-			string cs_val = seen at cs_i
-			if cs_val is decl_name
+		int seen_len = len(seen)
+		for seen_index in range(seen_len)
+			string seen_val = seen at seen_index
+			if seen_val is decl_name
 				already_seen = true
 				break
 		if not already_seen
 			seen at end = decl_name
 			for copy_idx in range(3)
-				int tok_pos = pos + copy_idx
-				Token copy_tok = tokens at tok_pos
-				result at end = copy_tok
+				int copy_pos = pos + copy_idx
+				Token copy_token = tokens at copy_pos
+				result at end = copy_token
 		pos = pos + 3
 	else
-		Token rb_fallback_tok = tokens at pos
-		result at end = rb_fallback_tok
+		Token fallback_token = tokens at pos
+		result at end = fallback_token
 		pos = pos + 1

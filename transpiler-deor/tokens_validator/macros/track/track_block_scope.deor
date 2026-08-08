@@ -22,6 +22,10 @@
 # This must run before the "fn name" validate_ident check later in the loop, since that check
 # `continue`s past the KW_FN token on a match — anything scheduled after it never sees it.
 macro track_block_scope
+	# ex: fn {void} name() — kw_pos+1 grabs the return-type slot
+	fn int locate_return_type(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "INDENT"
 		block_depth = block_depth + 1
 	if cur_kind is "DEDENT"
@@ -30,14 +34,14 @@ macro track_block_scope
 			in_struct_body = false
 			in_enum_body = false
 			in_fn_body = false
-		int vff_len = len(void_fn_stack)
-		if vff_len > 0
-			int vff_top_idx = vff_len - 1
-			VoidFnFrame vff_top = void_fn_stack at vff_top_idx
-			(vff_depth, vff_prev_void) in vff_top
-			if vff_depth is block_depth
-				in_void_fn = vff_prev_void
-				void_fn_stack remove at vff_top_idx
+		int stack_len = len(void_fn_stack)
+		if stack_len > 0
+			int top_idx = stack_len - 1
+			VoidFnFrame top_frame = void_fn_stack at top_idx
+			(depth, prev_void) in top_frame
+			if depth is block_depth
+				in_void_fn = prev_void
+				void_fn_stack remove at top_idx
 	if cur_kind is "KW_STRUCT"
 		if block_depth is 0
 			in_struct_body = true
@@ -55,16 +59,15 @@ macro track_block_scope
 				copy_var_names.clear();
 				moved_vars.clear();
 				moved_fields.clear();
-		int vff_depth = block_depth
-		bool vff_prev_void = in_void_fn
-		VoidFnFrame vff_new = (vff_depth, vff_prev_void)
-		void_fn_stack at end = vff_new
-		# ex: fn {void} name() — pos+1 grabs the return-type slot
-		int void_check = pos + 1
-		bool vff_is_void = false
-		if void_check < token_count
-			Token void_tok = tokens at void_check
-			(kind) in void_tok
+		int depth = block_depth
+		bool prev_void = in_void_fn
+		VoidFnFrame new_frame = (depth, prev_void)
+		void_fn_stack at end = new_frame
+		int return_type_pos = locate_return_type(pos)
+		bool is_void = false
+		if return_type_pos < token_count
+			Token return_type_token = tokens at return_type_pos
+			(kind) in return_type_token
 			if kind is "KW_VOID"
-				vff_is_void = true
-		in_void_fn = vff_is_void
+				is_void = true
+		in_void_fn = is_void

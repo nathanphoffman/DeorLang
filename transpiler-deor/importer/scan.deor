@@ -3,51 +3,69 @@
 
 # Handles `import "path"` — KW_IMPORT is at pos, STRING path is at pos+1.
 fn ParseResult scan_import_new(tokenList tokens, int pos)
-	# ex: import {"lib/json.deor"} — pos+1 grabs the STRING path
-	int path_pos = pos + 1
+	# ex: import {"lib/json.deor"} — kw_pos+1 grabs the STRING path
+	fn int locate_path(int kw_pos)
+		return kw_pos + 1
+
+	# ex: import "lib/json.deor"{\n} — kw_pos+2 grabs the token after the path
+	fn int locate_after_path(int kw_pos)
+		return kw_pos + 2
+
+	int path_pos = locate_path(pos)
 	int token_count = len(tokens)
 	if path_pos < token_count
-		Token path_tok = tokens at path_pos
-		(kind, value) in path_tok
+		Token path_token = tokens at path_pos
+		(kind, value) in path_token
 		if kind is "STRING"
-			# ex: import "lib/json.deor"{\n} — path_pos+1 grabs the token after the path
-			int after_path = path_pos + 1
+			int after_path = locate_after_path(pos)
 			return make_result(value, after_path)
-	string emp = ""
-	return make_result(emp, pos)
+	string empty_str = ""
+	return make_result(empty_str, pos)
 
 # Scans for `where Placeholder = ConcreteType` immediately after an import path.
 # pos should be the token position right after the STRING path token.
 # Returns code="Placeholder|ConcreteType" and new_pos=position after the clause.
 # Returns code="" and new_pos=pos if no where clause is present.
 fn ParseResult scan_import_where(tokenList tokens, int pos)
+	# ex: where {Placeholder} = ConcreteType — kw_pos+1 grabs the placeholder name
+	fn int locate_replacement(int kw_pos)
+		return kw_pos + 1
+
+	# ex: where Placeholder {=} ConcreteType — kw_pos+2 grabs the EQUALS token
+	fn int locate_equals(int kw_pos)
+		return kw_pos + 2
+
+	# ex: where Placeholder = {ConcreteType} — kw_pos+3 grabs the concrete type
+	fn int locate_concrete_type(int kw_pos)
+		return kw_pos + 3
+
+	# ex: where Placeholder = ConcreteType{\n} — kw_pos+4 grabs the token after the clause
+	fn int locate_after_where(int kw_pos)
+		return kw_pos + 4
+
 	int token_count = len(tokens)
 	int where_pos = pos
-	# ex: where {Placeholder} = ConcreteType — pos+1 grabs the placeholder name
-	int replacement_pos = pos + 1
-	# ex: where Placeholder {=} ConcreteType — pos+2 grabs the EQUALS token
-	int eq_pos = pos + 2
-	# ex: where Placeholder = {ConcreteType} — pos+3 grabs the concrete type
-	int concrete_pos = pos + 3
+	int replacement_pos = locate_replacement(pos)
+	int eq_pos = locate_equals(pos)
+	int concrete_pos = locate_concrete_type(pos)
 	if concrete_pos < token_count
-		Token where_tok = tokens at where_pos
-		(kind, value) in where_tok
+		Token where_token = tokens at where_pos
+		(kind, value) in where_token
 		bool is_where = kind is "IDENT" and value is "where"
 		if is_where
-			Token eq_tok = tokens at eq_pos
-			Token concrete_tok = tokens at concrete_pos
-			Token replacement_tok = tokens at replacement_pos
-			(kind) in eq_tok
+			Token eq_token = tokens at eq_pos
+			Token concrete_token = tokens at concrete_pos
+			Token replacement_token = tokens at replacement_pos
+			(kind) in eq_token
 			bool is_eq = kind is "EQUALS"
 			if is_eq
-				(value) in replacement_tok
+				(value) in replacement_token
 				replacement_value as value
 
-				(value) in concrete_tok
-				# ex: where Placeholder = ConcreteType{\n} — concrete_pos+1 grabs the token after the clause
-				int after_where = concrete_pos + 1
+				(value) in concrete_token
+				int after_where = locate_after_where(pos)
 
 				replace_with as s_join([replacement_value, "|", value])
 				return make_result(replace_with, after_where)
-	string emp = ""
-	return make_result(emp, pos)
+	string empty_str = ""
+	return make_result(empty_str, pos)

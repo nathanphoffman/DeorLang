@@ -1,21 +1,40 @@
 
-# Checks whether tokens[sep_pos..sep_pos+4] is the fixed "fn void main()" signature
-# (KW_FN already confirmed by the caller at sep_pos itself).
-# Reads: tokens, sep_pos, sep_len
-# Writes: sep_is_main
+# Checks whether tokens[scan_pos..scan_pos+4] is the fixed "fn void main()" signature
+# (KW_FN already confirmed by the caller at scan_pos itself).
+# Reads: tokens, scan_pos, token_count
+# Writes: is_main
 macro sep_check_main_signature
-	int sep_sig_end = sep_pos + 4
-	if sep_sig_end < sep_len
-		Token sig_void = tokens at (sep_pos + 1)
-		Token sig_name = tokens at (sep_pos + 2)
-		Token sig_lparen = tokens at (sep_pos + 3)
-		Token sig_rparen = tokens at (sep_pos + 4)
-		(kind) in sig_void
-		bool ok1 = kind is "KW_VOID"
-		(kind, value) in sig_name
-		bool ok2 = kind is "IDENT" and value is "main"
-		(kind) in sig_lparen
-		bool ok3 = kind is "LPAREN"
-		(kind) in sig_rparen
-		bool ok4 = kind is "RPAREN"
-		sep_is_main = ok1 and ok2 and ok3 and ok4
+	# ex: fn {void} main() — kw_pos+1 grabs the return-type slot
+	fn int locate_void(int kw_pos)
+		return kw_pos + 1
+
+	# ex: fn void {main}() — kw_pos+2 grabs the fn name
+	fn int locate_name(int kw_pos)
+		return kw_pos + 2
+
+	# ex: fn void main{(} — kw_pos+3 grabs the opening paren
+	fn int locate_left_paren(int kw_pos)
+		return kw_pos + 3
+
+	# ex: fn void main({)} — kw_pos+4 grabs the closing paren
+	fn int locate_right_paren(int kw_pos)
+		return kw_pos + 4
+
+	int void_pos = locate_void(scan_pos)
+	int name_pos = locate_name(scan_pos)
+	int left_paren_pos = locate_left_paren(scan_pos)
+	int right_paren_pos = locate_right_paren(scan_pos)
+	if right_paren_pos < token_count
+		Token void_token = tokens at void_pos
+		Token name_token = tokens at name_pos
+		Token left_paren_token = tokens at left_paren_pos
+		Token right_paren_token = tokens at right_paren_pos
+		(kind) in void_token
+		bool is_void = kind is "KW_VOID"
+		(kind, value) in name_token
+		bool is_main_name = kind is "IDENT" and value is "main"
+		(kind) in left_paren_token
+		bool is_lparen = kind is "LPAREN"
+		(kind) in right_paren_token
+		bool is_rparen = kind is "RPAREN"
+		is_main = is_void and is_main_name and is_lparen and is_rparen

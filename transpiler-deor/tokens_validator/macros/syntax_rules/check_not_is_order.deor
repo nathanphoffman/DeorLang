@@ -8,29 +8,32 @@
 # negation, so `not x is y` silently checks an unrelated number instead of erroring
 # or computing "not equal."
 macro check_not_is_order
+	# ex: not {x} is y — kw_pos+1 grabs the token right after 'not'
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "KW_NOT"
-		# ex: not {x} is y — pos+1 grabs the token right after 'not'
-		int next_not = pos + 1
-		if next_not < token_count
-			Token next_not_tok = tokens at next_not
-			(kind) in next_not_tok
-			int cnio_end = next_not
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
+			int end_pos = next_pos
 
 			if kind is "LPAREN"
 				# not (expr) is y — skip to the matching close paren
-				cnio_end = find_matching_rparen(tokens, next_not)
+				end_pos = find_matching_rparen(tokens, next_pos)
 			else if kind is "IDENT"
 				# not name(...) is y — skip a following call's argument list too
-				int cnio_peek = next_not + 1
-				if cnio_peek < token_count
-					Token cnio_peek_tok = tokens at cnio_peek
-					(kind) in cnio_peek_tok
+				int peek_pos = locate_next_token(next_pos)
+				if peek_pos < token_count
+					Token peek_token = tokens at peek_pos
+					(kind) in peek_token
 					if kind is "LPAREN"
-						cnio_end = find_matching_rparen(tokens, cnio_peek)
+						end_pos = find_matching_rparen(tokens, peek_pos)
 
-			int after_not = cnio_end + 1
-			if after_not < token_count
-				Token after_not_tok = tokens at after_not
-				(kind) in after_not_tok
+			int after_pos = end_pos + 1
+			if after_pos < token_count
+				Token after_token = tokens at after_pos
+				(kind) in after_token
 				if kind is "KW_IS"
-					errors at end = val_err(next_not_tok, lbl_var, rule_not_is)
+					errors at end = val_err(next_token, lbl_var, rule_not_is)

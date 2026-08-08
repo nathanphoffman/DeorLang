@@ -3,7 +3,7 @@
 # fresh binding (name = ... / name as ...), which clears any moved/partial-
 # move-field state for that name since a new value now occupies it, or a
 # read, which is flagged if that name is in moved_vars and isn't a Copy
-# type. uam_skip covers every syntactic position an IDENT can appear in
+# type. skip_read covers every syntactic position an IDENT can appear in
 # that is not actually a value read (struct/enum member access,
 # declaration/call-target/keyword-adjacent slots, and the loop variable
 # check_use_after_move_var_for's KW_FOR handling marks moved on this same
@@ -14,18 +14,23 @@
 #   in_enum_body, moved_vars, copy_var_names, lbl_var, rule_use_after_move.
 # Writes: moved_vars, moved_fields, errors.
 macro check_use_after_move_var_ident
-	if cur_kind is "IDENT"
-		int uam_n1 = pos + 1
-		bool uam_is_binding = false
-		if uam_n1 < token_count
-			Token uam_n1_tok = tokens at uam_n1
-			(kind) in uam_n1_tok
-			if kind is "EQUALS"
-				uam_is_binding = true
-			if kind is "KW_AS"
-				uam_is_binding = true
+	# ex: name{=} / name{as} / name{(} — kw_pos+1 grabs the token that decides
+	# fresh-binding vs. read
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
 
-		if uam_is_binding
+	if cur_kind is "IDENT"
+		int next_pos = locate_next_token(pos)
+		bool is_binding = false
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
+			if kind is "EQUALS"
+				is_binding = true
+			if kind is "KW_AS"
+				is_binding = true
+
+		if is_binding
 			# a fresh value now occupies this name — it's no longer moved,
 			# and any partial-move field tracking from a PRIOR value that
 			# happened to share this name (e.g. a macro like gen_expr_r
@@ -33,67 +38,67 @@ macro check_use_after_move_var_ident
 			# `ge_r`) no longer applies either — the old "name.field" keys
 			# belonged to a different instance.
 			string name = cur_val
-			string uam_field_pfx = s_join([name, "."])
+			string field_prefix = s_join([name, "."])
 			rust
 				moved_vars.retain(|x| x != &name);
-				moved_fields.retain(|x| !x.starts_with(&uam_field_pfx));
+				moved_fields.retain(|x| !x.starts_with(&field_prefix));
 		else
-			bool uam_skip = in_struct_body
+			bool skip_read = in_struct_body
 			if in_enum_body
-				uam_skip = true
-			bool uam_next_is_rparen = false
-			if uam_n1 < token_count
-				Token uam_n1_tok2 = tokens at uam_n1
-				(kind) in uam_n1_tok2
+				skip_read = true
+			bool next_is_rparen = false
+			if next_pos < token_count
+				Token next_token2 = tokens at next_pos
+				(kind) in next_token2
 				if kind is "IDENT"
-					uam_skip = true
+					skip_read = true
 				if kind is "LPAREN"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_IN"
-					uam_skip = true
+					skip_read = true
 				if kind is "RPAREN"
-					uam_next_is_rparen = true
+					next_is_rparen = true
 			if pos > 0
-				int uam_prev = pos - 1
-				Token uam_prev_tok = tokens at uam_prev
-				(kind) in uam_prev_tok
+				int prev_pos = pos - 1
+				Token prev_token = tokens at prev_pos
+				(kind) in prev_token
 				if kind is "KW_MOVE"
-					uam_skip = true
+					skip_read = true
 				# for move (item in {collection}) — collection here was just
 				# marked moved by the KW_FOR handler above, in this very same
 				# pass; without this, this identical token gets re-visited
 				# as a plain read and flags itself as already-moved.
 				if kind is "KW_IN"
-					if uam_next_is_rparen
-						uam_skip = true
+					if next_is_rparen
+						skip_read = true
 				if kind is "KW_STRUCT"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_ENUM"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_SHAPE"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_TYPE"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_FN"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_MACRO"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_MACRO_RUN"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_UNSAFE_MACRO_RUN"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_UNSAFE_MACRO"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_OF"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_TO"
-					uam_skip = true
+					skip_read = true
 				if kind is "KW_RAW"
-					uam_skip = true
+					skip_read = true
 
-			if not uam_skip
-				bool uam_was_moved = list_has(moved_vars, cur_val)
-				if uam_was_moved
-					bool uam_is_copy2 = list_has(copy_var_names, cur_val)
-					if not uam_is_copy2
+			if not skip_read
+				bool was_moved = list_has(moved_vars, cur_val)
+				if was_moved
+					bool is_copy = list_has(copy_var_names, cur_val)
+					if not is_copy
 						errors at end = val_err(tok, lbl_var, rule_use_after_move)

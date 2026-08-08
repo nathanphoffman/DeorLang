@@ -7,28 +7,37 @@
 # type declaration (`type Foo()`, also `IDENT ( )` but preceded by `KW_TYPE`), which
 # is never allowed to be empty since its base type is mandatory.
 macro check_empty_parens
+	# ex: foo({)} — kw_pos+1 checks the very next token for an immediate close
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	# ex: {name}() — kw_pos-1 checks the token immediately before '(' for a call/decl name
+	fn int locate_prev_token(int kw_pos)
+		return kw_pos - 1
+
+	# ex: type Name{(} — kw_pos-2 checks for the 'type' keyword to exclude validator declarations
+	fn int locate_prev2(int kw_pos)
+		return kw_pos - 2
+
 	if cur_kind is "LPAREN"
-		# ex: foo({)} — pos+1 checks the very next token for an immediate close
-		int ep_next_pos = pos + 1
-		if ep_next_pos < token_count
-			Token ep_next_tok = tokens at ep_next_pos
-			(kind) in ep_next_tok
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
 			if kind is "RPAREN"
-				bool ep_is_fn = false
+				bool is_fn = false
 				if pos > 0
-					# ex: {name}() — pos-1 checks the token immediately before '(' for a call/decl name
-					int ep_prev_pos = pos - 1
-					Token ep_prev_tok = tokens at ep_prev_pos
-					(kind) in ep_prev_tok
-					bool ep_prev_is_ident = kind is "IDENT"
-					if ep_prev_is_ident
-						bool ep_is_type_decl = false
+					int prev_pos = locate_prev_token(pos)
+					Token prev_token = tokens at prev_pos
+					(kind) in prev_token
+					bool prev_is_ident = kind is "IDENT"
+					if prev_is_ident
+						bool is_type_decl = false
 						if pos > 1
-							# ex: type Name{(} — pos-2 checks for the 'type' keyword to exclude validator declarations
-							int ep_prev2_pos = pos - 2
-							Token ep_prev2_tok = tokens at ep_prev2_pos
-							(kind) in ep_prev2_tok
-							ep_is_type_decl = kind is "KW_TYPE"
-						ep_is_fn = not ep_is_type_decl
-				if not ep_is_fn
+							int prev2_pos = locate_prev2(pos)
+							Token prev2_token = tokens at prev2_pos
+							(kind) in prev2_token
+							is_type_decl = kind is "KW_TYPE"
+						is_fn = not is_type_decl
+				if not is_fn
 					errors at end = val_err(tok, lbl_var, rule_empty_parens)

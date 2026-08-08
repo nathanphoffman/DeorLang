@@ -108,47 +108,47 @@ fn tokenList load_file(string path)
 		bool is_new_import = kind is "KW_IMPORT" and at_root_depth
 
 		if is_new_import
-			ParseResult imp_r = scan_import_new(tok_raw, pos)
-			string imp_path = pr_code(imp_r)
-			int imp_end = pr_pos(imp_r)
+			ParseResult import_result = scan_import_new(tok_raw, pos)
+			string import_path = pr_code(import_result)
+			int import_end = pr_pos(import_result)
 
-			string imp_t_concrete = ""
-			string imp_t_placeholder = ""
+			string import_type_concrete = ""
+			string import_type_placeholder = ""
 
-			ParseResult where_r = scan_import_where(tok_raw, imp_end)
-			imp_t_code as pr_code(where_r)
+			ParseResult where_result = scan_import_where(tok_raw, import_end)
+			import_type_code as pr_code(where_result)
 
-			if not is_empty(imp_t_code)
-				imp_end = pr_pos(where_r)
+			if not is_empty(import_type_code)
+				import_end = pr_pos(where_result)
 				const string PIPE = "|"
-				list_code as s_split(imp_t_code, PIPE)
-				imp_t_placeholder = list_code at 0
-				imp_t_concrete = list_code at 1
+				list_code as s_split(import_type_code, PIPE)
+				import_type_placeholder = list_code at 0
+				import_type_concrete = list_code at 1
 
-			imp_path = resolve_lib_path(imp_path)
-			if not is_empty(imp_path)
+			import_path = resolve_lib_path(import_path)
+			if not is_empty(import_path)
 				if seen_decl
 					string import_order_msg = "imports must appear at the top of the file before any declarations"
 					fatal_at(path, import_order_msg)
-				string dedup_key = imp_path
-				if not is_empty(imp_t_concrete)
-					dedup_key = s_join([imp_path, "|", imp_t_placeholder, "=", imp_t_concrete])
+				string dedup_key = import_path
+				if not is_empty(import_type_concrete)
+					dedup_key = s_join([import_path, "|", import_type_placeholder, "=", import_type_concrete])
 				bool is_new = file_is_new_keyed(dedup_key)
 				if is_new
-					bool exists = f_exists(imp_path)
+					bool exists = f_exists(import_path)
 					if not exists
-						fatal_missing_import(imp_path)
-					tokenList imp_tokens = load_file(imp_path)
-					if not is_empty(imp_t_concrete)
-						imp_tokens = apply_t_substitution(imp_tokens, imp_t_placeholder, imp_t_concrete)
-					int imp_len = len(imp_tokens)
-					for imp_index in range(imp_len)
-						Token imp_tok = imp_tokens at imp_index
-						(kind) in imp_tok
-						bool imp_is_eof = kind is "EOF"
-						if not imp_is_eof
-							result at end = imp_tok
-				pos = imp_end
+						fatal_missing_import(import_path)
+					tokenList import_tokens = load_file(import_path)
+					if not is_empty(import_type_concrete)
+						import_tokens = apply_t_substitution(import_tokens, import_type_placeholder, import_type_concrete)
+					int import_len = len(import_tokens)
+					for import_index in range(import_len)
+						Token import_token = import_tokens at import_index
+						(kind) in import_token
+						bool import_is_eof = kind is "EOF"
+						if not import_is_eof
+							result at end = import_token
+				pos = import_end
 				continue
 		if at_root_depth and kind is not "NEWLINE"
 			seen_decl = true

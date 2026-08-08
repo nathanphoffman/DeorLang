@@ -1,4 +1,4 @@
-# Locate-fn / prefix-cleanup rework — remaining phases
+# Locate-fn / prefix-cleanup rework — complete
 
 Rework applied to `codegen/` and `tokens_validator/` in this codebase: replace raw
 `pos + N` offset arithmetic with named `locate_*` helper functions, nested locally
@@ -10,7 +10,12 @@ variable prefixes (`vd_`, `tbp_`, `td_`, etc.) in favor of full, clear names —
 prefix needed for macro-local variables since macro bodies are auto-`block`-scoped
 and can't leak or collide with siblings.
 
-## Done
+All 11 phases done. Verified at every phase via `just build-transpiler &&
+just rebuild-binary && just test-examples` (94/94 passing), plus a final
+double self-compilation round-trip to confirm the self-hosted transpiler is
+fully stable.
+
+## Phases
 
 1. **Type/validator declarations** — `check_validator_declaration.deor`,
    `codegen/decl/validator_type.deor`. Includes the fix for finding #1 (empty
@@ -47,22 +52,55 @@ and can't leak or collide with siblings.
    (`gen_input_check`, `gic_match_kw_and_name`, `gic_match_parens`,
    `gic_emit_header`, `gic_emit_bindings` — same cross-file ambient-variable
    rename pattern as the reassign macros in phase 6).
-
-## Remaining
-
 8. **Expression parsing** — `expr/expr.deor`, `expr/primary.deor`, `expr/macros/*`
-   (prefix_ops, paren_expr, literals, list_literal, ident_expr)
-9. **Use-after-move tracking** — `use_after_move/*` (7 files), `track/*` (3 files)
-10. **Misc syntax-rule checks** — `syntax_rules/*` (8 files), `idents/*` (4),
-    `builtins/*` (2), `brackets_parens/*` (4), plus loose ones
-    (`check_undefined_var_read.deor`, `check_avow_target.deor`,
-    `skip_rust_block.deor`)
-11. **Import/lexer/registry infrastructure** — `importer/*`, `registry/*`,
-    `deor_helpers.deor`, `arg_helpers.deor`, `tokens_validation.deor`,
-    `codegen.deor`
+   (prefix_ops, paren_expr, literals, list_literal, ident_expr).
+9. **Use-after-move tracking** — all of `use_after_move/*` (`check_move_target`,
+   `check_use_after_move_field`, `check_use_after_move_var_for`,
+   `check_use_after_move_var_ident`, `check_use_after_move_var_move`,
+   `check_use_after_move_chain`, `track_copy_vars`; `check_use_after_move.deor`
+   and `check_use_after_move_var.deor` were already clean dispatchers) and
+   `track/*` (`track_block_scope` — touched again to rename `UamFrame`'s and
+   `VoidFnFrame`'s own field names, since struct construction/destructure binds
+   by matching local variable name to field name — `track_non_bool_vars`,
+   `track_validator_vars`; `track_paren_depth.deor` was already clean).
+10. **Misc syntax-rule checks** — all 12 `syntax_rules/*` files (2 already
+    clean: `check_void_return`, `check_rust_generic`), all 4 `idents/*` (1
+    already clean: `validate_ident` — its offset is a caller-parameterized
+    variable, not a fixed constant), all 4 `builtins/*` (a cross-file
+    ambient-variable rename, same pattern as phase 6/7), all 7
+    `brackets_parens/*` (1 already clean: `check_keyword_in_parens`), and the
+    3 loose files (`check_undefined_var_read.deor`, `check_avow_target.deor`,
+    `skip_rust_block.deor`). Hit and fixed a real naming collision along the
+    way: `valid` is the reserved `KW_VALID` keyword, can't be used as a Deor
+    variable name (renamed to `is_valid` in the 3 files that tried).
+11. **Import/lexer/registry infrastructure** — all of `registry/*` (`shape`,
+    `enum`, `struct`, `validator_type`, `mut_scan`, `registry`;
+    `type_resolve.deor` was already clean), the importer/dedup pipeline
+    (`scan.deor`, `load.deor`, the `sep_*`/`strip_enforce_pragmas` pragma
+    family — another cross-file ambient rename — and the `dd_*` dedup family,
+    another one), the lexer (`tokenizer.deor`, `collect_rust_block.deor`,
+    `emit_indent_or_dedent.deor` — caught and fixed a real ambient-variable
+    break here: renaming `tokenizer.deor`'s loop vars broke
+    `collect_rust_block.deor`'s reference to them, since it reads them as
+    ambient from that same loop), `deor_helpers.deor` (already clean),
+    `codegen/codegen.deor`, and `tokens_validator/arg_helpers.deor`.
 
-Each phase: extract repeated `pos+N` into locally-nested `locate_*` fns where a
-construct's offsets are reused across a file's macro/fn boundary, drop abbreviated
-prefixes, rebuild (`just build-transpiler && just rebuild-binary`), run the full
-suite (`just test-examples`), then move on — so a break is always traceable to one
-phase.
+## Notable things found along the way
+
+- **Nested-fn support is a real, permanent language feature now** — a `fn` may
+  nest inside another `fn`, restricted to a body of exactly one `return expr`
+  statement (validated by `is_single_return_body` in
+  `check_fn_declaration.deor`). This is what let every `locate_*` helper
+  become a private, zero-risk nested function instead of a shared global.
+- **Struct construction/destructure binds by matching local variable name to
+  the struct's field name**, not by position — renaming a struct's own field
+  names (`UamFrame`, `VoidFnFrame`) requires updating every call site that
+  constructs or destructures it to use the new names exactly.
+- **Cross-file "ambient variable" macro families** (one macro sets locals
+  that sibling macros read/write without any parameter list) appear
+  throughout this codebase — reassign checks, input-destructure, the pragma
+  scanner, the dedup family. Renaming any of their shared names means
+  updating every file in the family together, verified by grepping for the
+  old names after each rename.
+- **`valid` is a reserved keyword** (`KW_VALID`) — can't be used as a plain
+  variable name in Deor source, including the transpiler's own.

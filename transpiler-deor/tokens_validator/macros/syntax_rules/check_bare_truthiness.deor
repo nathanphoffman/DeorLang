@@ -7,19 +7,22 @@
 # real truthiness in Deor. An untracked identifier (e.g. a destructured struct
 # field) is left alone rather than guessed at, to avoid false positives.
 macro check_bare_truthiness
+	# ex: if {my_int} — kw_pos+1 grabs the identifier that might be the whole condition
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "KW_IF"
-		# ex: if {my_int} — pos+1 grabs the identifier that might be the whole condition
-		int cbt_next = pos + 1
-		if cbt_next < token_count
-			Token cbt_tok = tokens at cbt_next
-			(kind, value) in cbt_tok
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind, value) in next_token
 			if kind is "IDENT"
-				# ex: if my_int{\n} — pos+2 must be a bare newline for this identifier to BE
+				# ex: if my_int{\n} — next_pos+1 must be a bare newline for this identifier to BE
 				# the whole condition, not just its first token (e.g. 'if my_int is not 0')
-				int cbt_after = cbt_next + 1
-				if cbt_after < token_count
-					Token cbt_after_tok = tokens at cbt_after
-					(kind) in cbt_after_tok
+				int after_pos = locate_next_token(next_pos)
+				if after_pos < token_count
+					Token after_token = tokens at after_pos
+					(kind) in after_token
 					if kind is "NEWLINE"
 						if list_has(non_bool_var_names, value)
-							errors at end = val_err(cbt_tok, lbl_var, rule_bare_truthiness)
+							errors at end = val_err(next_token, lbl_var, rule_bare_truthiness)

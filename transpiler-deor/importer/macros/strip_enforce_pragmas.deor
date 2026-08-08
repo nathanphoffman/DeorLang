@@ -21,27 +21,27 @@ unsafe_macro strip_enforce_pragmas
 	bool enforce_unique_file = false
 	bool enforce_unique_import = false
 	int enforce_macro_file_depth = 0
-	tokenList sep_result = empty
-	int sep_len = len(tokens)
-	int sep_pos = 0
-	for if sep_pos < sep_len
-		Token sep_tok = tokens at sep_pos
-		(kind) in sep_tok
-		bool sep_is_main = false
+	tokenList result_tokens = empty
+	int token_count = len(tokens)
+	int scan_pos = 0
+	for if scan_pos < token_count
+		Token scan_token = tokens at scan_pos
+		(kind) in scan_token
+		bool is_main = false
 		if kind is "KW_FN"
 			macro_run sep_check_main_signature
-		if sep_is_main
-			bool sep_opener_ok = false
+		if is_main
+			bool opener_ok = false
 			macro_run sep_copy_main_opener
-			if sep_opener_ok
+			if opener_ok
 				macro_run sep_scan_pragma_lines
 			rust
-				for i in (sep_pos as usize)..(sep_len as usize) {
-					sep_result.push(tokens[i].clone());
+				for i in (scan_pos as usize)..(token_count as usize) {
+					result_tokens.push(tokens[i].clone());
 				}
-			sep_pos = sep_len
+			scan_pos = token_count
 			break
 		else
-			sep_result at end = sep_tok
-			sep_pos = sep_pos + 1
-	tokens = sep_result
+			result_tokens at end = scan_token
+			scan_pos = scan_pos + 1
+	tokens = result_tokens

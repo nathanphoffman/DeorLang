@@ -1,14 +1,18 @@
 
 # Ensures `valid` only appears after `is` or `is not` — it cannot be assigned or used as a standalone expression.
 macro check_valid_placement
+	# ex: {is} valid — kw_pos-1 grabs the token before 'valid'
+	fn int locate_prev_token(int kw_pos)
+		return kw_pos - 1
+
 	if cur_kind is "KW_VALID"
-		bool valid_ok = false
+		bool is_valid = false
 		if pos > 0
-			int valid_pos = pos - 1
-			Token prev_valid_tok = tokens at valid_pos
-			(kind) in prev_valid_tok
-			valid_ok = kind is "KW_IS"
-			if not valid_ok
-				valid_ok = kind is "KW_NOT"
-		if not valid_ok
+			int prev_pos = locate_prev_token(pos)
+			Token prev_token = tokens at prev_pos
+			(kind) in prev_token
+			is_valid = kind is "KW_IS"
+			if not is_valid
+				is_valid = kind is "KW_NOT"
+		if not is_valid
 			errors at end = val_err(tok, lbl_var, rule_valid)

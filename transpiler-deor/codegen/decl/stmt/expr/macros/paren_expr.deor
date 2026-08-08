@@ -5,71 +5,74 @@
 #                  generates `StructName { f1, f2 }`
 #   (expr)       — grouped arithmetic/logic: generates `(expr)`
 macro primary_paren_expr
+	# ex: ({avow} expr) — kw_pos+1 grabs the token that decides avow/struct/grouped
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if kind is "LPAREN"
-		# ex: ({avow} expr) — pos+1 grabs the token that decides avow/struct/grouped
-		int pe_peek = pos + 1
-		if pe_peek < token_count
-			Token pe_peek_tok = tokens at pe_peek
-			(kind) in pe_peek_tok
+		int peek_pos = locate_next_token(pos)
+		if peek_pos < token_count
+			Token peek_token = tokens at peek_pos
+			(kind) in peek_token
 			if kind is "KW_AVOW"
-				# ex: (avow {expr}) — pe_peek+1 grabs the expression after 'avow'
-				int pe_expr_pos = pe_peek + 1
-				ParseResult pe_expr_r = gen_expr(tokens, pe_expr_pos, ctx)
-				move (code, new_pos) in pe_expr_r
-				pe_expr_code as code
-				pe_after as new_pos + 1
-				string pe_unw = ".unwrap().0"
-				string pe_unwrap_code = s_join([pe_expr_code, pe_unw])
-				return make_result(move pe_unwrap_code, pe_after)
+				# ex: (avow {expr}) — peek_pos+1 grabs the expression after 'avow'
+				int avow_expr_pos = locate_next_token(peek_pos)
+				ParseResult avow_expr_result = gen_expr(tokens, avow_expr_pos, ctx)
+				move (code, new_pos) in avow_expr_result
+				avow_expr_code as code
+				avow_after as new_pos + 1
+				string unwrap_suffix = ".unwrap().0"
+				string avow_unwrap_code = s_join([avow_expr_code, unwrap_suffix])
+				return make_result(move avow_unwrap_code, avow_after)
 
 			# Peek ahead to decide: if every token before RPAREN is IDENT or COMMA
 			# then this is struct construction, otherwise it's a grouped expression.
-			bool pe_is_struct = true
-			int pe_scan = pe_peek
-			for if pe_scan < token_count
-				Token pe_scan_tok = tokens at pe_scan
-				(kind) in pe_scan_tok
+			bool is_struct = true
+			int scan_pos = peek_pos
+			for if scan_pos < token_count
+				Token scan_token = tokens at scan_pos
+				(kind) in scan_token
 				if kind is "RPAREN"
 					break
 				if kind is "IDENT"
-					pe_scan = pe_scan + 1
+					scan_pos = scan_pos + 1
 					continue
 				if kind is "COMMA"
-					pe_scan = pe_scan + 1
+					scan_pos = scan_pos + 1
 					continue
-				pe_is_struct = false
+				is_struct = false
 				break
 
-			if pe_is_struct
-				strList pe_fields = empty
-				int pe_cur = pe_peek
-				for if pe_cur < token_count
-					Token pe_field_tok = tokens at pe_cur
-					(kind, value) in pe_field_tok
+			if is_struct
+				strList fields = empty
+				int field_scan_pos = peek_pos
+				for if field_scan_pos < token_count
+					Token field_token = tokens at field_scan_pos
+					(kind, value) in field_token
 					if kind is "RPAREN"
-						pe_cur = pe_cur + 1
+						field_scan_pos = field_scan_pos + 1
 						break
 					else if kind is "COMMA"
-						pe_cur = pe_cur + 1
+						field_scan_pos = field_scan_pos + 1
 					else if kind is "IDENT"
-						pe_fields at end = value
-						pe_cur = pe_cur + 1
+						fields at end = value
+						field_scan_pos = field_scan_pos + 1
 					else
-						pe_cur = pe_cur + 1
-				string pe_struct_name = find_struct_for_fields(struct_reg, pe_fields)
-				string pe_sep = ", "
-				string pe_fields_code = s_join_with(pe_fields, pe_sep)
-				string pe_sco = " { "
-				string pe_scc = " }"
-				string pe_struct_code = s_join([pe_struct_name, pe_sco, pe_fields_code, pe_scc])
-				return make_result(move pe_struct_code, pe_cur)
+						field_scan_pos = field_scan_pos + 1
+				string struct_name = find_struct_for_fields(struct_reg, fields)
+				string fields_separator = ", "
+				string fields_code = s_join_with(fields, fields_separator)
+				string open_brace = " { "
+				string close_brace = " }"
+				string struct_code = s_join([struct_name, open_brace, fields_code, close_brace])
+				return make_result(move struct_code, field_scan_pos)
 
 			# Grouped expression: parse the inner expr then skip the closing RPAREN
-			ParseResult pe_inner_r = gen_expr(tokens, pe_peek, ctx)
-			move (code, new_pos) in pe_inner_r
-			pe_inner_code as code
-			pe_after_inner as new_pos + 1
-			string pe_open = "("
-			string pe_close = ")"
-			string pe_grouped = s_join([pe_open, pe_inner_code, pe_close])
-			return make_result(move pe_grouped, pe_after_inner)
+			ParseResult grouped_result = gen_expr(tokens, peek_pos, ctx)
+			move (code, new_pos) in grouped_result
+			grouped_inner_code as code
+			grouped_after as new_pos + 1
+			string paren_open = "("
+			string paren_close = ")"
+			string grouped_code = s_join([paren_open, grouped_inner_code, paren_close])
+			return make_result(move grouped_code, grouped_after)

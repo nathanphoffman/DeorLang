@@ -2,13 +2,16 @@
 # Flags `return empty` and `return none` — neither is valid in Deor.
 # For not-valid validator results, declare the variable without a value and return it.
 macro check_return_invalid
+	# ex: return {empty} — kw_pos+1 grabs the returned value
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "KW_RETURN"
-		# ex: return {empty} — pos+1 grabs the returned value
-		int ri_next = pos + 1
-		if ri_next < token_count
-			Token ri_tok = tokens at ri_next
-			(kind) in ri_tok
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
 			if kind is "KW_EMPTY"
-				errors at end = val_err(ri_tok, lbl_fn, rule_return_empty)
+				errors at end = val_err(next_token, lbl_fn, rule_return_empty)
 			if kind is "KW_NONE"
-				errors at end = val_err(ri_tok, lbl_fn, rule_return_none)
+				errors at end = val_err(next_token, lbl_fn, rule_return_none)

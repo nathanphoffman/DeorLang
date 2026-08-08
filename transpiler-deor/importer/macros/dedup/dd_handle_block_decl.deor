@@ -5,23 +5,23 @@
 # ENFORCE_UNIQUE_IMPORT_DECLARATIONS); otherwise keeps the first and drops the repeat.
 # Copies the full indented block to result and advances pos.
 macro dd_handle_block_decl
-	string dd_key_prefix = ""
+	string key_prefix = ""
 	unsafe_macro_run dd_check_duplicate
-	int fbe_cur = pos
-	int fbe_depth = 0
-	bool fbe_entered = false
-	for if fbe_cur < token_count
-		Token fbe_tok = tokens at fbe_cur
-		(kind) in fbe_tok
-		fbe_cur = fbe_cur + 1
+	int scan_pos = pos
+	int depth = 0
+	bool entered = false
+	for if scan_pos < token_count
+		Token scan_token = tokens at scan_pos
+		(kind) in scan_token
+		scan_pos = scan_pos + 1
 		if kind is "INDENT"
-			fbe_depth = fbe_depth + 1
-			fbe_entered = true
+			depth = depth + 1
+			entered = true
 		else if kind is "DEDENT"
-			fbe_depth = fbe_depth - 1
-			if fbe_depth is 0 and fbe_entered
+			depth = depth - 1
+			if depth is 0 and entered
 				break
-	int end_pos = fbe_cur
+	int end_pos = scan_pos
 	if not already_seen
 		rust
 			for i in (pos as usize)..(end_pos as usize) {

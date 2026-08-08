@@ -2,15 +2,15 @@
 # Reports a duplicate top-level declaration as a fatal import-time error and exits.
 # Fires for any name reused anywhere in the project, same file or a different one —
 # there is no more silent "first one wins" for cross-file collisions.
-fn void dd_error_duplicate(string decl_name, Token dn_tok, string origin_file)
-	(file, line) in dn_tok
+fn void dd_error_duplicate(string decl_name, Token name_token, string origin_file)
+	(file, line) in name_token
 	string line_str = n_to_str(line)
-	string err_pre = "[error] "
-	string err_line = " line "
-	string err_mid = ": duplicate declaration '"
-	string err_end = "' — already declared in "
-	strList err_parts = [err_pre, file, err_line, line_str, err_mid, decl_name, err_end, origin_file]
-	string err_msg = s_join(err_parts)
-	print(err_msg)
+	string error_prefix = "[error] "
+	string error_line = " line "
+	string error_mid = ": duplicate declaration '"
+	string error_end = "' — already declared in "
+	strList error_parts = [error_prefix, file, error_line, line_str, error_mid, decl_name, error_end, origin_file]
+	string error_msg = s_join(error_parts)
+	print(error_msg)
 	rust
 		std::process::exit(1);

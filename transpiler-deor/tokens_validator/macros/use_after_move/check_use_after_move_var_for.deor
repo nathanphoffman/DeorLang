@@ -9,34 +9,38 @@
 #   rule_use_after_move.
 # Writes: moved_vars, errors.
 macro check_use_after_move_var_for
+	# ex: for {move} (item in collection) — kw_pos+1 grabs the token after 'for'
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	# for move (item in collection) — collection is fully consumed once the
-	# loop is entered. ex: for {move} (item in collection) — pos+1 is KW_MOVE
+	# loop is entered.
 	if cur_kind is "KW_FOR"
-		int uam_mv_pos = pos + 1
-		if uam_mv_pos < token_count
-			Token uam_mv_tok = tokens at uam_mv_pos
-			(kind) in uam_mv_tok
+		int move_pos = locate_next_token(pos)
+		if move_pos < token_count
+			Token move_token = tokens at move_pos
+			(kind) in move_token
 			if kind is "KW_MOVE"
-				# ex: for move ({item} in collection) — uam_mv_pos+2 grabs the loop var
-				int uam_var_pos = uam_mv_pos + 2
-				# ex: for move (item {in} collection) — uam_var_pos+1 grabs 'in'
-				int uam_in_pos = uam_var_pos + 1
-				# ex: for move (item in {collection}) — uam_in_pos+1 grabs the collection name
-				int uam_coll_pos = uam_in_pos + 1
-				if uam_coll_pos < token_count
-					Token uam_coll_tok = tokens at uam_coll_pos
-					(kind, value) in uam_coll_tok
+				# ex: for move ({item} in collection) — move_pos+2 grabs the loop var
+				int var_pos = move_pos + 2
+				# ex: for move (item {in} collection) — var_pos+1 grabs 'in'
+				int in_pos = locate_next_token(var_pos)
+				# ex: for move (item in {collection}) — in_pos+1 grabs the collection name
+				int collection_pos = locate_next_token(in_pos)
+				if collection_pos < token_count
+					Token collection_token = tokens at collection_pos
+					(kind, value) in collection_token
 					if kind is "IDENT"
-						int uam_after_coll = uam_coll_pos + 1
-						bool uam_coll_bare = true
-						if uam_after_coll < token_count
-							Token uam_after_tok = tokens at uam_after_coll
-							(kind) in uam_after_tok
+						int after_collection = locate_next_token(collection_pos)
+						bool collection_is_bare = true
+						if after_collection < token_count
+							Token after_token = tokens at after_collection
+							(kind) in after_token
 							if kind is "LPAREN"
-								uam_coll_bare = false
-						if uam_coll_bare
-							bool uam_already = list_has(moved_vars, value)
-							if uam_already
-								errors at end = val_err(uam_coll_tok, lbl_var, rule_use_after_move)
+								collection_is_bare = false
+						if collection_is_bare
+							bool already_moved = list_has(moved_vars, value)
+							if already_moved
+								errors at end = val_err(collection_token, lbl_var, rule_use_after_move)
 							else
 								moved_vars at end = value

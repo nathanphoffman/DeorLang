@@ -3,26 +3,30 @@
 # INT and FLOAT pass their text through unchanged. STRING gets s_debug() to add quotes
 # and escape characters. TRUE/FALSE map to their Rust equivalents.
 macro primary_literals
+	# ex: {42} — kw_pos+1 grabs the token after a literal
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if kind is "INT"
-		string lit_val = value
-		bool lit_in_float = float_ctx_get()
-		if lit_in_float
-			string lit_dot = ".0"
-			lit_val = s_cat(lit_val, lit_dot)
-		int lit_next = pos + 1
-		return make_result(move lit_val, lit_next)
+		string int_value = value
+		bool in_float_ctx = float_ctx_get()
+		if in_float_ctx
+			string float_suffix = ".0"
+			int_value = s_cat(int_value, float_suffix)
+		int next_pos = locate_next_token(pos)
+		return make_result(move int_value, next_pos)
 	if kind is "FLOAT"
-		int lit_next = pos + 1
-		return make_result(move value, lit_next)
+		int next_pos = locate_next_token(pos)
+		return make_result(move value, next_pos)
 	if kind is "STRING"
-		string lit_debug = s_debug(value)
-		int lit_next = pos + 1
-		return make_result(move lit_debug, lit_next)
+		string string_debug = s_debug(value)
+		int next_pos = locate_next_token(pos)
+		return make_result(move string_debug, next_pos)
 	if kind is "KW_TRUE"
-		string lit_true = "true"
-		int lit_next = pos + 1
-		return make_result(move lit_true, lit_next)
+		string true_value = "true"
+		int next_pos = locate_next_token(pos)
+		return make_result(move true_value, next_pos)
 	if kind is "KW_FALSE"
-		string lit_false = "false"
-		int lit_next = pos + 1
-		return make_result(move lit_false, lit_next)
+		string false_value = "false"
+		int next_pos = locate_next_token(pos)
+		return make_result(move false_value, next_pos)

@@ -1,14 +1,17 @@
 
 # Ensures `move` is followed by an IDENT or LPAREN — flags `move 5`, `move "hello"`, etc.
 macro check_move_target
+	# ex: move {data} — kw_pos+1 grabs the move target
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "KW_MOVE"
-		# ex: move {data} — pos+1 grabs the move target
-		int mv_next = pos + 1
-		if mv_next < token_count
-			Token mv_tok = tokens at mv_next
-			(kind) in mv_tok
-			bool mv_ok = kind is "IDENT"
-			bool mv_destruct = kind is "LPAREN"
-			bool mv_valid = mv_ok or mv_destruct
-			if not mv_valid
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
+			bool is_ident = kind is "IDENT"
+			bool is_lparen = kind is "LPAREN"
+			bool is_valid_target = is_ident or is_lparen
+			if not is_valid_target
 				errors at end = val_err(tok, lbl_var, rule_move)

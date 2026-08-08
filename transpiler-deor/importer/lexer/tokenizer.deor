@@ -12,21 +12,21 @@ fn tokenList tokenize(string source, string path)
 	string kind_eof = "EOF"
 	string newline = "\n"
 	strList lines = s_split(source, newline)
-	int n_lines = len(lines)
+	int line_count = len(lines)
 	strList indent_stack = empty
 	string zero_str = "0"
 	indent_stack at end = zero_str
 	int cur_line = 0
 	int skip = 0
 
-	for raw_li in range(n_lines)
+	for line_index in range(line_count)
 		cur_line = cur_line + 1
 		TokenMeta meta = make_meta(cur_line, path)
 		if skip > 0
 			skip = skip - 1
 			continue
 
-		string raw_line = lines at raw_li
+		string raw_line = lines at line_index
 		string line = s_rtrim(raw_line)
 		string content = s_trim(line)
 
@@ -55,17 +55,17 @@ fn tokenList tokenize(string source, string path)
 				break
 
 			if character is "\""
-				ParseResult str_r = scan_string_literal(chars, char_index, char_count)
+				ParseResult string_result = scan_string_literal(chars, char_index, char_count)
 				string kind_string = "STRING"
-				string str_val = pr_code(str_r)
+				string str_val = pr_code(string_result)
 				tokens at end = make_token(kind_string, str_val, meta)
-				char_index = pr_pos(str_r)
+				char_index = pr_pos(string_result)
 				continue
 
 			if c_digit(character)
-				ParseResult num_r = scan_number(chars, char_index, char_count)
-				string num_str = pr_code(num_r)
-				char_index = pr_pos(num_r)
+				ParseResult number_result = scan_number(chars, char_index, char_count)
+				string num_str = pr_code(number_result)
+				char_index = pr_pos(number_result)
 				string dot = "."
 				strList num_parts = s_split(num_str, dot)
 				bool is_float = len(num_parts) > 1
@@ -78,9 +78,9 @@ fn tokenList tokenize(string source, string path)
 				continue
 
 			if c_alpha(character)
-				ParseResult word_r = scan_word(chars, char_index, char_count)
-				string word = pr_code(word_r)
-				char_index = pr_pos(word_r)
+				ParseResult word_result = scan_word(chars, char_index, char_count)
+				string word = pr_code(word_result)
+				char_index = pr_pos(word_result)
 				string word_kind = word_to_kind(word)
 				tokens at end = make_token(word_kind, word, meta)
 				continue

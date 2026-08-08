@@ -2,6 +2,9 @@
 # registry context from the main pipeline, then walks the token stream dispatching
 # each top-level declaration to its gen_* function and concatenating the results.
 fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
+	# ex: rust\n{"fn foo() {}"} — kw_pos+2 grabs the RUST_BLOCK content token
+	fn int locate_rust_block_content(int kw_pos)
+		return kw_pos + 2
 
 	strList parts = empty
 	int token_count = len(all_ref)
@@ -24,10 +27,10 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 			pos = pos + 1
 			continue
 		if file is not last_file
-			string fc_slash = "// "
-			string fc_nl = "\n"
-			string fc1 = s_cat(fc_slash, file)
-			string file_comment = s_cat(fc1, fc_nl)
+			string comment_prefix = "// "
+			string newline = "\n"
+			string prefixed_file = s_cat(comment_prefix, file)
+			string file_comment = s_cat(prefixed_file, newline)
 			parts at end = file_comment
 			last_file = file
 		if kind is "KW_STRUCT"
@@ -67,8 +70,7 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 			pos = new_pos
 			continue
 		if kind is "KW_RUST"
-			# ex: rust\n{"fn foo() {}"} — pos+2 grabs the RUST_BLOCK content token
-			int block_pos = pos + 2
+			int block_pos = locate_rust_block_content(pos)
 			Token block_token = all_ref at block_pos
 			(value) in block_token
 			string newline = "\n"

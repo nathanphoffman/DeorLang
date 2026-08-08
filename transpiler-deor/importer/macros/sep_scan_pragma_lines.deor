@@ -1,54 +1,58 @@
 
 # Repeatedly consumes ENFORCE_UNIQUE_FILE_DECLARATIONS / ENFORCE_UNIQUE_IMPORT_DECLARATIONS
 # pragma lines (IDENT + NEWLINE) and ENFORCE_MACRO_FILE_DEPTH pragma lines
-# (IDENT + EQUALS + INT + NEWLINE) starting at sep_pos, setting the matching flag/value for
+# (IDENT + EQUALS + INT + NEWLINE) starting at scan_pos, setting the matching flag/value for
 # each one found and advancing past it. Stops at the first token that isn't a recognized
 # pragma line.
-# Reads/writes: tokens, sep_pos, enforce_unique_file, enforce_unique_import, enforce_macro_file_depth
-# Reads: sep_len
+# Reads/writes: tokens, scan_pos, enforce_unique_file, enforce_unique_import, enforce_macro_file_depth
+# Reads: token_count
 macro sep_scan_pragma_lines
-	bool sep_scanning = true
-	for if sep_scanning
-		sep_scanning = false
-		if sep_pos < sep_len
-			Token prag_tok = tokens at sep_pos
-			(kind, value) in prag_tok
+	# ex: ENFORCE_UNIQUE_FILE_DECLARATIONS {\n} — anchor+1 grabs the newline that must follow
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	bool scanning = true
+	for if scanning
+		scanning = false
+		if scan_pos < token_count
+			Token pragma_token = tokens at scan_pos
+			(kind, value) in pragma_token
 			bool is_file_flag = kind is "IDENT" and value is "ENFORCE_UNIQUE_FILE_DECLARATIONS"
 			bool is_import_flag = kind is "IDENT" and value is "ENFORCE_UNIQUE_IMPORT_DECLARATIONS"
 			bool is_depth_flag = kind is "IDENT" and value is "ENFORCE_MACRO_FILE_DEPTH"
 			if is_file_flag or is_import_flag
-				int sep_nl_pos = sep_pos + 1
-				bool nl_ok = false
-				if sep_nl_pos < sep_len
-					Token prag_nl_tok = tokens at sep_nl_pos
-					(kind) in prag_nl_tok
-					nl_ok = kind is "NEWLINE"
-				if nl_ok
+				int newline_pos = locate_next_token(scan_pos)
+				bool newline_ok = false
+				if newline_pos < token_count
+					Token pragma_newline_token = tokens at newline_pos
+					(kind) in pragma_newline_token
+					newline_ok = kind is "NEWLINE"
+				if newline_ok
 					if is_file_flag
 						enforce_unique_file = true
 					else
 						enforce_unique_import = true
-					sep_pos = sep_pos + 2
-					sep_scanning = true
+					scan_pos = scan_pos + 2
+					scanning = true
 			else if is_depth_flag
-				int sep_eq_pos = sep_pos + 1
-				int sep_val_pos = sep_pos + 2
-				int sep_depth_nl_pos = sep_pos + 3
+				int equals_pos = scan_pos + 1
+				int value_pos = scan_pos + 2
+				int depth_newline_pos = scan_pos + 3
 				bool depth_ok = false
-				string sep_depth_str = ""
-				if sep_depth_nl_pos < sep_len
-					Token prag_eq_tok = tokens at sep_eq_pos
-					(kind) in prag_eq_tok
+				string depth_str = ""
+				if depth_newline_pos < token_count
+					Token equals_token = tokens at equals_pos
+					(kind) in equals_token
 					bool eq_ok = kind is "EQUALS"
-					Token prag_val_tok = tokens at sep_val_pos
-					(kind, value) in prag_val_tok
+					Token value_token = tokens at value_pos
+					(kind, value) in value_token
 					bool val_ok = kind is "INT"
-					sep_depth_str = value
-					Token prag_depth_nl_tok = tokens at sep_depth_nl_pos
-					(kind) in prag_depth_nl_tok
-					bool depth_nl_ok = kind is "NEWLINE"
-					depth_ok = eq_ok and val_ok and depth_nl_ok
+					depth_str = value
+					Token depth_newline_token = tokens at depth_newline_pos
+					(kind) in depth_newline_token
+					bool depth_newline_ok = kind is "NEWLINE"
+					depth_ok = eq_ok and val_ok and depth_newline_ok
 				if depth_ok
-					enforce_macro_file_depth = n_parse(sep_depth_str)
-					sep_pos = sep_pos + 4
-					sep_scanning = true
+					enforce_macro_file_depth = n_parse(depth_str)
+					scan_pos = scan_pos + 4
+					scanning = true

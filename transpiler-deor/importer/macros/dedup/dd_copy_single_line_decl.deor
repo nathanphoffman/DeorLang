@@ -5,18 +5,18 @@
 # dd_check_duplicate — run that first). Writes: result (unchanged if already_seen),
 # advances pos past the declaration.
 macro dd_copy_single_line_decl
-	int fse_cur = pos
-	for if fse_cur < token_count
-		Token fse_tok = tokens at fse_cur
-		(kind) in fse_tok
-		fse_cur = fse_cur + 1
+	int scan_pos = pos
+	for if scan_pos < token_count
+		Token scan_token = tokens at scan_pos
+		(kind) in scan_token
+		scan_pos = scan_pos + 1
 		if kind is "NEWLINE"
 			break
-	int end_pos = fse_cur
+	int end_pos = scan_pos
 	if not already_seen
 		int copy_len = end_pos - pos
 		for copy_idx in range(copy_len)
-			int tok_pos = pos + copy_idx
-			Token copy_tok = tokens at tok_pos
-			result at end = copy_tok
+			int copy_pos = pos + copy_idx
+			Token copy_token = tokens at copy_pos
+			result at end = copy_token
 	pos = end_pos

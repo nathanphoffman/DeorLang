@@ -6,14 +6,17 @@
 # per-context checks (check_var_decl, etc.) only recognize IDENT-kind names and
 # quietly skip anything else.
 macro check_kw_as_name
-	bool kan_is_reserved = list_has(reserved_keywords, cur_kind)
-	if kan_is_reserved
-		# ex: int {raw} = 5 — pos+1 checks the token after the reserved-keyword name
-		int kan_next_pos = pos + 1
-		if kan_next_pos < token_count
-			Token kan_next_tok = tokens at kan_next_pos
-			(kind) in kan_next_tok
-			bool kan_next_is_eq = kind is "EQUALS"
-			bool kan_next_is_as = kind is "KW_AS"
-			if kan_next_is_eq or kan_next_is_as
+	# ex: int {raw} = 5 — kw_pos+1 checks the token after the reserved-keyword name
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	bool is_reserved = list_has(reserved_keywords, cur_kind)
+	if is_reserved
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
+			bool next_is_eq = kind is "EQUALS"
+			bool next_is_as = kind is "KW_AS"
+			if next_is_eq or next_is_as
 				errors at end = val_err(tok, lbl_var, rule_kw_in_parens)

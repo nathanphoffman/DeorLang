@@ -5,13 +5,16 @@
 # forever instead of erroring. Same root cause check_destructure_binding_kw guards
 # against for `(f1, keyword) in expr`.
 macro check_with_parens
+	# ex: with {(}f1, f2) — kw_pos+1 grabs the token after with
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "KW_WITH"
 		bool with_ok = false
-		# ex: with {(}f1, f2) — pos+1 grabs the token after with
-		int with_next_pos = pos + 1
-		if with_next_pos < token_count
-			Token with_next_tok = tokens at with_next_pos
-			(kind) in with_next_tok
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
 			with_ok = kind is "LPAREN"
 		if not with_ok
 			errors at end = val_err(tok, lbl_var, rule_with_parens)

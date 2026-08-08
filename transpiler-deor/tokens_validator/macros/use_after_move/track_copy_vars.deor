@@ -9,56 +9,65 @@
 # track_non_bool_vars already scans, mirrored here for the positive
 # int/float/bool set instead of the "everything but bool" set.
 macro track_copy_vars
+	# ex: Type {name} = expr — kw_pos+1 grabs the variable name
+	fn int locate_var_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: Type name {=} expr — kw_pos+2 grabs the equals sign
+	fn int locate_equals(int kw_pos)
+		return kw_pos + 2
+
+	# ex: fn int add{(}left, right) — kw_pos+3 grabs the opening paren
+	fn int locate_left_paren(int kw_pos)
+		return kw_pos + 3
+
 	if cur_kind is "IDENT"
-		bool tcv_is_copy_kw = cur_val is "int"
-		if not tcv_is_copy_kw
-			tcv_is_copy_kw = cur_val is "float"
-		if not tcv_is_copy_kw
-			tcv_is_copy_kw = cur_val is "bool"
-		if tcv_is_copy_kw
-			# ex: Type {name} = expr — pos+1 grabs the variable name
-			int tcv_next1 = pos + 1
-			# ex: Type name {=} expr — pos+2 grabs the equals sign
-			int tcv_next2 = pos + 2
-			if tcv_next2 < token_count
-				Token tcv_tok1 = tokens at tcv_next1
-				Token tcv_tok2 = tokens at tcv_next2
-				(kind) in tcv_tok1
-				string tcv_k1 = kind
-				(kind) in tcv_tok2
-				if tcv_k1 is "IDENT" and kind is "EQUALS"
-					(value) in tcv_tok1
+		bool is_copy_kw = cur_val is "int"
+		if not is_copy_kw
+			is_copy_kw = cur_val is "float"
+		if not is_copy_kw
+			is_copy_kw = cur_val is "bool"
+		if is_copy_kw
+			int name_pos = locate_var_name(pos)
+			int equals_pos = locate_equals(pos)
+			if equals_pos < token_count
+				Token name_token = tokens at name_pos
+				Token equals_token = tokens at equals_pos
+				(kind) in name_token
+				string name_kind = kind
+				(kind) in equals_token
+				if name_kind is "IDENT" and kind is "EQUALS"
+					(value) in name_token
 					copy_var_names at end = value
 
 	if cur_kind is "KW_FN"
-		# ex: fn int add{(}left, right) — pos+3 grabs the opening paren
-		int tcv_lp = pos + 3
-		if tcv_lp < token_count
-			Token tcv_lp_tok = tokens at tcv_lp
-			(kind) in tcv_lp_tok
+		int left_paren_pos = locate_left_paren(pos)
+		if left_paren_pos < token_count
+			Token left_paren_token = tokens at left_paren_pos
+			(kind) in left_paren_token
 			if kind is "LPAREN"
-				int tcv_ps = tcv_lp + 1
-				for if tcv_ps < token_count
-					Token tcv_ps_tok = tokens at tcv_ps
-					(kind, value) in tcv_ps_tok
+				int param_scan_pos = left_paren_pos + 1
+				for if param_scan_pos < token_count
+					Token param_scan_token = tokens at param_scan_pos
+					(kind, value) in param_scan_token
 					if kind is "RPAREN"
 						break
 					if kind is "COMMA"
-						tcv_ps = tcv_ps + 1
+						param_scan_pos = param_scan_pos + 1
 						continue
 					if kind is "IDENT"
-						string tcv_param_type = value
-						bool tcv_p_is_copy = tcv_param_type is "int"
-						if not tcv_p_is_copy
-							tcv_p_is_copy = tcv_param_type is "float"
-						if not tcv_p_is_copy
-							tcv_p_is_copy = tcv_param_type is "bool"
-						int tcv_pn = tcv_ps + 1
-						if tcv_pn < token_count
-							Token tcv_pn_tok = tokens at tcv_pn
-							(kind, value) in tcv_pn_tok
+						string param_type = value
+						bool param_is_copy = param_type is "int"
+						if not param_is_copy
+							param_is_copy = param_type is "float"
+						if not param_is_copy
+							param_is_copy = param_type is "bool"
+						int param_name_pos = param_scan_pos + 1
+						if param_name_pos < token_count
+							Token param_name_token = tokens at param_name_pos
+							(kind, value) in param_name_token
 							if kind is "IDENT"
-								if tcv_p_is_copy
+								if param_is_copy
 									copy_var_names at end = value
-								tcv_ps = tcv_pn
-					tcv_ps = tcv_ps + 1
+								param_scan_pos = param_name_pos
+					param_scan_pos = param_scan_pos + 1

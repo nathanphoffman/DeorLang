@@ -5,11 +5,14 @@
 # Finds the DEDENT token that closes the block opened by the INDENT at indent_pos.
 # Tracks nesting depth so inner blocks don't terminate the search prematurely.
 fn int find_block_end_ref(TokensRef tokens, int indent_pos)
+	# ex: fn foo()\n{\t}body — kw_pos+1 grabs the first token of the block body
+	fn int locate_block_body_start(int kw_pos)
+		return kw_pos + 1
+
 	int token_count = len(tokens)
 	int depth = 1
 	int result = indent_pos
-	# ex: fn foo()\n{\t}body — indent_pos+1 grabs the first token of the block body
-	int start = indent_pos + 1
+	int start = locate_block_body_start(indent_pos)
 	for raw_i in range(start, token_count)
 		Token token = tokens at raw_i
 		(kind, value, line) in token
@@ -37,8 +40,8 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 			# ex: const int {LIMIT} = 10 — raw_i+2 grabs the const variable name
 			int const_name_pos = raw_i + 2
 			if const_name_pos < end_pos
-				Token const_name_tok = tokens at const_name_pos
-				(value) in const_name_tok
+				Token const_name_token = tokens at const_name_pos
+				(value) in const_name_token
 				if not list_has(const_names, value)
 					const_names at end = value
 		if kind is "EQUALS"

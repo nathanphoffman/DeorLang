@@ -1,23 +1,26 @@
 
 # Enforces that every argument at a call site with 2 or more args is a named variable (not a literal or expression).
 macro check_call_args
-	# ex: add{(}left, right) — pos+1 grabs the opening paren of the call
-	int call_lp = pos + 1
-	if call_lp < token_count
-		Token call_lp_tok = tokens at call_lp
-		(kind) in call_lp_tok
+	# ex: add{(}left, right) — kw_pos+1 grabs the opening paren of the call
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	int left_paren_pos = locate_next_token(pos)
+	if left_paren_pos < token_count
+		Token left_paren_token = tokens at left_paren_pos
+		(kind) in left_paren_token
 		if kind is "LPAREN"
-			int arg_count = count_call_args(tokens, call_lp)
+			int arg_count = count_call_args(tokens, left_paren_pos)
 			if arg_count >= 2
-				int scan_pos = call_lp + 1
+				int scan_pos = left_paren_pos + 1
 				int scan_depth = 0
 				bool at_arg_start = true
 				for if scan_pos < token_count
-					Token scan_tok = tokens at scan_pos
-					(kind) in scan_tok
+					Token scan_token = tokens at scan_pos
+					(kind) in scan_token
 					if kind is "RPAREN"
-						bool scan_root = scan_depth is 0
-						if scan_root
+						bool at_root = scan_depth is 0
+						if at_root
 							break
 						scan_depth = scan_depth - 1
 						at_arg_start = false
@@ -31,8 +34,8 @@ macro check_call_args
 						scan_depth = scan_depth - 1
 						at_arg_start = false
 					else if kind is "COMMA"
-						bool scan_root = scan_depth is 0
-						if scan_root
+						bool at_root = scan_depth is 0
+						if at_root
 							at_arg_start = true
 					else if at_arg_start
 						bool named = arg_is_named(tokens, scan_pos, kind)

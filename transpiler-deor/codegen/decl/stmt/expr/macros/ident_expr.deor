@@ -5,81 +5,84 @@
 #   name at idx  — index read (nested macro_run not supported, so this is inlined rather than shared)
 #   name         — plain identifier, or an enum variant if found in the variant registry
 macro primary_ident_expr
+	# ex: name{(}args) — kw_pos+1 grabs the token that decides call/index/plain
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	if kind is "IDENT"
-		# ex: name{(}args) — pos+1 grabs the token that decides call/index/plain
-		int ie_next = pos + 1
-		if ie_next < token_count
-			Token ie_next_tok = tokens at ie_next
-			(kind) in ie_next_tok
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
 			if kind is "LPAREN"
-				string ie_func = value
-				# ex: name({args}) — ie_next+1 grabs the first call-argument slot
-				int ie_args_pos = ie_next + 1
-				if ie_func is "len"
-					string ie_len_sfx = ".len() as i64"
-					ParseResult ie_len_r = gen_unary_method(ie_args_pos, ie_len_sfx, ctx)
-					move (code, new_pos) in ie_len_r
-					ie_len_code as code
-					ie_len_end as new_pos
-					string ie_lp = "("
-					string ie_rp = ")"
-					string ie_len_wrapped = s_join([ie_lp, ie_len_code, ie_rp])
-					return make_result(move ie_len_wrapped, ie_len_end)
-				else if ie_func is "crash"
-					ParseResult ie_crash_r = gen_call_args(tokens, ie_args_pos, ctx)
-					move (code, new_pos) in ie_crash_r
-					ie_crash_code as code
-					ie_crash_end as new_pos
-					string ie_pan_pfx = "panic!(\"{}\", "
-					string ie_pan_sfx = ")"
-					string ie_panic_code = s_join([ie_pan_pfx, ie_crash_code, ie_pan_sfx])
-					int ie_after_crash = ie_crash_end + 1
-					return make_result(move ie_panic_code, ie_after_crash)
+				string func_name = value
+				# ex: name({args}) — next_pos+1 grabs the first call-argument slot
+				int args_pos = locate_next_token(next_pos)
+				if func_name is "len"
+					string len_suffix = ".len() as i64"
+					ParseResult len_result = gen_unary_method(args_pos, len_suffix, ctx)
+					move (code, new_pos) in len_result
+					len_code as code
+					len_end as new_pos
+					string paren_open = "("
+					string paren_close = ")"
+					string len_wrapped = s_join([paren_open, len_code, paren_close])
+					return make_result(move len_wrapped, len_end)
+				else if func_name is "crash"
+					ParseResult crash_result = gen_call_args(tokens, args_pos, ctx)
+					move (code, new_pos) in crash_result
+					crash_code as code
+					crash_end as new_pos
+					string panic_prefix = "panic!(\"{}\", "
+					string panic_suffix = ")"
+					string panic_code = s_join([panic_prefix, crash_code, panic_suffix])
+					int after_crash = crash_end + 1
+					return make_result(move panic_code, after_crash)
 
 				# This is solely for optimization, it is rewritten as a .concat() so that no clones happen
 				#  clones happen because deor clones everything by default, and String is one of the few impacted
 				#  as a result, since it is a completely unnecessary wrapper call, it does save some performance to
 				#  replace the function with concat()
-				if ie_func is "s_join"
-					Token sj_arg_tok = tokens at ie_args_pos
-					(kind) in sj_arg_tok
+				if func_name is "s_join"
+					Token join_arg_token = tokens at args_pos
+					(kind) in join_arg_token
 					if kind is "LBRACKET"
-						# ex: s_join([{a}, b]) — ie_args_pos+1 grabs the first item after '['
-						int sj_inner = ie_args_pos + 1
-						ParseResult sj_r = gen_join_items(tokens, sj_inner, ctx)
-						move (code, new_pos) in sj_r
-						sj_items as code
-						sj_end as new_pos
-						int sj_after = sj_end + 2
-						string sj_open = "["
-						string sj_close = "].concat()"
-						string sj_code = s_join([sj_open, sj_items, sj_close])
-						return make_result(move sj_code, sj_after)
+						# ex: s_join([{a}, b]) — args_pos+1 grabs the first item after '['
+						int join_inner_pos = locate_next_token(args_pos)
+						ParseResult join_result = gen_join_items(tokens, join_inner_pos, ctx)
+						move (code, new_pos) in join_result
+						join_items_code as code
+						join_end as new_pos
+						int join_after = join_end + 2
+						string join_open = "["
+						string join_close = "].concat()"
+						string join_code = s_join([join_open, join_items_code, join_close])
+						return make_result(move join_code, join_after)
 
-				ParseResult ie_args_r = gen_call_args(tokens, ie_args_pos, ctx)
-				move (code, new_pos) in ie_args_r
-				ie_args_code as code
-				ie_args_end as new_pos
-				int ie_after = ie_args_end + 1
-				string ie_lp = "("
-				string ie_rp = ")"
-				string ie_call_code = s_join([ie_func, ie_lp, ie_args_code, ie_rp])
-				return make_result(move ie_call_code, ie_after)
-				
+				ParseResult call_args_result = gen_call_args(tokens, args_pos, ctx)
+				move (code, new_pos) in call_args_result
+				call_args_code as code
+				call_args_end as new_pos
+				int call_after = call_args_end + 1
+				string call_paren_open = "("
+				string call_paren_close = ")"
+				string call_code = s_join([func_name, call_paren_open, call_args_code, call_paren_close])
+				return make_result(move call_code, call_after)
+
 			if kind is "KW_AT"
-				# ex: name at {idx} — ie_next+1 grabs the index expression after 'at'
-				int ie_idx_pos = ie_next + 1
-				ParseResult ie_idx_r = gen_primary(tokens, ie_idx_pos, ctx)
-				move (code, new_pos) in ie_idx_r
-				ie_idx_code as code
-				ie_idx_end as new_pos
-				string ie_idx_mid = "["
-				string ie_idx_sfx = " as usize].clone()"
-				string ie_idx_expr = s_join([value, ie_idx_mid, ie_idx_code, ie_idx_sfx])
-				return make_result(move ie_idx_expr, ie_idx_end)
-		string ie_variant_enum = reg_get(variant_reg, value)
-		if not is_empty(ie_variant_enum)
-			string ie_dbl = "::"
-			string ie_variant_code = s_join([ie_variant_enum, ie_dbl, value])
-			return make_result(move ie_variant_code, ie_next)
-		return make_result(move value, ie_next)
+				# ex: name at {idx} — next_pos+1 grabs the index expression after 'at'
+				int index_pos = locate_next_token(next_pos)
+				ParseResult index_result = gen_primary(tokens, index_pos, ctx)
+				move (code, new_pos) in index_result
+				index_code as code
+				index_end as new_pos
+				string index_mid = "["
+				string index_suffix = " as usize].clone()"
+				string index_expr = s_join([value, index_mid, index_code, index_suffix])
+				return make_result(move index_expr, index_end)
+		string variant_enum = reg_get(variant_reg, value)
+		if not is_empty(variant_enum)
+			string double_colon = "::"
+			string variant_code = s_join([variant_enum, double_colon, value])
+			return make_result(move variant_code, next_pos)
+		return make_result(move value, next_pos)

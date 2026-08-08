@@ -3,8 +3,8 @@
 # argument expression. Used by ident_expr for `len(x)` → `(x.len() as i64)`.
 fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	(tokens) in ctx
-	ParseResult inner_r = gen_expr(tokens, args_pos, ctx)
-	move (code, new_pos) in inner_r
+	ParseResult inner_result = gen_expr(tokens, args_pos, ctx)
+	move (code, new_pos) in inner_result
 	inner_code as code
 	close as new_pos + 1
 	string result_code = s_join([inner_code, suffix])
@@ -18,6 +18,10 @@ fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 #   primary/prefix_ops.deor   — move and not
 #   primary/ident_expr.deor   — function call, index read, enum variant, plain name
 fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
+	# ex: {unknown} — kw_pos+1 grabs the token after an unrecognized primary
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
@@ -30,5 +34,5 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 	macro_run primary_ident_expr
 
 	string unknown = "/* unknown_primary */"
-	int next = pos + 1
+	int next = locate_next_token(pos)
 	return make_result(move unknown, next)
