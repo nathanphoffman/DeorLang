@@ -1,0 +1,18 @@
+# nested_fn_body_shape_test.deor
+# A fn nested inside another fn is restricted to a body of exactly one
+# `return expr` statement (see nested_fn_happy_test.deor for the valid
+# shape) — this must be a clean transpiler error, not something that
+# silently falls through to broken codegen / a confusing rustc failure.
+
+fn void outer()
+	fn int bad(int num)
+		int extra = num + 1
+		return extra
+
+	print("should never reach here")
+
+fn void main()
+	outer()
+
+# expect-error:
+# line 8: fn 'bad' - a fn nested inside another fn must have a body of exactly one 'return expr' statement
