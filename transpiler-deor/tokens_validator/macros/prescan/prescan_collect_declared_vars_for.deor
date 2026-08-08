@@ -8,40 +8,62 @@
 # Reads: pre_i, tokens, token_count.
 # Writes: declared_var_names.
 macro prescan_collect_declared_vars_for
-	if kind is "KW_FOR"
-		# ex: for {item} in list — pre_i+1 grabs the loop variable, +2 the 'in' keyword
-		int dv_fv1 = pre_i + 1
-		int dv_fv2 = pre_i + 2
-		if dv_fv2 < token_count
-			Token dv_fv1_tok = tokens at dv_fv1
-			Token dv_fv2_tok = tokens at dv_fv2
-			(kind, value) in dv_fv1_tok
-			string dv_fk = kind
-			string dv_fv = value
-			(kind) in dv_fv2_tok
-			if dv_fk is "IDENT" and kind is "KW_IN"
-				declared_var_names at end = dv_fv
+	# ex: for {item} in list — kw_pos+1 grabs the loop variable
+	fn int locate_loop_var(int kw_pos)
+		return kw_pos + 1
 
-		# ex: for move ({item} in collection) — pre_i+1 is KW_MOVE, +2 is LPAREN,
-		# +3 the loop variable, +4 the 'in' keyword. A separate shape from the
-		# plain form above, so it needs its own offsets rather than reusing them.
-		int dv_fmv = pre_i + 1
-		if dv_fmv < token_count
-			Token dv_fmv_tok = tokens at dv_fmv
-			(kind) in dv_fmv_tok
+	# ex: for item {in} list — kw_pos+2 grabs the 'in' keyword
+	fn int locate_in_keyword(int kw_pos)
+		return kw_pos + 2
+
+	# ex: for {move} (item in collection) — kw_pos+1 grabs the move keyword slot
+	fn int locate_move_keyword(int kw_pos)
+		return kw_pos + 1
+
+	# ex: for move {(}item in collection) — kw_pos+2 grabs the opening paren
+	fn int locate_move_lparen(int kw_pos)
+		return kw_pos + 2
+
+	# ex: for move ({item} in collection) — kw_pos+3 grabs the loop variable
+	fn int locate_move_var(int kw_pos)
+		return kw_pos + 3
+
+	# ex: for move (item {in} collection) — kw_pos+4 grabs the 'in' keyword
+	fn int locate_move_in(int kw_pos)
+		return kw_pos + 4
+
+	if kind is "KW_FOR"
+		int loop_var_pos = locate_loop_var(pre_i)
+		int in_pos = locate_in_keyword(pre_i)
+		if in_pos < token_count
+			Token loop_var_token = tokens at loop_var_pos
+			Token in_token = tokens at in_pos
+			(kind, value) in loop_var_token
+			string loop_var_kind = kind
+			string loop_var_value = value
+			(kind) in in_token
+			if loop_var_kind is "IDENT" and kind is "KW_IN"
+				declared_var_names at end = loop_var_value
+
+		# A separate shape from the plain form above, so it needs its own
+		# offsets rather than reusing them.
+		int move_pos = locate_move_keyword(pre_i)
+		if move_pos < token_count
+			Token move_token = tokens at move_pos
+			(kind) in move_token
 			if kind is "KW_MOVE"
-				int dv_fmlp = pre_i + 2
-				int dv_fmv1 = pre_i + 3
-				int dv_fmv2 = pre_i + 4
-				if dv_fmv2 < token_count
-					Token dv_fmlp_tok = tokens at dv_fmlp
-					Token dv_fmv1_tok = tokens at dv_fmv1
-					Token dv_fmv2_tok = tokens at dv_fmv2
-					(kind) in dv_fmlp_tok
-					bool dv_fm_lp_ok = kind is "LPAREN"
-					(kind, value) in dv_fmv1_tok
-					string dv_fmk = kind
-					string dv_fmn = value
-					(kind) in dv_fmv2_tok
-					if dv_fm_lp_ok and dv_fmk is "IDENT" and kind is "KW_IN"
-						declared_var_names at end = dv_fmn
+				int move_lparen_pos = locate_move_lparen(pre_i)
+				int move_var_pos = locate_move_var(pre_i)
+				int move_in_pos = locate_move_in(pre_i)
+				if move_in_pos < token_count
+					Token move_lparen_token = tokens at move_lparen_pos
+					Token move_var_token = tokens at move_var_pos
+					Token move_in_token = tokens at move_in_pos
+					(kind) in move_lparen_token
+					bool move_lparen_ok = kind is "LPAREN"
+					(kind, value) in move_var_token
+					string move_var_kind = kind
+					string move_var_value = value
+					(kind) in move_in_token
+					if move_lparen_ok and move_var_kind is "IDENT" and kind is "KW_IN"
+						declared_var_names at end = move_var_value

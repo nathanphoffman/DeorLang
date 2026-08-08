@@ -8,18 +8,25 @@
 # Reads: pre_i, tokens, token_count.
 # Writes: declared_var_names.
 macro prescan_collect_declared_vars_validator_param
+	# ex: type Roll({int} val) — kw_pos+2 grabs the opening paren
+	fn int locate_left_paren(int kw_pos)
+		return kw_pos + 2
+
+	# ex: type Roll(int {val}) — kw_pos+4 grabs the predicate's own parameter
+	# name (same fixed offsets check_validator_declaration uses) — this is the
+	# only declaration form check_undefined_var_read couldn't otherwise see,
+	# since the predicate body reads this name like any local var
+	fn int locate_param_name(int kw_pos)
+		return kw_pos + 4
+
 	if kind is "KW_TYPE"
-		# ex: type Roll({int} val) — pre_i+2 grabs the opening paren, pre_i+4 the
-		# predicate's own parameter name (same fixed offsets check_validator_declaration
-		# uses) — this is the only declaration form check_undefined_var_read couldn't
-		# otherwise see, since the predicate body reads this name like any local var
-		int dv_vt_lp = pre_i + 2
-		int dv_vt_pn = pre_i + 4
-		if dv_vt_pn < token_count
-			Token dv_vt_lp_tok = tokens at dv_vt_lp
-			Token dv_vt_pn_tok = tokens at dv_vt_pn
-			(kind) in dv_vt_lp_tok
+		int left_paren_pos = locate_left_paren(pre_i)
+		int param_name_pos = locate_param_name(pre_i)
+		if param_name_pos < token_count
+			Token left_paren_token = tokens at left_paren_pos
+			Token param_name_token = tokens at param_name_pos
+			(kind) in left_paren_token
 			if kind is "LPAREN"
-				(kind, value) in dv_vt_pn_tok
+				(kind, value) in param_name_token
 				if kind is "IDENT"
 					declared_var_names at end = value

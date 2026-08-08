@@ -2,21 +2,21 @@ fn string val_err(Token tok, string label, string rule)
 	(value, line, file) in tok
 	string name = value
 	string line_str = n_to_str(line)
-	string val_pfx = "[validation] "
-	string val_sep = " line "
-	string val_col = ": "
-	string val_qt1 = " '"
-	string val_qt2 = "' - "
-	strList val_parts = [val_pfx, file, val_sep, line_str, val_col, label, val_qt1, name, val_qt2, rule]
-	return s_join(val_parts)
+	string prefix = "[validation] "
+	string line_sep = " line "
+	string colon_sep = ": "
+	string quote_open = " '"
+	string quote_close = "' - "
+	strList parts = [prefix, file, line_sep, line_str, colon_sep, label, quote_open, name, quote_close, rule]
+	return s_join(parts)
 
 fn void handle_errors(strList: errors)
 	int error_count = len(errors)
 	if error_count > 0
-		int err_idx = 0
-		for if err_idx < error_count
-			string err_msg = errors at err_idx
-			print(err_msg)
-			err_idx = err_idx + 1
+		int error_index = 0
+		for if error_index < error_count
+			string error_msg = errors at error_index
+			print(error_msg)
+			error_index = error_index + 1
 		rust
 			std::process::exit(1);

@@ -5,29 +5,32 @@
 # Reads: pre_i, tokens, token_count.
 # Writes: declared_var_names.
 macro prescan_collect_declared_vars_fn_params
+	# ex: fn int add{(}left, right) — kw_pos+3 grabs the opening paren
+	fn int locate_left_paren(int kw_pos)
+		return kw_pos + 3
+
 	if kind is "KW_FN"
-		# ex: fn int add{(}left, right) — pre_i+3 grabs the opening paren
-		int dv_lp = pre_i + 3
-		if dv_lp < token_count
-			Token dv_lp_tok = tokens at dv_lp
-			(kind) in dv_lp_tok
+		int left_paren_pos = locate_left_paren(pre_i)
+		if left_paren_pos < token_count
+			Token left_paren_token = tokens at left_paren_pos
+			(kind) in left_paren_token
 			if kind is "LPAREN"
-				int dv_ps = dv_lp + 1
-				for if dv_ps < token_count
-					Token dv_ps_tok = tokens at dv_ps
-					(kind, value) in dv_ps_tok
+				int param_scan_pos = left_paren_pos + 1
+				for if param_scan_pos < token_count
+					Token param_scan_token = tokens at param_scan_pos
+					(kind, value) in param_scan_token
 					if kind is "RPAREN"
 						break
 					if kind is "COMMA"
-						dv_ps = dv_ps + 1
+						param_scan_pos = param_scan_pos + 1
 						continue
 					if kind is "IDENT"
-						# ex: {Type} name — dv_ps+1 grabs the param name after its type
-						int dv_pn = dv_ps + 1
-						if dv_pn < token_count
-							Token dv_pn_tok = tokens at dv_pn
-							(kind, value) in dv_pn_tok
+						# ex: {Type} name — param_scan_pos+1 grabs the param name after its type
+						int param_name_pos = param_scan_pos + 1
+						if param_name_pos < token_count
+							Token param_name_token = tokens at param_name_pos
+							(kind, value) in param_name_token
 							if kind is "IDENT"
 								declared_var_names at end = value
-								dv_ps = dv_pn
-					dv_ps = dv_ps + 1
+								param_scan_pos = param_name_pos
+					param_scan_pos = param_scan_pos + 1

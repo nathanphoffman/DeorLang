@@ -7,42 +7,45 @@
 # Reads: pre_i, tokens, token_count, primitive_type_names.
 # Writes: declared_var_names.
 macro prescan_collect_declared_vars_enum
+	# ex: enum {string} Color — kw_pos+1 grabs the type keyword slot of a typed enum
+	fn int locate_type_keyword(int kw_pos)
+		return kw_pos + 1
+
 	if kind is "KW_ENUM"
-		# ex: enum {string} Color — pre_i+1 grabs the type keyword slot of a typed enum
-		int dv_ep = pre_i + 1
-		if dv_ep < token_count
-			Token dv_ep_tok = tokens at dv_ep
-			(kind, value) in dv_ep_tok
-			bool dv_e_typed = false
+		int type_keyword_pos = locate_type_keyword(pre_i)
+		if type_keyword_pos < token_count
+			Token type_keyword_token = tokens at type_keyword_pos
+			(kind, value) in type_keyword_token
+			bool is_typed = false
 			if kind is "IDENT"
-				dv_e_typed = list_has(primitive_type_names, value)
-			if dv_e_typed
+				is_typed = list_has(primitive_type_names, value)
+			if is_typed
 				# find the INDENT that opens this enum's variant block
-				int dv_iscan = dv_ep + 2
-				for if dv_iscan < token_count
-					Token dv_itok = tokens at dv_iscan
-					(kind) in dv_itok
+				int indent_scan_pos = type_keyword_pos + 2
+				for if indent_scan_pos < token_count
+					Token indent_scan_token = tokens at indent_scan_pos
+					(kind) in indent_scan_token
 					if kind is "INDENT"
 						break
-					dv_iscan = dv_iscan + 1
-				# ex: enum string Color\n{\t}Red = "Red" — dv_iscan+1 grabs the first variant name
-				int dv_body = dv_iscan + 1
-				int dv_edepth = 1
-				for if dv_body < token_count
-					Token dv_body_tok = tokens at dv_body
-					(kind, value) in dv_body_tok
+					indent_scan_pos = indent_scan_pos + 1
+				# ex: enum string Color\n{\t}Red = "Red" — indent_scan_pos+1 grabs the first variant name
+				int body_pos = indent_scan_pos + 1
+				int depth = 1
+				for if body_pos < token_count
+					Token body_token = tokens at body_pos
+					(kind, value) in body_token
 					if kind is "INDENT"
-						dv_edepth = dv_edepth + 1
+						depth = depth + 1
 					else if kind is "DEDENT"
-						dv_edepth = dv_edepth - 1
-						if dv_edepth is 0
+						depth = depth - 1
+						if depth is 0
 							break
 					else if kind is "IDENT"
-						# ex: Red {=} "Red" — dv_body+1 grabs the equals sign after a variant name
-						int dv_bn = dv_body + 1
-						if dv_bn < token_count
-							Token dv_bn_tok = tokens at dv_bn
-							(kind) in dv_bn_tok
+						# ex: Red {=} "Red" — body_pos+1 grabs the equals sign after a variant name
+						int equals_check_pos = body_pos + 1
+						if equals_check_pos < token_count
+							Token equals_check_token = tokens at equals_check_pos
+							(kind) in equals_check_token
 							if kind is "EQUALS"
 								declared_var_names at end = value
-					dv_body = dv_body + 1
+					body_pos = body_pos + 1

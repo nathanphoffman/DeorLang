@@ -4,12 +4,15 @@
 # value (the only way to satisfy a func shape, e.g. `roomFunc worker =
 # check_room`) as a known name instead of flagging it as an undefined variable.
 macro prescan_collect_fn_names
+	# ex: fn int {add_one}(left) — kw_pos+2 grabs the fn name, whether the
+	# return-type slot at kw_pos+1 is an IDENT type name or the 'void' keyword
+	fn int locate_name(int kw_pos)
+		return kw_pos + 2
+
 	if kind is "KW_FN"
-		# ex: fn int {add_one}(left) — pre_i+2 grabs the fn name, whether the
-		# return-type slot at pre_i+1 is an IDENT type name or the 'void' keyword
-		int fnn_name_pos = pre_i + 2
-		if fnn_name_pos < token_count
-			Token fnn_name_tok = tokens at fnn_name_pos
-			(kind, value) in fnn_name_tok
+		int name_pos = locate_name(pre_i)
+		if name_pos < token_count
+			Token name_token = tokens at name_pos
+			(kind, value) in name_token
 			if kind is "IDENT"
 				fn_names at end = value

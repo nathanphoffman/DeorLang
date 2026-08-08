@@ -2,11 +2,15 @@
 # Prescan pass: collects const variable names into const_var_names so
 # check_const_reassign can flag any later assignment to those variables.
 macro prescan_collect_const_names
+	# ex: const int {LIMIT} = 10 — kw_pos+2 grabs the const variable name
+	fn int locate_name(int kw_pos)
+		return kw_pos + 2
+
 	if kind is "KW_CONST"
-		int cn_name_pos = pre_i + 2
-		if cn_name_pos < token_count
-			Token cn_name_tok = tokens at cn_name_pos
-			(kind, value) in cn_name_tok
+		int name_pos = locate_name(pre_i)
+		if name_pos < token_count
+			Token name_token = tokens at name_pos
+			(kind, value) in name_token
 			if kind is "IDENT"
 				if not list_has(const_var_names, value)
 					const_var_names at end = value

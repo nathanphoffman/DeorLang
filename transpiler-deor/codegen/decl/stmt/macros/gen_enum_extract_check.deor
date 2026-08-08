@@ -11,41 +11,49 @@
 #
 # Requires in scope: cur, tokens, token_count, fields, field_count, mut_names, depth, ctx.
 macro gen_enum_extract_check
+	# ex: (Fields) in {TypedEnumName} — kw_pos+1 grabs the enum name after 'in'
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	# ex: (Fields) in TypedEnumName{\n} — kw_pos+2 grabs the token after the enum name
+	fn int locate_after_name(int kw_pos)
+		return kw_pos + 2
+
 	(typed_enum_reg, typed_variant_reg) in ctx
-	bool geec_matched = false
+	bool matched = false
 	if cur < token_count
-		Token geec_in_tok = tokens at cur
-		(kind) in geec_in_tok
+		Token in_token = tokens at cur
+		(kind) in in_token
 		if kind is "KW_IN"
-			int geec_name_pos = cur + 1
-			if geec_name_pos < token_count
-				Token geec_name_tok = tokens at geec_name_pos
-				(kind, value) in geec_name_tok
+			int name_pos = locate_next_token(cur)
+			if name_pos < token_count
+				Token name_token = tokens at name_pos
+				(kind, value) in name_token
 				if kind is "IDENT"
-					string geec_val_type = reg_get(typed_enum_reg, value)
-					if not is_empty(geec_val_type)
-						geec_matched = true
-						string geec_enum = value
+					string val_type = reg_get(typed_enum_reg, value)
+					if not is_empty(val_type)
+						matched = true
+						string enum_name = value
 						unsafe_macro_run rust_strings
-						string geec_pad = s_repeat(RS_IND, depth)
-						strList geec_out = empty
-						for geec_fi in range(field_count)
-							string geec_field = fields at geec_fi
-							string geec_dot = "."
-							string geec_key = s_join([geec_enum, geec_dot, geec_field])
-							string geec_lit = reg_get(typed_variant_reg, geec_key)
-							bool geec_is_mut = list_has(mut_names, geec_field)
-							string geec_mut = ""
-							if geec_is_mut
-								geec_mut = "mut "
-							string geec_line = ""
-							if geec_val_type is "string"
-								string geec_debug = s_debug(geec_lit)
-								geec_line = s_join([geec_pad, "let ", geec_mut, geec_field, ": String = ", geec_debug, ".to_string();"])
+						string pad = s_repeat(RS_IND, depth)
+						strList output_lines = empty
+						for field_index in range(field_count)
+							string field_name = fields at field_index
+							string dot = "."
+							string key = s_join([enum_name, dot, field_name])
+							string literal = reg_get(typed_variant_reg, key)
+							bool is_mut = list_has(mut_names, field_name)
+							string mut_kw = ""
+							if is_mut
+								mut_kw = "mut "
+							string line = ""
+							if val_type is "string"
+								string debug_str = s_debug(literal)
+								line = s_join([pad, "let ", mut_kw, field_name, ": String = ", debug_str, ".to_string();"])
 							else
-								string geec_rust_t = render_rust_type(geec_val_type)
-								geec_line = s_join([geec_pad, "let ", geec_mut, geec_field, ": ", geec_rust_t, " = ", geec_lit, ";"])
-							geec_out at end = geec_line
-						string geec_code = s_join_nl(geec_out)
-						int geec_past = cur + 2
-						return make_nl_result(move geec_code, geec_past, tokens)
+								string rust_type = render_rust_type(val_type)
+								line = s_join([pad, "let ", mut_kw, field_name, ": ", rust_type, " = ", literal, ";"])
+							output_lines at end = line
+						string result_code = s_join_nl(output_lines)
+						int after_pos = locate_after_name(cur)
+						return make_nl_result(move result_code, after_pos, tokens)

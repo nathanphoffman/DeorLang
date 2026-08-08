@@ -9,23 +9,30 @@
 # Reads: pre_i, pre_tok, tokens, token_count, validator_type_names.
 # Writes: declared_var_names.
 macro prescan_collect_declared_vars_binding
+	# ex: Type {name} = expr — kw_pos+1 grabs the variable name
+	fn int locate_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: Type name {=} expr — kw_pos+2 grabs the equals sign
+	fn int locate_equals(int kw_pos)
+		return kw_pos + 2
+
 	if kind is "IDENT"
-		# ex: Type {name} = expr — pre_i+1 grabs the variable name, +2 the equals sign
-		int dv_n1 = pre_i + 1
-		int dv_n2 = pre_i + 2
-		if dv_n2 < token_count
-			Token dv_t1 = tokens at dv_n1
-			Token dv_t2 = tokens at dv_n2
-			(kind, value) in dv_t1
-			string dv_k1 = kind
-			string dv_v1 = value
-			(kind) in dv_t2
-			if dv_k1 is "IDENT" and kind is "EQUALS"
-				declared_var_names at end = dv_v1
-		if dv_n1 < token_count
-			# ex: {name} as expr — dv_n1 grabs the 'as' keyword slot
-			Token dv_as_tok = tokens at dv_n1
-			(kind) in dv_as_tok
+		int name_pos = locate_name(pre_i)
+		int equals_pos = locate_equals(pre_i)
+		if equals_pos < token_count
+			Token name_token = tokens at name_pos
+			Token equals_token = tokens at equals_pos
+			(kind, value) in name_token
+			string name_kind = kind
+			string name_value = value
+			(kind) in equals_token
+			if name_kind is "IDENT" and kind is "EQUALS"
+				declared_var_names at end = name_value
+		if name_pos < token_count
+			# ex: {name} as expr — name_pos grabs the 'as' keyword slot
+			Token as_token = tokens at name_pos
+			(kind) in as_token
 			if kind is "KW_AS"
 				(value) in pre_tok
 				declared_var_names at end = value
@@ -33,8 +40,8 @@ macro prescan_collect_declared_vars_binding
 			# (the "not valid until assigned" form) still declares the name, so a
 			# later `best = expr` reassignment isn't flagged as undeclared
 			(value) in pre_tok
-			bool dv_is_vtype = list_has(validator_type_names, value)
-			if dv_is_vtype
+			bool is_vtype = list_has(validator_type_names, value)
+			if is_vtype
 				if kind is "IDENT"
-					(value) in dv_as_tok
+					(value) in as_token
 					declared_var_names at end = value

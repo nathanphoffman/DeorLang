@@ -23,31 +23,24 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 			cur = cur + 1
 			continue
 		if kind is "MACRO_MARKER"
-			string mc_prefix = "// macro: "
-			string mc_open = " ("
-			string mc_close = ")"
-			string mc1 = s_cat(pad, mc_prefix)
-			string mc2 = s_cat(mc1, value)
-			string mc3 = s_cat(mc2, mc_open)
-			string mc4 = s_cat(mc3, file)
-			string mc5 = s_cat(mc4, mc_close)
-			string macro_comment = s_cat(mc5, RS_NL)
+			string macro_prefix = "// macro: "
+			string paren_open = " ("
+			string paren_close = ")"
+			string macro_comment = s_join([pad, macro_prefix, value, paren_open, file, paren_close, RS_NL])
 			stmts at end = macro_comment
 			last_file = file
 			cur = cur + 1
 			continue
 		if file is not last_file
-			string fc_slash = "// "
-			string fc1 = s_cat(pad, fc_slash)
-			string fc2 = s_cat(fc1, file)
-			string file_comment = s_cat(fc2, RS_NL)
+			string comment_prefix = "// "
+			string file_comment = s_join([pad, comment_prefix, file, RS_NL])
 			stmts at end = file_comment
 			last_file = file
 
-        ParseResult stmt_r = gen_stmt(cur, depth, ctx)
-        move (code, new_pos) in stmt_r
-        stmts at end = code
-        cur = new_pos
+		ParseResult stmt_result = gen_stmt(cur, depth, ctx)
+		move (code, new_pos) in stmt_result
+		stmts at end = code
+		cur = new_pos
 
 	string block_joined = s_join(stmts)
 	return make_result(move block_joined, cur)

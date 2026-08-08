@@ -15,6 +15,41 @@ just rebuild-binary && just test-examples` (94/94 passing), plus a final
 double self-compilation round-trip to confirm the self-hosted transpiler is
 fully stable.
 
+**Post-phase-11 gap sweep:** the original file survey undercounted — it
+grouped by directory but never separately enumerated `prescan/` or a few
+standalone macro files, so they silently fell outside every phase. Found and
+fixed via two systematic scans (a precise `pos ± N` regex and a repeated-prefix
+frequency scan) after claiming completion:
+- `tokens_validator/macros/raw/*` (4 files: `check_raw_in_binding`,
+  `check_raw_operator_use`, `check_raw_assignment`,
+  `check_raw_in_special_builtin`) — an entire subdirectory missed outright.
+- `check_type_base_primitive.deor`, `check_validator_empty.deor`,
+  `check_ident_token_rules.deor` — declaration/dispatcher files never
+  captured by any phase grouping.
+- `gen_expr_r.deor`, `expr_is_special.deor` — small helper macros.
+- `gen_enum_extract_check.deor` — 51 lines using one cryptic acronym
+  (`geec_`) 53 times, nearly every line.
+- The entire `prescan_collect_*` family (11 files): all 7
+  `prescan_collect_declared_vars_*.deor` (`dv_` prefix),
+  `prescan_collect_const_names.deor` (`cn_`),
+  `prescan_collect_fn_names.deor` (`fnn_`),
+  `prescan_collect_func_shapes.deor` (`cfs_`),
+  `prescan_collect_validator_types.deor` (`pvt_`).
+- `codegen/decl/stmt/block.deor` (`gen_block`, a central codegen function)
+  had numbered `mc1`–`mc5` variables — never touched despite being about as
+  foundational as it gets.
+- `tokens_validator/error_handling.deor` (`val_err`/`handle_errors`, used by
+  every single check in the codebase) — cleaned for full consistency.
+- Minor internal inconsistency fixed in the use-after-move family: a few
+  `pos - 1` lookbacks that should have been wrapped in a `locate_prev_token`
+  like their siblings were, weren't.
+
+Re-verified with the same build/test/self-compile cycle after each batch of
+fixes. The two scans that caught this are worth re-running if this pattern
+of work continues elsewhere in the codebase — directory-based file surveys
+miss subdirectories and stray files; a regex/frequency scan over actual file
+content doesn't.
+
 ## Phases
 
 1. **Type/validator declarations** — `check_validator_declaration.deor`,
