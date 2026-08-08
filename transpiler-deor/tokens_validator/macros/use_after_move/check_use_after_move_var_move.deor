@@ -14,6 +14,10 @@ macro check_use_after_move_var_move
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
+	# ex: {move} name — kw_pos-1 grabs the token before this KW_MOVE
+	fn int locate_prev_token(int kw_pos)
+		return kw_pos - 1
+
 	# move name — single-target form.
 	if cur_kind is "KW_MOVE"
 		int next_pos = locate_next_token(pos)
@@ -27,7 +31,7 @@ macro check_use_after_move_var_move
 				# docs/move.md#move-in-string-concatenation). Find the nearest
 				# enclosing '[' by bracket depth and check it opens 's_join('.
 				bool in_sjoin = false
-				int scan_pos = pos - 1
+				int scan_pos = locate_prev_token(pos)
 				int bracket_depth = 0
 				for if scan_pos >= 0
 					Token scan_token = tokens at scan_pos
@@ -64,7 +68,7 @@ macro check_use_after_move_var_move
 				# after. Detect by walking back to this line's first token and
 				# checking for '<same name> ='.
 				bool self_reassign = false
-				int line_scan_pos = pos - 1
+				int line_scan_pos = locate_prev_token(pos)
 				for if line_scan_pos >= 0
 					Token line_scan_token = tokens at line_scan_pos
 					(kind) in line_scan_token

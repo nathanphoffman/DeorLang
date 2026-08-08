@@ -1,5 +1,5 @@
 unsafe_macro gen_expr_r
-	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
-	move (code, new_pos) in ge_r
+	ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in expr_result
 	val_code as code
 	val_end as new_pos

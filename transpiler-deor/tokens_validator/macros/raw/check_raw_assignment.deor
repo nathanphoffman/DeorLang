@@ -6,36 +6,47 @@
 # marking something raw in the first place. Tracks the variable name into
 # raw_var_names for use by the other raw checks.
 macro check_raw_assignment
+	# ex: raw {name} = call() — kw_pos+1 grabs the binding name
+	fn int locate_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: raw name {=} call() — kw_pos+2 grabs the equals sign
+	fn int locate_equals(int kw_pos)
+		return kw_pos + 2
+
+	# ex: raw name = {call}() — kw_pos+3 grabs the call target right after '='
+	fn int locate_call_target(int kw_pos)
+		return kw_pos + 3
+
+	# ex: raw name = call{(}) — kw_pos+4 confirms a '(' follows the call name
+	fn int locate_call_lparen(int kw_pos)
+		return kw_pos + 4
+
 	if cur_kind is "KW_RAW"
-		# ex: raw name {=} call() — pos+2 grabs the equals sign
-		int ra_eq_pos = pos + 2
-		if ra_eq_pos < token_count
-			Token ra_eq_tok = tokens at ra_eq_pos
-			(kind) in ra_eq_tok
+		int equals_pos = locate_equals(pos)
+		if equals_pos < token_count
+			Token equals_token = tokens at equals_pos
+			(kind) in equals_token
 			if kind is "KW_AS"
-				# ex: raw {name} as 0 — pos+1 grabs the binding name for the error
-				int ra_as_name_pos = pos + 1
-				Token ra_as_name_tok = tokens at ra_as_name_pos
-				errors at end = val_err(ra_as_name_tok, lbl_var, rule_raw_as)
+				int as_name_pos = locate_name(pos)
+				Token as_name_token = tokens at as_name_pos
+				errors at end = val_err(as_name_token, lbl_var, rule_raw_as)
 			else if kind is "EQUALS"
-				# ex: raw {name} = call() — pos+1 grabs the binding name
-				int ra_name_pos = pos + 1
-				Token ra_name_tok = tokens at ra_name_pos
-				(kind, value) in ra_name_tok
+				int name_pos = locate_name(pos)
+				Token name_token = tokens at name_pos
+				(kind, value) in name_token
 				if kind is "IDENT"
 					raw_var_names at end = value
-					# ex: raw name = {call}() — ra_eq_pos+1 grabs the call target right after '='
-					int ra_call_pos = ra_eq_pos + 1
-					bool ra_is_call = false
-					if ra_call_pos < token_count
-						Token ra_call_tok = tokens at ra_call_pos
-						(kind) in ra_call_tok
+					int call_pos = locate_call_target(pos)
+					bool is_call = false
+					if call_pos < token_count
+						Token call_token = tokens at call_pos
+						(kind) in call_token
 						if kind is "IDENT"
-							# ex: raw name = call{(}) — ra_call_pos+1 confirms a '(' follows the call name
-							int ra_lparen_pos = ra_call_pos + 1
-							if ra_lparen_pos < token_count
-								Token ra_lparen_tok = tokens at ra_lparen_pos
-								(kind) in ra_lparen_tok
-								ra_is_call = kind is "LPAREN"
-					if not ra_is_call
-						errors at end = val_err(ra_name_tok, lbl_var, rule_raw_assignment)
+							int lparen_pos = locate_call_lparen(pos)
+							if lparen_pos < token_count
+								Token lparen_token = tokens at lparen_pos
+								(kind) in lparen_token
+								is_call = kind is "LPAREN"
+					if not is_call
+						errors at end = val_err(name_token, lbl_var, rule_raw_assignment)

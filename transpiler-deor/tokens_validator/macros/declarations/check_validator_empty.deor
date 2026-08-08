@@ -2,12 +2,16 @@
 # Flags `ValidatorType name = empty` — empty is not valid for validator types.
 # Declare without a value instead: `Roll best` starts as not valid.
 macro check_validator_empty
+	# ex: {Roll} best = empty — kw_pos-3 grabs the validator type name three tokens back
+	fn int locate_type_before_empty(int kw_pos)
+		return kw_pos - 3
+
 	if cur_kind is "KW_EMPTY"
 		if pos > 2
-			int ve_type_pos = pos - 3
-			Token ve_type_tok = tokens at ve_type_pos
-			(kind, value) in ve_type_tok
+			int type_pos = locate_type_before_empty(pos)
+			Token type_token = tokens at type_pos
+			(kind, value) in type_token
 			if kind is "IDENT"
-				bool ve_is_validator = list_has(validator_type_names, value)
-				if ve_is_validator
+				bool is_validator = list_has(validator_type_names, value)
+				if is_validator
 					errors at end = val_err(tok, lbl_var, rule_validator_empty)

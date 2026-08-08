@@ -4,13 +4,16 @@
 # skipped when this IDENT is itself a fn declaration's name (two tokens
 # after KW_FN), since that position is a name being declared, not a call.
 macro check_ident_token_rules
+	# ex: {fn} int add(...) — kw_pos-2 checks two tokens back for the fn keyword to identify this IDENT as the fn name
+	fn int locate_prev2(int kw_pos)
+		return kw_pos - 2
+
 	if cur_kind is "IDENT"
 		bool is_fn_decl_name = false
 		if pos > 1
-			# ex: {fn} int add(...) — pos-2 checks two tokens back for the fn keyword to identify this IDENT as the fn name
-			int prev2_p = pos - 2
-			Token prev2_tok = tokens at prev2_p
-			(kind) in prev2_tok
+			int prev2_pos = locate_prev2(pos)
+			Token prev2_token = tokens at prev2_pos
+			(kind) in prev2_token
 			is_fn_decl_name = kind is "KW_FN"
 		if not is_fn_decl_name
 			macro_run check_call_args

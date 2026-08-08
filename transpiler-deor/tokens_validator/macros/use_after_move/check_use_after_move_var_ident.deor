@@ -19,6 +19,10 @@ macro check_use_after_move_var_ident
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
+	# ex: {move} name — kw_pos-1 grabs the token before this IDENT
+	fn int locate_prev_token(int kw_pos)
+		return kw_pos - 1
+
 	if cur_kind is "IDENT"
 		int next_pos = locate_next_token(pos)
 		bool is_binding = false
@@ -59,7 +63,7 @@ macro check_use_after_move_var_ident
 				if kind is "RPAREN"
 					next_is_rparen = true
 			if pos > 0
-				int prev_pos = pos - 1
+				int prev_pos = locate_prev_token(pos)
 				Token prev_token = tokens at prev_pos
 				(kind) in prev_token
 				if kind is "KW_MOVE"

@@ -6,34 +6,37 @@
 # Ordinary function calls (Deor or lib) aren't checked here — raw values are
 # meant to pass through those untouched, with Rust's own compiler as the guard.
 macro check_raw_in_special_builtin
+	# ex: len{(}pool) — kw_pos+1 grabs the opening paren after the builtin name
+	fn int locate_left_paren(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "IDENT"
-		strList rsb_target_names = ["len", "crash", "s_join"]
-		bool rsb_is_target = list_has(rsb_target_names, cur_val)
-		if rsb_is_target
-			# ex: len{(}pool) — pos+1 grabs the opening paren after the builtin name
-			int rsb_lp = pos + 1
-			if rsb_lp < token_count
-				Token rsb_lp_tok = tokens at rsb_lp
-				(kind) in rsb_lp_tok
+		strList target_names = ["len", "crash", "s_join"]
+		bool is_target = list_has(target_names, cur_val)
+		if is_target
+			int left_paren_pos = locate_left_paren(pos)
+			if left_paren_pos < token_count
+				Token left_paren_token = tokens at left_paren_pos
+				(kind) in left_paren_token
 				if kind is "LPAREN"
-					int rsb_scan = rsb_lp + 1
-					int rsb_depth = 0
-					for if rsb_scan < token_count
-						Token rsb_tok = tokens at rsb_scan
-						(kind, value) in rsb_tok
+					int scan_pos = left_paren_pos + 1
+					int depth = 0
+					for if scan_pos < token_count
+						Token scan_token = tokens at scan_pos
+						(kind, value) in scan_token
 						if kind is "RPAREN"
-							bool rsb_root = rsb_depth is 0
-							if rsb_root
+							bool at_root = depth is 0
+							if at_root
 								break
-							rsb_depth = rsb_depth - 1
+							depth = depth - 1
 						else if kind is "LPAREN"
-							rsb_depth = rsb_depth + 1
+							depth = depth + 1
 						else if kind is "LBRACKET"
-							rsb_depth = rsb_depth + 1
+							depth = depth + 1
 						else if kind is "RBRACKET"
-							rsb_depth = rsb_depth - 1
+							depth = depth - 1
 						else if kind is "IDENT"
-							bool rsb_is_raw = list_has(raw_var_names, value)
-							if rsb_is_raw
-								errors at end = val_err(rsb_tok, lbl_var, rule_raw_in_expr)
-						rsb_scan = rsb_scan + 1
+							bool is_raw = list_has(raw_var_names, value)
+							if is_raw
+								errors at end = val_err(scan_token, lbl_var, rule_raw_in_expr)
+						scan_pos = scan_pos + 1

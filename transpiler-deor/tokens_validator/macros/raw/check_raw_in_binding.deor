@@ -4,42 +4,57 @@
 # (`copy as raw_index`). Both would hand the raw value a Deor-tracked identity
 # that's no longer treated as raw, defeating every other raw check downstream.
 macro check_raw_in_binding
-	if cur_kind is "IDENT"
-		# ex: string {val} = raw_index — pos+1 grabs the binding name
-		int rib_name_pos = pos + 1
-		# ex: string val {=} raw_index — pos+2 grabs the equals sign
-		int rib_eq_pos = pos + 2
-		# ex: string val = {raw_index} — pos+3 grabs the RHS value being bound
-		int rib_val_pos = pos + 3
-		if rib_val_pos < token_count
-			Token rib_name_tok = tokens at rib_name_pos
-			Token rib_eq_tok = tokens at rib_eq_pos
-			Token rib_val_tok = tokens at rib_val_pos
-			(kind) in rib_name_tok
-			string rib_name_kind = kind
-			(kind) in rib_eq_tok
-			string rib_eq_kind = kind
-			(kind, value) in rib_val_tok
-			bool rib_is_binding = rib_name_kind is "IDENT"
-			rib_is_binding = rib_is_binding and rib_eq_kind is "EQUALS"
-			bool rib_val_is_ident = kind is "IDENT"
-			if rib_is_binding and rib_val_is_ident
-				bool rib_is_raw = list_has(raw_var_names, value)
-				if rib_is_raw
-					errors at end = val_err(rib_val_tok, lbl_var, rule_raw_in_expr)
+	# ex: string {val} = raw_index — kw_pos+1 grabs the binding name
+	fn int locate_binding_name(int kw_pos)
+		return kw_pos + 1
 
-		# ex: copy {as} raw_index — pos+1 grabs the 'as' keyword
-		int rac_as_pos = pos + 1
-		# ex: copy as {raw_index} — pos+2 grabs the RHS value being rebound
-		int rac_val_pos = pos + 2
-		if rac_val_pos < token_count
-			Token rac_as_tok = tokens at rac_as_pos
-			Token rac_val_tok = tokens at rac_val_pos
-			(kind) in rac_as_tok
-			bool rac_is_as = kind is "KW_AS"
-			(kind, value) in rac_val_tok
-			bool rac_val_is_ident = kind is "IDENT"
-			if rac_is_as and rac_val_is_ident
-				bool rac_is_raw = list_has(raw_var_names, value)
-				if rac_is_raw
-					errors at end = val_err(rac_val_tok, lbl_var, rule_raw_in_expr)
+	# ex: string val {=} raw_index — kw_pos+2 grabs the equals sign
+	fn int locate_binding_equals(int kw_pos)
+		return kw_pos + 2
+
+	# ex: string val = {raw_index} — kw_pos+3 grabs the RHS value being bound
+	fn int locate_binding_value(int kw_pos)
+		return kw_pos + 3
+
+	# ex: copy {as} raw_index — kw_pos+1 grabs the 'as' keyword
+	fn int locate_as_keyword(int kw_pos)
+		return kw_pos + 1
+
+	# ex: copy as {raw_index} — kw_pos+2 grabs the RHS value being rebound
+	fn int locate_as_value(int kw_pos)
+		return kw_pos + 2
+
+	if cur_kind is "IDENT"
+		int name_pos = locate_binding_name(pos)
+		int equals_pos = locate_binding_equals(pos)
+		int value_pos = locate_binding_value(pos)
+		if value_pos < token_count
+			Token name_token = tokens at name_pos
+			Token equals_token = tokens at equals_pos
+			Token value_token = tokens at value_pos
+			(kind) in name_token
+			string name_kind = kind
+			(kind) in equals_token
+			string equals_kind = kind
+			(kind, value) in value_token
+			bool is_binding = name_kind is "IDENT"
+			is_binding = is_binding and equals_kind is "EQUALS"
+			bool value_is_ident = kind is "IDENT"
+			if is_binding and value_is_ident
+				bool is_raw = list_has(raw_var_names, value)
+				if is_raw
+					errors at end = val_err(value_token, lbl_var, rule_raw_in_expr)
+
+		int as_pos = locate_as_keyword(pos)
+		int as_value_pos = locate_as_value(pos)
+		if as_value_pos < token_count
+			Token as_token = tokens at as_pos
+			Token as_value_token = tokens at as_value_pos
+			(kind) in as_token
+			bool is_as = kind is "KW_AS"
+			(kind, value) in as_value_token
+			bool as_value_is_ident = kind is "IDENT"
+			if is_as and as_value_is_ident
+				bool as_value_is_raw = list_has(raw_var_names, value)
+				if as_value_is_raw
+					errors at end = val_err(as_value_token, lbl_var, rule_raw_in_expr)

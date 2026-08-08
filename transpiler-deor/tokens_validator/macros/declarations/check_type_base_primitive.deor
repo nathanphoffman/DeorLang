@@ -2,15 +2,21 @@
 # Flags `type Name(baseType ...)` where the base type is not a primitive (int, float, string, bool) —
 # validators can only wrap primitives, not structs, list shapes, or other validator types (including themselves).
 macro check_type_base_primitive
+	# ex: type Foo({intList} value) — kw_pos+3 grabs the base type
+	fn int locate_base_type(int kw_pos)
+		return kw_pos + 3
+
+	# ex: type {Foo}(intList value) — kw_pos+1 grabs the type name
+	fn int locate_type_name(int kw_pos)
+		return kw_pos + 1
+
 	if cur_kind is "KW_TYPE"
-		# ex: type Foo({intList} value) — pos+3 grabs the base type
-		int tbp_pos = pos + 3
-		if tbp_pos < token_count
-			Token tbp_tok = tokens at tbp_pos
-			(value) in tbp_tok
-			bool tbp_is_primitive = list_has(primitive_type_names, value)
-			if not tbp_is_primitive
-				# ex: type {Foo}(intList value) — pos+1 grabs the type name
-				int tbp_name_pos = pos + 1
-				Token tbp_name_tok = tokens at tbp_name_pos
-				errors at end = val_err(tbp_name_tok, lbl_type, rule_non_primitive_validator)
+		int base_type_pos = locate_base_type(pos)
+		if base_type_pos < token_count
+			Token base_type_token = tokens at base_type_pos
+			(value) in base_type_token
+			bool is_primitive = list_has(primitive_type_names, value)
+			if not is_primitive
+				int name_pos = locate_type_name(pos)
+				Token name_token = tokens at name_pos
+				errors at end = val_err(name_token, lbl_type, rule_non_primitive_validator)

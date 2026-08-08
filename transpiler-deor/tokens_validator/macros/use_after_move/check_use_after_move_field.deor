@@ -15,6 +15,10 @@ macro check_use_after_move_field
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
+	# ex: {(}f1, f2) in source — kw_pos-1 grabs the token right before KW_IN
+	fn int locate_prev_token(int kw_pos)
+		return kw_pos - 1
+
 	# ex: {(}f1, f2) in source — kw_pos-2 starts the backward scan for the
 	# matching '(' when walking back from KW_IN to collect the field list
 	fn int locate_backscan_start(int kw_pos)
@@ -93,7 +97,7 @@ macro check_use_after_move_field
 	# marked the fields — that's the transition to moved, not a use of it.
 	if cur_kind is "KW_IN"
 		if pos > 0
-			int prev_pos = pos - 1
+			int prev_pos = locate_prev_token(pos)
 			Token prev_token = tokens at prev_pos
 			(kind) in prev_token
 			if kind is "RPAREN"
