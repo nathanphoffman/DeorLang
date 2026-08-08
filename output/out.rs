@@ -3181,6 +3181,12 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: prescan_check_duplicate_decls (transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor)
         {
             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
+            fn locate_decl_name(kw_pos: i64) -> i64 {
+                return kw_pos + 1;
+            }
+            fn locate_fn_name(kw_pos: i64) -> i64 {
+                return kw_pos + 2;
+            }
             let mut is_kw_struct: bool = kind == "KW_STRUCT";
             let mut is_kw_enum: bool = kind == "KW_ENUM";
             let mut is_kw_shape: bool = kind == "KW_SHAPE";
@@ -3188,30 +3194,30 @@ fn validate_tokens(tokens: TokensRef) {
             let mut is_named_decl: bool = is_kw_struct || is_kw_enum || is_kw_shape || is_kw_type;
             if is_named_decl {
                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                let mut dn_pos: i64 = pre_i + 1;
-                if dn_pos < token_count {
+                let mut name_pos: i64 = locate_decl_name(pre_i.clone());
+                if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                    let mut dn_tok: Token = tokens[dn_pos as usize].clone();
-                    let mut kind = dn_tok.kind.clone();
-                    let mut value = dn_tok.value.clone();
+                    let mut name_token: Token = tokens[name_pos as usize].clone();
+                    let mut kind = name_token.kind.clone();
+                    let mut value = name_token.value.clone();
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                        let mut dn_is_typed_kw: bool = list_has(primitive_type_names.clone(), value.clone());
+                        let mut is_typed_enum_kw: bool = list_has(primitive_type_names.clone(), value.clone());
                         if is_kw_enum {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                            if dn_is_typed_kw {
+                            if is_typed_enum_kw {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                                let mut dn_name_pos: i64 = dn_pos + 1;
-                                if dn_name_pos < token_count {
+                                let mut typed_name_pos: i64 = name_pos + 1;
+                                if typed_name_pos < token_count {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                                    let mut dn_name_tok: Token = tokens[dn_name_pos as usize].clone();
-                                    let mut kind = dn_name_tok.kind.clone();
-                                    let mut value = dn_name_tok.value.clone();
+                                    let mut typed_name_token: Token = tokens[typed_name_pos as usize].clone();
+                                    let mut kind = typed_name_token.kind.clone();
+                                    let mut value = typed_name_token.value.clone();
                                     if kind == "IDENT" {
                                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
                                         if list_has(builtin_names.clone(), value.clone()) {
                                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                                            errors.push(val_err(dn_name_tok.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
+                                            errors.push(val_err(typed_name_token.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
                                         }
                                     }
                                 }
@@ -3219,14 +3225,14 @@ fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
                                 if list_has(builtin_names.clone(), value.clone()) {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                                    errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
+                                    errors.push(val_err(name_token.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
                                 }
                             }
                         } else {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
                             if list_has(builtin_names.clone(), value.clone()) {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                                errors.push(val_err(dn_tok.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
+                                errors.push(val_err(name_token.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
                             }
                         }
                     }
@@ -3234,17 +3240,17 @@ fn validate_tokens(tokens: TokensRef) {
             }
             if kind == "KW_FN" {
                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                let mut fn_name_pos: i64 = pre_i + 2;
+                let mut fn_name_pos: i64 = locate_fn_name(pre_i.clone());
                 if fn_name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                    let mut fn_name_tok: Token = tokens[fn_name_pos as usize].clone();
-                    let mut kind = fn_name_tok.kind.clone();
-                    let mut value = fn_name_tok.value.clone();
+                    let mut fn_name_token: Token = tokens[fn_name_pos as usize].clone();
+                    let mut kind = fn_name_token.kind.clone();
+                    let mut value = fn_name_token.value.clone();
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
                         if list_has(builtin_names.clone(), value.clone()) {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_duplicate_decls.deor
-                            errors.push(val_err(fn_name_tok.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
+                            errors.push(val_err(fn_name_token.clone(), lbl_decl.clone(), rule_builtin_shadow.clone()).clone());
                         }
                     }
                 }
@@ -3253,199 +3259,208 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: prescan_check_struct_fields (transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor)
         {
             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
+            fn locate_struct_name(kw_pos: i64) -> i64 {
+                return kw_pos + 1;
+            }
             if kind == "KW_STRUCT" {
                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                let mut sf_struct_name: String = "".to_string();
-                let mut sf_name_p: i64 = pre_i + 1;
-                if sf_name_p < token_count {
+                let mut struct_name: String = "".to_string();
+                let mut name_pos: i64 = locate_struct_name(pre_i.clone());
+                if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                    let mut sf_nm: Token = tokens[sf_name_p as usize].clone();
-                    let mut kind = sf_nm.kind.clone();
-                    let mut value = sf_nm.value.clone();
+                    let mut name_token: Token = tokens[name_pos as usize].clone();
+                    let mut kind = name_token.kind.clone();
+                    let mut value = name_token.value.clone();
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                        sf_struct_name = value;
+                        struct_name = value;
                     }
                 }
-                let mut sf_pos: i64 = pre_i + 1;
-                while sf_pos < token_count {
+                let mut scan_pos: i64 = locate_struct_name(pre_i.clone());
+                while scan_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                    let mut sf_tok: Token = tokens[sf_pos as usize].clone();
-                    let mut kind = sf_tok.kind.clone();
+                    let mut scan_token: Token = tokens[scan_pos as usize].clone();
+                    let mut kind = scan_token.kind.clone();
                     if kind == "INDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                         break;
                     }
-                    sf_pos = sf_pos + 1;
+                    scan_pos = scan_pos + 1;
                 }
-                sf_pos = sf_pos + 1;
-                let mut sf_fields: Vec<String> = Vec::new();
-                let mut sf_depth: i64 = 0;
-                while sf_pos < token_count {
+                scan_pos = scan_pos + 1;
+                let mut fields: Vec<String> = Vec::new();
+                let mut depth: i64 = 0;
+                while scan_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                    let mut sf_tok: Token = tokens[sf_pos as usize].clone();
-                    let mut kind = sf_tok.kind.clone();
+                    let mut scan_token: Token = tokens[scan_pos as usize].clone();
+                    let mut kind = scan_token.kind.clone();
                     if kind == "INDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                        sf_depth = sf_depth + 1;
+                        depth = depth + 1;
                     }
                     if kind == "DEDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                        if sf_depth == 0 {
+                        if depth == 0 {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                             break;
                         }
-                        sf_depth = sf_depth - 1;
+                        depth = depth - 1;
                     }
                     if kind == "KW_RAW" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                        let mut sf_raw_name_pos: i64 = sf_pos + 1;
-                        if sf_raw_name_pos < token_count {
+                        let mut raw_name_pos: i64 = scan_pos + 1;
+                        if raw_name_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                            let mut sf_raw_name_tok: Token = tokens[sf_raw_name_pos as usize].clone();
-                            let mut kind = sf_raw_name_tok.kind.clone();
-                            let mut value = sf_raw_name_tok.value.clone();
+                            let mut raw_name_token: Token = tokens[raw_name_pos as usize].clone();
+                            let mut kind = raw_name_token.kind.clone();
+                            let mut value = raw_name_token.value.clone();
                             if kind == "IDENT" {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                                errors.push(val_err(sf_raw_name_tok.clone(), lbl_field.clone(), rule_no_raw_field.clone()).clone());
+                                errors.push(val_err(raw_name_token.clone(), lbl_field.clone(), rule_no_raw_field.clone()).clone());
                             }
                         }
                     }
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                        let mut value = sf_tok.value.clone();
-                        let mut sf_field_type: String = value.clone();
-                        let mut field_name_pos: i64 = sf_pos + 1;
+                        let mut value = scan_token.value.clone();
+                        let mut field_type: String = value.clone();
+                        let mut field_name_pos: i64 = scan_pos + 1;
                         if field_name_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                            let mut field_name_tok: Token = tokens[field_name_pos as usize].clone();
-                            let mut kind = field_name_tok.kind.clone();
-                            let mut value = field_name_tok.value.clone();
+                            let mut field_name_token: Token = tokens[field_name_pos as usize].clone();
+                            let mut kind = field_name_token.kind.clone();
+                            let mut value = field_name_token.value.clone();
                             if kind == "IDENT" {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                                 if (value.len() as i64) < 3 {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                                    errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_min3.clone()).clone());
+                                    errors.push(val_err(field_name_token.clone(), lbl_field.clone(), rule_min3.clone()).clone());
                                 }
                                 if !is_snake(value.clone()) {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                                    errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_snake.clone()).clone());
+                                    errors.push(val_err(field_name_token.clone(), lbl_field.clone(), rule_snake.clone()).clone());
                                 }
                                 if list_has(builtin_names.clone(), value.clone()) {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                                    errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_builtin_shadow.clone()).clone());
+                                    errors.push(val_err(field_name_token.clone(), lbl_field.clone(), rule_builtin_shadow.clone()).clone());
                                 }
-                                let mut sf_is_func: bool = list_has(func_shape_names.clone(), sf_field_type.clone());
-                                if sf_is_func {
+                                let mut is_func_field: bool = list_has(func_shape_names.clone(), field_type.clone());
+                                if is_func_field {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                                    errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_no_func_field.clone()).clone());
+                                    errors.push(val_err(field_name_token.clone(), lbl_field.clone(), rule_no_func_field.clone()).clone());
                                 }
-                                sf_fields.push(value.clone());
+                                fields.push(value.clone());
                             } else if list_has(reserved_keywords.clone(), kind.clone()) {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                                errors.push(val_err(field_name_tok.clone(), lbl_field.clone(), rule_kw_in_parens.clone()).clone());
+                                errors.push(val_err(field_name_token.clone(), lbl_field.clone(), rule_kw_in_parens.clone()).clone());
                             }
                         }
                     }
-                    sf_pos = sf_pos + 1;
+                    scan_pos = scan_pos + 1;
                 }
-                let mut sf_has_name: bool = sf_struct_name != "";
-                if sf_has_name {
+                let mut has_name: bool = struct_name != "";
+                if has_name {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                    let mut sf_sep: String = ",".to_string();
-                    let mut sf_fields_str: String = s_join_with(sf_fields.clone(), sf_sep.clone());
-                    struct_field_reg.push(sf_struct_name.clone());
-                    struct_field_reg.push(sf_fields_str.clone());
+                    let mut sep: String = ",".to_string();
+                    let mut fields_str: String = s_join_with(fields.clone(), sep.clone());
+                    struct_field_reg.push(struct_name.clone());
+                    struct_field_reg.push(fields_str.clone());
                 }
             }
         }
         // macro: prescan_check_enum_variants (transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor)
         {
             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
+            fn locate_enum_type_or_name_slot(kw_pos: i64) -> i64 {
+                return kw_pos + 1;
+            }
+            fn locate_enum_typed_name(kw_pos: i64) -> i64 {
+                return kw_pos + 2;
+            }
             if kind == "KW_ENUM" {
                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                let mut ev_is_typed: bool = false;
-                let mut ev_pos: i64 = pre_i + 1;
-                if ev_pos < token_count {
+                let mut is_typed: bool = false;
+                let mut scan_pos: i64 = locate_enum_type_or_name_slot(pre_i.clone());
+                if scan_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                    let mut ev_type_tok: Token = tokens[ev_pos as usize].clone();
-                    let mut value = ev_type_tok.value.clone();
-                    ev_is_typed = list_has(primitive_type_names.clone(), value.clone());
+                    let mut type_keyword_token: Token = tokens[scan_pos as usize].clone();
+                    let mut value = type_keyword_token.value.clone();
+                    is_typed = list_has(primitive_type_names.clone(), value.clone());
                 }
-                let mut ev_name_pos: i64 = pre_i + 1;
-                if ev_is_typed {
+                let mut name_pos: i64 = locate_enum_type_or_name_slot(pre_i.clone());
+                if is_typed {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                    ev_name_pos = pre_i + 2;
+                    name_pos = locate_enum_typed_name(pre_i.clone());
                 }
-                if ev_name_pos < token_count {
+                if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                    let mut ev_name_tok: Token = tokens[ev_name_pos as usize].clone();
-                    let mut kind = ev_name_tok.kind.clone();
-                    let mut value = ev_name_tok.value.clone();
+                    let mut name_token: Token = tokens[name_pos as usize].clone();
+                    let mut kind = name_token.kind.clone();
+                    let mut value = name_token.value.clone();
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                         enum_names.push(value.clone());
                     }
                 }
-                while ev_pos < token_count {
+                while scan_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                    let mut ev_tok: Token = tokens[ev_pos as usize].clone();
-                    let mut kind = ev_tok.kind.clone();
+                    let mut scan_token: Token = tokens[scan_pos as usize].clone();
+                    let mut kind = scan_token.kind.clone();
                     if kind == "INDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                         break;
                     }
-                    ev_pos = ev_pos + 1;
+                    scan_pos = scan_pos + 1;
                 }
-                ev_pos = ev_pos + 1;
-                while ev_pos < token_count {
+                scan_pos = scan_pos + 1;
+                while scan_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                    let mut ev_tok: Token = tokens[ev_pos as usize].clone();
-                    let mut kind = ev_tok.kind.clone();
+                    let mut scan_token: Token = tokens[scan_pos as usize].clone();
+                    let mut kind = scan_token.kind.clone();
                     if kind == "DEDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                         break;
                     }
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                        let mut value = ev_tok.value.clone();
+                        let mut value = scan_token.value.clone();
                         enum_variant_names.push(value.clone());
                         if (value.len() as i64) < 3 {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                            errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_min3.clone()).clone());
+                            errors.push(val_err(scan_token.clone(), lbl_variant.clone(), rule_min3.clone()).clone());
                         }
                         if !is_pascal(value.clone()) {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                            errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_enum_pascal.clone()).clone());
+                            errors.push(val_err(scan_token.clone(), lbl_variant.clone(), rule_enum_pascal.clone()).clone());
                         }
-                        let mut after_variant: i64 = ev_pos + 1;
-                        if after_variant < token_count {
+                        let mut after_variant_pos: i64 = scan_pos + 1;
+                        if after_variant_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                            let mut after_tok: Token = tokens[after_variant as usize].clone();
-                            let mut kind = after_tok.kind.clone();
-                            if ev_is_typed {
+                            let mut after_variant_token: Token = tokens[after_variant_pos as usize].clone();
+                            let mut kind = after_variant_token.kind.clone();
+                            if is_typed {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                                 if kind != "EQUALS" {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                                    errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_typed_enum_eq.clone()).clone());
+                                    errors.push(val_err(scan_token.clone(), lbl_variant.clone(), rule_typed_enum_eq.clone()).clone());
                                 }
                             } else {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                                 if kind == "LPAREN" {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                                    errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_enum_data.clone()).clone());
+                                    errors.push(val_err(scan_token.clone(), lbl_variant.clone(), rule_enum_data.clone()).clone());
                                 }
                                 if kind == "EQUALS" {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                                    errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_untyped_enum_eq.clone()).clone());
+                                    errors.push(val_err(scan_token.clone(), lbl_variant.clone(), rule_untyped_enum_eq.clone()).clone());
                                 }
                             }
                         }
                     } else if list_has(reserved_keywords.clone(), kind.clone()) {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
-                        errors.push(val_err(ev_tok.clone(), lbl_variant.clone(), rule_kw_in_parens.clone()).clone());
+                        errors.push(val_err(scan_token.clone(), lbl_variant.clone(), rule_kw_in_parens.clone()).clone());
                     }
-                    ev_pos = ev_pos + 1;
+                    scan_pos = scan_pos + 1;
                 }
             }
         }
@@ -4757,6 +4772,9 @@ fn validate_tokens(tokens: TokensRef) {
         // macro: check_enum_decl (transpiler-deor/tokens_validator/macros/declarations/check_enum_decl.deor)
         {
             // transpiler-deor/tokens_validator/macros/declarations/check_enum_decl.deor
+            fn locate_enum_type_keyword(kw_pos: i64) -> i64 {
+                return kw_pos + 1;
+            }
             let mut keyword: String = "KW_ENUM".to_string();
             let mut lbl: String = lbl_enum.clone();
             let mut rule: String = rule_pascal.clone();
@@ -4764,11 +4782,11 @@ fn validate_tokens(tokens: TokensRef) {
             let mut validate_indent_offset: i64 = 1;
             if cur_kind == "KW_ENUM" {
                 // transpiler-deor/tokens_validator/macros/declarations/check_enum_decl.deor
-                let mut ev_type_pos: i64 = pos + 1;
-                if ev_type_pos < token_count {
+                let mut type_keyword_pos: i64 = locate_enum_type_keyword(pos.clone());
+                if type_keyword_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/declarations/check_enum_decl.deor
-                    let mut ev_type_tok: Token = tokens[ev_type_pos as usize].clone();
-                    let mut value = ev_type_tok.value.clone();
+                    let mut type_keyword_token: Token = tokens[type_keyword_pos as usize].clone();
+                    let mut value = type_keyword_token.value.clone();
                     if list_has(primitive_type_names.clone(), value.clone()) {
                         // transpiler-deor/tokens_validator/macros/declarations/check_enum_decl.deor
                         validate_indent_offset = 2;
@@ -4813,44 +4831,62 @@ fn validate_tokens(tokens: TokensRef) {
             // macro: check_func_shape_multi_param (transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor)
             {
                 // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
+                fn locate_shape_form(kw_pos: i64) -> i64 {
+                    return kw_pos + 3;
+                }
+                fn locate_func_of_or_to(kw_pos: i64) -> i64 {
+                    return kw_pos + 4;
+                }
+                fn locate_func_in_type(kw_pos: i64) -> i64 {
+                    return kw_pos + 5;
+                }
+                fn locate_func_to_after_of(kw_pos: i64) -> i64 {
+                    return kw_pos + 6;
+                }
+                fn locate_func_out_type_after_of(kw_pos: i64) -> i64 {
+                    return kw_pos + 7;
+                }
+                fn locate_func_out_type_after_to(kw_pos: i64) -> i64 {
+                    return kw_pos + 5;
+                }
                 if cur_kind == "KW_SHAPE" {
                     // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                    let mut fsm_form: i64 = pos + 3;
-                    if fsm_form < token_count {
+                    let mut form_pos: i64 = locate_shape_form(pos.clone());
+                    if form_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                        let mut fsm_form_tok: Token = tokens[fsm_form as usize].clone();
-                        let mut kind = fsm_form_tok.kind.clone();
+                        let mut form_token: Token = tokens[form_pos as usize].clone();
+                        let mut kind = form_token.kind.clone();
                         if kind == "KW_FUNC" {
                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                            let mut fsm_of: i64 = pos + 4;
-                            if fsm_of < token_count {
+                            let mut of_or_to_pos: i64 = locate_func_of_or_to(pos.clone());
+                            if of_or_to_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                                let mut fsm_of_tok: Token = tokens[fsm_of as usize].clone();
-                                let mut kind = fsm_of_tok.kind.clone();
+                                let mut of_or_to_token: Token = tokens[of_or_to_pos as usize].clone();
+                                let mut kind = of_or_to_token.kind.clone();
                                 if kind == "KW_OF" {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                                    let mut fsm_in: i64 = pos + 5;
-                                    if fsm_in < token_count {
+                                    let mut in_type_pos: i64 = locate_func_in_type(pos.clone());
+                                    if in_type_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                                        let mut fsm_in_tok: Token = tokens[fsm_in as usize].clone();
-                                        let mut kind = fsm_in_tok.kind.clone();
+                                        let mut in_type_token: Token = tokens[in_type_pos as usize].clone();
+                                        let mut kind = in_type_token.kind.clone();
                                         if kind == "LPAREN" {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                             errors.push(val_err(tok.clone(), lbl_shape.clone(), rule_func_shape_multi_param.clone()).clone());
                                         }
                                     }
-                                    let mut fsm_to: i64 = pos + 6;
-                                    if fsm_to < token_count {
+                                    let mut to_pos: i64 = locate_func_to_after_of(pos.clone());
+                                    if to_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                                        let mut fsm_to_tok: Token = tokens[fsm_to as usize].clone();
-                                        let mut kind = fsm_to_tok.kind.clone();
+                                        let mut to_token: Token = tokens[to_pos as usize].clone();
+                                        let mut kind = to_token.kind.clone();
                                         if kind == "KW_TO" {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                                            let mut fsm_out: i64 = pos + 7;
-                                            if fsm_out < token_count {
+                                            let mut out_type_pos: i64 = locate_func_out_type_after_of(pos.clone());
+                                            if out_type_pos < token_count {
                                                 // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                                                let mut fsm_out_tok: Token = tokens[fsm_out as usize].clone();
-                                                let mut kind = fsm_out_tok.kind.clone();
+                                                let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
+                                                let mut kind = out_type_token.kind.clone();
                                                 if kind == "LPAREN" {
                                                     // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                                     errors.push(val_err(tok.clone(), lbl_shape.clone(), rule_func_shape_multi_param.clone()).clone());
@@ -4860,11 +4896,11 @@ fn validate_tokens(tokens: TokensRef) {
                                     }
                                 } else if kind == "KW_TO" {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                                    let mut fsm_out2: i64 = pos + 5;
-                                    if fsm_out2 < token_count {
+                                    let mut out_type_pos: i64 = locate_func_out_type_after_to(pos.clone());
+                                    if out_type_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
-                                        let mut fsm_out2_tok: Token = tokens[fsm_out2 as usize].clone();
-                                        let mut kind = fsm_out2_tok.kind.clone();
+                                        let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
+                                        let mut kind = out_type_token.kind.clone();
                                         if kind == "LPAREN" {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                             errors.push(val_err(tok.clone(), lbl_shape.clone(), rule_func_shape_multi_param.clone()).clone());
@@ -10089,8 +10125,11 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 // transpiler-deor/codegen/decl/struct.deor
 fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/struct.deor
-    let mut start_pos: i64 = pos + 1;
-    let mut cur: TokenCursor = cur_at_ref(tokens.clone(), start_pos.clone());
+    fn locate_struct_name(kw_pos: i64) -> i64 {
+        return kw_pos + 1;
+    }
+    let mut name_pos: i64 = locate_struct_name(pos.clone());
+    let mut cur: TokenCursor = cur_at_ref(tokens.clone(), name_pos.clone());
     let current = cur.current.clone();
     let value = current.value.clone();
     let mut struct_name: String = value.clone();
@@ -10145,8 +10184,8 @@ fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         }
     }
     let mut fields_code: String = s_join_nl(field_lines.clone());
-    let mut sdcl_pfx: String = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
-    let mut decl: String = [sdcl_pfx.as_str(), struct_name.as_str(), RS_OB.as_str(), fields_code.as_str(), RS_CB2.as_str()].concat();
+    let mut struct_prefix: String = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
+    let mut decl: String = [struct_prefix.as_str(), struct_name.as_str(), RS_OB.as_str(), fields_code.as_str(), RS_CB2.as_str()].concat();
     let pos = cur.pos.clone();
     return make_result(decl, pos.clone());
 }
@@ -10154,13 +10193,16 @@ fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 // transpiler-deor/codegen/decl/enum.deor
 fn gen_enum_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     // transpiler-deor/codegen/decl/enum.deor
-    let mut start_pos: i64 = pos + 1;
-    let mut cur: TokenCursor = cur_at_ref(tokens.clone(), start_pos.clone());
+    fn locate_enum_type_or_name_slot(kw_pos: i64) -> i64 {
+        return kw_pos + 1;
+    }
+    let mut name_pos: i64 = locate_enum_type_or_name_slot(pos.clone());
+    let mut cur: TokenCursor = cur_at_ref(tokens.clone(), name_pos.clone());
     let current = cur.current.clone();
     let kind = current.kind.clone();
     let value = current.value.clone();
-    let mut ged_is_typed: bool = is_typed_enum_type(value.clone());
-    if ged_is_typed {
+    let mut is_typed: bool = is_typed_enum_type(value.clone());
+    if is_typed {
         // transpiler-deor/codegen/decl/enum.deor
         cur = cur_next_ref(cur.clone(), tokens.clone());
         cur = cur_skip_to_body_ref(cur.clone(), tokens.clone());
@@ -10222,8 +10264,8 @@ fn gen_enum_decl(tokens: TokensRef, pos: i64) -> ParseResult {
         }
     }
     let mut variants_code: String = s_join_nl(variant_lines.clone());
-    let mut enm_pfx: String = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum ".to_string();
-    let mut decl: String = [enm_pfx.as_str(), rust_name.as_str(), RS_OB.as_str(), variants_code.as_str(), RS_CB2.as_str()].concat();
+    let mut enum_prefix: String = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum ".to_string();
+    let mut decl: String = [enum_prefix.as_str(), rust_name.as_str(), RS_OB.as_str(), variants_code.as_str(), RS_CB2.as_str()].concat();
     let pos = cur.pos.clone();
     return make_result(decl, pos.clone());
 }
@@ -10231,10 +10273,10 @@ fn gen_enum_decl(tokens: TokensRef, pos: i64) -> ParseResult {
 // transpiler-deor/codegen/decl/shape.deor
 fn gen_list_shape_code(rust_name: String, rust_elem: String) -> String {
     // transpiler-deor/codegen/decl/shape.deor
-    let mut shp_pfx: String = "type ".to_string();
-    let mut shp_mid: String = " = Vec<".to_string();
-    let mut shp_sfx: String = ">;\n\n".to_string();
-    return [shp_pfx.as_str(), rust_name.as_str(), shp_mid.as_str(), rust_elem.as_str(), shp_sfx.as_str()].concat();
+    let mut list_prefix: String = "type ".to_string();
+    let mut list_mid: String = " = Vec<".to_string();
+    let mut list_suffix: String = ">;\n\n".to_string();
+    return [list_prefix.as_str(), rust_name.as_str(), list_mid.as_str(), rust_elem.as_str(), list_suffix.as_str()].concat();
 }
 
 fn gen_func_shape_code(rust_name: String, rust_in: String, rust_out: String) -> String {
@@ -10242,20 +10284,26 @@ fn gen_func_shape_code(rust_name: String, rust_in: String, rust_out: String) -> 
     let mut out_suffix: String = "".to_string();
     if !is_empty(rust_out.clone()) {
         // transpiler-deor/codegen/decl/shape.deor
-        let mut ost_pfx: String = " -> ".to_string();
-        out_suffix = [ost_pfx.as_str(), rust_out.as_str()].concat();
+        let mut out_prefix: String = " -> ".to_string();
+        out_suffix = [out_prefix.as_str(), rust_out.as_str()].concat();
     }
-    let mut fns_pfx: String = "type ".to_string();
-    let mut fns_mid: String = " = fn(".to_string();
-    let mut fns_rp: String = ")".to_string();
-    let mut fns_sfx: String = ";\n\n".to_string();
-    return [fns_pfx.as_str(), rust_name.as_str(), fns_mid.as_str(), rust_in.as_str(), fns_rp.as_str(), out_suffix.as_str(), fns_sfx.as_str()].concat();
+    let mut func_prefix: String = "type ".to_string();
+    let mut func_mid: String = " = fn(".to_string();
+    let mut func_paren_close: String = ")".to_string();
+    let mut func_suffix: String = ";\n\n".to_string();
+    return [func_prefix.as_str(), rust_name.as_str(), func_mid.as_str(), rust_in.as_str(), func_paren_close.as_str(), out_suffix.as_str(), func_suffix.as_str()].concat();
 }
 
 fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     // transpiler-deor/codegen/decl/shape.deor
-    let mut name_pos: i64 = pos + 1;
-    let mut form_pos: i64 = pos + 3;
+    fn locate_shape_name(kw_pos: i64) -> i64 {
+        return kw_pos + 1;
+    }
+    fn locate_shape_form(kw_pos: i64) -> i64 {
+        return kw_pos + 3;
+    }
+    let mut name_pos: i64 = locate_shape_name(pos.clone());
+    let mut form_pos: i64 = locate_shape_form(pos.clone());
     let mut name_token: Token = tokens[name_pos as usize].clone();
     let mut form_token: Token = tokens[form_pos as usize].clone();
     let value = name_token.value.clone();
@@ -10265,9 +10313,12 @@ fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     // macro: shape_list (transpiler-deor/codegen/decl/macros/shape_list.deor)
     {
         // transpiler-deor/codegen/decl/macros/shape_list.deor
+        fn locate_list_elem(kw_pos: i64) -> i64 {
+            return kw_pos + 5;
+        }
         if kind == "KW_LIST" {
             // transpiler-deor/codegen/decl/macros/shape_list.deor
-            let mut elem_pos: i64 = pos + 5;
+            let mut elem_pos: i64 = locate_list_elem(pos.clone());
             let mut elem_token: Token = tokens[elem_pos as usize].clone();
             let value = elem_token.value.clone();
             let mut elem_type: String = value.clone();
@@ -10280,42 +10331,57 @@ fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     // macro: shape_func (transpiler-deor/codegen/decl/macros/shape_func.deor)
     {
         // transpiler-deor/codegen/decl/macros/shape_func.deor
-        let mut t4_pos: i64 = pos + 4;
-        let mut t4_token: Token = tokens[t4_pos as usize].clone();
-        let kind = t4_token.kind.clone();
-        let value = t4_token.value.clone();
-        let mut t4_is_of: bool = kind == "KW_OF";
-        let mut t4_is_to: bool = kind == "KW_TO";
+        fn locate_func_of_or_to(kw_pos: i64) -> i64 {
+            return kw_pos + 4;
+        }
+        fn locate_func_in_type(kw_pos: i64) -> i64 {
+            return kw_pos + 5;
+        }
+        fn locate_func_to_after_of(kw_pos: i64) -> i64 {
+            return kw_pos + 6;
+        }
+        fn locate_func_out_type_after_of(kw_pos: i64) -> i64 {
+            return kw_pos + 7;
+        }
+        fn locate_func_out_type_after_to(kw_pos: i64) -> i64 {
+            return kw_pos + 5;
+        }
+        let mut of_or_to_pos: i64 = locate_func_of_or_to(pos.clone());
+        let mut of_or_to_token: Token = tokens[of_or_to_pos as usize].clone();
+        let kind = of_or_to_token.kind.clone();
+        let value = of_or_to_token.value.clone();
+        let mut is_of: bool = kind == "KW_OF";
+        let mut is_to: bool = kind == "KW_TO";
         let mut in_type: String = "".to_string();
         let mut out_type: String = "".to_string();
-        let mut func_end: i64 = t4_pos.clone();
-        if t4_is_of {
+        let mut func_end: i64 = of_or_to_pos.clone();
+        if is_of {
             // transpiler-deor/codegen/decl/macros/shape_func.deor
-            let mut t5_pos: i64 = pos + 5;
-            let mut t5_token: Token = tokens[t5_pos as usize].clone();
-            let value = t5_token.value.clone();
+            let mut in_type_pos: i64 = locate_func_in_type(pos.clone());
+            let mut in_type_token: Token = tokens[in_type_pos as usize].clone();
+            let value = in_type_token.value.clone();
             in_type = value;
-            let mut t6_pos: i64 = pos + 6;
-            let mut t6_token: Token = tokens[t6_pos as usize].clone();
-            let kind = t6_token.kind.clone();
-            let value = t6_token.value.clone();
-            let mut t6_is_to: bool = kind == "KW_TO";
-            func_end = t6_pos;
-            if t6_is_to {
+            let mut to_pos: i64 = locate_func_to_after_of(pos.clone());
+            let mut to_token: Token = tokens[to_pos as usize].clone();
+            let kind = to_token.kind.clone();
+            let value = to_token.value.clone();
+            let mut has_to: bool = kind == "KW_TO";
+            func_end = to_pos;
+            if has_to {
                 // transpiler-deor/codegen/decl/macros/shape_func.deor
-                let mut t7_pos: i64 = pos + 7;
-                let mut t7_token: Token = tokens[t7_pos as usize].clone();
-                let value = t7_token.value.clone();
+                let mut out_type_pos: i64 = locate_func_out_type_after_of(pos.clone());
+                let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
+                let value = out_type_token.value.clone();
                 out_type = value;
-                func_end = t7_pos;
+                func_end = out_type_pos;
             }
-        } else if t4_is_to {
+        } else if is_to {
             // transpiler-deor/codegen/decl/macros/shape_func.deor
-            let mut t5_pos: i64 = pos + 5;
-            let mut t5_token: Token = tokens[t5_pos as usize].clone();
-            let value = t5_token.value.clone();
+            let mut out_type_pos: i64 = locate_func_out_type_after_to(pos.clone());
+            let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
+            let value = out_type_token.value.clone();
             out_type = value;
-            func_end = t5_pos;
+            func_end = out_type_pos;
         }
         let mut rust_in: String = render_rust_type(in_type.clone());
         let mut rust_out: String = render_rust_type(out_type.clone());
@@ -10559,10 +10625,12 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 // transpiler-deor/codegen/decl/raw.deor
 fn gen_raw_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     // transpiler-deor/codegen/decl/raw.deor
-    let mut name_pos: i64 = pos + 1;
-    let mut after: i64 = name_pos + 1;
-    let mut emp: String = "".to_string();
-    return make_nl_result(emp, after.clone(), tokens.clone());
+    fn locate_raw_newline(kw_pos: i64) -> i64 {
+        return kw_pos + 2;
+    }
+    let mut after: i64 = locate_raw_newline(pos.clone());
+    let mut empty_str: String = "".to_string();
+    return make_nl_result(empty_str, after.clone(), tokens.clone());
 }
 
 // transpiler-deor/codegen/codegen.deor

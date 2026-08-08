@@ -2,48 +2,63 @@
 # Handles `shape Foo = func [of T] [to U]` → `type Foo = fn(T) -> U;`
 # Expects: pos, tokens, rust_name in scope from gen_shape_decl.
 macro shape_func
-	# ex: shape Foo = func {of} T to U — pos+4 grabs KW_OF/KW_TO (or nothing, if bare func)
-	int t4_pos = pos + 4
-	Token t4_token = tokens at t4_pos
-	(kind, value) in t4_token
-	bool t4_is_of = kind is "KW_OF"
-	bool t4_is_to = kind is "KW_TO"
+	# ex: shape Foo = func {of} T to U — kw_pos+4 grabs KW_OF/KW_TO (or nothing, if bare func)
+	fn int locate_func_of_or_to(int kw_pos)
+		return kw_pos + 4
+
+	# ex: shape Foo = func of {T} to U — kw_pos+5 grabs the input type
+	fn int locate_func_in_type(int kw_pos)
+		return kw_pos + 5
+
+	# ex: shape Foo = func of T {to} U — kw_pos+6 grabs KW_TO (or nothing, if no output)
+	fn int locate_func_to_after_of(int kw_pos)
+		return kw_pos + 6
+
+	# ex: shape Foo = func of T to {U} — kw_pos+7 grabs the output type
+	fn int locate_func_out_type_after_of(int kw_pos)
+		return kw_pos + 7
+
+	# ex: shape Foo = func to {U} — kw_pos+5 grabs the output type (no of-clause)
+	fn int locate_func_out_type_after_to(int kw_pos)
+		return kw_pos + 5
+
+	int of_or_to_pos = locate_func_of_or_to(pos)
+	Token of_or_to_token = tokens at of_or_to_pos
+	(kind, value) in of_or_to_token
+	bool is_of = kind is "KW_OF"
+	bool is_to = kind is "KW_TO"
 	string in_type = ""
 	string out_type = ""
-	int func_end = t4_pos
+	int func_end = of_or_to_pos
 
-	if t4_is_of
-		# ex: shape Foo = func of {T} to U — pos+5 grabs the input type
-		int t5_pos = pos + 5
-		Token t5_token = tokens at t5_pos
-		(value) in t5_token
+	if is_of
+		int in_type_pos = locate_func_in_type(pos)
+		Token in_type_token = tokens at in_type_pos
+		(value) in in_type_token
 		in_type = value
-		# ex: shape Foo = func of T {to} U — pos+6 grabs KW_TO (or nothing, if no output)
-		int t6_pos = pos + 6
-		Token t6_token = tokens at t6_pos
-		(kind, value) in t6_token
-		bool t6_is_to = kind is "KW_TO"
-		func_end = t6_pos
-		if t6_is_to
-			# ex: shape Foo = func of T to {U} — pos+7 grabs the output type
-			int t7_pos = pos + 7
-			Token t7_token = tokens at t7_pos
-			(value) in t7_token
+		int to_pos = locate_func_to_after_of(pos)
+		Token to_token = tokens at to_pos
+		(kind, value) in to_token
+		bool has_to = kind is "KW_TO"
+		func_end = to_pos
+		if has_to
+			int out_type_pos = locate_func_out_type_after_of(pos)
+			Token out_type_token = tokens at out_type_pos
+			(value) in out_type_token
 			out_type = value
-			func_end = t7_pos
+			func_end = out_type_pos
 
-	else if t4_is_to
-		# ex: shape Foo = func to {U} — pos+5 grabs the output type
-		int t5_pos = pos + 5
-		Token t5_token = tokens at t5_pos
-		(value) in t5_token
+	else if is_to
+		int out_type_pos = locate_func_out_type_after_to(pos)
+		Token out_type_token = tokens at out_type_pos
+		(value) in out_type_token
 		out_type = value
-		func_end = t5_pos
+		func_end = out_type_pos
 
 	string rust_in = render_rust_type(in_type)
 	string rust_out = render_rust_type(out_type)
 	string decl = gen_func_shape_code(rust_name, rust_in, rust_out)
 
 	int after = func_end + 1
-	
+
 	return make_nl_result(move decl, after, tokens)

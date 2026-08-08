@@ -5,42 +5,50 @@
 # on) every repeated declaration name during import-merging, well before this validator ever
 # runs, so no duplicate can reach this pass.
 macro prescan_check_duplicate_decls
+	# struct/enum/shape/type all share this layout: the declared name sits right
+	# after the keyword (an untyped enum too — a typed enum's type keyword takes
+	# this slot instead, with the name one slot further in).
+	fn int locate_decl_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: fn int {add}(...) — kw_pos+2 grabs the fn name
+	fn int locate_fn_name(int kw_pos)
+		return kw_pos + 2
+
 	bool is_kw_struct = kind is "KW_STRUCT"
 	bool is_kw_enum = kind is "KW_ENUM"
 	bool is_kw_shape = kind is "KW_SHAPE"
 	bool is_kw_type = kind is "KW_TYPE"
 	bool is_named_decl = is_kw_struct or is_kw_enum or is_kw_shape or is_kw_type
 	if is_named_decl
-		# ex: struct {Item} — pre_i+1 grabs the declared name
-		int dn_pos = pre_i + 1
-		if dn_pos < token_count
-			Token dn_tok = tokens at dn_pos
-			(kind, value) in dn_tok
+		int name_pos = locate_decl_name(pre_i)
+		if name_pos < token_count
+			Token name_token = tokens at name_pos
+			(kind, value) in name_token
 			if kind is "IDENT"
 				# Typed enums have an extra type word before the name: enum string Color
-				bool dn_is_typed_kw = list_has(primitive_type_names, value)
+				bool is_typed_enum_kw = list_has(primitive_type_names, value)
 				if is_kw_enum
-					if dn_is_typed_kw
-						# ex: enum string {Color} — dn_pos+1 grabs the enum name after the type keyword
-						int dn_name_pos = dn_pos + 1
-						if dn_name_pos < token_count
-							Token dn_name_tok = tokens at dn_name_pos
-							(kind, value) in dn_name_tok
+					if is_typed_enum_kw
+						# ex: enum string {Color} — name_pos+1 grabs the enum name after the type keyword
+						int typed_name_pos = name_pos + 1
+						if typed_name_pos < token_count
+							Token typed_name_token = tokens at typed_name_pos
+							(kind, value) in typed_name_token
 							if kind is "IDENT"
 								if list_has(builtin_names, value)
-									errors at end = val_err(dn_name_tok, lbl_decl, rule_builtin_shadow)
+									errors at end = val_err(typed_name_token, lbl_decl, rule_builtin_shadow)
 					else
 						if list_has(builtin_names, value)
-							errors at end = val_err(dn_tok, lbl_decl, rule_builtin_shadow)
+							errors at end = val_err(name_token, lbl_decl, rule_builtin_shadow)
 				else
 					if list_has(builtin_names, value)
-						errors at end = val_err(dn_tok, lbl_decl, rule_builtin_shadow)
+						errors at end = val_err(name_token, lbl_decl, rule_builtin_shadow)
 	if kind is "KW_FN"
-		# ex: fn int {add}(...) — pre_i+2 grabs the fn name
-		int fn_name_pos = pre_i + 2
+		int fn_name_pos = locate_fn_name(pre_i)
 		if fn_name_pos < token_count
-			Token fn_name_tok = tokens at fn_name_pos
-			(kind, value) in fn_name_tok
+			Token fn_name_token = tokens at fn_name_pos
+			(kind, value) in fn_name_token
 			if kind is "IDENT"
 				if list_has(builtin_names, value)
-					errors at end = val_err(fn_name_tok, lbl_decl, rule_builtin_shadow)
+					errors at end = val_err(fn_name_token, lbl_decl, rule_builtin_shadow)

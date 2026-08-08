@@ -5,9 +5,12 @@
 # comparisons. Maps each field's Deor type to its Rust equivalent via resolve_type
 # (Option<T>-wrapping validator-type fields, since those are Option<T> under the hood).
 fn ParseResult gen_struct_decl(TokensRef tokens, int pos, RcCtx ctx)
-	# ex: struct {Point} — pos+1 grabs the struct name
-	int start_pos = pos + 1
-	TokenCursor cur = cur_at_ref(tokens, start_pos)
+	# ex: struct {Point} — kw_pos+1 grabs the struct name
+	fn int locate_struct_name(int kw_pos)
+		return kw_pos + 1
+
+	int name_pos = locate_struct_name(pos)
+	TokenCursor cur = cur_at_ref(tokens, name_pos)
 	(current) in cur
 	(value) in current
 	string struct_name = value
@@ -33,8 +36,8 @@ fn ParseResult gen_struct_decl(TokensRef tokens, int pos, RcCtx ctx)
 			field_lines at end = s_join([RS_IND, field_name, RS_COL, rust_type, RS_COM])
 			cur = cur_next_ref(cur, tokens)
 	string fields_code = s_join_nl(field_lines)
-	string sdcl_pfx = "#[derive(Clone, PartialEq, Debug)]\nstruct "
-	string decl = s_join([sdcl_pfx, struct_name, RS_OB, fields_code, RS_CB2])
+	string struct_prefix = "#[derive(Clone, PartialEq, Debug)]\nstruct "
+	string decl = s_join([struct_prefix, struct_name, RS_OB, fields_code, RS_CB2])
 	(pos) in cur
-	
+
 	return make_result(move decl, pos)

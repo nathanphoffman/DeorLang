@@ -2,75 +2,78 @@
 # Prescan pass: validates struct field names (min 3 chars, snake_case) and registers each struct's field list
 # into struct_field_reg so check_struct_construction can verify construction sites.
 macro prescan_check_struct_fields
+	# ex: struct {Item} — kw_pos+1 grabs the struct name
+	fn int locate_struct_name(int kw_pos)
+		return kw_pos + 1
+
 	if kind is "KW_STRUCT"
 		# capture struct name
-		string sf_struct_name = ""
-		# ex: struct {Item} — pre_i+1 grabs the struct name
-		int sf_name_p = pre_i + 1
-		if sf_name_p < token_count
-			Token sf_nm = tokens at sf_name_p
-			(kind, value) in sf_nm
+		string struct_name = ""
+		int name_pos = locate_struct_name(pre_i)
+		if name_pos < token_count
+			Token name_token = tokens at name_pos
+			(kind, value) in name_token
 			if kind is "IDENT"
-				sf_struct_name = value
+				struct_name = value
 
 		# advance past struct name to INDENT
-		int sf_pos = pre_i + 1
-		for if sf_pos < token_count
-			Token sf_tok = tokens at sf_pos
-			(kind) in sf_tok
+		int scan_pos = locate_struct_name(pre_i)
+		for if scan_pos < token_count
+			Token scan_token = tokens at scan_pos
+			(kind) in scan_token
 			if kind is "INDENT"
 				break
-			sf_pos = sf_pos + 1
-		sf_pos = sf_pos + 1
+			scan_pos = scan_pos + 1
+		scan_pos = scan_pos + 1
 
 		# walk struct body: validate naming and collect field names
-		# sf_depth tracks nested INDENT/DEDENT pairs (e.g. a fn nested inside the
+		# depth tracks nested INDENT/DEDENT pairs (e.g. a fn nested inside the
 		# struct — invalid, but must not be mistaken for the struct's own close)
 		# so only the DEDENT that actually closes the struct body ends the scan.
-		strList sf_fields = empty
-		int sf_depth = 0
-		for if sf_pos < token_count
-			Token sf_tok = tokens at sf_pos
-			(kind) in sf_tok
+		strList fields = empty
+		int depth = 0
+		for if scan_pos < token_count
+			Token scan_token = tokens at scan_pos
+			(kind) in scan_token
 			if kind is "INDENT"
-				sf_depth = sf_depth + 1
+				depth = depth + 1
 			if kind is "DEDENT"
-				if sf_depth is 0
+				if depth is 0
 					break
-				sf_depth = sf_depth - 1
+				depth = depth - 1
 			if kind is "KW_RAW"
-				int sf_raw_name_pos = sf_pos + 1
-				if sf_raw_name_pos < token_count
-					Token sf_raw_name_tok = tokens at sf_raw_name_pos
-					(kind, value) in sf_raw_name_tok
+				int raw_name_pos = scan_pos + 1
+				if raw_name_pos < token_count
+					Token raw_name_token = tokens at raw_name_pos
+					(kind, value) in raw_name_token
 					if kind is "IDENT"
-						errors at end = val_err(sf_raw_name_tok, lbl_field, rule_no_raw_field)
+						errors at end = val_err(raw_name_token, lbl_field, rule_no_raw_field)
 			if kind is "IDENT"
-				(value) in sf_tok
-				string sf_field_type = value
-				int field_name_pos = sf_pos + 1
+				(value) in scan_token
+				string field_type = value
+				int field_name_pos = scan_pos + 1
 				if field_name_pos < token_count
-					Token field_name_tok = tokens at field_name_pos
-					(kind, value) in field_name_tok
+					Token field_name_token = tokens at field_name_pos
+					(kind, value) in field_name_token
 					if kind is "IDENT"
 						if len(value) < 3
-							errors at end = val_err(field_name_tok, lbl_field, rule_min3)
+							errors at end = val_err(field_name_token, lbl_field, rule_min3)
 						if not is_snake(value)
-							errors at end = val_err(field_name_tok, lbl_field, rule_snake)
+							errors at end = val_err(field_name_token, lbl_field, rule_snake)
 						if list_has(builtin_names, value)
-							errors at end = val_err(field_name_tok, lbl_field, rule_builtin_shadow)
-						bool sf_is_func = list_has(func_shape_names, sf_field_type)
-						if sf_is_func
-							errors at end = val_err(field_name_tok, lbl_field, rule_no_func_field)
-						sf_fields at end = value
+							errors at end = val_err(field_name_token, lbl_field, rule_builtin_shadow)
+						bool is_func_field = list_has(func_shape_names, field_type)
+						if is_func_field
+							errors at end = val_err(field_name_token, lbl_field, rule_no_func_field)
+						fields at end = value
 					else if list_has(reserved_keywords, kind)
-						errors at end = val_err(field_name_tok, lbl_field, rule_kw_in_parens)
-			sf_pos = sf_pos + 1
+						errors at end = val_err(field_name_token, lbl_field, rule_kw_in_parens)
+			scan_pos = scan_pos + 1
 
 		# register struct → field list for construction validation
-		bool sf_has_name = sf_struct_name is not ""
-		if sf_has_name
-			string sf_sep = ","
-			string sf_fields_str = s_join_with(sf_fields, sf_sep)
-			struct_field_reg at end = sf_struct_name
-			struct_field_reg at end = sf_fields_str
+		bool has_name = struct_name is not ""
+		if has_name
+			string sep = ","
+			string fields_str = s_join_with(fields, sep)
+			struct_field_reg at end = struct_name
+			struct_field_reg at end = fields_str

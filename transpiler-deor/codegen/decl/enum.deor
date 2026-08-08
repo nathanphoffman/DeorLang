@@ -7,14 +7,17 @@
 # Typed enums (`enum string/int/float/bool Name`) emit no Rust — they exist only as
 # Deor compile-time registries and are extracted via `(Variant) in EnumName`.
 fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
-	# ex: enum {Color} — pos+1 grabs the enum name (or type keyword if typed)
-	int start_pos = pos + 1
-	TokenCursor cur = cur_at_ref(tokens, start_pos)
+	# ex: enum {Color} — kw_pos+1 grabs the enum name (or type keyword if typed)
+	fn int locate_enum_type_or_name_slot(int kw_pos)
+		return kw_pos + 1
+
+	int name_pos = locate_enum_type_or_name_slot(pos)
+	TokenCursor cur = cur_at_ref(tokens, name_pos)
 	(current) in cur
 	(kind, value) in current
 
-	bool ged_is_typed = is_typed_enum_type(value)
-	if ged_is_typed
+	bool is_typed = is_typed_enum_type(value)
+	if is_typed
 		cur = cur_next_ref(cur, tokens)
 		cur = cur_skip_to_body_ref(cur, tokens)
 		for if not c_at_end(cur)
@@ -42,7 +45,7 @@ fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 		if kind is "IDENT"
 			variant_lines at end = s_join([RS_IND, value, RS_COM])
 	string variants_code = s_join_nl(variant_lines)
-	string enm_pfx = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum "
-	string decl = s_join([enm_pfx, rust_name, RS_OB, variants_code, RS_CB2])
+	string enum_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum "
+	string decl = s_join([enum_prefix, rust_name, RS_OB, variants_code, RS_CB2])
 	(pos) in cur
 	return make_result(move decl, pos)

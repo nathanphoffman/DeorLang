@@ -1,30 +1,36 @@
 
 # Builds the Rust source for `shape Foo = list of T` → `type Foo = Vec<T>;`
 fn string gen_list_shape_code(string rust_name, string rust_elem)
-	string shp_pfx = "type "
-	string shp_mid = " = Vec<"
-	string shp_sfx = ">;\n\n"
-	return s_join([shp_pfx, rust_name, shp_mid, rust_elem, shp_sfx])
+	string list_prefix = "type "
+	string list_mid = " = Vec<"
+	string list_suffix = ">;\n\n"
+	return s_join([list_prefix, rust_name, list_mid, rust_elem, list_suffix])
 
 # Builds the Rust source for `shape Foo = func of T to U` → `type Foo = fn(T) -> U;`
 fn string gen_func_shape_code(string rust_name, string rust_in, string rust_out)
 	string out_suffix = ""
 	if not is_empty(rust_out)
-		string ost_pfx = " -> "
-		out_suffix = s_join([ost_pfx, rust_out])
-	string fns_pfx = "type "
-	string fns_mid = " = fn("
-	string fns_rp = ")"
-	string fns_sfx = ";\n\n"
-	return s_join([fns_pfx, rust_name, fns_mid, rust_in, fns_rp, out_suffix, fns_sfx])
+		string out_prefix = " -> "
+		out_suffix = s_join([out_prefix, rust_out])
+	string func_prefix = "type "
+	string func_mid = " = fn("
+	string func_paren_close = ")"
+	string func_suffix = ";\n\n"
+	return s_join([func_prefix, rust_name, func_mid, rust_in, func_paren_close, out_suffix, func_suffix])
 
 # Generates a Rust type alias from a Deor `shape` declaration. Dispatches to
 # shape_list for `list of T` forms and shape_func for `func of T to U` forms.
 fn ParseResult gen_shape_decl(TokensRef tokens, int pos)
-	# ex: shape {Foo} = list of T — pos+1 grabs the shape name
-	int name_pos = pos + 1
-	# ex: shape Foo = {list} of T — pos+3 grabs the form keyword (list/func)
-	int form_pos = pos + 3
+	# ex: shape {Foo} = list of T — kw_pos+1 grabs the shape name
+	fn int locate_shape_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: shape Foo = {list} of T — kw_pos+3 grabs the form keyword (list/func)
+	fn int locate_shape_form(int kw_pos)
+		return kw_pos + 3
+
+	int name_pos = locate_shape_name(pos)
+	int form_pos = locate_shape_form(pos)
 	Token name_token = tokens at name_pos
 	Token form_token = tokens at form_pos
 	(value) in name_token

@@ -22,12 +22,10 @@ and can't leak or collide with siblings.
    place, and fixed a real pre-existing bug found along the way:
    `prescan_check_struct_fields.deor` could hang the transpiler forever on any
    nested block inside a struct body (not depth-aware DEDENT tracking).
-
-## Remaining
-
 3. **Struct declarations** — `codegen/decl/struct.deor`,
-   `prescan_check_struct_fields.deor` (already touched once for the hang fix, not
-   yet for prefix/offset cleanup), `prescan_check_duplicate_decls.deor`
+   `prescan_check_struct_fields.deor`, `prescan_check_duplicate_decls.deor`
+   (also covers struct/enum/shape/type's shared "builtin name as decl name"
+   check and fn name, so it's done here rather than split across phases).
 4. **Enum declarations** — `check_enum_decl.deor`,
    `prescan_check_enum_variants.deor`, `codegen/decl/enum.deor`
 5. **Shape declarations** (`list of T` / `func of T to U` / `raw`) —
@@ -35,6 +33,9 @@ and can't leak or collide with siblings.
    `codegen/decl/macros/shape_list.deor`, `codegen/decl/macros/shape_func.deor`,
    and `check_func_shape_multi_param.deor` (shape-related, not fn-related, despite
    the name)
+
+## Remaining
+
 6. **Variable decls / bindings** — `check_var_decl.deor`, `check_void_var.deor`,
    `reassign/*` (3 files), `stmt/typed_binding.deor` + `tb_*` macros,
    `stmt/as_binding.deor` + `aas_*` macros

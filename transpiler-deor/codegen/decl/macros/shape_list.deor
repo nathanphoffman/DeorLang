@@ -2,9 +2,12 @@
 # Handles `shape Foo = list of T` → `type Foo = Vec<T>;`
 # Expects: kind, pos, tokens, rust_name in scope from gen_shape_decl.
 macro shape_list
+	# ex: shape Foo = list of {T} — kw_pos+5 grabs the element type
+	fn int locate_list_elem(int kw_pos)
+		return kw_pos + 5
+
 	if kind is "KW_LIST"
-		# ex: shape Foo = list of {T} — pos+5 grabs the element type
-		int elem_pos = pos + 5
+		int elem_pos = locate_list_elem(pos)
 		Token elem_token = tokens at elem_pos
 		(value) in elem_token
 		string elem_type = value
