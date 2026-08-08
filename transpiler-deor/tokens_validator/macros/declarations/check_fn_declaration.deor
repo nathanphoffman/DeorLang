@@ -5,6 +5,19 @@
 # struct/enum/shape/macro body, an if/for outside any fn, etc.). A fn nested directly inside another fn's
 # body IS allowed, but only with a body of exactly one `return expr` statement — see is_single_return_body.
 macro check_fn_declaration
+	# Token offsets for a `fn RetType name(params)` declaration header, counted from
+	# the position of the KW_FN token itself. Layout:
+	#   +0 KW_FN  +1 return type  +2 name (or LPAREN, if the return type was omitted)
+	#   +3 LPAREN (only valid when a return type is actually present)
+	fn int locate_fn_return_type(int kw_pos)
+		return kw_pos + 1
+
+	fn int locate_fn_name(int kw_pos)
+		return kw_pos + 2
+
+	fn int locate_fn_left_paren(int kw_pos)
+		return kw_pos + 3
+
 	if cur_kind is "KW_FN"
 		bool is_nested = block_depth > 0
 		if is_nested
@@ -74,3 +87,53 @@ macro check_fn_declaration
 			if return_type_kind is "IDENT"
 				if kind is "LPAREN"
 					errors at end = val_err(return_type_token, lbl_fn, rule_no_ret)
+
+# A fn nested inside another fn is restricted to a body of exactly one
+# `return expr` statement — no local variable declarations, moves, or other
+# statements. That's what lets it skip the scope-isolated variable/move
+# tracking a general nested-fn feature would otherwise need: a single return
+# expression has nowhere to declare a local or perform a move. (This helper
+# itself can't be one of those restricted nested fns — it's multi-statement —
+# so it stays a plain top-level fn, used only from this file.)
+#
+# right_paren_pos is the fn header's closing RPAREN. Expected layout when the
+# body is valid: RPAREN, NEWLINE, INDENT, KW_RETURN, ... NEWLINE, DEDENT.
+fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_count)
+	int newline_pos = right_paren_pos + 1
+	if newline_pos >= token_count
+		return false
+	Token newline_token = tokens at newline_pos
+	(kind) in newline_token
+	if kind is not "NEWLINE"
+		return false
+
+	int indent_pos = newline_pos + 1
+	if indent_pos >= token_count
+		return false
+	Token indent_token = tokens at indent_pos
+	(kind) in indent_token
+	if kind is not "INDENT"
+		return false
+
+	int return_pos = indent_pos + 1
+	if return_pos >= token_count
+		return false
+	Token return_token = tokens at return_pos
+	(kind) in return_token
+	if kind is not "KW_RETURN"
+		return false
+
+	int scan_pos = return_pos + 1
+	for if scan_pos < token_count
+		Token scan_token = tokens at scan_pos
+		(kind) in scan_token
+		if kind is "NEWLINE"
+			break
+		scan_pos = scan_pos + 1
+
+	int after_stmt_pos = scan_pos + 1
+	if after_stmt_pos >= token_count
+		return false
+	Token after_stmt_token = tokens at after_stmt_pos
+	(kind) in after_stmt_token
+	return kind is "DEDENT"

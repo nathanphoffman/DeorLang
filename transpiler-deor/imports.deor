@@ -13,9 +13,6 @@ import "transpiler-deor/global_flags.deor"
 
 # core infrastructure
 import "transpiler-deor/deor_helpers.deor"
-import "transpiler-deor/shared/type_decl_positions.deor"
-import "transpiler-deor/shared/fn_decl_positions.deor"
-import "transpiler-deor/shared/nested_fn_shape.deor"
 
 # lexer and importer
 import "transpiler-deor/importer/lexer/token_factory.deor"

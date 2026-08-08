@@ -388,110 +388,6 @@ fn make_nl_result(code: String, pos: i64, tokens: TokensRef) -> ParseResult {
     return make_result(code, next_pos.clone());
 }
 
-// transpiler-deor/shared/type_decl_positions.deor
-fn locate_type_name(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/type_decl_positions.deor
-    return kw_pos + 1;
-}
-
-fn locate_type_left_paren(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/type_decl_positions.deor
-    return kw_pos + 2;
-}
-
-fn locate_type_param_type(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/type_decl_positions.deor
-    return kw_pos + 3;
-}
-
-fn locate_type_param_name(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/type_decl_positions.deor
-    return kw_pos + 4;
-}
-
-fn locate_type_newline(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/type_decl_positions.deor
-    return kw_pos + 6;
-}
-
-fn locate_type_body(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/type_decl_positions.deor
-    return kw_pos + 7;
-}
-
-// transpiler-deor/shared/fn_decl_positions.deor
-fn locate_fn_return_type(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/fn_decl_positions.deor
-    return kw_pos + 1;
-}
-
-fn locate_fn_name(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/fn_decl_positions.deor
-    return kw_pos + 2;
-}
-
-fn locate_fn_left_paren(kw_pos: i64) -> i64 {
-    // transpiler-deor/shared/fn_decl_positions.deor
-    return kw_pos + 3;
-}
-
-// transpiler-deor/shared/nested_fn_shape.deor
-fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i64) -> bool {
-    // transpiler-deor/shared/nested_fn_shape.deor
-    let mut newline_pos: i64 = right_paren_pos + 1;
-    if newline_pos >= token_count {
-        // transpiler-deor/shared/nested_fn_shape.deor
-        return false;
-    }
-    let mut newline_token: Token = tokens[newline_pos as usize].clone();
-    let kind = newline_token.kind.clone();
-    if kind != "NEWLINE" {
-        // transpiler-deor/shared/nested_fn_shape.deor
-        return false;
-    }
-    let mut indent_pos: i64 = newline_pos + 1;
-    if indent_pos >= token_count {
-        // transpiler-deor/shared/nested_fn_shape.deor
-        return false;
-    }
-    let mut indent_token: Token = tokens[indent_pos as usize].clone();
-    let kind = indent_token.kind.clone();
-    if kind != "INDENT" {
-        // transpiler-deor/shared/nested_fn_shape.deor
-        return false;
-    }
-    let mut return_pos: i64 = indent_pos + 1;
-    if return_pos >= token_count {
-        // transpiler-deor/shared/nested_fn_shape.deor
-        return false;
-    }
-    let mut return_token: Token = tokens[return_pos as usize].clone();
-    let kind = return_token.kind.clone();
-    if kind != "KW_RETURN" {
-        // transpiler-deor/shared/nested_fn_shape.deor
-        return false;
-    }
-    let mut scan_pos: i64 = return_pos + 1;
-    while scan_pos < token_count {
-        // transpiler-deor/shared/nested_fn_shape.deor
-        let mut scan_token: Token = tokens[scan_pos as usize].clone();
-        let kind = scan_token.kind.clone();
-        if kind == "NEWLINE" {
-            // transpiler-deor/shared/nested_fn_shape.deor
-            break;
-        }
-        scan_pos = scan_pos + 1;
-    }
-    let mut after_stmt_pos: i64 = scan_pos + 1;
-    if after_stmt_pos >= token_count {
-        // transpiler-deor/shared/nested_fn_shape.deor
-        return false;
-    }
-    let mut after_stmt_token: Token = tokens[after_stmt_pos as usize].clone();
-    let kind = after_stmt_token.kind.clone();
-    return kind == "DEDENT";
-}
-
 // transpiler-deor/importer/lexer/token_factory.deor
 fn make_meta(line: i64, file: String) -> TokenMeta {
     // transpiler-deor/importer/lexer/token_factory.deor
@@ -2580,6 +2476,63 @@ fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<To
     // transpiler-deor/macro_builder/macro_builder.deor
     let mut validated: Vec<Token> = validate_macros(raw_tokens.clone());
     return expand_deor_macros(validated.clone(), enforce_macro_file_depth.clone());
+}
+
+// transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i64) -> bool {
+    // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+    let mut newline_pos: i64 = right_paren_pos + 1;
+    if newline_pos >= token_count {
+        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+        return false;
+    }
+    let mut newline_token: Token = tokens[newline_pos as usize].clone();
+    let kind = newline_token.kind.clone();
+    if kind != "NEWLINE" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+        return false;
+    }
+    let mut indent_pos: i64 = newline_pos + 1;
+    if indent_pos >= token_count {
+        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+        return false;
+    }
+    let mut indent_token: Token = tokens[indent_pos as usize].clone();
+    let kind = indent_token.kind.clone();
+    if kind != "INDENT" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+        return false;
+    }
+    let mut return_pos: i64 = indent_pos + 1;
+    if return_pos >= token_count {
+        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+        return false;
+    }
+    let mut return_token: Token = tokens[return_pos as usize].clone();
+    let kind = return_token.kind.clone();
+    if kind != "KW_RETURN" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+        return false;
+    }
+    let mut scan_pos: i64 = return_pos + 1;
+    while scan_pos < token_count {
+        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+        let mut scan_token: Token = tokens[scan_pos as usize].clone();
+        let kind = scan_token.kind.clone();
+        if kind == "NEWLINE" {
+            // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+            break;
+        }
+        scan_pos = scan_pos + 1;
+    }
+    let mut after_stmt_pos: i64 = scan_pos + 1;
+    if after_stmt_pos >= token_count {
+        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+        return false;
+    }
+    let mut after_stmt_token: Token = tokens[after_stmt_pos as usize].clone();
+    let kind = after_stmt_token.kind.clone();
+    return kind == "DEDENT";
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
@@ -4987,6 +4940,24 @@ fn validate_tokens(tokens: TokensRef) {
             // macro: check_validator_declaration (transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor)
             {
                 // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
+                fn locate_type_name(kw_pos: i64) -> i64 {
+                    return kw_pos + 1;
+                }
+                fn locate_type_left_paren(kw_pos: i64) -> i64 {
+                    return kw_pos + 2;
+                }
+                fn locate_type_param_type(kw_pos: i64) -> i64 {
+                    return kw_pos + 3;
+                }
+                fn locate_type_param_name(kw_pos: i64) -> i64 {
+                    return kw_pos + 4;
+                }
+                fn locate_type_newline(kw_pos: i64) -> i64 {
+                    return kw_pos + 6;
+                }
+                fn locate_type_body(kw_pos: i64) -> i64 {
+                    return kw_pos + 7;
+                }
                 if cur_kind == "KW_TYPE" {
                     // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
                     let mut type_name_pos: i64 = locate_type_name(pos.clone());
@@ -5202,6 +5173,15 @@ fn validate_tokens(tokens: TokensRef) {
             // macro: check_fn_declaration (transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor)
             {
                 // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+                fn locate_fn_return_type(kw_pos: i64) -> i64 {
+                    return kw_pos + 1;
+                }
+                fn locate_fn_name(kw_pos: i64) -> i64 {
+                    return kw_pos + 2;
+                }
+                fn locate_fn_left_paren(kw_pos: i64) -> i64 {
+                    return kw_pos + 3;
+                }
                 if cur_kind == "KW_FN" {
                     // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
                     let mut is_nested: bool = block_depth > 0;
@@ -9944,6 +9924,9 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     }
     if kind == "KW_FN" {
         // transpiler-deor/codegen/decl/stmt/stmt.deor
+        fn locate_fn_return_type(kw_pos: i64) -> i64 {
+            return kw_pos + 1;
+        }
         let mut fn_tokens: TokensRef = tokens.clone();
         let mut return_type_pos: i64 = locate_fn_return_type(pos.clone());
         // macro: fn_parse_signature (transpiler-deor/codegen/decl/macros/fn_parse_signature.deor)
@@ -10345,6 +10328,9 @@ fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
 // transpiler-deor/codegen/decl/validator_type.deor
 fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/validator_type.deor
+    fn locate_type_name(kw_pos: i64) -> i64 {
+        return kw_pos + 1;
+    }
     let variant_reg = ctx.variant_reg.clone();
     let shape_reg = ctx.shape_reg.clone();
     let struct_reg = ctx.struct_reg.clone();
@@ -10457,6 +10443,9 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 // transpiler-deor/codegen/decl/function.deor
 fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/function.deor
+    fn locate_fn_return_type(kw_pos: i64) -> i64 {
+        return kw_pos + 1;
+    }
     let variant_reg = ctx.variant_reg.clone();
     let shape_reg = ctx.shape_reg.clone();
     let struct_reg = ctx.struct_reg.clone();

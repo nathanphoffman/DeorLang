@@ -11,6 +11,10 @@
 #                          immediately-invoked closure `(|| -> bool { ... })()` so the
 #                          predicate's `return` exits the closure, not the constructor.
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
+	# ex: type {Positive}(int val) — kw_pos+1 grabs the validator type's name
+	fn int locate_type_name(int kw_pos)
+		return kw_pos + 1
+
 	(variant_reg, shape_reg, struct_reg, enum_reg, type_reg, typed_enum_reg, typed_variant_reg) in ctx
 	int type_name_pos = locate_type_name(pos)
 
