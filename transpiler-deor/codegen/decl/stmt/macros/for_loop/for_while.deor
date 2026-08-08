@@ -6,25 +6,28 @@
 # even though it's runtime-identical. Any other condition (including compound ones
 # that merely start with `true`, like `true and x`) is untouched.
 macro for_while
-	# ex: for if {cond} — next_pos+1 grabs the start of the loop condition
-	int cond_pos = next_pos + 1
+	# ex: for if {cond} — anchor+1 grabs the start of the loop condition
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	int cond_pos = locate_next_token(next_pos)
 	val_pos as cond_pos
-	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
-	move (code, new_pos) in ge_r
+	ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in expr_result
 	val_code as code
 	val_end as new_pos
 	int blk_start = skip_to_body_ref(tokens, val_end)
 	int blk_depth = depth + 1
-	ParseResult blk_r = gen_block(blk_start, blk_depth, ctx)
-	move (code, new_pos) in blk_r
+	ParseResult blk_result = gen_block(blk_start, blk_depth, ctx)
+	move (code, new_pos) in blk_result
 	blk_code as code
 	blk_end as new_pos
-	string whl_kw = "while "
-	string fw_head = s_join([whl_kw, val_code])
-	
+	string while_kw = "while "
+	string while_head = s_join([while_kw, val_code])
+
 	# This was added to address a bug where no returns at the end of the function caused errors with RUST
 	# Infinite loops are one of the only cases where this happens
 	if val_code is "true"
-		fw_head = "loop"
-	string while_code = s_join([pad, fw_head, RS_OB, blk_code, pad, RS_CB])
+		while_head = "loop"
+	string while_code = s_join([pad, while_head, RS_OB, blk_code, pad, RS_CB])
 	return make_result(move while_code, blk_end)

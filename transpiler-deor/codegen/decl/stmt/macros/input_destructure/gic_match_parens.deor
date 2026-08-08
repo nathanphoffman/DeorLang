@@ -1,17 +1,21 @@
 
-# Checks that the token at gic_lp is LPAREN and the one after is RPAREN,
+# Checks that the token at lparen_pos is LPAREN and the one after is RPAREN,
 # confirming the trailing `()` of input() or args().
-# On success sets gic_matched=true.
-# Reads: gic_lp, tokens, token_count.
-# Writes: gic_matched (must be declared false in outer scope before call).
+# On success sets matched=true.
+# Reads: lparen_pos, tokens, token_count.
+# Writes: matched (must be declared false in outer scope before call).
 macro gic_match_parens
-	if gic_lp < token_count
-		Token gic_lp_tok = tokens at gic_lp
-		(kind) in gic_lp_tok
+	# ex: input({)}) — anchor+1 grabs the token right after the opening paren
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	if lparen_pos < token_count
+		Token lparen_token = tokens at lparen_pos
+		(kind) in lparen_token
 		if kind is "LPAREN"
-			int gic_rp = gic_lp + 1
-			if gic_rp < token_count
-				Token gic_rp_tok = tokens at gic_rp
-				(kind) in gic_rp_tok
+			int rparen_pos = locate_next_token(lparen_pos)
+			if rparen_pos < token_count
+				Token rparen_token = tokens at rparen_pos
+				(kind) in rparen_token
 				if kind is "RPAREN"
-					gic_matched = true
+					matched = true

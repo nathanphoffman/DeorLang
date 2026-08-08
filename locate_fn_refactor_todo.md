@@ -33,15 +33,23 @@ and can't leak or collide with siblings.
    `codegen/decl/macros/shape_list.deor`, `codegen/decl/macros/shape_func.deor`,
    and `check_func_shape_multi_param.deor` (shape-related, not fn-related, despite
    the name)
+6. **Variable decls / bindings** — `check_var_decl.deor`, `check_void_var.deor`,
+   `reassign/*` (all 5: `check_bare_reassign.deor` plus its two callers
+   `check_const_reassign.deor`/`check_validator_reassign.deor`, since renaming its
+   parameterization vars meant updating both call sites too), `stmt/typed_binding.deor`
+   + all 6 `tb_*` macros, `stmt/as_binding.deor` + all 4 `aas_*` macros.
+7. **Statement/control-flow codegen** — `stmt.deor`, `if.deor`, `for.deor`,
+   `for_loop/*` (`for_while`, `for_move`, `for_iter_expr`, `for_build_fields`;
+   `for_collect_fields.deor` was already clean, no changes needed),
+   `call_stmt.deor`, `list_mutation.deor`, `stmt_structural.deor`,
+   `stmt_flow.deor`, `stmt_blocks.deor`, `destructure.deor`,
+   `initialize_gen_destructure.deor`, and the whole `input_destructure/` family
+   (`gen_input_check`, `gic_match_kw_and_name`, `gic_match_parens`,
+   `gic_emit_header`, `gic_emit_bindings` — same cross-file ambient-variable
+   rename pattern as the reassign macros in phase 6).
 
 ## Remaining
 
-6. **Variable decls / bindings** — `check_var_decl.deor`, `check_void_var.deor`,
-   `reassign/*` (3 files), `stmt/typed_binding.deor` + `tb_*` macros,
-   `stmt/as_binding.deor` + `aas_*` macros
-7. **Statement/control-flow codegen** — `stmt.deor`, `if.deor`, `for.deor`,
-   `for_loop/*`, `call_stmt.deor`, `list_mutation.deor`, `stmt_structural.deor`,
-   `stmt_flow.deor`, `stmt_blocks.deor`, destructure macros
 8. **Expression parsing** — `expr/expr.deor`, `expr/primary.deor`, `expr/macros/*`
    (prefix_ops, paren_expr, literals, list_literal, ident_expr)
 9. **Use-after-move tracking** — `use_after_move/*` (7 files), `track/*` (3 files)

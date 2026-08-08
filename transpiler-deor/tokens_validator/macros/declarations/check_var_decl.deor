@@ -2,40 +2,49 @@
 # Validates variable names in typed declarations (`Type name = ...`) and as-bindings: enforces min 3 chars,
 # snake_case, and rejects a built-in function name (print, crash, len, range, args, input).
 macro check_var_decl
-	# ex: int {name} = 5 — pos+1 grabs the variable name
-	int next1 = pos + 1
-	# ex: int name {=} 5 — pos+2 grabs the equals sign
-	int next2 = pos + 2
-	if next2 < token_count
-		Token tok_one = tokens at next1
-		Token tok_two = tokens at next2
-		(kind) in tok_one
-		string one_kind = kind
-		(kind) in tok_two
-		string two_kind = kind
-		if one_kind is "IDENT" and two_kind is "EQUALS"
-			(value, line, file) in tok_one
+	# ex: int {name} = 5 — kw_pos+1 grabs the variable name
+	fn int locate_var_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: int name {=} 5 — kw_pos+2 grabs the equals sign
+	fn int locate_var_equals(int kw_pos)
+		return kw_pos + 2
+
+	# ex: {const} int NAME = 5 — kw_pos-1 checks the token before the type for the const keyword
+	fn int locate_const_check_pos(int kw_pos)
+		return kw_pos - 1
+
+	int name_pos = locate_var_name(pos)
+	int equals_pos = locate_var_equals(pos)
+	if equals_pos < token_count
+		Token name_token = tokens at name_pos
+		Token equals_token = tokens at equals_pos
+		(kind) in name_token
+		string name_kind = kind
+		(kind) in equals_token
+		string equals_kind = kind
+		if name_kind is "IDENT" and equals_kind is "EQUALS"
+			(value, line, file) in name_token
 			string var_name = value
 			int var_line = line
 			string var_file = file
 			if len(var_name) < 3
-				errors at end = val_err(tok_one, lbl_var, rule_min3)
+				errors at end = val_err(name_token, lbl_var, rule_min3)
 			if list_has(builtin_names, var_name)
-				errors at end = val_err(tok_one, lbl_var, rule_builtin_shadow)
-			bool cvd_is_const = false
+				errors at end = val_err(name_token, lbl_var, rule_builtin_shadow)
+			bool is_const = false
 			if pos > 0
-				# ex: {const} int NAME = 5 — pos-1 checks the token before the type for the const keyword
-				int cvd_prev = pos - 1
-				Token cvd_prev_tok = tokens at cvd_prev
-				(kind) in cvd_prev_tok
-				cvd_is_const = kind is "KW_CONST"
-			if cvd_is_const
+				int const_check_pos = locate_const_check_pos(pos)
+				Token const_check_token = tokens at const_check_pos
+				(kind) in const_check_token
+				is_const = kind is "KW_CONST"
+			if is_const
 				if not is_screaming_snake(var_name)
-					errors at end = val_err(tok_one, lbl_var, rule_screaming)
-			if not cvd_is_const
+					errors at end = val_err(name_token, lbl_var, rule_screaming)
+			if not is_const
 				if not is_snake(var_name)
-					errors at end = val_err(tok_one, lbl_var, rule_snake)
-		if one_kind is "KW_AS"
+					errors at end = val_err(name_token, lbl_var, rule_snake)
+		if name_kind is "KW_AS"
 			if len(cur_val) < 3
 				errors at end = val_err(tok, lbl_var, rule_min3)
 			if not is_snake(cur_val)

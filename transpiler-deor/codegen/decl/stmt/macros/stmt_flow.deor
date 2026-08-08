@@ -7,35 +7,36 @@
 # `return a + b + "c"`) — a chain already produces a correctly owned value, and this
 # suffix is meant for a single token.
 macro stmt_flow
+	# ex: return {expr} — anchor+1 grabs the return value expression
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
 	if kind is "KW_RETURN"
-		# ex: return {expr} — pos+1 grabs the return value expression
-		int sf_val_pos = pos + 1
-		Token sf_val_tok = tokens at sf_val_pos
-		(kind) in sf_val_tok
-		ParseResult sf_val_r = gen_expr(tokens, sf_val_pos, ctx)
-		move (code, new_pos) in sf_val_r
-		sf_val_code as code
-		sf_val_end as new_pos
+		int val_pos = locate_next_token(pos)
+		Token val_token = tokens at val_pos
+		(kind) in val_token
+		ParseResult val_result = gen_expr(tokens, val_pos, ctx)
+		move (code, new_pos) in val_result
+		val_code as code
+		val_end as new_pos
 
-		bool sf_is_chain = is_expr_chain(tokens, sf_val_pos, sf_val_end)
+		bool is_chain = is_expr_chain(tokens, val_pos, val_end)
 
-		string sf_suffix = ""
-		if not sf_is_chain
+		string suffix = ""
+		if not is_chain
 			if kind is "STRING"
-				sf_suffix = ".to_string()"
-		string sf_ret_kw = "return "
-		string sf_ret_sc = ";\n"
-		string sf_ret_code = s_join([pad, sf_ret_kw, sf_val_code, sf_suffix, sf_ret_sc])
-		return make_nl_result(move sf_ret_code, sf_val_end, tokens)
+				suffix = ".to_string()"
+		string return_kw = "return "
+		string return_sc = ";\n"
+		string return_code = s_join([pad, return_kw, val_code, suffix, return_sc])
+		return make_nl_result(move return_code, val_end, tokens)
 	if kind is "KW_BREAK"
-		string sf_brk_kw = "break;\n"
-		string sf_brk_code = s_join([pad, sf_brk_kw])
-		# ex: break{\n} — pos+1 grabs the token after break, where parsing resumes
-		int sf_brk_n = pos + 1
-		return make_nl_result(move sf_brk_code, sf_brk_n, tokens)
+		string break_kw = "break;\n"
+		string break_code = s_join([pad, break_kw])
+		int break_next = locate_next_token(pos)
+		return make_nl_result(move break_code, break_next, tokens)
 	if kind is "KW_CONTINUE"
-		string sf_cnt_kw = "continue;\n"
-		string sf_cnt_code = s_join([pad, sf_cnt_kw])
-		# ex: continue{\n} — pos+1 grabs the token after continue, where parsing resumes
-		int sf_cnt_n = pos + 1
-		return make_nl_result(move sf_cnt_code, sf_cnt_n, tokens)
+		string continue_kw = "continue;\n"
+		string continue_code = s_join([pad, continue_kw])
+		int continue_next = locate_next_token(pos)
+		return make_nl_result(move continue_code, continue_next, tokens)

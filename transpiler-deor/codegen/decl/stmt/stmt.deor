@@ -20,6 +20,15 @@
 # appropriate function or macro. The IDENT branch dispatches to sub-functions for
 # each identifier-led form so this function stays a clean dispatch table.
 fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
+	# The token right after whatever keyword/ident anchor is in scope at each call
+	# site below — reused across branches, meaning documented by the comment there.
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	# ex: raw name = {val} — kw_pos+3 skips 'raw', the name, and '=' to grab the value expr
+	fn int locate_raw_value(int kw_pos)
+		return kw_pos + 3
+
 	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, validator_var_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
@@ -32,14 +41,13 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	macro_run stmt_structural
 
 	if kind is "KW_RAW"
-		# ex: raw {name} = ... — pos+1 grabs the variable name after 'raw'
-		int raw_name_pos = pos + 1
+		# ex: raw {name} = ... — kw_pos+1 grabs the variable name after 'raw'
+		int raw_name_pos = locate_next_token(pos)
 		Token raw_name_tok = tokens at raw_name_pos
 		(value) in raw_name_tok
 		string raw_var_name = value
-		# ex: raw name = {val} — raw_name_pos+2 skips the name and '=' to grab the value expr
-		int val_pos = raw_name_pos + 2
-		
+		int val_pos = locate_raw_value(pos)
+
 		unsafe_macro_run gen_expr_r
 		string var_name = raw_var_name
 		unsafe_macro_run mut_guard
@@ -49,8 +57,8 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		return make_nl_result(move raw_code, val_end, tokens)
 
 	if kind is "KW_CONST"
-		# ex: const {Type} name = val — pos+1 grabs the type token after 'const'
-		int const_type_pos = pos + 1
+		# ex: const {Type} name = val — kw_pos+1 grabs the type token after 'const'
+		int const_type_pos = locate_next_token(pos)
 		return gen_typed_binding(const_type_pos, depth, ctx)
 
 	if kind is "KW_IF"
@@ -71,26 +79,26 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		TokensRef fn_tokens = tokens
 		int return_type_pos = locate_fn_return_type(pos)
 		unsafe_macro_run fn_parse_signature
-		int nf_body_depth = depth + 1
-		ParseResult nf_body_r = gen_stmt(body_start, nf_body_depth, ctx)
-		move (code, new_pos) in nf_body_r
-		nf_body_code as code
-		nf_body_end as new_pos
-		int nf_after_pos = nf_body_end + 1
-		string nf_params_code = s_join_with(param_strs, RS_CSEP)
-		string nf_ret_suffix = ""
+		int nested_fn_body_depth = depth + 1
+		ParseResult nested_fn_body_result = gen_stmt(body_start, nested_fn_body_depth, ctx)
+		move (code, new_pos) in nested_fn_body_result
+		nested_fn_body_code as code
+		nested_fn_body_end as new_pos
+		int nested_fn_after_pos = nested_fn_body_end + 1
+		string nested_fn_params_code = s_join_with(param_strs, RS_CSEP)
+		string nested_fn_ret_suffix = ""
 		if not is_empty(ret_type)
-			nf_ret_suffix = s_join([RS_ARR, ret_type])
-		string nf_kw = "fn "
-		string nf_close = "}\n"
-		strList nf_parts = [pad, nf_kw, fn_name, RS_LP, nf_params_code, RS_RP, nf_ret_suffix, RS_OB, nf_body_code, pad, nf_close]
-		string nf_code = s_join(nf_parts)
-		return make_result(move nf_code, nf_after_pos)
+			nested_fn_ret_suffix = s_join([RS_ARR, ret_type])
+		string nested_fn_kw = "fn "
+		string nested_fn_close = "}\n"
+		strList nested_fn_parts = [pad, nested_fn_kw, fn_name, RS_LP, nested_fn_params_code, RS_RP, nested_fn_ret_suffix, RS_OB, nested_fn_body_code, pad, nested_fn_close]
+		string nested_fn_code = s_join(nested_fn_parts)
+		return make_result(move nested_fn_code, nested_fn_after_pos)
 
 	if kind is "IDENT"
 		string ident_name = value
-		# ex: name {=} expr — pos+1 grabs the token after the identifier that decides the statement form
-		int next_pos = pos + 1
+		# ex: name {=} expr — kw_pos+1 grabs the token after the identifier that decides the statement form
+		int next_pos = locate_next_token(pos)
 		if next_pos >= token_count
 			string eof_code = "/* eof */\n"
 			return make_result(move eof_code, next_pos)
@@ -112,7 +120,7 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 		# name = expr  (plain reassignment)
 		if kind is "EQUALS"
 			# ex: name = {expr} — next_pos+1 grabs the value expression after '='
-			int val_pos = next_pos + 1
+			int val_pos = locate_next_token(next_pos)
 			Token eq_val_token = tokens at val_pos
 			(kind) in eq_val_token
 			unsafe_macro_run gen_expr_r
@@ -124,19 +132,19 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			string reassign_type = reg_get(validator_var_reg, ident_name)
 			string asgn_code = ""
 			if not is_empty(reassign_type)
-				string rva_nop = "::new("
-				string rva_sc = ");\n"
-				strList rva_parts = [pad, ident_name, RS_EQ, reassign_type, rva_nop, val_code, rva_sc]
-				asgn_code = s_join(rva_parts)
+				string reassign_new_open = "::new("
+				string reassign_sc = ");\n"
+				strList reassign_parts = [pad, ident_name, RS_EQ, reassign_type, reassign_new_open, val_code, reassign_sc]
+				asgn_code = s_join(reassign_parts)
 			else
-				strList asg_parts = [pad, ident_name, RS_EQ, val_code, assign_suffix, RS_SC]
-				asgn_code = s_join(asg_parts)
+				strList assign_parts = [pad, ident_name, RS_EQ, val_code, assign_suffix, RS_SC]
+				asgn_code = s_join(assign_parts)
 			return make_nl_result(move asgn_code, val_end, tokens)
 
 		# Type name = expr  (typed binding)
 		if kind is "IDENT"
 			# ex: Type name {=} val — next_pos+1 grabs the expected '=' after the var name
-			int eq_pos = next_pos + 1
+			int eq_pos = locate_next_token(next_pos)
 			if eq_pos < token_count
 				Token eq_token = tokens at eq_pos
 				(kind) in eq_token
@@ -148,14 +156,14 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 			string bare_rust_type = resolve_type(ident_name, ctx)
 			bool bare_is_validator = reg3_has(type_reg, ident_name)
 			if bare_is_validator
-				string bd_sfx = " = None;\n"
-				string bd_code = s_join([pad, RS_LETM, bare_var_name, RS_COL, bare_rust_type, bd_sfx])
-				int bd_after = next_pos + 1
-				return make_nl_result(move bd_code, bd_after, tokens)
+				string bare_decl_suffix = " = None;\n"
+				string bare_decl_code = s_join([pad, RS_LETM, bare_var_name, RS_COL, bare_rust_type, bare_decl_suffix])
+				int bare_decl_after = locate_next_token(next_pos)
+				return make_nl_result(move bare_decl_code, bare_decl_after, tokens)
 
-	string unh_pfx = "/* unhandled("
-	string unh_sfx = ") */\n"
-	strList unh_parts = [unh_pfx, kind, unh_sfx]
-	string unhand = s_join(unh_parts)
-	int unhand_next = pos + 1
-	return make_result(move unhand, unhand_next)
+	string unhandled_prefix = "/* unhandled("
+	string unhandled_suffix = ") */\n"
+	strList unhandled_parts = [unhandled_prefix, kind, unhandled_suffix]
+	string unhandled = s_join(unhandled_parts)
+	int unhandled_next = locate_next_token(pos)
+	return make_result(move unhandled, unhandled_next)

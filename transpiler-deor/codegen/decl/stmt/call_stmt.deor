@@ -4,6 +4,10 @@
 # (→ println! for 1 arg, print! for 2 args where the second replaces the
 # trailing newline) and `crash` (→ panic!).
 fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
+	# ex: print{(}left, right) — anchor+1 grabs the opening paren
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
 	(tokens, mut_names) in ctx
 	int token_count = len(tokens)
 	unsafe_macro_run rust_strings
@@ -11,12 +15,11 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	Token name_token = tokens at pos
 	(value) in name_token
 	string ident_name = value
-	# ex: print{(}left, right) — pos+1 grabs the opening paren
-	int next_pos = pos + 1
+	int next_pos = locate_next_token(pos)
 	# ex: print({left}, right) — next_pos+1 grabs the first argument slot
-	int args_pos = next_pos + 1
-	ParseResult args_r = gen_call_args(tokens, args_pos, ctx)
-	move (code, new_pos) in args_r
+	int args_pos = locate_next_token(next_pos)
+	ParseResult args_result = gen_call_args(tokens, args_pos, ctx)
+	move (code, new_pos) in args_result
 	args_code as code
 	args_end as new_pos
 	int after_paren = args_end + 1
@@ -25,14 +28,14 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 		# If print has 2 arguments it has a custom separator
 		int print_arg_count = count_call_args(tokens, next_pos)
 		if print_arg_count is 2
-			string prt_pfx = "print!(\"{}{}\", "
-			call_code = s_join([pad, prt_pfx, args_code, RS_RP_SC])
+			string print_2arg_prefix = "print!(\"{}{}\", "
+			call_code = s_join([pad, print_2arg_prefix, args_code, RS_RP_SC])
 		else # otherwise it new lines as per normal println
-			string prt_pfx = "println!(\"{}\", "
-			call_code = s_join([pad, prt_pfx, args_code, RS_RP_SC])
+			string println_prefix = "println!(\"{}\", "
+			call_code = s_join([pad, println_prefix, args_code, RS_RP_SC])
 	else if ident_name is "crash"
-		string crsh_pfx = "panic!(\"{}\", "
-		call_code = s_join([pad, crsh_pfx, args_code, RS_RP_SC])
+		string crash_prefix = "panic!(\"{}\", "
+		call_code = s_join([pad, crash_prefix, args_code, RS_RP_SC])
 	else
 		call_code = s_join([pad, ident_name, RS_LP, args_code, RS_RP_SC])
 	return make_nl_result(move call_code, after_paren, tokens)

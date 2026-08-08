@@ -14,19 +14,23 @@
 #
 # Returns early with the generated Rust code if the pattern matches.
 macro gen_input_check
-	bool gic_matched = false
-	bool gic_is_args = false
-	bool gic_nm_ok = false
-	int gic_lp = 0
+	# ex: (fields) in input(){\n} — kw_pos+4 grabs the token after the call's closing paren
+	fn int locate_after_call(int kw_pos)
+		return kw_pos + 4
+
+	bool matched = false
+	bool is_args = false
+	bool name_ok = false
+	int lparen_pos = 0
 	macro_run gic_match_kw_and_name
-	if gic_nm_ok
+	if name_ok
 		macro_run gic_match_parens
-	if gic_matched
+	if matched
 		unsafe_macro_run rust_strings
-		string gic_pad = s_repeat(RS_IND, depth)
-		strList gic_out = empty
+		string input_pad = s_repeat(RS_IND, depth)
+		strList output_lines = empty
 		macro_run gic_emit_header
 		macro_run gic_emit_bindings
-		string gic_code = s_join(gic_out)
-		int gic_past = cur + 4
-		return make_nl_result(move gic_code, gic_past, tokens)
+		string result_code = s_join(output_lines)
+		int after_pos = locate_after_call(cur)
+		return make_nl_result(move result_code, after_pos, tokens)

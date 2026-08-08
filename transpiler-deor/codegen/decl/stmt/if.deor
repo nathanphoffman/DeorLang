@@ -3,8 +3,8 @@
 # up to (but not including) the closing `}` so gen_if can chain additional else arms.
 fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 	(tokens) in ctx
-	ParseResult cond_r = gen_expr(tokens, cond_pos, ctx)
-	move (code, new_pos) in cond_r
+	ParseResult cond_result = gen_expr(tokens, cond_pos, ctx)
+	move (code, new_pos) in cond_result
 	cond_code as code
 	cond_end as new_pos
 	int blk_start = skip_to_body_ref(tokens, cond_end)
@@ -16,18 +16,21 @@ fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 # Generates a complete Rust `if / else if / else` chain. Calls gen_if_branch for the
 # initial `if`, then loops consuming `else` tokens to append `else if` or `else` arms.
 fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
+	# ex: if {cond} — kw_pos+1 grabs the condition expression after 'if'
+	fn int locate_if_cond(int kw_pos)
+		return kw_pos + 1
+
 	(tokens) in ctx
 	int token_count = len(tokens)
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
-	# ex: if {cond} — pos+1 grabs the condition expression after 'if'
-	int if_cond_pos = pos + 1
-	ParseResult then_r = gen_if_branch(if_cond_pos, depth, ctx)
-	move (code, new_pos) in then_r
+	int if_cond_pos = locate_if_cond(pos)
+	ParseResult then_result = gen_if_branch(if_cond_pos, depth, ctx)
+	move (code, new_pos) in then_result
 	then_code as code
 	string if_kw = "if "
-	string brc_cl = "}"
-	string result_code = s_join([pad, if_kw, then_code, pad, brc_cl])
+	string if_close = "}"
+	string result_code = s_join([pad, if_kw, then_code, pad, if_close])
 	cur as new_pos
 	for if true
 		if cur >= token_count
@@ -47,26 +50,26 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 		(kind) in after_else_token
 		if kind is "KW_IF"
 			# ex: else if {cond} — after_else+1 grabs the condition expression after 'else if'
-			int ei_cond = after_else + 1
-			ParseResult ei_r = gen_if_branch(ei_cond, depth, ctx)
-			move (code, new_pos) in ei_r
-			ei_code as code
-			string eli_kw = " else if "
-			string eli_cl = "}"
-			result_code = s_cat(move result_code, eli_kw)
-			result_code = s_cat(move result_code, ei_code)
+			int else_if_cond_pos = after_else + 1
+			ParseResult else_if_result = gen_if_branch(else_if_cond_pos, depth, ctx)
+			move (code, new_pos) in else_if_result
+			else_if_code as code
+			string else_if_kw = " else if "
+			string else_if_close = "}"
+			result_code = s_cat(move result_code, else_if_kw)
+			result_code = s_cat(move result_code, else_if_code)
 			result_code = s_cat(move result_code, pad)
-			result_code = s_cat(move result_code, eli_cl)
+			result_code = s_cat(move result_code, else_if_close)
 			cur = new_pos
 		else
 			int blk_start = skip_to_body_ref(tokens, after_else)
 			unsafe_macro_run gen_block_r
-			string els_kw = " else {\n"
-			string els_cl = "}"
-			result_code = s_cat(move result_code, els_kw)
+			string else_kw = " else {\n"
+			string else_close = "}"
+			result_code = s_cat(move result_code, else_kw)
 			result_code = s_cat(move result_code, blk_code)
 			result_code = s_cat(move result_code, pad)
-			result_code = s_cat(move result_code, els_cl)
+			result_code = s_cat(move result_code, else_close)
 			cur = blk_end
 			break
 	result_code = s_cat(move result_code, RS_NL)

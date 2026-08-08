@@ -5,7 +5,7 @@ macro for_build_fields
 		string mut_kw = ""
 		if is_mut
 			mut_kw = "mut "
-		string dst_let = "let "
-		string dst_eq = " = "
-		string dst_dot = "."
-		dest_lines at end = s_join([pad, dst_let, mut_kw, field, dst_eq, val_code, dst_dot, field, field_suffix])
+		string let_kw = "let "
+		string equals_kw = " = "
+		string dot = "."
+		dest_lines at end = s_join([pad, let_kw, mut_kw, field, equals_kw, val_code, dot, field, field_suffix])

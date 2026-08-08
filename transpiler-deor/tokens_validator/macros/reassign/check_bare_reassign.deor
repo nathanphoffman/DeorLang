@@ -2,32 +2,38 @@
 # Shared detector for "bare reassignment of a tracked name" — used by both
 # check_const_reassign (const bindings) and check_validator_reassign (validator
 # type variables). Fires when cur_val is a tracked name, the next token is
-# EQUALS (when rar_allow_eq) or KW_AS (when rar_allow_as), and the previous
+# EQUALS (when allow_eq) or KW_AS (when allow_as), and the previous
 # token is not an IDENT — i.e. this isn't the original typed declaration, it's
 # a later bare `name = expr` / `name as expr` that skips re-running the real
-# declaration form. Parameterized via rar_names, rar_allow_eq, rar_allow_as,
-# rar_rule — set these immediately before `macro_run check_bare_reassign`.
+# declaration form. Parameterized via bare_reassign_names, allow_eq, allow_as,
+# bare_reassign_rule — set these immediately before `macro_run check_bare_reassign`.
 macro check_bare_reassign
-	bool rar_is_tracked = list_has(rar_names, cur_val)
-	if rar_is_tracked
-		# ex: pipe {=} "new" — pos+1 grabs the token right after the tracked name
-		int rar_next_pos = pos + 1
-		if rar_next_pos < token_count
-			Token rar_next_tok = tokens at rar_next_pos
-			(kind) in rar_next_tok
-			bool rar_is_eq = false
-			if rar_allow_eq
-				rar_is_eq = kind is "EQUALS"
-			bool rar_is_as = false
-			if rar_allow_as
-				rar_is_as = kind is "KW_AS"
-			if rar_is_eq or rar_is_as
-				bool rar_is_decl = false
+	# ex: pipe {=} "new" — kw_pos+1 grabs the token right after the tracked name
+	fn int locate_after_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: {string} pipe = "new" — kw_pos-1 checks for a preceding type IDENT (a real decl)
+	fn int locate_before_name(int kw_pos)
+		return kw_pos - 1
+
+	bool is_tracked = list_has(bare_reassign_names, cur_val)
+	if is_tracked
+		int after_pos = locate_after_name(pos)
+		if after_pos < token_count
+			Token after_token = tokens at after_pos
+			(kind) in after_token
+			bool is_eq = false
+			if allow_eq
+				is_eq = kind is "EQUALS"
+			bool is_as = false
+			if allow_as
+				is_as = kind is "KW_AS"
+			if is_eq or is_as
+				bool is_decl = false
 				if pos > 0
-					# ex: {string} pipe = "new" — pos-1 checks for a preceding type IDENT (a real decl)
-					int rar_prev_pos = pos - 1
-					Token rar_prev_tok = tokens at rar_prev_pos
-					(kind) in rar_prev_tok
-					rar_is_decl = kind is "IDENT"
-				if not rar_is_decl
-					errors at end = val_err(tok, lbl_var, rar_rule)
+					int before_pos = locate_before_name(pos)
+					Token before_token = tokens at before_pos
+					(kind) in before_token
+					is_decl = kind is "IDENT"
+				if not is_decl
+					errors at end = val_err(tok, lbl_var, bare_reassign_rule)

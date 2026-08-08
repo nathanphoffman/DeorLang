@@ -4,38 +4,44 @@
 # declaration form instead of `as`. Falls through (no return) if the token
 # after the source ident is not `with`.
 macro tb_with
-	# ex: Type name = source {with} (f1, f2) — val_pos+1 grabs the with keyword slot
-	int tb_with_pos = val_pos + 1
-	if tb_with_pos < token_count
-		Token tb_with_tok = tokens at tb_with_pos
-		(kind) in tb_with_tok
+	# ex: Type name = source {with} (f1, f2) — anchor+1 grabs the with keyword slot
+	fn int locate_with_keyword(int anchor)
+		return anchor + 1
+
+	# ex: Type name = source with {(}f1, f2) — anchor+2 grabs the opening paren
+	fn int locate_with_lparen(int anchor)
+		return anchor + 2
+
+	int with_keyword_pos = locate_with_keyword(val_pos)
+	if with_keyword_pos < token_count
+		Token with_keyword_token = tokens at with_keyword_pos
+		(kind) in with_keyword_token
 		if kind is "KW_WITH"
 			(value) in val_token
-			string tb_src = value
-			# ex: Type name = source with {(}f1, f2) — tb_with_pos+1 grabs the opening paren
-			int tb_lp = tb_with_pos + 1
-			strList tb_ovr = empty
-			int tb_wend = tb_lp + 1
-			for if tb_wend < token_count
-				Token tb_wtok = tokens at tb_wend
-				(kind, value) in tb_wtok
+			string source_name = value
+			int with_lparen_pos = locate_with_lparen(val_pos)
+			strList override_fields = empty
+			int scan_pos = with_lparen_pos + 1
+			for if scan_pos < token_count
+				Token scan_token = tokens at scan_pos
+				(kind, value) in scan_token
 				if kind is "RPAREN"
-					tb_wend = tb_wend + 1
+					scan_pos = scan_pos + 1
 					break
 				if kind is "COMMA"
-					tb_wend = tb_wend + 1
+					scan_pos = scan_pos + 1
 					continue
 				if kind is "IDENT"
-					tb_ovr at end = value
-					tb_wend = tb_wend + 1
-			string tb_wsep = ", "
-			string tb_wfields = s_join_with(tb_ovr, tb_wsep)
+					override_fields at end = value
+					scan_pos = scan_pos + 1
+			string fields_separator = ", "
+			string fields_code = s_join_with(override_fields, fields_separator)
 			unsafe_macro_run mut_guard
-			string tb_wlet = "let "
-			string tb_weq = " = "
-			string tb_wob = " { "
-			string tb_wsp = ", .."
-			string tb_wclone = ".clone()"
-			string tb_wcb = " };\n"
-			string tb_with_code = s_join([pad, tb_wlet, mut_kw, var_name, tb_weq, rust_type, tb_wob, tb_wfields, tb_wsp, tb_src, tb_wclone, tb_wcb])
-			return make_nl_result(move tb_with_code, tb_wend, tokens)
+			string let_kw = "let "
+			string equals_kw = " = "
+			string open_brace = " { "
+			string spread_prefix = ", .."
+			string clone_suffix = ".clone()"
+			string close_brace = " };\n"
+			string with_code = s_join([pad, let_kw, mut_kw, var_name, equals_kw, rust_type, open_brace, fields_code, spread_prefix, source_name, clone_suffix, close_brace])
+			return make_nl_result(move with_code, scan_pos, tokens)

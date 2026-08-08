@@ -1,25 +1,34 @@
 
 # Flags `void name = ...` — void is not a valid variable type, only a function return type.
 macro check_void_var
+	# ex: fn {void} name(...) — kw_pos-1 checks the token before void for the fn keyword
+	fn int locate_before_void(int kw_pos)
+		return kw_pos - 1
+
+	# ex: void {name} = 5 — kw_pos+1 grabs the token after void
+	fn int locate_void_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: void name {=} 5 — kw_pos+2 grabs the equals sign
+	fn int locate_void_equals(int kw_pos)
+		return kw_pos + 2
+
 	if cur_kind is "KW_VOID"
 		bool preceded_by_fn = false
 		if pos > 0
-			# ex: fn {void} name(...) — pos-1 checks the token before void for the fn keyword
-			int prev_void = pos - 1
-			Token prev_void_tok = tokens at prev_void
-			(kind) in prev_void_tok
+			int before_void_pos = locate_before_void(pos)
+			Token before_void_token = tokens at before_void_pos
+			(kind) in before_void_token
 			preceded_by_fn = kind is "KW_FN"
 		if not preceded_by_fn
-			# ex: void {name} = 5 — pos+1 grabs the token after void
-			int void_name_pos = pos + 1
-			# ex: void name {=} 5 — pos+2 grabs the equals sign
-			int void_eq_pos = pos + 2
-			if void_eq_pos < token_count
-				Token void_name_tok = tokens at void_name_pos
-				Token void_eq_tok = tokens at void_eq_pos
-				(kind) in void_name_tok
+			int void_name_pos = locate_void_name(pos)
+			int void_equals_pos = locate_void_equals(pos)
+			if void_equals_pos < token_count
+				Token void_name_token = tokens at void_name_pos
+				Token void_equals_token = tokens at void_equals_pos
+				(kind) in void_name_token
 				string void_name_kind = kind
-				(kind) in void_eq_tok
+				(kind) in void_equals_token
 				if void_name_kind is "IDENT"
 					if kind is "EQUALS"
 						errors at end = val_err(tok, lbl_var, rule_void_var)

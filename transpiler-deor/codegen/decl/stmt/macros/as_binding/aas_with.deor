@@ -2,40 +2,46 @@
 # Handles `name as source with (f1, f2, ...)`: emits a record-update spread `StructName { f1, f2, ..source }`.
 # Falls through (no return) if the token after the source ident is not `with`.
 macro aas_with
-	# ex: name as source {with} (f1, f2) — after_as+1 grabs the with keyword slot
-	int aas_with_pos = after_as + 1
-	if aas_with_pos < token_count
-		Token aas_with_tok = tokens at aas_with_pos
-		(kind) in aas_with_tok
+	# ex: name as source {with} (f1, f2) — anchor+1 grabs the with keyword slot
+	fn int locate_with_keyword(int anchor)
+		return anchor + 1
+
+	# ex: name as source with {(}f1, f2) — anchor+2 grabs the opening paren
+	fn int locate_with_lparen(int anchor)
+		return anchor + 2
+
+	int with_keyword_pos = locate_with_keyword(after_as)
+	if with_keyword_pos < token_count
+		Token with_keyword_token = tokens at with_keyword_pos
+		(kind) in with_keyword_token
 		if kind is "KW_WITH"
-			string aas_src = after_as_value
-			# ex: name as source with {(}f1, f2) — aas_with_pos+1 grabs the opening paren
-			int aas_lp = aas_with_pos + 1
-			strList aas_ovr = empty
-			int aas_wend = aas_lp + 1
-			for if aas_wend < token_count
-				Token aas_wtok = tokens at aas_wend
-				(kind, value) in aas_wtok
+			string source_name = after_as_value
+			int with_lparen_pos = locate_with_lparen(after_as)
+			strList override_fields = empty
+			int scan_pos = with_lparen_pos + 1
+			for if scan_pos < token_count
+				Token scan_token = tokens at scan_pos
+				(kind, value) in scan_token
 				if kind is "RPAREN"
-					aas_wend = aas_wend + 1
+					scan_pos = scan_pos + 1
 					break
 				if kind is "COMMA"
-					aas_wend = aas_wend + 1
+					scan_pos = scan_pos + 1
 					continue
 				if kind is "IDENT"
-					aas_ovr at end = value
-					aas_wend = aas_wend + 1
-			string aas_first = aas_ovr at 0
-			string aas_struct_w = find_struct_for_field(struct_reg, aas_first)
-			string aas_wsep = ", "
-			string aas_wfields = s_join_with(aas_ovr, aas_wsep)
+					override_fields at end = value
+					scan_pos = scan_pos + 1
+			string first_field = override_fields at 0
+			string matched_struct_name = find_struct_for_field(struct_reg, first_field)
+			string fields_separator = ", "
+			string fields_code = s_join_with(override_fields, fields_separator)
 			string var_name = ident_name
 			unsafe_macro_run mut_guard
-			string aas_wlet = "let "
-			string aas_weq = " = "
-			string aas_wob = " { "
-			string aas_wsp = ", .."
-			string aas_wclone = ".clone()"
-			string aas_wcb = " };\n"
-			string aas_with_code = s_join([pad, aas_wlet, mut_kw, ident_name, aas_weq, aas_struct_w, aas_wob, aas_wfields, aas_wsp, aas_src, aas_wclone, aas_wcb])
-			return make_nl_result(move aas_with_code, aas_wend, tokens)
+			string let_kw = "let "
+			string equals_kw = " = "
+			string open_brace = " { "
+			string spread_prefix = ", .."
+			string clone_suffix = ".clone()"
+			string close_brace = " };\n"
+			string with_code = s_join([pad, let_kw, mut_kw, ident_name, equals_kw, matched_struct_name, open_brace, fields_code, spread_prefix, source_name, clone_suffix, close_brace])
+			return make_nl_result(move with_code, scan_pos, tokens)

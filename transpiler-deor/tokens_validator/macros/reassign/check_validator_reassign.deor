@@ -5,8 +5,8 @@
 # predicate — codegen looks up the tracked TypeName (see collect_validator_var_types
 # in registry/validator_type.deor) and emits `threads = ValidatorType::new(expr);`.
 macro check_validator_reassign
-	strList rar_names = validator_vars
-	bool rar_allow_eq = false
-	bool rar_allow_as = true
-	string rar_rule = rule_validator_reassign
+	strList bare_reassign_names = validator_vars
+	bool allow_eq = false
+	bool allow_as = true
+	string bare_reassign_rule = rule_validator_reassign
 	macro_run check_bare_reassign

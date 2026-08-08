@@ -5,22 +5,29 @@
 # the declaration site by checking for a preceding IDENT (the type name in
 # `Type name = ...`), but raw's own declaration is preceded by KW_RAW, not IDENT.
 macro check_raw_reassign
-	bool rr_is_tracked = list_has(raw_var_names, cur_val)
-	if rr_is_tracked
-		# ex: pool {=} other — pos+1 grabs the token after the raw variable
-		int rr_next_pos = pos + 1
-		if rr_next_pos < token_count
-			Token rr_next_tok = tokens at rr_next_pos
-			(kind) in rr_next_tok
-			bool rr_is_eq = kind is "EQUALS"
-			bool rr_is_as = kind is "KW_AS"
-			if rr_is_eq or rr_is_as
-				bool rr_is_decl = false
+	# ex: pool {=} other — kw_pos+1 grabs the token after the raw variable
+	fn int locate_after_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: {raw} pool = expr — kw_pos-1 checks the token before the raw variable
+	# for the declaring keyword
+	fn int locate_before_name(int kw_pos)
+		return kw_pos - 1
+
+	bool is_tracked = list_has(raw_var_names, cur_val)
+	if is_tracked
+		int after_pos = locate_after_name(pos)
+		if after_pos < token_count
+			Token after_token = tokens at after_pos
+			(kind) in after_token
+			bool is_eq = kind is "EQUALS"
+			bool is_as = kind is "KW_AS"
+			if is_eq or is_as
+				bool is_decl = false
 				if pos > 0
-					# ex: {raw} pool = expr — pos-1 checks the token before the raw variable for the declaring keyword
-					int rr_prev_pos = pos - 1
-					Token rr_prev_tok = tokens at rr_prev_pos
-					(kind) in rr_prev_tok
-					rr_is_decl = kind is "KW_RAW"
-				if not rr_is_decl
+					int before_pos = locate_before_name(pos)
+					Token before_token = tokens at before_pos
+					(kind) in before_token
+					is_decl = kind is "KW_RAW"
+				if not is_decl
 					errors at end = val_err(tok, lbl_var, rule_raw_reassign)

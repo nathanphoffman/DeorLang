@@ -1,30 +1,33 @@
 
 # Handles `for move var in expr`: generates `for var in expr { ... }` consuming ownership.
 macro for_move
-	# ex: for move {(}item in collection) — next_pos+1 grabs the opening paren
-	int lparen_pos = next_pos + 1
+	# ex: for move {(}item in collection) — anchor+1 grabs the opening paren
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	int lparen_pos = locate_next_token(next_pos)
 	# ex: for move ({item} in collection) — lparen_pos+1 grabs the loop variable
-	int var_pos = lparen_pos + 1
+	int var_pos = locate_next_token(lparen_pos)
 	Token var_tok = tokens at var_pos
 	(value) in var_tok
 	string move_var = value
 	# ex: for move (item {in} collection) — var_pos+1 grabs the in keyword
-	int in_pos = var_pos + 1
+	int in_pos = locate_next_token(var_pos)
 	# ex: for move (item in {collection}) — in_pos+1 grabs the start of the iterable expression
-	int iter_pos = in_pos + 1
+	int iter_pos = locate_next_token(in_pos)
 	val_pos as iter_pos
-	ParseResult ge_r = gen_expr(tokens, val_pos, ctx)
-	move (code, new_pos) in ge_r
+	ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in expr_result
 	val_code as code
 	val_end as new_pos
 	int iter_next = val_end + 1
 	int blk_start = skip_to_body_ref(tokens, iter_next)
 	int blk_depth = depth + 1
-	ParseResult blk_r = gen_block(blk_start, blk_depth, ctx)
-	move (code, new_pos) in blk_r
+	ParseResult blk_result = gen_block(blk_start, blk_depth, ctx)
+	move (code, new_pos) in blk_result
 	blk_code as code
 	blk_end as new_pos
-	string gfr_kw = "for "
-	string gfr_in = " in "
-	string for_code = s_join([pad, gfr_kw, move_var, gfr_in, val_code, RS_OB, blk_code, pad, RS_CB])
+	string for_kw = "for "
+	string for_in_kw = " in "
+	string for_code = s_join([pad, for_kw, move_var, for_in_kw, val_code, RS_OB, blk_code, pad, RS_CB])
 	return make_result(move for_code, blk_end)

@@ -1,24 +1,27 @@
 
 # Checks that `tokens at cur` is KW_IN followed by an IDENT named "input" or "args".
-# On success sets gic_nm_ok=true, gic_lp to the position of the expected LPAREN,
-# and gic_is_args=true when the source is args().
+# On success sets name_ok=true, lparen_pos to the position of the expected LPAREN,
+# and is_args=true when the source is args().
 # Reads: cur, tokens, token_count (all from outer scope).
-# Writes: gic_nm_ok, gic_lp, gic_is_args (must be declared in outer scope before call).
+# Writes: name_ok, lparen_pos, is_args (must be declared in outer scope before call).
 macro gic_match_kw_and_name
-	Token gic_in_tok = tokens at cur
-	(kind) in gic_in_tok
+	# ex: (fields) in {input}() — anchor+1 grabs the args/input identifier
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	Token in_token = tokens at cur
+	(kind) in in_token
 	if kind is "KW_IN"
-		# ex: (fields) in {input}() — cur+1 grabs the args/input identifier
-		int gic_nm_pos = cur + 1
-		if gic_nm_pos < token_count
-			Token gic_nm_tok = tokens at gic_nm_pos
-			(kind, value) in gic_nm_tok
+		int name_pos = locate_next_token(cur)
+		if name_pos < token_count
+			Token name_token = tokens at name_pos
+			(kind, value) in name_token
 			if kind is "IDENT"
 				if value is "input"
-					gic_nm_ok = true
+					name_ok = true
 				else if value is "args"
-					gic_nm_ok = true
-					gic_is_args = true
-				if gic_nm_ok
-					# ex: (fields) in input{(}) — gic_nm_pos+1 grabs the opening paren
-					gic_lp = gic_nm_pos + 1
+					name_ok = true
+					is_args = true
+				if name_ok
+					# ex: (fields) in input{(}) — name_pos+1 grabs the opening paren
+					lparen_pos = locate_next_token(name_pos)

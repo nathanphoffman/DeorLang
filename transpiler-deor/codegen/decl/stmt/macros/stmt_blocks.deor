@@ -3,38 +3,44 @@
 #   block  → bare `{ ... }` scope block at the current indentation depth
 #   rust   → inline Rust source block, re-indented to match current depth
 macro stmt_blocks
+	# ex: block {\n}    ... — anchor+1 grabs the NEWLINE before the scoped body
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	# ex: rust\n{"fn foo() {}"} — kw_pos+2 grabs the RUST_BLOCK content token
+	fn int locate_rust_block_content(int kw_pos)
+		return kw_pos + 2
+
 	if kind is "KW_BLOCK"
-		# ex: block {\n}    ... — pos+1 grabs the NEWLINE before the scoped body
-		int sb_nl = pos + 1
-		int sb_body_start = skip_to_body_ref(tokens, sb_nl)
-		int sb_body_depth = depth + 1
-		ParseResult sb_body_r = gen_block(sb_body_start, sb_body_depth, ctx)
-		move (code, new_pos) in sb_body_r
-		sb_body_code as code
-		sb_body_end as new_pos
-		string sb_open_brace = "{\n"
-		string sb_close_brace = "}\n"
-		string sb_blk_open = s_cat(pad, sb_open_brace)
-		string sb_blk_close = s_cat(pad, sb_close_brace)
-		string sb_blk_code = s_join([sb_blk_open, sb_body_code, sb_blk_close])
-		return make_result(move sb_blk_code, sb_body_end)
+		int newline_pos = locate_next_token(pos)
+		int body_start = skip_to_body_ref(tokens, newline_pos)
+		int body_depth = depth + 1
+		ParseResult body_result = gen_block(body_start, body_depth, ctx)
+		move (code, new_pos) in body_result
+		body_code as code
+		body_end as new_pos
+		string open_brace = "{\n"
+		string close_brace = "}\n"
+		string block_open = s_cat(pad, open_brace)
+		string block_close = s_cat(pad, close_brace)
+		string block_code = s_join([block_open, body_code, block_close])
+		return make_result(move block_code, body_end)
 	if kind is "KW_RUST"
-		# ex: rust\n{"fn foo() {}"} — pos+2 grabs the RUST_BLOCK content token
-		int sb_block_pos = pos + 2
-		Token sb_block_tok = tokens at sb_block_pos
-		(value) in sb_block_tok
-		string sb_content = value
-		strList sb_rust_lines = s_split(sb_content, RS_NL)
-		strList sb_padded = empty
-		int sb_line_count = len(sb_rust_lines)
-		for sb_ri in range(sb_line_count)
-			string sb_rust_line = sb_rust_lines at sb_ri
-			if is_empty(sb_rust_line)
-				string sb_empty_line = ""
-				sb_padded at end = sb_empty_line
+		int rust_block_pos = locate_rust_block_content(pos)
+		Token rust_block_token = tokens at rust_block_pos
+		(value) in rust_block_token
+		string rust_content = value
+		strList rust_lines = s_split(rust_content, RS_NL)
+		strList padded_lines = empty
+		int line_count = len(rust_lines)
+		for line_index in range(line_count)
+			string rust_line = rust_lines at line_index
+			if is_empty(rust_line)
+				string empty_line = ""
+				padded_lines at end = empty_line
 			else
-				sb_padded at end = s_join([pad, sb_rust_line])
-		string sb_block_code = s_join_nl(sb_padded)
-		sb_block_code = s_cat(sb_block_code, RS_NL)
-		int sb_block_next = sb_block_pos + 1
-		return make_result(move sb_block_code, sb_block_next)
+				padded_lines at end = s_join([pad, rust_line])
+		string rust_block_code = s_join_nl(padded_lines)
+		rust_block_code = s_cat(rust_block_code, RS_NL)
+		int rust_block_next = locate_next_token(rust_block_pos)
+		return make_result(move rust_block_code, rust_block_next)

@@ -6,27 +6,34 @@
 # `name = expr;` with no prior `let`, which rustc rejects with an opaque
 # "cannot find value `name` in this scope" instead of a Deor-level error.
 macro check_undeclared_reassign
-	# ex: hello {=} "world" — pos+1 grabs the equals sign
-	int uar_next = pos + 1
-	if uar_next < token_count
-		Token uar_next_tok = tokens at uar_next
-		(kind) in uar_next_tok
+	# ex: hello {=} "world" — kw_pos+1 grabs the equals sign
+	fn int locate_after_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: {string} hello = "world" — kw_pos-1 checks for a preceding type IDENT,
+	# 'raw', 'shape', or 'type' (a real decl)
+	fn int locate_before_name(int kw_pos)
+		return kw_pos - 1
+
+	int after_pos = locate_after_name(pos)
+	if after_pos < token_count
+		Token after_token = tokens at after_pos
+		(kind) in after_token
 		if kind is "EQUALS"
-			bool uar_is_decl = false
+			bool is_decl = false
 			if pos > 0
-				# ex: {string} hello = "world" — pos-1 checks for a preceding type IDENT, 'raw', 'shape', or 'type' (a real decl)
-				int uar_prev = pos - 1
-				Token uar_prev_tok = tokens at uar_prev
-				(kind) in uar_prev_tok
-				string uar_prev_kind = kind
-				uar_is_decl = uar_prev_kind is "IDENT"
-				if uar_prev_kind is "KW_RAW"
-					uar_is_decl = true
-				if uar_prev_kind is "KW_SHAPE"
-					uar_is_decl = true
-				if uar_prev_kind is "KW_TYPE"
-					uar_is_decl = true
-			if not uar_is_decl
-				bool uar_known = list_has(declared_var_names, cur_val)
-				if not uar_known
+				int before_pos = locate_before_name(pos)
+				Token before_token = tokens at before_pos
+				(kind) in before_token
+				string before_kind = kind
+				is_decl = before_kind is "IDENT"
+				if before_kind is "KW_RAW"
+					is_decl = true
+				if before_kind is "KW_SHAPE"
+					is_decl = true
+				if before_kind is "KW_TYPE"
+					is_decl = true
+			if not is_decl
+				bool is_known = list_has(declared_var_names, cur_val)
+				if not is_known
 					errors at end = val_err(tok, lbl_var, rule_undeclared_reassign)
