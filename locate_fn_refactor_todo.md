@@ -139,3 +139,35 @@ content doesn't.
   old names after each rename.
 - **`valid` is a reserved keyword** (`KW_VALID`) — can't be used as a plain
   variable name in Deor source, including the transpiler's own.
+
+## Second gap sweep — outside codegen/ and tokens_validator/
+
+The first gap sweep only widened the search within `codegen/`/`tokens_validator/`.
+A second pass explicitly checked the rest of `transpiler-deor/` (`macro_builder/`,
+`importer/` top-level files, `registry_lookup.deor`, `main.deor`, `imports.deor`,
+`utils.deor`, `types.deor`, `global_flags.deor`, and `lib/`) with the same two
+scans (precise `pos ± N` regex, repeated-prefix frequency count). Found and fixed:
+
+- `macro_builder/macro_validation.deor` — `pdx`/`mdx`/`nm_pos`/`nm_tok` in the
+  two-pass macro-name validator (never checked at all previously, despite being
+  the macro pipeline's own name-resolution pass).
+- `importer/t_substitute.deor` — `ph_len`/`after_ph` in the parameterized-import
+  name-substitution logic (`pascal_ph`/`camel_ph` were already reasonably clear
+  and got spelled out too, for consistency). Left the *embedded Rust* closures
+  inside this same file's `rust {}` block untouched — different language,
+  different scope, out of this rework's scope entirely.
+- `macro_builder/macro_expander.deor` (183 lines, the actual macro-splicing
+  engine) — checked in full and needed **no changes**: its entire body is one
+  `rust {}` block, so the Deor-level `pos+N`/cryptic-prefix pattern this rework
+  targets doesn't apply to it at all. Its Rust-side naming (`scope_depth`,
+  `depth_stack`, `cross_file_depth`, `unsafe_open`, `marker_file`) was already
+  clear.
+- `lib/` (the Deor standard library) — checked, genuinely clean. It's runtime
+  utility code, not a token parser, so the `pos+N` pattern this rework is about
+  never applied there in the first place.
+
+Final verification: full rebuild + self-compile + 94/94 tests after each fix,
+plus two more full double-self-compilation round-trips. A closing scan across
+the *entire* `transpiler-deor/` tree (not just the two originally-scoped
+directories) turned up nothing left to convert — every remaining `pos ± N` is a
+confirmed loop increment or cursor-relative computation.

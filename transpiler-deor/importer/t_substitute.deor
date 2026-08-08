@@ -48,26 +48,26 @@ fn string s_replace(string source, string from, string output)
 fn string apply_t_in_name(string name, string placeholder, string concrete)
 	if name is placeholder
 		return concrete
-	string pascal_ph = s_pascal(placeholder)
-	string camel_ph = s_camel(placeholder)
-	int ph_len = len(placeholder)
+	string pascal_placeholder = s_pascal(placeholder)
+	string camel_placeholder = s_camel(placeholder)
+	int placeholder_len = len(placeholder)
 	int name_len = len(name)
-	if name_len > ph_len
-		string after_ph = s_from(name, ph_len)
-		strList after_chars = c_chars(after_ph)
+	if name_len > placeholder_len
+		string after_placeholder = s_from(name, placeholder_len)
+		strList after_chars = c_chars(after_placeholder)
 		if len(after_chars) > 0
 			string next_char = after_chars at 0
 			bool next_is_upper = s_upper_char(next_char)
-			bool starts_pascal = s_starts_with(name, pascal_ph)
+			bool starts_pascal = s_starts_with(name, pascal_placeholder)
 			if starts_pascal and next_is_upper
 				string pascal_concrete = s_pascal(concrete)
-				return s_cat(pascal_concrete, after_ph)
-			bool starts_camel = s_starts_with(name, camel_ph)
+				return s_cat(pascal_concrete, after_placeholder)
+			bool starts_camel = s_starts_with(name, camel_placeholder)
 			if starts_camel and next_is_upper
 				string camel_concrete = s_camel(concrete)
-				return s_cat(camel_concrete, after_ph)
-	string pascal_sep = s_join(["_", pascal_ph, "_"])
-	string camel_sep = s_join(["_", camel_ph, "_"])
+				return s_cat(camel_concrete, after_placeholder)
+	string pascal_sep = s_join(["_", pascal_placeholder, "_"])
+	string camel_sep = s_join(["_", camel_placeholder, "_"])
 	string snake_concrete = s_to_snake(concrete)
 	string new_sep = s_join(["_", snake_concrete, "_"])
 	bool has_pascal_sep = s_contains(name, pascal_sep)
@@ -107,27 +107,27 @@ fn string replace_t_in_rust_block(string content, string placeholder, string con
 					};
 					return rust_type.to_string();
 				}
-				let pascal_ph = pascal_str(placeholder);
-				let camel_ph = camel_str(placeholder);
+				let pascal_placeholder = pascal_str(placeholder);
+				let camel_placeholder = camel_str(placeholder);
 				let pascal_c = pascal_str(concrete);
 				let camel_c = camel_str(concrete);
 				let ph_len = placeholder.len();
 				if word.len() > ph_len {
-					if word.starts_with(&pascal_ph) {
+					if word.starts_with(&pascal_placeholder) {
 						let rest = &word[ph_len..];
 						if rest.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
 							return format!("{}{}", pascal_c, rest);
 						}
 					}
-					if word.starts_with(&camel_ph) {
+					if word.starts_with(&camel_placeholder) {
 						let rest = &word[ph_len..];
 						if rest.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
 							return format!("{}{}", camel_c, rest);
 						}
 					}
 				}
-				let pascal_sep = format!("_{}_", pascal_ph);
-				let camel_sep = format!("_{}_", camel_ph);
+				let pascal_sep = format!("_{}_", pascal_placeholder);
+				let camel_sep = format!("_{}_", camel_placeholder);
 				let snake_c: String = {
 					let mut s = String::new();
 					for (i, c) in concrete.chars().enumerate() {

@@ -1156,34 +1156,34 @@ fn apply_t_in_name(name: String, placeholder: String, concrete: String) -> Strin
         // transpiler-deor/importer/t_substitute.deor
         return concrete;
     }
-    let mut pascal_ph: String = s_pascal(placeholder.clone());
-    let mut camel_ph: String = s_camel(placeholder.clone());
-    let mut ph_len: i64 = (placeholder.len() as i64);
+    let mut pascal_placeholder: String = s_pascal(placeholder.clone());
+    let mut camel_placeholder: String = s_camel(placeholder.clone());
+    let mut placeholder_len: i64 = (placeholder.len() as i64);
     let mut name_len: i64 = (name.len() as i64);
-    if name_len > ph_len {
+    if name_len > placeholder_len {
         // transpiler-deor/importer/t_substitute.deor
-        let mut after_ph: String = s_from(name.clone(), ph_len.clone());
-        let mut after_chars: Vec<String> = c_chars(after_ph.clone());
+        let mut after_placeholder: String = s_from(name.clone(), placeholder_len.clone());
+        let mut after_chars: Vec<String> = c_chars(after_placeholder.clone());
         if (after_chars.len() as i64) > 0 {
             // transpiler-deor/importer/t_substitute.deor
             let mut next_char: String = after_chars[0 as usize].clone();
             let mut next_is_upper: bool = s_upper_char(next_char.clone());
-            let mut starts_pascal: bool = s_starts_with(name.clone(), pascal_ph.clone());
+            let mut starts_pascal: bool = s_starts_with(name.clone(), pascal_placeholder.clone());
             if starts_pascal && next_is_upper {
                 // transpiler-deor/importer/t_substitute.deor
                 let mut pascal_concrete: String = s_pascal(concrete.clone());
-                return s_cat(pascal_concrete.clone(), after_ph.clone());
+                return s_cat(pascal_concrete.clone(), after_placeholder.clone());
             }
-            let mut starts_camel: bool = s_starts_with(name.clone(), camel_ph.clone());
+            let mut starts_camel: bool = s_starts_with(name.clone(), camel_placeholder.clone());
             if starts_camel && next_is_upper {
                 // transpiler-deor/importer/t_substitute.deor
                 let mut camel_concrete: String = s_camel(concrete.clone());
-                return s_cat(camel_concrete.clone(), after_ph.clone());
+                return s_cat(camel_concrete.clone(), after_placeholder.clone());
             }
         }
     }
-    let mut pascal_sep: String = ["_", pascal_ph.as_str(), "_"].concat();
-    let mut camel_sep: String = ["_", camel_ph.as_str(), "_"].concat();
+    let mut pascal_sep: String = ["_", pascal_placeholder.as_str(), "_"].concat();
+    let mut camel_sep: String = ["_", camel_placeholder.as_str(), "_"].concat();
     let mut snake_concrete: String = s_to_snake(concrete.clone());
     let mut new_sep: String = ["_", snake_concrete.as_str(), "_"].concat();
     let mut has_pascal_sep: bool = s_contains(name.clone(), pascal_sep.clone());
@@ -1226,27 +1226,27 @@ fn replace_t_in_rust_block(content: String, placeholder: String, concrete: Strin
     			};
     			return rust_type.to_string();
     		}
-    		let pascal_ph = pascal_str(placeholder);
-    		let camel_ph = camel_str(placeholder);
+    		let pascal_placeholder = pascal_str(placeholder);
+    		let camel_placeholder = camel_str(placeholder);
     		let pascal_c = pascal_str(concrete);
     		let camel_c = camel_str(concrete);
     		let ph_len = placeholder.len();
     		if word.len() > ph_len {
-    			if word.starts_with(&pascal_ph) {
+    			if word.starts_with(&pascal_placeholder) {
     				let rest = &word[ph_len..];
     				if rest.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
     					return format!("{}{}", pascal_c, rest);
     				}
     			}
-    			if word.starts_with(&camel_ph) {
+    			if word.starts_with(&camel_placeholder) {
     				let rest = &word[ph_len..];
     				if rest.chars().next().map(|c| c.is_uppercase()).unwrap_or(false) {
     					return format!("{}{}", camel_c, rest);
     				}
     			}
     		}
-    		let pascal_sep = format!("_{}_", pascal_ph);
-    		let camel_sep = format!("_{}_", camel_ph);
+    		let pascal_sep = format!("_{}_", pascal_placeholder);
+    		let camel_sep = format!("_{}_", camel_placeholder);
     		let snake_c: String = {
     			let mut s = String::new();
     			for (i, c) in concrete.chars().enumerate() {
@@ -2472,55 +2472,58 @@ fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<
 // transpiler-deor/macro_builder/macro_validation.deor
 fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
     // transpiler-deor/macro_builder/macro_validation.deor
+    fn locate_next_token(kw_pos: i64) -> i64 {
+        return kw_pos + 1;
+    }
     let mut token_count: i64 = (raw_tokens.len() as i64);
     let mut errors: Vec<String> = Vec::new();
     let mut macro_names: Vec<String> = Vec::new();
-    let mut pdx: i64 = 0;
-    while pdx < token_count {
+    let mut def_index: i64 = 0;
+    while def_index < token_count {
         // transpiler-deor/macro_builder/macro_validation.deor
-        let mut tok: Token = raw_tokens[pdx as usize].clone();
+        let mut tok: Token = raw_tokens[def_index as usize].clone();
         let kind = tok.kind.clone();
         if kind == "KW_MACRO" || kind == "KW_UNSAFE_MACRO" {
             // transpiler-deor/macro_builder/macro_validation.deor
-            let mut nm_pos: i64 = pdx + 1;
-            if nm_pos < token_count {
+            let mut name_pos: i64 = locate_next_token(def_index.clone());
+            if name_pos < token_count {
                 // transpiler-deor/macro_builder/macro_validation.deor
-                let mut nm_tok: Token = raw_tokens[nm_pos as usize].clone();
-                let kind = nm_tok.kind.clone();
-                let value = nm_tok.value.clone();
+                let mut name_token: Token = raw_tokens[name_pos as usize].clone();
+                let kind = name_token.kind.clone();
+                let value = name_token.value.clone();
                 if kind == "IDENT" {
                     // transpiler-deor/macro_builder/macro_validation.deor
                     macro_names.push(value.clone());
                 }
             }
         }
-        pdx = pdx + 1;
+        def_index = def_index + 1;
     }
     let mut lbl_macro: String = "macro_run".to_string();
     let mut rule_macro_run: String = "macro is not defined — check the name or add a 'macro <name>' definition".to_string();
-    let mut mdx: i64 = 0;
-    while mdx < token_count {
+    let mut run_index: i64 = 0;
+    while run_index < token_count {
         // transpiler-deor/macro_builder/macro_validation.deor
-        let mut tok: Token = raw_tokens[mdx as usize].clone();
+        let mut tok: Token = raw_tokens[run_index as usize].clone();
         let kind = tok.kind.clone();
         if kind == "KW_MACRO_RUN" || kind == "KW_UNSAFE_MACRO_RUN" {
             // transpiler-deor/macro_builder/macro_validation.deor
-            let mut nm_pos: i64 = mdx + 1;
-            if nm_pos < token_count {
+            let mut name_pos: i64 = locate_next_token(run_index.clone());
+            if name_pos < token_count {
                 // transpiler-deor/macro_builder/macro_validation.deor
-                let mut nm_tok: Token = raw_tokens[nm_pos as usize].clone();
-                let kind = nm_tok.kind.clone();
-                let value = nm_tok.value.clone();
+                let mut name_token: Token = raw_tokens[name_pos as usize].clone();
+                let kind = name_token.kind.clone();
+                let value = name_token.value.clone();
                 if kind == "IDENT" {
                     // transpiler-deor/macro_builder/macro_validation.deor
                     if !list_has(macro_names.clone(), value.clone()) {
                         // transpiler-deor/macro_builder/macro_validation.deor
-                        errors.push(val_err(nm_tok.clone(), lbl_macro.clone(), rule_macro_run.clone()).clone());
+                        errors.push(val_err(name_token.clone(), lbl_macro.clone(), rule_macro_run.clone()).clone());
                     }
                 }
             }
         }
-        mdx = mdx + 1;
+        run_index = run_index + 1;
     }
     handle_errors(errors.clone());
     return raw_tokens;
