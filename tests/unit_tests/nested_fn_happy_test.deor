@@ -1,0 +1,21 @@
+# nested_fn_happy_test.deor
+# Happy-path coverage for a fn nested inside another fn's body. Nested fns are
+# non-capturing (no access to the outer fn's locals) and restricted to a body
+# of exactly one `return expr` statement — see nested_fn_test.deor for the
+# still-rejected case (fn nested inside a non-fn block).
+
+import "lib/convert.deor"
+
+fn void outer()
+	fn int locate_left_paren(int kw_pos)
+		return kw_pos + 2
+
+	int result = locate_left_paren(10)
+	string msg = c_int_to_string(result)
+	print(msg)
+
+fn void main()
+	outer()
+
+# expect:
+# 12

@@ -24,12 +24,20 @@ macro prescan_check_struct_fields
 		sf_pos = sf_pos + 1
 
 		# walk struct body: validate naming and collect field names
+		# sf_depth tracks nested INDENT/DEDENT pairs (e.g. a fn nested inside the
+		# struct — invalid, but must not be mistaken for the struct's own close)
+		# so only the DEDENT that actually closes the struct body ends the scan.
 		strList sf_fields = empty
+		int sf_depth = 0
 		for if sf_pos < token_count
 			Token sf_tok = tokens at sf_pos
 			(kind) in sf_tok
+			if kind is "INDENT"
+				sf_depth = sf_depth + 1
 			if kind is "DEDENT"
-				break
+				if sf_depth is 0
+					break
+				sf_depth = sf_depth - 1
 			if kind is "KW_RAW"
 				int sf_raw_name_pos = sf_pos + 1
 				if sf_raw_name_pos < token_count

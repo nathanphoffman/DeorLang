@@ -1,6 +1,8 @@
 
-# Tracks INDENT/DEDENT nesting depth and sets `in_void_fn` when entering a void function body,
-# clearing it when the function's block closes — used to enforce the no-return rule in void fns.
+# Tracks INDENT/DEDENT nesting depth and sets `in_void_fn` to whatever the current
+# fn's own return type says, restoring the enclosing fn's value (via void_fn_stack,
+# keyed by the depth each fn was entered at) when that fn's body closes — this
+# matters once a fn can nest inside another fn with a different void-ness.
 # Also sets in_struct_body / in_enum_body when entering a struct or enum declaration (from the
 # KW_STRUCT/KW_ENUM token itself, so it covers the name and any type keyword before the body
 # even opens), clearing both at the same DEDENT that closes the declaration — every IDENT in
@@ -9,6 +11,14 @@
 # Also clears validator_vars, non_bool_var_names, and string_var_names at the start of
 # each top-level fn, so a tracked local in one function doesn't leak into matching
 # an unrelated same-named local in the next.
+# Also sets in_fn_body on any KW_FN (top-level or nested), clearing it at the same
+# DEDENT that closes back out to block_depth 0. Snapshots the pre-token value into
+# was_already_in_fn_body first — check_fn_declaration reads that (not the live
+# in_fn_body, which this same KW_FN token has by then already flipped true) to allow
+# a fn nested inside another fn's body while still rejecting one nested inside a
+# struct/enum/shape/macro body. Nested fn bodies are restricted (by a separate check)
+# to a single `return expr` statement, so unlike the top-level case above, no
+# additional scope isolation is needed here for the tracked-var lists.
 # This must run before the "fn name" validate_ident check later in the loop, since that check
 # `continue`s past the KW_FN token on a match — anything scheduled after it never sees it.
 macro track_block_scope
@@ -17,9 +27,17 @@ macro track_block_scope
 	if cur_kind is "DEDENT"
 		block_depth = block_depth - 1
 		if block_depth is 0
-			in_void_fn = false
 			in_struct_body = false
 			in_enum_body = false
+			in_fn_body = false
+		int vff_len = len(void_fn_stack)
+		if vff_len > 0
+			int vff_top_idx = vff_len - 1
+			VoidFnFrame vff_top = void_fn_stack at vff_top_idx
+			(vff_depth, vff_prev_void) in vff_top
+			if vff_depth is block_depth
+				in_void_fn = vff_prev_void
+				void_fn_stack remove at vff_top_idx
 	if cur_kind is "KW_STRUCT"
 		if block_depth is 0
 			in_struct_body = true
@@ -27,6 +45,8 @@ macro track_block_scope
 		if block_depth is 0
 			in_enum_body = true
 	if cur_kind is "KW_FN"
+		was_already_in_fn_body = in_fn_body
+		in_fn_body = true
 		if block_depth is 0
 			rust
 				validator_vars.clear();
@@ -35,10 +55,16 @@ macro track_block_scope
 				copy_var_names.clear();
 				moved_vars.clear();
 				moved_fields.clear();
+		int vff_depth = block_depth
+		bool vff_prev_void = in_void_fn
+		VoidFnFrame vff_new = (vff_depth, vff_prev_void)
+		void_fn_stack at end = vff_new
 		# ex: fn {void} name() — pos+1 grabs the return-type slot
 		int void_check = pos + 1
+		bool vff_is_void = false
 		if void_check < token_count
 			Token void_tok = tokens at void_check
 			(kind) in void_tok
 			if kind is "KW_VOID"
-				in_void_fn = true
+				vff_is_void = true
+		in_void_fn = vff_is_void

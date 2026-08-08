@@ -1,15 +1,17 @@
 # nested_fn_test.deor
 # Exercises the nested-function-declaration validator rule: declaring a fn
-# inside another fn's body must be a transpiler error, not something that
-# silently falls through to broken codegen / a confusing rustc failure.
+# inside a non-fn block (here, a struct body) must be a transpiler error, not
+# something that silently falls through to broken codegen / a confusing
+# rustc failure. A fn nested directly inside another fn's body IS allowed —
+# see nested_fn_happy_test.deor for that case.
 
-fn void outer()
+struct Broken
+	int val
 	fn bool inner(int val)
 		return val > 0
-	print("should never reach here")
 
 fn void main()
 	print("should never reach here")
 
 # expect-error:
-# line 7: fn 'inner' - functions may only be declared at the top level of a file
+# line 10: fn 'inner' - functions may only be declared at the top level of a file

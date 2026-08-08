@@ -1,14 +1,17 @@
 
 # Validates fn declarations: enforces max 3 params, no param name shadowing its type, snake_case and min-3-char
 # param names, that a return type is present (catches `fn name()` missing the return type token), and that
-# the fn isn't nested inside another block (block_depth > 0 means we're inside a fn/struct/enum/shape/macro
-# body, an if/for, etc. — fn is only ever valid at block_depth 0).
+# the fn isn't nested inside a non-fn block (block_depth > 0 with was_already_in_fn_body false means we're inside a
+# struct/enum/shape/macro body, an if/for outside any fn, etc.). A fn nested directly inside another fn's
+# body IS allowed, but only with a body of exactly one `return expr` statement — see is_single_return_body.
 macro check_fn_declaration
 	if cur_kind is "KW_FN"
-		if block_depth > 0
-			int name_pos = locate_fn_name(pos)
-			Token name_token = tokens at name_pos
-			errors at end = val_err(name_token, lbl_fn, rule_nested_fn)
+		bool is_nested = block_depth > 0
+		if is_nested
+			if not was_already_in_fn_body
+				int name_pos = locate_fn_name(pos)
+				Token name_token = tokens at name_pos
+				errors at end = val_err(name_token, lbl_fn, rule_nested_fn)
 		int left_paren_pos = locate_fn_left_paren(pos)
 		if left_paren_pos < token_count
 			Token left_paren_token = tokens at left_paren_pos
@@ -20,10 +23,12 @@ macro check_fn_declaration
 					Token name_token = tokens at name_pos
 					errors at end = val_err(name_token, lbl_fn, rule_max_params)
 				int param_scan_pos = left_paren_pos + 1
+				int right_paren_pos = left_paren_pos
 				for if param_scan_pos < token_count
 					Token param_scan_token = tokens at param_scan_pos
 					(kind, value) in param_scan_token
 					if kind is "RPAREN"
+						right_paren_pos = param_scan_pos
 						break
 					if kind is "COMMA"
 						param_scan_pos = param_scan_pos + 1
@@ -48,6 +53,14 @@ macro check_fn_declaration
 								errors at end = val_err(param_name_token, lbl_fn, rule_kw_in_parens)
 								param_scan_pos = param_name_pos
 					param_scan_pos = param_scan_pos + 1
+
+				if is_nested
+					if was_already_in_fn_body
+						bool has_valid_body = is_single_return_body(tokens, right_paren_pos, token_count)
+						if not has_valid_body
+							int name_pos = locate_fn_name(pos)
+							Token name_token = tokens at name_pos
+							errors at end = val_err(name_token, lbl_fn, rule_nested_fn_body_shape)
 		int return_type_pos = locate_fn_return_type(pos)
 		# Same slot as locate_fn_name — checked again here, but as "is this actually
 		# an LPAREN" rather than "is this the fn's name", to catch a missing return type.

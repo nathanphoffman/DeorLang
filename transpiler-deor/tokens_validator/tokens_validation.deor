@@ -11,6 +11,15 @@ struct UamFrame
 
 shape frameStack = list of UamFrame
 
+# One snapshot per currently-open fn, used by track_block_scope to restore
+# in_void_fn correctly when a nested fn's body closes back into its enclosing
+# fn (which may have a different void-ness than the nested one).
+struct VoidFnFrame
+	int vff_depth
+	bool vff_prev_void
+
+shape voidFrameStack = list of VoidFnFrame
+
 # Walks the merged token list and enforces naming conventions before codegen runs.
 # Prints all violations and exits with code 1 if any are found.
 fn void validate_tokens(TokensRef tokens)
@@ -22,6 +31,9 @@ fn void validate_tokens(TokensRef tokens)
 	bool in_void_fn = false
 	bool in_struct_body = false
 	bool in_enum_body = false
+	bool in_fn_body = false
+	bool was_already_in_fn_body = false
+	voidFrameStack void_fn_stack = empty
 
 	unsafe_macro_run define_errors
 
