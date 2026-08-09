@@ -1,0 +1,20 @@
+# validator_missing_body_test.deor
+# Exercises check_validator_declaration's missing-predicate-body check. Before this
+# check existed, a validator type declared with no indented body didn't just fail to
+# validate — depending on where it sat in the file it could panic the transpiler
+# process itself with an internal index-out-of-bounds error (reading past the header's
+# NEWLINE into whatever followed, or off the end of the token stream entirely) instead
+# of reporting a clean error. Covers a mid-file case (followed by another declaration)
+# and an end-of-file case (nothing at all follows the header) — the two failure shapes
+# the original crash depended on.
+
+type Empty1(int val)
+
+type Empty2(int val)
+
+fn void main()
+	print("unreachable")
+
+# expect-error:
+# line 11: type 'Empty1' - validator type is missing a predicate body
+# line 13: type 'Empty2' - validator type is missing a predicate body

@@ -1,0 +1,8 @@
+# Fixture for duplicate_rust_block_test.deor — declares a byte-identical top-level
+# rust block to dup_rust_block_a.deor, plus a unique function of its own.
+rust
+	fn shared_helper_double(n: i64) -> i64 { n * 2 }
+
+fn int helper_from_b()
+	rust
+		2

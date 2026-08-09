@@ -1,0 +1,27 @@
+# duplicate_decl_raw_test.deor
+# Exercises dedup.deor's duplicate-declaration check for a repeated top-level 'raw'
+# type name, with ENFORCE_UNIQUE_FILE_DECLARATIONS opted in. dd_handle_raw is a
+# separate code path from dd_handle_block_decl (keyed with a "_raw_" prefix so a raw
+# name can't collide with a same-named regular declaration), and was previously
+# exercised by no test at all. Without the pragma this is silently tolerated instead —
+# see duplicate_decl_macro_raw_loose_test.deor.
+
+raw Counter
+
+raw Counter
+
+rust
+	#[derive(Clone)]
+	struct Counter(i64);
+
+fn Counter c_make()
+	rust
+		Counter(0)
+
+fn void main()
+	ENFORCE_UNIQUE_FILE_DECLARATIONS
+	Counter ctr = c_make()
+	print("unreachable")
+
+# expect-error:
+# duplicate declaration 'Counter' — already declared in tests/unit_tests/duplicate_decl_raw_test.deor

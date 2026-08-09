@@ -1,0 +1,14 @@
+# validator_missing_body_eof_test.deor
+# Companion to validator_missing_body_test.deor, isolating the specific crash trigger
+# noted in the original bug report: a validator type with no predicate body as the very
+# last thing in the file (no declaration or token of any kind follows its header's
+# NEWLINE). This is the case that used to read straight off the end of the token stream
+# — check_validator_declaration's `body_pos < token_count` guard is what catches it now.
+# No 'fn void main()' here on purpose: the file must transpile-fail before any
+# missing-main check would matter, and this locks in that the validator check fires
+# first regardless.
+
+type TrailingEmpty(int val)
+
+# expect-error:
+# line 11: type 'TrailingEmpty' - validator type is missing a predicate body

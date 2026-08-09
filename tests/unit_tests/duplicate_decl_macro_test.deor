@@ -1,0 +1,19 @@
+# duplicate_decl_macro_test.deor
+# Exercises dedup.deor's duplicate-declaration check for a repeated top-level 'macro'
+# name, with ENFORCE_UNIQUE_FILE_DECLARATIONS opted in — dd_handle_block_decl covers
+# fn/struct/enum/type/macro/unsafe_macro uniformly, but only struct was previously
+# exercised anywhere in this suite (see duplicate_decl_same_file_test.deor). Without the
+# pragma this is silently tolerated instead — see duplicate_decl_macro_raw_loose_test.deor.
+
+macro greet
+	print("first")
+
+macro greet
+	print("second")
+
+fn void main()
+	ENFORCE_UNIQUE_FILE_DECLARATIONS
+	macro_run greet
+
+# expect-error:
+# duplicate declaration 'greet' — already declared in tests/unit_tests/duplicate_decl_macro_test.deor

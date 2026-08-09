@@ -1,0 +1,41 @@
+# duplicate_decl_macro_raw_loose_test.deor
+# With no ENFORCE_UNIQUE_* pragma, a repeated 'macro' or 'raw' name is silently
+# kept-first, same as the already-covered struct/shape cases in
+# duplicate_decl_default_loose_test.deor. Locks in that dd_handle_block_decl (macro)
+# and dd_handle_raw (raw) both honor the same loose default despite being different
+# code paths. The second 'greet' would print "second" instead of "first" if dedup ever
+# let it win, and the second (bodiless, since raw itself carries no definition) 'raw
+# Counter' redeclaration would have no functional effect either way — what actually
+# matters here is that the duplicate doesn't hard-error without the pragma set.
+
+macro greet
+	print("first")
+
+macro greet
+	print("second")
+
+raw Counter
+
+raw Counter
+
+rust
+	#[derive(Clone)]
+	struct Counter(i64);
+
+fn Counter c_make()
+	rust
+		Counter(7)
+
+fn int c_read(Counter ctr)
+	rust
+		ctr.0
+
+fn void main()
+	macro_run greet
+	Counter ctr = c_make()
+	int val = c_read(ctr)
+	print(val)
+
+# expect:
+# first
+# 7

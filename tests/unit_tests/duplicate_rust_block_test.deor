@@ -1,0 +1,30 @@
+# duplicate_rust_block_test.deor
+# Two imported files each declare a byte-identical top-level 'rust { }' block
+# (dd_handle_rust_block.deor keys on the block's full text content, independent of the
+# ENFORCE_UNIQUE_* pragma machinery that governs fn/struct/enum/shape/type/macro/
+# unsafe_macro/raw). Confirms the identical block is silently deduplicated — not
+# emitted twice into the generated Rust — even with BOTH strict pragmas turned on:
+# if it weren't deduped, `shared_helper_double` would be defined twice and rustc would
+# fail with a duplicate-definition error instead of this compiling and running cleanly.
+
+import "tests/unit_tests/fixtures/dup_rust_block_a.deor"
+import "tests/unit_tests/fixtures/dup_rust_block_b.deor"
+
+fn int call_shared(int num)
+	rust
+		shared_helper_double(num)
+
+fn void main()
+	ENFORCE_UNIQUE_FILE_DECLARATIONS
+	ENFORCE_UNIQUE_IMPORT_DECLARATIONS
+	int from_a = helper_from_a()
+	int from_b = helper_from_b()
+	int doubled = call_shared(5)
+	print(from_a)
+	print(from_b)
+	print(doubled)
+
+# expect:
+# 1
+# 2
+# 10

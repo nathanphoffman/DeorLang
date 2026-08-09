@@ -1,0 +1,38 @@
+# string_escape_unrecognized_test.deor
+# Companion to string_escape_test.deor, covering the escapes that aren't in the
+# recognized set (\n, \t, \\, \"). scan_string_literal's fallback branch re-emits an
+# unrecognized escape as two literal characters — the backslash plus whatever follows
+# it — instead of erroring or collapsing it into some other meaning. docs/strings.md
+# says "no other escape sequences are supported in v1," true of the effect, but doesn't
+# say unsupported ones pass through silently rather than being rejected. Checked via
+# length and s_contains (a literal backslash needle), same technique as
+# string_escape_test.deor, since these strings contain a raw backslash byte that would
+# be awkward to compare directly in a single-line expected-output format.
+
+import "lib/string.deor"
+
+fn void main()
+	weird_r as "a\rb"
+	int len_r = len(weird_r)
+	print(len_r)
+
+	weird_x as "a\xb"
+	int len_x = len(weird_x)
+	print(len_x)
+
+	needle_bs as "\\"
+	bool r_has_backslash = s_contains(weird_r, needle_bs)
+	print(r_has_backslash)
+	bool x_has_backslash = s_contains(weird_x, needle_bs)
+	print(x_has_backslash)
+
+	needle_r_letter as "r"
+	bool r_has_letter = s_contains(weird_r, needle_r_letter)
+	print(r_has_letter)
+
+# expect:
+# 4
+# 4
+# true
+# true
+# true
