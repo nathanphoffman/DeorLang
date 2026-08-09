@@ -1,0 +1,32 @@
+# avow_paren_trailing_op_test.deor
+# Exercises tb_paren.deor's handling of `Type name = (avow x) OP rhs` — docs/validator_types.md's
+# own worked example for parenthesized avow used inside a larger expression
+# (`int sum = (avow value) + 2`). Previously tb_paren returned immediately after unwrapping
+# the parenthesized avow expression, silently dropping everything after the closing paren —
+# `int sum = (avow value) + 2` transpiled and compiled, but only ever assigned the unwrapped
+# value, discarding the '+ 2' entirely. Also covers a comparison operator and confirms the
+# bare `(avow x)` form (nothing trailing) still works, since both paths share this macro.
+
+type Positive(int val)
+	val > 0
+
+fn void main()
+	Positive value = 5
+
+	int sum = (avow value) + 2
+	print(sum)
+
+	int product = (avow value) * 3
+	print(product)
+
+	bool is_five = (avow value) is 5
+	print(is_five)
+
+	int plain = (avow value)
+	print(plain)
+
+# expect:
+# 7
+# 15
+# true
+# 5

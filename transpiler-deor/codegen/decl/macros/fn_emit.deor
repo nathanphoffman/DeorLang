@@ -1,17 +1,25 @@
 
 # Generates the function body, assembles the full Rust fn string, and returns.
-# Expects: body_ctx, body_start, param_strs, ret_type, fn_name in scope from gen_fn_decl.
+# Expects: body_ctx, body_start, param_strs, ret_type, fn_name in scope from gen_fn_decl,
+# plus used_implicit_return/implicit_return_code/implicit_return_end from
+# fn_build_body_ctx (see there for the single-bare-expression-body detection).
 macro fn_emit
 	int body_pos = 0
 	int body_depth = 1
-	ParseResult body_r = gen_block(body_pos, body_depth, move body_ctx)
-	move (code, new_pos) in body_r
-	body_code as code
-	body_end as body_start + new_pos
 	string params_code = s_join_with(param_strs, RS_CSEP)
 	string ret_suffix = ""
 	if not is_empty(ret_type)
 		ret_suffix = s_join([RS_ARR, ret_type])
 	string fnc_kw = "fn "
+
+	if used_implicit_return
+		string fn_code = s_join([fnc_kw, fn_name, RS_LP, params_code, RS_RP, ret_suffix, RS_OB, implicit_return_code, RS_FNC_CB])
+		int implicit_body_end = body_start + implicit_return_end
+		return make_result(move fn_code, implicit_body_end)
+
+	ParseResult body_r = gen_block(body_pos, body_depth, move body_ctx)
+	move (code, new_pos) in body_r
+	body_code as code
+	body_end as body_start + new_pos
 	string fn_code = s_join([fnc_kw, fn_name, RS_LP, params_code, RS_RP, ret_suffix, RS_OB, body_code, RS_FNC_CB])
 	return make_result(move fn_code, body_end)

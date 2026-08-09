@@ -64,6 +64,37 @@ macro tb_paren
 			unwrap_expr = s_cat(val_code, unwrap_field0_suffix)
 		if var_type is "float"
 			unwrap_expr = s_cat(val_code, unwrap_field0_suffix)
+
+		# (avow x) can be the left operand of a larger expression -- e.g. '(avow x) + 2'
+		# (docs/validator_types.md's own worked example). Continue folding in trailing
+		# binary operators exactly like gen_expr's own loop, using the unwrapped value
+		# as the starting left operand, instead of stopping at the closing paren and
+		# silently dropping everything after it.
+		string left_code = unwrap_expr
+		int cur_pos = after_rparen
+		for if cur_pos < token_count
+			Token operator_token = tokens at cur_pos
+			(kind, value) in operator_token
+			if not is_binary_op(kind)
+				break
+			string operator_str = value
+			# ex: (avow x) is {right} -- cur_pos+1 grabs the right-hand operand after the operator
+			int after_op = cur_pos + 1
+			macro_run expr_is_special
+			ParseResult rhs_result = gen_primary(tokens, after_op, ctx)
+			move (code, new_pos) in rhs_result
+			rhs_code as code
+			rhs_pos as new_pos
+			string rust_op = map_op(operator_str)
+			string operator_space = " "
+			left_code = s_cat(move left_code, operator_space)
+			left_code = s_cat(move left_code, rust_op)
+			left_code = s_cat(move left_code, operator_space)
+			left_code = s_cat(move left_code, rhs_code)
+			cur_pos = rhs_pos
+		unwrap_expr = left_code
+		after_rparen = cur_pos
+
 		string avow_let = "let "
 		string avow_colon = ": "
 		string avow_eq = " = "

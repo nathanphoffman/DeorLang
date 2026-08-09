@@ -69,15 +69,16 @@ Fixed:
    adding that `else` branch in `expand_deor_macros` (`macro_expander.deor`). Regression
    test: `macro_out_of_scope_test.deor`.
 
-
-In Progress:
 4. **`(avow value) + 2` silently drops the `+ 2`.** This is `docs/validator_types.md`'s own
    worked example (line ~195) for parenthesized avow used in an expression. Actual
    behavior: transpiles and compiles, but silently discards everything after the closing
    paren and prints only the unwrapped value. Root cause: `codegen/decl/stmt/macros/typed_binding/tb_paren.deor`
    (lines ~44-69) returns immediately after parsing the parenthesized avow expression,
    never continuing to parse a trailing operator. Avow *without* the outer parens, or with
-   parens around the right-hand operand instead, both work correctly.
+   parens around the right-hand operand instead, both work correctly. Fixed by having
+   `tb_paren.deor` continue folding trailing binary operators after the closing paren
+   (mirroring `gen_expr`'s own fold loop) instead of returning immediately. Regression
+   test: `avow_paren_trailing_op_test.deor`.
 
 7. **The docs' flagship function example doesn't actually work.**
    `docs/functions.md`'s implicit-return style (`fn int add(int a, int b)` with a bare
@@ -86,8 +87,15 @@ In Progress:
    so it falls through to a catch-all that emits `/* unhandled(IDENT) */` per token.
    Transpiles with exit 0; fails `rustc` with a type mismatch. Every single-expression-body
    example in the doc is affected. Explicit `return` works fine. No validator catches a
-   function body missing a `return` at its exit point either — same broken-codegen result.
+   function body missing a `return` at its exit point either — same broken-codegen result
+   (this narrower remaining gap — a multi-statement body missing `return` at an exit point —
+   is still open; only the single-expression-body case described above is fixed). Fixed by
+   detecting a single-bare-expression function body in `fn_build_body_ctx.deor` (before
+   `gen_block`/`gen_stmt` ever see it) and emitting it as an explicit `return` in
+   `fn_emit.deor`. Regression test: `implicit_return_test.deor`.
 
+
+In Progress:
 8. **Destructuring a multi-return-value call invokes the function twice, not once.**
    `docs/functions.md`'s multi-return example (`(quotient, remainder) in divmod(a, b)`)
    generates code that calls `divmod` once per destructured field. Real correctness risk

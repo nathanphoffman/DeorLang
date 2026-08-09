@@ -1,0 +1,54 @@
+# implicit_return_test.deor
+# Exercises the single-bare-expression function body implicit return (docs/functions.md
+# "Return Rules": "A function body that is a single expression ... implicitly returns
+# that expression"). Previously gen_stmt had no handler for a bare trailing expression
+# statement at all — every single-expression-body example in the docs (this file's
+# flagship 'add'/'square') transpiled with exit 0 but emitted '/* unhandled(IDENT) */'
+# per token, failing only at rustc with a type mismatch. Detection happens in
+# fn_build_body_ctx.deor, ahead of gen_block, and only applies when the body is
+# EXACTLY one statement — a multi-statement body still requires explicit 'return'
+# everywhere, unaffected by this change (see recursion_test.deor, math_test.deor, etc.
+# for those, still passing via the untouched gen_block path).
+
+fn int add(int left, int right)
+	left + right
+
+fn int square(int val)
+	val * val
+
+fn string greeting()
+	"hi there"
+
+fn int helper_val()
+	42
+
+fn int compute()
+	helper_val()
+
+fn void greet(string name)
+	print(name)
+
+fn void main()
+	first_num as 3
+	second_num as 4
+	int total = add(first_num, second_num)
+	print(total)
+
+	int squared = square(5)
+	print(squared)
+
+	string msg = greeting()
+	print(msg)
+
+	int computed = compute()
+	print(computed)
+
+	person_name as "Ada"
+	greet(person_name)
+
+# expect:
+# 7
+# 25
+# hi there
+# 42
+# Ada
