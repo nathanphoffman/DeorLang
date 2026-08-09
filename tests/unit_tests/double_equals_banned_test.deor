@@ -1,0 +1,16 @@
+# double_equals_banned_test.deor
+# Exercises check_double_equals: '==' is a banned symbolic operator (docs/operators.md),
+# same category as '!=', '&&', '||' — but unlike those, a lone '=' is a valid EQUALS
+# token (used for assignment), so it needed its own two-adjacent-EQUALS check instead of
+# relying on check_invalid_char catching an invalid lexer character.
+
+fn void test_double_equals_in_if()
+	int val = 5
+	if val == 5
+		print("should never reach here")
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 9: variable '=' - '==' is not valid in Deor — use 'is' for equality comparison

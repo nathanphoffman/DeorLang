@@ -2692,6 +2692,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_bare_truthiness: String = "only bool and validator types have truthiness — use an explicit comparison ('is not 0', 'is not \"\"', 'is valid', etc.)".to_string();
     let mut rule_func_shape_multi_param: String = "func shapes accept at most one input type and one output type — bundle multiple values into a struct instead".to_string();
     let mut rule_string_plus_banned: String = "'+' cannot be used with strings — use s_join([a, b, ...]) or s_join_with(list, sep) instead".to_string();
+    let mut rule_double_equals: String = "'==' is not valid in Deor — use 'is' for equality comparison".to_string();
     let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
     let mut rule_validator_reassign: String = "cannot reassign a validator type variable with 'as' — it skips the predicate check; use 'name = expr' to re-validate, or 'TypeName name = expr' for a fresh declaration".to_string();
     let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
@@ -4931,6 +4932,26 @@ fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_string_plus_banned.deor
                                 errors.push(val_err(tok.clone(), lbl_var.clone(), rule_string_plus_banned.clone()).clone());
                             }
+                        }
+                    }
+                }
+            }
+            // macro: check_double_equals (transpiler-deor/tokens_validator/macros/syntax_rules/check_double_equals.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/syntax_rules/check_double_equals.deor
+                fn locate_next_token(kw_pos: i64) -> i64 {
+                    return kw_pos + 1;
+                }
+                if cur_kind == "EQUALS" {
+                    // transpiler-deor/tokens_validator/macros/syntax_rules/check_double_equals.deor
+                    let mut next_pos: i64 = locate_next_token(pos.clone());
+                    if next_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/syntax_rules/check_double_equals.deor
+                        let mut next_token: Token = tokens[next_pos as usize].clone();
+                        let mut kind = next_token.kind.clone();
+                        if kind == "EQUALS" {
+                            // transpiler-deor/tokens_validator/macros/syntax_rules/check_double_equals.deor
+                            errors.push(val_err(tok.clone(), lbl_var.clone(), rule_double_equals.clone()).clone());
                         }
                     }
                 }

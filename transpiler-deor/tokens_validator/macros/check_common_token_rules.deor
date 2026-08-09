@@ -23,3 +23,4 @@ macro check_common_token_rules
 	macro_run check_not_is_order
 	macro_run check_bare_truthiness
 	macro_run check_string_plus_banned
+	macro_run check_double_equals

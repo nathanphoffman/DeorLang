@@ -1,0 +1,18 @@
+
+# Flags '==' as a banned symbolic operator — Deor uses 'is' for equality
+# comparison (see docs/operators.md). Unlike '!=', '&&', '||' — which get
+# caught by check_invalid_char because their characters are never valid on
+# their own outside a string — a lone '=' is a legitimate EQUALS token used
+# for assignment, so nothing previously scanned for two of them back to back.
+macro check_double_equals
+	# ex: val == 5 — kw_pos is the first '=' (EQUALS), kw_pos+1 is the second
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	if cur_kind is "EQUALS"
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
+			if kind is "EQUALS"
+				errors at end = val_err(tok, lbl_var, rule_double_equals)
