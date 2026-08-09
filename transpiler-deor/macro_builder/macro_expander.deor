@@ -165,6 +165,15 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 					queue.push_front(Token { kind: "MACRO_FRAME_END".to_string(), value: String::new(), line: 0, file: marker_file.clone() });
 					for tok in body.iter().rev() { queue.push_front(tok.clone()); }
 					queue.push_front(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
+				} else {
+					// validate_macros only checks that the name is defined *somewhere* in the
+					// file, not that it's still in scope here -- a macro defined inside a block
+					// that already closed (removed from `macros` by the DEDENT retain() above)
+					// passes that check but has nothing to expand to at this call site. Without
+					// this branch the call silently vanished: no error, and the tokens consumed
+					// above (name, trailing NEWLINE) were simply dropped from the output.
+					let err_tok = name_tok.clone().unwrap_or(cur.clone());
+					handle_errors(vec![val_err(err_tok, "macro_run".to_string(), format!("'{}' is defined locally but not visible here -- it went out of scope (a local macro is only visible inside the block it's declared in)", name))]);
 				}
 				continue;
 			}

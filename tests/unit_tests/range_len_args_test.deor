@@ -1,0 +1,37 @@
+# range_len_args_test.deor
+# Exercises check_range_args/check_len_args: neither builtin previously had any
+# argument-count validation (unlike print/crash, which use the same shared
+# check_builtin_arg_count helper). Before this check existed, range(one, two, three)
+# silently transpiled, compiled, and ran, ignoring 'three' and iterating one..two;
+# len(a, b) silently dropped 'b'; and both range() and len() with 0 args transpiled
+# "successfully" but emitted invalid Rust, only failing at rustc.
+
+fn void test_range_too_many_args()
+	start_val as 0
+	end_val as 5
+	extra_val as 9
+	for idx in range(start_val, end_val, extra_val)
+		print(idx)
+
+fn void test_range_zero_args()
+	for idx in range()
+		print(idx)
+
+fn void test_len_zero_args()
+	int size = len()
+	print(size)
+
+fn void test_len_too_many_args()
+	nums as [1, 2, 3]
+	extra_val as 5
+	int size = len(nums, extra_val)
+	print(size)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 13: call to 'range' - range takes 1 argument (range(count)) or 2 arguments (range(start, end))
+# line 17: call to 'range' - range takes 1 argument (range(count)) or 2 arguments (range(start, end))
+# line 21: call to 'len' - len takes exactly 1 argument
+# line 27: call to 'len' - len takes exactly 1 argument

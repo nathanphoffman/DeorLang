@@ -7,6 +7,8 @@ macro check_misc_token_rules
 	macro_run track_validator_vars
 	macro_run check_crash_args
 	macro_run check_print_args
+	macro_run check_range_args
+	macro_run check_len_args
 	macro_run check_avow_target
 	macro_run check_validator_empty
 	macro_run check_empty_bracket

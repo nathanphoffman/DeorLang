@@ -20,10 +20,11 @@ Fixed:
    it can panic the transpiler process with an internal `index out of bounds` error (exit
    101) instead of reporting a clean error. No check exists for a missing predicate body.
    (`codegen/decl/validator_type.deor`; docs/validator_types.md claims this is rejected —
-   it is not, in either failure mode.)
+   it is not, in either failure mode.) Fixed via `check_validator_declaration.deor`'s
+   `has_body` guard, emitting `rule_validator_missing_body` instead of reading out of
+   bounds. Regression tests: `validator_missing_body_test.deor`,
+   `validator_missing_body_eof_test.deor`.
 
-
-In Progress:
 2. **`==` is not actually rejected**, though `docs/operators.md` (lines 117-127) lists it
    alongside `!=`/`&&`/`||` as a banned symbolic operator that's a transpiler error. `!=`,
    `&&`, `||` really do fail (their characters are invalid outside strings — see
@@ -32,22 +33,18 @@ In Progress:
    emitting broken Rust that only fails later at `rustc` with a confusing `E0308` type
    error instead of a clear Deor-level message. Root cause: `is_binary_op` in
    `codegen/decl/stmt/expr/expr.deor` doesn't include EQUALS, so `gen_expr` just stops
-   folding and leaves the tokens dangling.
+   folding and leaves the tokens dangling. Fixed via a new `check_double_equals.deor`
+   validator check. Regression test: `double_equals_banned_test.deor`.
 
 3. **Bare `if <validator_var>` (no `is valid`) is not rejected**, though
    `docs/variables.md` (lines 81-87) explicitly says it's a transpiler error. It compiles
    clean to `if sqft { ... }` where `sqft: Option<Squarefeet>`, then fails at `rustc` with
    `E0308`. Root cause: `track_non_bool_vars.deor` deliberately excludes validator types
    from `non_bool_var_names`, and `check_bare_truthiness.deor` only checks that list — the
-   validator-specific truthiness check was apparently never written.
-
-4. **`(avow value) + 2` silently drops the `+ 2`.** This is `docs/validator_types.md`'s own
-   worked example (line ~195) for parenthesized avow used in an expression. Actual
-   behavior: transpiles and compiles, but silently discards everything after the closing
-   paren and prints only the unwrapped value. Root cause: `codegen/decl/stmt/macros/typed_binding/tb_paren.deor`
-   (lines ~44-69) returns immediately after parsing the parenthesized avow expression,
-   never continuing to parse a trailing operator. Avow *without* the outer parens, or with
-   parens around the right-hand operand instead, both work correctly.
+   validator-specific truthiness check was apparently never written. Fixed by having
+   `check_bare_truthiness.deor` also check the existing `validator_vars` list (already
+   populated by `track_validator_vars.deor` for other checks). Regression test:
+   `validator_bare_truthiness_test.deor`.
 
 5. **`range()` and `len()` have zero argument-count validation.** Unlike `print`/`crash`
    (which have dedicated `check_print_args`/`check_crash_args` macros), no such check
@@ -59,13 +56,28 @@ In Progress:
      Rust (`/* unknown_primary */` in the argument position), failing only at `rustc`.
    - `docs/builtins.md` (lines 47-72) documents only the intended forms and doesn't
      disclose that malformed calls aren't caught by Deor.
+   Fixed via new `check_range_args.deor`/`check_len_args.deor`, reusing the existing
+   `check_builtin_arg_count` helper print/crash already used. Regression test:
+   `range_len_args_test.deor`.
 
 6. **A macro called from outside the function it's locally scoped in silently vanishes** —
    zero code emitted, zero diagnostic. `expand_deor_macros` removes out-of-scope local
    macro definitions from its lookup map on `DEDENT`, and the `macro_run` expansion site
    has no `else` branch for "not found," so the call site just disappears from the output.
    `docs/macros.md` says local macros aren't "visible outside" their block but doesn't
-   mention that calling one from outside fails silently instead of erroring.
+   mention that calling one from outside fails silently instead of erroring. Fixed by
+   adding that `else` branch in `expand_deor_macros` (`macro_expander.deor`). Regression
+   test: `macro_out_of_scope_test.deor`.
+
+
+In Progress:
+4. **`(avow value) + 2` silently drops the `+ 2`.** This is `docs/validator_types.md`'s own
+   worked example (line ~195) for parenthesized avow used in an expression. Actual
+   behavior: transpiles and compiles, but silently discards everything after the closing
+   paren and prints only the unwrapped value. Root cause: `codegen/decl/stmt/macros/typed_binding/tb_paren.deor`
+   (lines ~44-69) returns immediately after parsing the parenthesized avow expression,
+   never continuing to parse a trailing operator. Avow *without* the outer parens, or with
+   parens around the right-hand operand instead, both work correctly.
 
 7. **The docs' flagship function example doesn't actually work.**
    `docs/functions.md`'s implicit-return style (`fn int add(int a, int b)` with a bare

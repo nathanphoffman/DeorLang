@@ -1,11 +1,14 @@
 
-# Flags `if my_int` / `if my_string` / `if my_list` — a bare identifier used as an
-# entire if-condition (also covers 'for if', since that's just KW_FOR followed by
-# this same KW_IF token) with nothing else after it on that line. Only fires when
-# the identifier is positively known (via track_non_bool_vars) to be declared with
-# a type other than 'bool' or a validator type — those two are the only types with
-# real truthiness in Deor. An untracked identifier (e.g. a destructured struct
-# field) is left alone rather than guessed at, to avoid false positives.
+# Flags `if my_int` / `if my_string` / `if my_list` / `if my_validator_var` — a bare
+# identifier used as an entire if-condition (also covers 'for if', since that's just
+# KW_FOR followed by this same KW_IF token) with nothing else after it on that line.
+# Only 'bool' has real presence-check truthiness in Deor — validator types look
+# similar (they're also "is this set or not") but must go through 'is valid' /
+# 'is not valid' instead, never bare truthiness (see docs/variables.md's Truthiness
+# section). Fires when the identifier is positively known to be declared with a type
+# other than 'bool' (via track_non_bool_vars) or with a validator type (via
+# track_validator_vars). An untracked identifier (e.g. a destructured struct field)
+# is left alone rather than guessed at, to avoid false positives.
 macro check_bare_truthiness
 	# ex: if {my_int} — kw_pos+1 grabs the identifier that might be the whole condition
 	fn int locate_next_token(int kw_pos)
@@ -24,5 +27,7 @@ macro check_bare_truthiness
 					Token after_token = tokens at after_pos
 					(kind) in after_token
 					if kind is "NEWLINE"
-						if list_has(non_bool_var_names, value)
+						bool is_non_bool = list_has(non_bool_var_names, value)
+						bool is_validator_var = list_has(validator_vars, value)
+						if is_non_bool or is_validator_var
 							errors at end = val_err(next_token, lbl_var, rule_bare_truthiness)

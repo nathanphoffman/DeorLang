@@ -118,6 +118,8 @@ import "transpiler-deor/tokens_validator/macros/declarations/check_validator_dec
 import "transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor"
 import "transpiler-deor/tokens_validator/macros/builtins/check_crash_args.deor"
 import "transpiler-deor/tokens_validator/macros/builtins/check_print_args.deor"
+import "transpiler-deor/tokens_validator/macros/builtins/check_range_args.deor"
+import "transpiler-deor/tokens_validator/macros/builtins/check_len_args.deor"
 import "transpiler-deor/tokens_validator/macros/brackets_parens/check_empty_bracket.deor"
 import "transpiler-deor/tokens_validator/macros/brackets_parens/check_bracket_indexing.deor"
 import "transpiler-deor/tokens_validator/macros/declarations/check_void_var.deor"

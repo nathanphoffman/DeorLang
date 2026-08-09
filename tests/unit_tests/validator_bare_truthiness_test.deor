@@ -1,0 +1,23 @@
+# validator_bare_truthiness_test.deor
+# Exercises check_bare_truthiness's validator-type branch: docs/variables.md is
+# explicit that a validator-typed variable used as a bare if-condition (no 'is
+# valid'/'is not valid') is a transpiler error, same category as bare `if my_int` or
+# `if my_string`. Previously track_non_bool_vars deliberately excluded validator
+# types from non_bool_var_names (so the generic non-bool message wouldn't misfire on
+# them) but nothing filled in the validator-specific side of the check, so `if sqft`
+# transpiled clean and only failed later at rustc. See validator_type_happy_test.deor
+# for the correct 'is valid'/'is not valid' forms this must not flag.
+
+type Positive(int val)
+	val > 0
+
+fn void test_bare_validator_if()
+	Positive good_num = 5
+	if good_num
+		print("should never reach here")
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 16: variable 'good_num' - only bool and validator types have truthiness

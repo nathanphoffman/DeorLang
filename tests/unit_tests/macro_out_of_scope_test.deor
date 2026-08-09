@@ -1,0 +1,19 @@
+# macro_out_of_scope_test.deor
+# Exercises expand_deor_macros' out-of-scope macro_run handling. validate_macros
+# (macro_validation.deor) only checks that a name is defined *somewhere* in the
+# file, not that it's still visible at the call site — a local macro removed from
+# scope on DEDENT used to just vanish at the expansion site with zero code emitted
+# and zero diagnostic. See macro_test.deor's run_local_macro_scope for the correct
+# same-scope call this must not flag.
+
+fn void define_and_call_locally()
+	macro local_only
+		print("local macro ran")
+	macro_run local_only
+
+fn void main()
+	define_and_call_locally()
+	macro_run local_only
+
+# expect-error:
+# line 16: macro_run 'local_only' - 'local_only' is defined locally but not visible here

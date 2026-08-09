@@ -1,0 +1,13 @@
+
+# Enforces that len() is called with exactly 1 argument — see docs/builtins.md.
+# Unlike print/crash, this had no argument-count check at all: len() with 0 args
+# transpiled "successfully" but emitted invalid Rust ('/* unknown_primary */' in
+# the argument position), only failing at rustc; len(a, b) silently transpiled,
+# compiled, and ran, with 'b' vanishing from the output entirely — gen_unary_method
+# only ever parses the first argument and never checks for anything after it.
+macro check_len_args
+	string builtin_name = "len"
+	int min_args = 1
+	int max_args = 1
+	string arg_count_rule = rule_len_args
+	macro_run check_builtin_arg_count

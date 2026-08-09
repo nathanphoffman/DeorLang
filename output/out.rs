@@ -2451,6 +2451,15 @@ fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<
     			queue.push_front(Token { kind: "MACRO_FRAME_END".to_string(), value: String::new(), line: 0, file: marker_file.clone() });
     			for tok in body.iter().rev() { queue.push_front(tok.clone()); }
     			queue.push_front(Token { kind: "MACRO_MARKER".to_string(), value: name.clone(), line: 0, file: marker_file });
+    		} else {
+    			// validate_macros only checks that the name is defined *somewhere* in the
+    			// file, not that it's still in scope here -- a macro defined inside a block
+    			// that already closed (removed from `macros` by the DEDENT retain() above)
+    			// passes that check but has nothing to expand to at this call site. Without
+    			// this branch the call silently vanished: no error, and the tokens consumed
+    			// above (name, trailing NEWLINE) were simply dropped from the output.
+    			let err_tok = name_tok.clone().unwrap_or(cur.clone());
+    			handle_errors(vec![val_err(err_tok, "macro_run".to_string(), format!("'{}' is defined locally but not visible here -- it went out of scope (a local macro is only visible inside the block it's declared in)", name))]);
     		}
     		continue;
     	}
@@ -2663,6 +2672,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_void_var: String = "'void' is not a valid variable type — only functions can return void".to_string();
     let mut rule_crash: String = "crash takes exactly 1 string argument".to_string();
     let mut rule_print_args: String = "print takes 1 argument, or 2 arguments where the second replaces the trailing newline".to_string();
+    let mut rule_range_args: String = "range takes 1 argument (range(count)) or 2 arguments (range(start, end))".to_string();
+    let mut rule_len_args: String = "len takes exactly 1 argument".to_string();
     let mut rule_avow: String = "avow can only be used on a validator type variable".to_string();
     let mut rule_invalid_char: String = "character is not valid in Deor — use Deor operators and keywords; raw Rust syntax belongs inside a 'rust' block".to_string();
     let mut rule_validator_empty: String = "empty is not valid for validator types — declare without a value to start as not valid: 'Roll best'".to_string();
@@ -4875,7 +4886,9 @@ fn validate_tokens(tokens: TokensRef) {
                                 let mut kind = after_token.kind.clone();
                                 if kind == "NEWLINE" {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_bare_truthiness.deor
-                                    if list_has(non_bool_var_names.clone(), value.clone()) {
+                                    let mut is_non_bool: bool = list_has(non_bool_var_names.clone(), value.clone());
+                                    let mut is_validator_var: bool = list_has(validator_vars.clone(), value.clone());
+                                    if is_non_bool || is_validator_var {
                                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_bare_truthiness.deor
                                         errors.push(val_err(next_token.clone(), lbl_var.clone(), rule_bare_truthiness.clone()).clone());
                                     }
@@ -5756,6 +5769,80 @@ fn validate_tokens(tokens: TokensRef) {
                 let mut min_args: i64 = 1;
                 let mut max_args: i64 = 2;
                 let mut arg_count_rule: String = rule_print_args.clone();
+                // macro: check_builtin_arg_count (transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor)
+                {
+                    // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                    fn locate_next_token(kw_pos: i64) -> i64 {
+                        return kw_pos + 1;
+                    }
+                    if cur_kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                        let mut is_target: bool = cur_val == builtin_name;
+                        if is_target {
+                            // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                            let mut left_paren_pos: i64 = locate_next_token(pos.clone());
+                            if left_paren_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
+                                let mut kind = left_paren_token.kind.clone();
+                                if kind == "LPAREN" {
+                                    // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                    let mut arg_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
+                                    let mut count_ok: bool = arg_count >= min_args && arg_count <= max_args;
+                                    if !count_ok {
+                                        // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                        errors.push(val_err(tok.clone(), lbl_call.clone(), arg_count_rule.clone()).clone());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // macro: check_range_args (transpiler-deor/tokens_validator/macros/builtins/check_range_args.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/builtins/check_range_args.deor
+                let mut builtin_name: String = "range".to_string();
+                let mut min_args: i64 = 1;
+                let mut max_args: i64 = 2;
+                let mut arg_count_rule: String = rule_range_args.clone();
+                // macro: check_builtin_arg_count (transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor)
+                {
+                    // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                    fn locate_next_token(kw_pos: i64) -> i64 {
+                        return kw_pos + 1;
+                    }
+                    if cur_kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                        let mut is_target: bool = cur_val == builtin_name;
+                        if is_target {
+                            // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                            let mut left_paren_pos: i64 = locate_next_token(pos.clone());
+                            if left_paren_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
+                                let mut kind = left_paren_token.kind.clone();
+                                if kind == "LPAREN" {
+                                    // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                    let mut arg_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
+                                    let mut count_ok: bool = arg_count >= min_args && arg_count <= max_args;
+                                    if !count_ok {
+                                        // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                        errors.push(val_err(tok.clone(), lbl_call.clone(), arg_count_rule.clone()).clone());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // macro: check_len_args (transpiler-deor/tokens_validator/macros/builtins/check_len_args.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/builtins/check_len_args.deor
+                let mut builtin_name: String = "len".to_string();
+                let mut min_args: i64 = 1;
+                let mut max_args: i64 = 1;
+                let mut arg_count_rule: String = rule_len_args.clone();
                 // macro: check_builtin_arg_count (transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor)
                 {
                     // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
