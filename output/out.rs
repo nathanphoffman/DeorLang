@@ -2602,6 +2602,86 @@ fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i
     return kind == "DEDENT";
 }
 
+// transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+fn starts_binary_op(kind: String) -> bool {
+    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+    if kind == "PLUS" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "MINUS" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "STAR" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "SLASH" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "PERCENT" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "GT" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "LT" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "GTE" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "LTE" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "KW_IS" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "KW_AND" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    if kind == "KW_OR" {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        return true;
+    }
+    return false;
+}
+
+fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 {
+    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+    let mut depth: i64 = 0;
+    let mut scan_pos: i64 = start.clone();
+    while scan_pos < end_pos {
+        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+        let mut scan_token: Token = tokens[scan_pos as usize].clone();
+        let kind = scan_token.kind.clone();
+        if kind == "INDENT" {
+            // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+            depth = depth + 1;
+        } else if kind == "DEDENT" {
+            // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+            depth = depth - 1;
+        } else if kind == "NEWLINE" {
+            // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+            if depth == 0 {
+                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                return scan_pos;
+            }
+        }
+        scan_pos = scan_pos + 1;
+    }
+    return end_pos;
+}
+
 // transpiler-deor/tokens_validator/tokens_validation.deor
 type FnTestRule = fn(String) -> bool;
 
@@ -2647,6 +2727,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut lbl_decl: String = "declaration".to_string();
     let mut lbl_field: String = "struct field".to_string();
     let mut lbl_variant: String = "enum variant".to_string();
+    let mut lbl_stmt: String = "statement".to_string();
     let mut rule_min3: String = "name must be at least 3 characters".to_string();
     let mut rule_no_option: String = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types".to_string();
     let mut rule_pascal: String = "name must be PascalCase (start with uppercase letter)".to_string();
@@ -2660,6 +2741,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_untyped_enum_eq: String = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants".to_string();
     let mut rule_non_primitive_validator: String = "validator base type must be a primitive (int, float, string, bool) — structs, list shapes, and other validator types cannot be used".to_string();
     let mut rule_validator_missing_body: String = "validator type is missing a predicate body — add an indented block that returns a bool, e.g. 'return val > 0'".to_string();
+    let mut rule_missing_return_expr: String = "looks like a value meant to be returned, but 'return' is missing — only a function body that's a single expression implicitly returns; add 'return' here".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
     let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
     let mut rule_type_param_shadow: String = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num'".to_string();
@@ -5584,6 +5666,142 @@ fn validate_tokens(tokens: TokensRef) {
                             if kind == "LPAREN" {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
                                 errors.push(val_err(return_type_token.clone(), lbl_fn.clone(), rule_no_ret.clone()).clone());
+                            }
+                        }
+                    }
+                }
+            }
+            // macro: check_missing_return_expr (transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                fn locate_fn_return_type(kw_pos: i64) -> i64 {
+                    return kw_pos + 1;
+                }
+                fn locate_fn_name(kw_pos: i64) -> i64 {
+                    return kw_pos + 2;
+                }
+                fn locate_fn_left_paren(kw_pos: i64) -> i64 {
+                    return kw_pos + 3;
+                }
+                if cur_kind == "KW_FN" {
+                    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                    let mut return_type_pos: i64 = locate_fn_return_type(pos.clone());
+                    let mut name_pos: i64 = locate_fn_name(pos.clone());
+                    let mut left_paren_pos: i64 = locate_fn_left_paren(pos.clone());
+                    if left_paren_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                        let mut return_type_token: Token = tokens[return_type_pos as usize].clone();
+                        let mut kind = return_type_token.kind.clone();
+                        let mut value = return_type_token.value.clone();
+                        let mut has_ret_type: bool = kind == "IDENT";
+                        let mut is_void: bool = value == "void";
+                        let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
+                        let mut kind = left_paren_token.kind.clone();
+                        let mut is_call_shape: bool = kind == "LPAREN";
+                        if has_ret_type && !is_void && is_call_shape {
+                            // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                            let mut right_paren_pos: i64 = find_matching_rparen(tokens.clone(), left_paren_pos.clone());
+                            let mut newline_pos: i64 = right_paren_pos + 1;
+                            if newline_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                let mut newline_token: Token = tokens[newline_pos as usize].clone();
+                                let mut kind = newline_token.kind.clone();
+                                if kind == "NEWLINE" {
+                                    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                    let mut indent_pos: i64 = newline_pos + 1;
+                                    if indent_pos < token_count {
+                                        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                        let mut indent_token: Token = tokens[indent_pos as usize].clone();
+                                        let mut kind = indent_token.kind.clone();
+                                        if kind == "INDENT" {
+                                            // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                            let mut body_first_pos: i64 = indent_pos + 1;
+                                            let mut body_end_pos: i64 = find_block_end_ref(tokens.clone(), indent_pos.clone());
+                                            if body_first_pos < body_end_pos {
+                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                let mut first_nl_pos: i64 = first_depth0_newline(tokens.clone(), body_first_pos.clone(), body_end_pos.clone());
+                                                let mut is_single_stmt: bool = false;
+                                                let mut found_nl: bool = first_nl_pos < body_end_pos;
+                                                if found_nl {
+                                                    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                    let mut after_first_nl: i64 = first_nl_pos + 1;
+                                                    is_single_stmt = after_first_nl == body_end_pos;
+                                                }
+                                                if !is_single_stmt {
+                                                    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                    let mut scan_pos: i64 = body_first_pos.clone();
+                                                    while scan_pos < body_end_pos {
+                                                        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                        let mut at_boundary: bool = scan_pos == body_first_pos;
+                                                        if !at_boundary {
+                                                            // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                            let mut prev_pos: i64 = scan_pos - 1;
+                                                            let mut prev_token: Token = tokens[prev_pos as usize].clone();
+                                                            let mut kind = prev_token.kind.clone();
+                                                            let mut prev_kind: String = kind.clone();
+                                                            let mut prev_is_boundary: bool = prev_kind == "NEWLINE";
+                                                            if !prev_is_boundary {
+                                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                prev_is_boundary = prev_kind == "INDENT";
+                                                            }
+                                                            if !prev_is_boundary {
+                                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                prev_is_boundary = prev_kind == "DEDENT";
+                                                            }
+                                                            at_boundary = prev_is_boundary;
+                                                        }
+                                                        if at_boundary {
+                                                            // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                            let mut stmt_token: Token = tokens[scan_pos as usize].clone();
+                                                            let mut kind = stmt_token.kind.clone();
+                                                            let mut stmt_kind: String = kind.clone();
+                                                            let mut is_candidate: bool = stmt_kind == "IDENT";
+                                                            if !is_candidate {
+                                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                is_candidate = stmt_kind == "INT";
+                                                            }
+                                                            if !is_candidate {
+                                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                is_candidate = stmt_kind == "FLOAT";
+                                                            }
+                                                            if !is_candidate {
+                                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                is_candidate = stmt_kind == "STRING";
+                                                            }
+                                                            if !is_candidate {
+                                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                is_candidate = stmt_kind == "KW_TRUE";
+                                                            }
+                                                            if !is_candidate {
+                                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                is_candidate = stmt_kind == "KW_FALSE";
+                                                            }
+                                                            if is_candidate {
+                                                                // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                let mut next_pos: i64 = scan_pos + 1;
+                                                                if next_pos < body_end_pos {
+                                                                    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                    let mut next_token: Token = tokens[next_pos as usize].clone();
+                                                                    let mut kind = next_token.kind.clone();
+                                                                    let mut is_bare_expr: bool = starts_binary_op(kind.clone());
+                                                                    if !is_bare_expr {
+                                                                        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                        is_bare_expr = kind == "NEWLINE";
+                                                                    }
+                                                                    if is_bare_expr {
+                                                                        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
+                                                                        errors.push(val_err(stmt_token.clone(), lbl_stmt.clone(), rule_missing_return_expr.clone()).clone());
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        scan_pos = scan_pos + 1;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

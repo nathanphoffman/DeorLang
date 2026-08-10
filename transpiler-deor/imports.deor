@@ -139,6 +139,7 @@ import "transpiler-deor/tokens_validator/macros/declarations/check_struct_decl.d
 import "transpiler-deor/tokens_validator/macros/declarations/check_enum_decl.deor"
 import "transpiler-deor/tokens_validator/macros/declarations/check_shape_decl.deor"
 import "transpiler-deor/tokens_validator/macros/declarations/check_type_decl.deor"
+import "transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor"
 import "transpiler-deor/tokens_validator/macros/declarations/check_fn_decl.deor"
 import "transpiler-deor/tokens_validator/macros/check_misc_token_rules.deor"
 import "transpiler-deor/tokens_validator/macros/check_ident_token_rules.deor"

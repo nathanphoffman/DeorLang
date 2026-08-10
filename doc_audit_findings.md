@@ -87,12 +87,15 @@ Fixed:
    so it falls through to a catch-all that emits `/* unhandled(IDENT) */` per token.
    Transpiles with exit 0; fails `rustc` with a type mismatch. Every single-expression-body
    example in the doc is affected. Explicit `return` works fine. No validator catches a
-   function body missing a `return` at its exit point either — same broken-codegen result
-   (this narrower remaining gap — a multi-statement body missing `return` at an exit point —
-   is still open; only the single-expression-body case described above is fixed). Fixed by
-   detecting a single-bare-expression function body in `fn_build_body_ctx.deor` (before
-   `gen_block`/`gen_stmt` ever see it) and emitting it as an explicit `return` in
-   `fn_emit.deor`. Regression test: `implicit_return_test.deor`.
+   function body missing a `return` at its exit point either — same broken-codegen result.
+   Fixed in two parts: (1) detecting a single-bare-expression function body in
+   `fn_build_body_ctx.deor` (before `gen_block`/`gen_stmt` ever see it) and emitting it as
+   an explicit `return` in `fn_emit.deor` — regression test `implicit_return_test.deor`;
+   (2) a new `check_missing_return_expr.deor` validator that flags a bare expression
+   statement anywhere inside a function body (any nesting depth) that has more than one
+   statement, since that's not the documented implicit-return shape and used to hit the
+   same silent `/* unhandled */` codegen fallback — regression test
+   `missing_return_expr_test.deor`.
 
 
 In Progress:

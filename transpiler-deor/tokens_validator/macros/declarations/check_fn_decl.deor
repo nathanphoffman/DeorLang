@@ -2,6 +2,7 @@
 # count/shadowing, return type presence, top-level-only placement).
 macro check_fn_decl
 	macro_run check_fn_declaration
+	macro_run check_missing_return_expr
 
 	string keyword = "KW_FN"
 	string lbl = lbl_fn

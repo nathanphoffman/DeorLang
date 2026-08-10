@@ -1,0 +1,25 @@
+# missing_return_expr_test.deor
+# Exercises check_missing_return_expr: a bare expression statement (not the
+# function's only statement) used to fall through gen_stmt's dispatcher into a
+# silent '/* unhandled */' codegen fallback instead of a clear diagnostic — the
+# second half of the docs' "Return Rules" contract (a multi-statement body
+# requires explicit 'return' at every exit point) had nothing enforcing it. Covers
+# a trailing bare expression at the end of a multi-statement body, and one nested
+# inside an if branch — both hit the same broken-codegen path. See
+# implicit_return_test.deor for the single-statement case this must NOT flag.
+
+fn int trailing_bare_expr(int left, int right)
+	int total = left + right
+	total
+
+fn int nested_bare_expr(int val)
+	if val > 0
+		val * 2
+	return 0
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 13: statement 'total' - looks like a value meant to be returned, but 'return' is missing
+# line 17: statement 'val' - looks like a value meant to be returned, but 'return' is missing
