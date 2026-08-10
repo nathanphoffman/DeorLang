@@ -71,6 +71,13 @@ fn string test_terminal_dispatch(string kind, string value)
 		return value
 	return "none"
 
+fn void test_construct_via_move()
+	label as "high"
+	int points = 100
+	Score built = move (label, points)
+	(label) in built
+	print(label)
+
 fn void main()
 	test_copy_move()
 	test_sjoin_move()
@@ -81,6 +88,7 @@ fn void main()
 	string dispatch_kind = "BBB"
 	string dispatch_val = "kept"
 	print(test_terminal_dispatch(dispatch_kind, dispatch_val))
+	test_construct_via_move()
 
 # expect:
 # 5
@@ -91,3 +99,4 @@ fn void main()
 # two
 # 5
 # kept
+# high

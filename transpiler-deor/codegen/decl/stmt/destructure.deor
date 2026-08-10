@@ -18,6 +18,9 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 
+	string hoist_suffix = ".clone()"
+	macro_run hoist_multi_field_source
+
 	string field_suffix = ".clone();"
 	macro_run for_build_fields
 
@@ -42,6 +45,9 @@ fn ParseResult gen_move_destructure(int pos, int depth, RcCtx ctx)
 	int field_count = len(fields)
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
+
+	string hoist_suffix = ""
+	macro_run hoist_multi_field_source
 
 	string field_suffix = ";"
 	macro_run for_build_fields

@@ -1,0 +1,30 @@
+# Shared by gen_destructure/gen_move_destructure. for_build_fields emits one line per
+# field, each re-embedding val_code as the receiver ('val_code.field.clone()' /
+# 'val_code.field'). That's harmless when val_code is just a bare variable reference,
+# but when it's a call expression — '(quotient, remainder) in divmod(a, b)', docs/
+# functions.md's own multi-return example — re-embedding it verbatim in 2+ field lines
+# calls divmod() once per field instead of once total: a real correctness risk for any
+# function with side effects, not just wasted work. Hoist the source into a synthetic
+# local exactly once when there's more than one field to destructure, and point
+# val_code at that local instead — for_build_fields then reads from it same as before,
+# unaware anything changed. A single-field destructure only ever embeds val_code once
+# regardless, so it's left untouched. The synthetic name is safe to reuse verbatim
+# across every destructure site in the file: each is a fresh `let`, which shadows
+# rather than collides in Rust, and it never needs to satisfy Deor's own identifier
+# rules since it's emitted directly as Rust text, never re-parsed as Deor source.
+# Set hoist_suffix immediately before `macro_run hoist_multi_field_source`: "" for the
+# move form (gen_move_destructure fully consumes the source anyway) or ".clone()" for
+# the clone form (gen_destructure) — without it, a bare-variable source (the common
+# case: '(f1, f2) in some_struct') would get moved wholesale into the temp instead of
+# read from field-by-field like the original per-field '.clone()' calls always did,
+# making the source variable itself unusable afterward — a regression this fix must
+# not introduce for the case it wasn't even trying to change.
+macro hoist_multi_field_source
+	if field_count > 1
+		string hoist_let = "let "
+		string hoist_name = "__destructure_src"
+		string hoist_eq = " = "
+		string hoist_sc = ";"
+		string hoist_line = s_join([pad, hoist_let, hoist_name, hoist_eq, val_code, hoist_suffix, hoist_sc])
+		dest_lines at end = hoist_line
+		val_code = hoist_name

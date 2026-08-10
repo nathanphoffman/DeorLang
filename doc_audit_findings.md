@@ -98,20 +98,25 @@ Fixed:
    `missing_return_expr_test.deor`.
 
 
-In Progress:
-8. **Destructuring a multi-return-value call invokes the function twice, not once.**
-   `docs/functions.md`'s multi-return example (`(quotient, remainder) in divmod(a, b)`)
-   generates code that calls `divmod` once per destructured field. Real correctness risk
-   for any function with side effects (I/O, mutation, `crash()`, etc.) — silent, no
-   warning anywhere.
-
 9. **`Type x = move (f1, f2)` struct construction isn't tracked by use-after-move.**
    `docs/move.md`'s own "Struct Construction via move" example
    (`Score built = move (label, points)`) doesn't get flagged by Deor's use-after-move
    checker if `label`/`points` are read afterward — only bare `move IDENT` and
    `move (...) in source` forms are recognized
    (`check_use_after_move_var_move.deor`, `check_use_after_move_field.deor`). Passes Deor,
-   fails later at `rustc` with `E0382`.
+   fails later at `rustc` with `E0382`. Fixed by extending `check_use_after_move_var_move.deor`
+   to also mark each field moved for `Type x = move (f1, f2)` (gated on the token before
+   `KW_MOVE` being `EQUALS`, so it can't misfire on the unrelated `for move (item in
+   collection)` loop form or the `move (...) in source` destructure form, both of which
+   also start with `move (`). Also had to extend `check_use_after_move_var_ident.deor`'s
+   skip/clear logic for the same reason: fields inside the construction's parens must not
+   be flagged as reads of what was just marked moved a few tokens earlier in the same
+   pass, and — a related latent gap this exposed — destructuring a name back out of a
+   struct (`(label) in built`) must clear that name's moved status even when it shadows an
+   already-moved variable declared earlier under the same name. Regression tests: two new
+   cases in `use_after_move_test.deor` (read/double-move after construction) and one in
+   `use_after_move_happy_test.deor` (construct, then destructure-shadow the same name back
+   out and read it — must NOT be flagged).
 
 10. **Direct struct field assignment (`thing.field = val`) doesn't get a clean error — it
     silently corrupts codegen for that line *and* the following statement.**
@@ -120,7 +125,32 @@ In Progress:
     already-declared local variable, the reassignment-tracking logic misfires on the token
     after the dot as if it were a fresh statement. Verified: produced a nonsense type
     (`let mut occupied: Kitchen = false;`) and a mangled `println!` on the following line.
-    Fails `rustc` with unrelated errors instead of one clear Deor diagnostic.
+    Fails `rustc` with unrelated errors instead of one clear Deor diagnostic. Root cause was
+    one level deeper than the description above suggests: the lexer didn't emit any token
+    at all for a bare `.` outside a number literal (silently dropped instead of erroring),
+    which is what let `field` look like the start of a fresh statement in the first place.
+    Fixed by adding `.` to `emit_operator_token.deor`'s `op_invalid_chars` list, so the
+    existing `check_invalid_char` validator now catches it immediately and cleanly —
+    confirmed float literals (`3.14`) are unaffected, since those are consumed entirely
+    inside `scan_number` before `emit_operator_token` ever sees the `.`. Regression test:
+    `field_assignment_dot_test.deor`.
+
+8. **Destructuring a multi-return-value call invokes the function twice, not once.**
+   `docs/functions.md`'s multi-return example (`(quotient, remainder) in divmod(a, b)`)
+   generates code that calls `divmod` once per destructured field. Real correctness risk
+   for any function with side effects (I/O, mutation, `crash()`, etc.) — silent, no
+   warning anywhere. Fixed via a new shared `hoist_multi_field_source.deor`, used by both
+   `gen_destructure` and `gen_move_destructure`: when destructuring more than one field
+   (a single-field destructure only ever embedded the source once regardless, so it's
+   untouched), the source expression is now evaluated exactly once into a synthetic local
+   (`.clone()`'d for the clone form so a plain-variable source like `(f1, f2) in
+   some_struct` still just reads from it rather than moving it wholesale — a regression
+   caught by `struct_test.deor`/`typed_with_test.deor` during fixing, both destructure a
+   bare struct variable and use it again afterward; not `.clone()`'d for the move form,
+   which already fully consumes the source), and each field line reads from that local
+   instead of re-embedding the original expression. Regression test:
+   `destructure_call_once_test.deor` (call-once for both the clone and move forms, plus
+   confirms single-field and plain-variable-source destructuring are unaffected).
 
 ---
 

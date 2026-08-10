@@ -1,0 +1,85 @@
+# destructure_call_once_test.deor
+# Exercises hoist_multi_field_source.deor: destructuring 2+ fields from a function
+# call — docs/functions.md's own multi-return example, '(quotient, remainder) in
+# divmod(a, b)' — used to call the source function once PER destructured field
+# instead of once total, since for_build_fields re-embeds the source expression's
+# generated code verbatim in every field's line. Real correctness risk for any
+# function with side effects, not just wasted work — proven here with a call that
+# prints, confirming it only prints once. Also covers the 'move (...) in call()'
+# form, and confirms a single-field destructure (which was never affected, since it
+# only ever embeds the source once regardless) and a plain-variable multi-field
+# destructure (which must keep working exactly as before — no accidental move of the
+# source, still just a read) are both unaffected by the fix.
+
+struct DivResult
+	int quotient
+	int remainder
+
+struct Pair
+	string first
+	string second
+
+struct Room
+	int area
+
+fn DivResult divmod(int left, int right)
+	int quotient = left / right
+	int remainder = left % right
+	return (quotient, remainder)
+
+fn Pair make_pair()
+	print("make_pair called")
+	first as "a"
+	second as "b"
+	return (first, second)
+
+fn Room make_room()
+	print("make_room called")
+	int area = 42
+	return (area)
+
+fn void test_call_once_clone_form()
+	num as 17
+	div as 5
+	(quotient, remainder) in divmod(num, div)
+	print(quotient)
+	print(remainder)
+
+fn void test_call_once_move_form()
+	move (first, second) in make_pair()
+	print(first)
+	print(second)
+
+fn void test_single_field_call_unaffected()
+	(area) in make_room()
+	print(area)
+
+fn void test_plain_variable_source_unaffected()
+	num as 20
+	div as 6
+	DivResult result = divmod(num, div)
+	(quotient, remainder) in result
+	print(quotient)
+	print(remainder)
+	# result must still be usable afterward — the clone-form hoist must read from
+	# it, not move it, even though it's now hoisted into a temp for the destructure
+	(quotient) in result
+	print(quotient)
+
+fn void main()
+	test_call_once_clone_form()
+	test_call_once_move_form()
+	test_single_field_call_unaffected()
+	test_plain_variable_source_unaffected()
+
+# expect:
+# 3
+# 2
+# make_pair called
+# a
+# b
+# make_room called
+# 42
+# 3
+# 2
+# 3

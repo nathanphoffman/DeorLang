@@ -105,3 +105,40 @@ macro check_use_after_move_var_move
 						errors at end = val_err(next_token, lbl_var, rule_double_move)
 					else
 						moved_vars at end = value
+			else if kind is "LPAREN"
+				# Type name = move (f1, f2, ...) — struct construction via move (see
+				# docs/move.md#struct-construction): each named field is moved INTO the
+				# new struct. 'move (' also introduces two other, unrelated shapes that
+				# must NOT be treated as construction: 'move (f1, f2) in source' (partial
+				# destructure FROM an existing struct, tracked separately by
+				# check_use_after_move_field.deor's field-level moved_fields) and
+				# 'for move (item in collection)' (loop consumption, handled by
+				# check_use_after_move_var_for.deor — 'in' sits INSIDE these parens, not
+				# after them, so it can't be told apart from construction by peeking past
+				# the closing paren the way the destructure form can). The one token that
+				# reliably marks construction specifically is what precedes this KW_MOVE:
+				# only the '= move (...)' RHS position has EQUALS there — a destructure
+				# statement starts its own line (NEWLINE/INDENT before it), and a for-loop
+				# has KW_FOR before it.
+				bool is_construct_position = false
+				if pos > 0
+					int before_move_pos = locate_prev_token(pos)
+					Token before_move_token = tokens at before_move_pos
+					(kind) in before_move_token
+					if kind is "EQUALS"
+						is_construct_position = true
+				if is_construct_position
+					int construct_rparen_pos = find_matching_rparen(tokens, next_pos)
+					int construct_scan_pos = next_pos + 1
+					for if construct_scan_pos < construct_rparen_pos
+						Token construct_scan_token = tokens at construct_scan_pos
+						(kind, value) in construct_scan_token
+						if kind is "IDENT"
+							bool field_is_copy = list_has(copy_var_names, value)
+							if not field_is_copy
+								bool field_already_moved = list_has(moved_vars, value)
+								if field_already_moved
+									errors at end = val_err(construct_scan_token, lbl_var, rule_double_move)
+								else
+									moved_vars at end = value
+						construct_scan_pos = construct_scan_pos + 1

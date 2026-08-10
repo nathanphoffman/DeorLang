@@ -53,6 +53,18 @@ fn void test_redestructure_moved_field()
 	move (label, points) in score
 	move (label) in score
 
+fn void test_read_after_move_construct()
+	label as "high"
+	int points = 100
+	Score built = move (label, points)
+	print(label)
+
+fn void test_double_move_via_construct()
+	label as "high"
+	int points = 100
+	Score first_built = move (label, points)
+	Score second_built = move (label, points)
+
 fn void main()
 	test_read_after_move()
 	test_double_move()
@@ -60,6 +72,8 @@ fn void main()
 	test_move_in_one_arm_then_read_after_chain()
 	test_move_in_elseif_arm_then_read_after_chain()
 	test_redestructure_moved_field()
+	test_read_after_move_construct()
+	test_double_move_via_construct()
 
 # expect-error:
 # line 18: variable 'message' - used here but already moved earlier
@@ -68,3 +82,5 @@ fn void main()
 # line 37: variable 'val_b' - used here but already moved earlier
 # line 47: variable 'val_c' - used here but already moved earlier
 # line 54: variable 'score.label' - already moved earlier
+# line 60: variable 'label' - used here but already moved earlier
+# line 66: variable 'label' - already moved earlier

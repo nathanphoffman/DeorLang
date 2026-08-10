@@ -34,7 +34,7 @@ macro emit_operator_token
 	string op_val_rb = "]"
 	string op_kind_cm = "COMMA"
 	string op_val_cm = ","
-	strList op_invalid_chars = ["&", "|", "^", "!", "{", "}"]
+	strList op_invalid_chars = ["&", "|", "^", "!", "{", "}", "."]
 	int op_peek_idx = char_index + 1
 	string op_peek = ""
 

@@ -1,0 +1,27 @@
+# field_assignment_dot_test.deor
+# Exercises the lexer's handling of a bare '.' outside a number literal —
+# docs/immutability.md says "No field-assignment syntax exists" for structs, but
+# nothing previously rejected 'thing.field = val' cleanly. The '.' character wasn't
+# in op_invalid_chars, so it was silently dropped by the lexer with no token emitted
+# at all, leaving 'thing' and 'field = val' looking like two unrelated statements —
+# when 'field' happened to coincide with an already-declared local variable (as
+# 'occupied' does below, shadowing the struct's own field name), the reassignment
+# tracker misfired on it as a fresh statement, corrupting codegen for that line
+# ('let mut occupied: Kitchen = true;' — nonsense) and the next. Confirms float
+# literals ('3.14') are unaffected, since those are consumed entirely inside
+# scan_number before emit_operator_token ever sees the '.'.
+
+struct Kitchen
+	bool occupied
+	string name
+
+fn void main()
+	occupied as false
+	name as "main"
+	Kitchen kitchen = (occupied, name)
+	bool occupied = true
+	kitchen.occupied = true
+	print("after")
+
+# expect-error:
+# line 23: identifier '.' - character is not valid in Deor

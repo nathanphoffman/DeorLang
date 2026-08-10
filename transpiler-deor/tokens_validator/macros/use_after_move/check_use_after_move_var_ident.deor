@@ -100,6 +100,73 @@ macro check_use_after_move_var_ident
 				if kind is "KW_RAW"
 					skip_read = true
 
+			# Inside an unclosed paren group that's either preceded by KW_MOVE
+			# ('move (f1, f2)' construction or 'move (f1, f2) in source') or whose
+			# closing paren is followed by KW_IN ('(f1, f2) in source', with or
+			# without 'move') is always a destructure/construction TARGET LIST, never
+			# a read: construction fields are what check_use_after_move_var_move.deor
+			# just marked moved in this same pass (a few tokens back, at the KW_MOVE
+			# position), which would otherwise make this very read-check flag them as
+			# already-moved before the statement even finishes; a plain destructure's
+			# names are fresh bindings, even when they happen to shadow an
+			# already-moved name from earlier in the same scope (e.g. re-destructuring
+			# 'label' back out of a struct that was just built by moving a variable
+			# also named 'label' into it) — a function call's argument parens are the
+			# only other paren shape an IDENT sits directly inside of, and those match
+			# neither condition (preceded by the callee name, not KW_MOVE; followed by
+			# whatever comes after the call, essentially never KW_IN).
+			bool in_destructure_target = false
+			bool dt_followed_by_in = false
+			int dt_scan_pos = pos - 1
+			int dt_scan_depth = 0
+			bool dt_found_enclosing = false
+			int dt_lparen_pos = 0
+			for if dt_scan_pos >= 0
+				Token dt_scan_token = tokens at dt_scan_pos
+				(kind) in dt_scan_token
+				if kind is "NEWLINE"
+					break
+				if kind is "RPAREN"
+					dt_scan_depth = dt_scan_depth + 1
+				else if kind is "LPAREN"
+					if dt_scan_depth is 0
+						dt_found_enclosing = true
+						dt_lparen_pos = dt_scan_pos
+						break
+					else
+						dt_scan_depth = dt_scan_depth - 1
+				dt_scan_pos = dt_scan_pos - 1
+			if dt_found_enclosing
+				bool dt_preceded_by_move = false
+				if dt_lparen_pos > 0
+					int dt_before_lparen = dt_lparen_pos - 1
+					Token dt_before_lparen_token = tokens at dt_before_lparen
+					(kind) in dt_before_lparen_token
+					if kind is "KW_MOVE"
+						dt_preceded_by_move = true
+				int dt_rparen_pos = find_matching_rparen(tokens, dt_lparen_pos)
+				int dt_after_rparen = dt_rparen_pos + 1
+				if dt_after_rparen < token_count
+					Token dt_after_rparen_token = tokens at dt_after_rparen
+					(kind) in dt_after_rparen_token
+					if kind is "KW_IN"
+						dt_followed_by_in = true
+				if dt_preceded_by_move or dt_followed_by_in
+					in_destructure_target = true
+			if in_destructure_target
+				if dt_followed_by_in
+					# A binding TARGET receiving a freshly extracted value (both plain
+					# '(f1, f2) in source' and 'move (f1, f2) in source' land here) — same
+					# clearing as the is_binding branch above, since a fresh value now
+					# occupies this name even if it happens to shadow an already-moved
+					# variable declared earlier under the same name.
+					string dt_name = cur_val
+					string dt_field_prefix = s_join([dt_name, "."])
+					rust
+						moved_vars.retain(|x| x != &dt_name);
+						moved_fields.retain(|x| !x.starts_with(&dt_field_prefix));
+				skip_read = true
+
 			if not skip_read
 				bool was_moved = list_has(moved_vars, cur_val)
 				if was_moved
