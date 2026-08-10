@@ -227,6 +227,8 @@ import "rooms.deor"
 | `shape filterFunc = func of Room to bool` | `type FilterFunc = fn(Room) -> bool;` |
 | `shape handlerFunc = func of Error` | `type HandlerFunc = fn(Error);` |
 | `roomList result = empty` | `let mut result: Vec<Room> = Vec::new();` |
-| `filter(rooms, by_name)` | `filter(&rooms, by_name)` |
+| `filter(rooms, by_name)` | `filter(rooms.clone(), by_name.clone())` |
+
+A list argument is passed by value, not by reference — like any other named-variable call argument, it's cloned at the call site (see [Enforced Practices](docs/enforced_practices.md#named-arguments-user-defined-functions-only)). There is no reference-passing codegen for list shapes.
 
 Func shapes use Rust `fn` pointers, not closures — they cannot capture environment, consistent with Deor's no-lambda rule.

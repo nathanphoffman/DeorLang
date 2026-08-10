@@ -78,7 +78,10 @@ makes `m_sqrt` return NaN, `m_floor` turns that into `0`, and `0 * 0 is val` fai
 
 ```deor
 Squarefeet area = 9     # valid — predicate passes
-Squarefeet area = -1    # transpiles and compiles fine — not valid only at runtime
+Squarefeet area = -1    # transpiles, but fails at rustc (E0061) — negative literals hit a
+                         # separate, pre-existing gap: unary minus has no codegen for a
+                         # validator constructor argument, so the arg is emitted as
+                         # `/* unknown_primary */` instead of `-1`
 ```
 
 ---
@@ -242,4 +245,4 @@ if crit is valid
 - `(avow val)` → `.unwrap().0`.
 - Equality (`is` / `is not`) transpiles to `==` / `!=` in Rust and falls through to `Option<T>: PartialEq` — `None == None` is true, `Some(x) == Some(y)` compares inner values structurally.
 - `and` / `or` / `not` map to `&&` / `||` / `!`.
-- The predicate always runs at runtime inside `new()` — even for literals like `Squarefeet area = -1`. There is no compile-time evaluation of the predicate, but it is runtime validated.
+- The predicate always runs at runtime inside `new()` — even for literals like `Squarefeet area = 9`. There is no compile-time evaluation of the predicate, but it is runtime validated. (Negative literals are a special case — see the `-1` note above.)

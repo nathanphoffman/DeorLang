@@ -95,11 +95,13 @@ fn StringMap h_make()
         StringMap(std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new())))
 ```
 
-Once `StringMap` is registered this way, callers don't even write `raw` again — they just use it like any other declared type:
+Once `StringMap` is registered this way, callers don't even write `raw` again — they just use it like any other declared type. Note that `h_set` takes 3 arguments, so — like any call with 2 or more arguments — each one must already be a named variable, not a literal (see [Enforced Practices — Named Arguments](docs/enforced_practices.md#named-arguments-user-defined-functions-only)):
 
 ```deor
 StringMap config = h_make()
-config = h_set(config, "host", "localhost")
+string host_key = "host"
+string host_val = "localhost"
+config = h_set(config, host_key, host_val)
 ```
 
 Every function that takes a `StringMap` parameter is handed the same underlying `Arc<Mutex<...>>`, not a copy of the map.

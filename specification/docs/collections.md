@@ -33,9 +33,9 @@ int last = scores at 3     # 40
 
 Rust:
 ```rust
-let scores: Vec<i64> = vec![10, 20, 30, 40];
-let first: i64 = scores[0];
-let last: i64 = scores[3];
+let scores: Vec<i64> = vec![10.clone(), 20.clone(), 30.clone(), 40.clone()];
+let first: i64 = scores[0 as usize].clone();
+let last: i64 = scores[3 as usize].clone();
 ```
 
 Dynamic computed indices are fine:
@@ -46,7 +46,13 @@ int idx = 2
 int mid = scores at idx    # 30
 ```
 
-Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts on all index operations automatically.
+Rust:
+```rust
+let idx: i64 = 2;
+let mid: i64 = scores[idx as usize].clone();
+```
+
+Out-of-bounds access is a runtime panic. The transpiler inserts `as usize` casts and a trailing `.clone()` on all index reads automatically.
 
 ---
 ## Index Write
@@ -60,11 +66,11 @@ scores at idx = updated_score
 
 Rust:
 ```rust
-rooms[idx as usize] = new_room;
-scores[idx as usize] = updated_score;
+rooms[idx as usize] = new_room.clone();
+scores[idx as usize] = updated_score.clone();
 ```
 
-Out-of-bounds assignment is a runtime panic.
+Out-of-bounds assignment is a runtime panic. The right-hand side is always cloned, same as any other named-variable assignment.
 
 ---
 ## Append

@@ -181,7 +181,7 @@ and conversion notes.
 
 ## Recursion
 
-Functions may call themselves. Recursion follows the same rules as any other function call — arguments must be named variables in scope, and the 
+Functions may call themselves. Recursion follows the same rules as any other function call — when called with 2 or more arguments, every argument must already be a named variable in scope (see [Enforced Practices — Named Arguments](docs/enforced_practices.md#named-arguments-user-defined-functions-only); this is a general call-site rule, not specific to recursion), and the 
 return type must match.
 
 Deor:
