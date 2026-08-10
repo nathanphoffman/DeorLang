@@ -1,6 +1,10 @@
-# shape name: camelCase, min 3, plus the func-shape single-param constraint
+# shape name: camelCase, min 3, plus the func-shape single-param constraint and
+# referenced-type validation. Both sub-checks must run BEFORE validate_ident
+# below — validate_ident does an unconditional `pos = pos + 1; continue` on a
+# keyword match, which would otherwise skip them every time.
 macro check_shape_decl
 	macro_run check_func_shape_multi_param
+	macro_run check_shape_referenced_types
 
 	string keyword = "KW_SHAPE"
 	string lbl = lbl_shape

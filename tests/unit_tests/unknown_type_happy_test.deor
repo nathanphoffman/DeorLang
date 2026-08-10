@@ -1,0 +1,47 @@
+# unknown_type_happy_test.deor
+# Happy-path coverage for the general type-existence check (see unknown_type_test.deor
+# for the error cases): forward references between structs and shapes (structural
+# declarations may appear in any order relative to each other — see
+# docs/enforced_practices.md#ordering and docs/shapes.md#file-ordering), a raw type
+# used as an ordinary type once declared, and a func shape's explicit 'to void' output
+# form — none of these are real unknown types and must not be flagged.
+
+struct House
+	string address
+	Room main_room
+
+struct Room
+	string room_name
+
+shape roomList = list of Room
+
+shape sinkFunc = func of Room to void
+
+raw Counter
+
+rust
+	#[derive(Clone)]
+	struct Counter(i64);
+
+fn Counter make_counter()
+	rust
+		Counter(0)
+
+fn void main()
+	string room_name = "kitchen"
+	Room main_room = (room_name)
+	string address = "123 Main St"
+	House the_house = (address, main_room)
+	(address) in the_house
+	print(address)
+
+	roomList items = empty
+	print("ok")
+
+	Counter counter_val = make_counter()
+	print("counted")
+
+# expect:
+# 123 Main St
+# ok
+# counted

@@ -1,0 +1,87 @@
+
+# Flags a shape declaration (`list of T`, `func of A to B`) whose referenced
+# element/input/output type isn't a real known type (primitive, struct, shape,
+# raw type, validator type, or untyped enum) — without this, an unknown type
+# name here transpiles clean and only fails later at rustc with "cannot find
+# type". Runs in the main validation loop, after both prescan passes have
+# fully populated declared_type_names — shapes and structs may reference each
+# other freely regardless of declaration order (see
+# docs/shapes.md#file-ordering), so this can't run inside
+# prescan_collect_type_names itself, which is still building
+# declared_type_names as it walks the file — a valid forward reference would be
+# flagged as unknown mid-scan.
+macro check_shape_referenced_types
+	# ex: shape Foo = {list} of T / {func} of A to B — kw_pos+3 grabs the form keyword
+	fn int locate_shape_form(int kw_pos)
+		return kw_pos + 3
+
+	# ex: shape Foo = list of {T} — kw_pos+5 grabs the list element type
+	fn int locate_list_elem(int kw_pos)
+		return kw_pos + 5
+
+	# ex: shape Foo = func {of} A to B — kw_pos+4 checks for an of-clause
+	fn int locate_func_of_or_to(int kw_pos)
+		return kw_pos + 4
+
+	# ex: shape Foo = func of {A} to B — kw_pos+5 grabs the input type
+	fn int locate_func_in_type(int kw_pos)
+		return kw_pos + 5
+
+	# ex: shape Foo = func of A {to} B — kw_pos+6 checks for a to-clause
+	fn int locate_func_to_after_of(int kw_pos)
+		return kw_pos + 6
+
+	# ex: shape Foo = func of A to {B} — kw_pos+7 grabs the output type
+	fn int locate_func_out_type_after_of(int kw_pos)
+		return kw_pos + 7
+
+	# ex: shape Foo = func to {B} — no of-clause, kw_pos+5 grabs the output type
+	fn int locate_func_out_type_after_to(int kw_pos)
+		return kw_pos + 5
+
+	if cur_kind is "KW_SHAPE"
+		int form_pos = locate_shape_form(pos)
+		if form_pos < token_count
+			Token form_token = tokens at form_pos
+			(kind) in form_token
+			if kind is "KW_LIST"
+				int elem_pos = locate_list_elem(pos)
+				if elem_pos < token_count
+					Token elem_token = tokens at elem_pos
+					(value) in elem_token
+					bool is_known_elem_type = list_has(primitive_type_names, value) or list_has(declared_type_names, value)
+					if not is_known_elem_type
+						errors at end = val_err(elem_token, lbl_shape, rule_unknown_type)
+			else if kind is "KW_FUNC"
+				int of_or_to_pos = locate_func_of_or_to(pos)
+				if of_or_to_pos < token_count
+					Token of_or_to_token = tokens at of_or_to_pos
+					(kind) in of_or_to_token
+					if kind is "KW_OF"
+						int in_type_pos = locate_func_in_type(pos)
+						if in_type_pos < token_count
+							Token in_type_token = tokens at in_type_pos
+							(value) in in_type_token
+							bool is_known_in_type = list_has(primitive_type_names, value) or list_has(declared_type_names, value)
+							if not is_known_in_type
+								errors at end = val_err(in_type_token, lbl_shape, rule_unknown_type)
+						int to_pos = locate_func_to_after_of(pos)
+						if to_pos < token_count
+							Token to_token = tokens at to_pos
+							(kind) in to_token
+							if kind is "KW_TO"
+								int out_type_pos = locate_func_out_type_after_of(pos)
+								if out_type_pos < token_count
+									Token out_type_token = tokens at out_type_pos
+									(value) in out_type_token
+									bool is_known_out_type = value is "void" or list_has(primitive_type_names, value) or list_has(declared_type_names, value)
+									if not is_known_out_type
+										errors at end = val_err(out_type_token, lbl_shape, rule_unknown_type)
+					else if kind is "KW_TO"
+						int out_type_pos = locate_func_out_type_after_to(pos)
+						if out_type_pos < token_count
+							Token out_type_token = tokens at out_type_pos
+							(value) in out_type_token
+							bool is_known_bare_out_type = value is "void" or list_has(primitive_type_names, value) or list_has(declared_type_names, value)
+							if not is_known_bare_out_type
+								errors at end = val_err(out_type_token, lbl_shape, rule_unknown_type)

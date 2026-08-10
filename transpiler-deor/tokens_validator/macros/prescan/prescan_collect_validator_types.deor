@@ -13,3 +13,4 @@ macro prescan_collect_validator_types
 			(kind, value) in name_token
 			if kind is "IDENT"
 				validator_type_names at end = value
+				declared_type_names at end = value

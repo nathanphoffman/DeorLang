@@ -2747,6 +2747,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters)".to_string();
     let mut rule_screaming: String = "const name must be SCREAMING_SNAKE_CASE (all caps, underscores between words)".to_string();
     let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args".to_string();
+    let mut rule_unknown_type: String = "not a known type — must be a primitive (int, float, string, bool), or a declared struct, shape, raw type, validator type, or untyped enum name".to_string();
     let mut rule_enum_pascal: String = "enum variant must be PascalCase".to_string();
     let mut rule_enum_data: String = "enum variants cannot carry data — use a struct alongside the enum instead".to_string();
     let mut rule_typed_enum_eq: String = "typed enum variant must have a value — add '= value' after the variant name".to_string();
@@ -2906,6 +2907,7 @@ fn validate_tokens(tokens: TokensRef) {
     // macro: prescan_shapes_and_validator_types (transpiler-deor/tokens_validator/macros/prescan/prescan_shapes_and_validator_types.deor)
     let mut func_shape_names: Vec<String> = Vec::new();
     let mut validator_type_names: Vec<String> = Vec::new();
+    let mut declared_type_names: Vec<String> = Vec::new();
     let mut pre_i: i64 = 0;
     while pre_i < token_count {
         // transpiler-deor/tokens_validator/macros/prescan/prescan_shapes_and_validator_types.deor
@@ -2963,6 +2965,56 @@ fn validate_tokens(tokens: TokensRef) {
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_validator_types.deor
                         validator_type_names.push(value.clone());
+                        declared_type_names.push(value.clone());
+                    }
+                }
+            }
+        }
+        // macro: prescan_collect_type_names (transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor)
+        {
+            // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+            fn locate_shape_name(kw_pos: i64) -> i64 {
+                return kw_pos + 1;
+            }
+            fn locate_raw_name(kw_pos: i64) -> i64 {
+                return kw_pos + 1;
+            }
+            if kind == "KW_SHAPE" {
+                // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+                let mut shape_name_pos: i64 = locate_shape_name(pre_i.clone());
+                if shape_name_pos < token_count {
+                    // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+                    let mut shape_name_token: Token = tokens[shape_name_pos as usize].clone();
+                    let __destructure_src = shape_name_token.clone();
+                    let mut kind = __destructure_src.kind.clone();
+                    let mut value = __destructure_src.value.clone();
+                    if kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+                        declared_type_names.push(value.clone());
+                    }
+                }
+            }
+            if kind == "KW_RAW" {
+                // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+                let mut raw_name_pos: i64 = locate_raw_name(pre_i.clone());
+                if raw_name_pos < token_count {
+                    // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+                    let mut raw_name_token: Token = tokens[raw_name_pos as usize].clone();
+                    let __destructure_src = raw_name_token.clone();
+                    let mut kind = __destructure_src.kind.clone();
+                    let mut value = __destructure_src.value.clone();
+                    if kind == "IDENT" {
+                        // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+                        let mut after_name_pos: i64 = raw_name_pos + 1;
+                        if after_name_pos < token_count {
+                            // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+                            let mut after_name_token: Token = tokens[after_name_pos as usize].clone();
+                            let mut kind = after_name_token.kind.clone();
+                            if kind == "NEWLINE" {
+                                // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
+                                declared_type_names.push(value.clone());
+                            }
+                        }
                     }
                 }
             }
@@ -3614,6 +3666,7 @@ fn validate_tokens(tokens: TokensRef) {
                     let mut fields_str: String = s_join_with(fields.clone(), sep.clone());
                     struct_field_reg.push(struct_name.clone());
                     struct_field_reg.push(fields_str.clone());
+                    declared_type_names.push(struct_name.clone());
                 }
             }
         }
@@ -3650,6 +3703,10 @@ fn validate_tokens(tokens: TokensRef) {
                     if kind == "IDENT" {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                         enum_names.push(value.clone());
+                        if !is_typed {
+                            // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
+                            declared_type_names.push(value.clone());
+                        }
                     }
                 }
                 while scan_pos < token_count {
@@ -5221,6 +5278,66 @@ fn validate_tokens(tokens: TokensRef) {
         }
         // macro: check_struct_decl (transpiler-deor/tokens_validator/macros/declarations/check_struct_decl.deor)
         {
+            // macro: check_struct_field_types (transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                fn locate_struct_name(kw_pos: i64) -> i64 {
+                    return kw_pos + 1;
+                }
+                if cur_kind == "KW_STRUCT" {
+                    // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                    let mut scan_pos: i64 = locate_struct_name(pos.clone());
+                    while scan_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                        let mut indent_scan_token: Token = tokens[scan_pos as usize].clone();
+                        let mut kind = indent_scan_token.kind.clone();
+                        if kind == "INDENT" {
+                            // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                            break;
+                        }
+                        scan_pos = scan_pos + 1;
+                    }
+                    scan_pos = scan_pos + 1;
+                    let mut depth: i64 = 0;
+                    while scan_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                        let mut scan_token: Token = tokens[scan_pos as usize].clone();
+                        let mut kind = scan_token.kind.clone();
+                        if kind == "INDENT" {
+                            // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                            depth = depth + 1;
+                        }
+                        if kind == "DEDENT" {
+                            // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                            if depth == 0 {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                                break;
+                            }
+                            depth = depth - 1;
+                        }
+                        if kind == "IDENT" {
+                            // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                            let mut value = scan_token.value.clone();
+                            let mut field_type: String = value.clone();
+                            let mut field_name_pos: i64 = scan_pos + 1;
+                            if field_name_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                                let mut field_name_token: Token = tokens[field_name_pos as usize].clone();
+                                let mut kind = field_name_token.kind.clone();
+                                if kind == "IDENT" {
+                                    // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                                    let mut is_known_field_type: bool = list_has(primitive_type_names.clone(), field_type.clone()) || list_has(declared_type_names.clone(), field_type.clone());
+                                    if !is_known_field_type {
+                                        // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
+                                        errors.push(val_err(scan_token.clone(), lbl_field.clone(), rule_unknown_type.clone()).clone());
+                                    }
+                                }
+                            }
+                        }
+                        scan_pos = scan_pos + 1;
+                    }
+                }
+            }
             // transpiler-deor/tokens_validator/macros/declarations/check_struct_decl.deor
             let mut validate_indent_offset: i64 = 1;
             let mut keyword: String = "KW_STRUCT".to_string();
@@ -5397,6 +5514,109 @@ fn validate_tokens(tokens: TokensRef) {
                                         if kind == "LPAREN" {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                             errors.push(val_err(tok.clone(), lbl_shape.clone(), rule_func_shape_multi_param.clone()).clone());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // macro: check_shape_referenced_types (transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                fn locate_shape_form(kw_pos: i64) -> i64 {
+                    return kw_pos + 3;
+                }
+                fn locate_list_elem(kw_pos: i64) -> i64 {
+                    return kw_pos + 5;
+                }
+                fn locate_func_of_or_to(kw_pos: i64) -> i64 {
+                    return kw_pos + 4;
+                }
+                fn locate_func_in_type(kw_pos: i64) -> i64 {
+                    return kw_pos + 5;
+                }
+                fn locate_func_to_after_of(kw_pos: i64) -> i64 {
+                    return kw_pos + 6;
+                }
+                fn locate_func_out_type_after_of(kw_pos: i64) -> i64 {
+                    return kw_pos + 7;
+                }
+                fn locate_func_out_type_after_to(kw_pos: i64) -> i64 {
+                    return kw_pos + 5;
+                }
+                if cur_kind == "KW_SHAPE" {
+                    // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                    let mut form_pos: i64 = locate_shape_form(pos.clone());
+                    if form_pos < token_count {
+                        // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                        let mut form_token: Token = tokens[form_pos as usize].clone();
+                        let mut kind = form_token.kind.clone();
+                        if kind == "KW_LIST" {
+                            // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                            let mut elem_pos: i64 = locate_list_elem(pos.clone());
+                            if elem_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                let mut elem_token: Token = tokens[elem_pos as usize].clone();
+                                let mut value = elem_token.value.clone();
+                                let mut is_known_elem_type: bool = list_has(primitive_type_names.clone(), value.clone()) || list_has(declared_type_names.clone(), value.clone());
+                                if !is_known_elem_type {
+                                    // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                    errors.push(val_err(elem_token.clone(), lbl_shape.clone(), rule_unknown_type.clone()).clone());
+                                }
+                            }
+                        } else if kind == "KW_FUNC" {
+                            // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                            let mut of_or_to_pos: i64 = locate_func_of_or_to(pos.clone());
+                            if of_or_to_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                let mut of_or_to_token: Token = tokens[of_or_to_pos as usize].clone();
+                                let mut kind = of_or_to_token.kind.clone();
+                                if kind == "KW_OF" {
+                                    // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                    let mut in_type_pos: i64 = locate_func_in_type(pos.clone());
+                                    if in_type_pos < token_count {
+                                        // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                        let mut in_type_token: Token = tokens[in_type_pos as usize].clone();
+                                        let mut value = in_type_token.value.clone();
+                                        let mut is_known_in_type: bool = list_has(primitive_type_names.clone(), value.clone()) || list_has(declared_type_names.clone(), value.clone());
+                                        if !is_known_in_type {
+                                            // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                            errors.push(val_err(in_type_token.clone(), lbl_shape.clone(), rule_unknown_type.clone()).clone());
+                                        }
+                                    }
+                                    let mut to_pos: i64 = locate_func_to_after_of(pos.clone());
+                                    if to_pos < token_count {
+                                        // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                        let mut to_token: Token = tokens[to_pos as usize].clone();
+                                        let mut kind = to_token.kind.clone();
+                                        if kind == "KW_TO" {
+                                            // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                            let mut out_type_pos: i64 = locate_func_out_type_after_of(pos.clone());
+                                            if out_type_pos < token_count {
+                                                // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                                let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
+                                                let mut value = out_type_token.value.clone();
+                                                let mut is_known_out_type: bool = value == "void" || list_has(primitive_type_names.clone(), value.clone()) || list_has(declared_type_names.clone(), value.clone());
+                                                if !is_known_out_type {
+                                                    // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                                    errors.push(val_err(out_type_token.clone(), lbl_shape.clone(), rule_unknown_type.clone()).clone());
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else if kind == "KW_TO" {
+                                    // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                    let mut out_type_pos: i64 = locate_func_out_type_after_to(pos.clone());
+                                    if out_type_pos < token_count {
+                                        // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                        let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
+                                        let mut value = out_type_token.value.clone();
+                                        let mut is_known_bare_out_type: bool = value == "void" || list_has(primitive_type_names.clone(), value.clone()) || list_has(declared_type_names.clone(), value.clone());
+                                        if !is_known_bare_out_type {
+                                            // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
+                                            errors.push(val_err(out_type_token.clone(), lbl_shape.clone(), rule_unknown_type.clone()).clone());
                                         }
                                     }
                                 }
@@ -5779,6 +5999,11 @@ fn validate_tokens(tokens: TokensRef) {
                                 if kind == "IDENT" {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
                                     let mut param_type_val: String = value.clone();
+                                    let mut is_known_param_type: bool = list_has(primitive_type_names.clone(), param_type_val.clone()) || list_has(declared_type_names.clone(), param_type_val.clone());
+                                    if !is_known_param_type {
+                                        // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+                                        errors.push(val_err(param_scan_token.clone(), lbl_fn.clone(), rule_unknown_type.clone()).clone());
+                                    }
                                     let mut param_name_pos: i64 = param_scan_pos + 1;
                                     if param_name_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
@@ -5843,6 +6068,14 @@ fn validate_tokens(tokens: TokensRef) {
                             if kind == "LPAREN" {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
                                 errors.push(val_err(return_type_token.clone(), lbl_fn.clone(), rule_no_ret.clone()).clone());
+                            } else {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+                                let mut value = return_type_token.value.clone();
+                                let mut is_known_ret_type: bool = list_has(primitive_type_names.clone(), value.clone()) || list_has(declared_type_names.clone(), value.clone());
+                                if !is_known_ret_type {
+                                    // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
+                                    errors.push(val_err(return_type_token.clone(), lbl_fn.clone(), rule_unknown_type.clone()).clone());
+                                }
                             }
                         }
                     }
@@ -6852,6 +7085,14 @@ fn validate_tokens(tokens: TokensRef) {
                         let mut equals_kind: String = kind.clone();
                         if name_kind == "IDENT" && equals_kind == "EQUALS" {
                             // transpiler-deor/tokens_validator/macros/declarations/check_var_decl.deor
+                            let mut type_token: Token = tokens[pos as usize].clone();
+                            let mut value = type_token.value.clone();
+                            let mut type_name: String = value.clone();
+                            let mut is_known_type: bool = list_has(primitive_type_names.clone(), type_name.clone()) || list_has(declared_type_names.clone(), type_name.clone());
+                            if !is_known_type {
+                                // transpiler-deor/tokens_validator/macros/declarations/check_var_decl.deor
+                                errors.push(val_err(type_token.clone(), lbl_var.clone(), rule_unknown_type.clone()).clone());
+                            }
                             let __destructure_src = name_token.clone();
                             let mut value = __destructure_src.value.clone();
                             let mut line = __destructure_src.line.clone();

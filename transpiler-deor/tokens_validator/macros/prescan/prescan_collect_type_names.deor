@@ -1,0 +1,41 @@
+
+# Prescan pass: collects every top-level name usable as a type — shapes (list and
+# func form alike) and raw types — into declared_type_names, so check_var_decl /
+# check_fn_declaration / check_struct_field_types / check_shape_referenced_types can
+# catch a type-position name that doesn't refer to anything real instead of letting
+# it transpile clean and fail later at rustc with "cannot find type". Struct names
+# and untyped enum names are appended later, in prescan_declared_state
+# (prescan_check_struct_fields / prescan_check_enum_variants), where those bodies
+# are already being walked for other reasons.
+macro prescan_collect_type_names
+	# ex: shape {Foo} = list of T — kw_pos+1 grabs the shape name (list or func form alike)
+	fn int locate_shape_name(int kw_pos)
+		return kw_pos + 1
+
+	# ex: raw {TypeName} — kw_pos+1 grabs the raw type's name
+	fn int locate_raw_name(int kw_pos)
+		return kw_pos + 1
+
+	if kind is "KW_SHAPE"
+		int shape_name_pos = locate_shape_name(pre_i)
+		if shape_name_pos < token_count
+			Token shape_name_token = tokens at shape_name_pos
+			(kind, value) in shape_name_token
+			if kind is "IDENT"
+				declared_type_names at end = value
+
+	if kind is "KW_RAW"
+		int raw_name_pos = locate_raw_name(pre_i)
+		if raw_name_pos < token_count
+			Token raw_name_token = tokens at raw_name_pos
+			(kind, value) in raw_name_token
+			if kind is "IDENT"
+				# a top-level `raw TypeName` declaration is followed directly by NEWLINE —
+				# `raw name = expr` (a local raw variable) is followed by EQUALS instead,
+				# and must not be collected as a type name
+				int after_name_pos = raw_name_pos + 1
+				if after_name_pos < token_count
+					Token after_name_token = tokens at after_name_pos
+					(kind) in after_name_token
+					if kind is "NEWLINE"
+						declared_type_names at end = value

@@ -1,0 +1,49 @@
+
+# Flags a struct field whose declared type isn't a real known type (primitive,
+# struct, shape, raw type, validator type, or untyped enum) — without this,
+# a typo'd or made-up field type transpiles clean and only fails later at rustc
+# with "cannot find type". Runs in the main validation loop, after both prescan
+# passes have fully populated declared_type_names — struct fields may
+# forward-reference a struct/shape declared later in the file (structural
+# declarations may appear in any order relative to each other, see
+# docs/enforced_practices.md#ordering), so this can't run inside
+# prescan_check_struct_fields itself, which is still building
+# declared_type_names as it walks the file — a valid forward reference would be
+# flagged as unknown mid-scan.
+macro check_struct_field_types
+	# ex: struct {Item} — kw_pos+1 grabs the struct name, to skip past it to the body
+	fn int locate_struct_name(int kw_pos)
+		return kw_pos + 1
+
+	if cur_kind is "KW_STRUCT"
+		int scan_pos = locate_struct_name(pos)
+		for if scan_pos < token_count
+			Token indent_scan_token = tokens at scan_pos
+			(kind) in indent_scan_token
+			if kind is "INDENT"
+				break
+			scan_pos = scan_pos + 1
+		scan_pos = scan_pos + 1
+
+		int depth = 0
+		for if scan_pos < token_count
+			Token scan_token = tokens at scan_pos
+			(kind) in scan_token
+			if kind is "INDENT"
+				depth = depth + 1
+			if kind is "DEDENT"
+				if depth is 0
+					break
+				depth = depth - 1
+			if kind is "IDENT"
+				(value) in scan_token
+				string field_type = value
+				int field_name_pos = scan_pos + 1
+				if field_name_pos < token_count
+					Token field_name_token = tokens at field_name_pos
+					(kind) in field_name_token
+					if kind is "IDENT"
+						bool is_known_field_type = list_has(primitive_type_names, field_type) or list_has(declared_type_names, field_type)
+						if not is_known_field_type
+							errors at end = val_err(scan_token, lbl_field, rule_unknown_type)
+			scan_pos = scan_pos + 1

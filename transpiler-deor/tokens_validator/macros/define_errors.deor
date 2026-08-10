@@ -24,6 +24,7 @@ unsafe_macro define_errors
 	string rule_snake = "name must be lower_snake_case (no uppercase letters)"
 	string rule_screaming = "const name must be SCREAMING_SNAKE_CASE (all caps, underscores between words)"
 	string rule_named_arg = "each arg must be a named variable when passing 2 or more args"
+	string rule_unknown_type = "not a known type — must be a primitive (int, float, string, bool), or a declared struct, shape, raw type, validator type, or untyped enum name"
 
 	# declaration rules
 	string rule_enum_pascal = "enum variant must be PascalCase"

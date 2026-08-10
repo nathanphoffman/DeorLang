@@ -77,3 +77,4 @@ macro prescan_check_struct_fields
 			string fields_str = s_join_with(fields, sep)
 			struct_field_reg at end = struct_name
 			struct_field_reg at end = fields_str
+			declared_type_names at end = struct_name

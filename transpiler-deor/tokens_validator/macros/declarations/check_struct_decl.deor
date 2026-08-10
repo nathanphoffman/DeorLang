@@ -1,5 +1,10 @@
-# struct name: PascalCase, min 3
+# struct name: PascalCase, min 3, plus field-type validation.
+# check_struct_field_types must run BEFORE validate_ident below — validate_ident
+# does an unconditional `pos = pos + 1; continue` on a keyword match, which
+# would otherwise skip it every time.
 macro check_struct_decl
+	macro_run check_struct_field_types
+
 	int validate_indent_offset = 1
 	string keyword = "KW_STRUCT"
 	string lbl = lbl_struct

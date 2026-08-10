@@ -39,6 +39,8 @@ macro prescan_check_enum_variants
 			(kind, value) in name_token
 			if kind is "IDENT"
 				enum_names at end = value
+				if not is_typed
+					declared_type_names at end = value
 
 		# Scan forward to INDENT (works for both typed and untyped)
 		for if scan_pos < token_count

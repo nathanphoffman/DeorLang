@@ -48,6 +48,9 @@ macro check_fn_declaration
 						continue
 					if kind is "IDENT"
 						string param_type_val = value
+						bool is_known_param_type = list_has(primitive_type_names, param_type_val) or list_has(declared_type_names, param_type_val)
+						if not is_known_param_type
+							errors at end = val_err(param_scan_token, lbl_fn, rule_unknown_type)
 						int param_name_pos = param_scan_pos + 1
 						if param_name_pos < token_count
 							Token param_name_token = tokens at param_name_pos
@@ -87,6 +90,11 @@ macro check_fn_declaration
 			if return_type_kind is "IDENT"
 				if kind is "LPAREN"
 					errors at end = val_err(return_type_token, lbl_fn, rule_no_ret)
+				else
+					(value) in return_type_token
+					bool is_known_ret_type = list_has(primitive_type_names, value) or list_has(declared_type_names, value)
+					if not is_known_ret_type
+						errors at end = val_err(return_type_token, lbl_fn, rule_unknown_type)
 
 # A fn nested inside another fn is restricted to a body of exactly one
 # `return expr` statement — no local variable declarations, moves, or other

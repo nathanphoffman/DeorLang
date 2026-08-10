@@ -24,6 +24,12 @@ macro check_var_decl
 		(kind) in equals_token
 		string equals_kind = kind
 		if name_kind is "IDENT" and equals_kind is "EQUALS"
+			Token type_token = tokens at pos
+			(value) in type_token
+			string type_name = value
+			bool is_known_type = list_has(primitive_type_names, type_name) or list_has(declared_type_names, type_name)
+			if not is_known_type
+				errors at end = val_err(type_token, lbl_var, rule_unknown_type)
 			(value, line, file) in name_token
 			string var_name = value
 			int var_line = line

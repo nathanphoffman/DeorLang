@@ -1,0 +1,45 @@
+# unknown_type_test.deor
+# Exercises the general type-existence check across every type-position: variable
+# declarations, function parameters, function return types, struct fields, and shape
+# list-element/func-input/func-output slots. Before this check existed, none of these
+# positions were validated at all — a typo'd or made-up type name transpiled clean and
+# only failed later at rustc with a confusing "cannot find type" error. A typed enum's
+# own name is also rejected here, since it's a real declared name but not usable as a
+# Rust type (see docs/enums.md) — no validator ever caught that either.
+
+enum string Color
+	Red = "red"
+
+struct BadField
+	Bogus1 thing_here
+
+shape badList = list of Bogus2
+
+shape badFunc = func of Bogus3 to Bogus4
+
+fn Bogus5 make_thing()
+	return 5
+
+fn void takes_bad(Bogus6 val)
+	print("hi")
+
+fn void test_var_decl()
+	Bogus7 thing = 5
+	print(thing)
+
+fn void test_typed_enum_as_type()
+	Color background = Red
+	print("hi")
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 14: struct field 'Bogus1' - not a known type
+# line 16: shape 'Bogus2' - not a known type
+# line 18: shape 'Bogus3' - not a known type
+# line 18: shape 'Bogus4' - not a known type
+# line 20: fn 'Bogus5' - not a known type
+# line 23: fn 'Bogus6' - not a known type
+# line 27: variable 'Bogus7' - not a known type
+# line 31: variable 'Color' - not a known type
