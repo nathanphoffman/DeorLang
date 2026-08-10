@@ -54,6 +54,10 @@ String utilities. `+` cannot be used with strings — use `s_join`/`s_join_with`
 | `s_char_at` | `string, int → string` | Single character at index as a string |
 | `s_repeat` | `string, int → string` | Repeat the string `count` times |
 | `s_split` | `string, string → stringList` | Split on delimiter, returns a `stringList` |
+| `s_split_whitespace` | `string → stringList` | Split on runs of whitespace, returns a `stringList` |
+| `s_chars` | `string → stringList` | Every character as its own single-character string, returns a `stringList` |
+| `s_pad_left` | `string, int → string` | Right-align to `width`, padding with leading spaces |
+| `s_pad_right` | `string, int → string` | Left-align to `width`, padding with trailing spaces |
 | `s_join` | `stringList → string` | Join a list of strings with no separator |
 | `s_join_with` | `stringList, string → string` | Join a list of strings with a separator |
 

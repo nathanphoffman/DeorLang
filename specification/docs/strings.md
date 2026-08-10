@@ -38,6 +38,8 @@ let quote = "She said \"hello\"".to_string();
 
 No other escape sequences are supported in v1. For Unicode escapes or raw byte strings, use a `rust` block.
 
+An unrecognized escape (`\r`, `\x41`, etc.) isn't a transpiler error — the lexer silently passes it through as a literal backslash followed by the character, rather than rejecting it. `"bad\rescape"` becomes the literal 12-character text `bad\rescape` (backslash included), not a carriage return. Stick to the four sequences above; anything else quietly means something other than what it looks like.
+
 ---
 
 ## Concatenation

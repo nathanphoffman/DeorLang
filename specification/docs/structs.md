@@ -23,7 +23,7 @@ struct Room {
 
 Struct fields may be primitives, validator types, list shapes, or other structs. Func shapes as struct fields are a transpiler error — structs are pure data. See [Shapes — Func Shapes in Structs](docs/shapes.md#func-shapes-in-structs).
 
-**Caveat:** field *name* rules (min length, snake_case) and the func-shape rejection above are checked at validation time. The field *type* itself is not — if you misspell a type name or reference one that was never declared, the transpiler doesn't catch it. It silently passes through to codegen, which emits the bogus name as-is, and the failure only shows up as a confusing `rustc` error against the generated `.rs` file (e.g. "cannot find type `Bogs` in this scope") rather than a clear message pointing at your `.deor` source. Double-check field type spelling by hand.
+Field names follow the same min-length and snake_case rules as variable names, and can't shadow a built-in function name (`print`, `crash`, `len`, `range`, `args`, `input`) — `struct Foo { int print }` is a transpiler error. Field *types* are validated too — a misspelled or undeclared type name (`Squarefeat area` instead of `Squarefeet area`) is a clean transpiler error, not a later `rustc` failure.
 
 There are no per-field visibility modifiers — all fields are always accessible via destructuring whenever the struct itself is in scope.
 
@@ -48,6 +48,8 @@ Rust:
 ```rust
 let score = Score { label: label.clone(), points: points.clone() };
 ```
+
+**Caveat:** unlike the explicit-type form below, this inferred form has no validation against the struct registry. If no struct's field set matches the given names, it silently emits a bogus `Unknown { ... }` construction that only fails later at `rustc`. If more than one struct shares the exact same field set, it silently picks whichever was declared first in the file — no warning either way. Prefer the explicit-type form when field names alone don't uniquely identify the struct.
 
 ### Explicit Type
 

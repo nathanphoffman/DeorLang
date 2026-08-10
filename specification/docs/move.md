@@ -124,6 +124,37 @@ let new_var: String = prev_var;
 
 ---
 
+## Use-After-Move Across `if`/`else`
+
+Move tracking is flow-sensitive across an `if`/`else-if`/`else` chain, matching `rustc`'s own reachability logic: a move inside one branch doesn't poison a sibling branch, since only one branch actually runs.
+
+```deor
+if cond
+    string used = move nates_string
+    print(used)
+else
+    print(nates_string)   # fine — this branch never moved it
+```
+
+But a variable moved in *every* reachable branch of the chain is considered moved once the chain closes, because `rustc` can't know at that point which branch actually ran:
+
+```deor
+if cond
+    string used = move nates_string
+    print(used)
+else
+    string also_used = move nates_string
+    print(also_used)
+print(nates_string)   # error — moved on every path through the chain above
+```
+
+Two related details:
+
+- The self-reassignment idiom `x = f(move x)` is specially exempted from poisoning `x` — the old value is consumed to build the new one, and a fresh value occupies `x` again as soon as the statement finishes, so `x` stays usable immediately after.
+- Moving the same variable twice (`move x` ... `move x` again) gets its own distinct error ("already moved earlier — 'move' cannot consume the same variable twice") rather than the ordinary use-after-move message, since the second `move` is what actually double-consumes it rather than a later read.
+
+---
+
 ## Move in `return`
 
 `move` has no effect at all in a `return` statement, for *any* type — not because of `Copy`, but because `return` never clones to begin with. Every other site that defaults to 

@@ -128,7 +128,9 @@ fn void main()
 - `ENFORCE_UNIQUE_FILE_DECLARATIONS` — a name declared twice **in the same file** is a hard transpiler error.
 - `ENFORCE_UNIQUE_IMPORT_DECLARATIONS` — a name declared in two **different** files is a hard transpiler error.
 
-They're independent — set one, both, or neither, in either order. Both apply across all declaration forms (`struct`, `enum`, `shape`, `type`, `fn`) and across declaration kinds, so a `struct Foo` and a `fn Foo` sharing a name are checked the same way. The check runs while imports are being merged, before any other validation, and fails fast on the first collision found.
+They're independent — set one, both, or neither, in either order. Both apply across all declaration forms (`struct`, `enum`, `shape`, `type`, `fn`, `macro`, `unsafe_macro`, `raw`) and across declaration kinds, so a `struct Foo` and a `fn Foo` sharing a name are checked the same way. The check runs while imports are being merged, before any other validation, and fails fast on the first collision found.
+
+One exception: a top-level `rust { }` block is never covered by either pragma. Two files with a byte-identical top-level `rust` block are always silently deduplicated — even with both pragmas set — and never raise a duplicate-declaration error.
 
 ### Why two separate pragmas, and why opt-in
 
