@@ -122,7 +122,7 @@ result.remove(1);
 
 ---
 ## No Membership Test
-Deor has no built-in membership operator. To check whether an element is in a list, write an explicit loop or define a reusable helper function:
+Deor has no built-in membership operator. For a simple value check against `int`, `float`, or `string` lists, `lib/list.deor` ships `l_T_contains`/`l_T_index_of` — see [Libraries](docs/libs.md#liblistdeor). For anything else (a predicate, a custom struct field match, etc.), write an explicit loop or define a reusable helper function:
 
 Deor:
 ```deor

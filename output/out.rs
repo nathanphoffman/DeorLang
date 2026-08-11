@@ -963,7 +963,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut op_val_rb: String = "]".to_string();
                 let mut op_kind_cm: String = "COMMA".to_string();
                 let mut op_val_cm: String = ",".to_string();
-                let mut op_invalid_chars: Vec<String> = vec!["&".to_string(), "|".to_string(), "^".to_string(), "!".to_string(), "{".to_string(), "}".to_string(), ".".to_string()];
+                let mut op_invalid_chars: Vec<String> = vec!["&".to_string(), "|".to_string(), "^".to_string(), "!".to_string(), "{".to_string(), "}".to_string(), ".".to_string(), "~".to_string()];
                 let mut op_peek_idx: i64 = char_index + 1;
                 let mut op_peek: String = "".to_string();
                 if op_peek_idx < char_count {

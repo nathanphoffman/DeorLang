@@ -142,3 +142,7 @@ bool is_pdf = s_ends_with(filename, ext)
 | `s_char_at(str, idx)` | `str.chars().nth(idx as usize).map(\|c\| c.to_string()).unwrap_or_default()` |
 | `s_substring(str, start, end)` | `str.chars().skip(start).take(end - start).collect()` |
 | `s_repeat(str, count)` | `str.repeat(count as usize)` |
+| `s_chars(str)` | `str.chars().map(\|c\| c.to_string()).collect()` |
+| `s_pad_left(str, width)` | `format!("{:>width$}", str, width = width as usize)` |
+| `s_pad_right(str, width)` | `format!("{:<width$}", str, width = width as usize)` |
+| `s_split_whitespace(str)` | `str.split_whitespace().map(\|s\| s.to_string()).collect()` |
