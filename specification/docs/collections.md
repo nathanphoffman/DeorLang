@@ -159,5 +159,5 @@ let old_room: Room = rooms[idx as usize].clone();
 let area: Option<Squarefeet> = Squarefeet::new(25);
 let ceiling_height: i64 = 10;
 let new_room: Room = Room { area, ceiling_height, ..old_room.clone() };
-rooms[idx as usize] = new_room;
+rooms[idx as usize] = new_room.clone();
 ```

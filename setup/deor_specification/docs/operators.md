@@ -108,7 +108,7 @@ opposite as not original
 
 `opposite as not original` compiles to `let opposite = !original;` — the concise way to negate a value, versus writing out an `if`/`else` that sets `true`/`false` by hand.
 
-Don't reach for `not` to negate the result of a comparison, though — see [Comparison](#comparison) above: `not x is y` is a transpiler error, `x is not y` is the required form.
+Don't reach for `not` to negate the result of a comparison, though — see [Comparison](#comparison) above for the `is not` rule.
 
 ---
 

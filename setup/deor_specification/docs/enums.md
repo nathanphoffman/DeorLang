@@ -182,4 +182,6 @@ Variant naming rules match untyped enums (PascalCase, 3+ characters), but the `=
 
 A typed enum's name isn't a usable type anywhere else — no Rust enum is generated for it, so there's no `Color background = Red` and no `fn void thing(Color c)`. The only thing you can do with one is extract variant values via `(Variant) in EnumName`.
 
+This is enforced by the transpiler — `Color background = Red` is a clean Deor-level error ("not a known type"), not just a later `rustc` failure.
+
 **Conversion notes:** the `enum` declaration itself emits nothing in the generated Rust. Extraction becomes a plain `let` binding with the literal value already filled in — `.to_string()` for `string`-backed enums, a raw literal for `int`/`float`/`bool`.

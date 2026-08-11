@@ -21,12 +21,10 @@ print(a)  # still valid — a was never actually consumed
 ```
 
 This means `move` only has a real, observable effect (the original becomes inaccessible) on non-`Copy` types: `string`, list shapes, structs, and validator-wrapped structs. `move`-ing a `string`, 
-list, or struct genuinely consumes the source — using it afterward is a real Rust "use of moved value" compile error. `move`-ing an `int`/`float`/`bool` never produces that error, because there's 
-nothing to consume.
+list, or struct genuinely consumes the source — using it afterward is a real Rust "use of moved value" compile error. `move`-ing an `int`/`float`/`bool` never produces that error, since there's 
+nothing to consume — it's an inert, no-op annotation there. Reserve `move` for the non-`Copy` cases where it's actually doing something, so its presence in code reliably signals "this value is really being consumed here."
 
-Using `move` on a primitive isn't wrong — it's just inert, a no-op annotation rather than a real ownership transfer. Prefer reserving `move` for the non-`Copy` cases where it's actually doing 
-something, so its presence in code reliably signals "this value is really being consumed here."
-
+---
 
 ## Function Arguments
 

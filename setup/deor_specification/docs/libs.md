@@ -54,6 +54,10 @@ String utilities. `+` cannot be used with strings — use `s_join`/`s_join_with`
 | `s_char_at` | `string, int → string` | Single character at index as a string |
 | `s_repeat` | `string, int → string` | Repeat the string `count` times |
 | `s_split` | `string, string → stringList` | Split on delimiter, returns a `stringList` |
+| `s_split_whitespace` | `string → stringList` | Split on runs of whitespace, returns a `stringList` |
+| `s_chars` | `string → stringList` | Every character as its own single-character string, returns a `stringList` |
+| `s_pad_left` | `string, int → string` | Right-align to `width`, padding with leading spaces |
+| `s_pad_right` | `string, int → string` | Left-align to `width`, padding with trailing spaces |
 | `s_join` | `stringList → string` | Join a list of strings with no separator |
 | `s_join_with` | `stringList, string → string` | Join a list of strings with a separator |
 
@@ -62,11 +66,15 @@ import "lib/string.deor"
 
 string sentence = "  hello world  "
 string trimmed = s_trim(sentence)
-bool found = s_contains(trimmed, "world")
-stringList words = s_split(trimmed, " ")
+string needle = "world"
+bool found = s_contains(trimmed, needle)
+string space = " "
+stringList words = s_split(trimmed, space)
 string upper = s_to_upper(trimmed)
-string replaced = s_replace(trimmed, "world", "Deor")
-int pos = s_index_of(trimmed, "hello")
+string dest = "Deor"
+string replaced = s_replace(trimmed, needle, dest)
+string target = "hello"
+int pos = s_index_of(trimmed, target)
 ```
 
 ---
@@ -118,7 +126,9 @@ Random number generation with no external crates. Seeded automatically from the 
 ```deor
 import "lib/random.deor"
 
-int roll = m_rand_int(1, 6)
+min as 1
+max as 6
+int roll = m_rand_int(min, max)
 float chance = m_rand_float()
 ```
 
@@ -229,10 +239,15 @@ Signatures use `tList` for the list type and `T` for the element — after subst
 import "lib/list.deor" where T = int
 
 intList scores = [10, 20, 30]
-intList top = l_int_slice(scores, 0, 2)
-bool has_ten = l_int_contains(scores, 10)
-intList first_two = l_int_take(scores, 2)
-intList grown = l_int_push(scores, 40)
+start as 0
+stop as 2
+intList top = l_int_slice(scores, start, stop)
+target as 10
+bool has_ten = l_int_contains(scores, target)
+count as 2
+intList first_two = l_int_take(scores, count)
+new_score as 40
+intList grown = l_int_push(scores, new_score)
 intList shrunk = l_int_pop(scores)
 ```
 
@@ -302,12 +317,18 @@ String-to-string hash map backed by `Arc<Mutex<HashMap>>`. The `StringMap` is a 
 import "lib/map.deor"
 
 StringMap config = h_make()
-config = h_set(config, "host", "localhost")
-config = h_set(config, "port", "8080")
-bool has_host = h_has(config, "host")
-string host = h_get(config, "host")
+string host_key = "host"
+string host_val = "localhost"
+config = h_set(config, host_key, host_val)
+string port_key = "port"
+string port_val = "8080"
+config = h_set(config, port_key, port_val)
+bool has_host = h_has(config, host_key)
+string host = h_get(config, host_key)
 int count = h_size(config)
 ```
+
+`h_set`/`h_has`/`h_get` are regular user-defined functions taking 2+ arguments, so — like any such call — every argument must be a named variable, not a literal (see [Enforced Practices — Named Arguments](docs/enforced_practices.md#named-arguments-user-defined-functions-only)).
 
 ---
 
@@ -327,11 +348,14 @@ File system operations. All paths are strings. Functions that can fail return `b
 ```deor
 import "lib/file.deor"
 
-bool ok = f_write("log.txt", "starting up\n")
-bool appended = f_append("log.txt", "step two\n")
-string contents = f_read("log.txt")
-stringList lines = f_lines("log.txt")
-bool gone = f_delete("log.txt")
+path as "log.txt"
+start_msg as "starting up\n"
+bool wrote = f_write(path, start_msg)
+next_msg as "step two\n"
+bool appended = f_append(path, next_msg)
+string contents = f_read(path)
+stringList lines = f_lines(path)
+bool gone = f_delete(path)
 ```
 
 ---

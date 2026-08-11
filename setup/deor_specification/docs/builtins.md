@@ -38,7 +38,7 @@ print(second)
 
 Rust:
 ```rust
-print!("{}{}", first.clone(), sep.clone());
+print!("{}{}", first.clone(), separator.clone());
 println!("{}", second.clone());
 ```
 

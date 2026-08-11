@@ -56,9 +56,7 @@ struct Config
     raw lookup_table              # raw cannot be a struct field
 ```
 
-This is deliberate, not just a syntax restriction. The whole point of `raw` is "Deor can't see inside this value" — but a literal like `5` isn't opaque to Deor at all, it's a plain `int` Deor already understands fully. Only a function call can actually hand back something Deor genuinely can't inspect (typically a `rust`-block-backed value). Requiring the function call keeps `raw` meaningful: if you see `raw x = build_index()`, you know `x` is really opaque. If literals were allowed, `raw x = 5` would just be a relabeled plain value, and the `raw` marker would stop telling readers anything true.
-
-`as` is rejected for the same reason, from the other direction. `x as some_fn()` is Deor's ordinary binding form, used everywhere for normal values — nothing about it signals that `x` is special. If `raw` allowed `as` as an alternate separator, `x as some_fn()` and `raw x = some_fn()` would produce the same opaque value, but only one of them would visibly warn a reader that `x` can't be used in Deor expressions, passed to `len`/`crash`/`s_join`, or reassigned. The explicit `raw` keyword at the declaration site is what makes that unmistakable — so `raw` is only ever spelled one way: `raw name = expr`.
+This is deliberate, not just a syntax restriction. The whole point of `raw` is "Deor can't see inside this value" — a literal like `5` isn't opaque at all (it's a plain `int` Deor already understands), and `x as some_fn()` is the ordinary binding form used everywhere for normal values, so it wouldn't visibly mark `x` as special either. Only `raw name = expr`, with a function call on the right, keeps every `raw` declaration honestly labeled — anyone reading `raw x = build_index()` knows on sight that `x` can't be used in Deor expressions, passed to `len`/`crash`/`s_join`, or reassigned.
 
 So build it once inside a function, and hold the function's return value as `raw`:
 

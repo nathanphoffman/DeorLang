@@ -150,25 +150,25 @@ In trivial cases, like these inline is probably better anyhow, but in general:
 ---
 ## Reusable Consts — via Macros
 
-Deor has no global scope, so a `const` can't be shared across functions directly. Put shared constants in a `macro` and call it from each function — the macro is inlined, so every call site gets its own copy with the same names and values.
+Deor has no global scope, so a `const` can't be shared across functions directly. Put shared constants in an `unsafe_macro` and call it from each function with `unsafe_macro_run`. A plain `macro` won't work here — its body is contained, so the consts it declares would never escape into the caller. See [Macros — Macro Bodies Are Contained](docs/macros.md#macro-bodies-are-contained) and [`unsafe_macro`](docs/macros.md#unsafe_macro-deliberately-leaking-state).
 
 ```deor
-macro use_log_consts
+import "lib/string.deor"
+
+unsafe_macro use_log_consts
     const string INFO_PREFIX = "[INFO] "
     const string ERROR_PREFIX = "[ERROR] "
 
 fn void log_info(string msg)
-    macro_run use_log_consts
-    print(INFO_PREFIX + msg)
+    unsafe_macro_run use_log_consts
+    print(s_join([INFO_PREFIX, msg]))
 
 fn void log_error(string msg)
-    macro_run use_log_consts
-    print(ERROR_PREFIX + msg)
+    unsafe_macro_run use_log_consts
+    print(s_join([ERROR_PREFIX, msg]))
 ```
 
-Don't `macro_run` the same const-macro twice in one function body — the second inlining redeclares the same variable names in the same scope, 
-which the transpiler always rejects. This is a separate check from [top-level duplicate declarations](enforced_practices.md#duplicate-top-level-names) — 
-variable redeclaration inside a function body is never allowed, regardless of the `ENFORCE_UNIQUE_*` pragmas.
+Calling the same `unsafe_macro` more than once in one function body is fine — each call redeclares the same names, and Rust's own shadowing rules allow that.
 
 ---
 ## File Length

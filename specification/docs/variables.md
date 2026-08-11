@@ -24,6 +24,8 @@ Integer literals may contain underscores as visual separators — see [Numeric L
 
 Any value from a function call or other runtime computation uses `Type name = expr`. For list types the type is the shape name.
 
+The declared type is checked against the known-type set (primitive, struct, shape, raw type, validator type, or untyped enum). A misspelled or undeclared type name (`Rooom current = fetch_room()`) is a clean transpiler error, not a later `rustc` failure.
+
 Deor:
 ```deor
 int val = m_rand_int(min, max)
@@ -183,13 +185,6 @@ Squarefeet area = 9   # valid
 area = 16             # valid
 int raw = get_user_input()
 area = raw            # valid or not valid — predicate runs at runtime
-```
-
-Reassignment can also be done to any type, including itself (for increment/decrement)
-
-Deor:
-```deor
-total = total + 1
 ```
 
 ---

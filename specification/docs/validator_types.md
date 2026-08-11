@@ -165,8 +165,7 @@ ValidInt count = 0      # not valid — 0 means "no count"
 ValidInt count = 5      # valid
 ```
 
-**Note:** It is always ideal to avoid making a generic validator type like this, as most types do have actual names like Temperature, which do have 
-valid numbers they can't be (and are not always true), but for the rare case you actually need a generic nullable-ish type, this is the way to do it.
+**Note:** Prefer a real, named predicate (`Temperature`, `Squarefeet`, etc.) over this generic pattern whenever the type actually has rules about what values it can't be. Reach for a bare `true`/sentinel predicate only for the rare case where you genuinely just need a nullable-ish type.
 
 ---
 

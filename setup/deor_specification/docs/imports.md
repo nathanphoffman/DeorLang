@@ -23,11 +23,11 @@ The importer resolves imports **depth-first**: when it encounters an import stat
 
 The order you write imports only directly controls the relative ordering of files that have no dependency relationship with each other (siblings). Transitive dependencies are always resolved first regardless of where you list them.
 
-The ordering of declarations in the generated Rust output does not affect correctness — Rust does not require forward declarations within a module, and the type registry is built from the full merged token stream before code generation begins. Ordering only matters for **collision resolution**: when two files define a declaration with the same name, the first one encountered in the merged stream wins. This is the default, loose behavior — see [Duplicate Top-Level Names](enforced_practices.md#duplicate-top-level-names) for the opt-in pragmas that turn same-name collisions into hard errors instead.
+The ordering of declarations in the generated Rust output does not affect correctness — Rust does not require forward declarations within a module, and the type registry of structs, shapes, enums, and types is built from the full merged token stream before code generation begins, so a name can be referenced anywhere in the merged output regardless of where it was declared. The only thing import order actually affects is **collision resolution**: when two files define a declaration with the same name, the first one encountered in the merged stream wins. This is the default, loose behavior — see [Duplicate Top-Level Names](enforced_practices.md#duplicate-top-level-names) for the opt-in pragmas that turn same-name collisions into hard errors instead.
 
 ### Ordering does not cause errors
 
-Order does **not** matter for using a type or function defined in another file, even if that file relies on the caller to have already loaded it and does not import it directly. The registry of structs, shapes, enums, and types is built from the full merged token stream before code generation begins, so a name can be referenced anywhere in the merged output regardless of where it was declared — the same way Rust does not require forward declarations within a module.
+Because of that, a file can use a type or function from another file it never imports directly, as long as something else in the merged output pulled that file in first:
 
 ```deor
 # imports.deor — order does not matter here
@@ -35,7 +35,7 @@ import "services/billing.deor"   # uses Customer, even if it doesn't import cust
 import "models/customer.deor"    # defines Customer
 ```
 
-This still works, but relying on an implicit dependency like this is bad practice — `billing.deor` should import `models/customer.deor` itself so its dependencies are self-documenting. Import order only matters for **collision resolution** — see below.
+This still works, but relying on an implicit dependency like this is bad practice — `billing.deor` should import `models/customer.deor` itself so its dependencies are self-documenting.
 
 ## Two Valid Approaches
 
@@ -61,7 +61,7 @@ import "utility.deor"
 import "services/billing.deor"
 ```
 
-Because the importer is depth-first, you do not need to worry about manually ordering transitive dependencies — a file's imports are always resolved before its declarations reach the merged stream. You only need to think about ordering between sibling files that do not depend on each other and happen to define names that could collide.
+Depth-first resolution (see [Import Ordering](#import-ordering) above) means you never have to manually order transitive dependencies here — only sibling files that don't depend on each other and happen to define colliding names.
 
 | Upsides | Downsides |
 |---|---|
@@ -72,7 +72,7 @@ Because the importer is depth-first, you do not need to worry about manually ord
 
 ### Option B: Per-file imports
 
-Each file imports only what it directly needs. The importer's depth-first traversal handles ordering automatically — by the time a file's declarations land in the merged stream, all of its imported dependencies are already there.
+Each file imports only what it directly needs. Depth-first traversal handles ordering automatically, same as Option A.
 
 `main.deor`
 ```deor

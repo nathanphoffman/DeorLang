@@ -220,7 +220,7 @@ fn roomList filter(roomList items, string query, filterFunc predicate)
     # 3 params: list, data, behavior — the natural ceiling
 ```
 
-Parameters follow `Type name` order. All types — including shape names — are written as a prefix. `func` shape parameters are regular parameters: no special keyword, no annotation, just a typed name.
+`func` shape parameters are regular parameters — no special keyword, no annotation, just a typed name like any other.
 
 A parameter's name cannot be identical to its type name — the transpiler rejects the exact same string appearing in both positions:
 
@@ -230,6 +230,8 @@ fn void process(Room item)    # correct
 ```
 
 In practice this is rarely an issue since type names are PascalCase and parameter names are snake_case, but the transpiler enforces it explicitly.
+
+Every parameter type and the return type are checked against the known-type set (primitive, struct, shape, raw type, validator type, or untyped enum). A misspelled or undeclared type name (`fn void process(Rooom item)`) is a clean transpiler error, not a later `rustc` failure.
 
 Deor:
 ```deor

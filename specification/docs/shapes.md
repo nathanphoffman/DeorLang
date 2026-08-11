@@ -14,6 +14,8 @@ shape filterFunc = func of Room to bool
 
 Shapes are declared at the top level of a file, after imports and before structs. Two kinds exist: list shapes and func shapes. For discriminated variant types, see [Enums](docs/enums.md).
 
+Every type a shape references — the list element type, or a func shape's input/output types — is checked against the same known-type set as anywhere else (primitive, struct, shape, raw type, validator type, or untyped enum). A misspelled or undeclared type name here (`shape roomList = list of Rooom`) is a clean transpiler error, not a later `rustc` failure.
+
 ---
 
 ## List Shapes

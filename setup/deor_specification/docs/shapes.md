@@ -14,6 +14,8 @@ shape filterFunc = func of Room to bool
 
 Shapes are declared at the top level of a file, after imports and before structs. Two kinds exist: list shapes and func shapes. For discriminated variant types, see [Enums](docs/enums.md).
 
+Every type a shape references — the list element type, or a func shape's input/output types — is checked against the same known-type set as anywhere else (primitive, struct, shape, raw type, validator type, or untyped enum). A misspelled or undeclared type name here (`shape roomList = list of Rooom`) is a clean transpiler error, not a later `rustc` failure.
+
 ---
 
 ## List Shapes
@@ -162,6 +164,26 @@ fn roomList apply_filter(roomList items, filterFunc predicate)
 
 ---
 
+## Raw Types
+
+A third kind of shape-adjacent declaration: `raw TypeName` registers an opaque, Rust-backed type. Unlike list and func shapes, it has no `= ...` right-hand side — the actual Rust type must be given a real definition in an adjacent `rust` block:
+
+```deor
+raw StringMap
+
+rust
+    #[derive(Clone)]
+    struct StringMap(std::sync::Arc<std::sync::Mutex<std::collections::HashMap<String, String>>>);
+
+fn StringMap h_make()
+    rust
+        StringMap(std::sync::Arc::new(std::sync::Mutex::new(std::collections::HashMap::new())))
+```
+
+Once declared this way, `StringMap` behaves like an ordinary declared type name — usable as a function parameter, return type, or variable type — without ever writing the `raw` keyword again at the use site. See [Rust Interop — Global-Style References](docs/interop.md#global-style-references-sharing-state-across-functions) for the full worked example, and [Rust Interop — When to Use a rust Block](docs/interop.md#when-to-use-a-rust-block) for the separate `raw name = expr` variable-declaration form and its restrictions (can't be reassigned, retyped, used as an operator operand, or declared as a struct field via the `raw` keyword).
+
+---
+
 ## Naming Convention
 
 Shape names are camelCase — enforced by the transpiler. By convention (not enforced), the name ends with the shape's kind:
@@ -227,6 +249,8 @@ import "rooms.deor"
 | `shape filterFunc = func of Room to bool` | `type FilterFunc = fn(Room) -> bool;` |
 | `shape handlerFunc = func of Error` | `type HandlerFunc = fn(Error);` |
 | `roomList result = empty` | `let mut result: Vec<Room> = Vec::new();` |
-| `filter(rooms, by_name)` | `filter(&rooms, by_name)` |
+| `filter(rooms, by_name)` | `filter(rooms.clone(), by_name.clone())` |
+
+A list argument is passed by value, not by reference — like any other named-variable call argument, it's cloned at the call site (see [Enforced Practices](docs/enforced_practices.md#named-arguments-user-defined-functions-only)). There is no reference-passing codegen for list shapes.
 
 Func shapes use Rust `fn` pointers, not closures — they cannot capture environment, consistent with Deor's no-lambda rule.
