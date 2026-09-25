@@ -75,6 +75,10 @@ fn tokens_wrap(t: Vec<Token>) -> TokensRef { Rc::new(t) }
 fn make_rctx(ctx: GenCtx) -> RcCtx { Rc::new(ctx) }
 fn now_ms() -> i64 { std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as i64 }
 fn elapsed_ms(start: i64) -> i64 { now_ms() - start }
+// Hash set for hot name lookups: cloning an Rc is cheap, unlike list_has's by-value strList.
+type NameSet = Rc<std::collections::HashSet<String>>;
+fn name_set(names: Vec<String>) -> NameSet { Rc::new(names.into_iter().collect()) }
+fn name_set_has(set: NameSet, name: String) -> bool { set.contains(&name) }
 // transpiler-deor/lib/char.deor
 fn c_chars(source: String) -> Vec<String> {
     // transpiler-deor/lib/char.deor
@@ -3775,6 +3779,10 @@ fn validate_tokens(tokens: TokensRef) {
         pre_i = pre_i + 1;
     }
     // transpiler-deor/tokens_validator/tokens_validation.deor
+    let mut declared_var_set: NameSet = name_set(declared_var_names.clone());
+    let mut fn_name_set: NameSet = name_set(fn_names.clone());
+    let mut enum_variant_set: NameSet = name_set(enum_variant_names.clone());
+    let mut enum_name_set: NameSet = name_set(enum_names.clone());
     while pos < token_count {
         // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut tok: Token = tokens[pos as usize].clone();
@@ -4541,6 +4549,18 @@ fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
                                         let mut kind = scan_token.kind.clone();
+                                        if kind == "NEWLINE" {
+                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
+                                            break;
+                                        }
+                                        if kind == "INDENT" {
+                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
+                                            break;
+                                        }
+                                        if kind == "DEDENT" {
+                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
+                                            break;
+                                        }
                                         if kind == "RBRACKET" {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                             bracket_depth = bracket_depth + 1;
@@ -4923,17 +4943,17 @@ fn validate_tokens(tokens: TokensRef) {
                 fn locate_next_token(kw_pos: i64) -> i64 {
                     return kw_pos + 1;
                 }
-                let mut is_reserved: bool = list_has(reserved_keywords.clone(), cur_kind.clone());
-                if is_reserved {
+                let mut next_pos: i64 = locate_next_token(pos.clone());
+                if next_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/idents/check_kw_as_name.deor
-                    let mut next_pos: i64 = locate_next_token(pos.clone());
-                    if next_pos < token_count {
+                    let mut next_token: Token = tokens[next_pos as usize].clone();
+                    let mut kind = next_token.kind.clone();
+                    let mut next_is_eq: bool = kind == "EQUALS";
+                    let mut next_is_as: bool = kind == "KW_AS";
+                    if next_is_eq || next_is_as {
                         // transpiler-deor/tokens_validator/macros/idents/check_kw_as_name.deor
-                        let mut next_token: Token = tokens[next_pos as usize].clone();
-                        let mut kind = next_token.kind.clone();
-                        let mut next_is_eq: bool = kind == "EQUALS";
-                        let mut next_is_as: bool = kind == "KW_AS";
-                        if next_is_eq || next_is_as {
+                        let mut is_reserved: bool = list_has(reserved_keywords.clone(), cur_kind.clone());
+                        if is_reserved {
                             // transpiler-deor/tokens_validator/macros/idents/check_kw_as_name.deor
                             errors.push(val_err(tok.clone(), lbl_var.clone(), rule_kw_in_parens.clone()).clone());
                         }
@@ -7233,7 +7253,7 @@ fn validate_tokens(tokens: TokensRef) {
                             }
                             if !is_decl {
                                 // transpiler-deor/tokens_validator/macros/reassign/check_undeclared_reassign.deor
-                                let mut is_known: bool = list_has(declared_var_names.clone(), cur_val.clone());
+                                let mut is_known: bool = name_set_has(declared_var_set.clone(), cur_val.clone());
                                 if !is_known {
                                     // transpiler-deor/tokens_validator/macros/reassign/check_undeclared_reassign.deor
                                     errors.push(val_err(tok.clone(), lbl_var.clone(), rule_undeclared_reassign.clone()).clone());
@@ -7338,18 +7358,18 @@ fn validate_tokens(tokens: TokensRef) {
                     }
                     if !skip {
                         // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
-                        let mut known: bool = list_has(declared_var_names.clone(), cur_val.clone());
+                        let mut known: bool = name_set_has(declared_var_set.clone(), cur_val.clone());
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
-                            known = list_has(enum_variant_names.clone(), cur_val.clone());
+                            known = name_set_has(enum_variant_set.clone(), cur_val.clone());
                         }
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
-                            known = list_has(enum_names.clone(), cur_val.clone());
+                            known = name_set_has(enum_name_set.clone(), cur_val.clone());
                         }
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
-                            known = list_has(fn_names.clone(), cur_val.clone());
+                            known = name_set_has(fn_name_set.clone(), cur_val.clone());
                         }
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor

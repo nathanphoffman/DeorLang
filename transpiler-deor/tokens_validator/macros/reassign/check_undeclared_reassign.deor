@@ -34,6 +34,6 @@ macro check_undeclared_reassign
 				if before_kind is "KW_TYPE"
 					is_decl = true
 			if not is_decl
-				bool is_known = list_has(declared_var_names, cur_val)
+				bool is_known = name_set_has(declared_var_set, cur_val)
 				if not is_known
 					errors at end = val_err(tok, lbl_var, rule_undeclared_reassign)

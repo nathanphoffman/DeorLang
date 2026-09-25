@@ -8,7 +8,7 @@
 # nothing bound to it — an opaque "cannot find value" from rustc instead of a
 # clear Deor-level error.
 #
-# Reuses declared_var_names (see prescan_collect_declared_vars) — the same
+# Reuses declared_var_names (see prescan_collect_declared_vars, looked up via declared_var_set) — the same
 # registry check_undeclared_reassign checks — plus enum_variant_names, enum_names,
 # and fn_names for the read-only categories that registry doesn't cover.
 #
@@ -97,13 +97,13 @@ macro check_undefined_var_read
 			skip = true
 
 	if not skip
-		bool known = list_has(declared_var_names, cur_val)
+		bool known = name_set_has(declared_var_set, cur_val)
 		if not known
-			known = list_has(enum_variant_names, cur_val)
+			known = name_set_has(enum_variant_set, cur_val)
 		if not known
-			known = list_has(enum_names, cur_val)
+			known = name_set_has(enum_name_set, cur_val)
 		if not known
-			known = list_has(fn_names, cur_val)
+			known = name_set_has(fn_name_set, cur_val)
 		if not known
 			known = list_has(builtin_names, cur_val)
 		if not known

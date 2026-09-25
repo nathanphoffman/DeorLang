@@ -52,6 +52,13 @@ fn void validate_tokens(TokensRef tokens)
 	# second pre-scan: collect remaining names + validate members
 	unsafe_macro_run prescan_declared_state
 
+	# Hash-set copies of the big name lists for the per-token lookups in the main
+	# loop — list_has clones its whole list on every call, which dominated validation time.
+	NameSet declared_var_set = name_set(declared_var_names)
+	NameSet fn_name_set = name_set(fn_names)
+	NameSet enum_variant_set = name_set(enum_variant_names)
+	NameSet enum_name_set = name_set(enum_names)
+
 	for if pos < token_count
 		Token tok = tokens at pos
 		(kind, value, line, file) in tok

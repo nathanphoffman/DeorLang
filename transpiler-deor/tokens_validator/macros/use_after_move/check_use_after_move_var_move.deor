@@ -30,12 +30,20 @@ macro check_use_after_move_var_move
 				# operands, so there's nothing for move to consume here (see
 				# docs/move.md#move-in-string-concatenation). Find the nearest
 				# enclosing '[' by bracket depth and check it opens 's_join('.
+				# The lexer is line-based, so a bracket literal never spans lines —
+				# stop at the line start instead of walking back to the file start.
 				bool in_sjoin = false
 				int scan_pos = locate_prev_token(pos)
 				int bracket_depth = 0
 				for if scan_pos >= 0
 					Token scan_token = tokens at scan_pos
 					(kind) in scan_token
+					if kind is "NEWLINE"
+						break
+					if kind is "INDENT"
+						break
+					if kind is "DEDENT"
+						break
 					if kind is "RBRACKET"
 						bracket_depth = bracket_depth + 1
 					else if kind is "LBRACKET"
