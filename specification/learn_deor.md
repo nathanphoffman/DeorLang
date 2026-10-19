@@ -100,7 +100,6 @@ string message = "hello, the temperature is "
 if fahrenheit < -459.67
     crash("Oh no, the temperature is less than absolute 0! That doesn't seem possible...")
 else if i_should_say_hello is true
-     
     # this prints: hello, the temperature is
     print(message)
     

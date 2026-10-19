@@ -1,0 +1,69 @@
+# grades.deor
+# Coding test: given a list of students and their test scores, print each
+# student's average and letter grade, then the student with the best average.
+
+import "lib/string.deor"
+import "lib/convert.deor"
+import "lib/list_numeric.deor" where T = int
+
+struct Student
+	string name
+	intList scores
+
+shape studentList = list of Student
+
+
+fn Student make_student(string name, intList scores)
+	return (name, scores)
+
+
+fn int average(intList scores)
+	if scores is empty
+		return 0
+
+	return l_int_sum(scores) / len(scores)
+
+
+fn string letter_grade(int score)
+	if score >= 90
+		return "A"
+	if score >= 80
+		return "B"
+	if score >= 70
+		return "C"
+
+	return "F"
+
+
+fn void main()
+	studentList students = empty
+
+	name as "Alice"
+	intList scores = [92, 88, 95]
+	students at end = make_student(name, scores)
+
+	name = "Bob"
+	scores = [70, 65, 81]
+	students at end = make_student(name, scores)
+
+	name = "Cara"
+	scores = [85, 90, 79]
+	students at end = make_student(name, scores)
+
+	name = "Dan"
+	scores = [58, 64, 61]
+	students at end = make_student(name, scores)
+
+	top_name as ""
+	top_average as 0
+	for student in students
+		(name, scores) in student
+		int avg = average(scores)
+		string grade = letter_grade(avg)
+		print(s_join([name, ": ", c_int_to_string(avg), " ", grade]))
+
+		if avg > top_average
+			top_average = avg
+			top_name = name
+
+	print(s_join(["Top student: ", top_name]))
