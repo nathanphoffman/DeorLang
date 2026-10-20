@@ -4,7 +4,7 @@ import { extname, join, normalize } from 'path';
 const dir = join(import.meta.dir, 'public');
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
 
-const MIME = {
+const MIME: Record<string, string> = {
   '.html': 'text/html',
   '.js':   'application/javascript',
   '.wasm': 'application/wasm',
@@ -18,7 +18,7 @@ const MIME = {
   '.webp': 'image/webp',
 };
 
-function fileType(path) {
+function fileType(path: string) {
   try {
     const stat = statSync(path);
     return stat.isFile() ? 'file' : stat.isDirectory() ? 'dir' : null;
@@ -27,7 +27,7 @@ function fileType(path) {
   }
 }
 
-function serveFile(path) {
+function serveFile(path: string) {
   return new Response(Bun.file(path), {
     headers: {
       'Content-Type': MIME[extname(path)] || 'application/octet-stream',

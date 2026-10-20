@@ -9,7 +9,6 @@
   },
   "include": [
     "client/**/*.ts",
-    "server/**/*.ts",
-    "../transpiler-ts_old_dont_use/src/**/*.ts"
+    "server/**/*.ts"
   ]
 }
