@@ -84,9 +84,12 @@ rust
 fn stringList list_deor_files(string dir)
 	rust
 		{
+			// Reads the directory, keeps entries ending in .deor, turns each into a path string, then sorts them.
 			let mut v: Vec<String> = std::fs::read_dir(&dir)
+				// On success, keep only readable entries; on failure fall back to an empty list.
 				.map(|rd| rd.filter_map(|e| e.ok())
 					.map(|e| e.path())
+					// Keep a path only if it has an extension and that extension is "deor".
 					.filter(|p| p.extension().map(|s| s == "deor").unwrap_or(false))
 					.map(|p| p.to_string_lossy().to_string())
 					.collect())

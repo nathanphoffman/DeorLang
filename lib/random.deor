@@ -16,6 +16,7 @@ rust
 	fn _rng_next() -> u64 {
 		RNG_STATE.with(|s| {
 			let mut x = s.get();
+			// xorshift64: three shift-and-xor steps scramble the bits into the next random number.
 			x ^= x << 13;
 			x ^= x >> 7;
 			x ^= x << 17;
