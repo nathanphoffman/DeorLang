@@ -10,6 +10,36 @@ fn string emit_val(string val_code, string val_kind)
 		return s_join([val_code, RS_CLN])
 	return val_code
 
+# The suffix a bound value needs to be an owned String/value: `.to_string()` for a string
+# literal, `.clone()` for a plain identifier, and none for calls, index reads and binary-op
+# chains (those already produce an owned value, and a suffix meant for a single token would
+# land on the chain's last operand). The value spans tokens [val_pos, val_end).
+fn string value_ownership_suffix(TokensRef tokens, int val_pos, int val_end)
+	# ex: other{(}x) — anchor+1 checks for a call/index after the identifier
+	fn int locate_after_value(int anchor)
+		return anchor + 1
+
+	bool is_chain = is_expr_chain(tokens, val_pos, val_end)
+	if is_chain
+		return ""
+	Token val_token = tokens at val_pos
+	(kind) in val_token
+	if kind is "STRING"
+		return ".to_string()"
+	if kind is "IDENT"
+		int val_next_idx = locate_after_value(val_pos)
+		if val_next_idx < len(tokens)
+			Token next_val_token = tokens at val_next_idx
+			(kind) in next_val_token
+			bool val_is_call = kind is "LPAREN"
+			bool val_is_idx = kind is "KW_AT"
+			if val_is_call
+				return ""
+			if val_is_idx
+				return ""
+		return ".clone()"
+	return ""
+
 # Returns true if the token range [start, stop) contains a top-level binary operator —
 # i.e. the expression is a binary-op chain (`a + b + "c"`) rather than a single bare
 # token/call. Paren depth is tracked so a nested call's internal operators don't

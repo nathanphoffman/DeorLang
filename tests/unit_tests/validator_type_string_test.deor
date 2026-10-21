@@ -1,0 +1,32 @@
+# validator_type_string_test.deor
+# A validator type built on `string`: the rule can call a function or use len(...) directly,
+# and the source string can still be used after it is checked.
+
+type ShortName(string val)
+	len(val) < 6
+
+fn void main()
+	string good_text = "Ada"
+	ShortName good_name = good_text
+	if good_name is valid
+		string unwrapped = avow good_name
+		print(unwrapped)
+	else
+		print("should have been valid")
+
+	string bad_text = "Alexander"
+	ShortName bad_name = bad_text
+	if bad_name is not valid
+		print(bad_text)
+	else
+		print("should have been rejected")
+
+	ShortName literal_name = "Bo"
+	if literal_name is valid
+		string literal_text = avow literal_name
+		print(literal_text)
+
+# expect:
+# Ada
+# Alexander
+# Bo

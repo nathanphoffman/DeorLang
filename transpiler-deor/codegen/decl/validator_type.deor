@@ -45,7 +45,14 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	(pos) in cur
 	int body_start = pos
 
-	ParseResult pred_r = gen_expr(tokens, body_start, ctx)
+	# The ctx handed to gen_type_decl doesn't carry this file's tokens, but helpers like
+	# gen_unary_method (used for len(...)) read their tokens from the ctx, so build one that does.
+	strList mut_names = empty
+	strList validator_var_reg = empty
+	GenCtx expr_ctx_raw = (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
+	RcCtx expr_ctx = make_rctx(move expr_ctx_raw)
+
+	ParseResult pred_r = gen_expr(tokens, body_start, expr_ctx)
 	move (code, new_pos) in pred_r
 	pred_code as code
 	pred_end as new_pos
@@ -103,7 +110,10 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 		final_pred_code = s_join([closure_open, block_code, closure_close])
 		final_pos = body_start + block_new_pos
 
+	# Copy is only valid when the wrapped Rust type is Copy — a String field isn't.
 	string struct_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
+	if param_type is "string"
+		struct_prefix = "#[derive(Clone, PartialEq, Debug)]\nstruct "
 	string struct_paren_open = "("
 	string struct_suffix = ");\n\n"
 	string struct_code = s_join([struct_prefix, type_name, struct_paren_open, rust_param_type, struct_suffix])

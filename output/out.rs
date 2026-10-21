@@ -9315,6 +9315,45 @@ fn emit_val(val_code: String, val_kind: String) -> String {
     return val_code;
 }
 
+fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> String {
+    // transpiler-deor/codegen/decl/stmt/helpers.deor
+    fn locate_after_value(anchor: i64) -> i64 {
+        return anchor + 1;
+    }
+    let mut is_chain: bool = is_expr_chain(tokens.clone(), val_pos.clone(), val_end.clone());
+    if is_chain {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        return "".to_string();
+    }
+    let mut val_token: Token = tokens[val_pos as usize].clone();
+    let kind = val_token.kind.clone();
+    if kind == "STRING" {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        return ".to_string()".to_string();
+    }
+    if kind == "IDENT" {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        let mut val_next_idx: i64 = locate_after_value(val_pos.clone());
+        if val_next_idx < (tokens.len() as i64) {
+            // transpiler-deor/codegen/decl/stmt/helpers.deor
+            let mut next_val_token: Token = tokens[val_next_idx as usize].clone();
+            let kind = next_val_token.kind.clone();
+            let mut val_is_call: bool = kind == "LPAREN";
+            let mut val_is_idx: bool = kind == "KW_AT";
+            if val_is_call {
+                // transpiler-deor/codegen/decl/stmt/helpers.deor
+                return "".to_string();
+            }
+            if val_is_idx {
+                // transpiler-deor/codegen/decl/stmt/helpers.deor
+                return "".to_string();
+            }
+        }
+        return ".clone()".to_string();
+    }
+    return "".to_string();
+}
+
 fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
     // transpiler-deor/codegen/decl/stmt/helpers.deor
     let mut depth: i64 = 0;
@@ -11169,12 +11208,13 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 mut_kw = "mut ".to_string();
             }
             // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_validator.deor
+            let mut val_suffix: String = value_ownership_suffix(tokens.clone(), val_pos.clone(), val_end.clone());
             let mut validator_let: String = "let ".to_string();
             let mut validator_option_open: String = ": Option<".to_string();
             let mut validator_option_close: String = "> = ".to_string();
             let mut validator_new_open: String = "::new(".to_string();
             let mut validator_sc: String = ");\n".to_string();
-            let mut validator_code: String = [pad.as_str(), validator_let.as_str(), mut_kw.as_str(), var_name.as_str(), validator_option_open.as_str(), var_type.as_str(), validator_option_close.as_str(), var_type.as_str(), validator_new_open.as_str(), val_code.as_str(), validator_sc.as_str()].concat();
+            let mut validator_code: String = [pad.as_str(), validator_let.as_str(), mut_kw.as_str(), var_name.as_str(), validator_option_open.as_str(), var_type.as_str(), validator_option_close.as_str(), var_type.as_str(), validator_new_open.as_str(), val_code.as_str(), val_suffix.as_str(), validator_sc.as_str()].concat();
             return make_nl_result(validator_code, val_end.clone(), tokens.clone());
         }
     }
@@ -11975,7 +12015,11 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     cur = cur_skip_to_body_ref(cur.clone(), tokens.clone());
     let pos = cur.pos.clone();
     let mut body_start: i64 = pos.clone();
-    let mut pred_r: ParseResult = gen_expr(tokens.clone(), body_start.clone(), ctx.clone());
+    let mut mut_names: Vec<String> = Vec::new();
+    let mut validator_var_reg: Vec<String> = Vec::new();
+    let mut expr_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), tokens: tokens.clone(), typed_enum_reg: typed_enum_reg.clone(), typed_variant_reg: typed_variant_reg.clone(), validator_var_reg: validator_var_reg.clone() };
+    let mut expr_ctx: RcCtx = make_rctx(expr_ctx_raw);
+    let mut pred_r: ParseResult = gen_expr(tokens.clone(), body_start.clone(), expr_ctx.clone());
     let __destructure_src = pred_r;
     let code = __destructure_src.code;
     let new_pos = __destructure_src.new_pos;
@@ -12042,6 +12086,10 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         final_pos = body_start + block_new_pos;
     }
     let mut struct_prefix: String = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ".to_string();
+    if param_type == "string" {
+        // transpiler-deor/codegen/decl/validator_type.deor
+        struct_prefix = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
+    }
     let mut struct_paren_open: String = "(".to_string();
     let mut struct_suffix: String = ");\n\n".to_string();
     let mut struct_code: String = [struct_prefix.as_str(), type_name.as_str(), struct_paren_open.as_str(), rust_param_type.as_str(), struct_suffix.as_str()].concat();

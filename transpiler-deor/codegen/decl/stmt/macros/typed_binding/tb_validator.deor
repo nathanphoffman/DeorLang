@@ -6,10 +6,11 @@ macro tb_validator
 	val_code as code
 	val_end as new_pos
 	unsafe_macro_run mut_guard
+	string val_suffix = value_ownership_suffix(tokens, val_pos, val_end)
 	string validator_let = "let "
 	string validator_option_open = ": Option<"
 	string validator_option_close = "> = "
 	string validator_new_open = "::new("
 	string validator_sc = ");\n"
-	string validator_code = s_join([pad, validator_let, mut_kw, var_name, validator_option_open, var_type, validator_option_close, var_type, validator_new_open, val_code, validator_sc])
+	string validator_code = s_join([pad, validator_let, mut_kw, var_name, validator_option_open, var_type, validator_option_close, var_type, validator_new_open, val_code, val_suffix, validator_sc])
 	return make_nl_result(move validator_code, val_end, tokens)
