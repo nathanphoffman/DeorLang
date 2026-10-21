@@ -1,0 +1,15 @@
+# Handles a bare identifier — an enum variant (`Enum::Variant`) if the variant registry
+# knows the name, otherwise the name itself. Runs last, after calls and index reads.
+macro primary_plain_ident
+	# ex: name{ }... — kw_pos+1 grabs the token after the identifier
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	if kind is "IDENT"
+		int next_pos = locate_next_token(pos)
+		string variant_enum = reg_get(variant_reg, value)
+		if not is_empty(variant_enum)
+			string double_colon = "::"
+			string variant_code = s_join([variant_enum, double_colon, value])
+			return make_result(move variant_code, next_pos)
+		return make_result(move value, next_pos)

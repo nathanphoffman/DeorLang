@@ -1,0 +1,31 @@
+# Handles the two keyword-led binding forms that need no further dispatch.
+#   raw name = expr   → `let [mut] name = expr;`
+#   const Type name = expr → delegates to gen_typed_binding
+macro stmt_raw_const
+	# ex: raw {name} = ... — anchor+1 grabs the token after the keyword
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	# ex: raw name = {val} — kw_pos+3 skips 'raw', the name, and '=' to grab the value expr
+	fn int locate_raw_value(int kw_pos)
+		return kw_pos + 3
+
+	if kind is "KW_RAW"
+		int raw_name_pos = locate_next_token(pos)
+		Token raw_name_tok = tokens at raw_name_pos
+		(value) in raw_name_tok
+		string raw_var_name = value
+		int val_pos = locate_raw_value(pos)
+
+		unsafe_macro_run gen_expr_r
+		string var_name = raw_var_name
+		unsafe_macro_run mut_guard
+
+		strList raw_parts = [pad, RS_LET, mut_kw, raw_var_name, RS_EQ, val_code, RS_SC]
+		string raw_code = s_join(raw_parts)
+		return make_nl_result(move raw_code, val_end, tokens)
+
+	if kind is "KW_CONST"
+		# ex: const {Type} name = val — kw_pos+1 grabs the type token after 'const'
+		int const_type_pos = locate_next_token(pos)
+		return gen_typed_binding(const_type_pos, depth, ctx)

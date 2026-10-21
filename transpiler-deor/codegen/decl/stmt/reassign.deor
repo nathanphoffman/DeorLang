@@ -1,0 +1,36 @@
+
+# Generates a plain reassignment `name = expr`. pos points to the identifier and the
+# token after it is '='. Emits `name = expr;`, or `name = TypeName::new(expr);` when the
+# variable is validator-typed so the predicate re-runs — see
+# docs/validator_types.md#is-valid-is-not-valid
+fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
+	# ex: name {=} expr — anchor+1 grabs the token after the anchor
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	(tokens, validator_var_reg) in ctx
+	unsafe_macro_run rust_strings
+	string pad = s_repeat(RS_IND, depth)
+	Token name_token = tokens at pos
+	(value) in name_token
+	string ident_name = value
+	int next_pos = locate_next_token(pos)
+	# ex: name = {expr} — next_pos+1 grabs the value expression after '='
+	int val_pos = locate_next_token(next_pos)
+	Token eq_val_token = tokens at val_pos
+	(kind) in eq_val_token
+	unsafe_macro_run gen_expr_r
+	string assign_suffix = ""
+	if kind is "STRING"
+		assign_suffix = ".to_string()"
+	string reassign_type = reg_get(validator_var_reg, ident_name)
+	string asgn_code = ""
+	if not is_empty(reassign_type)
+		string reassign_new_open = "::new("
+		string reassign_sc = ");\n"
+		strList reassign_parts = [pad, ident_name, RS_EQ, reassign_type, reassign_new_open, val_code, reassign_sc]
+		asgn_code = s_join(reassign_parts)
+	else
+		strList assign_parts = [pad, ident_name, RS_EQ, val_code, assign_suffix, RS_SC]
+		asgn_code = s_join(assign_parts)
+	return make_nl_result(move asgn_code, val_end, tokens)

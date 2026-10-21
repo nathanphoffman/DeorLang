@@ -1,0 +1,22 @@
+# Handles an index read `name at idx` — emits `name[idx as usize].clone()`.
+macro primary_index_expr
+	# ex: name{ at} idx — kw_pos+1 grabs the token that decides call/index/plain
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	if kind is "IDENT"
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
+			if kind is "KW_AT"
+				# ex: name at {idx} — next_pos+1 grabs the index expression after 'at'
+				int index_pos = locate_next_token(next_pos)
+				ParseResult index_result = gen_primary(tokens, index_pos, ctx)
+				move (code, new_pos) in index_result
+				index_code as code
+				index_end as new_pos
+				string index_mid = "["
+				string index_suffix = " as usize].clone()"
+				string index_expr = s_join([value, index_mid, index_code, index_suffix])
+				return make_result(move index_expr, index_end)

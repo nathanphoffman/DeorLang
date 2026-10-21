@@ -1,6 +1,6 @@
 
 # Generates a single-argument built-in call by appending a Rust method suffix to the
-# argument expression. Used by ident_expr for `len(x)` → `(x.len() as i64)`.
+# argument expression. Used by primary_builtin_calls for `len(x)` → `(x.len() as i64)`.
 fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	(tokens) in ctx
 	ParseResult inner_result = gen_expr(tokens, args_pos, ctx)
@@ -10,13 +10,16 @@ fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 	string result_code = s_join([inner_code, suffix])
 	return make_result(move result_code, close)
 
-# Dispatches to one of five sub-cases based on the current token kind. Each macro
+# Dispatches to one of eight sub-cases based on the current token kind. Each macro
 # returns immediately if it recognises the token, otherwise falls through to the next.
 #   primary/literals.deor     — INT FLOAT STRING TRUE FALSE
 #   primary/list_literal.deor — [items]
 #   primary/paren_expr.deor   — (avow x) unwrap and (f1, f2) struct construction
 #   primary/prefix_ops.deor   — move and not
-#   primary/ident_expr.deor   — function call, index read, enum variant, plain name
+#   primary/macros/primary_builtin_calls.deor — len, crash, s_join special calls
+#   primary/macros/primary_call_expr.deor     — ordinary function call
+#   primary/macros/primary_index_expr.deor    — name at idx
+#   primary/macros/primary_plain_ident.deor   — enum variant or plain name
 fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 	# ex: {unknown} — kw_pos+1 grabs the token after an unrecognized primary
 	fn int locate_next_token(int kw_pos)
@@ -31,7 +34,10 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 	macro_run primary_list_literal
 	macro_run primary_paren_expr
 	macro_run primary_prefix_ops
-	macro_run primary_ident_expr
+	macro_run primary_builtin_calls
+	macro_run primary_call_expr
+	macro_run primary_index_expr
+	macro_run primary_plain_ident
 
 	string unknown = "/* unknown_primary */"
 	int next = locate_next_token(pos)

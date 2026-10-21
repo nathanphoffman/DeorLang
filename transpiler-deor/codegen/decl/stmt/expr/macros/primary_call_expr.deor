@@ -1,0 +1,25 @@
+# Handles an ordinary function call `name(args)` — emits `name(args)` with the args generated.
+# Built-ins with special output are caught earlier by primary_builtin_calls.
+macro primary_call_expr
+	# ex: name{(}args) — kw_pos+1 grabs the token that decides call/index/plain
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	if kind is "IDENT"
+		int next_pos = locate_next_token(pos)
+		if next_pos < token_count
+			Token next_token = tokens at next_pos
+			(kind) in next_token
+			if kind is "LPAREN"
+				string func_name = value
+				# ex: name({args}) — next_pos+1 grabs the first call-argument slot
+				int args_pos = locate_next_token(next_pos)
+				ParseResult call_args_result = gen_call_args(tokens, args_pos, ctx)
+				move (code, new_pos) in call_args_result
+				call_args_code as code
+				call_args_end as new_pos
+				int call_after = call_args_end + 1
+				string call_paren_open = "("
+				string call_paren_close = ")"
+				string call_code = s_join([func_name, call_paren_open, call_args_code, call_paren_close])
+				return make_result(move call_code, call_after)

@@ -11,6 +11,6 @@
 #   codegen_expr/primary/list_literal.deor — [items] → vec![...]
 #   codegen_expr/primary/paren_expr.deor — (avow x) unwrap and (f1, f2) struct construction
 #   codegen_expr/primary/prefix_ops.deor — move and not prefix operators
-#   codegen_expr/primary/ident_expr.deor — function call, index read, enum variant, plain name
+#   codegen_expr/primary/macros/primary_*.deor — builtin calls, function call, index read, plain name
 #   codegen_expr/primary.deor      — gen_unary_method + gen_primary dispatch table
 #   codegen_expr/expr.deor         — gen_expr: binary operator folding loop

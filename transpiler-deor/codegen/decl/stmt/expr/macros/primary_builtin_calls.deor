@@ -1,10 +1,9 @@
-
-# Handles identifiers, which are the most complex primary form — the next token
-# determines which of three sub-cases applies:
-#   name(args)   — function call (with special handling for len and crash builtins)
-#   name at idx  — index read (nested macro_run not supported, so this is inlined rather than shared)
-#   name         — plain identifier, or an enum variant if found in the variant registry
-macro primary_ident_expr
+# Handles the built-in calls that need their own Rust output instead of a plain `name(args)`:
+#   len(x)           — `(x.len() as i64)`
+#   crash(x)         — `panic!("{}", x)`
+#   s_join([a, b])   — `[a, b].concat()` (skips a wrapper call and its clones)
+# Falls through when the identifier is not one of these, so primary_call_expr can take over.
+macro primary_builtin_calls
 	# ex: name{(}args) — kw_pos+1 grabs the token that decides call/index/plain
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
@@ -58,31 +57,3 @@ macro primary_ident_expr
 						string join_close = "].concat()"
 						string join_code = s_join([join_open, join_items_code, join_close])
 						return make_result(move join_code, join_after)
-
-				ParseResult call_args_result = gen_call_args(tokens, args_pos, ctx)
-				move (code, new_pos) in call_args_result
-				call_args_code as code
-				call_args_end as new_pos
-				int call_after = call_args_end + 1
-				string call_paren_open = "("
-				string call_paren_close = ")"
-				string call_code = s_join([func_name, call_paren_open, call_args_code, call_paren_close])
-				return make_result(move call_code, call_after)
-
-			if kind is "KW_AT"
-				# ex: name at {idx} — next_pos+1 grabs the index expression after 'at'
-				int index_pos = locate_next_token(next_pos)
-				ParseResult index_result = gen_primary(tokens, index_pos, ctx)
-				move (code, new_pos) in index_result
-				index_code as code
-				index_end as new_pos
-				string index_mid = "["
-				string index_suffix = " as usize].clone()"
-				string index_expr = s_join([value, index_mid, index_code, index_suffix])
-				return make_result(move index_expr, index_end)
-		string variant_enum = reg_get(variant_reg, value)
-		if not is_empty(variant_enum)
-			string double_colon = "::"
-			string variant_code = s_join([variant_enum, double_colon, value])
-			return make_result(move variant_code, next_pos)
-		return make_result(move value, next_pos)
