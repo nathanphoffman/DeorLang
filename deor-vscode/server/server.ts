@@ -53,24 +53,27 @@ connection.onDefinition((params) => {
 
 function wordAt(line: string, char: number): string {
   let start = char;
+  // Walk left while the previous character is a letter, digit or underscore.
   while (start > 0 && /[a-zA-Z0-9_]/.test(line[start - 1])) start--;
   let end = char;
+  // Walk right while the character is a letter, digit or underscore.
   while (end < line.length && /[a-zA-Z0-9_]/.test(line[end])) end++;
   return line.slice(start, end);
 }
 
 // Patterns for every Deor declaration kind. All top-level so no leading tabs.
 function definitionPatterns(name: string): RegExp[] {
+  // Backslash-escapes characters that are special in a regex so the name matches literally.
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return [
     new RegExp(`^fn \\S+ ${escaped}\\(`),   // fn <type> name(
     new RegExp(`^fn ${escaped}\\(`),         // fn name( (void shorthand if ever used)
-    new RegExp(`^struct ${escaped}\\b`),
-    new RegExp(`^enum ${escaped}\\b`),
-    new RegExp(`^shape ${escaped}\\b`),
-    new RegExp(`^type ${escaped}\\b`),
-    new RegExp(`^macro ${escaped}\\b`),
-    new RegExp(`^raw ${escaped}\\b`),
+    new RegExp(`^struct ${escaped}\\b`), // line starts with 'struct ' + name, then a word boundary
+    new RegExp(`^enum ${escaped}\\b`), // line starts with 'enum ' + name, then a word boundary
+    new RegExp(`^shape ${escaped}\\b`), // line starts with 'shape ' + name, then a word boundary
+    new RegExp(`^type ${escaped}\\b`), // line starts with 'type ' + name, then a word boundary
+    new RegExp(`^macro ${escaped}\\b`), // line starts with 'macro ' + name, then a word boundary
+    new RegExp(`^raw ${escaped}\\b`), // line starts with 'raw ' + name, then a word boundary
   ];
 }
 
@@ -149,6 +152,7 @@ function runValidation(savedUri: string): void {
   proc.on('error', () => { running = false; });
 }
 
+// Matches '[validation] <file> line <n>: <message>' and captures file, line number and message.
 const VALIDATION_RE = /^\[validation\] (.+) line (\d+): (.+)$/;
 
 function publishDiagnostics(output: string): void {

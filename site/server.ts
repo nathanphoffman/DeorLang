@@ -21,6 +21,7 @@ const MIME: Record<string, string> = {
 function fileType(path: string) {
   try {
     const stat = statSync(path);
+    // Nested ternary: file if it is a file, otherwise dir if it is a directory, otherwise null.
     return stat.isFile() ? 'file' : stat.isDirectory() ? 'dir' : null;
   } catch {
     return null;
