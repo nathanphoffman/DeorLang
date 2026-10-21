@@ -34,7 +34,7 @@ macro check_var_decl
 			string var_name = value
 			int var_line = line
 			string var_file = file
-			if len(var_name) < 3
+			if len(var_name) < MIN_NAME_LEN
 				errors at end = val_err(name_token, lbl_var, rule_min3)
 			if list_has(builtin_names, var_name)
 				errors at end = val_err(name_token, lbl_var, rule_builtin_shadow)
@@ -51,7 +51,7 @@ macro check_var_decl
 				if not is_snake(var_name)
 					errors at end = val_err(name_token, lbl_var, rule_snake)
 		if name_kind is "KW_AS"
-			if len(cur_val) < 3
+			if len(cur_val) < MIN_NAME_LEN
 				errors at end = val_err(tok, lbl_var, rule_min3)
 			if not is_snake(cur_val)
 				errors at end = val_err(tok, lbl_var, rule_snake)

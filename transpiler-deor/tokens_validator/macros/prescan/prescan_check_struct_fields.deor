@@ -56,7 +56,7 @@ macro prescan_check_struct_fields
 					Token field_name_token = tokens at field_name_pos
 					(kind, value) in field_name_token
 					if kind is "IDENT"
-						if len(value) < 3
+						if len(value) < MIN_NAME_LEN
 							errors at end = val_err(field_name_token, lbl_field, rule_min3)
 						if not is_snake(value)
 							errors at end = val_err(field_name_token, lbl_field, rule_snake)

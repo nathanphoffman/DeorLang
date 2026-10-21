@@ -2,6 +2,7 @@
 # Counts leading tab characters (or groups of 4 spaces) in a source line to determine
 # its indentation depth. Deor uses depth to delimit blocks.
 fn int count_tabs(string line)
+	unsafe_macro_run limits
 	string space = " "
 	strList chars = c_chars(line)
 	int char_count = len(chars)
@@ -13,7 +14,7 @@ fn int count_tabs(string line)
 			count = count + 1
 		else if character is space
 			space_run = space_run + 1
-			if space_run is 4
+			if space_run is SPACES_PER_INDENT
 				count = count + 1
 				space_run = 0
 		else

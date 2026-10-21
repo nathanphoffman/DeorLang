@@ -31,7 +31,7 @@ macro check_fn_declaration
 			(kind) in left_paren_token
 			if kind is "LPAREN"
 				int param_count = count_call_args(tokens, left_paren_pos)
-				if param_count > 3
+				if param_count > MAX_FN_PARAMS
 					int name_pos = locate_fn_name(pos)
 					Token name_token = tokens at name_pos
 					errors at end = val_err(name_token, lbl_fn, rule_max_params)
@@ -58,7 +58,7 @@ macro check_fn_declaration
 							if kind is "IDENT"
 								if value is param_type_val
 									errors at end = val_err(param_name_token, lbl_fn, rule_param_shadow)
-								if len(value) < 3
+								if len(value) < MIN_NAME_LEN
 									errors at end = val_err(param_name_token, lbl_fn, rule_min3)
 								if not is_snake(value)
 									errors at end = val_err(param_name_token, lbl_fn, rule_snake)

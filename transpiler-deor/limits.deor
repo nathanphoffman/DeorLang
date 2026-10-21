@@ -1,0 +1,7 @@
+# Named language limits shared by the validator and lexer.
+# Use `unsafe_macro_run limits` at the top of any fn that needs one of these values.
+
+unsafe_macro limits
+	const int MIN_NAME_LEN = 3
+	const int MAX_FN_PARAMS = 3
+	const int SPACES_PER_INDENT = 4

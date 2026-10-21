@@ -10,7 +10,7 @@ macro check_for_loop_var_name
 			Token next_token = tokens at next_pos
 			(kind, value) in next_token
 			if kind is "IDENT"
-				if len(value) < 3
+				if len(value) < MIN_NAME_LEN
 					errors at end = val_err(next_token, lbl_var, rule_min3)
 				if not is_snake(value)
 					errors at end = val_err(next_token, lbl_var, rule_snake)

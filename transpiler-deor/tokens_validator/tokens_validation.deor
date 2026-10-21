@@ -44,6 +44,7 @@ fn void validate_tokens(TokensRef tokens)
 	macro_run check_bracket_balance
 	handle_errors(errors)
 
+	unsafe_macro_run limits
 	unsafe_macro_run define_lookup_tables
 
 	# first pre-scan: collect names that the second pre-scan pass depends on

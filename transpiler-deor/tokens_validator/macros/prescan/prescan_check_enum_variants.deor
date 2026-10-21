@@ -60,7 +60,7 @@ macro prescan_check_enum_variants
 			if kind is "IDENT"
 				(value) in scan_token
 				enum_variant_names at end = value
-				if len(value) < 3
+				if len(value) < MIN_NAME_LEN
 					errors at end = val_err(scan_token, lbl_variant, rule_min3)
 				if not is_pascal(value)
 					errors at end = val_err(scan_token, lbl_variant, rule_enum_pascal)

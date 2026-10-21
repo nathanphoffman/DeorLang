@@ -1,5 +1,7 @@
 # It is important imports are loaded in the order they are first referenced
 
+import "transpiler-deor/limits.deor"
+
 # primitives and lib
 import "transpiler-deor/types.deor"
 import "transpiler-deor/lib/char.deor"
