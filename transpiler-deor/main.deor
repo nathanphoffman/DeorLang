@@ -27,7 +27,7 @@ fn void main()
 	int arg_count = len(cli_args)
 
 	if arg_count < 2
-		print("usage: deor input.deor output.rs [--verbose|-v]")
+		crash("usage: deor input.deor output.rs [--verbose|-v]")
 	else
 		string input_path = cli_args at 0
 		string output_path = cli_args at 1

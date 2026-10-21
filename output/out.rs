@@ -12449,7 +12449,7 @@ fn main() {
     let mut arg_count: i64 = (cli_args.len() as i64);
     if arg_count < 2 {
         // transpiler-deor/main.deor
-        println!("{}", "usage: deor input.deor output.rs [--verbose|-v]".to_string());
+        panic!("{}", "usage: deor input.deor output.rs [--verbose|-v]".to_string());
     } else {
         // transpiler-deor/main.deor
         let mut input_path: String = cli_args[0 as usize].clone();

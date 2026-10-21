@@ -23,8 +23,12 @@ function fileType(path: string) {
     const stat = statSync(path);
     // Nested ternary: file if it is a file, otherwise dir if it is a directory, otherwise null.
     return stat.isFile() ? 'file' : stat.isDirectory() ? 'dir' : null;
-  } catch {
-    return null;
+  } catch (err) {
+    // A missing path (ENOENT) or a file used as a folder (ENOTDIR) is expected for a
+    // request to a URL that doesn't exist, so that returns null. Anything else (permissions, I/O) is a real problem and is rethrown.
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === 'ENOENT' || code === 'ENOTDIR') return null;
+    throw err;
   }
 }
 
