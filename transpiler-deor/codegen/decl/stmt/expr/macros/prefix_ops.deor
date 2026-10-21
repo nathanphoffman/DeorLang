@@ -11,11 +11,11 @@ macro primary_prefix_ops
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if kind is "KW_MOVE"
+	if kind is KW_MOVE
 		int inner_pos = locate_next_token(pos)
 		ParseResult result = gen_primary(tokens, inner_pos, ctx)
 		return result
-	if kind is "KW_AVOW"
+	if kind is KW_AVOW
 		int avow_inner_pos = locate_next_token(pos)
 		ParseResult avow_result = gen_primary(tokens, avow_inner_pos, ctx)
 		move (code, new_pos) in avow_result
@@ -24,7 +24,7 @@ macro primary_prefix_ops
 		string avow_suffix = ".unwrap().0"
 		string avow_unwrap_code = s_join([avow_code, avow_suffix])
 		return make_result(move avow_unwrap_code, avow_end)
-	if kind is "KW_NOT"
+	if kind is KW_NOT
 		int operand_pos = locate_next_token(pos)
 		ParseResult operand_result = gen_primary(tokens, operand_pos, ctx)
 		move (code, new_pos) in operand_result

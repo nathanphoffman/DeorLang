@@ -16,20 +16,20 @@ macro prescan_collect_type_names
 	fn int locate_raw_name(int kw_pos)
 		return kw_pos + 1
 
-	if kind is "KW_SHAPE"
+	if kind is KW_SHAPE
 		int shape_name_pos = locate_shape_name(pre_i)
 		if shape_name_pos < token_count
 			Token shape_name_token = tokens at shape_name_pos
 			(kind, value) in shape_name_token
-			if kind is "IDENT"
+			if kind is IDENT
 				declared_type_names at end = value
 
-	if kind is "KW_RAW"
+	if kind is KW_RAW
 		int raw_name_pos = locate_raw_name(pre_i)
 		if raw_name_pos < token_count
 			Token raw_name_token = tokens at raw_name_pos
 			(kind, value) in raw_name_token
-			if kind is "IDENT"
+			if kind is IDENT
 				# a top-level `raw TypeName` declaration is followed directly by NEWLINE —
 				# `raw name = expr` (a local raw variable) is followed by EQUALS instead,
 				# and must not be collected as a type name
@@ -37,5 +37,5 @@ macro prescan_collect_type_names
 				if after_name_pos < token_count
 					Token after_name_token = tokens at after_name_pos
 					(kind) in after_name_token
-					if kind is "NEWLINE"
+					if kind is NEWLINE
 						declared_type_names at end = value

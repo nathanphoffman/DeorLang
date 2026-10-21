@@ -167,17 +167,18 @@ fn string replace_t_in_rust_block(string content, string placeholder, string con
 
 # Walks every token from an imported file and applies placeholder -> concrete substitution.
 fn tokenList apply_t_substitution(tokenList tokens, string placeholder, string concrete)
+	unsafe_macro_run token_kinds
 	tokenList result = empty
 	int token_count = len(tokens)
 	for index in range(token_count)
 		Token tok = tokens at index
 		(kind, value, line, file) in tok
-		if kind is "IDENT"
+		if kind is IDENT
 			string new_value = apply_t_in_name(value, placeholder, concrete)
 			TokenMeta tok_meta = move (line, file)
 			Token new_tok = make_token(kind, new_value, tok_meta)
 			result at end = new_tok
-		else if kind is "RUST_BLOCK"
+		else if kind is RUST_BLOCK
 			string new_content = replace_t_in_rust_block(value, placeholder, concrete)
 			TokenMeta tok_meta = move (line, file)
 			Token new_tok = make_token(kind, new_content, tok_meta)

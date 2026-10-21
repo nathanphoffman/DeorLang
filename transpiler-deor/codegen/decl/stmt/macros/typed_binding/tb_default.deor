@@ -25,15 +25,15 @@ macro tb_default
 
 	string suffix = ""
 	if not is_chain
-		if kind is "STRING"
+		if kind is STRING
 			suffix = ".to_string()"
-		else if kind is "IDENT"
+		else if kind is IDENT
 			int val_next_idx = locate_after_value(val_pos)
 			if val_next_idx < token_count
 				Token next_val_token = tokens at val_next_idx
 				(kind) in next_val_token
-				bool val_is_call = kind is "LPAREN"
-				bool val_is_idx = kind is "KW_AT"
+				bool val_is_call = kind is LPAREN
+				bool val_is_idx = kind is KW_AT
 				if not val_is_call
 					if not val_is_idx
 						suffix = ".clone()"

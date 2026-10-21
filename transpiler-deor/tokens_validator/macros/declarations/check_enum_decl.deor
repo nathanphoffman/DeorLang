@@ -5,12 +5,12 @@ macro check_enum_decl
 	fn int locate_enum_type_keyword(int kw_pos)
 		return kw_pos + 1
 
-	string keyword = "KW_ENUM"
+	string keyword = KW_ENUM
 	string lbl = lbl_enum
 	string rule = rule_pascal
 	fnTestRule test_rule = is_pascal
 	int validate_indent_offset = 1
-	if cur_kind is "KW_ENUM"
+	if cur_kind is KW_ENUM
 		int type_keyword_pos = locate_enum_type_keyword(pos)
 		if type_keyword_pos < token_count
 			Token type_keyword_token = tokens at type_keyword_pos

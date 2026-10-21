@@ -1,8 +1,8 @@
 # Emits INDENT or DEDENT tokens by comparing the current line's depth against the
 # indent stack. Pushes INDENT when deeper, pops and emits DEDENTs when shallower.
 macro emit_indent_or_dedent
-	string kind_indent = "INDENT"
-	string kind_dedent = "DEDENT"
+	string kind_indent = INDENT
+	string kind_dedent = DEDENT
 	string empty_str = ""
 	int stack_len = len(indent_stack)
 	int top_idx = stack_len - 1

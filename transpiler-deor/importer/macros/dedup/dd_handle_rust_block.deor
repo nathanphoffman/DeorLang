@@ -22,9 +22,9 @@ macro dd_handle_rust_block
 		Token newline_token = tokens at newline_pos
 		Token content_token = tokens at content_pos
 		(kind) in newline_token
-		bool newline_ok = kind is "NEWLINE"
+		bool newline_ok = kind is NEWLINE
 		(kind, value) in content_token
-		bool block_ok = kind is "RUST_BLOCK"
+		bool block_ok = kind is RUST_BLOCK
 		is_block = newline_ok and block_ok
 		block_value = value
 	if is_block

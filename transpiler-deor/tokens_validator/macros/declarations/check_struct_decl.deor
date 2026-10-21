@@ -6,7 +6,7 @@ macro check_struct_decl
 	macro_run check_struct_field_types
 
 	int validate_indent_offset = 1
-	string keyword = "KW_STRUCT"
+	string keyword = KW_STRUCT
 	string lbl = lbl_struct
 	string rule = rule_pascal
 	fnTestRule test_rule = is_pascal

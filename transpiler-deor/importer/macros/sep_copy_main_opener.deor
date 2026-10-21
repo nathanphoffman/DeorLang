@@ -18,7 +18,7 @@ macro sep_copy_main_opener
 	if scan_pos < token_count
 		Token newline_token = tokens at scan_pos
 		(kind) in newline_token
-		newline_present = kind is "NEWLINE"
+		newline_present = kind is NEWLINE
 	if newline_present
 		Token newline_token2 = tokens at scan_pos
 		result_tokens at end = newline_token2
@@ -27,7 +27,7 @@ macro sep_copy_main_opener
 		if scan_pos < token_count
 			Token indent_token = tokens at scan_pos
 			(kind) in indent_token
-			indent_present = kind is "INDENT"
+			indent_present = kind is INDENT
 		if indent_present
 			Token indent_token2 = tokens at scan_pos
 			result_tokens at end = indent_token2

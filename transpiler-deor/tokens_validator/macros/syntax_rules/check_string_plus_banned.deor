@@ -20,7 +20,7 @@ macro check_string_plus_banned
 	fn int locate_prev_token(int kw_pos)
 		return kw_pos - 1
 
-	if cur_kind is "PLUS"
+	if cur_kind is PLUS
 		if pos > 0
 			int right_pos = locate_next_token(pos)
 			if right_pos < token_count
@@ -34,14 +34,14 @@ macro check_string_plus_banned
 				string right_kind = kind
 				string right_value = value
 
-				bool left_is_str = left_kind is "STRING"
+				bool left_is_str = left_kind is STRING
 				if not left_is_str
-					if left_kind is "IDENT"
+					if left_kind is IDENT
 						left_is_str = list_has(string_var_names, left_value)
 
-				bool right_is_str = right_kind is "STRING"
+				bool right_is_str = right_kind is STRING
 				if not right_is_str
-					if right_kind is "IDENT"
+					if right_kind is IDENT
 						right_is_str = list_has(string_var_names, right_value)
 
 				if left_is_str or right_is_str

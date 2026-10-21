@@ -4,7 +4,7 @@ macro check_fn_decl
 	macro_run check_fn_declaration
 	macro_run check_missing_return_expr
 
-	string keyword = "KW_FN"
+	string keyword = KW_FN
 	string lbl = lbl_fn
 	string rule = rule_snake
 	fnTestRule test_rule = is_snake

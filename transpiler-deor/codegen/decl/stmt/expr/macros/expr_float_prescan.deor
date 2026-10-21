@@ -11,16 +11,16 @@ unsafe_macro expr_float_prescan
 	for if pre_scan < token_count
 		Token pre_tok = tokens at pre_scan
 		(kind) in pre_tok
-		if kind is "FLOAT"
+		if kind is FLOAT
 			expr_has_float = true
 			break
-		if kind is "NEWLINE"
+		if kind is NEWLINE
 			break
 		if kind is "EOF"
 			break
-		if kind is "LPAREN"
+		if kind is LPAREN
 			pre_depth = pre_depth + 1
-		if kind is "RPAREN"
+		if kind is RPAREN
 			if pre_depth is 0
 				break
 			pre_depth = pre_depth - 1

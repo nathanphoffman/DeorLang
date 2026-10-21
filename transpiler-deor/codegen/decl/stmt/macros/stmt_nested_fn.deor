@@ -7,7 +7,7 @@ macro stmt_nested_fn
 	fn int locate_fn_return_type(int kw_pos)
 		return kw_pos + 1
 
-	if kind is "KW_FN"
+	if kind is KW_FN
 		TokensRef fn_tokens = tokens
 		int return_type_pos = locate_fn_return_type(pos)
 		unsafe_macro_run fn_parse_signature

@@ -5,12 +5,12 @@ macro primary_call_expr
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if kind is "IDENT"
+	if kind is IDENT
 		int next_pos = locate_next_token(pos)
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
-			if kind is "LPAREN"
+			if kind is LPAREN
 				string func_name = value
 				# ex: name({args}) — next_pos+1 grabs the first call-argument slot
 				int args_pos = locate_next_token(next_pos)

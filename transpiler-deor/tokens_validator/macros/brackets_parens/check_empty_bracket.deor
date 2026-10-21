@@ -5,10 +5,10 @@ macro check_empty_bracket
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if cur_kind is "LBRACKET"
+	if cur_kind is LBRACKET
 		int next_pos = locate_next_token(pos)
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
-			if kind is "RBRACKET"
+			if kind is RBRACKET
 				errors at end = val_err(tok, lbl_var, rule_empty_bracket)

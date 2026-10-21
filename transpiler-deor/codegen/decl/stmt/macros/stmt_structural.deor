@@ -9,19 +9,19 @@ macro stmt_structural
 	fn int locate_next_token(int anchor)
 		return anchor + 1
 
-	if kind is "KW_MOVE"
+	if kind is KW_MOVE
 		int move_next = locate_next_token(pos)
 		Token move_next_token = tokens at move_next
 		(kind) in move_next_token
-		if kind is "LPAREN"
+		if kind is LPAREN
 			return gen_move_destructure(move_next, depth, ctx)
 
-	if kind is "LPAREN"
+	if kind is LPAREN
 		int peek_pos = locate_next_token(pos)
 		if peek_pos < token_count
 			Token peek_token = tokens at peek_pos
 			(kind) in peek_token
-			if kind is "KW_AVOW"
+			if kind is KW_AVOW
 				# ex: (avow {expr}) — peek_pos+1 grabs the expression after avow
 				int expr_pos = locate_next_token(peek_pos)
 				ParseResult expr_result = gen_expr(tokens, expr_pos, ctx)

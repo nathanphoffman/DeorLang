@@ -24,7 +24,7 @@ macro check_validator_declaration
 	fn int locate_type_body(int kw_pos)
 		return kw_pos + 7
 
-	if cur_kind is "KW_TYPE"
+	if cur_kind is KW_TYPE
 		int type_name_pos = locate_type_name(pos)
 		int left_paren_pos = locate_type_left_paren(pos)
 		int param_type_pos = locate_type_param_type(pos)
@@ -37,11 +37,11 @@ macro check_validator_declaration
 			(kind, value) in type_name_token
 			string type_name = value
 			(kind) in left_paren_token
-			if kind is "LPAREN"
+			if kind is LPAREN
 				(value) in param_type_token
 				string param_type = value
 				(kind, value) in param_name_token
-				if kind is "IDENT"
+				if kind is IDENT
 					if value is type_name
 						errors at end = val_err(param_name_token, lbl_type, rule_type_param_shadow)
 					if value is param_type
@@ -58,10 +58,10 @@ macro check_validator_declaration
 				if body_pos < token_count
 					Token newline_token = tokens at newline_pos
 					(kind) in newline_token
-					if kind is "NEWLINE"
+					if kind is NEWLINE
 						Token body_token = tokens at body_pos
 						(kind) in body_token
-						if kind is "INDENT"
+						if kind is INDENT
 							has_body = true
 				if not has_body
 					errors at end = val_err(type_name_token, lbl_type, rule_validator_missing_body)

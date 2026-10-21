@@ -11,12 +11,12 @@ macro aas_struct
 	for if peek_pos < token_count
 		Token peek_token = tokens at peek_pos
 		(kind) in peek_token
-		if kind is "RPAREN"
+		if kind is RPAREN
 			break
-		if kind is "IDENT"
+		if kind is IDENT
 			peek_pos = peek_pos + 1
 			continue
-		if kind is "COMMA"
+		if kind is COMMA
 			peek_pos = peek_pos + 1
 			continue
 		is_struct = false
@@ -27,12 +27,12 @@ macro aas_struct
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind, value) in scan_token
-			if kind is "RPAREN"
+			if kind is RPAREN
 				scan_pos = scan_pos + 1
 				break
-			else if kind is "COMMA"
+			else if kind is COMMA
 				scan_pos = scan_pos + 1
-			else if kind is "IDENT"
+			else if kind is IDENT
 				fields at end = value
 				scan_pos = scan_pos + 1
 		string matched_struct_name = find_struct_for_fields(struct_reg, fields)

@@ -17,7 +17,7 @@ macro prescan_collect_declared_vars_binding
 	fn int locate_equals(int kw_pos)
 		return kw_pos + 2
 
-	if kind is "IDENT"
+	if kind is IDENT
 		int name_pos = locate_name(pre_i)
 		int equals_pos = locate_equals(pre_i)
 		if equals_pos < token_count
@@ -27,13 +27,13 @@ macro prescan_collect_declared_vars_binding
 			string name_kind = kind
 			string name_value = value
 			(kind) in equals_token
-			if name_kind is "IDENT" and kind is "EQUALS"
+			if name_kind is IDENT and kind is EQUALS
 				declared_var_names at end = name_value
 		if name_pos < token_count
 			# ex: {name} as expr — name_pos grabs the 'as' keyword slot
 			Token as_token = tokens at name_pos
 			(kind) in as_token
-			if kind is "KW_AS"
+			if kind is KW_AS
 				(value) in pre_tok
 				declared_var_names at end = value
 			# ex: Roll {best} — a validator type's bare declaration without '='
@@ -42,6 +42,6 @@ macro prescan_collect_declared_vars_binding
 			(value) in pre_tok
 			bool is_vtype = list_has(validator_type_names, value)
 			if is_vtype
-				if kind is "IDENT"
+				if kind is IDENT
 					(value) in as_token
 					declared_var_names at end = value

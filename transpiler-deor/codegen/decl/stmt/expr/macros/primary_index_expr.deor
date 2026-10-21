@@ -4,12 +4,12 @@ macro primary_index_expr
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if kind is "IDENT"
+	if kind is IDENT
 		int next_pos = locate_next_token(pos)
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
-			if kind is "KW_AT"
+			if kind is KW_AT
 				# ex: name at {idx} — next_pos+1 grabs the index expression after 'at'
 				int index_pos = locate_next_token(next_pos)
 				ParseResult index_result = gen_primary(tokens, index_pos, ctx)

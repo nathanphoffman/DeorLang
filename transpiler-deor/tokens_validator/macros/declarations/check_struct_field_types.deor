@@ -15,12 +15,12 @@ macro check_struct_field_types
 	fn int locate_struct_name(int kw_pos)
 		return kw_pos + 1
 
-	if cur_kind is "KW_STRUCT"
+	if cur_kind is KW_STRUCT
 		int scan_pos = locate_struct_name(pos)
 		for if scan_pos < token_count
 			Token indent_scan_token = tokens at scan_pos
 			(kind) in indent_scan_token
-			if kind is "INDENT"
+			if kind is INDENT
 				break
 			scan_pos = scan_pos + 1
 		scan_pos = scan_pos + 1
@@ -29,20 +29,20 @@ macro check_struct_field_types
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind) in scan_token
-			if kind is "INDENT"
+			if kind is INDENT
 				depth = depth + 1
-			if kind is "DEDENT"
+			if kind is DEDENT
 				if depth is 0
 					break
 				depth = depth - 1
-			if kind is "IDENT"
+			if kind is IDENT
 				(value) in scan_token
 				string field_type = value
 				int field_name_pos = scan_pos + 1
 				if field_name_pos < token_count
 					Token field_name_token = tokens at field_name_pos
 					(kind) in field_name_token
-					if kind is "IDENT"
+					if kind is IDENT
 						bool is_known_field_type = list_has(primitive_type_names, field_type) or list_has(declared_type_names, field_type)
 						if not is_known_field_type
 							errors at end = val_err(scan_token, lbl_field, rule_unknown_type)

@@ -6,12 +6,12 @@ macro check_return_invalid
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if cur_kind is "KW_RETURN"
+	if cur_kind is KW_RETURN
 		int next_pos = locate_next_token(pos)
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
-			if kind is "KW_EMPTY"
+			if kind is KW_EMPTY
 				errors at end = val_err(next_token, lbl_fn, rule_return_empty)
-			if kind is "KW_NONE"
+			if kind is KW_NONE
 				errors at end = val_err(next_token, lbl_fn, rule_return_none)

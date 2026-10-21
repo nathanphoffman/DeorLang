@@ -2,6 +2,7 @@
 # Generates a complete Rust function from a Deor `fn RetType name(params)` declaration.
 # Delegates to fn_parse_signature, fn_build_body_ctx, and fn_emit.
 fn ParseResult gen_fn_decl(TokensRef fn_tokens, int pos, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	# ex: fn {int} add(left, right) — kw_pos+1 grabs the return-type slot
 	fn int locate_fn_return_type(int kw_pos)
 		return kw_pos + 1

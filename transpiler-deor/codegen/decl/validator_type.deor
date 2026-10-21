@@ -11,6 +11,7 @@
 #                          immediately-invoked closure `(|| -> bool { ... })()` so the
 #                          predicate's `return` exits the closure, not the constructor.
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	# ex: type {Positive}(int val) — kw_pos+1 grabs the validator type's name
 	fn int locate_type_name(int kw_pos)
 		return kw_pos + 1
@@ -63,7 +64,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	for if not c_at_end(peek)
 		(current) in peek
 		(kind) in current
-		if kind is "NEWLINE"
+		if kind is NEWLINE
 			peek = cur_next_ref(peek, tokens)
 			continue
 		break
@@ -72,7 +73,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	if not c_at_end(peek)
 		(current) in peek
 		(kind) in current
-		is_single = kind is "DEDENT"
+		is_single = kind is DEDENT
 
 	string final_pred_code = pred_code
 	int final_pos = 0
@@ -83,7 +84,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 			(current) in scan
 			(kind) in current
 			scan = cur_next_ref(scan, tokens)
-			if kind is "DEDENT"
+			if kind is DEDENT
 				break
 		(pos) in scan
 		final_pos = pos

@@ -3,10 +3,11 @@
 # String literals need `.to_string()`, identifiers need `.clone()`. Expressions
 # produced by calls or arithmetic are already owned and pass through unchanged.
 fn string emit_val(string val_code, string val_kind)
+	unsafe_macro_run token_kinds
 	unsafe_macro_run rust_strings
-	if val_kind is "STRING"
+	if val_kind is STRING
 		return s_join([val_code, RS_TOS])
-	if val_kind is "IDENT"
+	if val_kind is IDENT
 		return s_join([val_code, RS_CLN])
 	return val_code
 
@@ -15,6 +16,7 @@ fn string emit_val(string val_code, string val_kind)
 # chains (those already produce an owned value, and a suffix meant for a single token would
 # land on the chain's last operand). The value spans tokens [val_pos, val_end).
 fn string value_ownership_suffix(TokensRef tokens, int val_pos, int val_end)
+	unsafe_macro_run token_kinds
 	# ex: other{(}x) — anchor+1 checks for a call/index after the identifier
 	fn int locate_after_value(int anchor)
 		return anchor + 1
@@ -24,15 +26,15 @@ fn string value_ownership_suffix(TokensRef tokens, int val_pos, int val_end)
 		return ""
 	Token val_token = tokens at val_pos
 	(kind) in val_token
-	if kind is "STRING"
+	if kind is STRING
 		return ".to_string()"
-	if kind is "IDENT"
+	if kind is IDENT
 		int val_next_idx = locate_after_value(val_pos)
 		if val_next_idx < len(tokens)
 			Token next_val_token = tokens at val_next_idx
 			(kind) in next_val_token
-			bool val_is_call = kind is "LPAREN"
-			bool val_is_idx = kind is "KW_AT"
+			bool val_is_call = kind is LPAREN
+			bool val_is_idx = kind is KW_AT
 			if val_is_call
 				return ""
 			if val_is_idx
@@ -46,14 +48,15 @@ fn string value_ownership_suffix(TokensRef tokens, int val_pos, int val_end)
 # count. Used to skip the ownership-coercion suffix (.clone()/.to_string()), which
 # assumes a single token and would otherwise land on the chain's last operand.
 fn bool is_expr_chain(TokensRef tokens, int start, int stop)
+	unsafe_macro_run token_kinds
 	int depth = 0
 	int scan = start
 	for if scan < stop
 		Token scan_tok = tokens at scan
 		(kind) in scan_tok
-		if kind is "LPAREN"
+		if kind is LPAREN
 			depth = depth + 1
-		if kind is "RPAREN"
+		if kind is RPAREN
 			if depth > 0
 				depth = depth - 1
 		if depth is 0

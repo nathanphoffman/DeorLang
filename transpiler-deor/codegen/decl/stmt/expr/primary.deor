@@ -21,6 +21,7 @@ fn ParseResult gen_unary_method(int args_pos, string suffix, RcCtx ctx)
 #   primary/macros/primary_index_expr.deor    — name at idx
 #   primary/macros/primary_plain_ident.deor   — enum variant or plain name
 fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	# ex: {unknown} — kw_pos+1 grabs the token after an unrecognized primary
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1

@@ -5,7 +5,7 @@ macro primary_plain_ident
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if kind is "IDENT"
+	if kind is IDENT
 		int next_pos = locate_next_token(pos)
 		string variant_enum = reg_get(variant_reg, value)
 		if not is_empty(variant_enum)

@@ -8,14 +8,14 @@ macro check_builtin_arg_count
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if cur_kind is "IDENT"
+	if cur_kind is IDENT
 		bool is_target = cur_val is builtin_name
 		if is_target
 			int left_paren_pos = locate_next_token(pos)
 			if left_paren_pos < token_count
 				Token left_paren_token = tokens at left_paren_pos
 				(kind) in left_paren_token
-				if kind is "LPAREN"
+				if kind is LPAREN
 					int arg_count = count_call_args(tokens, left_paren_pos)
 					bool count_ok = arg_count >= min_args and arg_count <= max_args
 					if not count_ok

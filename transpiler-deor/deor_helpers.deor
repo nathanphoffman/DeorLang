@@ -23,22 +23,24 @@ fn ParseResult make_result(string code, int new_pos)
 # If the token at `pos` is a NEWLINE, returns pos+1; otherwise returns pos unchanged.
 # Called after parsing a statement's value to step past the trailing newline.
 fn int adv_nl_ref(int pos, TokensRef tokens)
+	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	if pos < token_count
 		Token cur_token = tokens at pos
 		(kind) in cur_token
-		if kind is "NEWLINE"
+		if kind is NEWLINE
 			return pos + 1
 	return pos
 
 # If the token at `pos` is an INDENT, returns pos+1; otherwise returns pos unchanged.
 # Used alongside adv_nl_ref to skip the indent token at the opening of a block body.
 fn int adv_indent_ref(int pos, TokensRef tokens)
+	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	if pos < token_count
 		Token cur_token = tokens at pos
 		(kind) in cur_token
-		if kind is "INDENT"
+		if kind is INDENT
 			return pos + 1
 	return pos
 

@@ -19,14 +19,14 @@ macro prescan_collect_declared_vars_validator_param
 	fn int locate_param_name(int kw_pos)
 		return kw_pos + 4
 
-	if kind is "KW_TYPE"
+	if kind is KW_TYPE
 		int left_paren_pos = locate_left_paren(pre_i)
 		int param_name_pos = locate_param_name(pre_i)
 		if param_name_pos < token_count
 			Token left_paren_token = tokens at left_paren_pos
 			Token param_name_token = tokens at param_name_pos
 			(kind) in left_paren_token
-			if kind is "LPAREN"
+			if kind is LPAREN
 				(kind, value) in param_name_token
-				if kind is "IDENT"
+				if kind is IDENT
 					declared_var_names at end = value

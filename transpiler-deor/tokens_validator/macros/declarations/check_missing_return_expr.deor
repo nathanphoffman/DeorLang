@@ -19,30 +19,30 @@ macro check_missing_return_expr
 	fn int locate_fn_left_paren(int kw_pos)
 		return kw_pos + 3
 
-	if cur_kind is "KW_FN"
+	if cur_kind is KW_FN
 		int return_type_pos = locate_fn_return_type(pos)
 		int name_pos = locate_fn_name(pos)
 		int left_paren_pos = locate_fn_left_paren(pos)
 		if left_paren_pos < token_count
 			Token return_type_token = tokens at return_type_pos
 			(kind, value) in return_type_token
-			bool has_ret_type = kind is "IDENT"
+			bool has_ret_type = kind is IDENT
 			bool is_void = value is "void"
 			Token left_paren_token = tokens at left_paren_pos
 			(kind) in left_paren_token
-			bool is_call_shape = kind is "LPAREN"
+			bool is_call_shape = kind is LPAREN
 			if has_ret_type and not is_void and is_call_shape
 				int right_paren_pos = find_matching_rparen(tokens, left_paren_pos)
 				int newline_pos = right_paren_pos + 1
 				if newline_pos < token_count
 					Token newline_token = tokens at newline_pos
 					(kind) in newline_token
-					if kind is "NEWLINE"
+					if kind is NEWLINE
 						int indent_pos = newline_pos + 1
 						if indent_pos < token_count
 							Token indent_token = tokens at indent_pos
 							(kind) in indent_token
-							if kind is "INDENT"
+							if kind is INDENT
 								int body_first_pos = indent_pos + 1
 								int body_end_pos = find_block_end_ref(tokens, indent_pos)
 								if body_first_pos < body_end_pos
@@ -64,27 +64,27 @@ macro check_missing_return_expr
 												Token prev_token = tokens at prev_pos
 												(kind) in prev_token
 												string prev_kind = kind
-												bool prev_is_boundary = prev_kind is "NEWLINE"
+												bool prev_is_boundary = prev_kind is NEWLINE
 												if not prev_is_boundary
-													prev_is_boundary = prev_kind is "INDENT"
+													prev_is_boundary = prev_kind is INDENT
 												if not prev_is_boundary
-													prev_is_boundary = prev_kind is "DEDENT"
+													prev_is_boundary = prev_kind is DEDENT
 												at_boundary = prev_is_boundary
 											if at_boundary
 												Token stmt_token = tokens at scan_pos
 												(kind) in stmt_token
 												string stmt_kind = kind
-												bool is_candidate = stmt_kind is "IDENT"
+												bool is_candidate = stmt_kind is IDENT
 												if not is_candidate
 													is_candidate = stmt_kind is "INT"
 												if not is_candidate
-													is_candidate = stmt_kind is "FLOAT"
+													is_candidate = stmt_kind is FLOAT
 												if not is_candidate
-													is_candidate = stmt_kind is "STRING"
+													is_candidate = stmt_kind is STRING
 												if not is_candidate
-													is_candidate = stmt_kind is "KW_TRUE"
+													is_candidate = stmt_kind is KW_TRUE
 												if not is_candidate
-													is_candidate = stmt_kind is "KW_FALSE"
+													is_candidate = stmt_kind is KW_FALSE
 												if is_candidate
 													int next_pos = scan_pos + 1
 													if next_pos < body_end_pos
@@ -92,7 +92,7 @@ macro check_missing_return_expr
 														(kind) in next_token
 														bool is_bare_expr = is_binary_op(kind)
 														if not is_bare_expr
-															is_bare_expr = kind is "NEWLINE"
+															is_bare_expr = kind is NEWLINE
 														if is_bare_expr
 															errors at end = val_err(stmt_token, lbl_stmt, rule_missing_return_expr)
 											scan_pos = scan_pos + 1
@@ -104,16 +104,17 @@ macro check_missing_return_expr
 # Returns end_pos itself (never a valid depth-0 NEWLINE position) as the not-found
 # sentinel — unary minus has no codegen in Deor yet, so plain -1 isn't usable here.
 fn int first_depth0_newline(TokensRef tokens, int start, int end_pos)
+	unsafe_macro_run token_kinds
 	int depth = 0
 	int scan_pos = start
 	for if scan_pos < end_pos
 		Token scan_token = tokens at scan_pos
 		(kind) in scan_token
-		if kind is "INDENT"
+		if kind is INDENT
 			depth = depth + 1
-		else if kind is "DEDENT"
+		else if kind is DEDENT
 			depth = depth - 1
-		else if kind is "NEWLINE"
+		else if kind is NEWLINE
 			if depth is 0
 				return scan_pos
 		scan_pos = scan_pos + 1

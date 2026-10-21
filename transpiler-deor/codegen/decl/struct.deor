@@ -5,6 +5,7 @@
 # comparisons. Maps each field's Deor type to its Rust equivalent via resolve_type
 # (Option<T>-wrapping validator-type fields, since those are Option<T> under the hood).
 fn ParseResult gen_struct_decl(TokensRef tokens, int pos, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	# ex: struct {Point} — kw_pos+1 grabs the struct name
 	fn int locate_struct_name(int kw_pos)
 		return kw_pos + 1
@@ -21,12 +22,12 @@ fn ParseResult gen_struct_decl(TokensRef tokens, int pos, RcCtx ctx)
 	for if not c_at_end(cur)
 		(current) in cur
 		(kind, value) in current
-		if kind is "DEDENT"
+		if kind is DEDENT
 			cur = cur_next_ref(cur, tokens)
 			break
-		else if kind is "NEWLINE"
+		else if kind is NEWLINE
 			cur = cur_next_ref(cur, tokens)
-		else if kind is "IDENT"
+		else if kind is IDENT
 			string field_type = value
 			cur = cur_next_ref(cur, tokens)
 			(current) in cur

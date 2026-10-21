@@ -9,7 +9,7 @@ macro validate_ident
 			(kind, value) in name_tok
 			string name_kind = kind
 			string name_val = value
-			if name_kind is "IDENT"
+			if name_kind is IDENT
 				if len(name_val) < MIN_NAME_LEN
 					errors at end = val_err(name_tok, lbl, rule_min3)
 				if not test_rule(name_val)

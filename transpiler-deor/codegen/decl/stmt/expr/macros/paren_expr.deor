@@ -9,12 +9,12 @@ macro primary_paren_expr
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if kind is "LPAREN"
+	if kind is LPAREN
 		int peek_pos = locate_next_token(pos)
 		if peek_pos < token_count
 			Token peek_token = tokens at peek_pos
 			(kind) in peek_token
-			if kind is "KW_AVOW"
+			if kind is KW_AVOW
 				# ex: (avow {expr}) — peek_pos+1 grabs the expression after 'avow'
 				int avow_expr_pos = locate_next_token(peek_pos)
 				ParseResult avow_expr_result = gen_expr(tokens, avow_expr_pos, ctx)
@@ -32,12 +32,12 @@ macro primary_paren_expr
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
 				(kind) in scan_token
-				if kind is "RPAREN"
+				if kind is RPAREN
 					break
-				if kind is "IDENT"
+				if kind is IDENT
 					scan_pos = scan_pos + 1
 					continue
-				if kind is "COMMA"
+				if kind is COMMA
 					scan_pos = scan_pos + 1
 					continue
 				is_struct = false
@@ -49,12 +49,12 @@ macro primary_paren_expr
 				for if field_scan_pos < token_count
 					Token field_token = tokens at field_scan_pos
 					(kind, value) in field_token
-					if kind is "RPAREN"
+					if kind is RPAREN
 						field_scan_pos = field_scan_pos + 1
 						break
-					else if kind is "COMMA"
+					else if kind is COMMA
 						field_scan_pos = field_scan_pos + 1
-					else if kind is "IDENT"
+					else if kind is IDENT
 						fields at end = value
 						field_scan_pos = field_scan_pos + 1
 					else

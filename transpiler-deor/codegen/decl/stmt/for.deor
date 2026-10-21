@@ -5,6 +5,7 @@
 #   `for var in range(n)`    → `for var in 0..n { ... }` (or start..end)
 #   `for var in collection`  → `for var in collection { ... }`
 fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	# Reused across the branches below for whatever "one token past X" is needed —
 	# each call site's comment documents what X is.
 	fn int locate_next_token(int anchor)
@@ -19,15 +20,15 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	Token next_token = tokens at next_pos
 	(kind) in next_token
 
-	if kind is "KW_IF"
+	if kind is KW_IF
 		macro_run for_while
 
-	if kind is "KW_MOVE"
+	if kind is KW_MOVE
 		macro_run for_move
 
 	string var_name = "_"
 	int iter_pos = 0
-	if kind is "KW_IN"
+	if kind is KW_IN
 		# ex: for in {(}start, end) — next_pos+1 grabs the range expression after 'in'
 		iter_pos = locate_next_token(next_pos)
 	else

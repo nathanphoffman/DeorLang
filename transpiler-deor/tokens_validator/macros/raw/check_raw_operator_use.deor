@@ -12,7 +12,7 @@ macro check_raw_operator_use
 	fn int locate_prev_token(int kw_pos)
 		return kw_pos - 1
 
-	if cur_kind is "IDENT"
+	if cur_kind is IDENT
 		bool is_raw = list_has(raw_var_names, cur_val)
 		if is_raw
 			bool next_is_op = false

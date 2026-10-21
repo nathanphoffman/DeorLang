@@ -11,7 +11,7 @@ macro stmt_ident
 	fn int locate_next_token(int anchor)
 		return anchor + 1
 
-	if kind is "IDENT"
+	if kind is IDENT
 		string ident_name = value
 		int next_pos = locate_next_token(pos)
 		if next_pos >= token_count
@@ -20,29 +20,29 @@ macro stmt_ident
 		Token next_token = tokens at next_pos
 		(kind) in next_token
 
-		if kind is "KW_AS"
+		if kind is KW_AS
 			return gen_as_binding(pos, depth, ctx)
 
-		if kind is "LPAREN"
+		if kind is LPAREN
 			return gen_call_stmt(pos, depth, ctx)
 
-		if kind is "KW_AT"
+		if kind is KW_AT
 			return gen_list_mutation_stmt(pos, depth, ctx)
 
-		if kind is "KW_REMOVE"
+		if kind is KW_REMOVE
 			return gen_list_mutation_stmt(pos, depth, ctx)
 
-		if kind is "EQUALS"
+		if kind is EQUALS
 			return gen_reassign(pos, depth, ctx)
 
 		# Type name = expr  (typed binding)
-		if kind is "IDENT"
+		if kind is IDENT
 			# ex: Type name {=} val — next_pos+1 grabs the expected '=' after the var name
 			int eq_pos = locate_next_token(next_pos)
 			if eq_pos < token_count
 				Token eq_token = tokens at eq_pos
 				(kind) in eq_token
-				if kind is "EQUALS"
+				if kind is EQUALS
 					return gen_typed_binding(pos, depth, ctx)
 			# bare declaration: Type name  (no = → None for validator types)
 			(value) in next_token

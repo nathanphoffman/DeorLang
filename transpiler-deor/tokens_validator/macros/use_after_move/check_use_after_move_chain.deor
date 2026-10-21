@@ -23,13 +23,13 @@ macro check_use_after_move_chain
 	# "else if", which belongs to the chain already on the stack (else and if
 	# are two flat tokens on the same line, not a nested if inside an else
 	# block — see docs/conditionals.md).
-	if cur_kind is "KW_IF"
+	if cur_kind is KW_IF
 		bool is_elseif = false
 		if pos > 0
 			int prev_pos = locate_prev_token(pos)
 			Token prev_token = tokens at prev_pos
 			(kind) in prev_token
-			if kind is "KW_ELSE"
+			if kind is KW_ELSE
 				is_elseif = true
 		if not is_elseif
 			int chain_depth = block_depth
@@ -47,7 +47,7 @@ macro check_use_after_move_chain
 	# way, moved_vars is restored to the pre-chain snapshot so the next arm
 	# starts from the same base as every other arm, not from what the
 	# previous arm moved.
-	if cur_kind is "KW_ELSE"
+	if cur_kind is KW_ELSE
 		int stack_len = len(move_if_stack)
 		if stack_len > 0
 			int top_idx = stack_len - 1
@@ -69,7 +69,7 @@ macro check_use_after_move_chain
 	# Every other DEDENT (closing a for/fn body, or a chain arm followed by
 	# another else) is a no-op — nothing is cleared, so a move followed by a
 	# read in later straight-line code is still caught.
-	if cur_kind is "DEDENT"
+	if cur_kind is DEDENT
 		int stack_len = len(move_if_stack)
 		if stack_len > 0
 			int top_idx = stack_len - 1
@@ -81,7 +81,7 @@ macro check_use_after_move_chain
 				if after_dedent < token_count
 					Token after_dedent_token = tokens at after_dedent
 					(kind) in after_dedent_token
-					if kind is "KW_ELSE"
+					if kind is KW_ELSE
 						next_is_else = true
 				if not next_is_else
 					bool arm_is_terminal = arm_ends_in_jump(tokens, pos)

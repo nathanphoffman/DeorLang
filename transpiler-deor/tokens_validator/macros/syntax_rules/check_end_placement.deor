@@ -5,12 +5,12 @@ macro check_end_placement
 	fn int locate_prev_token(int kw_pos)
 		return kw_pos - 1
 
-	if cur_kind is "KW_END"
+	if cur_kind is KW_END
 		bool is_valid = false
 		if pos > 0
 			int prev_pos = locate_prev_token(pos)
 			Token prev_token = tokens at prev_pos
 			(kind) in prev_token
-			is_valid = kind is "KW_AT"
+			is_valid = kind is KW_AT
 		if not is_valid
 			errors at end = val_err(tok, lbl_var, rule_end)

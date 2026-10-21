@@ -9,19 +9,19 @@ macro check_bare_tuple_range
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if cur_kind is "KW_FOR"
+	if cur_kind is KW_FOR
 		int next_pos = locate_next_token(pos)
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
 			bool applies = true
-			if kind is "KW_IF"
+			if kind is KW_IF
 				applies = false
-			if kind is "KW_MOVE"
+			if kind is KW_MOVE
 				applies = false
 			if applies
 				int iter_pos = 0
-				if kind is "KW_IN"
+				if kind is KW_IN
 					# ex: for in {(}low, high) — bare index-free range form
 					iter_pos = locate_next_token(next_pos)
 				else
@@ -32,5 +32,5 @@ macro check_bare_tuple_range
 				if iter_pos < token_count
 					Token iter_token = tokens at iter_pos
 					(kind) in iter_token
-					if kind is "LPAREN"
+					if kind is LPAREN
 						errors at end = val_err(iter_token, lbl_call, rule_bare_tuple_range)

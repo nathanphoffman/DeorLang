@@ -29,7 +29,7 @@ macro track_non_bool_vars
 	fn int locate_left_paren(int kw_pos)
 		return kw_pos + 3
 
-	if cur_kind is "IDENT"
+	if cur_kind is IDENT
 		int name_pos = locate_var_name(pos)
 		int equals_pos = locate_equals(pos)
 		if equals_pos < token_count
@@ -39,7 +39,7 @@ macro track_non_bool_vars
 			string name_kind = kind
 			(kind) in equals_token
 			string equals_kind = kind
-			if name_kind is "IDENT" and equals_kind is "EQUALS"
+			if name_kind is IDENT and equals_kind is EQUALS
 				bool is_bool = cur_val is "bool"
 				bool is_vtype = list_has(validator_type_names, cur_val)
 				if not is_bool
@@ -51,37 +51,37 @@ macro track_non_bool_vars
 					string_var_names at end = value
 
 			# ex: {name} as "literal" / name as other_str — name_kind is KW_AS, equals_kind is the RHS
-			if name_kind is "KW_AS"
-				bool as_is_str = equals_kind is "STRING"
+			if name_kind is KW_AS
+				bool as_is_str = equals_kind is STRING
 				if not as_is_str
-					if equals_kind is "IDENT"
+					if equals_kind is IDENT
 						(value) in equals_token
 						as_is_str = list_has(string_var_names, value)
 				if as_is_str
 					string_var_names at end = cur_val
 
-	if cur_kind is "KW_FN"
+	if cur_kind is KW_FN
 		int left_paren_pos = locate_left_paren(pos)
 		if left_paren_pos < token_count
 			Token left_paren_token = tokens at left_paren_pos
 			(kind) in left_paren_token
-			if kind is "LPAREN"
+			if kind is LPAREN
 				int param_scan_pos = left_paren_pos + 1
 				for if param_scan_pos < token_count
 					Token param_scan_token = tokens at param_scan_pos
 					(kind, value) in param_scan_token
-					if kind is "RPAREN"
+					if kind is RPAREN
 						break
-					if kind is "COMMA"
+					if kind is COMMA
 						param_scan_pos = param_scan_pos + 1
 						continue
-					if kind is "IDENT"
+					if kind is IDENT
 						string param_type = value
 						int param_name_pos = param_scan_pos + 1
 						if param_name_pos < token_count
 							Token param_name_token = tokens at param_name_pos
 							(kind, value) in param_name_token
-							if kind is "IDENT"
+							if kind is IDENT
 								bool param_is_bool = param_type is "bool"
 								bool param_is_vtype = list_has(validator_type_names, param_type)
 								if not param_is_bool

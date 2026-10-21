@@ -10,7 +10,7 @@ macro dd_copy_single_line_decl
 		Token scan_token = tokens at scan_pos
 		(kind) in scan_token
 		scan_pos = scan_pos + 1
-		if kind is "NEWLINE"
+		if kind is NEWLINE
 			break
 	int end_pos = scan_pos
 	if not already_seen

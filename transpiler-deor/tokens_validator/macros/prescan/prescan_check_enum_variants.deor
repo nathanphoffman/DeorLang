@@ -21,7 +21,7 @@ macro prescan_check_enum_variants
 	fn int locate_enum_typed_name(int kw_pos)
 		return kw_pos + 2
 
-	if kind is "KW_ENUM"
+	if kind is KW_ENUM
 		# Detect typed vs. untyped by peeking at token after KW_ENUM
 		bool is_typed = false
 		int scan_pos = locate_enum_type_or_name_slot(pre_i)
@@ -37,7 +37,7 @@ macro prescan_check_enum_variants
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
 			(kind, value) in name_token
-			if kind is "IDENT"
+			if kind is IDENT
 				enum_names at end = value
 				if not is_typed
 					declared_type_names at end = value
@@ -46,7 +46,7 @@ macro prescan_check_enum_variants
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind) in scan_token
-			if kind is "INDENT"
+			if kind is INDENT
 				break
 			scan_pos = scan_pos + 1
 		scan_pos = scan_pos + 1
@@ -55,9 +55,9 @@ macro prescan_check_enum_variants
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind) in scan_token
-			if kind is "DEDENT"
+			if kind is DEDENT
 				break
-			if kind is "IDENT"
+			if kind is IDENT
 				(value) in scan_token
 				enum_variant_names at end = value
 				if len(value) < MIN_NAME_LEN
@@ -69,12 +69,12 @@ macro prescan_check_enum_variants
 					Token after_variant_token = tokens at after_variant_pos
 					(kind) in after_variant_token
 					if is_typed
-						if kind is not "EQUALS"
+						if kind is not EQUALS
 							errors at end = val_err(scan_token, lbl_variant, rule_typed_enum_eq)
 					else
-						if kind is "LPAREN"
+						if kind is LPAREN
 							errors at end = val_err(scan_token, lbl_variant, rule_enum_data)
-						if kind is "EQUALS"
+						if kind is EQUALS
 							errors at end = val_err(scan_token, lbl_variant, rule_untyped_enum_eq)
 			else if list_has(reserved_keywords, kind)
 				errors at end = val_err(scan_token, lbl_variant, rule_kw_in_parens)

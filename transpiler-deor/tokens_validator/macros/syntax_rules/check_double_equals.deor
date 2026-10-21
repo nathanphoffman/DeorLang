@@ -9,10 +9,10 @@ macro check_double_equals
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if cur_kind is "EQUALS"
+	if cur_kind is EQUALS
 		int next_pos = locate_next_token(pos)
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
-			if kind is "EQUALS"
+			if kind is EQUALS
 				errors at end = val_err(tok, lbl_var, rule_double_equals)

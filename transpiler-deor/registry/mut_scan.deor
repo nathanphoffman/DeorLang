@@ -5,6 +5,7 @@
 # Finds the DEDENT token that closes the block opened by the INDENT at indent_pos.
 # Tracks nesting depth so inner blocks don't terminate the search prematurely.
 fn int find_block_end_ref(TokensRef tokens, int indent_pos)
+	unsafe_macro_run token_kinds
 	# ex: fn foo()\n{\t}body — kw_pos+1 grabs the first token of the block body
 	fn int locate_block_body_start(int kw_pos)
 		return kw_pos + 1
@@ -16,9 +17,9 @@ fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 	for raw_i in range(start, token_count)
 		Token token = tokens at raw_i
 		(kind, value, line) in token
-		if kind is "INDENT"
+		if kind is INDENT
 			depth = depth + 1
-		else if kind is "DEDENT"
+		else if kind is DEDENT
 			depth = depth - 1
 			if depth is 0
 				result = raw_i
@@ -31,12 +32,13 @@ fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 # returns those names so codegen knows to mark them mutable. Const names are tracked
 # separately and excluded even though a const's initializer also uses '='.
 fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
+	unsafe_macro_run token_kinds
 	strList result = empty
 	strList const_names = empty
 	for raw_i in range(start, end_pos)
 		Token token = tokens at raw_i
 		(kind, value, line) in token
-		if kind is "KW_CONST"
+		if kind is KW_CONST
 			# ex: const int {LIMIT} = 10 — raw_i+2 grabs the const variable name
 			int const_name_pos = raw_i + 2
 			if const_name_pos < end_pos
@@ -44,13 +46,13 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 				(value) in const_name_token
 				if not list_has(const_names, value)
 					const_names at end = value
-		if kind is "EQUALS"
+		if kind is EQUALS
 			# ex: {count} = count + 1 — raw_i-1 grabs the IDENT being assigned to
 			int prev_pos = raw_i - 1
 			if prev_pos >= start
 				Token prev_token = tokens at prev_pos
 				(kind, value) in prev_token
-				if kind is "IDENT"
+				if kind is IDENT
 					if not list_has(result, value)
 						if not list_has(const_names, value)
 							result at end = value

@@ -7,7 +7,7 @@ macro check_type_decl
 	macro_run check_type_base_primitive
 	macro_run check_validator_declaration
 
-	string keyword = "KW_TYPE"
+	string keyword = KW_TYPE
 	string lbl = lbl_type
 	string rule = rule_pascal
 	fnTestRule test_rule = is_pascal

@@ -20,6 +20,7 @@
 # start empty here — both are per-function, populated later (by collect_mut_names
 # and collect_validator_var_types) when each fn body is generated.
 fn RcCtx build_registry(TokensRef tokens_ref)
+	unsafe_macro_run token_kinds
 	strList struct_reg = empty
 	strList shape_reg = empty
 	strList enum_reg = empty
@@ -34,7 +35,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 		Token token = tokens_ref at pos
 		(kind) in token
 
-		if kind is "KW_STRUCT"
+		if kind is KW_STRUCT
 			Reg2Scan scan = try_struct_entry(tokens_ref, pos)
 			move (matched, key, val, new_pos) in scan
 			if matched
@@ -43,7 +44,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 			pos = new_pos
 			continue
 
-		if kind is "KW_SHAPE"
+		if kind is KW_SHAPE
 			Reg2Scan scan = try_shape_entry(tokens_ref, pos)
 			move (matched, key, val, new_pos) in scan
 			if matched
@@ -52,7 +53,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 			pos = new_pos
 			continue
 
-		if kind is "KW_RAW"
+		if kind is KW_RAW
 			Reg2Scan scan = try_raw_entry(tokens_ref, pos)
 			move (matched, key, val, new_pos) in scan
 			if matched
@@ -61,7 +62,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 			pos = new_pos
 			continue
 
-		if kind is "KW_TYPE"
+		if kind is KW_TYPE
 			Reg3Scan scan = try_type_entry(tokens_ref, pos)
 			move (matched, key, val, val2, new_pos) in scan
 			if matched
@@ -71,7 +72,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 			pos = new_pos
 			continue
 
-		if kind is "KW_ENUM"
+		if kind is KW_ENUM
 			EnumScan scan = try_enum_entry(tokens_ref, pos)
 			move (matched, is_typed, name, rust_name, val_type, pairs, new_pos) in scan
 			if matched

@@ -58,3 +58,7 @@ test-examples:
 # suite through the freshly built binary.
 build-and-test: build-transpiler rebuild-binary test-examples
 
+
+# Runs the code quality checker, skipping the generated out.rs files.
+check:
+    codequality . --full --exclude '*out.rs*'

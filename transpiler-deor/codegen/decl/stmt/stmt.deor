@@ -24,6 +24,7 @@
 # appropriate function or macro. The IDENT branch dispatches to sub-functions for
 # each identifier-led form so this function stays a clean dispatch table.
 fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	# The token right after whatever keyword/ident anchor is in scope at each call
 	# site below — reused across branches, meaning documented by the comment there.
 	fn int locate_next_token(int anchor)
@@ -42,10 +43,10 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 
 	macro_run stmt_raw_const
 
-	if kind is "KW_IF"
+	if kind is KW_IF
 		return gen_if(pos, depth, ctx)
 
-	if kind is "KW_FOR"
+	if kind is KW_FOR
 		return gen_for(pos, depth, ctx)
 
 	macro_run stmt_nested_fn

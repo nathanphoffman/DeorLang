@@ -8,31 +8,31 @@ macro emit_operator_token
 	string op_val_gte = ">="
 	string op_kind_lte = "LTE"
 	string op_val_lte = "<="
-	string op_kind_plus = "PLUS"
+	string op_kind_plus = PLUS
 	string op_val_plus = "+"
-	string op_kind_minus = "MINUS"
+	string op_kind_minus = MINUS
 	string op_val_minus = "-"
-	string op_kind_star = "STAR"
+	string op_kind_star = STAR
 	string op_val_star = "*"
-	string op_kind_slash = "SLASH"
+	string op_kind_slash = SLASH
 	string op_val_slash = "/"
-	string op_kind_pct = "PERCENT"
+	string op_kind_pct = PERCENT
 	string op_val_pct = "%"
-	string op_kind_eq = "EQUALS"
+	string op_kind_eq = EQUALS
 	string op_val_eq = "="
 	string op_kind_gt = "GT"
 	string op_val_gt = ">"
 	string op_kind_lt = "LT"
 	string op_val_lt = "<"
-	string op_kind_lp = "LPAREN"
+	string op_kind_lp = LPAREN
 	string op_val_lp = "("
-	string op_kind_rp = "RPAREN"
+	string op_kind_rp = RPAREN
 	string op_val_rp = ")"
-	string op_kind_lb = "LBRACKET"
+	string op_kind_lb = LBRACKET
 	string op_val_lb = "["
-	string op_kind_rb = "RBRACKET"
+	string op_kind_rb = RBRACKET
 	string op_val_rb = "]"
-	string op_kind_cm = "COMMA"
+	string op_kind_cm = COMMA
 	string op_val_cm = ","
 	strList op_invalid_chars = ["&", "|", "^", "!", "{", "}", ".", "~"]
 	int op_peek_idx = char_index + 1

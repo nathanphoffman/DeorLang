@@ -55,6 +55,7 @@ fn int ps_new_pos(PairsScan scan)
 # Scans an untyped enum's variant list (already positioned at its opening INDENT) into
 # [variantName, rustEnumName] pairs.
 fn PairsScan collect_variant_pairs(TokensRef tokens, int start, string rust_name)
+	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	strList pairs = empty
 	int new_pos = start
@@ -66,9 +67,9 @@ fn PairsScan collect_variant_pairs(TokensRef tokens, int start, string rust_name
 			Token variant_token = tokens at new_pos
 			(kind, value) in variant_token
 			new_pos = new_pos + 1
-			if kind is "DEDENT"
+			if kind is DEDENT
 				scanning = false
-			else if kind is "IDENT"
+			else if kind is IDENT
 				pairs at end = value
 				pairs at end = rust_name
 	PairsScan result = (pairs, new_pos)
@@ -77,6 +78,7 @@ fn PairsScan collect_variant_pairs(TokensRef tokens, int start, string rust_name
 # Scans a typed enum's variant list (already positioned at its opening INDENT) into
 # ["EnumName.VariantName", literalValue] pairs.
 fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enum_name)
+	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	strList pairs = empty
 	int new_pos = start
@@ -88,15 +90,15 @@ fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enu
 			Token variant_token = tokens at new_pos
 			(kind, value) in variant_token
 			new_pos = new_pos + 1
-			if kind is "DEDENT"
+			if kind is DEDENT
 				scanning = false
-			else if kind is "IDENT"
+			else if kind is IDENT
 				string variant_name = value
 				if new_pos < token_count
 					Token equals_token = tokens at new_pos
 					(kind) in equals_token
 					new_pos = new_pos + 1
-					if kind is "EQUALS"
+					if kind is EQUALS
 						if new_pos < token_count
 							Token literal_token = tokens at new_pos
 							(value) in literal_token
@@ -109,6 +111,7 @@ fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enu
 	return result
 
 fn EnumScan try_enum_entry(TokensRef tokens, int pos)
+	unsafe_macro_run token_kinds
 	# ex: enum {Color} — kw_pos+1 grabs the enum name (or type keyword if typed)
 	fn int locate_type_or_name(int kw_pos)
 		return kw_pos + 1
@@ -138,7 +141,7 @@ fn EnumScan try_enum_entry(TokensRef tokens, int pos)
 	if type_pos < token_count
 		Token type_token = tokens at type_pos
 		(kind, value) in type_token
-		if kind is "IDENT"
+		if kind is IDENT
 			bool word_is_typed = is_typed_enum_type(value)
 			if word_is_typed
 				matched = true

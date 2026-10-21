@@ -51,6 +51,7 @@ fn void fatal_missing_import(string imp_path)
 	fatal(s_cat(err_pre, imp_path))
 
 fn tokenList load_file(string path)
+	unsafe_macro_run token_kinds
 	string source = f_read(path)
 	tokenList tok_raw = tokenize(source, path)
 	tokenList result = empty
@@ -72,13 +73,13 @@ fn tokenList load_file(string path)
 		if kind is "EOF"
 			break
 
-		if kind is "INDENT"
+		if kind is INDENT
 			depth = depth + 1
 			result at end = tok
 			pos = pos + 1
 			continue
 
-		if kind is "DEDENT"
+		if kind is DEDENT
 			depth = depth - 1
 			result at end = tok
 			pos = pos + 1
@@ -91,21 +92,21 @@ fn tokenList load_file(string path)
 		# themselves) -> macros -> functions. Only checked at root depth — a macro
 		# declared inside a function body is locally scoped and exempt.
 		if at_root_depth
-			bool is_structural_kw = kind is "KW_STRUCT" or kind is "KW_ENUM" or kind is "KW_SHAPE" or kind is "KW_TYPE"
+			bool is_structural_kw = kind is KW_STRUCT or kind is KW_ENUM or kind is KW_SHAPE or kind is KW_TYPE
 			if is_structural_kw
 				if decl_phase > 0
 					string struct_order_msg = "struct/enum/type/shape declarations must come before macros and functions"
 					fatal_at(path, struct_order_msg)
-			if kind is "KW_MACRO" or kind is "KW_UNSAFE_MACRO"
+			if kind is KW_MACRO or kind is KW_UNSAFE_MACRO
 				if decl_phase is 2
 					string macro_order_msg = "macros must be declared before functions"
 					fatal_at(path, macro_order_msg)
 				else if decl_phase < 1
 					decl_phase = 1
-			if kind is "KW_FN"
+			if kind is KW_FN
 				decl_phase = 2
 
-		bool is_new_import = kind is "KW_IMPORT" and at_root_depth
+		bool is_new_import = kind is KW_IMPORT and at_root_depth
 
 		if is_new_import
 			ParseResult import_result = scan_import_new(tok_raw, pos)
@@ -150,7 +151,7 @@ fn tokenList load_file(string path)
 							result at end = import_token
 				pos = import_end
 				continue
-		if at_root_depth and kind is not "NEWLINE"
+		if at_root_depth and kind is not NEWLINE
 			seen_decl = true
 		result at end = tok
 		pos = pos + 1

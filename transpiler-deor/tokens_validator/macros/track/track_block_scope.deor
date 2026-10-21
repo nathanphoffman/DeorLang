@@ -26,9 +26,9 @@ macro track_block_scope
 	fn int locate_return_type(int kw_pos)
 		return kw_pos + 1
 
-	if cur_kind is "INDENT"
+	if cur_kind is INDENT
 		block_depth = block_depth + 1
-	if cur_kind is "DEDENT"
+	if cur_kind is DEDENT
 		block_depth = block_depth - 1
 		if block_depth is 0
 			in_struct_body = false
@@ -42,13 +42,13 @@ macro track_block_scope
 			if depth is block_depth
 				in_void_fn = prev_void
 				void_fn_stack remove at top_idx
-	if cur_kind is "KW_STRUCT"
+	if cur_kind is KW_STRUCT
 		if block_depth is 0
 			in_struct_body = true
-	if cur_kind is "KW_ENUM"
+	if cur_kind is KW_ENUM
 		if block_depth is 0
 			in_enum_body = true
-	if cur_kind is "KW_FN"
+	if cur_kind is KW_FN
 		was_already_in_fn_body = in_fn_body
 		in_fn_body = true
 		if block_depth is 0
@@ -68,6 +68,6 @@ macro track_block_scope
 		if return_type_pos < token_count
 			Token return_type_token = tokens at return_type_pos
 			(kind) in return_type_token
-			if kind is "KW_VOID"
+			if kind is KW_VOID
 				is_void = true
 		in_void_fn = is_void

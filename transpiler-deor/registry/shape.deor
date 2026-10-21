@@ -9,6 +9,7 @@
 # build_registry's single-pass dispatch loop (registry.deor) rather than each registry
 # running its own full scan over every token.
 fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
+	unsafe_macro_run token_kinds
 	# ex: shape {Foo} = list of T — kw_pos+1 grabs the shape name
 	fn int locate_shape_name(int kw_pos)
 		return kw_pos + 1
@@ -55,7 +56,7 @@ fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
 		(value) in name_token
 		string shape_name = value
 		(kind) in form_token
-		if kind is "KW_LIST"
+		if kind is KW_LIST
 			int elem_pos = locate_list_elem(pos)
 			if elem_pos < token_count
 				Token elem_token = tokens at elem_pos
@@ -66,8 +67,8 @@ fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
 		else
 			Token of_or_to_token = tokens at of_or_to_pos
 			(kind, value) in of_or_to_token
-			bool is_of = kind is "KW_OF"
-			bool is_to = kind is "KW_TO"
+			bool is_of = kind is KW_OF
+			bool is_to = kind is KW_TO
 			string in_type = ""
 			string out_type = ""
 			if is_of
@@ -80,7 +81,7 @@ fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
 				if to_pos < token_count
 					Token to_token = tokens at to_pos
 					(kind, value) in to_token
-					bool has_to = kind is "KW_TO"
+					bool has_to = kind is KW_TO
 					if has_to
 						int out_type_pos = locate_func_out_type_after_of(pos)
 						if out_type_pos < token_count

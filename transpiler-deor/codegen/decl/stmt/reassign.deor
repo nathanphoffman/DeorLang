@@ -4,6 +4,7 @@
 # variable is validator-typed so the predicate re-runs — see
 # docs/validator_types.md#is-valid-is-not-valid
 fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	# ex: name {=} expr — anchor+1 grabs the token after the anchor
 	fn int locate_next_token(int anchor)
 		return anchor + 1
@@ -21,7 +22,7 @@ fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
 	(kind) in eq_val_token
 	unsafe_macro_run gen_expr_r
 	string assign_suffix = ""
-	if kind is "STRING"
+	if kind is STRING
 		assign_suffix = ".to_string()"
 	string reassign_type = reg_get(validator_var_reg, ident_name)
 	string asgn_code = ""

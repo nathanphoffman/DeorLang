@@ -1,6 +1,7 @@
 # It is important imports are loaded in the order they are first referenced
 
 import "transpiler-deor/limits.deor"
+import "transpiler-deor/token_kinds.deor"
 
 # primitives and lib
 import "transpiler-deor/types.deor"

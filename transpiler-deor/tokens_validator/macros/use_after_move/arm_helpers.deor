@@ -3,6 +3,7 @@
 # return/break/continue — that arm never falls through to code after the if chain.
 # Skips trailing NEWLINEs, then walks back to the start of that last line.
 fn bool arm_ends_in_jump(TokensRef tokens, int pos)
+	unsafe_macro_run token_kinds
 	# ex: {else} / {DEDENT} — kw_pos-1 grabs the token just before it
 	fn int locate_prev_token(int kw_pos)
 		return kw_pos - 1
@@ -11,7 +12,7 @@ fn bool arm_ends_in_jump(TokensRef tokens, int pos)
 	for if line_scan >= 0
 		Token line_scan_token = tokens at line_scan
 		(kind) in line_scan_token
-		if kind is "NEWLINE"
+		if kind is NEWLINE
 			line_scan = line_scan - 1
 		else
 			break
@@ -19,22 +20,22 @@ fn bool arm_ends_in_jump(TokensRef tokens, int pos)
 	for if line_scan >= 0
 		Token line_scan_token2 = tokens at line_scan
 		(kind) in line_scan_token2
-		if kind is "NEWLINE"
+		if kind is NEWLINE
 			break
-		if kind is "INDENT"
+		if kind is INDENT
 			break
-		if kind is "DEDENT"
+		if kind is DEDENT
 			break
 		line_scan = line_scan - 1
 	int line_start = line_scan + 1
 	if line_start <= line_end
 		Token line_first_token = tokens at line_start
 		(kind) in line_first_token
-		if kind is "KW_RETURN"
+		if kind is KW_RETURN
 			return true
-		if kind is "KW_BREAK"
+		if kind is KW_BREAK
 			return true
-		if kind is "KW_CONTINUE"
+		if kind is KW_CONTINUE
 			return true
 	return false
 

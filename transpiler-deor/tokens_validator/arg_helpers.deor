@@ -15,6 +15,7 @@ fn string find_struct_field_str(strList reg, string name)
 	return ""
 
 fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
+	unsafe_macro_run token_kinds
 	# ex: move {data} — kw_pos+1 skips 'move' to reach the real arg name
 	fn int locate_after_move(int kw_pos)
 		return kw_pos + 1
@@ -22,26 +23,26 @@ fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 	int token_count = len(tokens)
 	int check_pos = scan_pos
 	string check_kind = kind
-	if kind is "KW_MOVE"
+	if kind is KW_MOVE
 		check_pos = locate_after_move(scan_pos)
 		if check_pos < token_count
 			Token move_token = tokens at check_pos
 			(kind) in move_token
 			check_kind = kind
-	if check_kind is not "IDENT"
+	if check_kind is not IDENT
 		return false
 	# ex: add(data{(}5)) — check_pos+1 peeks the token after the arg name
 	int peek_pos = check_pos + 1
 	if peek_pos < token_count
 		Token peek_token = tokens at peek_pos
 		(kind) in peek_token
-		bool is_call = kind is "LPAREN"
-		bool is_idx = kind is "KW_AT"
-		bool is_plus = kind is "PLUS"
-		bool is_minus = kind is "MINUS"
-		bool is_star = kind is "STAR"
-		bool is_slash = kind is "SLASH"
-		bool is_pct = kind is "PERCENT"
+		bool is_call = kind is LPAREN
+		bool is_idx = kind is KW_AT
+		bool is_plus = kind is PLUS
+		bool is_minus = kind is MINUS
+		bool is_star = kind is STAR
+		bool is_slash = kind is SLASH
+		bool is_pct = kind is PERCENT
 		bool is_op = is_plus or is_minus or is_star or is_slash or is_pct
 		if is_call or is_idx or is_op
 			return false
@@ -51,6 +52,7 @@ fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 # Returns the position of the RPAREN matching the LPAREN at lp_pos. Falls back to
 # lp_pos itself if unmatched (shouldn't happen — check_paren_balance runs first).
 fn int find_matching_rparen(TokensRef tokens, int lp_pos)
+	unsafe_macro_run token_kinds
 	# ex: name({}arg) — kw_pos+1 grabs the first token after the opening paren
 	fn int locate_first_token(int kw_pos)
 		return kw_pos + 1
@@ -61,9 +63,9 @@ fn int find_matching_rparen(TokensRef tokens, int lp_pos)
 	for if cur < token_count
 		Token token = tokens at cur
 		(kind) in token
-		if kind is "LPAREN"
+		if kind is LPAREN
 			depth = depth + 1
-		else if kind is "RPAREN"
+		else if kind is RPAREN
 			bool at_root = depth is 0
 			if at_root
 				return cur
@@ -74,6 +76,7 @@ fn int find_matching_rparen(TokensRef tokens, int lp_pos)
 # Counts arguments between LPAREN at lp_pos and its matching RPAREN.
 # Returns 0 for empty calls, 1 for single-arg, N for N-arg calls.
 fn int count_call_args(TokensRef tokens, int lp_pos)
+	unsafe_macro_run token_kinds
 	# ex: name({}arg) — kw_pos+1 grabs the first token after the opening paren
 	fn int locate_first_token(int kw_pos)
 		return kw_pos + 1
@@ -86,21 +89,21 @@ fn int count_call_args(TokensRef tokens, int lp_pos)
 	for if cur < token_count
 		Token token = tokens at cur
 		(kind) in token
-		if kind is "RPAREN"
+		if kind is RPAREN
 			bool at_root = depth is 0
 			if at_root
 				break
 			depth = depth - 1
-		else if kind is "LPAREN"
+		else if kind is LPAREN
 			depth = depth + 1
 			saw_token = true
-		else if kind is "LBRACKET"
+		else if kind is LBRACKET
 			depth = depth + 1
 			saw_token = true
-		else if kind is "RBRACKET"
+		else if kind is RBRACKET
 			depth = depth - 1
 			saw_token = true
-		else if kind is "COMMA"
+		else if kind is COMMA
 			bool at_root = depth is 0
 			if at_root
 				comma_count = comma_count + 1

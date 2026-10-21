@@ -9,7 +9,7 @@ macro for_iter_expr
 	fn int locate_next_token(int anchor)
 		return anchor + 1
 
-	if kind is "IDENT" and value is "range"
+	if kind is IDENT and value is "range"
 		int lparen = locate_next_token(iter_pos)
 		# ex: for x in range({n}) — lparen+1 grabs the first range argument
 		int first_pos = locate_next_token(lparen)
@@ -20,7 +20,7 @@ macro for_iter_expr
 		val_end as new_pos
 		Token comma_token = tokens at val_end
 		(kind) in comma_token
-		bool has_start = kind is "COMMA"
+		bool has_start = kind is COMMA
 		if has_start
 			string first_code = move val_code
 			int val_pos = val_end + 1

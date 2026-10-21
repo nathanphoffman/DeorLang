@@ -17,12 +17,12 @@ unsafe_macro fn_parse_signature
 	for if not c_at_end(cur)
 		(current) in cur
 		(kind, value) in current
-		if kind is "RPAREN"
+		if kind is RPAREN
 			cur = cur_next_ref(cur, fn_tokens)
 			break
-		else if kind is "COMMA"
+		else if kind is COMMA
 			cur = cur_next_ref(cur, fn_tokens)
-		else if kind is "IDENT"
+		else if kind is IDENT
 			string param_type = value
 			cur = cur_next_ref(cur, fn_tokens)
 			(current) in cur

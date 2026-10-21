@@ -11,7 +11,7 @@ macro stmt_blocks
 	fn int locate_rust_block_content(int kw_pos)
 		return kw_pos + 2
 
-	if kind is "KW_BLOCK"
+	if kind is KW_BLOCK
 		int newline_pos = locate_next_token(pos)
 		int body_start = skip_to_body_ref(tokens, newline_pos)
 		int body_depth = depth + 1
@@ -25,7 +25,7 @@ macro stmt_blocks
 		string block_close = s_cat(pad, close_brace)
 		string block_code = s_join([block_open, body_code, block_close])
 		return make_result(move block_code, body_end)
-	if kind is "KW_RUST"
+	if kind is KW_RUST
 		int rust_block_pos = locate_rust_block_content(pos)
 		Token rust_block_token = tokens at rust_block_pos
 		(value) in rust_block_token

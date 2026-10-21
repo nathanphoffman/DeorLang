@@ -4,10 +4,10 @@
 # depth, trims trailing blank lines, then emits KW_RUST + NEWLINE + RUST_BLOCK.
 # Advances `skip` for each consumed line so the outer loop skips them.
 macro collect_rust_block
-	string kind_kw_rust = "KW_RUST"
+	string kind_kw_rust = KW_RUST
 	string kw_rust_val = "rust"
-	string kind_newline = "NEWLINE"
-	string kind_rust_block = "RUST_BLOCK"
+	string kind_newline = NEWLINE
+	string kind_rust_block = RUST_BLOCK
 	string empty_str = ""
 	tokens at end = make_token(kind_kw_rust, kw_rust_val, meta)
 	tokens at end = make_token(kind_newline, empty_str, meta)

@@ -37,21 +37,21 @@ macro check_struct_construction
 			string equals_kind = kind
 			(kind) in value_token
 			string value_kind = kind
-			bool is_var = name_kind is "IDENT"
-			bool is_eq = equals_kind is "EQUALS"
+			bool is_var = name_kind is IDENT
+			bool is_eq = equals_kind is EQUALS
 			bool prefix_ok = is_var and is_eq
 
 			bool matched = false
 			int paren_pos = value_pos
 			if prefix_ok
-				if value_kind is "LPAREN"
+				if value_kind is LPAREN
 					matched = true
-				else if value_kind is "KW_MOVE"
+				else if value_kind is KW_MOVE
 					int move_paren_pos = locate_paren_after_move(pos)
 					if move_paren_pos < token_count
 						Token move_paren_token = tokens at move_paren_pos
 						(kind) in move_paren_token
-						if kind is "LPAREN"
+						if kind is LPAREN
 							matched = true
 							paren_pos = move_paren_pos
 
@@ -71,9 +71,9 @@ macro check_struct_construction
 						else
 							Token scan_token = tokens at scan_pos
 							(kind, value) in scan_token
-							if kind is "RPAREN"
+							if kind is RPAREN
 								scanning = false
-							else if kind is "IDENT"
+							else if kind is IDENT
 								provided_fields at end = value
 							scan_pos = scan_pos + 1
 					int provided_count = len(provided_fields)

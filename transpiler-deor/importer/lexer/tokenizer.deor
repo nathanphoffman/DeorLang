@@ -5,10 +5,11 @@
 # time. Each line is checked for indentation changes, rust blocks, and then scanned
 # character by character. Emits trailing DEDENTs and a terminal EOF when done.
 fn tokenList tokenize(string source, string path)
+	unsafe_macro_run token_kinds
 	tokenList tokens = empty
 	string empty_str = ""
-	string kind_newline = "NEWLINE"
-	string kind_dedent = "DEDENT"
+	string kind_newline = NEWLINE
+	string kind_dedent = DEDENT
 	string kind_eof = "EOF"
 	string newline = "\n"
 	strList lines = s_split(source, newline)
@@ -56,7 +57,7 @@ fn tokenList tokenize(string source, string path)
 
 			if character is "\""
 				ParseResult string_result = scan_string_literal(chars, char_index, char_count)
-				string kind_string = "STRING"
+				string kind_string = STRING
 				string str_val = pr_code(string_result)
 				tokens at end = make_token(kind_string, str_val, meta)
 				char_index = pr_pos(string_result)
@@ -70,7 +71,7 @@ fn tokenList tokenize(string source, string path)
 				strList num_parts = s_split(num_str, dot)
 				bool is_float = len(num_parts) > 1
 				if is_float
-					string kind_float = "FLOAT"
+					string kind_float = FLOAT
 					tokens at end = make_token(kind_float, num_str, meta)
 				else
 					string kind_int = "INT"

@@ -6,7 +6,7 @@ macro primary_list_literal
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	if kind is "LBRACKET"
+	if kind is LBRACKET
 		int inner_pos = locate_next_token(pos)
 		ParseResult items_result = gen_list_items(tokens, inner_pos, ctx)
 		move (code, new_pos) in items_result

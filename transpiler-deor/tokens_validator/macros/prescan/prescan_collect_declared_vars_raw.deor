@@ -13,7 +13,7 @@ macro prescan_collect_declared_vars_raw
 	fn int locate_equals(int kw_pos)
 		return kw_pos + 2
 
-	if kind is "KW_RAW"
+	if kind is KW_RAW
 		int name_pos = locate_name(pre_i)
 		int equals_pos = locate_equals(pre_i)
 		if equals_pos < token_count
@@ -23,5 +23,5 @@ macro prescan_collect_declared_vars_raw
 			string name_kind = kind
 			string name_value = value
 			(kind) in equals_token
-			if name_kind is "IDENT" and kind is "EQUALS"
+			if name_kind is IDENT and kind is EQUALS
 				declared_var_names at end = name_value

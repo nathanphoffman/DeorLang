@@ -56,44 +56,44 @@ macro check_undefined_var_read
 	if next_pos < token_count
 		Token next_token = tokens at next_pos
 		(kind) in next_token
-		if kind is "IDENT"
+		if kind is IDENT
 			skip = true
-		if kind is "EQUALS"
+		if kind is EQUALS
 			skip = true
-		if kind is "KW_AS"
+		if kind is KW_AS
 			skip = true
-		if kind is "LPAREN"
+		if kind is LPAREN
 			skip = true
-		if kind is "KW_IN"
+		if kind is KW_IN
 			skip = true
 
 	if pos > 0
 		int prev_pos = locate_prev_token(pos)
 		Token prev_token = tokens at prev_pos
 		(kind) in prev_token
-		if kind is "KW_STRUCT"
+		if kind is KW_STRUCT
 			skip = true
-		if kind is "KW_ENUM"
+		if kind is KW_ENUM
 			skip = true
-		if kind is "KW_SHAPE"
+		if kind is KW_SHAPE
 			skip = true
-		if kind is "KW_TYPE"
+		if kind is KW_TYPE
 			skip = true
-		if kind is "KW_FN"
+		if kind is KW_FN
 			skip = true
-		if kind is "KW_MACRO"
+		if kind is KW_MACRO
 			skip = true
-		if kind is "KW_MACRO_RUN"
+		if kind is KW_MACRO_RUN
 			skip = true
-		if kind is "KW_UNSAFE_MACRO_RUN"
+		if kind is KW_UNSAFE_MACRO_RUN
 			skip = true
-		if kind is "KW_UNSAFE_MACRO"
+		if kind is KW_UNSAFE_MACRO
 			skip = true
-		if kind is "KW_OF"
+		if kind is KW_OF
 			skip = true
-		if kind is "KW_TO"
+		if kind is KW_TO
 			skip = true
-		if kind is "KW_RAW"
+		if kind is KW_RAW
 			skip = true
 
 	if not skip

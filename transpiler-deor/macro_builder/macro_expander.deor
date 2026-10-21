@@ -36,6 +36,7 @@
 # depth correctly unwinds when a spliced macro body finishes expanding, matching the
 # already-nested structure of macro_run calls within macro_run calls.
 fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
+	unsafe_macro_run token_kinds
 	rust
 		let mut macros: std::collections::HashMap<String, (Vec<Token>, i32, bool)> = std::collections::HashMap::new();
 		let mut result: Vec<Token> = vec![];
@@ -48,32 +49,32 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 			let kind = cur.kind.as_str();
 
 			// track scope depth for macro privacy
-			if kind == "INDENT" { scope_depth += 1; }
-			if kind == "DEDENT" {
+			if kind == INDENT { scope_depth += 1; }
+			if kind == DEDENT {
 				scope_depth -= 1;
 				// remove any macros defined at the depth we are leaving
 				macros.retain(|_, (_, def_depth, _)| *def_depth <= scope_depth);
 			}
 
 			// collect macro definition
-			if kind == "KW_MACRO" || kind == "KW_UNSAFE_MACRO" {
-				let is_unsafe = kind == "KW_UNSAFE_MACRO";
+			if kind == KW_MACRO || kind == KW_UNSAFE_MACRO {
+				let is_unsafe = kind == KW_UNSAFE_MACRO;
 				let is_block_macro = !is_unsafe;
 				let def_label = if is_unsafe { "unsafe_macro" } else { "macro" }.to_string();
 				let name_tok = queue.pop_front();
 				let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
 				// skip NEWLINE
-				while queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
+				while queue.front().map(|t| t.kind == NEWLINE).unwrap_or(false) { queue.pop_front(); }
 				// a macro definition must have an indented body — without one, the body-collection
 				// loop below has no INDENT to balance against and runs away consuming the rest of
 				// the file as its "body" until it happens to hit an unrelated DEDENT
-				let has_body = queue.front().map(|t| t.kind == "INDENT").unwrap_or(false);
+				let has_body = queue.front().map(|t| t.kind == INDENT).unwrap_or(false);
 				if !has_body {
 					let err_tok = name_tok.clone().unwrap_or(cur.clone());
 					handle_errors(vec![val_err(err_tok, def_label.clone(), format!("must have an indented body — an empty '{} <name>' with no block is not valid", def_label))]);
 				}
 				// skip INDENT
-				while queue.front().map(|t| t.kind == "INDENT").unwrap_or(false) { queue.pop_front(); }
+				while queue.front().map(|t| t.kind == INDENT).unwrap_or(false) { queue.pop_front(); }
 				// collect body tokens, excluding the outer INDENT/DEDENT pair
 				let mut body: Vec<Token> = vec![];
 				let mut depth: i32 = 1;
@@ -81,13 +82,13 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 					match queue.pop_front() {
 						None => break,
 						Some(t) => {
-							if t.kind == "KW_MACRO" || t.kind == "KW_UNSAFE_MACRO" {
+							if t.kind == KW_MACRO || t.kind == KW_UNSAFE_MACRO {
 								let name_tok = queue.pop_front().unwrap_or(t.clone());
 								handle_errors(vec![val_err(name_tok, "macro".to_string(), "cannot be defined inside another macro body — use macro_run to call an existing macro".to_string())]);
-							} else if t.kind == "INDENT" {
+							} else if t.kind == INDENT {
 								depth += 1;
 								body.push(t);
-							} else if t.kind == "DEDENT" {
+							} else if t.kind == DEDENT {
 								depth -= 1;
 								if depth == 0 { break; }
 								body.push(t);
@@ -102,17 +103,17 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 					// would produce for a hand-written 'block' as the macro's first statement
 					let wrap_file = body.first().map(|t| t.file.clone()).unwrap_or_default();
 					let mut wrapped: Vec<Token> = vec![
-						Token { kind: "KW_BLOCK".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
-						Token { kind: "NEWLINE".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
-						Token { kind: "INDENT".to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+						Token { kind: KW_BLOCK.to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+						Token { kind: NEWLINE.to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
+						Token { kind: INDENT.to_string(), value: String::new(), line: 0, file: wrap_file.clone() },
 					];
 					wrapped.extend(body);
-					wrapped.push(Token { kind: "DEDENT".to_string(), value: String::new(), line: 0, file: wrap_file });
+					wrapped.push(Token { kind: DEDENT.to_string(), value: String::new(), line: 0, file: wrap_file });
 					body = wrapped;
 				}
 				if !name.is_empty() { macros.insert(name, (body, scope_depth, is_unsafe)); }
 				// skip trailing NEWLINE after the definition block
-				while queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
+				while queue.front().map(|t| t.kind == NEWLINE).unwrap_or(false) { queue.pop_front(); }
 				continue;
 			}
 
@@ -121,12 +122,12 @@ fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 			// own kind: macro_run for an ordinary macro, unsafe_macro_run for an
 			// unsafe_macro — so a reader never has to look up the definition to know
 			// whether a call site can leak.
-			if kind == "KW_MACRO_RUN" || kind == "KW_UNSAFE_MACRO_RUN" {
-				let is_unsafe_call = kind == "KW_UNSAFE_MACRO_RUN";
+			if kind == KW_MACRO_RUN || kind == KW_UNSAFE_MACRO_RUN {
+				let is_unsafe_call = kind == KW_UNSAFE_MACRO_RUN;
 				let name_tok = queue.pop_front();
 				let name = name_tok.as_ref().map(|t| t.value.clone()).unwrap_or_default();
 				// skip trailing NEWLINE after the call
-				if queue.front().map(|t| t.kind == "NEWLINE").unwrap_or(false) { queue.pop_front(); }
+				if queue.front().map(|t| t.kind == NEWLINE).unwrap_or(false) { queue.pop_front(); }
 				// prepend body tokens to front of queue so they are processed next
 				if let Some((body, _, target_is_unsafe)) = macros.get(&name) {
 					let target_is_unsafe = *target_is_unsafe;

@@ -8,6 +8,7 @@
 # loose behavior. Also captures ENFORCE_MACRO_FILE_DEPTH (see strip_enforce_pragmas) and
 # returns it alongside the deduped tokens for build_macros to enforce.
 fn DedupResult deduplicate_decls(tokenList tokens_in)
+	unsafe_macro_run token_kinds
 	tokenList tokens = tokens_in
 	unsafe_macro_run strip_enforce_pragmas
 	tokenList result = empty
@@ -22,19 +23,19 @@ fn DedupResult deduplicate_decls(tokenList tokens_in)
 			result at end = token
 			pos = pos + 1
 			continue
-		if kind is "NEWLINE"
+		if kind is NEWLINE
 			result at end = token
 			pos = pos + 1
 			continue
-		bool is_fn = kind is "KW_FN"
-		bool is_struct = kind is "KW_STRUCT"
-		bool is_enum = kind is "KW_ENUM"
-		bool is_shape = kind is "KW_SHAPE"
-		bool is_type = kind is "KW_TYPE"
-		bool is_macro = kind is "KW_MACRO"
-		bool is_unsafe_macro = kind is "KW_UNSAFE_MACRO"
-		bool is_raw = kind is "KW_RAW"
-		bool is_rust_blk = kind is "KW_RUST"
+		bool is_fn = kind is KW_FN
+		bool is_struct = kind is KW_STRUCT
+		bool is_enum = kind is KW_ENUM
+		bool is_shape = kind is KW_SHAPE
+		bool is_type = kind is KW_TYPE
+		bool is_macro = kind is KW_MACRO
+		bool is_unsafe_macro = kind is KW_UNSAFE_MACRO
+		bool is_raw = kind is KW_RAW
+		bool is_rust_blk = kind is KW_RUST
 		bool is_block_decl = is_fn or is_struct or is_enum or is_type or is_macro or is_unsafe_macro
 		if is_block_decl
 			macro_run dd_handle_block_decl

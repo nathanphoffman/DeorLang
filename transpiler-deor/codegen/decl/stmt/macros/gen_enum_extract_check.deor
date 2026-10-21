@@ -24,12 +24,12 @@ macro gen_enum_extract_check
 	if cur < token_count
 		Token in_token = tokens at cur
 		(kind) in in_token
-		if kind is "KW_IN"
+		if kind is KW_IN
 			int name_pos = locate_next_token(cur)
 			if name_pos < token_count
 				Token name_token = tokens at name_pos
 				(kind, value) in name_token
-				if kind is "IDENT"
+				if kind is IDENT
 					string val_type = reg_get(typed_enum_reg, value)
 					if not is_empty(val_type)
 						matched = true

@@ -14,7 +14,7 @@ macro aas_with
 	if with_keyword_pos < token_count
 		Token with_keyword_token = tokens at with_keyword_pos
 		(kind) in with_keyword_token
-		if kind is "KW_WITH"
+		if kind is KW_WITH
 			string source_name = after_as_value
 			int with_lparen_pos = locate_with_lparen(after_as)
 			strList override_fields = empty
@@ -22,13 +22,13 @@ macro aas_with
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
 				(kind, value) in scan_token
-				if kind is "RPAREN"
+				if kind is RPAREN
 					scan_pos = scan_pos + 1
 					break
-				if kind is "COMMA"
+				if kind is COMMA
 					scan_pos = scan_pos + 1
 					continue
-				if kind is "IDENT"
+				if kind is IDENT
 					override_fields at end = value
 					scan_pos = scan_pos + 1
 			string first_field = override_fields at 0

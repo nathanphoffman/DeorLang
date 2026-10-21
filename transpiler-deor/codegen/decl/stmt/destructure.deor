@@ -2,6 +2,7 @@
 # becomes a separate `let [mut] field = source.field.clone();` line. `mut` is applied
 # when the field appears in mut_names because it is reassigned later in the function.
 fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
+	unsafe_macro_run token_kinds
 
 	unsafe_macro_run initialize_gen_destructure
 	macro_run for_collect_fields_into_fields_list
@@ -34,6 +35,7 @@ fn ParseResult gen_destructure(int pos, int depth, RcCtx ctx)
 # field becomes a separate `let [mut] field = source.field;` line — moves instead of
 # cloning. Source becomes unavailable after. Safe when source is not used afterward.
 fn ParseResult gen_move_destructure(int pos, int depth, RcCtx ctx)
+	unsafe_macro_run token_kinds
 
 	unsafe_macro_run initialize_gen_destructure
 	macro_run for_collect_fields_into_fields_list

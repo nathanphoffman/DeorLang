@@ -28,7 +28,7 @@ unsafe_macro strip_enforce_pragmas
 		Token scan_token = tokens at scan_pos
 		(kind) in scan_token
 		bool is_main = false
-		if kind is "KW_FN"
+		if kind is KW_FN
 			macro_run sep_check_main_signature
 		if is_main
 			bool opener_ok = false

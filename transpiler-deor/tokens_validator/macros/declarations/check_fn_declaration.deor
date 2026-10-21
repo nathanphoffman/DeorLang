@@ -18,7 +18,7 @@ macro check_fn_declaration
 	fn int locate_fn_left_paren(int kw_pos)
 		return kw_pos + 3
 
-	if cur_kind is "KW_FN"
+	if cur_kind is KW_FN
 		bool is_nested = block_depth > 0
 		if is_nested
 			if not was_already_in_fn_body
@@ -29,7 +29,7 @@ macro check_fn_declaration
 		if left_paren_pos < token_count
 			Token left_paren_token = tokens at left_paren_pos
 			(kind) in left_paren_token
-			if kind is "LPAREN"
+			if kind is LPAREN
 				int param_count = count_call_args(tokens, left_paren_pos)
 				if param_count > MAX_FN_PARAMS
 					int name_pos = locate_fn_name(pos)
@@ -40,13 +40,13 @@ macro check_fn_declaration
 				for if param_scan_pos < token_count
 					Token param_scan_token = tokens at param_scan_pos
 					(kind, value) in param_scan_token
-					if kind is "RPAREN"
+					if kind is RPAREN
 						right_paren_pos = param_scan_pos
 						break
-					if kind is "COMMA"
+					if kind is COMMA
 						param_scan_pos = param_scan_pos + 1
 						continue
-					if kind is "IDENT"
+					if kind is IDENT
 						string param_type_val = value
 						bool is_known_param_type = list_has(primitive_type_names, param_type_val) or list_has(declared_type_names, param_type_val)
 						if not is_known_param_type
@@ -55,7 +55,7 @@ macro check_fn_declaration
 						if param_name_pos < token_count
 							Token param_name_token = tokens at param_name_pos
 							(kind, value) in param_name_token
-							if kind is "IDENT"
+							if kind is IDENT
 								if value is param_type_val
 									errors at end = val_err(param_name_token, lbl_fn, rule_param_shadow)
 								if len(value) < MIN_NAME_LEN
@@ -87,8 +87,8 @@ macro check_fn_declaration
 			(kind) in return_type_token
 			string return_type_kind = kind
 			(kind) in after_return_type_token
-			if return_type_kind is "IDENT"
-				if kind is "LPAREN"
+			if return_type_kind is IDENT
+				if kind is LPAREN
 					errors at end = val_err(return_type_token, lbl_fn, rule_no_ret)
 				else
 					(value) in return_type_token
@@ -107,12 +107,13 @@ macro check_fn_declaration
 # right_paren_pos is the fn header's closing RPAREN. Expected layout when the
 # body is valid: RPAREN, NEWLINE, INDENT, KW_RETURN, ... NEWLINE, DEDENT.
 fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_count)
+	unsafe_macro_run token_kinds
 	int newline_pos = right_paren_pos + 1
 	if newline_pos >= token_count
 		return false
 	Token newline_token = tokens at newline_pos
 	(kind) in newline_token
-	if kind is not "NEWLINE"
+	if kind is not NEWLINE
 		return false
 
 	int indent_pos = newline_pos + 1
@@ -120,7 +121,7 @@ fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_c
 		return false
 	Token indent_token = tokens at indent_pos
 	(kind) in indent_token
-	if kind is not "INDENT"
+	if kind is not INDENT
 		return false
 
 	int return_pos = indent_pos + 1
@@ -128,14 +129,14 @@ fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_c
 		return false
 	Token return_token = tokens at return_pos
 	(kind) in return_token
-	if kind is not "KW_RETURN"
+	if kind is not KW_RETURN
 		return false
 
 	int scan_pos = return_pos + 1
 	for if scan_pos < token_count
 		Token scan_token = tokens at scan_pos
 		(kind) in scan_token
-		if kind is "NEWLINE"
+		if kind is NEWLINE
 			break
 		scan_pos = scan_pos + 1
 
@@ -144,4 +145,4 @@ fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_c
 		return false
 	Token after_stmt_token = tokens at after_stmt_pos
 	(kind) in after_stmt_token
-	return kind is "DEDENT"
+	return kind is DEDENT

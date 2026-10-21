@@ -17,16 +17,16 @@ macro sep_scan_pragma_lines
 		if scan_pos < token_count
 			Token pragma_token = tokens at scan_pos
 			(kind, value) in pragma_token
-			bool is_file_flag = kind is "IDENT" and value is "ENFORCE_UNIQUE_FILE_DECLARATIONS"
-			bool is_import_flag = kind is "IDENT" and value is "ENFORCE_UNIQUE_IMPORT_DECLARATIONS"
-			bool is_depth_flag = kind is "IDENT" and value is "ENFORCE_MACRO_FILE_DEPTH"
+			bool is_file_flag = kind is IDENT and value is "ENFORCE_UNIQUE_FILE_DECLARATIONS"
+			bool is_import_flag = kind is IDENT and value is "ENFORCE_UNIQUE_IMPORT_DECLARATIONS"
+			bool is_depth_flag = kind is IDENT and value is "ENFORCE_MACRO_FILE_DEPTH"
 			if is_file_flag or is_import_flag
 				int newline_pos = locate_next_token(scan_pos)
 				bool newline_ok = false
 				if newline_pos < token_count
 					Token pragma_newline_token = tokens at newline_pos
 					(kind) in pragma_newline_token
-					newline_ok = kind is "NEWLINE"
+					newline_ok = kind is NEWLINE
 				if newline_ok
 					if is_file_flag
 						enforce_unique_file = true
@@ -43,14 +43,14 @@ macro sep_scan_pragma_lines
 				if depth_newline_pos < token_count
 					Token equals_token = tokens at equals_pos
 					(kind) in equals_token
-					bool eq_ok = kind is "EQUALS"
+					bool eq_ok = kind is EQUALS
 					Token value_token = tokens at value_pos
 					(kind, value) in value_token
 					bool val_ok = kind is "INT"
 					depth_str = value
 					Token depth_newline_token = tokens at depth_newline_pos
 					(kind) in depth_newline_token
-					bool depth_newline_ok = kind is "NEWLINE"
+					bool depth_newline_ok = kind is NEWLINE
 					depth_ok = eq_ok and val_ok and depth_newline_ok
 				if depth_ok
 					enforce_macro_file_depth = n_parse(depth_str)

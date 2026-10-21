@@ -31,38 +31,38 @@ macro check_func_shape_multi_param
 	fn int locate_func_out_type_after_to(int kw_pos)
 		return kw_pos + 5
 
-	if cur_kind is "KW_SHAPE"
+	if cur_kind is KW_SHAPE
 		int form_pos = locate_shape_form(pos)
 		if form_pos < token_count
 			Token form_token = tokens at form_pos
 			(kind) in form_token
-			if kind is "KW_FUNC"
+			if kind is KW_FUNC
 				int of_or_to_pos = locate_func_of_or_to(pos)
 				if of_or_to_pos < token_count
 					Token of_or_to_token = tokens at of_or_to_pos
 					(kind) in of_or_to_token
-					if kind is "KW_OF"
+					if kind is KW_OF
 						int in_type_pos = locate_func_in_type(pos)
 						if in_type_pos < token_count
 							Token in_type_token = tokens at in_type_pos
 							(kind) in in_type_token
-							if kind is "LPAREN"
+							if kind is LPAREN
 								errors at end = val_err(tok, lbl_shape, rule_func_shape_multi_param)
 						int to_pos = locate_func_to_after_of(pos)
 						if to_pos < token_count
 							Token to_token = tokens at to_pos
 							(kind) in to_token
-							if kind is "KW_TO"
+							if kind is KW_TO
 								int out_type_pos = locate_func_out_type_after_of(pos)
 								if out_type_pos < token_count
 									Token out_type_token = tokens at out_type_pos
 									(kind) in out_type_token
-									if kind is "LPAREN"
+									if kind is LPAREN
 										errors at end = val_err(tok, lbl_shape, rule_func_shape_multi_param)
-					else if kind is "KW_TO"
+					else if kind is KW_TO
 						int out_type_pos = locate_func_out_type_after_to(pos)
 						if out_type_pos < token_count
 							Token out_type_token = tokens at out_type_pos
 							(kind) in out_type_token
-							if kind is "LPAREN"
+							if kind is LPAREN
 								errors at end = val_err(tok, lbl_shape, rule_func_shape_multi_param)

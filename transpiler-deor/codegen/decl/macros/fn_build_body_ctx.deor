@@ -35,10 +35,10 @@ unsafe_macro fn_build_body_ctx
 			int second_last_idx = body_len - 2
 			Token last_tok = detect_tokens at last_idx
 			(kind) in last_tok
-			bool ends_in_dedent = kind is "DEDENT"
+			bool ends_in_dedent = kind is DEDENT
 			Token second_last_tok = detect_tokens at second_last_idx
 			(kind) in second_last_tok
-			bool second_last_is_newline = kind is "NEWLINE"
+			bool second_last_is_newline = kind is NEWLINE
 			# Both checks together confirm the body is exactly one line long: statement
 			# tokens, then NEWLINE, then immediately the DEDENT that closes the function.
 			if ends_in_dedent and second_last_is_newline
@@ -50,25 +50,25 @@ unsafe_macro fn_build_body_ctx
 				# 'return', 'if', 'for', destructure, raw/rust/macro_run, etc.) is left
 				# completely untouched by this new path.
 				bool skip_leading = false
-				if first_kind is "KW_RETURN"
+				if first_kind is KW_RETURN
 					skip_leading = true
-				if first_kind is "KW_IF"
+				if first_kind is KW_IF
 					skip_leading = true
-				if first_kind is "KW_FOR"
+				if first_kind is KW_FOR
 					skip_leading = true
-				if first_kind is "KW_CONST"
+				if first_kind is KW_CONST
 					skip_leading = true
-				if first_kind is "KW_RAW"
+				if first_kind is KW_RAW
 					skip_leading = true
-				if first_kind is "KW_RUST"
+				if first_kind is KW_RUST
 					skip_leading = true
-				if first_kind is "KW_BLOCK"
+				if first_kind is KW_BLOCK
 					skip_leading = true
-				if first_kind is "KW_MACRO_RUN"
+				if first_kind is KW_MACRO_RUN
 					skip_leading = true
-				if first_kind is "KW_UNSAFE_MACRO_RUN"
+				if first_kind is KW_UNSAFE_MACRO_RUN
 					skip_leading = true
-				if first_kind is "LPAREN"
+				if first_kind is LPAREN
 					skip_leading = true
 				if not skip_leading
 					# Trial-parse the whole line as one expression. If it doesn't fully
@@ -85,7 +85,7 @@ unsafe_macro fn_build_body_ctx
 						bool is_chain = is_expr_chain(detect_tokens, zero, trial_end)
 						string suffix = ""
 						if not is_chain
-							if first_kind is "STRING"
+							if first_kind is STRING
 								suffix = ".to_string()"
 						string return_kw = "return "
 						string return_sc = ";\n"

@@ -10,7 +10,7 @@ macro check_type_base_primitive
 	fn int locate_type_name(int kw_pos)
 		return kw_pos + 1
 
-	if cur_kind is "KW_TYPE"
+	if cur_kind is KW_TYPE
 		int base_type_pos = locate_base_type(pos)
 		if base_type_pos < token_count
 			Token base_type_token = tokens at base_type_pos

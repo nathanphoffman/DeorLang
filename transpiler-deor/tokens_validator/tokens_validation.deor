@@ -23,6 +23,7 @@ shape voidFrameStack = list of VoidFnFrame
 # Walks the merged token list and enforces naming conventions before codegen runs.
 # Prints all violations and exits with code 1 if any are found.
 fn void validate_tokens(TokensRef tokens)
+	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	strList errors = empty
 	int pos = 0

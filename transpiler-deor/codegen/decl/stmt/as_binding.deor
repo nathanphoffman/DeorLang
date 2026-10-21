@@ -7,6 +7,7 @@
 #   name as source with (f1, f2)  — record update spread: StructName { f1, f2, ..source }
 #   name as expr                  — regular let binding
 fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	# ex: result as {(}a, b) — kw_pos+2 grabs the token after 'as' used to dispatch the binding form
 	fn int locate_after_as(int kw_pos)
 		return kw_pos + 2
@@ -24,13 +25,13 @@ fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	(value) in after_as_token
 	string after_as_value = value
 
-	if kind is "LPAREN"
+	if kind is LPAREN
 		macro_run aas_struct
 
-	if kind is "KW_EMPTY"
+	if kind is KW_EMPTY
 		macro_run aas_empty
 
-	if kind is "IDENT"
+	if kind is IDENT
 		macro_run aas_with
 
 	macro_run aas_default

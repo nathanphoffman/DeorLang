@@ -24,30 +24,30 @@ macro check_range_placement
 	fn int locate_prev3(int kw_pos)
 		return kw_pos - 3
 
-	if cur_kind is "IDENT"
+	if cur_kind is IDENT
 		if cur_val is "range"
 			int next_pos = locate_next_token(pos)
 			if next_pos < token_count
 				Token next_token = tokens at next_pos
 				(kind) in next_token
-				if kind is "LPAREN"
+				if kind is LPAREN
 					bool is_valid = false
 					if pos > 1
 						int prev_pos = locate_prev_token(pos)
 						Token prev_token = tokens at prev_pos
 						(kind) in prev_token
-						if kind is "KW_IN"
+						if kind is KW_IN
 							int prev2_pos = locate_prev2(pos)
 							Token prev2_token = tokens at prev2_pos
 							(kind) in prev2_token
-							if kind is "KW_FOR"
+							if kind is KW_FOR
 								is_valid = true
-							else if kind is "IDENT"
+							else if kind is IDENT
 								if pos > 2
 									int prev3_pos = locate_prev3(pos)
 									Token prev3_token = tokens at prev3_pos
 									(kind) in prev3_token
-									if kind is "KW_FOR"
+									if kind is KW_FOR
 										is_valid = true
 					if not is_valid
 						errors at end = val_err(tok, lbl_call, rule_range_placement)

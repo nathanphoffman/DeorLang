@@ -15,12 +15,12 @@ macro check_use_after_move_var_for
 
 	# for move (item in collection) — collection is fully consumed once the
 	# loop is entered.
-	if cur_kind is "KW_FOR"
+	if cur_kind is KW_FOR
 		int move_pos = locate_next_token(pos)
 		if move_pos < token_count
 			Token move_token = tokens at move_pos
 			(kind) in move_token
-			if kind is "KW_MOVE"
+			if kind is KW_MOVE
 				# ex: for move ({item} in collection) — move_pos+2 grabs the loop var
 				int var_pos = move_pos + 2
 				# ex: for move (item {in} collection) — var_pos+1 grabs 'in'
@@ -30,13 +30,13 @@ macro check_use_after_move_var_for
 				if collection_pos < token_count
 					Token collection_token = tokens at collection_pos
 					(kind, value) in collection_token
-					if kind is "IDENT"
+					if kind is IDENT
 						int after_collection = locate_next_token(collection_pos)
 						bool collection_is_bare = true
 						if after_collection < token_count
 							Token after_token = tokens at after_collection
 							(kind) in after_token
-							if kind is "LPAREN"
+							if kind is LPAREN
 								collection_is_bare = false
 						if collection_is_bare
 							bool already_moved = list_has(moved_vars, value)

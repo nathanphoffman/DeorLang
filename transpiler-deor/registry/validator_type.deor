@@ -46,12 +46,13 @@ fn Reg3Scan try_type_entry(TokensRef tokens, int pos)
 # so a later bare reassignment (`varName = expr`) can look up which validator type to
 # re-run the predicate through — see gen_stmt's plain-reassignment branch in stmt.deor.
 fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
+	unsafe_macro_run token_kinds
 	strList result = empty
 	int token_count = len(tokens)
 	for index in range(token_count)
 		Token token = tokens at index
 		(kind, value) in token
-		if kind is "IDENT"
+		if kind is IDENT
 			string maybe_type = value
 			bool is_vtype = reg3_has(type_reg, maybe_type)
 			if is_vtype
@@ -59,7 +60,7 @@ fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
 				if next_pos < token_count
 					Token next_token = tokens at next_pos
 					(kind, value) in next_token
-					if kind is "IDENT"
+					if kind is IDENT
 						string var_name = value
 						result at end = var_name
 						result at end = maybe_type

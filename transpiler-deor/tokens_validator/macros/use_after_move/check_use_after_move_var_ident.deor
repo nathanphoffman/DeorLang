@@ -23,15 +23,15 @@ macro check_use_after_move_var_ident
 	fn int locate_prev_token(int kw_pos)
 		return kw_pos - 1
 
-	if cur_kind is "IDENT"
+	if cur_kind is IDENT
 		int next_pos = locate_next_token(pos)
 		bool is_binding = false
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
-			if kind is "EQUALS"
+			if kind is EQUALS
 				is_binding = true
-			if kind is "KW_AS"
+			if kind is KW_AS
 				is_binding = true
 
 		if is_binding
@@ -54,50 +54,50 @@ macro check_use_after_move_var_ident
 			if next_pos < token_count
 				Token next_token2 = tokens at next_pos
 				(kind) in next_token2
-				if kind is "IDENT"
+				if kind is IDENT
 					skip_read = true
-				if kind is "LPAREN"
+				if kind is LPAREN
 					skip_read = true
-				if kind is "KW_IN"
+				if kind is KW_IN
 					skip_read = true
-				if kind is "RPAREN"
+				if kind is RPAREN
 					next_is_rparen = true
 			if pos > 0
 				int prev_pos = locate_prev_token(pos)
 				Token prev_token = tokens at prev_pos
 				(kind) in prev_token
-				if kind is "KW_MOVE"
+				if kind is KW_MOVE
 					skip_read = true
 				# for move (item in {collection}) — collection here was just
 				# marked moved by the KW_FOR handler above, in this very same
 				# pass; without this, this identical token gets re-visited
 				# as a plain read and flags itself as already-moved.
-				if kind is "KW_IN"
+				if kind is KW_IN
 					if next_is_rparen
 						skip_read = true
-				if kind is "KW_STRUCT"
+				if kind is KW_STRUCT
 					skip_read = true
-				if kind is "KW_ENUM"
+				if kind is KW_ENUM
 					skip_read = true
-				if kind is "KW_SHAPE"
+				if kind is KW_SHAPE
 					skip_read = true
-				if kind is "KW_TYPE"
+				if kind is KW_TYPE
 					skip_read = true
-				if kind is "KW_FN"
+				if kind is KW_FN
 					skip_read = true
-				if kind is "KW_MACRO"
+				if kind is KW_MACRO
 					skip_read = true
-				if kind is "KW_MACRO_RUN"
+				if kind is KW_MACRO_RUN
 					skip_read = true
-				if kind is "KW_UNSAFE_MACRO_RUN"
+				if kind is KW_UNSAFE_MACRO_RUN
 					skip_read = true
-				if kind is "KW_UNSAFE_MACRO"
+				if kind is KW_UNSAFE_MACRO
 					skip_read = true
-				if kind is "KW_OF"
+				if kind is KW_OF
 					skip_read = true
-				if kind is "KW_TO"
+				if kind is KW_TO
 					skip_read = true
-				if kind is "KW_RAW"
+				if kind is KW_RAW
 					skip_read = true
 
 			# Inside an unclosed paren group that's either preceded by KW_MOVE
@@ -124,11 +124,11 @@ macro check_use_after_move_var_ident
 			for if dt_scan_pos >= 0
 				Token dt_scan_token = tokens at dt_scan_pos
 				(kind) in dt_scan_token
-				if kind is "NEWLINE"
+				if kind is NEWLINE
 					break
-				if kind is "RPAREN"
+				if kind is RPAREN
 					dt_scan_depth = dt_scan_depth + 1
-				else if kind is "LPAREN"
+				else if kind is LPAREN
 					if dt_scan_depth is 0
 						dt_found_enclosing = true
 						dt_lparen_pos = dt_scan_pos
@@ -142,14 +142,14 @@ macro check_use_after_move_var_ident
 					int dt_before_lparen = dt_lparen_pos - 1
 					Token dt_before_lparen_token = tokens at dt_before_lparen
 					(kind) in dt_before_lparen_token
-					if kind is "KW_MOVE"
+					if kind is KW_MOVE
 						dt_preceded_by_move = true
 				int dt_rparen_pos = find_matching_rparen(tokens, dt_lparen_pos)
 				int dt_after_rparen = dt_rparen_pos + 1
 				if dt_after_rparen < token_count
 					Token dt_after_rparen_token = tokens at dt_after_rparen
 					(kind) in dt_after_rparen_token
-					if kind is "KW_IN"
+					if kind is KW_IN
 						dt_followed_by_in = true
 				if dt_preceded_by_move or dt_followed_by_in
 					in_destructure_target = true

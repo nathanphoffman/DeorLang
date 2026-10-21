@@ -1,15 +1,16 @@
 
 # Returns true for token kinds that can appear as binary operators in an expression.
 fn bool is_binary_op(string kind)
-	if kind is "PLUS"
+	unsafe_macro_run token_kinds
+	if kind is PLUS
 		return true
-	if kind is "MINUS"
+	if kind is MINUS
 		return true
-	if kind is "STAR"
+	if kind is STAR
 		return true
-	if kind is "SLASH"
+	if kind is SLASH
 		return true
-	if kind is "PERCENT"
+	if kind is PERCENT
 		return true
 	if kind is "GT"
 		return true
@@ -19,11 +20,11 @@ fn bool is_binary_op(string kind)
 		return true
 	if kind is "LTE"
 		return true
-	if kind is "KW_IS"
+	if kind is KW_IS
 		return true
-	if kind is "KW_AND"
+	if kind is KW_AND
 		return true
-	if kind is "KW_OR"
+	if kind is KW_OR
 		return true
 	return false
 
@@ -54,6 +55,7 @@ fn string map_op(string operator)
 # this runs, a '+' chain is always plain numeric arithmetic — string joining goes
 # through s_join/s_join_with (see gen_join_items) instead.
 fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
+	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 
 	unsafe_macro_run expr_float_prescan

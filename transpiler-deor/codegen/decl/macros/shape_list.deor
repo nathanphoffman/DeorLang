@@ -6,7 +6,7 @@ macro shape_list
 	fn int locate_list_elem(int kw_pos)
 		return kw_pos + 5
 
-	if kind is "KW_LIST"
+	if kind is KW_LIST
 		int elem_pos = locate_list_elem(pos)
 		Token elem_token = tokens at elem_pos
 		(value) in elem_token

@@ -14,7 +14,7 @@ macro skip_rust_block
 	fn int locate_rust_block(int kw_pos)
 		return kw_pos + 2
 
-	if cur_kind is "KW_RUST"
+	if cur_kind is KW_RUST
 		int newline_pos = locate_newline(pos)
 		int block_pos = locate_rust_block(pos)
 		bool is_block = false
@@ -22,9 +22,9 @@ macro skip_rust_block
 			Token newline_token = tokens at newline_pos
 			Token block_token = tokens at block_pos
 			(kind) in newline_token
-			bool newline_ok = kind is "NEWLINE"
+			bool newline_ok = kind is NEWLINE
 			(kind) in block_token
-			bool block_ok = kind is "RUST_BLOCK"
+			bool block_ok = kind is RUST_BLOCK
 			is_block = newline_ok and block_ok
 		if is_block
 			pos = block_pos + 1

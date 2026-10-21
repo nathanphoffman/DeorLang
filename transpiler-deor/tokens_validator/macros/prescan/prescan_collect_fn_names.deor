@@ -9,10 +9,10 @@ macro prescan_collect_fn_names
 	fn int locate_name(int kw_pos)
 		return kw_pos + 2
 
-	if kind is "KW_FN"
+	if kind is KW_FN
 		int name_pos = locate_name(pre_i)
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
 			(kind, value) in name_token
-			if kind is "IDENT"
+			if kind is IDENT
 				fn_names at end = value

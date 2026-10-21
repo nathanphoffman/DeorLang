@@ -11,7 +11,7 @@ macro stmt_flow
 	fn int locate_next_token(int anchor)
 		return anchor + 1
 
-	if kind is "KW_RETURN"
+	if kind is KW_RETURN
 		int val_pos = locate_next_token(pos)
 		Token val_token = tokens at val_pos
 		(kind) in val_token
@@ -24,18 +24,18 @@ macro stmt_flow
 
 		string suffix = ""
 		if not is_chain
-			if kind is "STRING"
+			if kind is STRING
 				suffix = ".to_string()"
 		string return_kw = "return "
 		string return_sc = ";\n"
 		string return_code = s_join([pad, return_kw, val_code, suffix, return_sc])
 		return make_nl_result(move return_code, val_end, tokens)
-	if kind is "KW_BREAK"
+	if kind is KW_BREAK
 		string break_kw = "break;\n"
 		string break_code = s_join([pad, break_kw])
 		int break_next = locate_next_token(pos)
 		return make_nl_result(move break_code, break_next, tokens)
-	if kind is "KW_CONTINUE"
+	if kind is KW_CONTINUE
 		string continue_kw = "continue;\n"
 		string continue_code = s_join([pad, continue_kw])
 		int continue_next = locate_next_token(pos)
