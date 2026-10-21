@@ -8,6 +8,7 @@ type Positive(int val)
 
 fn void main()
 	Positive num
+
 	if num is not valid
 		print("not valid")
 	else

@@ -8,6 +8,7 @@
 fn void main()
 	int total = (1 + 2
 	print(total)
+
 	if total > 0
 		print(total)
 	else

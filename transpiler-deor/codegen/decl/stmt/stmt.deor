@@ -25,6 +25,7 @@
 # each identifier-led form so this function stays a clean dispatch table.
 fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run token_kinds
+
 	# The token right after whatever keyword/ident anchor is in scope at each call
 	# site below — reused across branches, meaning documented by the comment there.
 	fn int locate_next_token(int anchor)
@@ -57,4 +58,5 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 	strList unhandled_parts = [unhandled_prefix, kind, unhandled_suffix]
 	string unhandled = s_join(unhandled_parts)
 	int unhandled_next = locate_next_token(pos)
+
 	return make_result(move unhandled, unhandled_next)

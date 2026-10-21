@@ -25,12 +25,15 @@ macro check_use_after_move_chain
 	# block — see docs/conditionals.md).
 	if cur_kind is KW_IF
 		bool is_elseif = false
+
 		if pos > 0
 			int prev_pos = locate_prev_token(pos)
 			Token prev_token = tokens at prev_pos
 			(kind) in prev_token
+
 			if kind is KW_ELSE
 				is_elseif = true
+
 		if not is_elseif
 			int chain_depth = block_depth
 			strList pre_vars = moved_vars
@@ -49,14 +52,18 @@ macro check_use_after_move_chain
 	# previous arm moved.
 	if cur_kind is KW_ELSE
 		int stack_len = len(move_if_stack)
+
 		if stack_len > 0
 			int top_idx = stack_len - 1
 			UamFrame top_frame = move_if_stack at top_idx
 			(chain_depth, pre_vars, acc_vars) in top_frame
+
 			if chain_depth is block_depth
 				bool arm_is_terminal = arm_ends_in_jump(tokens, pos)
+
 				if not arm_is_terminal
 					acc_vars = fold_moved_into(acc_vars, moved_vars)
+
 				move_if_stack remove at top_idx
 				UamFrame updated_frame = (chain_depth, pre_vars, acc_vars)
 				move_if_stack at end = updated_frame
@@ -71,21 +78,28 @@ macro check_use_after_move_chain
 	# read in later straight-line code is still caught.
 	if cur_kind is DEDENT
 		int stack_len = len(move_if_stack)
+
 		if stack_len > 0
 			int top_idx = stack_len - 1
 			UamFrame top_frame = move_if_stack at top_idx
 			(chain_depth, acc_vars) in top_frame
+
 			if chain_depth is block_depth
 				bool next_is_else = false
 				int after_dedent = locate_next_token(pos)
+
 				if after_dedent < token_count
 					Token after_dedent_token = tokens at after_dedent
 					(kind) in after_dedent_token
+
 					if kind is KW_ELSE
 						next_is_else = true
+
 				if not next_is_else
 					bool arm_is_terminal = arm_ends_in_jump(tokens, pos)
+
 					if not arm_is_terminal
 						acc_vars = fold_moved_into(acc_vars, moved_vars)
+
 					move_if_stack remove at top_idx
 					moved_vars = acc_vars

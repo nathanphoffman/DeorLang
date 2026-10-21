@@ -8,9 +8,11 @@ macro prescan_collect_validator_types
 
 	if kind is KW_TYPE
 		int name_pos = locate_name(pre_i)
+
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
 			(kind, value) in name_token
+
 			if kind is IDENT
 				validator_type_names at end = value
 				declared_type_names at end = value

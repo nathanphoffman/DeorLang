@@ -5,4 +5,5 @@
 # Returns the expanded token list ready for validation and codegen.
 fn tokenList build_macros(tokenList raw_tokens, int enforce_macro_file_depth)
 	tokenList validated = validate_macros(raw_tokens)
+
 	return expand_deor_macros(validated, enforce_macro_file_depth)

@@ -24,6 +24,7 @@ macro sep_check_main_signature
 	int name_pos = locate_name(scan_pos)
 	int left_paren_pos = locate_left_paren(scan_pos)
 	int right_paren_pos = locate_right_paren(scan_pos)
+
 	if right_paren_pos < token_count
 		Token void_token = tokens at void_pos
 		Token name_token = tokens at name_pos

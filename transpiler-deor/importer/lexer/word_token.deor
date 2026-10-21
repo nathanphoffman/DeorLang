@@ -6,82 +6,121 @@
 # (KW_FN, KW_STRUCT, etc.) for reserved words and "IDENT" for everything else.
 fn string word_to_kind(string word)
 	unsafe_macro_run token_kinds
+
 	if word is "fn"
 		return KW_FN
+
 	if word is "as"
 		return KW_AS
+
 	if word is "return"
 		return KW_RETURN
+
 	if word is "if"
 		return KW_IF
+
 	if word is "else"
 		return KW_ELSE
+
 	if word is "for"
 		return KW_FOR
+
 	if word is "in"
 		return KW_IN
+
 	if word is "break"
 		return KW_BREAK
+
 	if word is "continue"
 		return KW_CONTINUE
+
 	if word is "and"
 		return KW_AND
+
 	if word is "or"
 		return KW_OR
+
 	if word is "not"
 		return KW_NOT
+
 	if word is "is"
 		return KW_IS
+
 	if word is "true"
 		return KW_TRUE
+
 	if word is "false"
 		return KW_FALSE
+
 	if word is "valid"
 		return KW_VALID
+
 	if word is "avow"
 		return KW_AVOW
+
 	if word is "empty"
 		return KW_EMPTY
+
 	if word is "type"
 		return KW_TYPE
+
 	if word is "struct"
 		return KW_STRUCT
+
 	if word is "shape"
 		return KW_SHAPE
+
 	if word is "list"
 		return KW_LIST
+
 	if word is "of"
 		return KW_OF
+
 	if word is "enum"
 		return KW_ENUM
+
 	if word is "at"
 		return KW_AT
+
 	if word is "remove"
 		return KW_REMOVE
+
 	if word is "rust"
 		return KW_RUST
+
 	if word is "void"
 		return KW_VOID
+
 	if word is "with"
 		return KW_WITH
+
 	if word is "move"
 		return KW_MOVE
+
 	if word is "raw"
 		return KW_RAW
+
 	if word is "macro"
 		return KW_MACRO
+
 	if word is "macro_run"
 		return KW_MACRO_RUN
+
 	if word is "unsafe_macro_run"
 		return KW_UNSAFE_MACRO_RUN
+
 	if word is "unsafe_macro"
 		return KW_UNSAFE_MACRO
+
 	if word is "import"
 		return KW_IMPORT
+
 	if word is "block"
 		return KW_BLOCK
+
 	if word is "const"
 		return KW_CONST
+
 	if word is "end"
 		return KW_END
 
@@ -96,8 +135,10 @@ fn string word_to_kind(string word)
 	# none — not a Deor concept; blocked so `return none` produces a clear error
 	if word is "to"
 		return KW_TO
+
 	if word is "none"
 		return KW_NONE
+
 	return IDENT
 
 fn ParseResult scan_word(strList chars, int char_index, int char_count)
@@ -106,11 +147,14 @@ fn ParseResult scan_word(strList chars, int char_index, int char_count)
 	string word = s_cat(empty_str, first_char)
 	int word_start = char_index + 1
 	int new_pos = char_index + 1
+
 	for word_index in range(word_start, char_count)
 		string word_char = chars at word_index
+
 		if c_alnum(word_char)
 			word = s_cat(word, word_char)
 			new_pos = word_index + 1
 		else
 			break
+
 	return make_result(word, new_pos)

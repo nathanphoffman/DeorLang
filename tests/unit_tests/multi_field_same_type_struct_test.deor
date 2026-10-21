@@ -15,6 +15,7 @@ struct Rectangle
 
 fn int volume(Rectangle rect)
 	(width, height, depth) in rect
+
 	return width * height * depth
 
 fn void main()

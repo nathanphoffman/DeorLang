@@ -5,6 +5,7 @@
 
 fn int nested_count(int outer_limit, int inner_limit)
 	total as 0
+
 	for outer_idx in range(outer_limit)
 		if outer_idx > 0
 			for inner_idx in range(inner_limit)
@@ -14,6 +15,7 @@ fn int nested_count(int outer_limit, int inner_limit)
 					total = total + 2
 		else
 			total = total + 100
+
 	return total
 
 fn void main()

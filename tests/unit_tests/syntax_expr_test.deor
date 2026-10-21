@@ -21,12 +21,14 @@ fn void test_kw_in_parens()
 
 fn void test_not_is_order()
 	bool flag = true
+
 	if not flag is true
 		print("bad order")
 
 fn void test_not_is_order_paren()
 	int low = 3
 	int high = 4
+
 	if not (low > high) is true
 		print("bad order paren")
 
@@ -46,6 +48,7 @@ fn void test_range_as_arg()
 
 fn void test_bare_truthiness()
 	int my_count = 5
+
 	if my_count
 		print("bad truthiness")
 
@@ -67,12 +70,12 @@ fn void main()
 # line 14: variable 'nums' - bracket indexing is not valid in Deor
 # line 17: variable '[' - use 'empty' to initialize an empty list
 # line 20: variable 'if' - reserved keyword cannot be used as a name
-# line 24: variable 'flag' - use 'x is not y' instead of 'not x is y'
-# line 30: variable '(' - use 'x is not y' instead of 'not x is y'
-# line 34: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
-# line 41: call to 'range' - 'range' can only be used as a for-loop's iterator expression
-# line 45: call to 'range' - 'range' can only be used as a for-loop's iterator expression
-# line 49: variable 'my_count' - only bool and validator types have truthiness
-# line 53: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
-# line 56: call to '(' - bare tuple range
-# line 60: call to '(' - bare tuple range
+# line 25: variable 'flag' - use 'x is not y' instead of 'not x is y'
+# line 32: variable '(' - use 'x is not y' instead of 'not x is y'
+# line 36: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
+# line 43: call to 'range' - 'range' can only be used as a for-loop's iterator expression
+# line 47: call to 'range' - 'range' can only be used as a for-loop's iterator expression
+# line 52: variable 'my_count' - only bool and validator types have truthiness
+# line 56: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
+# line 59: call to '(' - bare tuple range
+# line 63: call to '(' - bare tuple range

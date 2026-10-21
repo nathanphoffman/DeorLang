@@ -1,5 +1,6 @@
 fn void main()
 	(first, second, third, input_string, input_list) in args()
+
 	if first is ""
 		print("usage: args_example <name> <age> <city>")
 	else

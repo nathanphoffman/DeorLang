@@ -8,26 +8,32 @@
 # Assigns (caller must predeclare): opener_ok
 macro sep_copy_main_opener
 	int copy_index = 0
+
 	for if copy_index < 5
 		int copy_pos = scan_pos + copy_index
 		Token copy_token = tokens at copy_pos
 		result_tokens at end = copy_token
 		copy_index = copy_index + 1
+
 	scan_pos = scan_pos + 5
 	bool newline_present = false
+
 	if scan_pos < token_count
 		Token newline_token = tokens at scan_pos
 		(kind) in newline_token
 		newline_present = kind is NEWLINE
+
 	if newline_present
 		Token newline_token2 = tokens at scan_pos
 		result_tokens at end = newline_token2
 		scan_pos = scan_pos + 1
 		bool indent_present = false
+
 		if scan_pos < token_count
 			Token indent_token = tokens at scan_pos
 			(kind) in indent_token
 			indent_present = kind is INDENT
+
 		if indent_present
 			Token indent_token2 = tokens at scan_pos
 			result_tokens at end = indent_token2

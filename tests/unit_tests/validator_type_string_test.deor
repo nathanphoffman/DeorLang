@@ -8,6 +8,7 @@ type ShortName(string val)
 fn void main()
 	string good_text = "Ada"
 	ShortName good_name = good_text
+
 	if good_name is valid
 		string unwrapped = avow good_name
 		print(unwrapped)
@@ -16,12 +17,14 @@ fn void main()
 
 	string bad_text = "Alexander"
 	ShortName bad_name = bad_text
+
 	if bad_name is not valid
 		print(bad_text)
 	else
 		print("should have been rejected")
 
 	ShortName literal_name = "Bo"
+
 	if literal_name is valid
 		string literal_text = avow literal_name
 		print(literal_text)

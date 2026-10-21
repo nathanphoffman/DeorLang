@@ -57,4 +57,5 @@ fn ParseResult gen_move_destructure(int pos, int depth, RcCtx ctx)
 	int after = adv_nl_ref(val_end, tokens)
 	string dest_code = s_join_nl(dest_lines)
 	dest_code = s_cat(dest_code, RS_NL)
+
 	return make_result(move dest_code, after)

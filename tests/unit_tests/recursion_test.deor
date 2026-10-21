@@ -7,8 +7,10 @@
 fn int factorial(int num)
 	if num <= 1
 		return 1
+
 	prev as num - 1
 	int prev_result = factorial(prev)
+
 	return num * prev_result
 
 fn void main()

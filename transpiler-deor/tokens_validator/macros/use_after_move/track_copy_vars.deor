@@ -23,51 +23,69 @@ macro track_copy_vars
 
 	if cur_kind is IDENT
 		bool is_copy_kw = cur_val is "int"
+
 		if not is_copy_kw
 			is_copy_kw = cur_val is "float"
+
 		if not is_copy_kw
 			is_copy_kw = cur_val is "bool"
+
 		if is_copy_kw
 			int name_pos = locate_var_name(pos)
 			int equals_pos = locate_equals(pos)
+
 			if equals_pos < token_count
 				Token name_token = tokens at name_pos
 				Token equals_token = tokens at equals_pos
 				(kind) in name_token
 				string name_kind = kind
 				(kind) in equals_token
+
 				if name_kind is IDENT and kind is EQUALS
 					(value) in name_token
 					copy_var_names at end = value
 
 	if cur_kind is KW_FN
 		int left_paren_pos = locate_left_paren(pos)
+
 		if left_paren_pos < token_count
 			Token left_paren_token = tokens at left_paren_pos
 			(kind) in left_paren_token
+
 			if kind is LPAREN
 				int param_scan_pos = left_paren_pos + 1
+
 				for if param_scan_pos < token_count
 					Token param_scan_token = tokens at param_scan_pos
 					(kind, value) in param_scan_token
+
 					if kind is RPAREN
 						break
+
 					if kind is COMMA
 						param_scan_pos = param_scan_pos + 1
 						continue
+
 					if kind is IDENT
 						string param_type = value
 						bool param_is_copy = param_type is "int"
+
 						if not param_is_copy
 							param_is_copy = param_type is "float"
+
 						if not param_is_copy
 							param_is_copy = param_type is "bool"
+
 						int param_name_pos = param_scan_pos + 1
+
 						if param_name_pos < token_count
 							Token param_name_token = tokens at param_name_pos
 							(kind, value) in param_name_token
+
 							if kind is IDENT
 								if param_is_copy
 									copy_var_names at end = value
+
 								param_scan_pos = param_name_pos
+
 					param_scan_pos = param_scan_pos + 1

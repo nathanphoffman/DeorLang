@@ -6,17 +6,21 @@ struct Point
 
 fn Point make_point(int pos_x, int pos_y)
 	point as (pos_x, pos_y)
+
 	return point
 
 fn int manhattan(Point point)
 	(pos_x, pos_y) in point
+
 	return pos_x + pos_y
 
 fn int sum_distances(pointList pts)
 	total as 0
+
 	for point in pts
 		int dist = manhattan(point)
 		total = total + dist
+
 	return total
 
 fn void main()

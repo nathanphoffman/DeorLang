@@ -11,13 +11,16 @@ macro tb_paren
 	(kind) in peek_token
 	bool is_avow_expr = kind is KW_AVOW
 	bool is_struct_type = reg_has(struct_reg, var_type)
+
 	if not is_avow_expr
 		if is_struct_type
 			strList paren_fields = empty
 			int scan_pos = locate_after_lparen(val_pos)
+
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
 				(kind, value) in scan_token
+
 				if kind is RPAREN
 					scan_pos = scan_pos + 1
 					break
@@ -28,13 +31,16 @@ macro tb_paren
 					scan_pos = scan_pos + 1
 				else
 					scan_pos = scan_pos + 1
+
 			strList field_pairs = empty
 			int field_count = len(paren_fields)
+
 			for field_index in range(field_count)
 				string field_name = paren_fields at field_index
 				string field_sep = ": "
 				string field_clone_suffix = ".clone()"
 				field_pairs at end = s_join([field_name, field_sep, field_name, field_clone_suffix])
+
 			string sep = ", "
 			string fields_code = s_join_with(field_pairs, sep)
 			unsafe_macro_run mut_guard
@@ -43,7 +49,9 @@ macro tb_paren
 			string struct_open_brace = " { "
 			string struct_close_brace = " };\n"
 			string struct_code = s_join([pad, struct_let, mut_kw, var_name, struct_eq, var_type, struct_open_brace, fields_code, struct_close_brace])
+
 			return make_nl_result(move struct_code, scan_pos, tokens)
+
 	if is_avow_expr
 		# ex: Type name = (avow {x}) — peek_pos+1 grabs the expression after avow
 		int inner_pos = peek_pos + 1
@@ -56,12 +64,16 @@ macro tb_paren
 		string unwrap_suffix = ".unwrap()"
 		string unwrap_field0_suffix = ".unwrap().0"
 		string unwrap_expr = s_cat(val_code, unwrap_suffix)
+
 		if var_type is "int"
 			unwrap_expr = s_cat(val_code, unwrap_field0_suffix)
+
 		if var_type is "string"
 			unwrap_expr = s_cat(val_code, unwrap_field0_suffix)
+
 		if var_type is "bool"
 			unwrap_expr = s_cat(val_code, unwrap_field0_suffix)
+
 		if var_type is "float"
 			unwrap_expr = s_cat(val_code, unwrap_field0_suffix)
 
@@ -72,12 +84,16 @@ macro tb_paren
 		# silently dropping everything after it.
 		string left_code = unwrap_expr
 		int cur_pos = after_rparen
+
 		for if cur_pos < token_count
 			Token operator_token = tokens at cur_pos
 			(kind, value) in operator_token
+
 			if not is_binary_op(kind)
 				break
+
 			string operator_str = value
+
 			# ex: (avow x) is {right} -- cur_pos+1 grabs the right-hand operand after the operator
 			int after_op = cur_pos + 1
 			macro_run expr_is_special
@@ -92,6 +108,7 @@ macro tb_paren
 			left_code = s_cat(move left_code, operator_space)
 			left_code = s_cat(move left_code, rhs_code)
 			cur_pos = rhs_pos
+
 		unwrap_expr = left_code
 		after_rparen = cur_pos
 
@@ -100,4 +117,5 @@ macro tb_paren
 		string avow_eq = " = "
 		string avow_sc = ";\n"
 		string avow_code = s_join([pad, avow_let, var_name, avow_colon, rust_type, avow_eq, unwrap_expr, avow_sc])
+
 		return make_nl_result(move avow_code, after_rparen, tokens)

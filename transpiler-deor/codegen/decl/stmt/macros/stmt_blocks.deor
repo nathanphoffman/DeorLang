@@ -24,7 +24,9 @@ macro stmt_blocks
 		string block_open = s_cat(pad, open_brace)
 		string block_close = s_cat(pad, close_brace)
 		string block_code = s_join([block_open, body_code, block_close])
+
 		return make_result(move block_code, body_end)
+
 	if kind is KW_RUST
 		int rust_block_pos = locate_rust_block_content(pos)
 		Token rust_block_token = tokens at rust_block_pos
@@ -33,14 +35,18 @@ macro stmt_blocks
 		strList rust_lines = s_split(rust_content, RS_NL)
 		strList padded_lines = empty
 		int line_count = len(rust_lines)
+
 		for line_index in range(line_count)
 			string rust_line = rust_lines at line_index
+
 			if is_empty(rust_line)
 				string empty_line = ""
 				padded_lines at end = empty_line
 			else
 				padded_lines at end = s_join([pad, rust_line])
+
 		string rust_block_code = s_join_nl(padded_lines)
 		rust_block_code = s_cat(rust_block_code, RS_NL)
 		int rust_block_next = locate_next_token(rust_block_pos)
+
 		return make_result(move rust_block_code, rust_block_next)

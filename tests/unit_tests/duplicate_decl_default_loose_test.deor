@@ -22,6 +22,7 @@ shape intList = list of string
 
 fn Player make_player_objayer(string name, int score)
 	player_objayer as (name, score)
+
 	return player_objayer
 
 fn void main()

@@ -8,15 +8,19 @@ fn string val_err(Token tok, string label, string rule)
 	string quote_open = " '"
 	string quote_close = "' - "
 	strList parts = [prefix, file, line_sep, line_str, colon_sep, label, quote_open, name, quote_close, rule]
+
 	return s_join(parts)
 
 fn void handle_errors(strList: errors)
 	int error_count = len(errors)
+
 	if error_count > 0
 		int error_index = 0
+
 		for if error_index < error_count
 			string error_msg = errors at error_index
 			print(error_msg)
 			error_index = error_index + 1
+
 		rust
 			std::process::exit(1);

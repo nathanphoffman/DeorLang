@@ -6,17 +6,23 @@
 # advances pos past the declaration.
 macro dd_copy_single_line_decl
 	int scan_pos = pos
+
 	for if scan_pos < token_count
 		Token scan_token = tokens at scan_pos
 		(kind) in scan_token
 		scan_pos = scan_pos + 1
+
 		if kind is NEWLINE
 			break
+
 	int end_pos = scan_pos
+
 	if not already_seen
 		int copy_len = end_pos - pos
+
 		for copy_idx in range(copy_len)
 			int copy_pos = pos + copy_idx
 			Token copy_token = tokens at copy_pos
 			result at end = copy_token
+
 	pos = end_pos

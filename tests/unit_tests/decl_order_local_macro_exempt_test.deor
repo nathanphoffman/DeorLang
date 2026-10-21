@@ -9,6 +9,7 @@ fn void first()
 fn void second()
 	macro local_only
 		print("local macro ran")
+
 	macro_run local_only
 
 fn void main()

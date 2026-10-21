@@ -29,6 +29,7 @@ unsafe_macro fn_build_body_ctx
 	string implicit_return_code = ""
 	int implicit_return_end = 0
 	bool is_void_ret = is_empty(ret_type)
+
 	if not is_void_ret
 		if body_len > 2
 			int last_idx = body_len - 1
@@ -39,37 +40,50 @@ unsafe_macro fn_build_body_ctx
 			Token second_last_tok = detect_tokens at second_last_idx
 			(kind) in second_last_tok
 			bool second_last_is_newline = kind is NEWLINE
+
 			# Both checks together confirm the body is exactly one line long: statement
 			# tokens, then NEWLINE, then immediately the DEDENT that closes the function.
 			if ends_in_dedent and second_last_is_newline
 				Token first_tok = detect_tokens at zero
 				(kind) in first_tok
 				string first_kind = kind
+
 				# Statement forms gen_stmt already handles correctly on their own — skip
 				# the trial parse below so an existing single-statement body (a lone
 				# 'return', 'if', 'for', destructure, raw/rust/macro_run, etc.) is left
 				# completely untouched by this new path.
 				bool skip_leading = false
+
 				if first_kind is KW_RETURN
 					skip_leading = true
+
 				if first_kind is KW_IF
 					skip_leading = true
+
 				if first_kind is KW_FOR
 					skip_leading = true
+
 				if first_kind is KW_CONST
 					skip_leading = true
+
 				if first_kind is KW_RAW
 					skip_leading = true
+
 				if first_kind is KW_RUST
 					skip_leading = true
+
 				if first_kind is KW_BLOCK
 					skip_leading = true
+
 				if first_kind is KW_MACRO_RUN
 					skip_leading = true
+
 				if first_kind is KW_UNSAFE_MACRO_RUN
 					skip_leading = true
+
 				if first_kind is LPAREN
 					skip_leading = true
+
 				if not skip_leading
 					# Trial-parse the whole line as one expression. If it doesn't fully
 					# consume the line (e.g. 'x = 5', 'x as 5' — gen_expr stops right
@@ -81,12 +95,15 @@ unsafe_macro fn_build_body_ctx
 					trial_code as code
 					trial_end as new_pos
 					bool fully_consumed = trial_end is second_last_idx
+
 					if fully_consumed
 						bool is_chain = is_expr_chain(detect_tokens, zero, trial_end)
 						string suffix = ""
+
 						if not is_chain
 							if first_kind is STRING
 								suffix = ".to_string()"
+
 						string return_kw = "return "
 						string return_sc = ";\n"
 						string return_code = s_join([RS_IND, return_kw, trial_code, suffix, return_sc])

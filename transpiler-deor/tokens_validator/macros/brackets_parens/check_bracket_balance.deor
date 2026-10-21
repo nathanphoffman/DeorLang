@@ -11,20 +11,25 @@ macro check_bracket_balance
 	int open_line = 0
 	string open_file = ""
 	int scan_i = 0
+
 	for if scan_i < token_count
 		Token scan_token = tokens at scan_i
 		(kind, line, file) in scan_token
+
 		if kind is LBRACKET
 			if depth is 0
 				open_line = line
 				open_file = file
+
 			depth = depth + 1
 		else if kind is RBRACKET
 			if depth is 0
 				errors at end = val_err(scan_token, lbl_var, rule_unmatched_close_bracket)
 			else
 				depth = depth - 1
+
 		scan_i = scan_i + 1
+
 	if depth > 0
 		string kind = LBRACKET
 		string value = "["

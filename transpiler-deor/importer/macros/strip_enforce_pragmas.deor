@@ -24,24 +24,31 @@ unsafe_macro strip_enforce_pragmas
 	tokenList result_tokens = empty
 	int token_count = len(tokens)
 	int scan_pos = 0
+
 	for if scan_pos < token_count
 		Token scan_token = tokens at scan_pos
 		(kind) in scan_token
 		bool is_main = false
+
 		if kind is KW_FN
 			macro_run sep_check_main_signature
+
 		if is_main
 			bool opener_ok = false
 			macro_run sep_copy_main_opener
+
 			if opener_ok
 				macro_run sep_scan_pragma_lines
+
 			rust
 				for i in (scan_pos as usize)..(token_count as usize) {
 					result_tokens.push(tokens[i].clone());
 				}
+
 			scan_pos = token_count
 			break
 		else
 			result_tokens at end = scan_token
 			scan_pos = scan_pos + 1
+
 	tokens = result_tokens

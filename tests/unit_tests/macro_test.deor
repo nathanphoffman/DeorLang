@@ -21,24 +21,21 @@ macro outer_macro
 	macro_run inner_macro
 	print("outer end")
 
-
 fn void greet()
 	macro_run say_hello
 	macro_run say_hello
-
 
 fn void run_area_twice()
 	macro_run compute_area
 	macro_run compute_area
 
-
 fn void run_nested()
 	macro_run outer_macro
-
 
 fn void run_local_macro_scope()
 	macro local_only
 		print("local macro ran")
+
 	macro_run local_only
 
 fn void main()

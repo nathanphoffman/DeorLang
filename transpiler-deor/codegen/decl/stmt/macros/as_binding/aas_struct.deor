@@ -8,25 +8,33 @@ macro aas_struct
 
 	bool is_struct = true
 	int peek_pos = locate_after_lparen(after_as)
+
 	for if peek_pos < token_count
 		Token peek_token = tokens at peek_pos
 		(kind) in peek_token
+
 		if kind is RPAREN
 			break
+
 		if kind is IDENT
 			peek_pos = peek_pos + 1
 			continue
+
 		if kind is COMMA
 			peek_pos = peek_pos + 1
 			continue
+
 		is_struct = false
 		break
+
 	if is_struct
 		strList fields = empty
 		int scan_pos = locate_after_lparen(after_as)
+
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind, value) in scan_token
+
 			if kind is RPAREN
 				scan_pos = scan_pos + 1
 				break
@@ -35,16 +43,19 @@ macro aas_struct
 			else if kind is IDENT
 				fields at end = value
 				scan_pos = scan_pos + 1
+
 		string matched_struct_name = find_struct_for_fields(struct_reg, fields)
 		string var_name = ident_name
 		unsafe_macro_run mut_guard
 		int field_count = len(fields)
 		strList field_pairs = empty
+
 		for field_index in range(field_count)
 			string field_name = fields at field_index
 			string field_sep = ": "
 			string field_clone_suffix = ".clone()"
 			field_pairs at end = s_join([field_name, field_sep, field_name, field_clone_suffix])
+
 		string fields_separator = ", "
 		string fields_code = s_join_with(field_pairs, fields_separator)
 		string let_kw = "let "
@@ -52,4 +63,5 @@ macro aas_struct
 		string open_brace = " { "
 		string close_brace = " };\n"
 		string struct_code = s_join([pad, let_kw, mut_kw, ident_name, equals_kw, matched_struct_name, open_brace, fields_code, close_brace])
+
 		return make_nl_result(move struct_code, scan_pos, tokens)

@@ -25,6 +25,7 @@ fn void test_param(int len)
 
 fn void test_for_loop()
 	intList items = [1, 2, 3]
+
 	for input in items
 		print("hi")
 
@@ -46,5 +47,5 @@ fn void main()
 # line 17: declaration 'crash' - this name belongs to a built-in function
 # line 21: variable 'print' - this name belongs to a built-in function
 # line 23: fn 'len' - this name belongs to a built-in function
-# line 28: variable 'input' - this name belongs to a built-in function
-# line 33: variable 'args' - this name belongs to a built-in function
+# line 29: variable 'input' - this name belongs to a built-in function
+# line 34: variable 'args' - this name belongs to a built-in function

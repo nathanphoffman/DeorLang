@@ -3,8 +3,10 @@ macro for_build_fields
 		string field = fields at field_index
 		bool is_mut = list_has(mut_names, field)
 		string mut_kw = ""
+
 		if is_mut
 			mut_kw = "mut "
+
 		string let_kw = "let "
 		string equals_kw = " = "
 		string dot = "."

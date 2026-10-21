@@ -10,13 +10,17 @@ macro primary_builtin_calls
 
 	if kind is IDENT
 		int next_pos = locate_next_token(pos)
+
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
+
 			if kind is LPAREN
 				string func_name = value
+
 				# ex: name({args}) — next_pos+1 grabs the first call-argument slot
 				int args_pos = locate_next_token(next_pos)
+
 				if func_name is "len"
 					string len_suffix = ".len() as i64"
 					ParseResult len_result = gen_unary_method(args_pos, len_suffix, ctx)
@@ -26,6 +30,7 @@ macro primary_builtin_calls
 					string paren_open = "("
 					string paren_close = ")"
 					string len_wrapped = s_join([paren_open, len_code, paren_close])
+
 					return make_result(move len_wrapped, len_end)
 				else if func_name is "crash"
 					ParseResult crash_result = gen_call_args(tokens, args_pos, ctx)
@@ -36,6 +41,7 @@ macro primary_builtin_calls
 					string panic_suffix = ")"
 					string panic_code = s_join([panic_prefix, crash_code, panic_suffix])
 					int after_crash = crash_end + 1
+
 					return make_result(move panic_code, after_crash)
 
 				# This is solely for optimization, it is rewritten as a .concat() so that no clones happen
@@ -45,6 +51,7 @@ macro primary_builtin_calls
 				if func_name is "s_join"
 					Token join_arg_token = tokens at args_pos
 					(kind) in join_arg_token
+
 					if kind is LBRACKET
 						# ex: s_join([{a}, b]) — args_pos+1 grabs the first item after '['
 						int join_inner_pos = locate_next_token(args_pos)
@@ -56,4 +63,5 @@ macro primary_builtin_calls
 						string join_open = "["
 						string join_close = "].concat()"
 						string join_code = s_join([join_open, join_items_code, join_close])
+
 						return make_result(move join_code, join_after)

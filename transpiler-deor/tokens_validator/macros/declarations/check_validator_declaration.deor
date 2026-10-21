@@ -29,6 +29,7 @@ macro check_validator_declaration
 		int left_paren_pos = locate_type_left_paren(pos)
 		int param_type_pos = locate_type_param_type(pos)
 		int param_name_pos = locate_type_param_name(pos)
+
 		if param_name_pos < token_count
 			Token type_name_token = tokens at type_name_pos
 			Token left_paren_token = tokens at left_paren_pos
@@ -37,15 +38,19 @@ macro check_validator_declaration
 			(kind, value) in type_name_token
 			string type_name = value
 			(kind) in left_paren_token
+
 			if kind is LPAREN
 				(value) in param_type_token
 				string param_type = value
 				(kind, value) in param_name_token
+
 				if kind is IDENT
 					if value is type_name
 						errors at end = val_err(param_name_token, lbl_type, rule_type_param_shadow)
+
 					if value is param_type
 						errors at end = val_err(param_name_token, lbl_type, rule_param_shadow)
+
 					if list_has(builtin_names, value)
 						errors at end = val_err(param_name_token, lbl_type, rule_builtin_shadow)
 
@@ -55,13 +60,17 @@ macro check_validator_declaration
 				int newline_pos = locate_type_newline(pos)
 				int body_pos = locate_type_body(pos)
 				bool has_body = false
+
 				if body_pos < token_count
 					Token newline_token = tokens at newline_pos
 					(kind) in newline_token
+
 					if kind is NEWLINE
 						Token body_token = tokens at body_pos
 						(kind) in body_token
+
 						if kind is INDENT
 							has_body = true
+
 				if not has_body
 					errors at end = val_err(type_name_token, lbl_type, rule_validator_missing_body)

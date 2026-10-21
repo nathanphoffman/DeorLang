@@ -48,34 +48,47 @@ fn string s_replace(string source, string from, string output)
 fn string apply_t_in_name(string name, string placeholder, string concrete)
 	if name is placeholder
 		return concrete
+
 	string pascal_placeholder = s_pascal(placeholder)
 	string camel_placeholder = s_camel(placeholder)
 	int placeholder_len = len(placeholder)
 	int name_len = len(name)
+
 	if name_len > placeholder_len
 		string after_placeholder = s_from(name, placeholder_len)
 		strList after_chars = c_chars(after_placeholder)
+
 		if len(after_chars) > 0
 			string next_char = after_chars at 0
 			bool next_is_upper = s_upper_char(next_char)
 			bool starts_pascal = s_starts_with(name, pascal_placeholder)
+
 			if starts_pascal and next_is_upper
 				string pascal_concrete = s_pascal(concrete)
+
 				return s_cat(pascal_concrete, after_placeholder)
+
 			bool starts_camel = s_starts_with(name, camel_placeholder)
+
 			if starts_camel and next_is_upper
 				string camel_concrete = s_camel(concrete)
+
 				return s_cat(camel_concrete, after_placeholder)
+
 	string pascal_sep = s_join(["_", pascal_placeholder, "_"])
 	string camel_sep = s_join(["_", camel_placeholder, "_"])
 	string snake_concrete = s_to_snake(concrete)
 	string new_sep = s_join(["_", snake_concrete, "_"])
 	bool has_pascal_sep = s_contains(name, pascal_sep)
+
 	if has_pascal_sep
 		return s_replace(name, pascal_sep, new_sep)
+
 	bool has_camel_sep = s_contains(name, camel_sep)
+
 	if has_camel_sep
 		return s_replace(name, camel_sep, new_sep)
+
 	return name
 
 # Applies the same compound-name substitution rules inside raw Rust block content.
@@ -170,9 +183,11 @@ fn tokenList apply_t_substitution(tokenList tokens, string placeholder, string c
 	unsafe_macro_run token_kinds
 	tokenList result = empty
 	int token_count = len(tokens)
+
 	for index in range(token_count)
 		Token tok = tokens at index
 		(kind, value, line, file) in tok
+
 		if kind is IDENT
 			string new_value = apply_t_in_name(value, placeholder, concrete)
 			TokenMeta tok_meta = move (line, file)
@@ -185,4 +200,5 @@ fn tokenList apply_t_substitution(tokenList tokens, string placeholder, string c
 			result at end = new_tok
 		else
 			result at end = tok
+
 	return result

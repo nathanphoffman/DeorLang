@@ -16,17 +16,21 @@ fn DedupResult deduplicate_decls(tokenList tokens_in)
 	strList seen_files = empty
 	int token_count = len(tokens)
 	int pos = 0
+
 	for if pos < token_count
 		Token token = tokens at pos
 		(kind) in token
+
 		if kind is "EOF"
 			result at end = token
 			pos = pos + 1
 			continue
+
 		if kind is NEWLINE
 			result at end = token
 			pos = pos + 1
 			continue
+
 		bool is_fn = kind is KW_FN
 		bool is_struct = kind is KW_STRUCT
 		bool is_enum = kind is KW_ENUM
@@ -37,6 +41,7 @@ fn DedupResult deduplicate_decls(tokenList tokens_in)
 		bool is_raw = kind is KW_RAW
 		bool is_rust_blk = kind is KW_RUST
 		bool is_block_decl = is_fn or is_struct or is_enum or is_type or is_macro or is_unsafe_macro
+
 		if is_block_decl
 			macro_run dd_handle_block_decl
 		else if is_shape
@@ -48,6 +53,8 @@ fn DedupResult deduplicate_decls(tokenList tokens_in)
 		else
 			result at end = token
 			pos = pos + 1
+
 	tokens = result
 	DedupResult dedup_out = (tokens, enforce_macro_file_depth)
+
 	return dedup_out

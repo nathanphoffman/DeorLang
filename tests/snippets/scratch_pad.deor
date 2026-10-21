@@ -1,6 +1,5 @@
 import "tests/snippets/macro.deor"
 
-
 fn void main()
     ENFORCE_MACRO_FILE_DEPTH = 1
     int should_update = 0
@@ -11,6 +10,7 @@ fn void main()
     string hello = "hi"
 
     print("hola")
+
     for idx in range(1)
         print(idx)
 

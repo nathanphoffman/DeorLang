@@ -5,4 +5,5 @@ macro test2
 macro test
     should_update = 2
     int shouldnt_see = 1
+
     #macro_run test2

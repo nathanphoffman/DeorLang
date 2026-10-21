@@ -6,22 +6,29 @@ macro check_call_args
 		return kw_pos + 1
 
 	int left_paren_pos = locate_next_token(pos)
+
 	if left_paren_pos < token_count
 		Token left_paren_token = tokens at left_paren_pos
 		(kind) in left_paren_token
+
 		if kind is LPAREN
 			int arg_count = count_call_args(tokens, left_paren_pos)
+
 			if arg_count >= 2
 				int scan_pos = left_paren_pos + 1
 				int scan_depth = 0
 				bool at_arg_start = true
+
 				for if scan_pos < token_count
 					Token scan_token = tokens at scan_pos
 					(kind) in scan_token
+
 					if kind is RPAREN
 						bool at_root = scan_depth is 0
+
 						if at_root
 							break
+
 						scan_depth = scan_depth - 1
 						at_arg_start = false
 					else if kind is LPAREN
@@ -35,11 +42,15 @@ macro check_call_args
 						at_arg_start = false
 					else if kind is COMMA
 						bool at_root = scan_depth is 0
+
 						if at_root
 							at_arg_start = true
 					else if at_arg_start
 						bool named = arg_is_named(tokens, scan_pos, kind)
+
 						if not named
 							errors at end = val_err(tok, lbl_call, rule_named_arg)
+
 						at_arg_start = false
+
 					scan_pos = scan_pos + 1

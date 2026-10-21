@@ -25,6 +25,7 @@ macro prescan_check_enum_variants
 		# Detect typed vs. untyped by peeking at token after KW_ENUM
 		bool is_typed = false
 		int scan_pos = locate_enum_type_or_name_slot(pre_i)
+
 		if scan_pos < token_count
 			Token type_keyword_token = tokens at scan_pos
 			(value) in type_keyword_token
@@ -32,13 +33,17 @@ macro prescan_check_enum_variants
 
 		# the enum's own name sits one slot further in for a typed enum
 		int name_pos = locate_enum_type_or_name_slot(pre_i)
+
 		if is_typed
 			name_pos = locate_enum_typed_name(pre_i)
+
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
 			(kind, value) in name_token
+
 			if kind is IDENT
 				enum_names at end = value
+
 				if not is_typed
 					declared_type_names at end = value
 
@@ -46,36 +51,48 @@ macro prescan_check_enum_variants
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind) in scan_token
+
 			if kind is INDENT
 				break
+
 			scan_pos = scan_pos + 1
+
 		scan_pos = scan_pos + 1
 
 		# Validate each variant in the body
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind) in scan_token
+
 			if kind is DEDENT
 				break
+
 			if kind is IDENT
 				(value) in scan_token
 				enum_variant_names at end = value
+
 				if len(value) < MIN_NAME_LEN
 					errors at end = val_err(scan_token, lbl_variant, rule_min3)
+
 				if not is_pascal(value)
 					errors at end = val_err(scan_token, lbl_variant, rule_enum_pascal)
+
 				int after_variant_pos = scan_pos + 1
+
 				if after_variant_pos < token_count
 					Token after_variant_token = tokens at after_variant_pos
 					(kind) in after_variant_token
+
 					if is_typed
 						if kind is not EQUALS
 							errors at end = val_err(scan_token, lbl_variant, rule_typed_enum_eq)
 					else
 						if kind is LPAREN
 							errors at end = val_err(scan_token, lbl_variant, rule_enum_data)
+
 						if kind is EQUALS
 							errors at end = val_err(scan_token, lbl_variant, rule_untyped_enum_eq)
 			else if list_has(reserved_keywords, kind)
 				errors at end = val_err(scan_token, lbl_variant, rule_kw_in_parens)
+
 			scan_pos = scan_pos + 1

@@ -1,5 +1,4 @@
 
-
 # Handles structural statement forms — those that reshape or unpack data.
 #   move (f1, f2) in src  → move destructuring: delegates to gen_move_destructure
 #   (avow expr)           → statement-level forced unwrap: `expr.unwrap();`
@@ -13,14 +12,17 @@ macro stmt_structural
 		int move_next = locate_next_token(pos)
 		Token move_next_token = tokens at move_next
 		(kind) in move_next_token
+
 		if kind is LPAREN
 			return gen_move_destructure(move_next, depth, ctx)
 
 	if kind is LPAREN
 		int peek_pos = locate_next_token(pos)
+
 		if peek_pos < token_count
 			Token peek_token = tokens at peek_pos
 			(kind) in peek_token
+
 			if kind is KW_AVOW
 				# ex: (avow {expr}) — peek_pos+1 grabs the expression after avow
 				int expr_pos = locate_next_token(peek_pos)
@@ -30,5 +32,7 @@ macro stmt_structural
 				after_rparen as new_pos + 1
 				string unwrap_suffix = ".unwrap();\n"
 				string avow_code = s_join([pad, expr_code, unwrap_suffix])
+
 				return make_nl_result(move avow_code, after_rparen, tokens)
+
 		return gen_destructure(pos, depth, ctx)

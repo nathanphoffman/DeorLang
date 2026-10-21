@@ -6,9 +6,11 @@
 # Reads: fields, input_pad, RS_NL, output_lines.
 macro gic_emit_bindings
 	int field_count = len(fields)
+
 	for field_index in range(field_count)
 		string field_name = fields at field_index
 		string binding = ""
+
 		if field_name is "first"
 			binding = "let first: String = _deor_args.get(0).cloned().unwrap_or_default();"
 		else if field_name is "second"
@@ -19,6 +21,7 @@ macro gic_emit_bindings
 			binding = "let input_string: String = _deor_args.join(\" \");"
 		else if field_name is "input_list"
 			binding = "let input_list: Vec<String> = _deor_args.clone();"
+
 		if not is_empty(binding)
 			string binding_line = s_join([input_pad, binding, RS_NL])
 			output_lines at end = binding_line

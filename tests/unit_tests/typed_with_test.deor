@@ -7,6 +7,7 @@ fn PiChunk compute_pi_chunk(PiChunk chunk)
 	(min, max) in chunk
 	float value = min + max
 	PiChunk chunk_with_value = chunk with (value)
+
 	return chunk_with_value
 
 fn void main()

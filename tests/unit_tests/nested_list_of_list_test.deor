@@ -7,6 +7,7 @@
 # including a nested list literal as the initializer.
 
 shape intList = list of int
+
 shape rowList = list of intList
 
 fn void main()

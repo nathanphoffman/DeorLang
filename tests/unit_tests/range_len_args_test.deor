@@ -10,6 +10,7 @@ fn void test_range_too_many_args()
 	start_val as 0
 	end_val as 5
 	extra_val as 9
+
 	for idx in range(start_val, end_val, extra_val)
 		print(idx)
 
@@ -31,7 +32,7 @@ fn void main()
 	print("should never reach here")
 
 # expect-error:
-# line 13: call to 'range' - range takes 1 argument (range(count)) or 2 arguments (range(start, end))
-# line 17: call to 'range' - range takes 1 argument (range(count)) or 2 arguments (range(start, end))
-# line 21: call to 'len' - len takes exactly 1 argument
-# line 27: call to 'len' - len takes exactly 1 argument
+# line 14: call to 'range' - range takes 1 argument (range(count)) or 2 arguments (range(start, end))
+# line 18: call to 'range' - range takes 1 argument (range(count)) or 2 arguments (range(start, end))
+# line 22: call to 'len' - len takes exactly 1 argument
+# line 28: call to 'len' - len takes exactly 1 argument

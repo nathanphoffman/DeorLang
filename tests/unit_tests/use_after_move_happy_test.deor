@@ -45,6 +45,7 @@ fn void test_self_reassign()
 
 fn void test_branch_independent()
 	string label = "x"
+
 	if true
 		string taken = move label
 	else
@@ -52,6 +53,7 @@ fn void test_branch_independent()
 
 fn void test_for_move()
 	wordList items = ["one", "two"]
+
 	for move (item in items)
 		print(item)
 
@@ -66,9 +68,12 @@ fn void test_untouched_field_after_partial_move()
 fn string test_terminal_dispatch(string kind, string value)
 	if kind is "AAA"
 		string taken = move value
+
 		return taken
+
 	if kind is "BBB"
 		return value
+
 	return "none"
 
 fn void test_construct_via_move()

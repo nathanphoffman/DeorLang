@@ -11,18 +11,24 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 	string last_file = ""
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
+
 	for if true
 		if cur >= token_count
 			break
+
 		Token token = tokens at cur
 		(kind, value, file) in token
+
 		if kind is DEDENT or kind is "EOF"
 			if kind is DEDENT
 				cur = cur + 1
+
 			break
+
 		if kind is NEWLINE
 			cur = cur + 1
 			continue
+
 		if kind is "MACRO_MARKER"
 			string macro_prefix = "// macro: "
 			string paren_open = " ("
@@ -32,6 +38,7 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 			last_file = file
 			cur = cur + 1
 			continue
+
 		if file is not last_file
 			string comment_prefix = "// "
 			string file_comment = s_join([pad, comment_prefix, file, RS_NL])
@@ -44,4 +51,5 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 		cur = new_pos
 
 	string block_joined = s_join(stmts)
+
 	return make_result(move block_joined, cur)

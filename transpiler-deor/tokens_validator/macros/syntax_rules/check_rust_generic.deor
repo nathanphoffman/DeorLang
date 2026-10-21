@@ -3,5 +3,6 @@
 macro check_rust_generic
 	strList rust_generic_names = ["Option", "Vec", "Box", "Rc", "Arc", "Result"]
 	bool is_rust_generic = list_has(rust_generic_names, cur_val)
+
 	if is_rust_generic
 		errors at end = val_err(tok, lbl_rust, rule_no_option)

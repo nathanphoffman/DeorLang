@@ -6,6 +6,7 @@
 #   `for var in collection`  → `for var in collection { ... }`
 fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run token_kinds
+
 	# Reused across the branches below for whatever "one token past X" is needed —
 	# each call site's comment documents what X is.
 	fn int locate_next_token(int anchor)
@@ -15,6 +16,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	int token_count = len(tokens)
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
+
 	# ex: for {if} cond — kw_pos+1 grabs the token after 'for' that decides the loop form
 	int next_pos = locate_next_token(pos)
 	Token next_token = tokens at next_pos
@@ -28,14 +30,17 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 
 	string var_name = "_"
 	int iter_pos = 0
+
 	if kind is KW_IN
 		# ex: for in {(}start, end) — next_pos+1 grabs the range expression after 'in'
 		iter_pos = locate_next_token(next_pos)
 	else
 		(value) in next_token
 		var_name = value
+
 		# ex: for {var} in expr — next_pos+1 grabs the expected 'in' keyword after the loop var
 		int in_pos = locate_next_token(next_pos)
+
 		# ex: for var in {expr} — in_pos+1 grabs the iteration expression after 'in'
 		iter_pos = locate_next_token(in_pos)
 
@@ -53,4 +58,5 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	string for_kw = "for "
 	string for_in_kw = " in "
 	string for_code = s_join([pad, for_kw, var_name, for_in_kw, range_expr, RS_OB, blk_code, pad, RS_CB])
+
 	return make_result(move for_code, blk_end)

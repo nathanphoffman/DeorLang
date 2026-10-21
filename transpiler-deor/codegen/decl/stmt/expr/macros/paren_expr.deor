@@ -11,9 +11,11 @@ macro primary_paren_expr
 
 	if kind is LPAREN
 		int peek_pos = locate_next_token(pos)
+
 		if peek_pos < token_count
 			Token peek_token = tokens at peek_pos
 			(kind) in peek_token
+
 			if kind is KW_AVOW
 				# ex: (avow {expr}) — peek_pos+1 grabs the expression after 'avow'
 				int avow_expr_pos = locate_next_token(peek_pos)
@@ -23,32 +25,40 @@ macro primary_paren_expr
 				avow_after as new_pos + 1
 				string unwrap_suffix = ".unwrap().0"
 				string avow_unwrap_code = s_join([avow_expr_code, unwrap_suffix])
+
 				return make_result(move avow_unwrap_code, avow_after)
 
 			# Peek ahead to decide: if every token before RPAREN is IDENT or COMMA
 			# then this is struct construction, otherwise it's a grouped expression.
 			bool is_struct = true
 			int scan_pos = peek_pos
+
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
 				(kind) in scan_token
+
 				if kind is RPAREN
 					break
+
 				if kind is IDENT
 					scan_pos = scan_pos + 1
 					continue
+
 				if kind is COMMA
 					scan_pos = scan_pos + 1
 					continue
+
 				is_struct = false
 				break
 
 			if is_struct
 				strList fields = empty
 				int field_scan_pos = peek_pos
+
 				for if field_scan_pos < token_count
 					Token field_token = tokens at field_scan_pos
 					(kind, value) in field_token
+
 					if kind is RPAREN
 						field_scan_pos = field_scan_pos + 1
 						break
@@ -59,12 +69,14 @@ macro primary_paren_expr
 						field_scan_pos = field_scan_pos + 1
 					else
 						field_scan_pos = field_scan_pos + 1
+
 				string struct_name = find_struct_for_fields(struct_reg, fields)
 				string fields_separator = ", "
 				string fields_code = s_join_with(fields, fields_separator)
 				string open_brace = " { "
 				string close_brace = " }"
 				string struct_code = s_join([struct_name, open_brace, fields_code, close_brace])
+
 				return make_result(move struct_code, field_scan_pos)
 
 			# Grouped expression: parse the inner expr then skip the closing RPAREN
@@ -75,4 +87,5 @@ macro primary_paren_expr
 			string paren_open = "("
 			string paren_close = ")"
 			string grouped_code = s_join([paren_open, grouped_inner_code, paren_close])
+
 			return make_result(move grouped_code, grouped_after)

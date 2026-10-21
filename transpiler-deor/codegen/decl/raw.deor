@@ -10,4 +10,5 @@ fn ParseResult gen_raw_decl(TokensRef tokens, int pos)
 
 	int after = locate_raw_newline(pos)
 	string empty_str = ""
+
 	return make_nl_result(move empty_str, after, tokens)

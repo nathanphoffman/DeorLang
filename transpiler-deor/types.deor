@@ -1,4 +1,5 @@
 shape tokenList = list of Token
+
 shape strList = list of string
 
 # A single lexer token. `kind` is the token category (e.g. "KW_FN", "IDENT", "PLUS"),

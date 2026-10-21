@@ -17,25 +17,24 @@ struct Outcome
 
 shape accountList = list of Account
 
-
 fn int find_account(accountList accounts, string wanted)
 	int missing = 0 - 1
 	int count = len(accounts)
+
 	for idx in range(count)
 		Account account = accounts at idx
 		(owner) in account
+
 		if owner is wanted
 			return idx
 
 	return missing
-
 
 fn int balance_at(accountList accounts, int idx)
 	Account account = accounts at idx
 	(balance) in account
 
 	return balance
-
 
 fn accountList adjust(accountList accounts, int idx, int change)
 	Account old_account = accounts at idx
@@ -49,14 +48,15 @@ fn accountList adjust(accountList accounts, int idx, int change)
 
 	return updated
 
-
 fn Outcome apply(accountList ledger, string command)
 	accountList accounts = ledger
 	stringList parts = s_split_whitespace(command)
 	int count = len(parts)
 	status as "ok"
+
 	if count < 3
 		status = "rejected: bad command"
+
 		return (accounts, status)
 
 	string action = parts at 0
@@ -72,18 +72,22 @@ fn Outcome apply(accountList ledger, string command)
 			int balance = amount
 			Account account = (owner, balance)
 			accounts at end = account
+
 		return (accounts, status)
 
 	if source < 0
 		status = "rejected: unknown account"
+
 		return (accounts, status)
 
 	if action is "deposit"
 		accounts = adjust(accounts, source, amount)
+
 		return (accounts, status)
 
 	# withdraw and transfer both take money out of the source account
 	int debit = 0 - amount
+
 	if balance_at(accounts, source) < amount
 		status = "rejected: insufficient funds"
 	else if action is "withdraw"
@@ -91,6 +95,7 @@ fn Outcome apply(accountList ledger, string command)
 	else if action is "transfer"
 		string target_name = parts at 2
 		int target = find_account(accounts, target_name)
+
 		if target < 0
 			status = "rejected: unknown account"
 		else
@@ -100,7 +105,6 @@ fn Outcome apply(accountList ledger, string command)
 		status = "rejected: unknown command"
 
 	return (accounts, status)
-
 
 fn void main()
 	stringList commands = empty
@@ -116,17 +120,21 @@ fn void main()
 
 	accountList ledger = empty
 	rejected as 0
+
 	for command in commands
 		Outcome outcome = apply(ledger, command)
 		(accounts, status) in outcome
 		ledger = accounts
+
 		if status is not "ok"
 			rejected = rejected + 1
+
 		print(s_join([command, " -> ", status]))
 
 	print("")
 	print("Final balances:")
 	width as 8
+
 	for account in ledger
 		(owner, balance) in account
 		string label = s_pad_right(owner, width)

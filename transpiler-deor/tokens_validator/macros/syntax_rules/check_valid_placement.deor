@@ -7,12 +7,15 @@ macro check_valid_placement
 
 	if cur_kind is KW_VALID
 		bool is_valid = false
+
 		if pos > 0
 			int prev_pos = locate_prev_token(pos)
 			Token prev_token = tokens at prev_pos
 			(kind) in prev_token
 			is_valid = kind is KW_IS
+
 			if not is_valid
 				is_valid = kind is KW_NOT
+
 		if not is_valid
 			errors at end = val_err(tok, lbl_var, rule_valid)

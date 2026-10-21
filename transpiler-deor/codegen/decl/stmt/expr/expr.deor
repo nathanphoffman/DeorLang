@@ -2,50 +2,71 @@
 # Returns true for token kinds that can appear as binary operators in an expression.
 fn bool is_binary_op(string kind)
 	unsafe_macro_run token_kinds
+
 	if kind is PLUS
 		return true
+
 	if kind is MINUS
 		return true
+
 	if kind is STAR
 		return true
+
 	if kind is SLASH
 		return true
+
 	if kind is PERCENT
 		return true
+
 	if kind is "GT"
 		return true
+
 	if kind is "LT"
 		return true
+
 	if kind is "GTE"
 		return true
+
 	if kind is "LTE"
 		return true
+
 	if kind is KW_IS
 		return true
+
 	if kind is KW_AND
 		return true
+
 	if kind is KW_OR
 		return true
+
 	return false
 
 # Translates Deor operators to their Rust equivalents.
 fn string map_op(string operator)
 	if operator is "is"
 		return "=="
+
 	if operator is "is not"
 		return "!="
+
 	if operator is "and"
 		return "&&"
+
 	if operator is "or"
 		return "||"
+
 	if operator is ">"
 		return ">"
+
 	if operator is "<"
 		return "<"
+
 	if operator is ">="
 		return ">="
+
 	if operator is "<="
 		return "<="
+
 	return operator
 
 # Parses a full expression using a left-associative loop over binary operators. Calls
@@ -68,10 +89,12 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	for if cur_pos < token_count
 		Token operator_token = tokens at cur_pos
 		(kind, value) in operator_token
+
 		if not is_binary_op(kind)
 			break
 
 		string operator_str = value
+
 		# ex: left is {right} — cur_pos+1 grabs the right-hand operand after the operator
 		int after_op = cur_pos + 1
 		macro_run expr_is_special

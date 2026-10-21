@@ -14,6 +14,7 @@ struct Pair
 
 fn int add_one(int left)
 	left = left + 1
+
 	return left
 
 fn void test_typed_reassign()
@@ -47,4 +48,4 @@ fn void main()
 	test_destructure_reassign()
 
 # expect-error:
-# line 39: variable 'hello' - 'name = expr' only works for reassigning an existing variable
+# line 40: variable 'hello' - 'name = expr' only works for reassigning an existing variable

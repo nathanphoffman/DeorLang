@@ -8,9 +8,11 @@ macro prescan_collect_const_names
 
 	if kind is KW_CONST
 		int name_pos = locate_name(pre_i)
+
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
 			(kind, value) in name_token
+
 			if kind is IDENT
 				if not list_has(const_var_names, value)
 					const_var_names at end = value

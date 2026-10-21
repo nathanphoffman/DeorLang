@@ -9,4 +9,5 @@ macro aas_empty
 	string empty_suffix = " = Vec::new();\n"
 	string empty_code = s_join([pad, empty_prefix, ident_name, empty_suffix])
 	int after_empty = locate_after_empty(after_as)
+
 	return make_nl_result(move empty_code, after_empty, tokens)

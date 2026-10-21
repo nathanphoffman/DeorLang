@@ -22,21 +22,26 @@ macro aas_default
 	string var_name = ident_name
 	unsafe_macro_run mut_guard
 	string suffix = ""
+
 	if not is_chain
 		if kind is STRING
 			suffix = ".to_string()"
 		else if kind is IDENT
 			int next_idx = locate_after_value(val_pos)
+
 			if next_idx < token_count
 				Token next_token = tokens at next_idx
 				(kind) in next_token
 				bool is_call = kind is LPAREN
 				bool is_idx = kind is KW_AT
+
 				if not is_call
 					if not is_idx
 						suffix = ".clone()"
+
 	string let_kw = "let "
 	string equals_kw = " = "
 	string statement_close = ";\n"
 	string bind_code = s_join([pad, let_kw, mut_kw, ident_name, equals_kw, val_code, suffix, statement_close])
+
 	return make_nl_result(move bind_code, val_end, tokens)

@@ -9,13 +9,17 @@
 fn bool is_even(int num)
 	if num is 0
 		return true
+
 	prev as num - 1
+
 	return is_odd(prev)
 
 fn bool is_odd(int num)
 	if num is 0
 		return false
+
 	prev as num - 1
+
 	return is_even(prev)
 
 fn void main()

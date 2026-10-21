@@ -15,19 +15,24 @@ macro check_raw_reassign
 		return kw_pos - 1
 
 	bool is_tracked = list_has(raw_var_names, cur_val)
+
 	if is_tracked
 		int after_pos = locate_after_name(pos)
+
 		if after_pos < token_count
 			Token after_token = tokens at after_pos
 			(kind) in after_token
 			bool is_eq = kind is EQUALS
 			bool is_as = kind is KW_AS
+
 			if is_eq or is_as
 				bool is_decl = false
+
 				if pos > 0
 					int before_pos = locate_before_name(pos)
 					Token before_token = tokens at before_pos
 					(kind) in before_token
 					is_decl = kind is KW_RAW
+
 				if not is_decl
 					errors at end = val_err(tok, lbl_var, rule_raw_reassign)

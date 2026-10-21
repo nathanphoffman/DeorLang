@@ -7,6 +7,7 @@
 
 struct Broken
 	int val
+
 	fn bool inner(int val)
 		return val > 0
 
@@ -14,4 +15,4 @@ fn void main()
 	print("should never reach here")
 
 # expect-error:
-# line 10: fn 'inner' - functions may only be declared at the top level of a file
+# line 11: fn 'inner' - functions may only be declared at the top level of a file

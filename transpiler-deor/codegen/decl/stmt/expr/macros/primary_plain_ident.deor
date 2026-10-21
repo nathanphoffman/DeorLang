@@ -8,8 +8,11 @@ macro primary_plain_ident
 	if kind is IDENT
 		int next_pos = locate_next_token(pos)
 		string variant_enum = reg_get(variant_reg, value)
+
 		if not is_empty(variant_enum)
 			string double_colon = "::"
 			string variant_code = s_join([variant_enum, double_colon, value])
+
 			return make_result(move variant_code, next_pos)
+
 		return make_result(move value, next_pos)

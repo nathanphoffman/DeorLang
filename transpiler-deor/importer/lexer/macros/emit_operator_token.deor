@@ -38,17 +38,19 @@ macro emit_operator_token
 	int op_peek_idx = char_index + 1
 	string op_peek = ""
 
-	
 	if op_peek_idx < char_count
 		op_peek = chars at op_peek_idx
+
 	if character is ">" and op_peek is "="
 		tokens at end = make_token(op_kind_gte, op_val_gte, meta)
 		char_index = char_index + 2
 		continue
+
 	if character is "<" and op_peek is "="
 		tokens at end = make_token(op_kind_lte, op_val_lte, meta)
 		char_index = char_index + 2
 		continue
+
 	if character is "+"
 		tokens at end = make_token(op_kind_plus, op_val_plus, meta)
 	else if character is "-"
@@ -78,4 +80,5 @@ macro emit_operator_token
 	else if list_has(op_invalid_chars, character)
 		string op_kind_inv = "INVALID"
 		tokens at end = make_token(op_kind_inv, character, meta)
+
 	char_index = char_index + 1

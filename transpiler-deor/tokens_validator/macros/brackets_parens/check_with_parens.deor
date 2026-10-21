@@ -12,9 +12,11 @@ macro check_with_parens
 	if cur_kind is KW_WITH
 		bool with_ok = false
 		int next_pos = locate_next_token(pos)
+
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
 			with_ok = kind is LPAREN
+
 		if not with_ok
 			errors at end = val_err(tok, lbl_var, rule_with_parens)

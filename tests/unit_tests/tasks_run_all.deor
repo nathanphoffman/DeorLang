@@ -7,12 +7,14 @@ struct Score
 
 fn Score make_score(string label, int points)
 	Score built = move (label, points)
+
 	return built
 
 fn Score apply_bonus(Score score)
 	(label, points) in score
 	points = points * 2
 	Score result = move (label, points)
+
 	return result
 
 fn void main()
@@ -42,10 +44,12 @@ fn void main()
 	print(count)
 
 	int total_points = 0
+
 	for idx in range(count)
 		Score res = results at idx
 		(points) in res
 		total_points = total_points + points
+
 	print(total_points)
 
 # expect:

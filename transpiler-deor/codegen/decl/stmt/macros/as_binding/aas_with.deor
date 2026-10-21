@@ -11,26 +11,33 @@ macro aas_with
 		return anchor + 2
 
 	int with_keyword_pos = locate_with_keyword(after_as)
+
 	if with_keyword_pos < token_count
 		Token with_keyword_token = tokens at with_keyword_pos
 		(kind) in with_keyword_token
+
 		if kind is KW_WITH
 			string source_name = after_as_value
 			int with_lparen_pos = locate_with_lparen(after_as)
 			strList override_fields = empty
 			int scan_pos = with_lparen_pos + 1
+
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
 				(kind, value) in scan_token
+
 				if kind is RPAREN
 					scan_pos = scan_pos + 1
 					break
+
 				if kind is COMMA
 					scan_pos = scan_pos + 1
 					continue
+
 				if kind is IDENT
 					override_fields at end = value
 					scan_pos = scan_pos + 1
+
 			string first_field = override_fields at 0
 			string matched_struct_name = find_struct_for_field(struct_reg, first_field)
 			string fields_separator = ", "
@@ -44,4 +51,5 @@ macro aas_with
 			string clone_suffix = ".clone()"
 			string close_brace = " };\n"
 			string with_code = s_join([pad, let_kw, mut_kw, ident_name, equals_kw, matched_struct_name, open_brace, fields_code, spread_prefix, source_name, clone_suffix, close_brace])
+
 			return make_nl_result(move with_code, scan_pos, tokens)

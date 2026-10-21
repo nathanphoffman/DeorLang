@@ -6,13 +6,16 @@ macro for_move
 		return anchor + 1
 
 	int lparen_pos = locate_next_token(next_pos)
+
 	# ex: for move ({item} in collection) — lparen_pos+1 grabs the loop variable
 	int var_pos = locate_next_token(lparen_pos)
 	Token var_tok = tokens at var_pos
 	(value) in var_tok
 	string move_var = value
+
 	# ex: for move (item {in} collection) — var_pos+1 grabs the in keyword
 	int in_pos = locate_next_token(var_pos)
+
 	# ex: for move (item in {collection}) — in_pos+1 grabs the start of the iterable expression
 	int iter_pos = locate_next_token(in_pos)
 	val_pos as iter_pos
@@ -30,4 +33,5 @@ macro for_move
 	string for_kw = "for "
 	string for_in_kw = " in "
 	string for_code = s_join([pad, for_kw, move_var, for_in_kw, val_code, RS_OB, blk_code, pad, RS_CB])
+
 	return make_result(move for_code, blk_end)

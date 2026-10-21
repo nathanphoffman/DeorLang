@@ -10,6 +10,7 @@
 #   default     — let [mut] varName: RustType = val[.clone()/.to_string()]
 fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run token_kinds
+
 	# ex: Type {name} = val — kw_pos+1 grabs the variable name after the type
 	fn int locate_var_name(int kw_pos)
 		return kw_pos + 1
@@ -47,6 +48,7 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 		macro_run tb_with
 
 	bool is_validator = reg3_has(type_reg, var_type)
+
 	if is_validator
 		macro_run tb_validator
 

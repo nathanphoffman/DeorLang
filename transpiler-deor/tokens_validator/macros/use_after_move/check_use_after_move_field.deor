@@ -29,9 +29,11 @@ macro check_use_after_move_field
 	if cur_kind is INDENT
 		rust
 			moved_fields.clear();
+
 	if cur_kind is DEDENT
 		rust
 			moved_fields.clear();
+
 	if cur_kind is KW_ELSE
 		rust
 			moved_fields.clear();
@@ -43,48 +45,61 @@ macro check_use_after_move_field
 	# untouched field must stay legal.
 	if cur_kind is KW_MOVE
 		int move_next_pos = locate_next_token(pos)
+
 		if move_next_pos < token_count
 			Token move_next_token = tokens at move_next_pos
 			(kind) in move_next_token
+
 			if kind is LPAREN
 				strList move_fields = empty
 				int scan_pos = locate_next_token(move_next_pos)
 				bool scanning = true
+
 				for if scanning
 					if scan_pos < token_count
 						Token scan_token = tokens at scan_pos
 						(kind, value) in scan_token
+
 						if kind is IDENT
 							move_fields at end = value
+
 						if kind is RPAREN
 							scanning = false
+
 						scan_pos = scan_pos + 1
 					else
 						scanning = false
+
 				# scan_pos now sits just past the RPAREN — ex: move (f1, f2) {in} source
 				if scan_pos < token_count
 					Token in_token = tokens at scan_pos
 					(kind) in in_token
+
 					if kind is KW_IN
 						int source_pos = scan_pos + 1
+
 						if source_pos < token_count
 							Token source_token = tokens at source_pos
 							(kind, value) in source_token
+
 							if kind is IDENT
 								string source_name = value
 								(line, file) in source_token
 								string line_str = n_to_str(line)
 								int field_index = 0
 								int field_count = len(move_fields)
+
 								for if field_index < field_count
 									string field_name = move_fields at field_index
 									string field_key = s_join([source_name, ".", field_name])
 									bool already_moved = list_has(moved_fields, field_key)
+
 									if already_moved
 										strList msg_parts = ["[validation] ", file, " line ", line_str, ": ", lbl_var, " '", field_key, "' - ", rule_double_move]
 										errors at end = s_join(msg_parts)
 									else
 										moved_fields at end = field_key
+
 									field_index = field_index + 1
 
 	# (f1, f2) in source / move (f1, f2) in source — the read side. Only
@@ -100,56 +115,71 @@ macro check_use_after_move_field
 			int prev_pos = locate_prev_token(pos)
 			Token prev_token = tokens at prev_pos
 			(kind) in prev_token
+
 			if kind is RPAREN
 				int next_pos = locate_next_token(pos)
+
 				if next_pos < token_count
 					Token next_token = tokens at next_pos
 					(kind, value) in next_token
+
 					if kind is IDENT
 						int after_pos = locate_next_token(next_pos)
 						bool is_bare = true
+
 						if after_pos < token_count
 							Token after_token = tokens at after_pos
 							(kind) in after_token
+
 							if kind is LPAREN
 								is_bare = false
+
 						if is_bare
 							string source_name = value
 							strList fields = empty
 							int backscan_pos = locate_backscan_start(pos)
 							int paren_depth = 0
+
 							for if backscan_pos >= 0
 								Token backscan_token = tokens at backscan_pos
 								(kind, value) in backscan_token
+
 								if kind is RPAREN
 									paren_depth = paren_depth + 1
 								else if kind is LPAREN
 									if paren_depth is 0
 										break
+
 									paren_depth = paren_depth - 1
 								else if kind is IDENT
 									if paren_depth is 0
 										fields at end = value
+
 								backscan_pos = backscan_pos - 1
 
 							bool is_move_stmt = false
+
 							if backscan_pos > 0
 								int before_lparen_pos = backscan_pos - 1
 								Token before_lparen_token = tokens at before_lparen_pos
 								(kind) in before_lparen_token
+
 								if kind is KW_MOVE
 									is_move_stmt = true
 
 							if not is_move_stmt
 								int field_index = 0
 								int field_count = len(fields)
+
 								for if field_index < field_count
 									string field_name = fields at field_index
 									string field_key = s_join([source_name, ".", field_name])
 									bool was_moved = list_has(moved_fields, field_key)
+
 									if was_moved
 										(line, file) in next_token
 										string line_str = n_to_str(line)
 										strList msg_parts = ["[validation] ", file, " line ", line_str, ": ", lbl_var, " '", field_key, "' - ", rule_use_after_move]
 										errors at end = s_join(msg_parts)
+
 									field_index = field_index + 1

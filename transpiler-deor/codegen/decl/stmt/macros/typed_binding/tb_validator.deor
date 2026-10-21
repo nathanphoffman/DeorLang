@@ -13,4 +13,5 @@ macro tb_validator
 	string validator_new_open = "::new("
 	string validator_sc = ");\n"
 	string validator_code = s_join([pad, validator_let, mut_kw, var_name, validator_option_open, var_type, validator_option_close, var_type, validator_new_open, val_code, val_suffix, validator_sc])
+
 	return make_nl_result(move validator_code, val_end, tokens)

@@ -9,6 +9,7 @@
 fn void define_and_call_locally()
 	macro local_only
 		print("local macro ran")
+
 	macro_run local_only
 
 fn void main()
@@ -16,4 +17,4 @@ fn void main()
 	macro_run local_only
 
 # expect-error:
-# line 16: macro_run 'local_only' - 'local_only' is defined locally but not visible here
+# line 17: macro_run 'local_only' - 'local_only' is defined locally but not visible here

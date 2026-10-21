@@ -13,6 +13,7 @@ macro check_bad_stmt
 	if paren_depth is 0
 		int second_pos = locate_second_token(pos)
 		int third_pos = locate_third_token(pos)
+
 		if third_pos < token_count
 			Token second_token = tokens at second_pos
 			Token third_token = tokens at third_pos
@@ -20,15 +21,19 @@ macro check_bad_stmt
 			string second_kind = kind
 			(kind) in third_token
 			string third_kind = kind
+
 			if second_kind is IDENT
 				bool third_is_str = third_kind is STRING
 				bool third_is_int = third_kind is "INT"
 				bool third_is_flt = third_kind is FLOAT
 				bool third_is_lit = third_is_str or third_is_int or third_is_flt
+
 				if third_is_lit
 					errors at end = val_err(tok, lbl_var, rule_bad_stmt)
+
 				if third_kind is KW_AS
 					errors at end = val_err(tok, lbl_var, rule_typed_as)
+
 			if second_kind is KW_AS
 				if third_kind is KW_MOVE
 					errors at end = val_err(tok, lbl_var, rule_as_move)

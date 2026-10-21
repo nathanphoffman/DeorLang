@@ -20,6 +20,7 @@ unsafe_macro prescan_declared_state
 	strList enum_variant_names = empty
 	strList enum_names = empty
 	int pre_i = 0
+
 	for if pre_i < token_count
 		Token pre_tok = tokens at pre_i
 		(kind) in pre_tok

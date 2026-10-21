@@ -9,12 +9,16 @@ macro tb_empty
 	bool is_shape = reg_has(shape_reg, var_type)
 	int val_next_pos = locate_after_empty(val_pos)
 	int after_empty = adv_nl_ref(val_next_pos, tokens)
+
 	if is_shape
 		string list_prefix = "let mut "
 		string list_mid = ": "
 		string list_suffix = " = Vec::new();\n"
 		string list_code = s_join([pad, list_prefix, var_name, list_mid, rust_type, list_suffix])
+
 		return make_result(move list_code, after_empty)
+
 	string err_msg = "/* error: empty is only valid for list shapes */\n"
 	string err_code = s_join([pad, err_msg])
+
 	return make_result(move err_code, after_empty)

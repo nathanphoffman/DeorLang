@@ -9,6 +9,7 @@ shape numList = list of int
 
 fn void main()
 	numList nums = [10, 20, 30]
+
 	for move (num in nums)
 		int doubled = num * 2
 		print(doubled)

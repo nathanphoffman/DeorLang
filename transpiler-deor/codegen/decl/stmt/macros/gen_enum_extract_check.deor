@@ -21,22 +21,28 @@ macro gen_enum_extract_check
 
 	(typed_enum_reg, typed_variant_reg) in ctx
 	bool matched = false
+
 	if cur < token_count
 		Token in_token = tokens at cur
 		(kind) in in_token
+
 		if kind is KW_IN
 			int name_pos = locate_next_token(cur)
+
 			if name_pos < token_count
 				Token name_token = tokens at name_pos
 				(kind, value) in name_token
+
 				if kind is IDENT
 					string val_type = reg_get(typed_enum_reg, value)
+
 					if not is_empty(val_type)
 						matched = true
 						string enum_name = value
 						unsafe_macro_run rust_strings
 						string pad = s_repeat(RS_IND, depth)
 						strList output_lines = empty
+
 						for field_index in range(field_count)
 							string field_name = fields at field_index
 							string dot = "."
@@ -44,16 +50,22 @@ macro gen_enum_extract_check
 							string literal = reg_get(typed_variant_reg, key)
 							bool is_mut = list_has(mut_names, field_name)
 							string mut_kw = ""
+
 							if is_mut
 								mut_kw = "mut "
+
 							string line = ""
+
 							if val_type is "string"
 								string debug_str = s_debug(literal)
 								line = s_join([pad, "let ", mut_kw, field_name, ": String = ", debug_str, ".to_string();"])
 							else
 								string rust_type = render_rust_type(val_type)
 								line = s_join([pad, "let ", mut_kw, field_name, ": ", rust_type, " = ", literal, ";"])
+
 							output_lines at end = line
+
 						string result_code = s_join_nl(output_lines)
 						int after_pos = locate_after_name(cur)
+
 						return make_nl_result(move result_code, after_pos, tokens)

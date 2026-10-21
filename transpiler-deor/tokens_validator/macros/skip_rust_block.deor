@@ -18,6 +18,7 @@ macro skip_rust_block
 		int newline_pos = locate_newline(pos)
 		int block_pos = locate_rust_block(pos)
 		bool is_block = false
+
 		if block_pos < token_count
 			Token newline_token = tokens at newline_pos
 			Token block_token = tokens at block_pos
@@ -26,6 +27,7 @@ macro skip_rust_block
 			(kind) in block_token
 			bool block_ok = kind is RUST_BLOCK
 			is_block = newline_ok and block_ok
+
 		if is_block
 			pos = block_pos + 1
 			continue

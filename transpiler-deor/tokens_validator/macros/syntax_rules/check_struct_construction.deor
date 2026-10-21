@@ -27,6 +27,7 @@ macro check_struct_construction
 		int name_pos = locate_var_name(pos)
 		int equals_pos = locate_equals(pos)
 		int value_pos = locate_value_or_move(pos)
+
 		if value_pos < token_count
 			Token name_token = tokens at name_pos
 			Token equals_token = tokens at equals_pos
@@ -43,14 +44,17 @@ macro check_struct_construction
 
 			bool matched = false
 			int paren_pos = value_pos
+
 			if prefix_ok
 				if value_kind is LPAREN
 					matched = true
 				else if value_kind is KW_MOVE
 					int move_paren_pos = locate_paren_after_move(pos)
+
 					if move_paren_pos < token_count
 						Token move_paren_token = tokens at move_paren_pos
 						(kind) in move_paren_token
+
 						if kind is LPAREN
 							matched = true
 							paren_pos = move_paren_pos
@@ -59,31 +63,40 @@ macro check_struct_construction
 				string sep = ","
 				string fields_str = find_struct_field_str(struct_field_reg, cur_val)
 				bool is_struct = fields_str is not ""
+
 				if is_struct
 					strList expected_fields = s_split(fields_str, sep)
 					int expected_count = len(expected_fields)
 					strList provided_fields = empty
 					int scan_pos = paren_pos + 1
 					bool scanning = true
+
 					for if scanning
 						if scan_pos >= token_count
 							scanning = false
 						else
 							Token scan_token = tokens at scan_pos
 							(kind, value) in scan_token
+
 							if kind is RPAREN
 								scanning = false
 							else if kind is IDENT
 								provided_fields at end = value
+
 							scan_pos = scan_pos + 1
+
 					int provided_count = len(provided_fields)
 					bool wrong_count = provided_count is not expected_count
+
 					if wrong_count
 						errors at end = val_err(tok, lbl_struct, rule_struct_field_count)
 					else
 						int field_index = 0
+
 						for if field_index < provided_count
 							string field_name = provided_fields at field_index
+
 							if not list_has(expected_fields, field_name)
 								errors at end = val_err(tok, lbl_struct, rule_struct_field_name)
+
 							field_index = field_index + 1

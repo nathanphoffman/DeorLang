@@ -8,6 +8,7 @@
 # Deor compile-time registries and are extracted via `(Variant) in EnumName`.
 fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 	unsafe_macro_run token_kinds
+
 	# ex: enum {Color} — kw_pos+1 grabs the enum name (or type keyword if typed)
 	fn int locate_enum_type_or_name_slot(int kw_pos)
 		return kw_pos + 1
@@ -18,17 +19,22 @@ fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 	(kind, value) in current
 
 	bool is_typed = is_typed_enum_type(value)
+
 	if is_typed
 		cur = cur_next_ref(cur, tokens)
 		cur = cur_skip_to_body_ref(cur, tokens)
+
 		for if not c_at_end(cur)
 			(current) in cur
 			(kind) in current
 			cur = cur_next_ref(cur, tokens)
+
 			if kind is DEDENT
 				break
+
 		(pos) in cur
 		string empty_str = ""
+
 		return make_result(empty_str, pos)
 
 	string enum_name = value
@@ -37,16 +43,21 @@ fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 	cur = cur_skip_to_body_ref(cur, tokens)
 	unsafe_macro_run rust_strings
 	strList variant_lines = empty
+
 	for if not c_at_end(cur)
 		(current) in cur
 		(kind, value) in current
 		cur = cur_next_ref(cur, tokens)
+
 		if kind is DEDENT
 			break
+
 		if kind is IDENT
 			variant_lines at end = s_join([RS_IND, value, RS_COM])
+
 	string variants_code = s_join_nl(variant_lines)
 	string enum_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum "
 	string decl = s_join([enum_prefix, rust_name, RS_OB, variants_code, RS_CB2])
 	(pos) in cur
+
 	return make_result(move decl, pos)

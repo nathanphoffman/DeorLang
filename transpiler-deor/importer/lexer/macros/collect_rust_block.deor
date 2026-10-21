@@ -14,31 +14,39 @@ macro collect_rust_block
 	int rust_base = indent + 1
 	strList rust_lines = empty
 	int scan_start = line_index + 1
+
 	for scan_line in range(scan_start, line_count)
 		string rust_line = lines at scan_line
 		string stripped = s_trim(rust_line)
+
 		if is_empty(stripped)
 			rust_lines at end = ""
 			skip = skip + 1
 		else
 			int line_indent = count_tabs(rust_line)
+
 			if line_indent >= rust_base
 				string content = s_from(rust_line, rust_base)
 				rust_lines at end = s_rtrim(content)
 				skip = skip + 1
 			else
 				break
+
 	bool trimming = true
+
 	for if trimming
 		int lines_len = len(rust_lines)
+
 		if lines_len > 0
 			int last_index = lines_len - 1
 			string last_line = rust_lines at last_index
+
 			if last_line is ""
 				rust_lines remove at last_index
 			else
 				trimming = false
 		else
 			trimming = false
+
 	string block_content = s_join_nl(rust_lines)
 	tokens at end = make_token(kind_rust_block, block_content, meta)

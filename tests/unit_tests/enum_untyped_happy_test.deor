@@ -11,12 +11,14 @@ enum Direction
 
 fn void main()
 	Direction heading = North
+
 	if heading is North
 		print("heading north")
 	else
 		print("not north")
 
 	Direction other = West
+
 	if other is North
 		print("wrong")
 	else

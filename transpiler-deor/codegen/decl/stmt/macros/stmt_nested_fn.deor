@@ -19,10 +19,13 @@ macro stmt_nested_fn
 		int nested_fn_after_pos = nested_fn_body_end + 1
 		string nested_fn_params_code = s_join_with(param_strs, RS_CSEP)
 		string nested_fn_ret_suffix = ""
+
 		if not is_empty(ret_type)
 			nested_fn_ret_suffix = s_join([RS_ARR, ret_type])
+
 		string nested_fn_kw = "fn "
 		string nested_fn_close = "}\n"
 		strList nested_fn_parts = [pad, nested_fn_kw, fn_name, RS_LP, nested_fn_params_code, RS_RP, nested_fn_ret_suffix, RS_OB, nested_fn_body_code, pad, nested_fn_close]
 		string nested_fn_code = s_join(nested_fn_parts)
+
 		return make_result(move nested_fn_code, nested_fn_after_pos)

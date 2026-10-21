@@ -15,6 +15,7 @@ fn int trailing_bare_expr(int left, int right)
 fn int nested_bare_expr(int val)
 	if val > 0
 		val * 2
+
 	return 0
 
 fn void main()

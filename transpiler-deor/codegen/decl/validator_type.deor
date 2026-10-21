@@ -12,6 +12,7 @@
 #                          predicate's `return` exits the closure, not the constructor.
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	unsafe_macro_run token_kinds
+
 	# ex: type {Positive}(int val) — kw_pos+1 grabs the validator type's name
 	fn int locate_type_name(int kw_pos)
 		return kw_pos + 1
@@ -38,6 +39,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 	cur = cur_next_ref(cur, tokens)   # RPAREN
 	cur = cur_next_ref(cur, tokens)   # NEWLINE
+
 	# pos is now the header's NEWLINE — pos+1 grabs the INDENT starting the predicate body
 	(pos) in cur
 	int indent_pos = pos + 1
@@ -61,15 +63,19 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	# Peek past the parsed expression: if a (possibly absent) DEDENT follows
 	# immediately, the predicate was a single line and pred_code is already correct.
 	TokenCursor peek = cur_at_ref(tokens, pred_end)
+
 	for if not c_at_end(peek)
 		(current) in peek
 		(kind) in current
+
 		if kind is NEWLINE
 			peek = cur_next_ref(peek, tokens)
 			continue
+
 		break
 
 	bool is_single = true
+
 	if not c_at_end(peek)
 		(current) in peek
 		(kind) in current
@@ -80,12 +86,15 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 	if is_single
 		TokenCursor scan = cur_at_ref(tokens, pred_end)
+
 		for if not c_at_end(scan)
 			(current) in scan
 			(kind) in current
 			scan = cur_next_ref(scan, tokens)
+
 			if kind is DEDENT
 				break
+
 		(pos) in scan
 		final_pos = pos
 	else
@@ -113,8 +122,10 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 	# Copy is only valid when the wrapped Rust type is Copy — a String field isn't.
 	string struct_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
+
 	if param_type is "string"
 		struct_prefix = "#[derive(Clone, PartialEq, Debug)]\nstruct "
+
 	string struct_paren_open = "("
 	string struct_suffix = ");\n\n"
 	string struct_code = s_join([struct_prefix, type_name, struct_paren_open, rust_param_type, struct_suffix])

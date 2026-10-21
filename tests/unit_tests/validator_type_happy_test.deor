@@ -10,6 +10,7 @@ type Positive(int val)
 
 fn void main()
 	Positive good_num = 5
+
 	if good_num is valid
 		int unwrapped = avow good_num
 		string msg = c_int_to_string(unwrapped)
@@ -18,6 +19,7 @@ fn void main()
 		print("should have been valid")
 
 	Positive bad_num = 0
+
 	if bad_num is not valid
 		print("correctly rejected")
 	else

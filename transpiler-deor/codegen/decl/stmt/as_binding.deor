@@ -8,6 +8,7 @@
 #   name as expr                  — regular let binding
 fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run token_kinds
+
 	# ex: result as {(}a, b) — kw_pos+2 grabs the token after 'as' used to dispatch the binding form
 	fn int locate_after_as(int kw_pos)
 		return kw_pos + 2

@@ -10,20 +10,26 @@ macro prescan_check_struct_fields
 		# capture struct name
 		string struct_name = ""
 		int name_pos = locate_struct_name(pre_i)
+
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
 			(kind, value) in name_token
+
 			if kind is IDENT
 				struct_name = value
 
 		# advance past struct name to INDENT
 		int scan_pos = locate_struct_name(pre_i)
+
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind) in scan_token
+
 			if kind is INDENT
 				break
+
 			scan_pos = scan_pos + 1
+
 		scan_pos = scan_pos + 1
 
 		# walk struct body: validate naming and collect field names
@@ -32,46 +38,63 @@ macro prescan_check_struct_fields
 		# so only the DEDENT that actually closes the struct body ends the scan.
 		strList fields = empty
 		int depth = 0
+
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
 			(kind) in scan_token
+
 			if kind is INDENT
 				depth = depth + 1
+
 			if kind is DEDENT
 				if depth is 0
 					break
+
 				depth = depth - 1
+
 			if kind is KW_RAW
 				int raw_name_pos = scan_pos + 1
+
 				if raw_name_pos < token_count
 					Token raw_name_token = tokens at raw_name_pos
 					(kind, value) in raw_name_token
+
 					if kind is IDENT
 						errors at end = val_err(raw_name_token, lbl_field, rule_no_raw_field)
+
 			if kind is IDENT
 				(value) in scan_token
 				string field_type = value
 				int field_name_pos = scan_pos + 1
+
 				if field_name_pos < token_count
 					Token field_name_token = tokens at field_name_pos
 					(kind, value) in field_name_token
+
 					if kind is IDENT
 						if len(value) < MIN_NAME_LEN
 							errors at end = val_err(field_name_token, lbl_field, rule_min3)
+
 						if not is_snake(value)
 							errors at end = val_err(field_name_token, lbl_field, rule_snake)
+
 						if list_has(builtin_names, value)
 							errors at end = val_err(field_name_token, lbl_field, rule_builtin_shadow)
+
 						bool is_func_field = list_has(func_shape_names, field_type)
+
 						if is_func_field
 							errors at end = val_err(field_name_token, lbl_field, rule_no_func_field)
+
 						fields at end = value
 					else if list_has(reserved_keywords, kind)
 						errors at end = val_err(field_name_token, lbl_field, rule_kw_in_parens)
+
 			scan_pos = scan_pos + 1
 
 		# register struct → field list for construction validation
 		bool has_name = struct_name is not ""
+
 		if has_name
 			string sep = ","
 			string fields_str = s_join_with(fields, sep)

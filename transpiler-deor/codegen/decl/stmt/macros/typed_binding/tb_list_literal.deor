@@ -10,4 +10,5 @@ macro tb_list_literal
 	string list_eq = " = "
 	string list_sc = ";\n"
 	string list_code = s_join([pad, list_prefix, var_name, list_colon, rust_type, list_eq, val_code, list_sc])
+
 	return make_nl_result(move list_code, val_end, tokens)

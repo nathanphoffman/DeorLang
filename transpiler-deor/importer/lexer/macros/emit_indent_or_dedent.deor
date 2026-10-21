@@ -7,16 +7,19 @@ macro emit_indent_or_dedent
 	int stack_len = len(indent_stack)
 	int top_idx = stack_len - 1
 	int top = n_parse(indent_stack at top_idx)
+
 	if indent > top
 		tokens at end = make_token(kind_indent, empty_str, meta)
 		string indent_str = n_to_str(indent)
 		indent_stack at end = indent_str
 	else
 		bool dedenting = indent < top
+
 		for if dedenting
 			int new_stack_len = len(indent_stack)
 			int new_top_idx = new_stack_len - 1
 			int cur_top = n_parse(indent_stack at new_top_idx)
+
 			if indent < cur_top
 				tokens at end = make_token(kind_dedent, empty_str, meta)
 				indent_stack remove at new_top_idx

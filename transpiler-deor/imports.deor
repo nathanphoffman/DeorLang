@@ -239,5 +239,3 @@ import "transpiler-deor/codegen/decl/function.deor"
 import "transpiler-deor/codegen/decl/raw.deor"
 import "transpiler-deor/codegen/decl/decl.deor"
 import "transpiler-deor/codegen/codegen.deor"
-
-

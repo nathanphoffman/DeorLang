@@ -7,6 +7,7 @@
 fn void outer()
 	fn int bad(int num)
 		int extra = num + 1
+
 		return extra
 
 	print("should never reach here")

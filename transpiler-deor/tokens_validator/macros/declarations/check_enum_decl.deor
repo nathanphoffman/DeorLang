@@ -10,11 +10,15 @@ macro check_enum_decl
 	string rule = rule_pascal
 	fnTestRule test_rule = is_pascal
 	int validate_indent_offset = 1
+
 	if cur_kind is KW_ENUM
 		int type_keyword_pos = locate_enum_type_keyword(pos)
+
 		if type_keyword_pos < token_count
 			Token type_keyword_token = tokens at type_keyword_pos
 			(value) in type_keyword_token
+
 			if list_has(primitive_type_names, value)
 				validate_indent_offset = 2
+
 	macro_run validate_ident

@@ -5,6 +5,7 @@
 # docs/validator_types.md#is-valid-is-not-valid
 fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run token_kinds
+
 	# ex: name {=} expr — anchor+1 grabs the token after the anchor
 	fn int locate_next_token(int anchor)
 		return anchor + 1
@@ -16,16 +17,20 @@ fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
 	(value) in name_token
 	string ident_name = value
 	int next_pos = locate_next_token(pos)
+
 	# ex: name = {expr} — next_pos+1 grabs the value expression after '='
 	int val_pos = locate_next_token(next_pos)
 	Token eq_val_token = tokens at val_pos
 	(kind) in eq_val_token
 	unsafe_macro_run gen_expr_r
 	string assign_suffix = ""
+
 	if kind is STRING
 		assign_suffix = ".to_string()"
+
 	string reassign_type = reg_get(validator_var_reg, ident_name)
 	string asgn_code = ""
+
 	if not is_empty(reassign_type)
 		string reassign_new_open = "::new("
 		string reassign_sc = ");\n"
@@ -34,4 +39,5 @@ fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
 	else
 		strList assign_parts = [pad, ident_name, RS_EQ, val_code, assign_suffix, RS_SC]
 		asgn_code = s_join(assign_parts)
+
 	return make_nl_result(move asgn_code, val_end, tokens)

@@ -3,6 +3,7 @@ macro for_collect_fields_into_fields_list
 	for if cur < token_count
 		Token field_token = tokens at cur
 		(kind, value) in field_token
+
 		if kind is RPAREN
 			cur = cur + 1
 			break

@@ -14,6 +14,7 @@ macro check_not_is_order
 
 	if cur_kind is KW_NOT
 		int next_pos = locate_next_token(pos)
+
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
@@ -25,15 +26,19 @@ macro check_not_is_order
 			else if kind is IDENT
 				# not name(...) is y — skip a following call's argument list too
 				int peek_pos = locate_next_token(next_pos)
+
 				if peek_pos < token_count
 					Token peek_token = tokens at peek_pos
 					(kind) in peek_token
+
 					if kind is LPAREN
 						end_pos = find_matching_rparen(tokens, peek_pos)
 
 			int after_pos = end_pos + 1
+
 			if after_pos < token_count
 				Token after_token = tokens at after_pos
 				(kind) in after_token
+
 				if kind is KW_IS
 					errors at end = val_err(next_token, lbl_var, rule_not_is)

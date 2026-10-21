@@ -23,6 +23,7 @@ fn tokenList tokenize(string source, string path)
 	for line_index in range(line_count)
 		cur_line = cur_line + 1
 		TokenMeta meta = make_meta(cur_line, path)
+
 		if skip > 0
 			skip = skip - 1
 			continue
@@ -70,12 +71,14 @@ fn tokenList tokenize(string source, string path)
 				string dot = "."
 				strList num_parts = s_split(num_str, dot)
 				bool is_float = len(num_parts) > 1
+
 				if is_float
 					string kind_float = FLOAT
 					tokens at end = make_token(kind_float, num_str, meta)
 				else
 					string kind_int = "INT"
 					tokens at end = make_token(kind_int, num_str, meta)
+
 				continue
 
 			if c_alpha(character)
@@ -93,8 +96,10 @@ fn tokenList tokenize(string source, string path)
 	int final_stack_len = len(indent_stack)
 	TokenMeta tail_meta = make_meta(cur_line, path)
 	int dedent_start = 1
+
 	for in range(dedent_start, final_stack_len)
 		tokens at end = make_token(kind_dedent, empty_str, tail_meta)
 
 	tokens at end = make_token(kind_eof, empty_str, tail_meta)
+
 	return tokens

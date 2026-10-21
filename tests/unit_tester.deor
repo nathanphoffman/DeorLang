@@ -210,13 +210,16 @@ fn bool run_one(string path, ParsedSpec spec)
 		bool transpile_failed = transpile_exit is not 0
 		bool has_all = contains_all(transpile_combined, expected)
 		bool result_ok = transpile_failed and has_all
+
 		if not result_ok
 			string exit_str = c_int_to_string(transpile_exit)
 			print(s_join(["  expected transpile failure containing:\n", expected, "\n  got (exit ", exit_str, "):\n", transpile_combined]))
+
 		return result_ok
 
 	if transpile_exit is not 0
 		print(s_join(["  unexpected transpile failure:\n", transpile_combined]))
+
 		return false
 
 	string program = "rustc"
@@ -232,13 +235,16 @@ fn bool run_one(string path, ParsedSpec spec)
 		bool rustc_failed = exit_code is not 0
 		bool has_all = contains_all(rustc_combined, expected)
 		bool result_ok = rustc_failed and has_all
+
 		if not result_ok
 			string exit_str = c_int_to_string(exit_code)
 			print(s_join(["  expected rustc failure containing:\n", expected, "\n  got (exit ", exit_str, "):\n", rustc_combined]))
+
 		return result_ok
 
 	if exit_code is not 0
 		print(s_join(["  rustc failed:\n", stderr_text]))
+
 		return false
 
 	string program = bin_path
@@ -254,9 +260,11 @@ fn bool run_one(string path, ParsedSpec spec)
 		bool crashed = exit_code is not 0
 		bool has_all = contains_all(run_combined, expected)
 		bool result_ok = crashed and has_all
+
 		if not result_ok
 			string exit_str = c_int_to_string(exit_code)
 			print(s_join(["  expected panic containing:\n", expected, "\n  got (exit ", exit_str, "):\n", run_combined]))
+
 		return result_ok
 
 	string actual_trimmed = s_trim(stdout_text)
@@ -264,9 +272,11 @@ fn bool run_one(string path, ParsedSpec spec)
 	bool matched = actual_trimmed is expected_trimmed
 	bool clean_exit = exit_code is 0
 	bool result_ok = matched and clean_exit
+
 	if not result_ok
 		string exit_str = c_int_to_string(exit_code)
 		print(s_join(["  expected stdout:\n", expected_trimmed, "\n  got (exit ", exit_str, "):\n", actual_trimmed]))
+
 	return result_ok
 
 fn void main()
@@ -275,6 +285,7 @@ fn void main()
 	int passed = 0
 	int failed = 0
 	int skipped = 0
+
 	for idx in range(total)
 		string path = files at idx
 		string source = f_read(path)
@@ -282,11 +293,13 @@ fn void main()
 		(mode) in spec
 		int display_num = idx + 1
 		string progress = s_join([c_int_to_string(display_num), "/", c_int_to_string(total)])
+
 		if mode is "skip"
 			skipped = skipped + 1
 			print(s_join(["[skip ", progress, "] ", path]))
 		else
 			bool result_ok = run_one(path, spec)
+
 			if result_ok
 				passed = passed + 1
 				print(s_join(["[pass ", progress, "] ", path]))
@@ -295,6 +308,7 @@ fn void main()
 				print(s_join(["[fail ", progress, "] ", path]))
 
 	print(s_join(["passed: ", c_int_to_string(passed), "  failed: ", c_int_to_string(failed), "  skipped: ", c_int_to_string(skipped)]))
+
 	if failed > 0
 		rust
 			std::process::exit(1);

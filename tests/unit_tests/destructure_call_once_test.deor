@@ -25,17 +25,20 @@ struct Room
 fn DivResult divmod(int left, int right)
 	int quotient = left / right
 	int remainder = left % right
+
 	return (quotient, remainder)
 
 fn Pair make_pair()
 	print("make_pair called")
 	first as "a"
 	second as "b"
+
 	return (first, second)
 
 fn Room make_room()
 	print("make_room called")
 	int area = 42
+
 	return (area)
 
 fn void test_call_once_clone_form()
@@ -61,6 +64,7 @@ fn void test_plain_variable_source_unaffected()
 	(quotient, remainder) in result
 	print(quotient)
 	print(remainder)
+
 	# result must still be usable afterward — the clone-form hoist must read from
 	# it, not move it, even though it's now hoisted into a temp for the destructure
 	(quotient) in result

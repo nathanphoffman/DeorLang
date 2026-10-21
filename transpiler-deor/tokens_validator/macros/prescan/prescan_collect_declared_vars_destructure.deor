@@ -17,41 +17,54 @@ macro prescan_collect_declared_vars_destructure
 
 	if kind is LPAREN
 		bool is_call = false
+
 		if pre_i > 0
 			int prev_pos = locate_prev_token(pre_i)
 			Token prev_token = tokens at prev_pos
 			(kind) in prev_token
 			is_call = kind is IDENT
+
 		if not is_call
 			int scan_pos = locate_next_token(pre_i)
 			int depth = 1
+
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
 				(kind) in scan_token
+
 				if kind is LPAREN
 					depth = depth + 1
 				else if kind is RPAREN
 					depth = depth - 1
+
 					if depth is 0
 						break
+
 				scan_pos = scan_pos + 1
+
 			# ex: (f1, f2){)} in source — scan_pos+1 checks the token after the matched close paren for KW_IN
 			int after_pos = scan_pos + 1
 			bool is_destructure = false
+
 			if after_pos < token_count
 				Token after_token = tokens at after_pos
 				(kind) in after_token
 				is_destructure = kind is KW_IN
+
 			if is_destructure
 				int name_pos = locate_next_token(pre_i)
 				bool at_name_slot = true
+
 				for if name_pos < scan_pos
 					Token name_token = tokens at name_pos
 					(kind, value) in name_token
+
 					if kind is COMMA
 						at_name_slot = true
 					else if at_name_slot
 						if kind is IDENT
 							declared_var_names at end = value
+
 						at_name_slot = false
+
 					name_pos = name_pos + 1

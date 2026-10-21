@@ -7,11 +7,13 @@ macro check_move_target
 
 	if cur_kind is KW_MOVE
 		int next_pos = locate_next_token(pos)
+
 		if next_pos < token_count
 			Token next_token = tokens at next_pos
 			(kind) in next_token
 			bool is_ident = kind is IDENT
 			bool is_lparen = kind is LPAREN
 			bool is_valid_target = is_ident or is_lparen
+
 			if not is_valid_target
 				errors at end = val_err(tok, lbl_var, rule_move)

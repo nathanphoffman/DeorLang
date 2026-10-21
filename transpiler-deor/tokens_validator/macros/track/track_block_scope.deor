@@ -28,29 +28,38 @@ macro track_block_scope
 
 	if cur_kind is INDENT
 		block_depth = block_depth + 1
+
 	if cur_kind is DEDENT
 		block_depth = block_depth - 1
+
 		if block_depth is 0
 			in_struct_body = false
 			in_enum_body = false
 			in_fn_body = false
+
 		int stack_len = len(void_fn_stack)
+
 		if stack_len > 0
 			int top_idx = stack_len - 1
 			VoidFnFrame top_frame = void_fn_stack at top_idx
 			(depth, prev_void) in top_frame
+
 			if depth is block_depth
 				in_void_fn = prev_void
 				void_fn_stack remove at top_idx
+
 	if cur_kind is KW_STRUCT
 		if block_depth is 0
 			in_struct_body = true
+
 	if cur_kind is KW_ENUM
 		if block_depth is 0
 			in_enum_body = true
+
 	if cur_kind is KW_FN
 		was_already_in_fn_body = in_fn_body
 		in_fn_body = true
+
 		if block_depth is 0
 			rust
 				validator_vars.clear();
@@ -59,15 +68,19 @@ macro track_block_scope
 				copy_var_names.clear();
 				moved_vars.clear();
 				moved_fields.clear();
+
 		int depth = block_depth
 		bool prev_void = in_void_fn
 		VoidFnFrame new_frame = (depth, prev_void)
 		void_fn_stack at end = new_frame
 		int return_type_pos = locate_return_type(pos)
 		bool is_void = false
+
 		if return_type_pos < token_count
 			Token return_type_token = tokens at return_type_pos
 			(kind) in return_type_token
+
 			if kind is KW_VOID
 				is_void = true
+
 		in_void_fn = is_void

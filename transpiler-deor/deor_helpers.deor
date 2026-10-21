@@ -18,6 +18,7 @@ fn int pr_pos(ParseResult result)
 # registry-scanning function since Deor uses struct literals for multi-value returns.
 fn ParseResult make_result(string code, int new_pos)
 	result as (code, new_pos)
+
 	return result
 
 # If the token at `pos` is a NEWLINE, returns pos+1; otherwise returns pos unchanged.
@@ -25,11 +26,14 @@ fn ParseResult make_result(string code, int new_pos)
 fn int adv_nl_ref(int pos, TokensRef tokens)
 	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
+
 	if pos < token_count
 		Token cur_token = tokens at pos
 		(kind) in cur_token
+
 		if kind is NEWLINE
 			return pos + 1
+
 	return pos
 
 # If the token at `pos` is an INDENT, returns pos+1; otherwise returns pos unchanged.
@@ -37,11 +41,14 @@ fn int adv_nl_ref(int pos, TokensRef tokens)
 fn int adv_indent_ref(int pos, TokensRef tokens)
 	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
+
 	if pos < token_count
 		Token cur_token = tokens at pos
 		(kind) in cur_token
+
 		if kind is INDENT
 			return pos + 1
+
 	return pos
 
 # Skips over both the NEWLINE and INDENT that separate a declaration header from its
@@ -49,11 +56,12 @@ fn int adv_indent_ref(int pos, TokensRef tokens)
 fn int skip_to_body_ref(TokensRef tokens, int pos)
 	int cur = adv_nl_ref(pos, tokens)
 	cur = adv_indent_ref(cur, tokens)
+
 	return cur
 
 # Convenience wrapper around make_result that also steps past a trailing NEWLINE at
 # `pos` first — saves callers an explicit adv_nl_ref call after a statement's value.
 fn ParseResult make_nl_result(string code, int pos, TokensRef tokens)
 	int next_pos = adv_nl_ref(pos, tokens)
-	return make_result(move code, next_pos)
 
+	return make_result(move code, next_pos)

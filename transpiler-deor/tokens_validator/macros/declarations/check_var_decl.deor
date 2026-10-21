@@ -16,6 +16,7 @@ macro check_var_decl
 
 	int name_pos = locate_var_name(pos)
 	int equals_pos = locate_var_equals(pos)
+
 	if equals_pos < token_count
 		Token name_token = tokens at name_pos
 		Token equals_token = tokens at equals_pos
@@ -23,37 +24,49 @@ macro check_var_decl
 		string name_kind = kind
 		(kind) in equals_token
 		string equals_kind = kind
+
 		if name_kind is IDENT and equals_kind is EQUALS
 			Token type_token = tokens at pos
 			(value) in type_token
 			string type_name = value
 			bool is_known_type = list_has(primitive_type_names, type_name) or list_has(declared_type_names, type_name)
+
 			if not is_known_type
 				errors at end = val_err(type_token, lbl_var, rule_unknown_type)
+
 			(value, line, file) in name_token
 			string var_name = value
 			int var_line = line
 			string var_file = file
+
 			if len(var_name) < MIN_NAME_LEN
 				errors at end = val_err(name_token, lbl_var, rule_min3)
+
 			if list_has(builtin_names, var_name)
 				errors at end = val_err(name_token, lbl_var, rule_builtin_shadow)
+
 			bool is_const = false
+
 			if pos > 0
 				int const_check_pos = locate_const_check_pos(pos)
 				Token const_check_token = tokens at const_check_pos
 				(kind) in const_check_token
 				is_const = kind is KW_CONST
+
 			if is_const
 				if not is_screaming_snake(var_name)
 					errors at end = val_err(name_token, lbl_var, rule_screaming)
+
 			if not is_const
 				if not is_snake(var_name)
 					errors at end = val_err(name_token, lbl_var, rule_snake)
+
 		if name_kind is KW_AS
 			if len(cur_val) < MIN_NAME_LEN
 				errors at end = val_err(tok, lbl_var, rule_min3)
+
 			if not is_snake(cur_val)
 				errors at end = val_err(tok, lbl_var, rule_snake)
+
 			if list_has(builtin_names, cur_val)
 				errors at end = val_err(tok, lbl_var, rule_builtin_shadow)

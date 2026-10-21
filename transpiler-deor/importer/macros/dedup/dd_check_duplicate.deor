@@ -13,34 +13,43 @@
 # caller's job (see dd_copy_single_line_decl for the shape/raw case).
 unsafe_macro dd_check_duplicate
 	int name_offset = 1
+
 	if is_fn
 		name_offset = 2
+
 	int name_pos = pos + name_offset
 	string decl_name = ""
 	Token name_token = tokens at pos
+
 	if name_pos < token_count
 		name_token = tokens at name_pos
 		(value) in name_token
 		decl_name = value
+
 	string lookup_name = s_join([key_prefix, decl_name])
 	bool already_seen = false
 	int dup_index = 0
 	int seen_len = len(seen)
+
 	for seen_index in range(seen_len)
 		string seen_val = seen at seen_index
+
 		if seen_val is lookup_name
 			already_seen = true
 			dup_index = seen_index
 			break
+
 	if already_seen
 		string origin_file = seen_files at dup_index
 		(file) in name_token
 		bool is_same_file = origin_file is file
 		bool should_error = false
+
 		if is_same_file
 			should_error = enforce_unique_file
 		else
 			should_error = enforce_unique_import
+
 		if should_error
 			dd_error_duplicate(decl_name, name_token, origin_file)
 	else

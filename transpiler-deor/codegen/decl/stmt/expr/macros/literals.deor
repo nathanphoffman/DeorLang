@@ -10,23 +10,34 @@ macro primary_literals
 	if kind is "INT"
 		string int_value = value
 		bool in_float_ctx = float_ctx_get()
+
 		if in_float_ctx
 			string float_suffix = ".0"
 			int_value = s_cat(int_value, float_suffix)
+
 		int next_pos = locate_next_token(pos)
+
 		return make_result(move int_value, next_pos)
+
 	if kind is FLOAT
 		int next_pos = locate_next_token(pos)
+
 		return make_result(move value, next_pos)
+
 	if kind is STRING
 		string string_debug = s_debug(value)
 		int next_pos = locate_next_token(pos)
+
 		return make_result(move string_debug, next_pos)
+
 	if kind is KW_TRUE
 		string true_value = "true"
 		int next_pos = locate_next_token(pos)
+
 		return make_result(move true_value, next_pos)
+
 	if kind is KW_FALSE
 		string false_value = "false"
 		int next_pos = locate_next_token(pos)
+
 		return make_result(move false_value, next_pos)

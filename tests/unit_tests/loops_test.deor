@@ -1,6 +1,7 @@
 fn int sum_to(int num)
 
 	total as 0
+
 	for idx in range(num)
 		total = total + idx
 
@@ -9,6 +10,7 @@ fn int sum_to(int num)
 fn int sum_range(int start, int stop)
 
 	total as 0
+
 	for idx in range(start, stop)
 		total = total + idx
 
@@ -16,30 +18,40 @@ fn int sum_range(int start, int stop)
 
 fn int count_down(int num)
 	result as 0
+
 	for idx in range(num)
 		if idx < 2
 			continue
+
 		result = result + idx
+
 	return result
 
 fn int count_up_while(int limit)
 	result as 0
+
 	for if result < limit
 		result = result + 1
+
 	return result
 
 fn int loop_true_break()
 	counter as 0
+
 	for if true
 		counter = counter + 1
+
 		if counter is 5
 			break
+
 	return counter
 
 fn int bare_range_count(int num)
 	total as 0
+
 	for in range(num)
 		total = total + 1
+
 	return total
 
 fn void main()
@@ -52,10 +64,12 @@ fn void main()
 	int total3 = count_down(5)
 	print(total3)
 	flag as true
+
 	if not flag
 		print("no")
 	else
 		print("yes")
+
 	int total4 = count_up_while(4)
 	print(total4)
 	int total5 = loop_true_break()

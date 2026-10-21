@@ -49,21 +49,28 @@ macro check_undefined_var_read
 		return kw_pos - 1
 
 	bool skip = in_struct_body
+
 	if in_enum_body
 		skip = true
 
 	int next_pos = locate_next_token(pos)
+
 	if next_pos < token_count
 		Token next_token = tokens at next_pos
 		(kind) in next_token
+
 		if kind is IDENT
 			skip = true
+
 		if kind is EQUALS
 			skip = true
+
 		if kind is KW_AS
 			skip = true
+
 		if kind is LPAREN
 			skip = true
+
 		if kind is KW_IN
 			skip = true
 
@@ -71,40 +78,57 @@ macro check_undefined_var_read
 		int prev_pos = locate_prev_token(pos)
 		Token prev_token = tokens at prev_pos
 		(kind) in prev_token
+
 		if kind is KW_STRUCT
 			skip = true
+
 		if kind is KW_ENUM
 			skip = true
+
 		if kind is KW_SHAPE
 			skip = true
+
 		if kind is KW_TYPE
 			skip = true
+
 		if kind is KW_FN
 			skip = true
+
 		if kind is KW_MACRO
 			skip = true
+
 		if kind is KW_MACRO_RUN
 			skip = true
+
 		if kind is KW_UNSAFE_MACRO_RUN
 			skip = true
+
 		if kind is KW_UNSAFE_MACRO
 			skip = true
+
 		if kind is KW_OF
 			skip = true
+
 		if kind is KW_TO
 			skip = true
+
 		if kind is KW_RAW
 			skip = true
 
 	if not skip
 		bool known = name_set_has(declared_var_set, cur_val)
+
 		if not known
 			known = name_set_has(enum_variant_set, cur_val)
+
 		if not known
 			known = name_set_has(enum_name_set, cur_val)
+
 		if not known
 			known = name_set_has(fn_name_set, cur_val)
+
 		if not known
 			known = list_has(builtin_names, cur_val)
+
 		if not known
 			errors at end = val_err(tok, lbl_var, rule_undefined_var)

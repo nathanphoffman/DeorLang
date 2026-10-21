@@ -13,27 +13,34 @@ macro tb_with
 		return anchor + 2
 
 	int with_keyword_pos = locate_with_keyword(val_pos)
+
 	if with_keyword_pos < token_count
 		Token with_keyword_token = tokens at with_keyword_pos
 		(kind) in with_keyword_token
+
 		if kind is KW_WITH
 			(value) in val_token
 			string source_name = value
 			int with_lparen_pos = locate_with_lparen(val_pos)
 			strList override_fields = empty
 			int scan_pos = with_lparen_pos + 1
+
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
 				(kind, value) in scan_token
+
 				if kind is RPAREN
 					scan_pos = scan_pos + 1
 					break
+
 				if kind is COMMA
 					scan_pos = scan_pos + 1
 					continue
+
 				if kind is IDENT
 					override_fields at end = value
 					scan_pos = scan_pos + 1
+
 			string fields_separator = ", "
 			string fields_code = s_join_with(override_fields, fields_separator)
 			unsafe_macro_run mut_guard
@@ -44,4 +51,5 @@ macro tb_with
 			string clone_suffix = ".clone()"
 			string close_brace = " };\n"
 			string with_code = s_join([pad, let_kw, mut_kw, var_name, equals_kw, rust_type, open_brace, fields_code, spread_prefix, source_name, clone_suffix, close_brace])
+
 			return make_nl_result(move with_code, scan_pos, tokens)

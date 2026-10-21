@@ -13,4 +13,5 @@
 # value (see deduplicate_decls / strip_enforce_pragmas).
 fn DedupResult collect_all_tokens_with_all_imports(string path)
 	tokenList merged = load_file(path)
+
 	return deduplicate_decls(merged)

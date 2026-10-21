@@ -16,4 +16,5 @@ macro primary_list_literal
 		string list_close = "]"
 		string list_code = s_join([list_open, items_code, list_close])
 		int after_pos = items_pos + 1
+
 		return make_result(move list_code, after_pos)

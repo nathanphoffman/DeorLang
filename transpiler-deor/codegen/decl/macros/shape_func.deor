@@ -41,6 +41,7 @@ macro shape_func
 		(kind, value) in to_token
 		bool has_to = kind is KW_TO
 		func_end = to_pos
+
 		if has_to
 			int out_type_pos = locate_func_out_type_after_of(pos)
 			Token out_type_token = tokens at out_type_pos

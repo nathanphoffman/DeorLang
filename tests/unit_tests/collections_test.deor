@@ -1,14 +1,17 @@
 import "lib/string.deor"
 
 shape intList = list of int
+
 shape wordList = list of string
 
 fn int sum_list(intList nums)
 	total as 0
 	int cnt = len(nums)
+
 	for idx in range(cnt)
 		int val = nums at idx
 		total = total + val
+
 	return total
 
 fn string join_two(string word_a, string word_b)

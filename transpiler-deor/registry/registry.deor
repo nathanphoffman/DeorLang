@@ -31,6 +31,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 
 	int token_count = len(tokens_ref)
 	int pos = 0
+
 	for if pos < token_count
 		Token token = tokens_ref at pos
 		(kind) in token
@@ -38,56 +39,68 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 		if kind is KW_STRUCT
 			Reg2Scan scan = try_struct_entry(tokens_ref, pos)
 			move (matched, key, val, new_pos) in scan
+
 			if matched
 				struct_reg at end = key
 				struct_reg at end = val
+
 			pos = new_pos
 			continue
 
 		if kind is KW_SHAPE
 			Reg2Scan scan = try_shape_entry(tokens_ref, pos)
 			move (matched, key, val, new_pos) in scan
+
 			if matched
 				shape_reg at end = key
 				shape_reg at end = val
+
 			pos = new_pos
 			continue
 
 		if kind is KW_RAW
 			Reg2Scan scan = try_raw_entry(tokens_ref, pos)
 			move (matched, key, val, new_pos) in scan
+
 			if matched
 				shape_reg at end = key
 				shape_reg at end = val
+
 			pos = new_pos
 			continue
 
 		if kind is KW_TYPE
 			Reg3Scan scan = try_type_entry(tokens_ref, pos)
 			move (matched, key, val, val2, new_pos) in scan
+
 			if matched
 				type_reg at end = key
 				type_reg at end = val
 				type_reg at end = val2
+
 			pos = new_pos
 			continue
 
 		if kind is KW_ENUM
 			EnumScan scan = try_enum_entry(tokens_ref, pos)
 			move (matched, is_typed, name, rust_name, val_type, pairs, new_pos) in scan
+
 			if matched
 				if is_typed
 					typed_enum_reg at end = name
 					typed_enum_reg at end = val_type
 					int typed_variant_count = len(pairs)
+
 					for typed_variant_index in range(typed_variant_count)
 						typed_variant_reg at end = pairs at typed_variant_index
 				else
 					enum_reg at end = name
 					enum_reg at end = rust_name
 					int variant_count = len(pairs)
+
 					for variant_index in range(variant_count)
 						variant_reg at end = pairs at variant_index
+
 			pos = new_pos
 			continue
 
@@ -99,4 +112,5 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 	TokensRef tokens = tokens_wrap(move placeholder)
 	GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
 	RcCtx ctx = make_rctx(move ctx_raw)
+
 	return ctx

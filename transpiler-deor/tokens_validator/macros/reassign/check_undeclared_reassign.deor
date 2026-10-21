@@ -16,24 +16,32 @@ macro check_undeclared_reassign
 		return kw_pos - 1
 
 	int after_pos = locate_after_name(pos)
+
 	if after_pos < token_count
 		Token after_token = tokens at after_pos
 		(kind) in after_token
+
 		if kind is EQUALS
 			bool is_decl = false
+
 			if pos > 0
 				int before_pos = locate_before_name(pos)
 				Token before_token = tokens at before_pos
 				(kind) in before_token
 				string before_kind = kind
 				is_decl = before_kind is IDENT
+
 				if before_kind is KW_RAW
 					is_decl = true
+
 				if before_kind is KW_SHAPE
 					is_decl = true
+
 				if before_kind is KW_TYPE
 					is_decl = true
+
 			if not is_decl
 				bool is_known = name_set_has(declared_var_set, cur_val)
+
 				if not is_known
 					errors at end = val_err(tok, lbl_var, rule_undeclared_reassign)

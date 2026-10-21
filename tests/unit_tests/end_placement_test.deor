@@ -4,8 +4,10 @@
 
 fn int sum_range(int start, int end)
 	total as 0
+
 	for idx in (start, end)
 		total = total + idx
+
 	return total
 
 fn void bad_bare_use()
@@ -20,6 +22,6 @@ fn void main()
 
 # expect-error:
 # line 5: variable 'end' - 'end' can only appear directly after 'at'
-# line 7: variable 'end' - 'end' can only appear directly after 'at'
-# line 12: variable 'end' - 'end' can only appear directly after 'at'
-# line 13: variable 'end' - 'end' can only appear directly after 'at'
+# line 8: variable 'end' - 'end' can only appear directly after 'at'
+# line 14: variable 'end' - 'end' can only appear directly after 'at'
+# line 15: variable 'end' - 'end' can only appear directly after 'at'

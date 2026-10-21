@@ -5,6 +5,7 @@
 # guard since empty string is the conventional sentinel returned by failed registry lookups.
 fn bool is_empty(string source)
 	int length = len(source)
+
 	return length is 0
 
 # Linear scan checking whether a strList contains a specific string. Used throughout
@@ -13,8 +14,11 @@ fn bool is_empty(string source)
 # index loop instead to avoid the clone this function's by-value strList param forces.
 fn bool list_has(strList items, string val)
 	int item_count = len(items)
+
 	for index in range(item_count)
 		string item = items at index
+
 		if item is val
 			return true
+
 	return false

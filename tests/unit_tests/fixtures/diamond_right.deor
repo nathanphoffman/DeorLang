@@ -8,4 +8,5 @@ fn Point point_scale(Point point_val, int factor)
 	pos_x = pos_x * factor
 	pos_y = pos_y * factor
 	Point result = move (pos_x, pos_y)
+
 	return result

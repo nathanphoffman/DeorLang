@@ -15,20 +15,24 @@ macro check_void_var
 
 	if cur_kind is KW_VOID
 		bool preceded_by_fn = false
+
 		if pos > 0
 			int before_void_pos = locate_before_void(pos)
 			Token before_void_token = tokens at before_void_pos
 			(kind) in before_void_token
 			preceded_by_fn = kind is KW_FN
+
 		if not preceded_by_fn
 			int void_name_pos = locate_void_name(pos)
 			int void_equals_pos = locate_void_equals(pos)
+
 			if void_equals_pos < token_count
 				Token void_name_token = tokens at void_name_pos
 				Token void_equals_token = tokens at void_equals_pos
 				(kind) in void_name_token
 				string void_name_kind = kind
 				(kind) in void_equals_token
+
 				if void_name_kind is IDENT
 					if kind is EQUALS
 						errors at end = val_err(tok, lbl_var, rule_void_var)

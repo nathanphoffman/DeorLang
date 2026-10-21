@@ -12,10 +12,8 @@ struct Student
 
 shape studentList = list of Student
 
-
 fn Student make_student(string name, intList scores)
 	return (name, scores)
-
 
 fn int average(intList scores)
 	if scores is empty
@@ -23,17 +21,17 @@ fn int average(intList scores)
 
 	return l_int_sum(scores) / len(scores)
 
-
 fn string letter_grade(int score)
 	if score >= 90
 		return "A"
+
 	if score >= 80
 		return "B"
+
 	if score >= 70
 		return "C"
 
 	return "F"
-
 
 fn void main()
 	studentList students = empty
@@ -56,6 +54,7 @@ fn void main()
 
 	top_name as ""
 	top_average as 0
+
 	for student in students
 		(name, scores) in student
 		int avg = average(scores)

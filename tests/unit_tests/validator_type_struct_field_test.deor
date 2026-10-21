@@ -20,6 +20,7 @@ fn void main()
 	Squarefeet area = 20
 	Room room = (name, area)
 	(area) in room
+
 	if area is valid
 		print("valid area")
 	else
@@ -32,6 +33,7 @@ fn void main()
 	House house = (address, main_room)
 	(main_room) in house
 	(area) in main_room
+
 	if area is valid
 		print("valid nested area")
 	else

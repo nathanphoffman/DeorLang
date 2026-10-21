@@ -11,7 +11,9 @@ macro check_validator_empty
 			int type_pos = locate_type_before_empty(pos)
 			Token type_token = tokens at type_pos
 			(kind, value) in type_token
+
 			if kind is IDENT
 				bool is_validator = list_has(validator_type_names, value)
+
 				if is_validator
 					errors at end = val_err(tok, lbl_var, rule_validator_empty)

@@ -15,12 +15,15 @@ type Roll(int val)
 # expression inline path (see codegen/decl/validator_type.deor).
 type Even(int val)
 	int remainder = val % 2
+
 	return remainder is 0
 
 fn Roll find_best(int val)
 	Roll best
+
 	if val > 0
 		best = val
+
 	return best
 
 fn void show_if_valid(Roll rvar)

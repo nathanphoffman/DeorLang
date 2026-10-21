@@ -29,5 +29,7 @@ macro for_while
 	# Infinite loops are one of the only cases where this happens
 	if val_code is "true"
 		while_head = "loop"
+
 	string while_code = s_join([pad, while_head, RS_OB, blk_code, pad, RS_CB])
+
 	return make_result(move while_code, blk_end)

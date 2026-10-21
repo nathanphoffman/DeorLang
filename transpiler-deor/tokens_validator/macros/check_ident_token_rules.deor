@@ -10,13 +10,16 @@ macro check_ident_token_rules
 
 	if cur_kind is IDENT
 		bool is_fn_decl_name = false
+
 		if pos > 1
 			int prev2_pos = locate_prev2(pos)
 			Token prev2_token = tokens at prev2_pos
 			(kind) in prev2_token
 			is_fn_decl_name = kind is KW_FN
+
 		if not is_fn_decl_name
 			macro_run check_call_args
+
 		macro_run check_rust_generic
 		macro_run check_raw_in_binding
 		macro_run check_raw_reassign

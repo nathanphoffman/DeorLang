@@ -11,23 +11,28 @@ macro expr_is_special
 		if after_op < token_count
 			Token maybe_not = tokens at after_op
 			(kind) in maybe_not
+
 			if kind is KW_NOT
 				operator_str = "is not"
 				after_op = after_op + 1
+
 			if kind is KW_EMPTY
 				string is_empty_suffix = ".is_empty()"
 				left_code = s_cat(move left_code, is_empty_suffix)
 				cur_pos = after_op + 1
 				continue
+
 			if kind is KW_VALID
 				string is_valid_suffix = ".is_some()"
 				left_code = s_cat(move left_code, is_valid_suffix)
 				cur_pos = after_op + 1
 				continue
+
 	if operator_str is "is not"
 		if after_op < token_count
 			Token maybe_empty = tokens at after_op
 			(kind) in maybe_empty
+
 			if kind is KW_EMPTY
 				string not_empty_prefix = "!"
 				string not_empty_suffix = ".is_empty()"
@@ -35,6 +40,7 @@ macro expr_is_special
 				left_code = s_cat(move left_code, not_empty_suffix)
 				cur_pos = after_op + 1
 				continue
+
 			if kind is KW_VALID
 				string not_valid_prefix = "!("
 				string not_valid_suffix = ".is_some())"

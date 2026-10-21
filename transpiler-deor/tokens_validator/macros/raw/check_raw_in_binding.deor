@@ -28,6 +28,7 @@ macro check_raw_in_binding
 		int name_pos = locate_binding_name(pos)
 		int equals_pos = locate_binding_equals(pos)
 		int value_pos = locate_binding_value(pos)
+
 		if value_pos < token_count
 			Token name_token = tokens at name_pos
 			Token equals_token = tokens at equals_pos
@@ -40,13 +41,16 @@ macro check_raw_in_binding
 			bool is_binding = name_kind is IDENT
 			is_binding = is_binding and equals_kind is EQUALS
 			bool value_is_ident = kind is IDENT
+
 			if is_binding and value_is_ident
 				bool is_raw = list_has(raw_var_names, value)
+
 				if is_raw
 					errors at end = val_err(value_token, lbl_var, rule_raw_in_expr)
 
 		int as_pos = locate_as_keyword(pos)
 		int as_value_pos = locate_as_value(pos)
+
 		if as_value_pos < token_count
 			Token as_token = tokens at as_pos
 			Token as_value_token = tokens at as_value_pos
@@ -54,7 +58,9 @@ macro check_raw_in_binding
 			bool is_as = kind is KW_AS
 			(kind, value) in as_value_token
 			bool as_value_is_ident = kind is IDENT
+
 			if is_as and as_value_is_ident
 				bool as_value_is_raw = list_has(raw_var_names, value)
+
 				if as_value_is_raw
 					errors at end = val_err(as_value_token, lbl_var, rule_raw_in_expr)

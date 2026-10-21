@@ -12,10 +12,12 @@ macro check_type_base_primitive
 
 	if cur_kind is KW_TYPE
 		int base_type_pos = locate_base_type(pos)
+
 		if base_type_pos < token_count
 			Token base_type_token = tokens at base_type_pos
 			(value) in base_type_token
 			bool is_primitive = list_has(primitive_type_names, value)
+
 			if not is_primitive
 				int name_pos = locate_type_name(pos)
 				Token name_token = tokens at name_pos

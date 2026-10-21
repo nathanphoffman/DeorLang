@@ -13,6 +13,7 @@ type Positive(int val)
 
 fn void test_bare_validator_if()
 	Positive good_num = 5
+
 	if good_num
 		print("should never reach here")
 
@@ -20,4 +21,4 @@ fn void main()
 	print("should never reach here")
 
 # expect-error:
-# line 16: variable 'good_num' - only bool and validator types have truthiness
+# line 17: variable 'good_num' - only bool and validator types have truthiness

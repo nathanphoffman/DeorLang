@@ -34,6 +34,7 @@ type Positive(int val)
 
 fn bool is_big(Room room)
 	(area) in room
+
 	return area > 100
 
 fn void log_room(Room room)
@@ -48,12 +49,14 @@ fn void main()
 	int area = 50
 	string name = "Office"
 	Room office = (area, name)
+
 	if checker(office)
 		print("big")
 	else
 		print("small")
 
 	ColorTag background = Blue
+
 	if background is Blue
 		print("blue")
 
@@ -61,6 +64,7 @@ fn void main()
 	print(Foo)
 
 	Positive score = 5
+
 	if score is valid
 		print("valid")
 

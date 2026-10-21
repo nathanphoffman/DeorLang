@@ -18,6 +18,7 @@ macro dd_handle_rust_block
 	int content_pos = locate_content(pos)
 	bool is_block = false
 	string block_value = ""
+
 	if content_pos < token_count
 		Token newline_token = tokens at newline_pos
 		Token content_token = tokens at content_pos
@@ -27,23 +28,29 @@ macro dd_handle_rust_block
 		bool block_ok = kind is RUST_BLOCK
 		is_block = newline_ok and block_ok
 		block_value = value
+
 	if is_block
 		string rust_key_prefix = "_rust_"
 		strList key_parts = [rust_key_prefix, block_value]
 		string decl_name = s_join(key_parts)
 		bool already_seen = false
 		int seen_len = len(seen)
+
 		for seen_index in range(seen_len)
 			string seen_val = seen at seen_index
+
 			if seen_val is decl_name
 				already_seen = true
 				break
+
 		if not already_seen
 			seen at end = decl_name
+
 			for copy_idx in range(3)
 				int copy_pos = pos + copy_idx
 				Token copy_token = tokens at copy_pos
 				result at end = copy_token
+
 		pos = pos + 3
 	else
 		Token fallback_token = tokens at pos

@@ -23,9 +23,11 @@ macro stmt_raw_const
 
 		strList raw_parts = [pad, RS_LET, mut_kw, raw_var_name, RS_EQ, val_code, RS_SC]
 		string raw_code = s_join(raw_parts)
+
 		return make_nl_result(move raw_code, val_end, tokens)
 
 	if kind is KW_CONST
 		# ex: const {Type} name = val — kw_pos+1 grabs the type token after 'const'
 		int const_type_pos = locate_next_token(pos)
+
 		return gen_typed_binding(const_type_pos, depth, ctx)

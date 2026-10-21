@@ -23,20 +23,27 @@ macro stmt_flow
 		bool is_chain = is_expr_chain(tokens, val_pos, val_end)
 
 		string suffix = ""
+
 		if not is_chain
 			if kind is STRING
 				suffix = ".to_string()"
+
 		string return_kw = "return "
 		string return_sc = ";\n"
 		string return_code = s_join([pad, return_kw, val_code, suffix, return_sc])
+
 		return make_nl_result(move return_code, val_end, tokens)
+
 	if kind is KW_BREAK
 		string break_kw = "break;\n"
 		string break_code = s_join([pad, break_kw])
 		int break_next = locate_next_token(pos)
+
 		return make_nl_result(move break_code, break_next, tokens)
+
 	if kind is KW_CONTINUE
 		string continue_kw = "continue;\n"
 		string continue_code = s_join([pad, continue_kw])
 		int continue_next = locate_next_token(pos)
+
 		return make_nl_result(move continue_code, continue_next, tokens)

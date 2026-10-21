@@ -7,16 +7,18 @@ import "lib/convert.deor"
 fn string fizzbuzz(int num)
 	if num % 15 is 0
 		return "FizzBuzz"
+
 	if num % 3 is 0
 		return "Fizz"
+
 	if num % 5 is 0
 		return "Buzz"
 
 	return c_int_to_string(num)
 
-
 fn void main()
 	start as 1
 	stop as 21
+
 	for num in range(start, stop)
 		print(fizzbuzz(num))

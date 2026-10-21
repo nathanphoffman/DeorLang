@@ -16,6 +16,7 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	(value) in name_token
 	string ident_name = value
 	int next_pos = locate_next_token(pos)
+
 	# ex: print({left}, right) — next_pos+1 grabs the first argument slot
 	int args_pos = locate_next_token(next_pos)
 	ParseResult args_result = gen_call_args(tokens, args_pos, ctx)
@@ -24,9 +25,11 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	args_end as new_pos
 	int after_paren = args_end + 1
 	string call_code = ""
+
 	if ident_name is "print"
 		# If print has 2 arguments it has a custom separator
 		int print_arg_count = count_call_args(tokens, next_pos)
+
 		if print_arg_count is 2
 			string print_2arg_prefix = "print!(\"{}{}\", "
 			call_code = s_join([pad, print_2arg_prefix, args_code, RS_RP_SC])
@@ -38,4 +41,5 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 		call_code = s_join([pad, crash_prefix, args_code, RS_RP_SC])
 	else
 		call_code = s_join([pad, ident_name, RS_LP, args_code, RS_RP_SC])
+
 	return make_nl_result(move call_code, after_paren, tokens)
