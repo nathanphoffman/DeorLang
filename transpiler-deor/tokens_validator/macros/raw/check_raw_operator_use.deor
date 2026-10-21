@@ -2,7 +2,7 @@
 # Flags a raw variable used as either operand of a binary operator. Arithmetic,
 # comparison, `is`/`is not`, and `and`/`or` codegen all assume a known concrete
 # type on both sides — raw variables by definition don't have one in Deor's eyes.
-# Operator kind list mirrors is_binary_op in codegen/decl/stmt/expr/expr.deor.
+# Operators are those recognised by is_binary_op in codegen/decl/stmt/expr/expr.deor.
 macro check_raw_operator_use
 	# ex: pool {+} 1 — kw_pos+1 grabs the token after the raw variable to check for a binary operator
 	fn int locate_next_token(int kw_pos)
@@ -15,18 +15,17 @@ macro check_raw_operator_use
 	if cur_kind is "IDENT"
 		bool is_raw = list_has(raw_var_names, cur_val)
 		if is_raw
-			strList op_kinds = ["PLUS", "MINUS", "STAR", "SLASH", "PERCENT", "GT", "LT", "GTE", "LTE", "KW_IS", "KW_AND", "KW_OR"]
 			bool next_is_op = false
 			int next_pos = locate_next_token(pos)
 			if next_pos < token_count
 				Token next_token = tokens at next_pos
 				(kind) in next_token
-				next_is_op = list_has(op_kinds, kind)
+				next_is_op = is_binary_op(kind)
 			bool prev_is_op = false
 			if pos > 0
 				int prev_pos = locate_prev_token(pos)
 				Token prev_token = tokens at prev_pos
 				(kind) in prev_token
-				prev_is_op = list_has(op_kinds, kind)
+				prev_is_op = is_binary_op(kind)
 			if next_is_op or prev_is_op
 				errors at end = val_err(tok, lbl_var, rule_raw_in_expr)

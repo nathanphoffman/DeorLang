@@ -90,42 +90,12 @@ macro check_missing_return_expr
 													if next_pos < body_end_pos
 														Token next_token = tokens at next_pos
 														(kind) in next_token
-														bool is_bare_expr = starts_binary_op(kind)
+														bool is_bare_expr = is_binary_op(kind)
 														if not is_bare_expr
 															is_bare_expr = kind is "NEWLINE"
 														if is_bare_expr
 															errors at end = val_err(stmt_token, lbl_stmt, rule_missing_return_expr)
 											scan_pos = scan_pos + 1
-
-# True for a token kind that can follow a bare primary as a binary operator — a
-# local copy of codegen's is_binary_op so this validator file (which runs before
-# codegen even starts) doesn't reach into codegen internals for it.
-fn bool starts_binary_op(string kind)
-	if kind is "PLUS"
-		return true
-	if kind is "MINUS"
-		return true
-	if kind is "STAR"
-		return true
-	if kind is "SLASH"
-		return true
-	if kind is "PERCENT"
-		return true
-	if kind is "GT"
-		return true
-	if kind is "LT"
-		return true
-	if kind is "GTE"
-		return true
-	if kind is "LTE"
-		return true
-	if kind is "KW_IS"
-		return true
-	if kind is "KW_AND"
-		return true
-	if kind is "KW_OR"
-		return true
-	return false
 
 # Position of the first depth-0 NEWLINE in [start, end_pos) — depth tracked relative
 # to `start`, so a nested if/for block's own NEWLINEs don't count. Used only to tell

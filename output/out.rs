@@ -2619,59 +2619,6 @@ fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i
 }
 
 // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-fn starts_binary_op(kind: String) -> bool {
-    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-    if kind == "PLUS" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "MINUS" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "STAR" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "SLASH" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "PERCENT" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "GT" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "LT" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "GTE" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "LTE" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "KW_IS" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "KW_AND" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "KW_OR" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    return false;
-}
-
 fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 {
     // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
     let mut depth: i64 = 0;
@@ -6214,7 +6161,7 @@ fn validate_tokens(tokens: TokensRef) {
                                                                     // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                                                     let mut next_token: Token = tokens[next_pos as usize].clone();
                                                                     let mut kind = next_token.kind.clone();
-                                                                    let mut is_bare_expr: bool = starts_binary_op(kind.clone());
+                                                                    let mut is_bare_expr: bool = is_binary_op(kind.clone());
                                                                     if !is_bare_expr {
                                                                         // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                                                         is_bare_expr = kind == "NEWLINE";
@@ -6892,14 +6839,13 @@ fn validate_tokens(tokens: TokensRef) {
                         let mut is_raw: bool = list_has(raw_var_names.clone(), cur_val.clone());
                         if is_raw {
                             // transpiler-deor/tokens_validator/macros/raw/check_raw_operator_use.deor
-                            let mut op_kinds: Vec<String> = vec!["PLUS".to_string(), "MINUS".to_string(), "STAR".to_string(), "SLASH".to_string(), "PERCENT".to_string(), "GT".to_string(), "LT".to_string(), "GTE".to_string(), "LTE".to_string(), "KW_IS".to_string(), "KW_AND".to_string(), "KW_OR".to_string()];
                             let mut next_is_op: bool = false;
                             let mut next_pos: i64 = locate_next_token(pos.clone());
                             if next_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/raw/check_raw_operator_use.deor
                                 let mut next_token: Token = tokens[next_pos as usize].clone();
                                 let mut kind = next_token.kind.clone();
-                                next_is_op = list_has(op_kinds.clone(), kind.clone());
+                                next_is_op = is_binary_op(kind.clone());
                             }
                             let mut prev_is_op: bool = false;
                             if pos > 0 {
@@ -6907,7 +6853,7 @@ fn validate_tokens(tokens: TokensRef) {
                                 let mut prev_pos: i64 = locate_prev_token(pos.clone());
                                 let mut prev_token: Token = tokens[prev_pos as usize].clone();
                                 let mut kind = prev_token.kind.clone();
-                                prev_is_op = list_has(op_kinds.clone(), kind.clone());
+                                prev_is_op = is_binary_op(kind.clone());
                             }
                             if next_is_op || prev_is_op {
                                 // transpiler-deor/tokens_validator/macros/raw/check_raw_operator_use.deor
