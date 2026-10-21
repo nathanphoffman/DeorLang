@@ -98,6 +98,7 @@ import "transpiler-deor/tokens_validator/macros/syntax_rules/check_void_return.d
 import "transpiler-deor/tokens_validator/macros/syntax_rules/check_return_invalid.deor"
 import "transpiler-deor/tokens_validator/macros/use_after_move/check_move_target.deor"
 import "transpiler-deor/tokens_validator/macros/use_after_move/track_copy_vars.deor"
+import "transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor"
 import "transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor"
 import "transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor"
 import "transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_for.deor"

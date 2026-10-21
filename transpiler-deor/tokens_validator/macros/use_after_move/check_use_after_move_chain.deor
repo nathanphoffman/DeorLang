@@ -54,45 +54,9 @@ macro check_use_after_move_chain
 			UamFrame top_frame = move_if_stack at top_idx
 			(chain_depth, pre_vars, acc_vars) in top_frame
 			if chain_depth is block_depth
-				bool arm_is_terminal = false
-				int line_scan = locate_prev_token(pos)
-				for if line_scan >= 0
-					Token line_scan_token = tokens at line_scan
-					(kind) in line_scan_token
-					if kind is "NEWLINE"
-						line_scan = line_scan - 1
-					else
-						break
-				int line_end = line_scan
-				for if line_scan >= 0
-					Token line_scan_token2 = tokens at line_scan
-					(kind) in line_scan_token2
-					if kind is "NEWLINE"
-						break
-					if kind is "INDENT"
-						break
-					if kind is "DEDENT"
-						break
-					line_scan = line_scan - 1
-				int line_start = line_scan + 1
-				if line_start <= line_end
-					Token line_first_token = tokens at line_start
-					(kind) in line_first_token
-					if kind is "KW_RETURN"
-						arm_is_terminal = true
-					if kind is "KW_BREAK"
-						arm_is_terminal = true
-					if kind is "KW_CONTINUE"
-						arm_is_terminal = true
+				bool arm_is_terminal = arm_ends_in_jump(tokens, pos)
 				if not arm_is_terminal
-					int move_index = 0
-					int move_count = len(moved_vars)
-					for if move_index < move_count
-						string moved_name = moved_vars at move_index
-						bool already_acc = list_has(acc_vars, moved_name)
-						if not already_acc
-							acc_vars at end = moved_name
-						move_index = move_index + 1
+					acc_vars = fold_moved_into(acc_vars, moved_vars)
 				move_if_stack remove at top_idx
 				UamFrame updated_frame = (chain_depth, pre_vars, acc_vars)
 				move_if_stack at end = updated_frame
@@ -120,44 +84,8 @@ macro check_use_after_move_chain
 					if kind is "KW_ELSE"
 						next_is_else = true
 				if not next_is_else
-					bool arm_is_terminal = false
-					int line_scan = locate_prev_token(pos)
-					for if line_scan >= 0
-						Token line_scan_token = tokens at line_scan
-						(kind) in line_scan_token
-						if kind is "NEWLINE"
-							line_scan = line_scan - 1
-						else
-							break
-					int line_end = line_scan
-					for if line_scan >= 0
-						Token line_scan_token2 = tokens at line_scan
-						(kind) in line_scan_token2
-						if kind is "NEWLINE"
-							break
-						if kind is "INDENT"
-							break
-						if kind is "DEDENT"
-							break
-						line_scan = line_scan - 1
-					int line_start = line_scan + 1
-					if line_start <= line_end
-						Token line_first_token = tokens at line_start
-						(kind) in line_first_token
-						if kind is "KW_RETURN"
-							arm_is_terminal = true
-						if kind is "KW_BREAK"
-							arm_is_terminal = true
-						if kind is "KW_CONTINUE"
-							arm_is_terminal = true
+					bool arm_is_terminal = arm_ends_in_jump(tokens, pos)
 					if not arm_is_terminal
-						int move_index = 0
-						int move_count = len(moved_vars)
-						for if move_index < move_count
-							string moved_name = moved_vars at move_index
-							bool already_acc = list_has(acc_vars, moved_name)
-							if not already_acc
-								acc_vars at end = moved_name
-							move_index = move_index + 1
+						acc_vars = fold_moved_into(acc_vars, moved_vars)
 					move_if_stack remove at top_idx
 					moved_vars = acc_vars

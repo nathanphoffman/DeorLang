@@ -1,0 +1,52 @@
+
+# True when the line just before `pos` (an else or the DEDENT closing an arm) starts with
+# return/break/continue — that arm never falls through to code after the if chain.
+# Skips trailing NEWLINEs, then walks back to the start of that last line.
+fn bool arm_ends_in_jump(TokensRef tokens, int pos)
+	# ex: {else} / {DEDENT} — kw_pos-1 grabs the token just before it
+	fn int locate_prev_token(int kw_pos)
+		return kw_pos - 1
+
+	int line_scan = locate_prev_token(pos)
+	for if line_scan >= 0
+		Token line_scan_token = tokens at line_scan
+		(kind) in line_scan_token
+		if kind is "NEWLINE"
+			line_scan = line_scan - 1
+		else
+			break
+	int line_end = line_scan
+	for if line_scan >= 0
+		Token line_scan_token2 = tokens at line_scan
+		(kind) in line_scan_token2
+		if kind is "NEWLINE"
+			break
+		if kind is "INDENT"
+			break
+		if kind is "DEDENT"
+			break
+		line_scan = line_scan - 1
+	int line_start = line_scan + 1
+	if line_start <= line_end
+		Token line_first_token = tokens at line_start
+		(kind) in line_first_token
+		if kind is "KW_RETURN"
+			return true
+		if kind is "KW_BREAK"
+			return true
+		if kind is "KW_CONTINUE"
+			return true
+	return false
+
+# Returns acc_vars with every name from moved_vars added that it doesn't already hold.
+fn strList fold_moved_into(strList acc_vars, strList moved_vars)
+	strList folded_vars = acc_vars
+	int move_index = 0
+	int move_count = len(moved_vars)
+	for if move_index < move_count
+		string moved_name = moved_vars at move_index
+		bool already_acc = list_has(folded_vars, moved_name)
+		if not already_acc
+			folded_vars at end = moved_name
+		move_index = move_index + 1
+	return folded_vars
