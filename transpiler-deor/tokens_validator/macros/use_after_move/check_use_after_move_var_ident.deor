@@ -46,6 +46,7 @@ macro check_use_after_move_var_ident
 			# belonged to a different instance.
 			string name = cur_val
 			string field_prefix = s_join([name, "."])
+
 			rust
 				moved_vars.retain(|x| x != &name);
 				moved_fields.retain(|x| !x.starts_with(&field_prefix));
@@ -160,6 +161,7 @@ macro check_use_after_move_var_ident
 					if dt_scan_depth is 0
 						dt_found_enclosing = true
 						dt_lparen_pos = dt_scan_pos
+
 						break
 					else
 						dt_scan_depth = dt_scan_depth - 1
@@ -199,6 +201,7 @@ macro check_use_after_move_var_ident
 					# variable declared earlier under the same name.
 					string dt_name = cur_val
 					string dt_field_prefix = s_join([dt_name, "."])
+
 					rust
 						moved_vars.retain(|x| x != &dt_name);
 						moved_fields.retain(|x| !x.starts_with(&dt_field_prefix));

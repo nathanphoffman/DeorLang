@@ -15,6 +15,7 @@ unsafe_macro expr_float_prescan
 
 		if kind is FLOAT
 			expr_has_float = true
+
 			break
 
 		if kind is NEWLINE

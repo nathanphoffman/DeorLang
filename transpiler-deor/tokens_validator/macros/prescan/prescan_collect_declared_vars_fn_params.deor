@@ -28,6 +28,7 @@ macro prescan_collect_declared_vars_fn_params
 
 					if kind is COMMA
 						param_scan_pos = param_scan_pos + 1
+
 						continue
 
 					if kind is IDENT

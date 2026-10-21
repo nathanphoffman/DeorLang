@@ -12,5 +12,6 @@ fn void dd_error_duplicate(string decl_name, Token name_token, string origin_fil
 	strList error_parts = [error_prefix, file, error_line, line_str, error_mid, decl_name, error_end, origin_file]
 	string error_msg = s_join(error_parts)
 	print(error_msg)
+
 	rust
 		std::process::exit(1);

@@ -45,6 +45,7 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 
 		if kind is NEWLINE
 			cur = cur + 1
+
 			continue
 
 		if kind is not KW_ELSE
@@ -82,6 +83,7 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 			result_code = s_cat(move result_code, pad)
 			result_code = s_cat(move result_code, else_close)
 			cur = blk_end
+
 			break
 
 	result_code = s_cat(move result_code, RS_NL)

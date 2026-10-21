@@ -18,13 +18,16 @@ macro aas_struct
 
 		if kind is IDENT
 			peek_pos = peek_pos + 1
+
 			continue
 
 		if kind is COMMA
 			peek_pos = peek_pos + 1
+
 			continue
 
 		is_struct = false
+
 		break
 
 	if is_struct
@@ -37,6 +40,7 @@ macro aas_struct
 
 			if kind is RPAREN
 				scan_pos = scan_pos + 1
+
 				break
 			else if kind is COMMA
 				scan_pos = scan_pos + 1

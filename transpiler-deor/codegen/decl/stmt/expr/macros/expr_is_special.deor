@@ -20,12 +20,14 @@ macro expr_is_special
 				string is_empty_suffix = ".is_empty()"
 				left_code = s_cat(move left_code, is_empty_suffix)
 				cur_pos = after_op + 1
+
 				continue
 
 			if kind is KW_VALID
 				string is_valid_suffix = ".is_some()"
 				left_code = s_cat(move left_code, is_valid_suffix)
 				cur_pos = after_op + 1
+
 				continue
 
 	if operator_str is "is not"
@@ -39,6 +41,7 @@ macro expr_is_special
 				left_code = s_cat(not_empty_prefix, move left_code)
 				left_code = s_cat(move left_code, not_empty_suffix)
 				cur_pos = after_op + 1
+
 				continue
 
 			if kind is KW_VALID
@@ -47,4 +50,5 @@ macro expr_is_special
 				left_code = s_cat(not_valid_prefix, move left_code)
 				left_code = s_cat(move left_code, not_valid_suffix)
 				cur_pos = after_op + 1
+
 				continue

@@ -26,6 +26,7 @@ fn tokenList tokenize(string source, string path)
 
 		if skip > 0
 			skip = skip - 1
+
 			continue
 
 		string raw_line = lines at line_index
@@ -40,6 +41,7 @@ fn tokenList tokenize(string source, string path)
 
 		if content is "rust"
 			macro_run collect_rust_block
+
 			continue
 
 		strList chars = c_chars(content)
@@ -51,6 +53,7 @@ fn tokenList tokenize(string source, string path)
 
 			if character is " "
 				char_index = char_index + 1
+
 				continue
 
 			if character is "#"
@@ -62,6 +65,7 @@ fn tokenList tokenize(string source, string path)
 				string str_val = pr_code(string_result)
 				tokens at end = make_token(kind_string, str_val, meta)
 				char_index = pr_pos(string_result)
+
 				continue
 
 			if c_digit(character)
@@ -87,6 +91,7 @@ fn tokenList tokenize(string source, string path)
 				char_index = pr_pos(word_result)
 				string word_kind = word_to_kind(word)
 				tokens at end = make_token(word_kind, word, meta)
+
 				continue
 
 			macro_run emit_operator_token

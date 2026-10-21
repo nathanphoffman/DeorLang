@@ -32,6 +32,7 @@ fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 
 		if kind is DEDENT
 			cur = field_index + 1
+
 			break
 		else if kind is IDENT
 			# ex: int {x} — field_index+1 grabs the field name after its type

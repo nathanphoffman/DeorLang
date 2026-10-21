@@ -23,6 +23,7 @@ macro tb_paren
 
 				if kind is RPAREN
 					scan_pos = scan_pos + 1
+
 					break
 				else if kind is COMMA
 					scan_pos = scan_pos + 1

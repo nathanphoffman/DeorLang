@@ -42,13 +42,16 @@ macro primary_paren_expr
 
 				if kind is IDENT
 					scan_pos = scan_pos + 1
+
 					continue
 
 				if kind is COMMA
 					scan_pos = scan_pos + 1
+
 					continue
 
 				is_struct = false
+
 				break
 
 			if is_struct
@@ -61,6 +64,7 @@ macro primary_paren_expr
 
 					if kind is RPAREN
 						field_scan_pos = field_scan_pos + 1
+
 						break
 					else if kind is COMMA
 						field_scan_pos = field_scan_pos + 1

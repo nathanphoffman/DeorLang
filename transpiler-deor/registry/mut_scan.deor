@@ -27,6 +27,7 @@ fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 
 			if depth is 0
 				result = raw_i
+
 				break
 
 	return result

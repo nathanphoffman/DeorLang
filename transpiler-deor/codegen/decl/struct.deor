@@ -27,6 +27,7 @@ fn ParseResult gen_struct_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 		if kind is DEDENT
 			cur = cur_next_ref(cur, tokens)
+
 			break
 		else if kind is NEWLINE
 			cur = cur_next_ref(cur, tokens)

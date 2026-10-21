@@ -173,6 +173,7 @@ fn void ensure_scratch_dir()
 
 fn RunResult run_process(ProcSpec spec)
 	(program, proc_args, stdin_data, set_lib_env, timeout_secs) in spec
+
 	rust
 		{
 			let mut cmd = Command::new(&program);

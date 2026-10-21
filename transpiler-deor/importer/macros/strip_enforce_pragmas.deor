@@ -46,6 +46,7 @@ unsafe_macro strip_enforce_pragmas
 				}
 
 			scan_pos = token_count
+
 			break
 		else
 			result_tokens at end = scan_token

@@ -21,6 +21,7 @@ unsafe_macro fn_parse_signature
 
 		if kind is RPAREN
 			cur = cur_next_ref(cur, fn_tokens)
+
 			break
 		else if kind is COMMA
 			cur = cur_next_ref(cur, fn_tokens)

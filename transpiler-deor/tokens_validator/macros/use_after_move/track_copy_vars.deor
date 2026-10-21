@@ -64,6 +64,7 @@ macro track_copy_vars
 
 					if kind is COMMA
 						param_scan_pos = param_scan_pos + 1
+
 						continue
 
 					if kind is IDENT

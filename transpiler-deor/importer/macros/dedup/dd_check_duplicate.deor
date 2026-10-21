@@ -37,6 +37,7 @@ unsafe_macro dd_check_duplicate
 		if seen_val is lookup_name
 			already_seen = true
 			dup_index = seen_index
+
 			break
 
 	if already_seen

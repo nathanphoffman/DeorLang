@@ -6,6 +6,7 @@ macro for_collect_fields_into_fields_list
 
 		if kind is RPAREN
 			cur = cur + 1
+
 			break
 		else if kind is COMMA
 			cur = cur + 1

@@ -31,10 +31,12 @@ macro tb_with
 
 				if kind is RPAREN
 					scan_pos = scan_pos + 1
+
 					break
 
 				if kind is COMMA
 					scan_pos = scan_pos + 1
+
 					continue
 
 				if kind is IDENT

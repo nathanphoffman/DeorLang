@@ -33,6 +33,7 @@ rust
 # print + process::exit boilerplate.
 fn void fatal(string msg)
 	print(msg)
+
 	rust
 		std::process::exit(1);
 
@@ -78,12 +79,14 @@ fn tokenList load_file(string path)
 			depth = depth + 1
 			result at end = tok
 			pos = pos + 1
+
 			continue
 
 		if kind is DEDENT
 			depth = depth - 1
 			result at end = tok
 			pos = pos + 1
+
 			continue
 
 		bool at_root_depth = depth is 0
@@ -166,6 +169,7 @@ fn tokenList load_file(string path)
 							result at end = import_token
 
 				pos = import_end
+
 				continue
 
 		if at_root_depth and kind is not NEWLINE

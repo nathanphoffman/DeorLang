@@ -37,6 +37,7 @@
 # already-nested structure of macro_run calls within macro_run calls.
 fn tokenList expand_deor_macros(tokenList tokens, int enforce_macro_file_depth)
 	unsafe_macro_run token_kinds
+
 	rust
 		let mut macros: std::collections::HashMap<String, (Vec<Token>, i32, bool)> = std::collections::HashMap::new();
 		let mut result: Vec<Token> = vec![];

@@ -21,6 +21,7 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 
 		if kind is COMMA
 			cur = cur + 1
+
 			continue
 
 		ParseResult item_r = gen_expr(tokens, cur, ctx)
@@ -63,6 +64,7 @@ fn ParseResult gen_join_items(TokensRef tokens, int pos, RcCtx ctx)
 
 		if kind is COMMA
 			cur = cur + 1
+
 			continue
 
 		ParseResult item_r = gen_expr(tokens, cur, ctx)

@@ -70,6 +70,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 		if kind is NEWLINE
 			peek = cur_next_ref(peek, tokens)
+
 			continue
 
 		break

@@ -41,6 +41,7 @@ macro dd_handle_rust_block
 
 			if seen_val is decl_name
 				already_seen = true
+
 				break
 
 		if not already_seen

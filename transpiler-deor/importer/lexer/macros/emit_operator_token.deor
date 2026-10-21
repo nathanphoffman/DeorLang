@@ -44,11 +44,13 @@ macro emit_operator_token
 	if character is ">" and op_peek is "="
 		tokens at end = make_token(op_kind_gte, op_val_gte, meta)
 		char_index = char_index + 2
+
 		continue
 
 	if character is "<" and op_peek is "="
 		tokens at end = make_token(op_kind_lte, op_val_lte, meta)
 		char_index = char_index + 2
+
 		continue
 
 	if character is "+"

@@ -24,11 +24,13 @@ fn DedupResult deduplicate_decls(tokenList tokens_in)
 		if kind is "EOF"
 			result at end = token
 			pos = pos + 1
+
 			continue
 
 		if kind is NEWLINE
 			result at end = token
 			pos = pos + 1
+
 			continue
 
 		bool is_fn = kind is KW_FN

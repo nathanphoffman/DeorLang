@@ -45,6 +45,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 				struct_reg at end = val
 
 			pos = new_pos
+
 			continue
 
 		if kind is KW_SHAPE
@@ -56,6 +57,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 				shape_reg at end = val
 
 			pos = new_pos
+
 			continue
 
 		if kind is KW_RAW
@@ -67,6 +69,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 				shape_reg at end = val
 
 			pos = new_pos
+
 			continue
 
 		if kind is KW_TYPE
@@ -79,6 +82,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 				type_reg at end = val2
 
 			pos = new_pos
+
 			continue
 
 		if kind is KW_ENUM
@@ -102,6 +106,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 						variant_reg at end = pairs at variant_index
 
 			pos = new_pos
+
 			continue
 
 		pos = pos + 1

@@ -21,4 +21,5 @@ macro validate_ident
 				errors at end = val_err(name_tok, lbl, rule_kw_in_parens)
 
 		pos = pos + 1
+
 		continue

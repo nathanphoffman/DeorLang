@@ -30,4 +30,5 @@ macro skip_rust_block
 
 		if is_block
 			pos = block_pos + 1
+
 			continue
