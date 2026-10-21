@@ -75,6 +75,10 @@ fn tokens_wrap(t: Vec<Token>) -> TokensRef { Rc::new(t) }
 fn make_rctx(ctx: GenCtx) -> RcCtx { Rc::new(ctx) }
 fn now_ms() -> i64 { std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as i64 }
 fn elapsed_ms(start: i64) -> i64 { now_ms() - start }
+// Hash set for hot name lookups: cloning an Rc is cheap, unlike list_has's by-value strList.
+type NameSet = Rc<std::collections::HashSet<String>>;
+fn name_set(names: Vec<String>) -> NameSet { Rc::new(names.into_iter().collect()) }
+fn name_set_has(set: NameSet, name: String) -> bool { set.contains(&name) }
 // transpiler-deor/lib/char.deor
 fn c_chars(source: String) -> Vec<String> {
     // transpiler-deor/lib/char.deor
@@ -963,7 +967,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut op_val_rb: String = "]".to_string();
                 let mut op_kind_cm: String = "COMMA".to_string();
                 let mut op_val_cm: String = ",".to_string();
-                let mut op_invalid_chars: Vec<String> = vec!["&".to_string(), "|".to_string(), "^".to_string(), "!".to_string(), "{".to_string(), "}".to_string(), ".".to_string()];
+                let mut op_invalid_chars: Vec<String> = vec!["&".to_string(), "|".to_string(), "^".to_string(), "!".to_string(), "{".to_string(), "}".to_string(), ".".to_string(), "~".to_string()];
                 let mut op_peek_idx: i64 = char_index + 1;
                 let mut op_peek: String = "".to_string();
                 if op_peek_idx < char_count {
@@ -2557,6 +2561,83 @@ fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<To
     return expand_deor_macros(validated.clone(), enforce_macro_file_depth.clone());
 }
 
+// transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
+    // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+    fn locate_prev_token(kw_pos: i64) -> i64 {
+        return kw_pos - 1;
+    }
+    let mut line_scan: i64 = locate_prev_token(pos.clone());
+    while line_scan >= 0 {
+        // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+        let mut line_scan_token: Token = tokens[line_scan as usize].clone();
+        let kind = line_scan_token.kind.clone();
+        if kind == "NEWLINE" {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            line_scan = line_scan - 1;
+        } else {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            break;
+        }
+    }
+    let mut line_end: i64 = line_scan.clone();
+    while line_scan >= 0 {
+        // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+        let mut line_scan_token2: Token = tokens[line_scan as usize].clone();
+        let kind = line_scan_token2.kind.clone();
+        if kind == "NEWLINE" {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            break;
+        }
+        if kind == "INDENT" {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            break;
+        }
+        if kind == "DEDENT" {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            break;
+        }
+        line_scan = line_scan - 1;
+    }
+    let mut line_start: i64 = line_scan + 1;
+    if line_start <= line_end {
+        // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+        let mut line_first_token: Token = tokens[line_start as usize].clone();
+        let kind = line_first_token.kind.clone();
+        if kind == "KW_RETURN" {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            return true;
+        }
+        if kind == "KW_BREAK" {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            return true;
+        }
+        if kind == "KW_CONTINUE" {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            return true;
+        }
+    }
+    return false;
+}
+
+fn fold_moved_into(acc_vars: Vec<String>, moved_vars: Vec<String>) -> Vec<String> {
+    // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+    let mut folded_vars: Vec<String> = acc_vars.clone();
+    let mut move_index: i64 = 0;
+    let mut move_count: i64 = (moved_vars.len() as i64);
+    while move_index < move_count {
+        // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+        let mut moved_name: String = moved_vars[move_index as usize].clone();
+        let mut already_acc: bool = list_has(folded_vars.clone(), moved_name.clone());
+        if !already_acc {
+            // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
+            folded_vars.push(moved_name.clone());
+        }
+        move_index = move_index + 1;
+    }
+    return folded_vars;
+}
+
 // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
 fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i64) -> bool {
     // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
@@ -2615,59 +2696,6 @@ fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i
 }
 
 // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-fn starts_binary_op(kind: String) -> bool {
-    // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-    if kind == "PLUS" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "MINUS" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "STAR" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "SLASH" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "PERCENT" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "GT" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "LT" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "GTE" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "LTE" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "KW_IS" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "KW_AND" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    if kind == "KW_OR" {
-        // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-        return true;
-    }
-    return false;
-}
-
 fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 {
     // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
     let mut depth: i64 = 0;
@@ -3775,6 +3803,10 @@ fn validate_tokens(tokens: TokensRef) {
         pre_i = pre_i + 1;
     }
     // transpiler-deor/tokens_validator/tokens_validation.deor
+    let mut declared_var_set: NameSet = name_set(declared_var_names.clone());
+    let mut fn_name_set: NameSet = name_set(fn_names.clone());
+    let mut enum_variant_set: NameSet = name_set(enum_variant_names.clone());
+    let mut enum_name_set: NameSet = name_set(enum_names.clone());
     while pos < token_count {
         // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut tok: Token = tokens[pos as usize].clone();
@@ -4086,71 +4118,10 @@ fn validate_tokens(tokens: TokensRef) {
                             let mut acc_vars = __destructure_src.acc_vars.clone();
                             if chain_depth == block_depth {
                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                let mut arm_is_terminal: bool = false;
-                                let mut line_scan: i64 = locate_prev_token(pos.clone());
-                                while line_scan >= 0 {
-                                    // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                    let mut line_scan_token: Token = tokens[line_scan as usize].clone();
-                                    let mut kind = line_scan_token.kind.clone();
-                                    if kind == "NEWLINE" {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        line_scan = line_scan - 1;
-                                    } else {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        break;
-                                    }
-                                }
-                                let mut line_end: i64 = line_scan.clone();
-                                while line_scan >= 0 {
-                                    // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                    let mut line_scan_token2: Token = tokens[line_scan as usize].clone();
-                                    let mut kind = line_scan_token2.kind.clone();
-                                    if kind == "NEWLINE" {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        break;
-                                    }
-                                    if kind == "INDENT" {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        break;
-                                    }
-                                    if kind == "DEDENT" {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        break;
-                                    }
-                                    line_scan = line_scan - 1;
-                                }
-                                let mut line_start: i64 = line_scan + 1;
-                                if line_start <= line_end {
-                                    // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                    let mut line_first_token: Token = tokens[line_start as usize].clone();
-                                    let mut kind = line_first_token.kind.clone();
-                                    if kind == "KW_RETURN" {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        arm_is_terminal = true;
-                                    }
-                                    if kind == "KW_BREAK" {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        arm_is_terminal = true;
-                                    }
-                                    if kind == "KW_CONTINUE" {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        arm_is_terminal = true;
-                                    }
-                                }
+                                let mut arm_is_terminal: bool = arm_ends_in_jump(tokens.clone(), pos.clone());
                                 if !arm_is_terminal {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                    let mut move_index: i64 = 0;
-                                    let mut move_count: i64 = (moved_vars.len() as i64);
-                                    while move_index < move_count {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        let mut moved_name: String = moved_vars[move_index as usize].clone();
-                                        let mut already_acc: bool = list_has(acc_vars.clone(), moved_name.clone());
-                                        if !already_acc {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            acc_vars.push(moved_name.clone());
-                                        }
-                                        move_index = move_index + 1;
-                                    }
+                                    acc_vars = fold_moved_into(acc_vars.clone(), moved_vars.clone());
                                 }
                                 move_if_stack.remove(top_idx as usize);
                                 let mut updated_frame = UamFrame { chain_depth: chain_depth.clone(), pre_vars: pre_vars.clone(), acc_vars: acc_vars.clone() };
@@ -4184,71 +4155,10 @@ fn validate_tokens(tokens: TokensRef) {
                                 }
                                 if !next_is_else {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                    let mut arm_is_terminal: bool = false;
-                                    let mut line_scan: i64 = locate_prev_token(pos.clone());
-                                    while line_scan >= 0 {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        let mut line_scan_token: Token = tokens[line_scan as usize].clone();
-                                        let mut kind = line_scan_token.kind.clone();
-                                        if kind == "NEWLINE" {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            line_scan = line_scan - 1;
-                                        } else {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            break;
-                                        }
-                                    }
-                                    let mut line_end: i64 = line_scan.clone();
-                                    while line_scan >= 0 {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        let mut line_scan_token2: Token = tokens[line_scan as usize].clone();
-                                        let mut kind = line_scan_token2.kind.clone();
-                                        if kind == "NEWLINE" {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            break;
-                                        }
-                                        if kind == "INDENT" {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            break;
-                                        }
-                                        if kind == "DEDENT" {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            break;
-                                        }
-                                        line_scan = line_scan - 1;
-                                    }
-                                    let mut line_start: i64 = line_scan + 1;
-                                    if line_start <= line_end {
-                                        // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        let mut line_first_token: Token = tokens[line_start as usize].clone();
-                                        let mut kind = line_first_token.kind.clone();
-                                        if kind == "KW_RETURN" {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            arm_is_terminal = true;
-                                        }
-                                        if kind == "KW_BREAK" {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            arm_is_terminal = true;
-                                        }
-                                        if kind == "KW_CONTINUE" {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            arm_is_terminal = true;
-                                        }
-                                    }
+                                    let mut arm_is_terminal: bool = arm_ends_in_jump(tokens.clone(), pos.clone());
                                     if !arm_is_terminal {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                        let mut move_index: i64 = 0;
-                                        let mut move_count: i64 = (moved_vars.len() as i64);
-                                        while move_index < move_count {
-                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                            let mut moved_name: String = moved_vars[move_index as usize].clone();
-                                            let mut already_acc: bool = list_has(acc_vars.clone(), moved_name.clone());
-                                            if !already_acc {
-                                                // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
-                                                acc_vars.push(moved_name.clone());
-                                            }
-                                            move_index = move_index + 1;
-                                        }
+                                        acc_vars = fold_moved_into(acc_vars.clone(), moved_vars.clone());
                                     }
                                     move_if_stack.remove(top_idx as usize);
                                     moved_vars = acc_vars;
@@ -4541,6 +4451,18 @@ fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
                                         let mut kind = scan_token.kind.clone();
+                                        if kind == "NEWLINE" {
+                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
+                                            break;
+                                        }
+                                        if kind == "INDENT" {
+                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
+                                            break;
+                                        }
+                                        if kind == "DEDENT" {
+                                            // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
+                                            break;
+                                        }
                                         if kind == "RBRACKET" {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                             bracket_depth = bracket_depth + 1;
@@ -4923,17 +4845,17 @@ fn validate_tokens(tokens: TokensRef) {
                 fn locate_next_token(kw_pos: i64) -> i64 {
                     return kw_pos + 1;
                 }
-                let mut is_reserved: bool = list_has(reserved_keywords.clone(), cur_kind.clone());
-                if is_reserved {
+                let mut next_pos: i64 = locate_next_token(pos.clone());
+                if next_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/idents/check_kw_as_name.deor
-                    let mut next_pos: i64 = locate_next_token(pos.clone());
-                    if next_pos < token_count {
+                    let mut next_token: Token = tokens[next_pos as usize].clone();
+                    let mut kind = next_token.kind.clone();
+                    let mut next_is_eq: bool = kind == "EQUALS";
+                    let mut next_is_as: bool = kind == "KW_AS";
+                    if next_is_eq || next_is_as {
                         // transpiler-deor/tokens_validator/macros/idents/check_kw_as_name.deor
-                        let mut next_token: Token = tokens[next_pos as usize].clone();
-                        let mut kind = next_token.kind.clone();
-                        let mut next_is_eq: bool = kind == "EQUALS";
-                        let mut next_is_as: bool = kind == "KW_AS";
-                        if next_is_eq || next_is_as {
+                        let mut is_reserved: bool = list_has(reserved_keywords.clone(), cur_kind.clone());
+                        if is_reserved {
                             // transpiler-deor/tokens_validator/macros/idents/check_kw_as_name.deor
                             errors.push(val_err(tok.clone(), lbl_var.clone(), rule_kw_in_parens.clone()).clone());
                         }
@@ -6194,7 +6116,7 @@ fn validate_tokens(tokens: TokensRef) {
                                                                     // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                                                     let mut next_token: Token = tokens[next_pos as usize].clone();
                                                                     let mut kind = next_token.kind.clone();
-                                                                    let mut is_bare_expr: bool = starts_binary_op(kind.clone());
+                                                                    let mut is_bare_expr: bool = is_binary_op(kind.clone());
                                                                     if !is_bare_expr {
                                                                         // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                                                         is_bare_expr = kind == "NEWLINE";
@@ -6872,14 +6794,13 @@ fn validate_tokens(tokens: TokensRef) {
                         let mut is_raw: bool = list_has(raw_var_names.clone(), cur_val.clone());
                         if is_raw {
                             // transpiler-deor/tokens_validator/macros/raw/check_raw_operator_use.deor
-                            let mut op_kinds: Vec<String> = vec!["PLUS".to_string(), "MINUS".to_string(), "STAR".to_string(), "SLASH".to_string(), "PERCENT".to_string(), "GT".to_string(), "LT".to_string(), "GTE".to_string(), "LTE".to_string(), "KW_IS".to_string(), "KW_AND".to_string(), "KW_OR".to_string()];
                             let mut next_is_op: bool = false;
                             let mut next_pos: i64 = locate_next_token(pos.clone());
                             if next_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/raw/check_raw_operator_use.deor
                                 let mut next_token: Token = tokens[next_pos as usize].clone();
                                 let mut kind = next_token.kind.clone();
-                                next_is_op = list_has(op_kinds.clone(), kind.clone());
+                                next_is_op = is_binary_op(kind.clone());
                             }
                             let mut prev_is_op: bool = false;
                             if pos > 0 {
@@ -6887,7 +6808,7 @@ fn validate_tokens(tokens: TokensRef) {
                                 let mut prev_pos: i64 = locate_prev_token(pos.clone());
                                 let mut prev_token: Token = tokens[prev_pos as usize].clone();
                                 let mut kind = prev_token.kind.clone();
-                                prev_is_op = list_has(op_kinds.clone(), kind.clone());
+                                prev_is_op = is_binary_op(kind.clone());
                             }
                             if next_is_op || prev_is_op {
                                 // transpiler-deor/tokens_validator/macros/raw/check_raw_operator_use.deor
@@ -7233,7 +7154,7 @@ fn validate_tokens(tokens: TokensRef) {
                             }
                             if !is_decl {
                                 // transpiler-deor/tokens_validator/macros/reassign/check_undeclared_reassign.deor
-                                let mut is_known: bool = list_has(declared_var_names.clone(), cur_val.clone());
+                                let mut is_known: bool = name_set_has(declared_var_set.clone(), cur_val.clone());
                                 if !is_known {
                                     // transpiler-deor/tokens_validator/macros/reassign/check_undeclared_reassign.deor
                                     errors.push(val_err(tok.clone(), lbl_var.clone(), rule_undeclared_reassign.clone()).clone());
@@ -7338,18 +7259,18 @@ fn validate_tokens(tokens: TokensRef) {
                     }
                     if !skip {
                         // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
-                        let mut known: bool = list_has(declared_var_names.clone(), cur_val.clone());
+                        let mut known: bool = name_set_has(declared_var_set.clone(), cur_val.clone());
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
-                            known = list_has(enum_variant_names.clone(), cur_val.clone());
+                            known = name_set_has(enum_variant_set.clone(), cur_val.clone());
                         }
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
-                            known = list_has(enum_names.clone(), cur_val.clone());
+                            known = name_set_has(enum_name_set.clone(), cur_val.clone());
                         }
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
-                            known = list_has(fn_names.clone(), cur_val.clone());
+                            known = name_set_has(fn_name_set.clone(), cur_val.clone());
                         }
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
@@ -8968,25 +8889,25 @@ fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             return make_result(not_code, operand_end.clone());
         }
     }
-    // macro: primary_ident_expr (transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor)
+    // macro: primary_builtin_calls (transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor)
     {
-        // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+        // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
         fn locate_next_token(kw_pos: i64) -> i64 {
             return kw_pos + 1;
         }
         if kind == "IDENT" {
-            // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+            // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
             let mut next_pos: i64 = locate_next_token(pos.clone());
             if next_pos < token_count {
-                // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+                // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
                 let mut next_token: Token = tokens[next_pos as usize].clone();
                 let kind = next_token.kind.clone();
                 if kind == "LPAREN" {
-                    // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+                    // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
                     let mut func_name: String = value.clone();
                     let mut args_pos: i64 = locate_next_token(next_pos.clone());
                     if func_name == "len" {
-                        // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+                        // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
                         let mut len_suffix: String = ".len() as i64".to_string();
                         let mut len_result: ParseResult = gen_unary_method(args_pos.clone(), len_suffix.clone(), ctx.clone());
                         let __destructure_src = len_result;
@@ -8999,7 +8920,7 @@ fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                         let mut len_wrapped: String = [paren_open.as_str(), len_code.as_str(), paren_close.as_str()].concat();
                         return make_result(len_wrapped, len_end.clone());
                     } else if func_name == "crash" {
-                        // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+                        // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
                         let mut crash_result: ParseResult = gen_call_args(tokens.clone(), args_pos.clone(), ctx.clone());
                         let __destructure_src = crash_result;
                         let code = __destructure_src.code;
@@ -9013,11 +8934,11 @@ fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                         return make_result(panic_code, after_crash.clone());
                     }
                     if func_name == "s_join" {
-                        // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+                        // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
                         let mut join_arg_token: Token = tokens[args_pos as usize].clone();
                         let kind = join_arg_token.kind.clone();
                         if kind == "LBRACKET" {
-                            // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+                            // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
                             let mut join_inner_pos: i64 = locate_next_token(args_pos.clone());
                             let mut join_result: ParseResult = gen_join_items(tokens.clone(), join_inner_pos.clone(), ctx.clone());
                             let __destructure_src = join_result;
@@ -9032,6 +8953,27 @@ fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                             return make_result(join_code, join_after.clone());
                         }
                     }
+                }
+            }
+        }
+    }
+    // macro: primary_call_expr (transpiler-deor/codegen/decl/stmt/expr/macros/primary_call_expr.deor)
+    {
+        // transpiler-deor/codegen/decl/stmt/expr/macros/primary_call_expr.deor
+        fn locate_next_token(kw_pos: i64) -> i64 {
+            return kw_pos + 1;
+        }
+        if kind == "IDENT" {
+            // transpiler-deor/codegen/decl/stmt/expr/macros/primary_call_expr.deor
+            let mut next_pos: i64 = locate_next_token(pos.clone());
+            if next_pos < token_count {
+                // transpiler-deor/codegen/decl/stmt/expr/macros/primary_call_expr.deor
+                let mut next_token: Token = tokens[next_pos as usize].clone();
+                let kind = next_token.kind.clone();
+                if kind == "LPAREN" {
+                    // transpiler-deor/codegen/decl/stmt/expr/macros/primary_call_expr.deor
+                    let mut func_name: String = value.clone();
+                    let mut args_pos: i64 = locate_next_token(next_pos.clone());
                     let mut call_args_result: ParseResult = gen_call_args(tokens.clone(), args_pos.clone(), ctx.clone());
                     let __destructure_src = call_args_result;
                     let code = __destructure_src.code;
@@ -9044,8 +8986,24 @@ fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                     let mut call_code: String = [func_name.as_str(), call_paren_open.as_str(), call_args_code.as_str(), call_paren_close.as_str()].concat();
                     return make_result(call_code, call_after.clone());
                 }
+            }
+        }
+    }
+    // macro: primary_index_expr (transpiler-deor/codegen/decl/stmt/expr/macros/primary_index_expr.deor)
+    {
+        // transpiler-deor/codegen/decl/stmt/expr/macros/primary_index_expr.deor
+        fn locate_next_token(kw_pos: i64) -> i64 {
+            return kw_pos + 1;
+        }
+        if kind == "IDENT" {
+            // transpiler-deor/codegen/decl/stmt/expr/macros/primary_index_expr.deor
+            let mut next_pos: i64 = locate_next_token(pos.clone());
+            if next_pos < token_count {
+                // transpiler-deor/codegen/decl/stmt/expr/macros/primary_index_expr.deor
+                let mut next_token: Token = tokens[next_pos as usize].clone();
+                let kind = next_token.kind.clone();
                 if kind == "KW_AT" {
-                    // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+                    // transpiler-deor/codegen/decl/stmt/expr/macros/primary_index_expr.deor
                     let mut index_pos: i64 = locate_next_token(next_pos.clone());
                     let mut index_result: ParseResult = gen_primary(tokens.clone(), index_pos.clone(), ctx.clone());
                     let __destructure_src = index_result;
@@ -9059,9 +9017,20 @@ fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                     return make_result(index_expr, index_end.clone());
                 }
             }
+        }
+    }
+    // macro: primary_plain_ident (transpiler-deor/codegen/decl/stmt/expr/macros/primary_plain_ident.deor)
+    {
+        // transpiler-deor/codegen/decl/stmt/expr/macros/primary_plain_ident.deor
+        fn locate_next_token(kw_pos: i64) -> i64 {
+            return kw_pos + 1;
+        }
+        if kind == "IDENT" {
+            // transpiler-deor/codegen/decl/stmt/expr/macros/primary_plain_ident.deor
+            let mut next_pos: i64 = locate_next_token(pos.clone());
             let mut variant_enum: String = reg_get(variant_reg.clone(), value.clone());
             if !is_empty(variant_enum.clone()) {
-                // transpiler-deor/codegen/decl/stmt/expr/macros/ident_expr.deor
+                // transpiler-deor/codegen/decl/stmt/expr/macros/primary_plain_ident.deor
                 let mut double_colon: String = "::".to_string();
                 let mut variant_code: String = [variant_enum.as_str(), double_colon.as_str(), value.as_str()].concat();
                 return make_result(variant_code, next_pos.clone());
@@ -9344,6 +9313,45 @@ fn emit_val(val_code: String, val_kind: String) -> String {
         return [val_code.as_str(), RS_CLN.as_str()].concat();
     }
     return val_code;
+}
+
+fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> String {
+    // transpiler-deor/codegen/decl/stmt/helpers.deor
+    fn locate_after_value(anchor: i64) -> i64 {
+        return anchor + 1;
+    }
+    let mut is_chain: bool = is_expr_chain(tokens.clone(), val_pos.clone(), val_end.clone());
+    if is_chain {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        return "".to_string();
+    }
+    let mut val_token: Token = tokens[val_pos as usize].clone();
+    let kind = val_token.kind.clone();
+    if kind == "STRING" {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        return ".to_string()".to_string();
+    }
+    if kind == "IDENT" {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        let mut val_next_idx: i64 = locate_after_value(val_pos.clone());
+        if val_next_idx < (tokens.len() as i64) {
+            // transpiler-deor/codegen/decl/stmt/helpers.deor
+            let mut next_val_token: Token = tokens[val_next_idx as usize].clone();
+            let kind = next_val_token.kind.clone();
+            let mut val_is_call: bool = kind == "LPAREN";
+            let mut val_is_idx: bool = kind == "KW_AT";
+            if val_is_call {
+                // transpiler-deor/codegen/decl/stmt/helpers.deor
+                return "".to_string();
+            }
+            if val_is_idx {
+                // transpiler-deor/codegen/decl/stmt/helpers.deor
+                return "".to_string();
+            }
+        }
+        return ".clone()".to_string();
+    }
+    return "".to_string();
 }
 
 fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
@@ -10300,6 +10308,75 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     return make_result(for_code, blk_end.clone());
 }
 
+// transpiler-deor/codegen/decl/stmt/reassign.deor
+fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+    // transpiler-deor/codegen/decl/stmt/reassign.deor
+    fn locate_next_token(anchor: i64) -> i64 {
+        return anchor + 1;
+    }
+    let __destructure_src = ctx.clone();
+    let tokens = __destructure_src.tokens.clone();
+    let validator_var_reg = __destructure_src.validator_var_reg.clone();
+    // macro: rust_strings (transpiler-deor/codegen/rust_strings.deor)
+    let RS_IND: String = "    ".to_string();
+    let RS_NL: String = "\n".to_string();
+    let RS_SC: String = ";\n".to_string();
+    let RS_OB: String = " {\n".to_string();
+    let RS_CB: String = "}\n".to_string();
+    let RS_CB2: String = "\n}\n\n".to_string();
+    let RS_FNC_CB: String = "}\n\n".to_string();
+    let RS_EQ: String = " = ".to_string();
+    let RS_LET: String = "let ".to_string();
+    let RS_LETM: String = "let mut ".to_string();
+    let RS_COL: String = ": ".to_string();
+    let RS_COM: String = ",".to_string();
+    let RS_CSEP: String = ", ".to_string();
+    let RS_LP: String = "(".to_string();
+    let RS_RP: String = ")".to_string();
+    let RS_RP_SC: String = ");\n".to_string();
+    let RS_ARR: String = " -> ".to_string();
+    let RS_OB_SP: String = " { ".to_string();
+    let RS_CB_SC: String = " };\n".to_string();
+    let RS_CLN: String = ".clone()".to_string();
+    let RS_TOS: String = ".to_string()".to_string();
+    // transpiler-deor/codegen/decl/stmt/reassign.deor
+    let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
+    let mut name_token: Token = tokens[pos as usize].clone();
+    let value = name_token.value.clone();
+    let mut ident_name: String = value.clone();
+    let mut next_pos: i64 = locate_next_token(pos.clone());
+    let mut val_pos: i64 = locate_next_token(next_pos.clone());
+    let mut eq_val_token: Token = tokens[val_pos as usize].clone();
+    let kind = eq_val_token.kind.clone();
+    // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
+    let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+    let __destructure_src = expr_result;
+    let code = __destructure_src.code;
+    let new_pos = __destructure_src.new_pos;
+    let val_code = code.clone();
+    let val_end = new_pos.clone();
+    // transpiler-deor/codegen/decl/stmt/reassign.deor
+    let mut assign_suffix: String = "".to_string();
+    if kind == "STRING" {
+        // transpiler-deor/codegen/decl/stmt/reassign.deor
+        assign_suffix = ".to_string()".to_string();
+    }
+    let mut reassign_type: String = reg_get(validator_var_reg.clone(), ident_name.clone());
+    let mut asgn_code: String = "".to_string();
+    if !is_empty(reassign_type.clone()) {
+        // transpiler-deor/codegen/decl/stmt/reassign.deor
+        let mut reassign_new_open: String = "::new(".to_string();
+        let mut reassign_sc: String = ");\n".to_string();
+        let mut reassign_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), RS_EQ.clone(), reassign_type.clone(), reassign_new_open.clone(), val_code.clone(), reassign_sc.clone()];
+        asgn_code = s_join(reassign_parts.clone());
+    } else {
+        // transpiler-deor/codegen/decl/stmt/reassign.deor
+        let mut assign_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), RS_EQ.clone(), val_code.clone(), assign_suffix.clone(), RS_SC.clone()];
+        asgn_code = s_join(assign_parts.clone());
+    }
+    return make_nl_result(asgn_code, val_end.clone(), tokens.clone());
+}
+
 // transpiler-deor/codegen/decl/stmt/as_binding.deor
 fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/as_binding.deor
@@ -11131,12 +11208,13 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 mut_kw = "mut ".to_string();
             }
             // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_validator.deor
+            let mut val_suffix: String = value_ownership_suffix(tokens.clone(), val_pos.clone(), val_end.clone());
             let mut validator_let: String = "let ".to_string();
             let mut validator_option_open: String = ": Option<".to_string();
             let mut validator_option_close: String = "> = ".to_string();
             let mut validator_new_open: String = "::new(".to_string();
             let mut validator_sc: String = ");\n".to_string();
-            let mut validator_code: String = [pad.as_str(), validator_let.as_str(), mut_kw.as_str(), var_name.as_str(), validator_option_open.as_str(), var_type.as_str(), validator_option_close.as_str(), var_type.as_str(), validator_new_open.as_str(), val_code.as_str(), validator_sc.as_str()].concat();
+            let mut validator_code: String = [pad.as_str(), validator_let.as_str(), mut_kw.as_str(), var_name.as_str(), validator_option_open.as_str(), var_type.as_str(), validator_option_close.as_str(), var_type.as_str(), validator_new_open.as_str(), val_code.as_str(), val_suffix.as_str(), validator_sc.as_str()].concat();
             return make_nl_result(validator_code, val_end.clone(), tokens.clone());
         }
     }
@@ -11245,9 +11323,6 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/stmt.deor
     fn locate_next_token(anchor: i64) -> i64 {
         return anchor + 1;
-    }
-    fn locate_raw_value(kw_pos: i64) -> i64 {
-        return kw_pos + 3;
     }
     let __destructure_src = ctx.clone();
     let variant_reg = __destructure_src.variant_reg.clone();
@@ -11428,40 +11503,50 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             return gen_destructure(pos.clone(), depth.clone(), ctx.clone());
         }
     }
-    // transpiler-deor/codegen/decl/stmt/stmt.deor
-    if kind == "KW_RAW" {
-        // transpiler-deor/codegen/decl/stmt/stmt.deor
-        let mut raw_name_pos: i64 = locate_next_token(pos.clone());
-        let mut raw_name_tok: Token = tokens[raw_name_pos as usize].clone();
-        let value = raw_name_tok.value.clone();
-        let mut raw_var_name: String = value.clone();
-        let mut val_pos: i64 = locate_raw_value(pos.clone());
-        // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
-        let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-        let __destructure_src = expr_result;
-        let code = __destructure_src.code;
-        let new_pos = __destructure_src.new_pos;
-        let val_code = code.clone();
-        let val_end = new_pos.clone();
-        // transpiler-deor/codegen/decl/stmt/stmt.deor
-        let mut var_name: String = raw_var_name.clone();
-        // macro: mut_guard (transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor)
-        let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
-        let mut mut_kw: String = "".to_string();
-        if mg_is_mut {
-            // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
-            mut_kw = "mut ".to_string();
+    // macro: stmt_raw_const (transpiler-deor/codegen/decl/stmt/macros/stmt_raw_const.deor)
+    {
+        // transpiler-deor/codegen/decl/stmt/macros/stmt_raw_const.deor
+        fn locate_next_token(anchor: i64) -> i64 {
+            return anchor + 1;
         }
-        // transpiler-deor/codegen/decl/stmt/stmt.deor
-        let mut raw_parts: Vec<String> = vec![pad.clone(), RS_LET.clone(), mut_kw.clone(), raw_var_name.clone(), RS_EQ.clone(), val_code.clone(), RS_SC.clone()];
-        let mut raw_code: String = s_join(raw_parts.clone());
-        return make_nl_result(raw_code, val_end.clone(), tokens.clone());
+        fn locate_raw_value(kw_pos: i64) -> i64 {
+            return kw_pos + 3;
+        }
+        if kind == "KW_RAW" {
+            // transpiler-deor/codegen/decl/stmt/macros/stmt_raw_const.deor
+            let mut raw_name_pos: i64 = locate_next_token(pos.clone());
+            let mut raw_name_tok: Token = tokens[raw_name_pos as usize].clone();
+            let value = raw_name_tok.value.clone();
+            let mut raw_var_name: String = value.clone();
+            let mut val_pos: i64 = locate_raw_value(pos.clone());
+            // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
+            let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+            let __destructure_src = expr_result;
+            let code = __destructure_src.code;
+            let new_pos = __destructure_src.new_pos;
+            let val_code = code.clone();
+            let val_end = new_pos.clone();
+            // transpiler-deor/codegen/decl/stmt/macros/stmt_raw_const.deor
+            let mut var_name: String = raw_var_name.clone();
+            // macro: mut_guard (transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor)
+            let mut mg_is_mut: bool = list_has(mut_names.clone(), var_name.clone());
+            let mut mut_kw: String = "".to_string();
+            if mg_is_mut {
+                // transpiler-deor/codegen/decl/stmt/macros/mut_guard.deor
+                mut_kw = "mut ".to_string();
+            }
+            // transpiler-deor/codegen/decl/stmt/macros/stmt_raw_const.deor
+            let mut raw_parts: Vec<String> = vec![pad.clone(), RS_LET.clone(), mut_kw.clone(), raw_var_name.clone(), RS_EQ.clone(), val_code.clone(), RS_SC.clone()];
+            let mut raw_code: String = s_join(raw_parts.clone());
+            return make_nl_result(raw_code, val_end.clone(), tokens.clone());
+        }
+        if kind == "KW_CONST" {
+            // transpiler-deor/codegen/decl/stmt/macros/stmt_raw_const.deor
+            let mut const_type_pos: i64 = locate_next_token(pos.clone());
+            return gen_typed_binding(const_type_pos.clone(), depth.clone(), ctx.clone());
+        }
     }
-    if kind == "KW_CONST" {
-        // transpiler-deor/codegen/decl/stmt/stmt.deor
-        let mut const_type_pos: i64 = locate_next_token(pos.clone());
-        return gen_typed_binding(const_type_pos.clone(), depth.clone(), ctx.clone());
-    }
+    // transpiler-deor/codegen/decl/stmt/stmt.deor
     if kind == "KW_IF" {
         // transpiler-deor/codegen/decl/stmt/stmt.deor
         return gen_if(pos.clone(), depth.clone(), ctx.clone());
@@ -11470,165 +11555,148 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         // transpiler-deor/codegen/decl/stmt/stmt.deor
         return gen_for(pos.clone(), depth.clone(), ctx.clone());
     }
-    if kind == "KW_FN" {
-        // transpiler-deor/codegen/decl/stmt/stmt.deor
+    // macro: stmt_nested_fn (transpiler-deor/codegen/decl/stmt/macros/stmt_nested_fn.deor)
+    {
+        // transpiler-deor/codegen/decl/stmt/macros/stmt_nested_fn.deor
         fn locate_fn_return_type(kw_pos: i64) -> i64 {
             return kw_pos + 1;
         }
-        let mut fn_tokens: TokensRef = tokens.clone();
-        let mut return_type_pos: i64 = locate_fn_return_type(pos.clone());
-        // macro: fn_parse_signature (transpiler-deor/codegen/decl/macros/fn_parse_signature.deor)
-        let mut cur: TokenCursor = cur_at_ref(fn_tokens.clone(), return_type_pos.clone());
-        let current = cur.current.clone();
-        let value = current.value.clone();
-        let mut ret_type: String = resolve_type(value.clone(), ctx.clone());
-        cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-        let current = cur.current.clone();
-        let value = current.value.clone();
-        let mut fn_name: String = value.clone();
-        cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-        cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-        let mut param_strs: Vec<String> = Vec::new();
-        while !c_at_end(cur.clone()) {
-            // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
+        if kind == "KW_FN" {
+            // transpiler-deor/codegen/decl/stmt/macros/stmt_nested_fn.deor
+            let mut fn_tokens: TokensRef = tokens.clone();
+            let mut return_type_pos: i64 = locate_fn_return_type(pos.clone());
+            // macro: fn_parse_signature (transpiler-deor/codegen/decl/macros/fn_parse_signature.deor)
+            let mut cur: TokenCursor = cur_at_ref(fn_tokens.clone(), return_type_pos.clone());
             let current = cur.current.clone();
-            let __destructure_src = current.clone();
-            let kind = __destructure_src.kind.clone();
-            let value = __destructure_src.value.clone();
-            if kind == "RPAREN" {
+            let value = current.value.clone();
+            let mut ret_type: String = resolve_type(value.clone(), ctx.clone());
+            cur = cur_next_ref(cur.clone(), fn_tokens.clone());
+            let current = cur.current.clone();
+            let value = current.value.clone();
+            let mut fn_name: String = value.clone();
+            cur = cur_next_ref(cur.clone(), fn_tokens.clone());
+            cur = cur_next_ref(cur.clone(), fn_tokens.clone());
+            let mut param_strs: Vec<String> = Vec::new();
+            while !c_at_end(cur.clone()) {
                 // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
-                cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-                break;
-            } else if kind == "COMMA" {
-                // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
-                cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-            } else if kind == "IDENT" {
-                // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
-                let mut param_type: String = value.clone();
-                cur = cur_next_ref(cur.clone(), fn_tokens.clone());
                 let current = cur.current.clone();
-                let value = current.value.clone();
-                let mut param_name: String = value.clone();
-                let mut rust_param_type: String = resolve_type(param_type.clone(), ctx.clone());
-                let mut param_separator: String = ": ".to_string();
-                param_strs.push([param_name.as_str(), param_separator.as_str(), rust_param_type.as_str()].concat().clone());
-                cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-            } else {
-                // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
-                cur = cur_next_ref(cur.clone(), fn_tokens.clone());
-            }
-        }
-        let pos = cur.pos.clone();
-        let mut indent_pos: i64 = pos + 1;
-        cur = cur_skip_to_body_ref(cur.clone(), fn_tokens.clone());
-        let pos = cur.pos.clone();
-        let mut body_start: i64 = pos.clone();
-        // transpiler-deor/codegen/decl/stmt/stmt.deor
-        let mut nested_fn_body_depth: i64 = depth + 1;
-        let mut nested_fn_body_result: ParseResult = gen_stmt(body_start.clone(), nested_fn_body_depth.clone(), ctx.clone());
-        let __destructure_src = nested_fn_body_result;
-        let code = __destructure_src.code;
-        let new_pos = __destructure_src.new_pos;
-        let nested_fn_body_code = code.clone();
-        let nested_fn_body_end = new_pos.clone();
-        let mut nested_fn_after_pos: i64 = nested_fn_body_end + 1;
-        let mut nested_fn_params_code: String = s_join_with(param_strs.clone(), RS_CSEP.clone());
-        let mut nested_fn_ret_suffix: String = "".to_string();
-        if !is_empty(ret_type.clone()) {
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            nested_fn_ret_suffix = [RS_ARR.as_str(), ret_type.as_str()].concat();
-        }
-        let mut nested_fn_kw: String = "fn ".to_string();
-        let mut nested_fn_close: String = "}\n".to_string();
-        let mut nested_fn_parts: Vec<String> = vec![pad.clone(), nested_fn_kw.clone(), fn_name.clone(), RS_LP.clone(), nested_fn_params_code.clone(), RS_RP.clone(), nested_fn_ret_suffix.clone(), RS_OB.clone(), nested_fn_body_code.clone(), pad.clone(), nested_fn_close.clone()];
-        let mut nested_fn_code: String = s_join(nested_fn_parts.clone());
-        return make_result(nested_fn_code, nested_fn_after_pos.clone());
-    }
-    if kind == "IDENT" {
-        // transpiler-deor/codegen/decl/stmt/stmt.deor
-        let mut ident_name: String = value.clone();
-        let mut next_pos: i64 = locate_next_token(pos.clone());
-        if next_pos >= token_count {
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            let mut eof_code: String = "/* eof */\n".to_string();
-            return make_result(eof_code, next_pos.clone());
-        }
-        let mut next_token: Token = tokens[next_pos as usize].clone();
-        let kind = next_token.kind.clone();
-        if kind == "KW_AS" {
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            return gen_as_binding(pos.clone(), depth.clone(), ctx.clone());
-        }
-        if kind == "LPAREN" {
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            return gen_call_stmt(pos.clone(), depth.clone(), ctx.clone());
-        }
-        if kind == "KW_AT" {
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            return gen_list_mutation_stmt(pos.clone(), depth.clone(), ctx.clone());
-        }
-        if kind == "KW_REMOVE" {
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            return gen_list_mutation_stmt(pos.clone(), depth.clone(), ctx.clone());
-        }
-        if kind == "EQUALS" {
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            let mut val_pos: i64 = locate_next_token(next_pos.clone());
-            let mut eq_val_token: Token = tokens[val_pos as usize].clone();
-            let kind = eq_val_token.kind.clone();
-            // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
-            let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-            let __destructure_src = expr_result;
-            let code = __destructure_src.code;
-            let new_pos = __destructure_src.new_pos;
-            let val_code = code.clone();
-            let val_end = new_pos.clone();
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            let mut assign_suffix: String = "".to_string();
-            if kind == "STRING" {
-                // transpiler-deor/codegen/decl/stmt/stmt.deor
-                assign_suffix = ".to_string()".to_string();
-            }
-            let mut reassign_type: String = reg_get(validator_var_reg.clone(), ident_name.clone());
-            let mut asgn_code: String = "".to_string();
-            if !is_empty(reassign_type.clone()) {
-                // transpiler-deor/codegen/decl/stmt/stmt.deor
-                let mut reassign_new_open: String = "::new(".to_string();
-                let mut reassign_sc: String = ");\n".to_string();
-                let mut reassign_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), RS_EQ.clone(), reassign_type.clone(), reassign_new_open.clone(), val_code.clone(), reassign_sc.clone()];
-                asgn_code = s_join(reassign_parts.clone());
-            } else {
-                // transpiler-deor/codegen/decl/stmt/stmt.deor
-                let mut assign_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), RS_EQ.clone(), val_code.clone(), assign_suffix.clone(), RS_SC.clone()];
-                asgn_code = s_join(assign_parts.clone());
-            }
-            return make_nl_result(asgn_code, val_end.clone(), tokens.clone());
-        }
-        if kind == "IDENT" {
-            // transpiler-deor/codegen/decl/stmt/stmt.deor
-            let mut eq_pos: i64 = locate_next_token(next_pos.clone());
-            if eq_pos < token_count {
-                // transpiler-deor/codegen/decl/stmt/stmt.deor
-                let mut eq_token: Token = tokens[eq_pos as usize].clone();
-                let kind = eq_token.kind.clone();
-                if kind == "EQUALS" {
-                    // transpiler-deor/codegen/decl/stmt/stmt.deor
-                    return gen_typed_binding(pos.clone(), depth.clone(), ctx.clone());
+                let __destructure_src = current.clone();
+                let kind = __destructure_src.kind.clone();
+                let value = __destructure_src.value.clone();
+                if kind == "RPAREN" {
+                    // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
+                    cur = cur_next_ref(cur.clone(), fn_tokens.clone());
+                    break;
+                } else if kind == "COMMA" {
+                    // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
+                    cur = cur_next_ref(cur.clone(), fn_tokens.clone());
+                } else if kind == "IDENT" {
+                    // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
+                    let mut param_type: String = value.clone();
+                    cur = cur_next_ref(cur.clone(), fn_tokens.clone());
+                    let current = cur.current.clone();
+                    let value = current.value.clone();
+                    let mut param_name: String = value.clone();
+                    let mut rust_param_type: String = resolve_type(param_type.clone(), ctx.clone());
+                    let mut param_separator: String = ": ".to_string();
+                    param_strs.push([param_name.as_str(), param_separator.as_str(), rust_param_type.as_str()].concat().clone());
+                    cur = cur_next_ref(cur.clone(), fn_tokens.clone());
+                } else {
+                    // transpiler-deor/codegen/decl/macros/fn_parse_signature.deor
+                    cur = cur_next_ref(cur.clone(), fn_tokens.clone());
                 }
             }
-            let value = next_token.value.clone();
-            let mut bare_var_name: String = value.clone();
-            let mut bare_rust_type: String = resolve_type(ident_name.clone(), ctx.clone());
-            let mut bare_is_validator: bool = reg3_has(type_reg.clone(), ident_name.clone());
-            if bare_is_validator {
-                // transpiler-deor/codegen/decl/stmt/stmt.deor
-                let mut bare_decl_suffix: String = " = None;\n".to_string();
-                let mut bare_decl_code: String = [pad.as_str(), RS_LETM.as_str(), bare_var_name.as_str(), RS_COL.as_str(), bare_rust_type.as_str(), bare_decl_suffix.as_str()].concat();
-                let mut bare_decl_after: i64 = locate_next_token(next_pos.clone());
-                return make_nl_result(bare_decl_code, bare_decl_after.clone(), tokens.clone());
+            let pos = cur.pos.clone();
+            let mut indent_pos: i64 = pos + 1;
+            cur = cur_skip_to_body_ref(cur.clone(), fn_tokens.clone());
+            let pos = cur.pos.clone();
+            let mut body_start: i64 = pos.clone();
+            // transpiler-deor/codegen/decl/stmt/macros/stmt_nested_fn.deor
+            let mut nested_fn_body_depth: i64 = depth + 1;
+            let mut nested_fn_body_result: ParseResult = gen_stmt(body_start.clone(), nested_fn_body_depth.clone(), ctx.clone());
+            let __destructure_src = nested_fn_body_result;
+            let code = __destructure_src.code;
+            let new_pos = __destructure_src.new_pos;
+            let nested_fn_body_code = code.clone();
+            let nested_fn_body_end = new_pos.clone();
+            let mut nested_fn_after_pos: i64 = nested_fn_body_end + 1;
+            let mut nested_fn_params_code: String = s_join_with(param_strs.clone(), RS_CSEP.clone());
+            let mut nested_fn_ret_suffix: String = "".to_string();
+            if !is_empty(ret_type.clone()) {
+                // transpiler-deor/codegen/decl/stmt/macros/stmt_nested_fn.deor
+                nested_fn_ret_suffix = [RS_ARR.as_str(), ret_type.as_str()].concat();
+            }
+            let mut nested_fn_kw: String = "fn ".to_string();
+            let mut nested_fn_close: String = "}\n".to_string();
+            let mut nested_fn_parts: Vec<String> = vec![pad.clone(), nested_fn_kw.clone(), fn_name.clone(), RS_LP.clone(), nested_fn_params_code.clone(), RS_RP.clone(), nested_fn_ret_suffix.clone(), RS_OB.clone(), nested_fn_body_code.clone(), pad.clone(), nested_fn_close.clone()];
+            let mut nested_fn_code: String = s_join(nested_fn_parts.clone());
+            return make_result(nested_fn_code, nested_fn_after_pos.clone());
+        }
+    }
+    // macro: stmt_ident (transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor)
+    {
+        // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+        fn locate_next_token(anchor: i64) -> i64 {
+            return anchor + 1;
+        }
+        if kind == "IDENT" {
+            // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+            let mut ident_name: String = value.clone();
+            let mut next_pos: i64 = locate_next_token(pos.clone());
+            if next_pos >= token_count {
+                // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                let mut eof_code: String = "/* eof */\n".to_string();
+                return make_result(eof_code, next_pos.clone());
+            }
+            let mut next_token: Token = tokens[next_pos as usize].clone();
+            let kind = next_token.kind.clone();
+            if kind == "KW_AS" {
+                // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                return gen_as_binding(pos.clone(), depth.clone(), ctx.clone());
+            }
+            if kind == "LPAREN" {
+                // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                return gen_call_stmt(pos.clone(), depth.clone(), ctx.clone());
+            }
+            if kind == "KW_AT" {
+                // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                return gen_list_mutation_stmt(pos.clone(), depth.clone(), ctx.clone());
+            }
+            if kind == "KW_REMOVE" {
+                // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                return gen_list_mutation_stmt(pos.clone(), depth.clone(), ctx.clone());
+            }
+            if kind == "EQUALS" {
+                // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                return gen_reassign(pos.clone(), depth.clone(), ctx.clone());
+            }
+            if kind == "IDENT" {
+                // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                let mut eq_pos: i64 = locate_next_token(next_pos.clone());
+                if eq_pos < token_count {
+                    // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                    let mut eq_token: Token = tokens[eq_pos as usize].clone();
+                    let kind = eq_token.kind.clone();
+                    if kind == "EQUALS" {
+                        // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                        return gen_typed_binding(pos.clone(), depth.clone(), ctx.clone());
+                    }
+                }
+                let value = next_token.value.clone();
+                let mut bare_var_name: String = value.clone();
+                let mut bare_rust_type: String = resolve_type(ident_name.clone(), ctx.clone());
+                let mut bare_is_validator: bool = reg3_has(type_reg.clone(), ident_name.clone());
+                if bare_is_validator {
+                    // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
+                    let mut bare_decl_suffix: String = " = None;\n".to_string();
+                    let mut bare_decl_code: String = [pad.as_str(), RS_LETM.as_str(), bare_var_name.as_str(), RS_COL.as_str(), bare_rust_type.as_str(), bare_decl_suffix.as_str()].concat();
+                    let mut bare_decl_after: i64 = locate_next_token(next_pos.clone());
+                    return make_nl_result(bare_decl_code, bare_decl_after.clone(), tokens.clone());
+                }
             }
         }
     }
+    // transpiler-deor/codegen/decl/stmt/stmt.deor
     let mut unhandled_prefix: String = "/* unhandled(".to_string();
     let mut unhandled_suffix: String = ") */\n".to_string();
     let mut unhandled_parts: Vec<String> = vec![unhandled_prefix.clone(), kind.clone(), unhandled_suffix.clone()];
@@ -11947,7 +12015,11 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     cur = cur_skip_to_body_ref(cur.clone(), tokens.clone());
     let pos = cur.pos.clone();
     let mut body_start: i64 = pos.clone();
-    let mut pred_r: ParseResult = gen_expr(tokens.clone(), body_start.clone(), ctx.clone());
+    let mut mut_names: Vec<String> = Vec::new();
+    let mut validator_var_reg: Vec<String> = Vec::new();
+    let mut expr_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), tokens: tokens.clone(), typed_enum_reg: typed_enum_reg.clone(), typed_variant_reg: typed_variant_reg.clone(), validator_var_reg: validator_var_reg.clone() };
+    let mut expr_ctx: RcCtx = make_rctx(expr_ctx_raw);
+    let mut pred_r: ParseResult = gen_expr(tokens.clone(), body_start.clone(), expr_ctx.clone());
     let __destructure_src = pred_r;
     let code = __destructure_src.code;
     let new_pos = __destructure_src.new_pos;
@@ -12014,6 +12086,10 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         final_pos = body_start + block_new_pos;
     }
     let mut struct_prefix: String = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ".to_string();
+    if param_type == "string" {
+        // transpiler-deor/codegen/decl/validator_type.deor
+        struct_prefix = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
+    }
     let mut struct_paren_open: String = "(".to_string();
     let mut struct_suffix: String = ");\n\n".to_string();
     let mut struct_code: String = [struct_prefix.as_str(), type_name.as_str(), struct_paren_open.as_str(), rust_param_type.as_str(), struct_suffix.as_str()].concat();
@@ -12421,7 +12497,7 @@ fn main() {
     let mut arg_count: i64 = (cli_args.len() as i64);
     if arg_count < 2 {
         // transpiler-deor/main.deor
-        println!("{}", "usage: deor input.deor output.rs [--verbose|-v]".to_string());
+        panic!("{}", "usage: deor input.deor output.rs [--verbose|-v]".to_string());
     } else {
         // transpiler-deor/main.deor
         let mut input_path: String = cli_args[0 as usize].clone();

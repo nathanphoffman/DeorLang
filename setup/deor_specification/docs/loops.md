@@ -50,7 +50,7 @@ for idx in range(start, stop)
 
 Rust:
 ```rust
-for idx in 0..count-1 {
+for idx in 0..count {
     ...
 }
 for idx in 1..11 {
