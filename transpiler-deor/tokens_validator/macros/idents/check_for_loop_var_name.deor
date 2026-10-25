@@ -11,12 +11,26 @@ macro check_for_loop_var_name
 			Token next_token = tokens at next_pos
 			(kind, value) in next_token
 
-			if kind is IDENT
-				if len(value) < MIN_NAME_LEN
+			string head_kind = kind
+			string head_value = value
+
+			# ex: for idx {10} times — a name only declares a loop variable when what follows
+			# it is 'in', a count name or a count number; 'for total times' and
+			# 'for len(items) times' are counts with no variable
+			int after_pos = locate_next_token(next_pos)
+			bool declares_var = false
+
+			if after_pos < token_count
+				Token after_token = tokens at after_pos
+				(kind) in after_token
+				declares_var = kind is KW_IN or kind is IDENT or kind is "INT"
+
+			if head_kind is IDENT and declares_var
+				if len(head_value) < MIN_NAME_LEN
 					errors at end = val_err(next_token, lbl_var, rule_min3)
 
-				if not is_snake(value)
+				if not is_snake(head_value)
 					errors at end = val_err(next_token, lbl_var, rule_snake)
 
-				if list_has(builtin_names, value)
+				if list_has(builtin_names, head_value)
 					errors at end = val_err(next_token, lbl_var, rule_builtin_shadow)

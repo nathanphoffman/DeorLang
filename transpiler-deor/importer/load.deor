@@ -160,7 +160,7 @@ fn tokenList load_file(string path)
 
 					int import_len = len(import_tokens)
 
-					for import_index in range(import_len)
+					for import_index import_len times
 						Token import_token = import_tokens at import_index
 						(kind) in import_token
 						bool import_is_eof = kind is "EOF"

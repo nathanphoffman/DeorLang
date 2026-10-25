@@ -31,7 +31,7 @@ unsafe_macro dd_check_duplicate
 	int dup_index = 0
 	int seen_len = len(seen)
 
-	for seen_index in range(seen_len)
+	for seen_index seen_len times
 		string seen_val = seen at seen_index
 
 		if seen_val is lookup_name

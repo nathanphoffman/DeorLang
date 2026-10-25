@@ -15,7 +15,7 @@ fn bool is_empty(string source)
 fn bool list_has(strList items, string val)
 	int item_count = len(items)
 
-	for index in range(item_count)
+	for index item_count times
 		string item = items at index
 
 		if item is val

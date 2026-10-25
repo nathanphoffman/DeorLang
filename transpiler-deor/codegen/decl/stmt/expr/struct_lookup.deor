@@ -9,7 +9,7 @@ fn string find_struct_for_fields(strList struct_reg, strList fields)
 	bool next_is_val = false
 	string cur_name = ""
 
-	for index in range(reg_count)
+	for index reg_count times
 		string item = struct_reg at index
 
 		if next_is_val
@@ -19,7 +19,7 @@ fn string find_struct_for_fields(strList struct_reg, strList fields)
 			if reg_count_f is input_count
 				bool all_match = true
 
-				for fidx in range(input_count)
+				for fidx input_count times
 					string field = fields at fidx
 					bool found = list_has(reg_fields, field)
 
@@ -44,7 +44,7 @@ fn string find_struct_for_field(strList struct_reg, string field)
 	bool next_is_val = false
 	string cur_name = ""
 
-	for index in range(reg_count)
+	for index reg_count times
 		string item = struct_reg at index
 
 		if next_is_val

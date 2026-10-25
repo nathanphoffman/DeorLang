@@ -33,4 +33,4 @@ macro check_ident_token_rules
 		macro_run check_undefined_var_read
 		macro_run check_bracket_indexing
 		macro_run check_struct_construction
-		macro_run check_range_placement
+		macro_run check_removed_range

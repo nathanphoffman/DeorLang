@@ -12,7 +12,8 @@ fn ParseResult scan_string_literal(strList chars, int char_index, int char_count
 	string ch_bs = "\\"
 	string ch_qt = "\""
 
-	for string_index in range(str_start, char_count)
+	for string_off char_count - str_start times
+		int string_index = str_start + string_off
 		string string_char = chars at string_index
 
 		if escape_next

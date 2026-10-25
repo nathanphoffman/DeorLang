@@ -45,7 +45,7 @@ fn void main()
 
 	int total_points = 0
 
-	for idx in range(count)
+	for idx count times
 		Score res = results at idx
 		(points) in res
 		total_points = total_points + points

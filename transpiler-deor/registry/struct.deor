@@ -8,7 +8,8 @@ fn ParseResult skip_to_block_start(TokensRef tokens, int start)
 	int token_count = len(tokens)
 	int cur = start
 
-	for skip_index in range(start, token_count)
+	for skip_off token_count - start times
+		int skip_index = start + skip_off
 		Token skip_token = tokens at skip_index
 		(kind) in skip_token
 		cur = skip_index + 1
@@ -26,7 +27,8 @@ fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 	strList fields = empty
 	int cur = start
 
-	for field_index in range(start, token_count)
+	for field_off token_count - start times
+		int field_index = start + field_off
 		Token field_token = tokens at field_index
 		(kind) in field_token
 

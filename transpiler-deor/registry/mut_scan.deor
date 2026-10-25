@@ -16,7 +16,8 @@ fn int find_block_end_ref(TokensRef tokens, int indent_pos)
 	int result = indent_pos
 	int start = locate_block_body_start(indent_pos)
 
-	for raw_i in range(start, token_count)
+	for raw_off token_count - start times
+		int raw_i = start + raw_off
 		Token token = tokens at raw_i
 		(kind, value, line) in token
 
@@ -42,7 +43,8 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 	strList result = empty
 	strList const_names = empty
 
-	for raw_i in range(start, end_pos)
+	for raw_off end_pos - start times
+		int raw_i = start + raw_off
 		Token token = tokens at raw_i
 		(kind, value, line) in token
 

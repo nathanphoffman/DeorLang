@@ -7,7 +7,7 @@ These functions are wired directly into the transpiler — no import, no wrapper
 
 Everything else lives in a standard library file under `lib/` or must be wrapped in a `rust` block. See [Libs](docs/libs.md) for the standard library and custom wrapper patterns.
 
-No shadowing: `print`, `crash`, `len`, `range`, `args`, and `input` aren't reserved keywords in the lexer — they lex as plain identifiers — but the validator hardcodes them as built-in names and rejects any attempt to reuse one as a variable, parameter, function, struct, or type name. See [Syntax — Built-in Function Names](docs/syntax.md#built-in-function-names).
+No shadowing: `print`, `crash`, `len`, `args`, and `input` aren't reserved keywords in the lexer — they lex as plain identifiers — but the validator hardcodes them as built-in names and rejects any attempt to reuse one as a variable, parameter, function, struct, or type name. See [Syntax — Built-in Function Names](docs/syntax.md#built-in-function-names).
 
 ---
 
@@ -57,18 +57,6 @@ Rust:
 let size: i64 = rooms.len() as i64;
 let chars: i64 = name.len() as i64;
 ```
-
----
-
-## `range`
-Produces an integer sequence for use in `for` loops. Two forms:
-
-| Form | Produces |
-|---|---|
-| `range(count)` | `0` through `count - 1` |
-| `range(start, end)` | `start` through `end - 1` (exclusive upper bound) |
-
-`range` is only valid as the iteration source in a `for` loop — it is not a value and cannot be assigned. See [Loops — Numeric Iteration](docs/loops.md#numeric-iteration) for the full `for` usage and Rust translation.
 
 ---
 

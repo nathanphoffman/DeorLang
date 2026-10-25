@@ -12,8 +12,8 @@ fn void main()
 	int sum = add_raw(val_a, val_b)
 	print(sum)
 	string prefix = "ab"
-	int times = 3
-	string repeated = repeat_str(prefix, times)
+	int repeat_count = 3
+	string repeated = repeat_str(prefix, repeat_count)
 	print(repeated)
 
 # expect:

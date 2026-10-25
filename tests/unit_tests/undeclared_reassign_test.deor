@@ -27,7 +27,7 @@ fn void test_raw_reassign()
 	print("done")
 
 fn void test_for_loop_reassign()
-	for item in range(3)
+	for item 3 times
 		item = item + 1
 
 fn void test_destructure_reassign()

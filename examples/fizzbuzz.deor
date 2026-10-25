@@ -20,5 +20,6 @@ fn void main()
 	start as 1
 	stop as 21
 
-	for num in range(start, stop)
+	for num_off stop - start times
+		int num = start + num_off
 		print(fizzbuzz(num))

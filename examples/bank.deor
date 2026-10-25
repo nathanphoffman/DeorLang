@@ -21,7 +21,7 @@ fn int find_account(accountList accounts, string wanted)
 	int missing = 0 - 1
 	int count = len(accounts)
 
-	for idx in range(count)
+	for idx count times
 		Account account = accounts at idx
 		(owner) in account
 

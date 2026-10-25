@@ -25,8 +25,8 @@
 
 ### Leanness
 - **Limited Syntax** - only one way to do most things: it makes all code, even AI code read similar
-- **Only For** - no while/for distinction: `for if` is the while loop, `for in` is collection/range iteration
-- **Slim Built-Ins** - only `len`, `range`, `crash`, `input/args`, and `print` -- all others use rust wrappers
+- **Only For** - no while/for distinction: `for if` is the while loop, `for in` is collection iteration, `for N times` is counted iteration
+- **Slim Built-Ins** - only `len`, `crash`, `input/args`, and `print` -- all others use rust wrappers
 
 
 ---

@@ -1,8 +1,33 @@
 
+# True when the for header (from the token after `for` up to its NEWLINE) contains
+# the `times` keyword, i.e. it is a count loop.
+fn bool for_header_has_times(TokensRef tokens, int pos)
+	unsafe_macro_run token_kinds
+
+	# ex: for {idx} 10 times — pos+1 is the first token after 'for'
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	int token_count = len(tokens)
+	int scan_start = locate_next_token(pos)
+
+	for scan_off token_count - scan_start times
+		int scan_index = scan_start + scan_off
+		Token scan_token = tokens at scan_index
+		(kind) in scan_token
+
+		if kind is KW_TIMES
+			return true
+
+		if kind is NEWLINE
+			return false
+
+	return false
+
 # Generates Rust loop code from a Deor `for` statement. Four dispatch paths:
 #   `for if cond`            → `while cond { ... }`
+#   `for idx N times`        → `for idx in 0..N { ... }` (or `for N times`, no variable)
 #   `for move (var in expr)` → `for var in expr { ... }` (consuming ownership)
-#   `for var in range(n)`    → `for var in 0..n { ... }` (or start..end)
 #   `for var in collection`  → `for var in collection { ... }`
 fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run token_kinds
@@ -27,6 +52,9 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 
 	if kind is KW_MOVE
 		macro_run for_move
+
+	if for_header_has_times(tokens, pos)
+		macro_run for_times
 
 	string var_name = "_"
 	int iter_pos = 0

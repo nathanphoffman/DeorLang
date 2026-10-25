@@ -48,7 +48,6 @@ unsafe_macro define_errors
 	string rule_void_var = "'void' is not a valid variable type — only functions can return void"
 	string rule_crash = "crash takes exactly 1 string argument"
 	string rule_print_args = "print takes 1 argument, or 2 arguments where the second replaces the trailing newline"
-	string rule_range_args = "range takes 1 argument (range(count)) or 2 arguments (range(start, end))"
 	string rule_len_args = "len takes exactly 1 argument"
 
 	# statement rules
@@ -76,8 +75,8 @@ unsafe_macro define_errors
 	string rule_unmatched_open_bracket = "'[' is never closed — every open bracket needs a matching ']'"
 	string rule_unmatched_close_bracket = "']' has no matching '[' before it — remove the extra ']' or add the missing '['"
 	string rule_builtin_shadow = "this name belongs to a built-in function (print, crash, len, range, args, input) and cannot be shadowed or redeclared"
-	string rule_range_placement = "'range' can only be used as a for-loop's iterator expression ('for var in range(n)' or 'for in range(n)') — it cannot be assigned to a variable or passed as an argument"
-	string rule_bare_tuple_range = "bare tuple range ('for var in (start, end)') is not valid — use 'for var in range(start, end)' instead"
+	string rule_range_removed = "'range' no longer exists — use 'for idx N times' (or 'for N times') for a counted loop"
+	string rule_bare_tuple_range = "bare tuple range ('for var in (start, end)') is not valid — use 'for var N times' instead"
 	string rule_bare_truthiness = "only bool and validator types have truthiness — use an explicit comparison ('is not 0', 'is not \"\"', 'is valid', etc.)"
 	string rule_func_shape_multi_param = "func shapes accept at most one input type and one output type — bundle multiple values into a struct instead"
 	string rule_string_plus_banned = "'+' cannot be used with strings — use s_join([a, b, ...]) or s_join_with(list, sep) instead"

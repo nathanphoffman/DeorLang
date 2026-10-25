@@ -1,5 +1,5 @@
 macro for_build_fields
-	for field_index in range(field_count)
+	for field_index field_count times
 		string field = fields at field_index
 		bool is_mut = list_has(mut_names, field)
 		string mut_kw = ""

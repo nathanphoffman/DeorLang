@@ -1,0 +1,22 @@
+# len_args_test.deor
+# Exercises check_len_args: len had no argument-count validation (unlike
+# print/crash, which use the same shared check_builtin_arg_count helper). Before
+# this check existed, len(a, b) silently dropped 'b', and len() with 0 args
+# transpiled "successfully" but emitted invalid Rust, only failing at rustc.
+
+fn void test_len_zero_args()
+	int size = len()
+	print(size)
+
+fn void test_len_too_many_args()
+	nums as [1, 2, 3]
+	extra_val as 5
+	int size = len(nums, extra_val)
+	print(size)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 8: call to 'len' - len takes exactly 1 argument
+# line 14: call to 'len' - len takes exactly 1 argument

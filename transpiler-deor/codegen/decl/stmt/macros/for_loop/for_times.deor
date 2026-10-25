@@ -1,0 +1,46 @@
+# Handles `for idx N times` and `for N times`: generates `for idx in 0..N { ... }`
+# (or `for _ in 0..N` with no variable). N is any expression — a number, a name, a
+# call, or arithmetic. The loop variable is present when the token after `for` is a
+# name and the token after that starts the count (another name or a number), so
+# `for idx total times` has a variable and `for total times` does not.
+macro for_times
+	# ex: for {idx} 10 times — anchor+1 grabs the token that decides whether idx is a loop variable
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	string head_kind = kind
+	string times_var = "_"
+	int count_pos = next_pos
+	int after_pos = locate_next_token(next_pos)
+	Token after_token = tokens at after_pos
+	(kind) in after_token
+	bool after_is_name = kind is IDENT
+	bool after_is_int = kind is "INT"
+	bool has_var = head_kind is IDENT and (after_is_name or after_is_int)
+
+	if has_var
+		(value) in next_token
+		times_var = value
+		count_pos = after_pos
+
+	val_pos as count_pos
+	ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
+	move (code, new_pos) in expr_result
+	val_code as code
+	val_end as new_pos
+
+	# ex: for idx 10 {times} — val_end+1 steps past the times keyword
+	int times_next = locate_next_token(val_end)
+	int blk_start = skip_to_body_ref(tokens, times_next)
+	int blk_depth = depth + 1
+	ParseResult blk_result = gen_block(blk_start, blk_depth, ctx)
+	move (code, new_pos) in blk_result
+	blk_code as code
+	blk_end as new_pos
+	string range_zero_prefix = "0.."
+	string times_range = s_cat(range_zero_prefix, val_code)
+	string for_kw = "for "
+	string for_in_kw = " in "
+	string times_code = s_join([pad, for_kw, times_var, for_in_kw, times_range, RS_OB, blk_code, pad, RS_CB])
+
+	return make_result(move times_code, blk_end)

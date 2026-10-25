@@ -442,7 +442,7 @@ fn void main()
     scoreList results = t_score_run_all(pool, jobs, worker)
 
     int count = len(results)
-    for idx in range(count)
+    for idx count times
         Score res = results at idx
         (label, points) in res
         print(label)

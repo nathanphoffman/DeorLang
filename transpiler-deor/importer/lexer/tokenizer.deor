@@ -20,7 +20,7 @@ fn tokenList tokenize(string source, string path)
 	int cur_line = 0
 	int skip = 0
 
-	for line_index in range(line_count)
+	for line_index line_count times
 		cur_line = cur_line + 1
 		TokenMeta meta = make_meta(cur_line, path)
 
@@ -102,7 +102,7 @@ fn tokenList tokenize(string source, string path)
 	TokenMeta tail_meta = make_meta(cur_line, path)
 	int dedent_start = 1
 
-	for in range(dedent_start, final_stack_len)
+	for final_stack_len - dedent_start times
 		tokens at end = make_token(kind_dedent, empty_str, tail_meta)
 
 	tokens at end = make_token(kind_eof, empty_str, tail_meta)

@@ -1,6 +1,6 @@
 
 # Declared-var collection, for-loop variable forms: the plain loop var
-# ('for item in list') and the move-destructure header
+# ('for item in list'), the count-loop var ('for idx 10 times') and the move-destructure header
 # ('for move (item in collection)') — a separate token shape from the plain
 # form, so it needs its own fixed offsets rather than reusing them. Part of
 # prescan_collect_declared_vars — see that macro's header for the full list
@@ -45,6 +45,13 @@ macro prescan_collect_declared_vars_for
 			(kind) in in_token
 
 			if loop_var_kind is IDENT and kind is KW_IN
+				declared_var_names at end = loop_var_value
+
+			# ex: for {idx} 10 times / for {idx} total times — a name followed by a
+			# number or another name is a count loop's variable
+			bool times_var_follows = kind is IDENT or kind is "INT"
+
+			if loop_var_kind is IDENT and times_var_follows
 				declared_var_names at end = loop_var_value
 
 		# A separate shape from the plain form above, so it needs its own

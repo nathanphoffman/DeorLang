@@ -124,6 +124,10 @@ fn string word_to_kind(string word)
 	if word is "end"
 		return KW_END
 
+	# Count-loop keyword: for idx 10 times
+	if word is "times"
+		return KW_TIMES
+
 	# Shape connector — active keyword in func shape declarations:
 	# shape myShape = func of Room to bool
 	if word is "func"
@@ -148,7 +152,8 @@ fn ParseResult scan_word(strList chars, int char_index, int char_count)
 	int word_start = char_index + 1
 	int new_pos = char_index + 1
 
-	for word_index in range(word_start, char_count)
+	for word_off char_count - word_start times
+		int word_index = word_start + word_off
 		string word_char = chars at word_index
 
 		if c_alnum(word_char)
