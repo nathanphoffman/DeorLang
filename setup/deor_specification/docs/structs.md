@@ -23,7 +23,7 @@ struct Room {
 
 Struct fields may be primitives, validator types, list shapes, or other structs. Func shapes as struct fields are a transpiler error — structs are pure data. See [Shapes — Func Shapes in Structs](docs/shapes.md#func-shapes-in-structs).
 
-Field names follow the same min-length and snake_case rules as variable names, and can't shadow a built-in function name (`print`, `crash`, `len`, `args`, `input`) — `struct Foo { int print }` is a transpiler error. Field *types* are validated too — a misspelled or undeclared type name (`Squarefeat area` instead of `Squarefeet area`) is a clean transpiler error, not a later `rustc` failure.
+Field names follow the same min-length and snake_case rules as variable names, and can't shadow a built-in function name (`print`, `crash`, `len`, `range`, `args`, `input`) — `struct Foo { int print }` is a transpiler error. Field *types* are validated too — a misspelled or undeclared type name (`Squarefeat area` instead of `Squarefeet area`) is a clean transpiler error, not a later `rustc` failure.
 
 There are no per-field visibility modifiers — all fields are always accessible via destructuring whenever the struct itself is in scope.
 

@@ -391,7 +391,6 @@ fn adv_nl_ref(pos: i64, tokens: TokensRef) -> i64 {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -468,7 +467,6 @@ fn adv_indent_ref(pos: i64, tokens: TokensRef) -> i64 {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -577,9 +575,8 @@ fn scan_string_literal(chars: Vec<String>, char_index: i64, char_count: i64) -> 
     let mut ch_tab: String = "\t".to_string();
     let mut ch_bs: String = "\\".to_string();
     let mut ch_qt: String = "\"".to_string();
-    for string_off in 0..char_count - str_start {
+    for string_index in str_start..char_count {
         // transpiler-deor/importer/lexer/string_literal.deor
-        let mut string_index: i64 = str_start + string_off;
         let mut string_char: String = chars[string_index as usize].clone();
         if escape_next {
             // transpiler-deor/importer/lexer/string_literal.deor
@@ -627,9 +624,8 @@ fn scan_number(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseRes
     let mut num: String = s_cat(empty_str.clone(), first_char.clone());
     let mut num_start: i64 = char_index + 1;
     let mut new_pos: i64 = char_index + 1;
-    for number_off in 0..char_count - num_start {
+    for number_index in num_start..char_count {
         // transpiler-deor/importer/lexer/number_literal.deor
-        let mut number_index: i64 = num_start + number_off;
         let mut number_char: String = chars[number_index as usize].clone();
         if c_digit(number_char.clone()) {
             // transpiler-deor/importer/lexer/number_literal.deor
@@ -669,9 +665,8 @@ fn scan_number(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseRes
                 let mut dot_str: String = ".".to_string();
                 num = s_cat(num.clone(), dot_str.clone());
                 new_pos = frac_start;
-                for frac_off in 0..char_count - frac_start {
+                for frac_index in frac_start..char_count {
                     // transpiler-deor/importer/lexer/number_literal.deor
-                    let mut frac_index: i64 = frac_start + frac_off;
                     let mut frac_char: String = chars[frac_index as usize].clone();
                     if c_digit(frac_char.clone()) {
                         // transpiler-deor/importer/lexer/number_literal.deor
@@ -731,7 +726,6 @@ fn word_to_kind(word: String) -> String {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -909,10 +903,6 @@ fn word_to_kind(word: String) -> String {
         // transpiler-deor/importer/lexer/word_token.deor
         return KW_END;
     }
-    if word == "times" {
-        // transpiler-deor/importer/lexer/word_token.deor
-        return KW_TIMES;
-    }
     if word == "func" {
         // transpiler-deor/importer/lexer/word_token.deor
         return KW_FUNC;
@@ -935,9 +925,8 @@ fn scan_word(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResul
     let mut word: String = s_cat(empty_str.clone(), first_char.clone());
     let mut word_start: i64 = char_index + 1;
     let mut new_pos: i64 = char_index + 1;
-    for word_off in 0..char_count - word_start {
+    for word_index in word_start..char_count {
         // transpiler-deor/importer/lexer/word_token.deor
-        let mut word_index: i64 = word_start + word_off;
         let mut word_char: String = chars[word_index as usize].clone();
         if c_alnum(word_char.clone()) {
             // transpiler-deor/importer/lexer/word_token.deor
@@ -994,7 +983,6 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -1094,9 +1082,8 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut rust_base: i64 = indent + 1;
                 let mut rust_lines: Vec<String> = Vec::new();
                 let mut scan_start: i64 = line_index + 1;
-                for scan_line_off in 0..line_count - scan_start {
+                for scan_line in scan_start..line_count {
                     // transpiler-deor/importer/lexer/macros/collect_rust_block.deor
-                    let mut scan_line: i64 = scan_start + scan_line_off;
                     let mut rust_line: String = lines[scan_line as usize].clone();
                     let mut stripped: String = s_trim(rust_line.clone());
                     if is_empty(stripped.clone()) {
@@ -1299,7 +1286,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
     let mut final_stack_len: i64 = (indent_stack.len() as i64);
     let mut tail_meta: TokenMeta = make_meta(cur_line.clone(), path.clone());
     let mut dedent_start: i64 = 1;
-    for _ in 0..final_stack_len - dedent_start {
+    for _ in dedent_start..final_stack_len {
         // transpiler-deor/importer/lexer/tokenizer.deor
         tokens.push(make_token(kind_dedent.clone(), empty_str.clone(), tail_meta.clone()).clone());
     }
@@ -1350,7 +1337,6 @@ fn scan_import_new(tokens: Vec<Token>, pos: i64) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -1438,7 +1424,6 @@ fn scan_import_where(tokens: Vec<Token>, pos: i64) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -1719,7 +1704,6 @@ fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: Strin
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -1857,7 +1841,6 @@ fn load_file(path: String) -> Vec<Token> {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -2072,7 +2055,6 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -2785,7 +2767,6 @@ fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -2890,7 +2871,6 @@ fn find_matching_rparen(tokens: TokensRef, lp_pos: i64) -> i64 {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -2981,7 +2961,6 @@ fn count_call_args(tokens: TokensRef, lp_pos: i64) -> i64 {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -3134,7 +3113,6 @@ fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -3354,7 +3332,6 @@ fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -3485,7 +3462,6 @@ fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -3624,7 +3600,6 @@ fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -3743,7 +3718,6 @@ fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -3851,7 +3825,6 @@ fn validate_tokens(tokens: TokensRef) {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -3924,6 +3897,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_void_var: String = "'void' is not a valid variable type — only functions can return void".to_string();
     let mut rule_crash: String = "crash takes exactly 1 string argument".to_string();
     let mut rule_print_args: String = "print takes 1 argument, or 2 arguments where the second replaces the trailing newline".to_string();
+    let mut rule_range_args: String = "range takes 1 argument (range(count)) or 2 arguments (range(start, end))".to_string();
     let mut rule_len_args: String = "len takes exactly 1 argument".to_string();
     let mut rule_avow: String = "avow can only be used on a validator type variable".to_string();
     let mut rule_invalid_char: String = "character is not valid in Deor — use Deor operators and keywords; raw Rust syntax belongs inside a 'rust' block".to_string();
@@ -3949,8 +3923,8 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_unmatched_open_bracket: String = "'[' is never closed — every open bracket needs a matching ']'".to_string();
     let mut rule_unmatched_close_bracket: String = "']' has no matching '[' before it — remove the extra ']' or add the missing '['".to_string();
     let mut rule_builtin_shadow: String = "this name belongs to a built-in function (print, crash, len, range, args, input) and cannot be shadowed or redeclared".to_string();
-    let mut rule_range_removed: String = "'range' no longer exists — use 'for idx N times' (or 'for N times') for a counted loop".to_string();
-    let mut rule_bare_tuple_range: String = "bare tuple range ('for var in (start, end)') is not valid — use 'for var N times' instead".to_string();
+    let mut rule_range_placement: String = "'range' can only be used as a for-loop's iterator expression ('for var in range(n)' or 'for in range(n)') — it cannot be assigned to a variable or passed as an argument".to_string();
+    let mut rule_bare_tuple_range: String = "bare tuple range ('for var in (start, end)') is not valid — use 'for var in range(start, end)' instead".to_string();
     let mut rule_bare_truthiness: String = "only bool and validator types have truthiness — use an explicit comparison ('is not 0', 'is not \"\"', 'is valid', etc.)".to_string();
     let mut rule_func_shape_multi_param: String = "func shapes accept at most one input type and one output type — bundle multiple values into a struct instead".to_string();
     let mut rule_string_plus_banned: String = "'+' cannot be used with strings — use s_join([a, b, ...]) or s_join_with(list, sep) instead".to_string();
@@ -4061,8 +4035,8 @@ fn validate_tokens(tokens: TokensRef) {
     let SPACES_PER_INDENT: i64 = 4;
     // macro: define_lookup_tables (transpiler-deor/tokens_validator/macros/define_lookup_tables.deor)
     let mut forbidden_in_parens: Vec<String> = vec![KW_LIST.clone(), KW_STRUCT.clone(), KW_SHAPE.clone(), KW_ENUM.clone(), KW_TYPE.clone(), KW_FN.clone(), KW_OF.clone(), KW_FOR.clone(), KW_IF.clone(), KW_ELSE.clone(), KW_RETURN.clone(), KW_BREAK.clone(), KW_CONTINUE.clone(), KW_REMOVE.clone(), KW_RUST.clone(), KW_IMPORT.clone(), KW_MACRO.clone(), KW_UNSAFE_MACRO.clone(), KW_VOID.clone(), KW_RAW.clone()];
-    let mut reserved_keywords: Vec<String> = vec![KW_AND.clone(), KW_AS.clone(), KW_AT.clone(), KW_AVOW.clone(), KW_BLOCK.clone(), KW_BREAK.clone(), KW_CONST.clone(), KW_CONTINUE.clone(), KW_ELSE.clone(), KW_EMPTY.clone(), KW_ENUM.clone(), KW_FALSE.clone(), KW_FN.clone(), KW_FOR.clone(), KW_FUNC.clone(), KW_IF.clone(), KW_IMPORT.clone(), KW_IN.clone(), KW_IS.clone(), KW_LIST.clone(), KW_MACRO.clone(), KW_MACRO_RUN.clone(), KW_UNSAFE_MACRO.clone(), KW_UNSAFE_MACRO_RUN.clone(), KW_MOVE.clone(), KW_NONE.clone(), KW_NOT.clone(), KW_OF.clone(), KW_OR.clone(), KW_RAW.clone(), KW_REMOVE.clone(), KW_RETURN.clone(), KW_RUST.clone(), KW_SHAPE.clone(), KW_STRUCT.clone(), KW_TIMES.clone(), KW_TO.clone(), KW_TRUE.clone(), KW_TYPE.clone(), KW_VALID.clone(), KW_VOID.clone(), KW_WITH.clone()];
-    let mut builtin_names: Vec<String> = vec!["print".to_string(), "crash".to_string(), "len".to_string(), "args".to_string(), "input".to_string()];
+    let mut reserved_keywords: Vec<String> = vec![KW_AND.clone(), KW_AS.clone(), KW_AT.clone(), KW_AVOW.clone(), KW_BLOCK.clone(), KW_BREAK.clone(), KW_CONST.clone(), KW_CONTINUE.clone(), KW_ELSE.clone(), KW_EMPTY.clone(), KW_ENUM.clone(), KW_FALSE.clone(), KW_FN.clone(), KW_FOR.clone(), KW_FUNC.clone(), KW_IF.clone(), KW_IMPORT.clone(), KW_IN.clone(), KW_IS.clone(), KW_LIST.clone(), KW_MACRO.clone(), KW_MACRO_RUN.clone(), KW_UNSAFE_MACRO.clone(), KW_UNSAFE_MACRO_RUN.clone(), KW_MOVE.clone(), KW_NONE.clone(), KW_NOT.clone(), KW_OF.clone(), KW_OR.clone(), KW_RAW.clone(), KW_REMOVE.clone(), KW_RETURN.clone(), KW_RUST.clone(), KW_SHAPE.clone(), KW_STRUCT.clone(), KW_TO.clone(), KW_TRUE.clone(), KW_TYPE.clone(), KW_VALID.clone(), KW_VOID.clone(), KW_WITH.clone()];
+    let mut builtin_names: Vec<String> = vec!["print".to_string(), "crash".to_string(), "len".to_string(), "range".to_string(), "args".to_string(), "input".to_string()];
     let mut primitive_type_names: Vec<String> = vec!["string".to_string(), "int".to_string(), "float".to_string(), "bool".to_string()];
     // macro: prescan_shapes_and_validator_types (transpiler-deor/tokens_validator/macros/prescan/prescan_shapes_and_validator_types.deor)
     let mut func_shape_names: Vec<String> = Vec::new();
@@ -4376,11 +4350,6 @@ fn validate_tokens(tokens: TokensRef) {
                         let mut loop_var_value: String = value.clone();
                         let mut kind = in_token.kind.clone();
                         if loop_var_kind == IDENT && kind == KW_IN {
-                            // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_for.deor
-                            declared_var_names.push(loop_var_value.clone());
-                        }
-                        let mut times_var_follows: bool = kind == IDENT || kind == "INT";
-                        if loop_var_kind == IDENT && times_var_follows {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_for.deor
                             declared_var_names.push(loop_var_value.clone());
                         }
@@ -7490,6 +7459,43 @@ fn validate_tokens(tokens: TokensRef) {
                     }
                 }
             }
+            // macro: check_range_args (transpiler-deor/tokens_validator/macros/builtins/check_range_args.deor)
+            {
+                // transpiler-deor/tokens_validator/macros/builtins/check_range_args.deor
+                let mut builtin_name: String = "range".to_string();
+                let mut min_args: i64 = 1;
+                let mut max_args: i64 = 2;
+                let mut arg_count_rule: String = rule_range_args.clone();
+                // macro: check_builtin_arg_count (transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor)
+                {
+                    // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                    fn locate_next_token(kw_pos: i64) -> i64 {
+                        return kw_pos + 1;
+                    }
+                    if cur_kind == IDENT {
+                        // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                        let mut is_target: bool = cur_val == builtin_name;
+                        if is_target {
+                            // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                            let mut left_paren_pos: i64 = locate_next_token(pos.clone());
+                            if left_paren_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
+                                let mut kind = left_paren_token.kind.clone();
+                                if kind == LPAREN {
+                                    // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                    let mut arg_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
+                                    let mut count_ok: bool = arg_count >= min_args && arg_count <= max_args;
+                                    if !count_ok {
+                                        // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
+                                        errors.push(val_err(tok.clone(), lbl_call.clone(), arg_count_rule.clone()).clone());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             // macro: check_len_args (transpiler-deor/tokens_validator/macros/builtins/check_len_args.deor)
             {
                 // transpiler-deor/tokens_validator/macros/builtins/check_len_args.deor
@@ -7614,27 +7620,17 @@ fn validate_tokens(tokens: TokensRef) {
                         let __destructure_src = next_token.clone();
                         let mut kind = __destructure_src.kind.clone();
                         let mut value = __destructure_src.value.clone();
-                        let mut head_kind: String = kind.clone();
-                        let mut head_value: String = value.clone();
-                        let mut after_pos: i64 = locate_next_token(next_pos.clone());
-                        let mut declares_var: bool = false;
-                        if after_pos < token_count {
+                        if kind == IDENT {
                             // transpiler-deor/tokens_validator/macros/idents/check_for_loop_var_name.deor
-                            let mut after_token: Token = tokens[after_pos as usize].clone();
-                            let mut kind = after_token.kind.clone();
-                            declares_var = kind == KW_IN || kind == IDENT || kind == "INT";
-                        }
-                        if head_kind == IDENT && declares_var {
-                            // transpiler-deor/tokens_validator/macros/idents/check_for_loop_var_name.deor
-                            if (head_value.len() as i64) < MIN_NAME_LEN {
+                            if (value.len() as i64) < MIN_NAME_LEN {
                                 // transpiler-deor/tokens_validator/macros/idents/check_for_loop_var_name.deor
                                 errors.push(val_err(next_token.clone(), lbl_var.clone(), rule_min3.clone()).clone());
                             }
-                            if !is_snake(head_value.clone()) {
+                            if !is_snake(value.clone()) {
                                 // transpiler-deor/tokens_validator/macros/idents/check_for_loop_var_name.deor
                                 errors.push(val_err(next_token.clone(), lbl_var.clone(), rule_snake.clone()).clone());
                             }
-                            if list_has(builtin_names.clone(), head_value.clone()) {
+                            if list_has(builtin_names.clone(), value.clone()) {
                                 // transpiler-deor/tokens_validator/macros/idents/check_for_loop_var_name.deor
                                 errors.push(val_err(next_token.clone(), lbl_var.clone(), rule_builtin_shadow.clone()).clone());
                             }
@@ -7661,10 +7657,6 @@ fn validate_tokens(tokens: TokensRef) {
                             applies = false;
                         }
                         if kind == KW_MOVE {
-                            // transpiler-deor/tokens_validator/macros/syntax_rules/check_bare_tuple_range.deor
-                            applies = false;
-                        }
-                        if for_header_has_times(tokens.clone(), pos.clone()) {
                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_bare_tuple_range.deor
                             applies = false;
                         }
@@ -8525,31 +8517,65 @@ fn validate_tokens(tokens: TokensRef) {
                         }
                     }
                 }
-                // macro: check_removed_range (transpiler-deor/tokens_validator/macros/syntax_rules/check_removed_range.deor)
+                // macro: check_range_placement (transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor)
                 {
-                    // transpiler-deor/tokens_validator/macros/syntax_rules/check_removed_range.deor
+                    // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                     fn locate_next_token(kw_pos: i64) -> i64 {
                         return kw_pos + 1;
                     }
                     fn locate_prev_token(kw_pos: i64) -> i64 {
                         return kw_pos - 1;
                     }
+                    fn locate_prev2(kw_pos: i64) -> i64 {
+                        return kw_pos - 2;
+                    }
+                    fn locate_prev3(kw_pos: i64) -> i64 {
+                        return kw_pos - 3;
+                    }
                     if cur_kind == IDENT {
-                        // transpiler-deor/tokens_validator/macros/syntax_rules/check_removed_range.deor
+                        // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                         if cur_val == "range" {
-                            // transpiler-deor/tokens_validator/macros/syntax_rules/check_removed_range.deor
+                            // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                             let mut next_pos: i64 = locate_next_token(pos.clone());
-                            if next_pos < token_count && pos > 0 {
-                                // transpiler-deor/tokens_validator/macros/syntax_rules/check_removed_range.deor
+                            if next_pos < token_count {
+                                // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                                 let mut next_token: Token = tokens[next_pos as usize].clone();
                                 let mut kind = next_token.kind.clone();
-                                let mut is_call: bool = kind == LPAREN;
-                                let mut prev_pos: i64 = locate_prev_token(pos.clone());
-                                let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                                let mut kind = prev_token.kind.clone();
-                                if is_call && kind == KW_IN {
-                                    // transpiler-deor/tokens_validator/macros/syntax_rules/check_removed_range.deor
-                                    errors.push(val_err(tok.clone(), lbl_call.clone(), rule_range_removed.clone()).clone());
+                                if kind == LPAREN {
+                                    // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
+                                    let mut is_valid: bool = false;
+                                    if pos > 1 {
+                                        // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
+                                        let mut prev_pos: i64 = locate_prev_token(pos.clone());
+                                        let mut prev_token: Token = tokens[prev_pos as usize].clone();
+                                        let mut kind = prev_token.kind.clone();
+                                        if kind == KW_IN {
+                                            // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
+                                            let mut prev2_pos: i64 = locate_prev2(pos.clone());
+                                            let mut prev2_token: Token = tokens[prev2_pos as usize].clone();
+                                            let mut kind = prev2_token.kind.clone();
+                                            if kind == KW_FOR {
+                                                // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
+                                                is_valid = true;
+                                            } else if kind == IDENT {
+                                                // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
+                                                if pos > 2 {
+                                                    // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
+                                                    let mut prev3_pos: i64 = locate_prev3(pos.clone());
+                                                    let mut prev3_token: Token = tokens[prev3_pos as usize].clone();
+                                                    let mut kind = prev3_token.kind.clone();
+                                                    if kind == KW_FOR {
+                                                        // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
+                                                        is_valid = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if !is_valid {
+                                        // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
+                                        errors.push(val_err(tok.clone(), lbl_call.clone(), rule_range_placement.clone()).clone());
+                                    }
                                 }
                             }
                         }
@@ -8727,7 +8753,6 @@ fn skip_to_block_start(tokens: TokensRef, start: i64) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -8751,9 +8776,8 @@ fn skip_to_block_start(tokens: TokensRef, start: i64) -> ParseResult {
     // transpiler-deor/registry/struct.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut cur: i64 = start.clone();
-    for skip_off in 0..token_count - start {
+    for skip_index in start..token_count {
         // transpiler-deor/registry/struct.deor
-        let mut skip_index: i64 = start + skip_off;
         let mut skip_token: Token = tokens[skip_index as usize].clone();
         let kind = skip_token.kind.clone();
         cur = skip_index + 1;
@@ -8808,7 +8832,6 @@ fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -8833,9 +8856,8 @@ fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
     let mut token_count: i64 = (tokens.len() as i64);
     let mut fields: Vec<String> = Vec::new();
     let mut cur: i64 = start.clone();
-    for field_off in 0..token_count - start {
+    for field_index in start..token_count {
         // transpiler-deor/registry/struct.deor
-        let mut field_index: i64 = start + field_off;
         let mut field_token: Token = tokens[field_index as usize].clone();
         let kind = field_token.kind.clone();
         if kind == DEDENT {
@@ -8906,7 +8928,6 @@ fn try_struct_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -9005,7 +9026,6 @@ fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -9248,7 +9268,6 @@ fn collect_variant_pairs(tokens: TokensRef, start: i64, rust_name: String) -> Pa
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -9342,7 +9361,6 @@ fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: String)
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -9454,7 +9472,6 @@ fn try_enum_entry(tokens: TokensRef, pos: i64) -> EnumScan {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -9623,7 +9640,6 @@ fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) -> Vec
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -9772,7 +9788,6 @@ fn find_block_end_ref(tokens: TokensRef, indent_pos: i64) -> i64 {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -9801,9 +9816,8 @@ fn find_block_end_ref(tokens: TokensRef, indent_pos: i64) -> i64 {
     let mut depth: i64 = 1;
     let mut result: i64 = indent_pos.clone();
     let mut start: i64 = locate_block_body_start(indent_pos.clone());
-    for raw_off in 0..token_count - start {
+    for raw_i in start..token_count {
         // transpiler-deor/registry/mut_scan.deor
-        let mut raw_i: i64 = start + raw_off;
         let mut token: Token = tokens[raw_i as usize].clone();
         let __destructure_src = token.clone();
         let kind = __destructure_src.kind.clone();
@@ -9867,7 +9881,6 @@ fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<String
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -9891,9 +9904,8 @@ fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<String
     // transpiler-deor/registry/mut_scan.deor
     let mut result: Vec<String> = Vec::new();
     let mut const_names: Vec<String> = Vec::new();
-    for raw_off in 0..end_pos - start {
+    for raw_i in start..end_pos {
         // transpiler-deor/registry/mut_scan.deor
-        let mut raw_i: i64 = start + raw_off;
         let mut token: Token = tokens[raw_i as usize].clone();
         let __destructure_src = token.clone();
         let kind = __destructure_src.kind.clone();
@@ -9980,7 +9992,6 @@ fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -10240,7 +10251,6 @@ fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -10396,7 +10406,6 @@ fn gen_list_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -10525,7 +10534,6 @@ fn gen_join_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -10666,7 +10674,6 @@ fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -11101,7 +11108,6 @@ fn is_binary_op(kind: String) -> bool {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -11253,7 +11259,6 @@ fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -11460,7 +11465,6 @@ fn emit_val(val_code: String, val_kind: String) -> String {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -11557,7 +11561,6 @@ fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> Stri
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -11658,7 +11661,6 @@ fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -11752,7 +11754,6 @@ fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -12186,7 +12187,6 @@ fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -12369,7 +12369,6 @@ fn gen_block(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -12561,7 +12560,6 @@ fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -12688,92 +12686,6 @@ fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/for.deor
-fn for_header_has_times(tokens: TokensRef, pos: i64) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
-    // transpiler-deor/codegen/decl/stmt/for.deor
-    fn locate_next_token(anchor: i64) -> i64 {
-        return anchor + 1;
-    }
-    let mut token_count: i64 = (tokens.len() as i64);
-    let mut scan_start: i64 = locate_next_token(pos.clone());
-    for scan_off in 0..token_count - scan_start {
-        // transpiler-deor/codegen/decl/stmt/for.deor
-        let mut scan_index: i64 = scan_start + scan_off;
-        let mut scan_token: Token = tokens[scan_index as usize].clone();
-        let kind = scan_token.kind.clone();
-        if kind == KW_TIMES {
-            // transpiler-deor/codegen/decl/stmt/for.deor
-            return true;
-        }
-        if kind == NEWLINE {
-            // transpiler-deor/codegen/decl/stmt/for.deor
-            return false;
-        }
-    }
-    return false;
-}
-
 fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
@@ -12816,7 +12728,6 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -12878,7 +12789,7 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 return anchor + 1;
             }
             let mut cond_pos: i64 = locate_next_token(next_pos.clone());
-            let val_pos = cond_pos.clone();
+            let mut val_pos = cond_pos.clone();
             let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
             let __destructure_src = expr_result;
             let code = __destructure_src.code;
@@ -12917,7 +12828,7 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let mut move_var: String = value.clone();
             let mut in_pos: i64 = locate_next_token(var_pos.clone());
             let mut iter_pos: i64 = locate_next_token(in_pos.clone());
-            let val_pos = iter_pos.clone();
+            let mut val_pos = iter_pos.clone();
             let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
             let __destructure_src = expr_result;
             let code = __destructure_src.code;
@@ -12937,52 +12848,6 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let mut for_in_kw: String = " in ".to_string();
             let mut for_code: String = [pad.as_str(), for_kw.as_str(), move_var.as_str(), for_in_kw.as_str(), val_code.as_str(), RS_OB.as_str(), blk_code.as_str(), pad.as_str(), RS_CB.as_str()].concat();
             return make_result(for_code, blk_end.clone());
-        }
-    }
-    if for_header_has_times(tokens.clone(), pos.clone()) {
-        // macro: for_times (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_times.deor)
-        {
-            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_times.deor
-            fn locate_next_token(anchor: i64) -> i64 {
-                return anchor + 1;
-            }
-            let mut head_kind: String = kind.clone();
-            let mut times_var: String = "_".to_string();
-            let mut count_pos: i64 = next_pos.clone();
-            let mut after_pos: i64 = locate_next_token(next_pos.clone());
-            let mut after_token: Token = tokens[after_pos as usize].clone();
-            let kind = after_token.kind.clone();
-            let mut after_is_name: bool = kind == IDENT;
-            let mut after_is_int: bool = kind == "INT";
-            let mut has_var: bool = head_kind == IDENT && (after_is_name || after_is_int);
-            if has_var {
-                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_times.deor
-                let value = next_token.value.clone();
-                times_var = value;
-                count_pos = after_pos;
-            }
-            let val_pos = count_pos.clone();
-            let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-            let __destructure_src = expr_result;
-            let code = __destructure_src.code;
-            let new_pos = __destructure_src.new_pos;
-            let val_code = code.clone();
-            let val_end = new_pos.clone();
-            let mut times_next: i64 = locate_next_token(val_end.clone());
-            let mut blk_start: i64 = skip_to_body_ref(tokens.clone(), times_next.clone());
-            let mut blk_depth: i64 = depth + 1;
-            let mut blk_result: ParseResult = gen_block(blk_start.clone(), blk_depth.clone(), ctx.clone());
-            let __destructure_src = blk_result;
-            let code = __destructure_src.code;
-            let new_pos = __destructure_src.new_pos;
-            let blk_code = code.clone();
-            let blk_end = new_pos.clone();
-            let mut range_zero_prefix: String = "0..".to_string();
-            let mut times_range: String = s_cat(range_zero_prefix.clone(), val_code.clone());
-            let mut for_kw: String = "for ".to_string();
-            let mut for_in_kw: String = " in ".to_string();
-            let mut times_code: String = [pad.as_str(), for_kw.as_str(), times_var.as_str(), for_in_kw.as_str(), times_range.as_str(), RS_OB.as_str(), blk_code.as_str(), pad.as_str(), RS_CB.as_str()].concat();
-            return make_result(times_code, blk_end.clone());
         }
     }
     let mut var_name: String = "_".to_string();
@@ -13006,17 +12871,56 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: for_iter_expr (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor)
     {
         // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
-        let val_pos = iter_pos.clone();
-        let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
-        let __destructure_src = expr_result;
-        let code = __destructure_src.code;
-        let new_pos = __destructure_src.new_pos;
-        let val_code = code.clone();
-        let val_end = new_pos.clone();
-        let mut amp: String = "&".to_string();
-        let mut collection_ref: String = s_cat(amp.clone(), val_code.clone());
-        range_expr = collection_ref;
-        body_tok_pos = val_end;
+        fn locate_next_token(anchor: i64) -> i64 {
+            return anchor + 1;
+        }
+        if kind == IDENT && value == "range" {
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
+            let mut lparen: i64 = locate_next_token(iter_pos.clone());
+            let mut first_pos: i64 = locate_next_token(lparen.clone());
+            let mut val_pos = first_pos.clone();
+            let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+            let __destructure_src = expr_result;
+            let code = __destructure_src.code;
+            let new_pos = __destructure_src.new_pos;
+            let val_code = code.clone();
+            let val_end = new_pos.clone();
+            let mut comma_token: Token = tokens[val_end as usize].clone();
+            let kind = comma_token.kind.clone();
+            let mut has_start: bool = kind == COMMA;
+            if has_start {
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
+                let mut first_code: String = val_code;
+                let mut val_pos: i64 = val_end + 1;
+                let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+                let __destructure_src = expr_result;
+                let code = __destructure_src.code;
+                let new_pos = __destructure_src.new_pos;
+                let val_code = code.clone();
+                let val_end = new_pos.clone();
+                let mut range_dot: String = "..".to_string();
+                range_expr = [first_code.as_str(), range_dot.as_str(), val_code.as_str()].concat();
+                body_tok_pos = val_end + 1;
+            } else {
+                // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
+                let mut range_zero_prefix: String = "0..".to_string();
+                range_expr = [range_zero_prefix.as_str(), val_code.as_str()].concat();
+                body_tok_pos = val_end + 1;
+            }
+        } else {
+            // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
+            let mut val_pos = iter_pos.clone();
+            let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
+            let __destructure_src = expr_result;
+            let code = __destructure_src.code;
+            let new_pos = __destructure_src.new_pos;
+            let val_code = code.clone();
+            let val_end = new_pos.clone();
+            let mut amp: String = "&".to_string();
+            let mut collection_ref: String = s_cat(amp.clone(), val_code.clone());
+            range_expr = collection_ref;
+            body_tok_pos = val_end;
+        }
     }
     // transpiler-deor/codegen/decl/stmt/for.deor
     let mut blk_start: i64 = skip_to_body_ref(tokens.clone(), body_tok_pos.clone());
@@ -13078,7 +12982,6 @@ fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -13209,7 +13112,6 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -13606,7 +13508,6 @@ fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -13792,7 +13693,6 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -14336,7 +14236,6 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -14785,7 +14684,6 @@ fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -14916,7 +14814,6 @@ fn gen_enum_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -15083,7 +14980,6 @@ fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -15245,7 +15141,6 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -15433,7 +15328,6 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
@@ -15726,7 +15620,6 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     let KW_RUST: String = "KW_RUST".to_string();
     let KW_SHAPE: String = "KW_SHAPE".to_string();
     let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TIMES: String = "KW_TIMES".to_string();
     let KW_TO: String = "KW_TO".to_string();
     let KW_TRUE: String = "KW_TRUE".to_string();
     let KW_TYPE: String = "KW_TYPE".to_string();
