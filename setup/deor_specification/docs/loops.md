@@ -4,7 +4,7 @@
 # Loops
 
 ## Collection Iteration
-Iterating a list borrows it by default — `item` is a reference to each element, and the collection is still usable after the loop. Write the list name directly after `in`; no `range` needed.
+Iterating a list borrows it by default — `item` is a reference to each element, and the collection is still usable after the loop. Write the list name directly after `in`.
 
 Deor:
 ```deor
@@ -26,55 +26,64 @@ for room in &rooms {
 }
 ```
 
-Use `range` when you need the index — see [Numeric Iteration](#numeric-iteration) below. Use plain collection iteration when you only need the values.
+Use a counted loop when you need the index — see [Counted Iteration](#counted-iteration) below. Use plain collection iteration when you only need the values.
 
 ---
 ## Move Iteration
 `for move (item in collection)` consumes the collection instead of borrowing it — `item` is owned, and `collection` cannot be used after the loop. See [Move — Loop Iteration](docs/move.md#loop-iteration) for the full example and when to reach for it.
 
 ---
-## Numeric Iteration
-`range(count)` produces values from `0` to `count - 1`. `range(a_start_num, an_end_num)` produces values from `a_start_num` 
-up to but not including `an_end_num`. `range` is a built-in, so literals are valid directly.
+## Counted Iteration
+`for idx N times` runs the body `N` times, with `idx` counting from `0` to `N - 1`. `N` can be a number, a variable, or any expression.
 
 Deor:
 ```deor
-for idx in range(count)
-    ...
+for idx 10 times
+    print(idx)    # prints 0 through 9
 
-start as 1
-stop as 11
-for idx in range(start, stop)
-    print(idx)    # prints 1 through 10
+count as 4
+for idx count times
+    print(idx)    # prints 0 through 3
+
+for idx len(rooms) times
+    print(idx)
 ```
 
 Rust:
 ```rust
-for idx in 0..count {
-    ...
+for idx in 0..10 {
+    println!("{}", idx);
 }
-for idx in 1..11 {
+for idx in 0..count {
+    println!("{}", idx);
+}
+for idx in 0..rooms.len() as i64 {
     println!("{}", idx);
 }
 ```
 
-**Note:** `range` with two bounds requires both to be named variables — the same rule as any multi-argument call. `end` 
-is a reserved keyword; the conventional names for range bounds are `start` and `stop`.
+There is no start value. To skip items or start from another number, adjust inside the loop:
 
-`range(count)` is shorthand for `range(0, count)`.
+```deor
+for idx len(rooms) times
+    if idx < 1
+        continue    # skip the first item
 
+for idx 5 times
+    print(idx + 1)    # prints 1 through 5
+```
+
+The loop variable follows the usual naming rules (snake_case, at least 3 characters). A count that is a single name works too: `for count times` has no loop variable, while `for idx count times` does.
 
 ---
 ## Repeat Without an Index
-When the loop index is not needed, write `for in range(n)` — the variable name is omitted but `in` stays:
+When the loop index is not needed, leave the variable out:
 
 ```deor
-for in range(10)
+for 10 times
     do_something()
 
-start as 1
-stop as 11
-for in range(start, stop)
+for count times
     do_something()
 ```
 
@@ -82,7 +91,7 @@ for in range(start, stop)
 for _ in 0..10 {
     do_something();
 }
-for _ in 1..11 {
+for _ in 0..count {
     do_something();
 }
 ```
@@ -179,8 +188,8 @@ fn ask_until_valid() -> i64 {
 }
 ```
 
-`for if` fits the same keyword as collection and range iteration — `for` is Deor's single loop keyword, and the token 
-after it determines the form: `item in collection`, `in range(n)`, or `if condition`.
+`for if` fits the same keyword as collection and counted iteration — `for` is Deor's single loop keyword, and the tokens 
+after it determine the form: `item in collection`, `idx N times`, or `if condition`.
 
 ---
 ## `continue` — Skip to Next Iteration

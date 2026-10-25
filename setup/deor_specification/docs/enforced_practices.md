@@ -269,7 +269,7 @@ print(val)          # 5
 
 `block` works anywhere a statement is valid — top-level function bodies, inside `if`/`for` blocks, and inside macro bodies. That last case is also its most common use: see [Macros — `block` Inside Macros](docs/macros.md#block-inside-macros) for how it keeps a macro's internal variables from leaking into its caller's scope.
 
-**Exception:** built-in function names (`print`, `crash`, `len`, `range`, `args`, `input`) can never be shadowed, even though they aren't reserved keywords — see [Syntax — Built-in Function Names](docs/syntax.md#built-in-function-names).
+**Exception:** built-in function names (`print`, `crash`, `len`, `args`, `input`) can never be shadowed, even though they aren't reserved keywords — see [Syntax — Built-in Function Names](docs/syntax.md#built-in-function-names).
 
 ```deor
 int print = 5    # transpiler error — print is a built-in, not shadowable
@@ -362,7 +362,7 @@ int cnt = len(rooms)      # 1 arg — variable fine
 
 start as 0
 stop as 10
-for idx in range(start, stop)    # 2 args — named variables required
+for idx stop - start times    # count loop — any expression works as the count
     ...
 ```
 
