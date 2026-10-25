@@ -9,7 +9,7 @@ fn int count_tabs(string line)
 	int count = 0
 	space_run as 0
 
-	for index char_count times
+	for index in range(char_count)
 		string character = chars at index
 
 		if character is "\t"

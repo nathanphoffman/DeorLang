@@ -42,7 +42,6 @@ unsafe_macro token_kinds
 	const string KW_RUST             = "KW_RUST"
 	const string KW_SHAPE            = "KW_SHAPE"
 	const string KW_STRUCT           = "KW_STRUCT"
-	const string KW_TIMES            = "KW_TIMES"
 	const string KW_TO               = "KW_TO"
 	const string KW_TRUE             = "KW_TRUE"
 	const string KW_TYPE             = "KW_TYPE"

@@ -20,7 +20,7 @@ macro dd_copy_single_line_decl
 	if not already_seen
 		int copy_len = end_pos - pos
 
-		for copy_idx copy_len times
+		for copy_idx in range(copy_len)
 			int copy_pos = pos + copy_idx
 			Token copy_token = tokens at copy_pos
 			result at end = copy_token

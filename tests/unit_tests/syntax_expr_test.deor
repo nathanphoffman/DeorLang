@@ -2,8 +2,8 @@
 # Exercises the syntax/expression validator rules: bracket indexing instead of
 # 'at', an empty bracket literal instead of 'empty', a reserved keyword used
 # where a variable name is expected, 'not x is y' ordering (bare identifier,
-# parenthesized expression, and function call forms), the removed
-# 'for var in range(...)' loop form, bare truthiness on a non-bool/non-validator
+# parenthesized expression, and function call forms), 'range(...)' used
+# outside a for-loop header, bare truthiness on a non-bool/non-validator
 # variable, and a raw Rust generic type name (Option/Vec/Box/Rc/Arc/Result)
 # used directly.
 
@@ -39,13 +39,12 @@ fn void test_not_is_order_call()
 fn bool get_flag()
 	return true
 
-fn void test_removed_range()
-	for idx in range(5)
-		print(idx)
+fn void test_range_assigned()
+	int bad_assign = range(5)
+	print(bad_assign)
 
-fn void test_removed_range_no_var()
-	for in range(3)
-		print("iter")
+fn void test_range_as_arg()
+	print(range(3))
 
 fn void test_bare_truthiness()
 	int my_count = 5
@@ -74,9 +73,9 @@ fn void main()
 # line 25: variable 'flag' - use 'x is not y' instead of 'not x is y'
 # line 32: variable '(' - use 'x is not y' instead of 'not x is y'
 # line 36: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
-# line 43: call to 'range' - 'range' no longer exists
-# line 47: call to 'range' - 'range' no longer exists
-# line 53: variable 'my_count' - only bool and validator types have truthiness
-# line 57: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
-# line 60: call to '(' - bare tuple range
-# line 64: call to '(' - bare tuple range
+# line 43: call to 'range' - 'range' can only be used as a for-loop's iterator expression
+# line 47: call to 'range' - 'range' can only be used as a for-loop's iterator expression
+# line 52: variable 'my_count' - only bool and validator types have truthiness
+# line 56: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
+# line 59: call to '(' - bare tuple range
+# line 63: call to '(' - bare tuple range

@@ -15,8 +15,7 @@ macro collect_rust_block
 	strList rust_lines = empty
 	int scan_start = line_index + 1
 
-	for scan_line_off line_count - scan_start times
-		int scan_line = scan_start + scan_line_off
+	for scan_line in range(scan_start, line_count)
 		string rust_line = lines at scan_line
 		string stripped = s_trim(rust_line)
 

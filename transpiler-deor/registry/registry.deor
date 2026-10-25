@@ -95,14 +95,14 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 					typed_enum_reg at end = val_type
 					int typed_variant_count = len(pairs)
 
-					for typed_variant_index typed_variant_count times
+					for typed_variant_index in range(typed_variant_count)
 						typed_variant_reg at end = pairs at typed_variant_index
 				else
 					enum_reg at end = name
 					enum_reg at end = rust_name
 					int variant_count = len(pairs)
 
-					for variant_index variant_count times
+					for variant_index in range(variant_count)
 						variant_reg at end = pairs at variant_index
 
 			pos = new_pos

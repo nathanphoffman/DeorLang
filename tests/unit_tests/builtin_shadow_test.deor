@@ -1,18 +1,18 @@
 # builtin_shadow_test.deor
-# Exercises the built-in-name-shadow validator: print, crash, len, args,
+# Exercises the built-in-name-shadow validator: print, crash, len, range, args,
 # and input are plain IDENTs (not lexer keywords) but still cannot be used as a
 # variable, fn param, struct field, for-loop var, top-level fn name, or
 # destructuring target.
 
 shape intList = list of int
 
-shape len = list of int
+shape range = list of int
 
 enum string print
 	Foo = "Foo"
 
 struct Item
-	int len
+	int range
 
 fn void crash()
 	print("hi")
@@ -41,9 +41,9 @@ fn void main()
 	test_destructure()
 
 # expect-error:
-# line 9: declaration 'len' - this name belongs to a built-in function
+# line 9: declaration 'range' - this name belongs to a built-in function
 # line 11: declaration 'print' - this name belongs to a built-in function
-# line 15: struct field 'len' - this name belongs to a built-in function
+# line 15: struct field 'range' - this name belongs to a built-in function
 # line 17: declaration 'crash' - this name belongs to a built-in function
 # line 21: variable 'print' - this name belongs to a built-in function
 # line 23: fn 'len' - this name belongs to a built-in function

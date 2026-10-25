@@ -1,6 +1,6 @@
 
 # Flags the bare-tuple range form `for [var] in (start, end)` / `for in (start,
-# end)` — counted iteration goes through `for var N times`, so a paren
+# end)` — range iteration must go through `range(...)` now, so a paren
 # directly in the iterator-expression slot of a for-header is always invalid.
 # Does not apply to `for if ...` (while-loop form) or `for move (...)`
 # (move-iteration form), which legitimately have other tokens there.
@@ -21,9 +21,6 @@ macro check_bare_tuple_range
 				applies = false
 
 			if kind is KW_MOVE
-				applies = false
-
-			if for_header_has_times(tokens, pos)
 				applies = false
 
 			if applies

@@ -198,10 +198,9 @@
     fn float perform_liebniz_computation(int start_iter, int end_iter)
     	float value = 0.0
 
-    	# Loops count with "times", here it runs once per value between a start and end. Note: end is
-    	#  reserved in Deor as a keyword and can't be used
-    	for iter_off end_iter - start_iter times
-    		int iter = start_iter + iter_off
+    	# Loops use ranges like other languages such as Python these can be used in various ways, here it
+    	#  is going from a start to end value. Note: end is reserved in Deor as a keyword and can't be used
+    	for iter in range(start_iter, end_iter)
     		macro_run leibniz_iteration
 
     	return value

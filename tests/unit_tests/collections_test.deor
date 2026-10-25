@@ -8,7 +8,7 @@ fn int sum_list(intList nums)
 	total as 0
 	int cnt = len(nums)
 
-	for idx cnt times
+	for idx in range(cnt)
 		int val = nums at idx
 		total = total + val
 

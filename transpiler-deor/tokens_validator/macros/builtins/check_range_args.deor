@@ -1,0 +1,13 @@
+
+# Enforces that range() is called with 1 or 2 arguments: range(count) or
+# range(start, end) — see docs/builtins.md. Unlike print/crash, this had no
+# argument-count check at all: range(one, two, three) used to transpile, compile,
+# and run, silently dropping 'three' and iterating one..two; range() with 0 args
+# transpiled "successfully" but emitted invalid Rust ('/* unknown_primary */' in
+# the argument position), only failing at rustc.
+macro check_range_args
+	string builtin_name = "range"
+	int min_args = 1
+	int max_args = 2
+	string arg_count_rule = rule_range_args
+	macro_run check_builtin_arg_count

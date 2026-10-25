@@ -6,9 +6,9 @@
 fn int nested_count(int outer_limit, int inner_limit)
 	total as 0
 
-	for outer_idx outer_limit times
+	for outer_idx in range(outer_limit)
 		if outer_idx > 0
-			for inner_idx inner_limit times
+			for inner_idx in range(inner_limit)
 				if inner_idx > 0
 					total = total + 1
 				else

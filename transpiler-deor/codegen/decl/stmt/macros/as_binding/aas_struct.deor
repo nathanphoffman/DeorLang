@@ -54,7 +54,7 @@ macro aas_struct
 		int field_count = len(fields)
 		strList field_pairs = empty
 
-		for field_index field_count times
+		for field_index in range(field_count)
 			string field_name = fields at field_index
 			string field_sep = ": "
 			string field_clone_suffix = ".clone()"

@@ -2,17 +2,16 @@ fn int sum_to(int num)
 
 	total as 0
 
-	for idx num times
+	for idx in range(num)
 		total = total + idx
 
 	return total
 
-fn int sum_offset(int start, int stop)
+fn int sum_range(int start, int stop)
 
 	total as 0
 
-	for idx_off stop - start times
-		int idx = start + idx_off
+	for idx in range(start, stop)
 		total = total + idx
 
 	return total
@@ -20,7 +19,7 @@ fn int sum_offset(int start, int stop)
 fn int count_down(int num)
 	result as 0
 
-	for idx num times
+	for idx in range(num)
 		if idx < 2
 			continue
 
@@ -47,51 +46,11 @@ fn int loop_true_break()
 
 	return counter
 
-fn int bare_times_count(int num)
+fn int bare_range_count(int num)
 	total as 0
 
-	for num times
+	for in range(num)
 		total = total + 1
-
-	return total
-
-fn int times_expr_count(int num)
-	total as 0
-
-	for idx num + 1 times
-		total = total + idx
-
-	return total
-
-fn int times_len_count()
-	nums as [4, 5, 6]
-	total as 0
-
-	for idx len(nums) times
-		total = total + idx
-
-	return total
-
-fn int times_named_count()
-	limit as 4
-	total as 0
-
-	for limit times
-		total = total + 10
-
-	return total
-
-fn int times_break_continue()
-	total as 0
-
-	for idx 10 times
-		if idx < 2
-			continue
-
-		if idx is 5
-			break
-
-		total = total + idx
 
 	return total
 
@@ -100,7 +59,7 @@ fn void main()
 	print(total1)
 	int range_start = 3
 	int range_end = 7
-	int total2 = sum_offset(range_start, range_end)
+	int total2 = sum_range(range_start, range_end)
 	print(total2)
 	int total3 = count_down(5)
 	print(total3)
@@ -115,16 +74,8 @@ fn void main()
 	print(total4)
 	int total5 = loop_true_break()
 	print(total5)
-	int total6 = bare_times_count(6)
+	int total6 = bare_range_count(6)
 	print(total6)
-	int total7 = times_expr_count(3)
-	print(total7)
-	int total8 = times_len_count()
-	print(total8)
-	int total9 = times_named_count()
-	print(total9)
-	int total10 = times_break_continue()
-	print(total10)
 
 	# print's legitimate 2-arg form: the second arg replaces the trailing
 	# newline (print! instead of println!), so this line and the next print's
@@ -143,8 +94,4 @@ fn void main()
 # 4
 # 5
 # 6
-# 6
-# 3
-# 40
-# 9
 # prefix-suffixend

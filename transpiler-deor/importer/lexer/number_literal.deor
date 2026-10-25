@@ -10,8 +10,7 @@ fn ParseResult scan_number(strList chars, int char_index, int char_count)
 	int num_start = char_index + 1
 	int new_pos = char_index + 1
 
-	for number_off char_count - num_start times
-		int number_index = num_start + number_off
+	for number_index in range(num_start, char_count)
 		string number_char = chars at number_index
 
 		if c_digit(number_char)
@@ -46,8 +45,7 @@ fn ParseResult scan_number(strList chars, int char_index, int char_count)
 				num = s_cat(num, dot_str)
 				new_pos = frac_start
 
-				for frac_off char_count - frac_start times
-					int frac_index = frac_start + frac_off
+				for frac_index in range(frac_start, char_count)
 					string frac_char = chars at frac_index
 
 					if c_digit(frac_char)

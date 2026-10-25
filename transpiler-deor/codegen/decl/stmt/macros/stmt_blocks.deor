@@ -36,7 +36,7 @@ macro stmt_blocks
 		strList padded_lines = empty
 		int line_count = len(rust_lines)
 
-		for line_index line_count times
+		for line_index in range(line_count)
 			string rust_line = rust_lines at line_index
 
 			if is_empty(rust_line)

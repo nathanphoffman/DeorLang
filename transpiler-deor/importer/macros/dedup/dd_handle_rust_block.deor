@@ -36,7 +36,7 @@ macro dd_handle_rust_block
 		bool already_seen = false
 		int seen_len = len(seen)
 
-		for seen_index seen_len times
+		for seen_index in range(seen_len)
 			string seen_val = seen at seen_index
 
 			if seen_val is decl_name
@@ -47,7 +47,7 @@ macro dd_handle_rust_block
 		if not already_seen
 			seen at end = decl_name
 
-			for copy_idx 3 times
+			for copy_idx in range(3)
 				int copy_pos = pos + copy_idx
 				Token copy_token = tokens at copy_pos
 				result at end = copy_token

@@ -184,7 +184,7 @@ fn tokenList apply_t_substitution(tokenList tokens, string placeholder, string c
 	tokenList result = empty
 	int token_count = len(tokens)
 
-	for index token_count times
+	for index in range(token_count)
 		Token tok = tokens at index
 		(kind, value, line, file) in tok
 

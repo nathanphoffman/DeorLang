@@ -7,7 +7,7 @@
 macro gic_emit_bindings
 	int field_count = len(fields)
 
-	for field_index field_count times
+	for field_index in range(field_count)
 		string field_name = fields at field_index
 		string binding = ""
 

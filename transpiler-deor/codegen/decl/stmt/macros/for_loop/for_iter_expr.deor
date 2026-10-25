@@ -1,14 +1,49 @@
-# Determines `range_expr` and `body_tok_pos` for the shared for-loop emit path: the
-# iterated collection becomes `&collection`. Count loops (`for idx N times`) are
-# handled earlier by for_times, and a bare `(start, end)` in this position is a
-# validation error (see check_bare_tuple_range.deor) that never reaches codegen.
+
+# Determines `range_expr` and `body_tok_pos` for the shared for-loop emit path. Two cases:
+#   range(n) or range(start, end) → `0..n` or `start..end`
+#   collection                    → `&collection`
+# A bare `(start, end)` in this position is a validation error (see
+# check_bare_tuple_range.deor) and never reaches codegen.
 macro for_iter_expr
-	val_pos as iter_pos
-	ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
-	move (code, new_pos) in expr_result
-	val_code as code
-	val_end as new_pos
-	string amp = "&"
-	string collection_ref = s_cat(amp, val_code)
-	range_expr = collection_ref
-	body_tok_pos = val_end
+	# ex: for x in range{(}n) — anchor+1 grabs the opening paren
+	fn int locate_next_token(int anchor)
+		return anchor + 1
+
+	if kind is IDENT and value is "range"
+		int lparen = locate_next_token(iter_pos)
+
+		# ex: for x in range({n}) — lparen+1 grabs the first range argument
+		int first_pos = locate_next_token(lparen)
+		val_pos as first_pos
+		ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
+		move (code, new_pos) in expr_result
+		val_code as code
+		val_end as new_pos
+		Token comma_token = tokens at val_end
+		(kind) in comma_token
+		bool has_start = kind is COMMA
+
+		if has_start
+			string first_code = move val_code
+			int val_pos = val_end + 1
+			ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
+			move (code, new_pos) in expr_result
+			val_code as code
+			val_end as new_pos
+			string range_dot = ".."
+			range_expr = s_join([first_code, range_dot, val_code])
+			body_tok_pos = val_end + 1
+		else
+			string range_zero_prefix = "0.."
+			range_expr = s_join([range_zero_prefix, val_code])
+			body_tok_pos = val_end + 1
+	else
+		val_pos as iter_pos
+		ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
+		move (code, new_pos) in expr_result
+		val_code as code
+		val_end as new_pos
+		string amp = "&"
+		string collection_ref = s_cat(amp, val_code)
+		range_expr = collection_ref
+		body_tok_pos = val_end

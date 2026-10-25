@@ -82,8 +82,9 @@ Imports must be first — only enforced rule. Recommended order after: Enums →
 
 ## Loops
 - `for item in collection` — collection iteration
-- `for idx count times` — idx runs 0 to count-1; count can be a number, name, or expression
-- `for count times` — no index needed
+- `for idx in range(count)` — 0 to count-1; `range(start, end)` exclusive upper bound
+- `for in range(n)` — no index needed
+- `for idx in (low, high)` — bare tuple range
 - `for if condition` — while loop; `for if true` — infinite loop
 - `break` / `continue` — innermost loop only; no labeled breaks
 
@@ -94,6 +95,7 @@ Imports must be first — only enforced rule. Recommended order after: Enums →
 ## Built-ins (no import)
 - `print(val)` — stdout + newline, any primitive
 - `len(val)` — length of list or string
+- `range(n)` / `range(start, end)` — for-loop iteration source only, not a value
 - `crash(message)` — panic!
 - `(avow val)` — unwrap validator type to raw primitive
 

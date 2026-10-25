@@ -43,7 +43,7 @@ macro gen_enum_extract_check
 						string pad = s_repeat(RS_IND, depth)
 						strList output_lines = empty
 
-						for field_index field_count times
+						for field_index in range(field_count)
 							string field_name = fields at field_index
 							string dot = "."
 							string key = s_join([enum_name, dot, field_name])
