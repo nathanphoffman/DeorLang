@@ -1,0 +1,14 @@
+# list_remove_at_out_of_bounds_panic_test.deor
+# `list remove at idx` compiles straight to Rust `list.remove(idx)`, so an
+# out-of-bounds index is a runtime panic rather than a silent no-op.
+
+shape intList = list of int
+
+fn void main()
+	intList nums = [1, 2, 3]
+	bad_index as 10
+	nums remove at bad_index
+	print("unreachable")
+
+# expect-panic:
+# removal index

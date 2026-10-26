@@ -1,0 +1,34 @@
+# string_trim_test.deor
+# Exercises lib/string.deor's s_trim, the only string function not covered by
+# string_lib_full_test.deor. It strips whitespace from both ends and leaves interior
+# whitespace alone. Results are compared via `is` rather than printed raw, since the
+# harness only trims the outer edges of the whole stdout blob.
+
+import "lib/string.deor"
+
+fn void main()
+	padded as "  hello world  "
+	string trimmed = s_trim(padded)
+	expected as "hello world"
+	bool trim_ok = trimmed is expected
+	print(trim_ok)
+
+	string trimmed_len_src = s_trim(padded)
+	int trimmed_len = len(trimmed_len_src)
+	print(trimmed_len)
+
+	already_clean as "clean"
+	string clean_result = s_trim(already_clean)
+	bool clean_ok = clean_result is already_clean
+	print(clean_ok)
+
+	blank as "   "
+	string blank_result = s_trim(blank)
+	int blank_len = len(blank_result)
+	print(blank_len)
+
+# expect:
+# true
+# 11
+# true
+# 0

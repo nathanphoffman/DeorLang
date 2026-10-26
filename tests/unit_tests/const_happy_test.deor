@@ -1,0 +1,29 @@
+# const_happy_test.deor
+# Happy-path counterpart to const_validator_test.deor (which only covers const
+# reassignment errors): const bindings of each primitive type can be declared in
+# a function body and read in expressions, interpolated into strings, and passed to calls.
+
+fn int double_it(int value)
+	return value * 2
+
+fn void main()
+	const int MAX_RETRIES = 3
+	const string PIPE = "|"
+	const float RATE = 1.5
+
+	int doubled = double_it(MAX_RETRIES)
+	print(doubled)
+
+	int next_try = MAX_RETRIES + 1
+	print(next_try)
+
+	print(PIPE)
+
+	float scaled = RATE * 2.0
+	print(scaled)
+
+# expect:
+# 6
+# 4
+# |
+# 3
