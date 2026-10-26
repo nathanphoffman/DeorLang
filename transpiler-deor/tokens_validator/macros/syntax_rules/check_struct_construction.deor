@@ -47,7 +47,17 @@ macro check_struct_construction
 
 			if prefix_ok
 				if value_kind is LPAREN
+					# ex: Item item = ({avow} wrapped) — an avow unwrap of a validator-typed
+					# struct, not a construction, so there are no field names to check
+					int after_paren_pos = value_pos + 1
 					matched = true
+
+					if after_paren_pos < token_count
+						Token after_paren_token = tokens at after_paren_pos
+						(kind) in after_paren_token
+
+						if kind is KW_AVOW
+							matched = false
 				else if value_kind is KW_MOVE
 					int move_paren_pos = locate_paren_after_move(pos)
 

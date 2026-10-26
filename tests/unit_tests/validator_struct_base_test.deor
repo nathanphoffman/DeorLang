@@ -1,0 +1,54 @@
+# validator_struct_base_test.deor
+# A validator type can wrap a struct, not just a primitive. The predicate pulls fields
+# out of the struct with `in`, the result is checked with is valid / is not valid, and
+# `avow` hands back a copy of the struct (so the validator variable stays usable).
+# Structs stay immutable: a "changed" version comes from `with`, and assigning it back
+# re-runs the predicate.
+
+struct DateRange
+	int start_day
+	int end_day
+
+type ValidRange(DateRange val)
+	(start_day, end_day) in val
+	return start_day < end_day
+
+fn void main()
+	int start_day = 3
+	int end_day = 9
+	DateRange span = (start_day, end_day)
+	ValidRange checked = span
+
+	if checked is valid
+		DateRange first_copy = (avow checked)
+		DateRange second_copy = (avow checked)
+		(end_day) in second_copy
+		print(end_day)
+	else
+		print("should have been valid")
+
+	start_day = 12
+	DateRange backwards = (start_day, end_day)
+	ValidRange rejected = backwards
+
+	if rejected is not valid
+		print("end must be after start")
+
+	ValidRange unset
+
+	if unset is not valid
+		print("unset is not valid")
+
+	# fix the bad range with `with`, then assign it back: the predicate re-runs
+	start_day = 1
+	repaired as backwards with (start_day)
+	rejected = repaired
+
+	if rejected is valid
+		print("repaired")
+
+# expect:
+# 9
+# end must be after start
+# unset is not valid
+# repaired

@@ -3882,7 +3882,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_enum_data: String = "enum variants cannot carry data — use a struct alongside the enum instead".to_string();
     let mut rule_typed_enum_eq: String = "typed enum variant must have a value — add '= value' after the variant name".to_string();
     let mut rule_untyped_enum_eq: String = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants".to_string();
-    let mut rule_non_primitive_validator: String = "validator base type must be a primitive (int, float, string, bool) — structs, list shapes, and other validator types cannot be used".to_string();
+    let mut rule_non_primitive_validator: String = "validator base type must be a primitive (int, float, string, bool) or a struct — list shapes and other validator types cannot be used".to_string();
     let mut rule_validator_missing_body: String = "validator type is missing a predicate body — add an indented block that returns a bool, e.g. 'return val > 0'".to_string();
     let mut rule_missing_return_expr: String = "looks like a value meant to be returned, but 'return' is missing — only a function body that's a single expression implicitly returns; add 'return' here".to_string();
     let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
@@ -6712,7 +6712,9 @@ fn validate_tokens(tokens: TokensRef) {
                         let mut base_type_token: Token = tokens[base_type_pos as usize].clone();
                         let mut value = base_type_token.value.clone();
                         let mut is_primitive: bool = list_has(primitive_type_names.clone(), value.clone());
-                        if !is_primitive {
+                        let mut is_struct_base: bool = reg_has(struct_field_reg.clone(), value.clone());
+                        let mut is_allowed_base: bool = is_primitive || is_struct_base;
+                        if !is_allowed_base {
                             // transpiler-deor/tokens_validator/macros/declarations/check_type_base_primitive.deor
                             let mut name_pos: i64 = locate_type_name(pos.clone());
                             let mut name_token: Token = tokens[name_pos as usize].clone();
@@ -8445,7 +8447,17 @@ fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                 if value_kind == LPAREN {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
+                                    let mut after_paren_pos: i64 = value_pos + 1;
                                     matched = true;
+                                    if after_paren_pos < token_count {
+                                        // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
+                                        let mut after_paren_token: Token = tokens[after_paren_pos as usize].clone();
+                                        let mut kind = after_paren_token.kind.clone();
+                                        if kind == KW_AVOW {
+                                            // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
+                                            matched = false;
+                                        }
+                                    }
                                 } else if value_kind == KW_MOVE {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                     let mut move_paren_pos: i64 = locate_paren_after_move(pos.clone());
@@ -13883,6 +13895,11 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                     // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                     unwrap_expr = s_cat(val_code.clone(), unwrap_field0_suffix.clone());
                 }
+                if is_struct_type {
+                    // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
+                    let mut clone_unwrap_suffix: String = ".clone().unwrap().0".to_string();
+                    unwrap_expr = s_cat(val_code.clone(), clone_unwrap_suffix.clone());
+                }
                 let mut left_code: String = unwrap_expr.clone();
                 let mut cur_pos: i64 = after_rparen.clone();
                 while cur_pos < token_count {
@@ -15265,10 +15282,11 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         final_pred_code = [closure_open.as_str(), block_code.as_str(), closure_close.as_str()].concat();
         final_pos = body_start + block_new_pos;
     }
-    let mut struct_prefix: String = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ".to_string();
-    if param_type == "string" {
+    let mut struct_prefix: String = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
+    let mut is_copy_base: bool = param_type == "int" || param_type == "float" || param_type == "bool";
+    if is_copy_base {
         // transpiler-deor/codegen/decl/validator_type.deor
-        struct_prefix = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
+        struct_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ".to_string();
     }
     let mut struct_paren_open: String = "(".to_string();
     let mut struct_suffix: String = ");\n\n".to_string();
@@ -15652,7 +15670,7 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     }
     let mut pos: i64 = 0;
     let mut last_file: String = "".to_string();
-    let mut _timer_label: String = "[timer]   codegen-loop: ".to_string();
+    let mut _timer_label: String = "[timer] codegen-loop: ".to_string();
     // macro: timer_start (transpiler-deor/macros/timer.deor)
     let mut _timer_start: i64 = now_ms();
     // transpiler-deor/codegen/codegen.deor
@@ -15773,16 +15791,10 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
 }
 
 // transpiler-deor/main.deor
-fn main() {
+fn strip_verbose_flags(raw_args: Vec<String>) -> Vec<String> {
     // transpiler-deor/main.deor
-    let mut raw_args: Vec<String> = f_args();
     let mut verbose_long: String = "--verbose".to_string();
     let mut verbose_short: String = "-v".to_string();
-    let mut verbose: bool = list_has(raw_args.clone(), verbose_long.clone()) || list_has(raw_args.clone(), verbose_short.clone());
-    if verbose {
-        // transpiler-deor/main.deor
-        verbose_enable();
-    }
     let mut cli_args: Vec<String> = Vec::new();
     let mut raw_count: i64 = (raw_args.len() as i64);
     let mut raw_i: i64 = 0;
@@ -15796,6 +15808,20 @@ fn main() {
         }
         raw_i = raw_i + 1;
     }
+    return cli_args;
+}
+
+fn main() {
+    // transpiler-deor/main.deor
+    let mut raw_args: Vec<String> = f_args();
+    let mut verbose_long: String = "--verbose".to_string();
+    let mut verbose_short: String = "-v".to_string();
+    let mut verbose: bool = list_has(raw_args.clone(), verbose_long.clone()) || list_has(raw_args.clone(), verbose_short.clone());
+    if verbose {
+        // transpiler-deor/main.deor
+        verbose_enable();
+    }
+    let mut cli_args: Vec<String> = strip_verbose_flags(raw_args.clone());
     let mut arg_count: i64 = (cli_args.len() as i64);
     if arg_count < 2 {
         // transpiler-deor/main.deor

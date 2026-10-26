@@ -78,6 +78,12 @@ macro tb_paren
 		if var_type is "float"
 			unwrap_expr = s_cat(val_code, unwrap_field0_suffix)
 
+		# A validator type wrapping a struct: the struct isn't Copy, so unwrap a clone and
+		# leave the validator variable usable afterwards
+		if is_struct_type
+			string clone_unwrap_suffix = ".clone().unwrap().0"
+			unwrap_expr = s_cat(val_code, clone_unwrap_suffix)
+
 		# (avow x) can be the left operand of a larger expression -- e.g. '(avow x) + 2'
 		# (docs/validator_types.md's own worked example). Continue folding in trailing
 		# binary operators exactly like gen_expr's own loop, using the unwrapped value

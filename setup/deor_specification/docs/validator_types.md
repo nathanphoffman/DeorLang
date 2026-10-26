@@ -25,13 +25,14 @@ variables, and structs.
 **The predicate body is mandatory** — a `type` with no rule means nothing more than its base type, so the transpiler rejects an empty body. 
 Just use the base type directly if you don't need a check.
 
-The base type must be a primitive (`int`, `float`, `string`, `bool`) — structs, list shapes, and other validator types (including the type 
+The base type must be a primitive (`int`, `float`, `string`, `bool`) or a declared struct — list shapes and other validator types (including the type 
 referencing itself) are not valid as a validator base type and are transpiler errors:
 
 ```deor
 type Foo(int val)          # correct — primitive base type
+type Foo(Point val)        # correct — struct base type (see Validator Types Over Structs)
 type Foo(intList val)      # transpiler error — list shapes cannot be validator base types
-type Foo(Point val)        # transpiler error — structs cannot be validator base types
+type Foo(Bar val)          # transpiler error — Bar is another validator type (or not declared)
 type Foo(Foo val)          # transpiler error — a validator type cannot reference itself
 ```
 
@@ -213,6 +214,42 @@ struct Room
 if max_capacity is valid
     int cap = (avow max_capacity)
 ```
+
+---
+
+## Validator Types Over Structs
+
+A validator type can wrap a struct, so a rule can check several fields together. The predicate pulls the fields out with `in`, the same as any function:
+
+```deor
+struct DateRange
+    int start_day
+    int end_day
+
+type ValidRange(DateRange val)
+    (start_day, end_day) in val
+    return start_day < end_day
+```
+
+```deor
+DateRange span = (start_day, end_day)
+ValidRange checked = span
+
+if checked is valid
+    DateRange good = (avow checked)
+```
+
+Everything else works like any other validator type: `is valid` / `is not valid`, declaring without a value, and the predicate re-running on every assignment.
+
+**Structs stay immutable.** There is still no field-assignment syntax, and `avow` hands back a copy, so the validator variable stays usable afterwards. To "change" a wrapped struct, build a new one with `with` and assign it back — the rule re-runs on that assignment, so an invalid struct can't be slipped in by editing it:
+
+```deor
+start_day = 1
+repaired as backwards with (start_day)
+rejected = repaired    # predicate re-runs
+```
+
+In Rust the wrapper derives `Clone` but not `Copy` (a struct isn't `Copy`), and `(avow checked)` becomes `checked.clone().unwrap().0`.
 
 ---
 

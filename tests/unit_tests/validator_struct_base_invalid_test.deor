@@ -1,0 +1,29 @@
+# validator_struct_base_invalid_test.deor
+# Only a primitive or a declared struct can be a validator's base type: a list shape,
+# a name that was never declared, and another validator type are all still rejected.
+
+shape intList = list of int
+
+struct Point
+	int pos_x
+	int pos_y
+
+type PointOk(Point val)
+	true
+
+type ShapeBase(intList val)
+	true
+
+type MissingBase(Nowhere val)
+	true
+
+type NestedBase(PointOk val)
+	true
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 14: type 'ShapeBase' - validator base type must be a primitive
+# line 17: type 'MissingBase' - validator base type must be a primitive
+# line 20: type 'NestedBase' - validator base type must be a primitive
