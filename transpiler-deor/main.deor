@@ -1,6 +1,25 @@
 import "transpiler-deor/imports.deor"
 import "transpiler-deor/macros/timer.deor"
 
+# Removes --verbose/-v from the raw args and returns the rest (input and output paths).
+fn strList strip_verbose_flags(strList raw_args)
+	string verbose_long = "--verbose"
+	string verbose_short = "-v"
+	strList cli_args = empty
+	int raw_count = len(raw_args)
+	int raw_i = 0
+
+	for if raw_i < raw_count
+		string raw_arg = raw_args at raw_i
+		bool is_verbose_flag = raw_arg is verbose_long or raw_arg is verbose_short
+
+		if not is_verbose_flag
+			cli_args at end = raw_arg
+
+		raw_i = raw_i + 1
+
+	return cli_args
+
 # Entry point. Reads input and output paths from command-line arguments, calls
 # collect_all_tokens_with_all_imports to load and resolve all imports, calls generate
 # to produce Rust source, and writes it to the output file.
@@ -15,19 +34,7 @@ fn void main()
 	if verbose
 		verbose_enable()
 
-	strList cli_args = empty
-	int raw_count = len(raw_args)
-	int raw_i = 0
-
-	for if raw_i < raw_count
-		string raw_arg = raw_args at raw_i
-		bool is_verbose_flag = raw_arg is verbose_long or raw_arg is verbose_short
-
-		if not is_verbose_flag
-			cli_args at end = raw_arg
-
-		raw_i = raw_i + 1
-
+	strList cli_args = strip_verbose_flags(raw_args)
 	int arg_count = len(cli_args)
 
 	if arg_count < 2
