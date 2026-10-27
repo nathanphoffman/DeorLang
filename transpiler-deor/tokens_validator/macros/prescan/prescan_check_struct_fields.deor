@@ -81,6 +81,11 @@ macro prescan_check_struct_fields
 						if list_has(builtin_names, value)
 							errors at end = val_err(field_name_token, lbl_field, rule_builtin_shadow)
 
+						# a validator-typed field comes out of `in` destructuring as a validator
+						# variable under the field's own name, so remember it for check_avow_target
+						if list_has(validator_type_names, field_type)
+							validator_field_names at end = value
+
 						bool is_func_field = list_has(func_shape_names, field_type)
 
 						if is_func_field

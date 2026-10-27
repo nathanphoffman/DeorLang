@@ -1,0 +1,50 @@
+# result_multi_type_test.deor
+# lib/result.deor imported for two different types at once: each import stamps out its
+# own IntResult / StringResult and its own r_int_* / r_string_* functions, with no clash.
+
+import "lib/result.deor" where T = int
+import "lib/result.deor" where T = string
+
+fn IntResult half(int number)
+	int remainder = number - (number / 2) * 2
+
+	if remainder is not 0
+		return r_int_error("odd number")
+
+	int halved = number / 2
+
+	return r_int_ok(halved)
+
+fn StringResult first_word(string text)
+	if text is ""
+		return r_string_error("no text")
+
+	return r_string_ok(text)
+
+fn void main()
+	int even_number = 10
+	IntResult even_result = half(even_number)
+	(value, message) in even_result
+
+	if value is valid
+		int answer = (avow value)
+		print(answer)
+
+	int odd_number = 7
+	IntResult odd_result = half(odd_number)
+	(value, message) in odd_result
+
+	if value is not valid
+		print(message)
+
+	blank as ""
+	StringResult blank_result = first_word(blank)
+	(value, message) in blank_result
+
+	if value is not valid
+		print(message)
+
+# expect:
+# 5
+# odd number
+# no text

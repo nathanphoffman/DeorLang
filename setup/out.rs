@@ -4159,6 +4159,7 @@ fn validate_tokens(tokens: TokensRef) {
     // macro: prescan_declared_state (transpiler-deor/tokens_validator/macros/prescan/prescan_declared_state.deor)
     let mut struct_field_reg: Vec<String> = Vec::new();
     let mut validator_vars: Vec<String> = Vec::new();
+    let mut validator_field_names: Vec<String> = Vec::new();
     let mut raw_var_names: Vec<String> = Vec::new();
     let mut const_var_names: Vec<String> = Vec::new();
     let mut non_bool_var_names: Vec<String> = Vec::new();
@@ -4778,6 +4779,10 @@ fn validate_tokens(tokens: TokensRef) {
                                 if list_has(builtin_names.clone(), value.clone()) {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                                     errors.push(val_err(field_name_token.clone(), lbl_field.clone(), rule_builtin_shadow.clone()).clone());
+                                }
+                                if list_has(validator_type_names.clone(), field_type.clone()) {
+                                    // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
+                                    validator_field_names.push(value.clone());
                                 }
                                 let mut is_func_field: bool = list_has(func_shape_names.clone(), field_type.clone());
                                 if is_func_field {
@@ -7552,7 +7557,7 @@ fn validate_tokens(tokens: TokensRef) {
                         let mut value = __destructure_src.value.clone();
                         if kind == IDENT {
                             // transpiler-deor/tokens_validator/macros/check_avow_target.deor
-                            let mut is_valid: bool = list_has(validator_vars.clone(), value.clone());
+                            let mut is_valid: bool = list_has(validator_vars.clone(), value.clone()) || list_has(validator_field_names.clone(), value.clone());
                             if !is_valid {
                                 // transpiler-deor/tokens_validator/macros/check_avow_target.deor
                                 errors.push(val_err(target_token.clone(), lbl_var.clone(), rule_avow.clone()).clone());

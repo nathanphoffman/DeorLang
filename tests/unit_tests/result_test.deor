@@ -1,0 +1,45 @@
+# result_test.deor
+# Exercises lib/result.deor with T = Config: r_config_ok builds a result whose value is
+# valid, r_config_error builds one whose value is not valid and whose message says why.
+# The caller destructures the result and checks `value` with is valid, then avows it.
+
+import "lib/result.deor" where T = Config
+
+struct Config
+	string name
+	int port
+
+fn ConfigResult load(string path)
+	if path is ""
+		return r_config_error("path is empty")
+
+	string name = path
+	int port = 8080
+	Config cfg = (name, port)
+
+	return r_config_ok(cfg)
+
+fn void report(ConfigResult outcome)
+	(value, message) in outcome
+
+	if value is valid
+		Config cfg = (avow value)
+		(name, port) in cfg
+		print(name)
+		print(port)
+	else
+		print(message)
+
+fn void main()
+	good_path as "app.conf"
+	ConfigResult good = load(good_path)
+	report(good)
+
+	empty_path as ""
+	ConfigResult bad = load(empty_path)
+	report(bad)
+
+# expect:
+# app.conf
+# 8080
+# path is empty

@@ -10,7 +10,7 @@ import "lib/string.deor"
 import "lib/math.deor"
 ```
 
-Four of the library files are **parameterized** — they use `where Placeholder = Type` to produce a concrete, type-safe version of the module. `T` is the conventional placeholder name but any valid identifier works. See [Parameterized Imports](#parameterized-imports) below.
+Five of the library files are **parameterized** — they use `where Placeholder = Type` to produce a concrete, type-safe version of the module. `T` is the conventional placeholder name but any valid identifier works. See [Parameterized Imports](#parameterized-imports) below.
 
 ## Do Not Edit `lib/` Files
 
@@ -174,7 +174,7 @@ The placeholder can be any valid identifier — `T` is the convention in the sta
 
 All Deor primitive types work as the concrete value: `int`, `float`, `string`, and `bool`.
 
-Four standard library files (`lib/list.deor`, `lib/list_order.deor`, `lib/list_numeric.deor`, `lib/tasks.deor`) are parameterized this way. See their sections below for details.
+Five standard library files (`lib/list.deor`, `lib/list_order.deor`, `lib/list_numeric.deor`, `lib/result.deor`, `lib/tasks.deor`) are parameterized this way. See their sections below for details.
 
 ### Substitution rules
 
@@ -295,6 +295,50 @@ int best = l_int_max(scores)
 ```
 
 `l_T_sort`, `l_T_sum`, `l_T_min`, `l_T_max`, `l_T_contains`, `l_T_index_of`, and `l_T_unique` require the element type to implement `Ord` / `Hash` / `Clone` in the generated Rust. They work naturally for `int`, `float`, and `string`. For custom structs, use a `rust` block instead.
+
+---
+
+## `lib/result.deor`
+
+A result that is either a value or an error message, for functions that can fail. Built on a [validator type over a struct](docs/validator_types.md#validator-types-over-structs).
+
+```deor
+import "lib/result.deor" where T = Config
+```
+
+After substitution with `T = Config`:
+
+| Name | Kind | Description |
+|---|---|---|
+| `ConfigOk` | validator type | wraps a `Config`; valid whenever a value was assigned |
+| `ConfigResult` | struct | fields `value` (a `ConfigOk`) and `message` (a `string`) |
+
+| Function | Signature | Description |
+|---|---|---|
+| `r_config_ok` | `(Config val) → ConfigResult` | Successful result: `value` is valid, `message` is empty |
+| `r_config_error` | `(string message) → ConfigResult` | Failed result: `value` is not valid, `message` says what went wrong |
+
+```deor
+fn ConfigResult load(string path)
+    if path is ""
+        return r_config_error("path is empty")
+
+    Config cfg = read_config(path)
+
+    return r_config_ok(cfg)
+
+fn void main()
+    path as "app.conf"
+    ConfigResult outcome = load(path)
+    (value, message) in outcome
+
+    if value is valid
+        Config cfg = (avow value)
+    else
+        print(message)
+```
+
+The `is valid` check runs on the destructured `value`, not on the result itself. Import the file once per type (`T = int`, `T = string`, ...) and each gets its own `IntResult` / `r_int_ok`, `StringResult` / `r_string_ok`, and so on.
 
 ---
 

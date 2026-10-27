@@ -1,6 +1,8 @@
 
 # Enforces that avow is only used on a validator type variable.
-# avow appears inside parens: (avow x) — the token after KW_AVOW is the target.
+# avow appears inside parens: (avow x) — the token after KW_AVOW is the target. A target
+# also counts when it shares its name with a validator-typed struct field, since
+# `(field) in some_struct` brings that field out as a validator variable.
 macro check_avow_target
 	# ex: (avow {x}) — kw_pos+1 grabs the avow target
 	fn int locate_next_token(int kw_pos)
@@ -14,7 +16,7 @@ macro check_avow_target
 			(kind, value) in target_token
 
 			if kind is IDENT
-				bool is_valid = list_has(validator_vars, value)
+				bool is_valid = list_has(validator_vars, value) or list_has(validator_field_names, value)
 
 				if not is_valid
 					errors at end = val_err(target_token, lbl_var, rule_avow)

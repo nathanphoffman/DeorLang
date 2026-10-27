@@ -7,6 +7,7 @@
 unsafe_macro prescan_declared_state
 	strList struct_field_reg = empty
 	strList validator_vars = empty
+	strList validator_field_names = empty
 	strList raw_var_names = empty
 	strList const_var_names = empty
 	strList non_bool_var_names = empty
