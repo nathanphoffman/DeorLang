@@ -1,0 +1,23 @@
+# validator_struct_avow_non_validator_test.deor
+# avow is accepted on a struct field that is validator-typed once it's destructured, but
+# not on a plain field: 'size' below is an ordinary int, so avow on it is still an error.
+
+type Positive(int val)
+	val > 0
+
+struct Holder
+	Positive count
+	int size
+
+fn void main()
+	Positive count = 5
+	int size = 3
+	Holder held = (count, size)
+	(count, size) in held
+	int good_total = (avow count)
+	int bad_total = (avow size)
+	print(good_total)
+	print(bad_total)
+
+# expect-error:
+# line 18: variable 'size' - avow can only be used on a validator type variable

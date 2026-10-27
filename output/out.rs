@@ -3936,6 +3936,7 @@ fn validate_tokens(tokens: TokensRef) {
     let mut rule_raw_assignment: String = "raw variables can only be assigned from a function call — use 'raw name = some_function()', not a literal or an inline rust block".to_string();
     let mut rule_raw_as: String = "raw declarations must use '=', not 'as' — 'raw name = call()' declares an opaque value from a function call".to_string();
     let mut rule_no_func_field: String = "func shapes cannot be struct fields — pass the func shape as a function parameter instead".to_string();
+    let mut rule_recursive_struct_field: String = "a struct cannot hold itself, directly or inside a validator type — it would have infinite size".to_string();
     let mut rule_no_raw_field: String = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs".to_string();
     let mut rule_struct_field_count: String = "wrong number of fields in struct construction — all fields must be provided".to_string();
     let mut rule_struct_field_name: String = "unknown field name in struct construction — variable name does not match any field in this struct".to_string();
@@ -4041,6 +4042,7 @@ fn validate_tokens(tokens: TokensRef) {
     // macro: prescan_shapes_and_validator_types (transpiler-deor/tokens_validator/macros/prescan/prescan_shapes_and_validator_types.deor)
     let mut func_shape_names: Vec<String> = Vec::new();
     let mut validator_type_names: Vec<String> = Vec::new();
+    let mut validator_base_reg: Vec<String> = Vec::new();
     let mut declared_type_names: Vec<String> = Vec::new();
     let mut pre_i: i64 = 0;
     while pre_i < token_count {
@@ -4087,9 +4089,13 @@ fn validate_tokens(tokens: TokensRef) {
             fn locate_name(kw_pos: i64) -> i64 {
                 return kw_pos + 1;
             }
+            fn locate_base(kw_pos: i64) -> i64 {
+                return kw_pos + 3;
+            }
             if kind == KW_TYPE {
                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_validator_types.deor
                 let mut name_pos: i64 = locate_name(pre_i.clone());
+                let mut base_pos: i64 = locate_base(pre_i.clone());
                 if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_validator_types.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
@@ -4100,6 +4106,14 @@ fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_validator_types.deor
                         validator_type_names.push(value.clone());
                         declared_type_names.push(value.clone());
+                        if base_pos < token_count {
+                            // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_validator_types.deor
+                            let mut validator_name: String = value.clone();
+                            let mut base_token: Token = tokens[base_pos as usize].clone();
+                            let mut value = base_token.value.clone();
+                            validator_base_reg.push(validator_name.clone());
+                            validator_base_reg.push(value.clone());
+                        }
                     }
                 }
             }
@@ -4783,6 +4797,15 @@ fn validate_tokens(tokens: TokensRef) {
                                 if list_has(validator_type_names.clone(), field_type.clone()) {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                                     validator_field_names.push(value.clone());
+                                }
+                                let mut field_base: String = field_type.clone();
+                                if reg_has(validator_base_reg.clone(), field_type.clone()) {
+                                    // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
+                                    field_base = reg_get(validator_base_reg.clone(), field_type.clone());
+                                }
+                                if field_base == struct_name {
+                                    // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
+                                    errors.push(val_err(field_name_token.clone(), lbl_field.clone(), rule_recursive_struct_field.clone()).clone());
                                 }
                                 let mut is_func_field: bool = list_has(func_shape_names.clone(), field_type.clone());
                                 if is_func_field {

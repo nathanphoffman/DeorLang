@@ -1,0 +1,35 @@
+# struct_recursive_field_test.deor
+# A struct cannot hold itself, either directly or wrapped in a validator type — in Rust
+# either would have infinite size, so Deor reports it instead of leaving it to rustc.
+# A struct may still hold a different struct, or a validator over a different struct.
+
+struct Inner
+	int depth
+
+type InnerOk(Inner val)
+	true
+
+type NodeOk(Node val)
+	true
+
+struct Node
+	int depth
+	Node next
+
+struct Tree
+	int depth
+	TreeOk left
+
+type TreeOk(Tree val)
+	true
+
+struct Wrapper
+	InnerOk inner
+	Inner plain
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 17: struct field 'next' - a struct cannot hold itself, directly or inside a validator type
+# line 21: struct field 'left' - a struct cannot hold itself, directly or inside a validator type

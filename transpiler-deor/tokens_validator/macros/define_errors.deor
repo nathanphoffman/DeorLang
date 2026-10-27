@@ -97,6 +97,7 @@ unsafe_macro define_errors
 
 	# struct field rules
 	string rule_no_func_field = "func shapes cannot be struct fields — pass the func shape as a function parameter instead"
+	string rule_recursive_struct_field = "a struct cannot hold itself, directly or inside a validator type — it would have infinite size"
 	string rule_no_raw_field = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs"
 
 	# struct construction rules

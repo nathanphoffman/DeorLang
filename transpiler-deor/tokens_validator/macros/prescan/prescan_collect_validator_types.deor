@@ -1,13 +1,20 @@
 
 # Prescan pass: collects all validator type names into validator_type_names so
-# track_validator_vars can identify which variables are validator-typed.
+# track_validator_vars can identify which variables are validator-typed, and each
+# one's base type into validator_base_reg (name, base pairs) so prescan_check_struct_fields
+# can tell when a struct field wraps the struct that contains it.
 macro prescan_collect_validator_types
 	# ex: type {Positive}(int val) — kw_pos+1 grabs the validator type's name
 	fn int locate_name(int kw_pos)
 		return kw_pos + 1
 
+	# ex: type Positive({int} val) — kw_pos+3 grabs the base type
+	fn int locate_base(int kw_pos)
+		return kw_pos + 3
+
 	if kind is KW_TYPE
 		int name_pos = locate_name(pre_i)
+		int base_pos = locate_base(pre_i)
 
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
@@ -16,3 +23,10 @@ macro prescan_collect_validator_types
 			if kind is IDENT
 				validator_type_names at end = value
 				declared_type_names at end = value
+
+				if base_pos < token_count
+					string validator_name = value
+					Token base_token = tokens at base_pos
+					(value) in base_token
+					validator_base_reg at end = validator_name
+					validator_base_reg at end = value

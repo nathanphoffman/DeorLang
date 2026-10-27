@@ -68,6 +68,17 @@ struct Room    # transpiler error — struct after a function
 
 
 ---
+## Validator Type Base Must Be a Primitive or Struct
+
+A validator type wraps `int`, `float`, `string`, `bool`, or a declared struct. List shapes, undeclared names, and other validator types (including the type itself) are transpiler errors — see [Validator Types — Declaration](docs/validator_types.md#declaration).
+
+**Correct:**
+```deor
+type Positive(int val)
+    val > 0
+```
+
+---
 ## Validator Type Predicate Required
 
 The predicate body is mandatory — see [Validator Types — Declaration](docs/validator_types.md#declaration) for why.
@@ -279,6 +290,18 @@ int print = 5    # transpiler error — print is a built-in, not shadowable
 ## Maximum 3 Parameters per Function
 
 Functions may accept at most 3 parameters, enforced by the transpiler — see [Functions — Parameters](docs/functions.md#parameters).
+
+---
+## No Self-Containing Structs
+
+A struct field can't have the struct's own type, nor a validator type that wraps it — the struct would have infinite size. This is a transpiler error, not a later `rustc` failure. See [Validator Types — Over Structs](docs/validator_types.md#validator-types-over-structs).
+
+**Incorrect:**
+```deor
+struct Node
+    int depth
+    Node next
+```
 
 ---
 ## No `func` Shapes as Struct Fields

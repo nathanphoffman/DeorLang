@@ -86,6 +86,16 @@ macro prescan_check_struct_fields
 						if list_has(validator_type_names, field_type)
 							validator_field_names at end = value
 
+						# a struct that holds itself, directly or wrapped in a validator type, has
+						# infinite size in Rust
+						string field_base = field_type
+
+						if reg_has(validator_base_reg, field_type)
+							field_base = reg_get(validator_base_reg, field_type)
+
+						if field_base is struct_name
+							errors at end = val_err(field_name_token, lbl_field, rule_recursive_struct_field)
+
 						bool is_func_field = list_has(func_shape_names, field_type)
 
 						if is_func_field

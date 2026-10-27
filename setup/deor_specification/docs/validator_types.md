@@ -249,6 +249,25 @@ repaired as backwards with (start_day)
 rejected = repaired    # predicate re-runs
 ```
 
+**A struct can't hold itself.** A struct field whose type is the struct itself, or a validator type wrapping that struct, is a transpiler error — in Rust the struct would have infinite size:
+
+```deor
+struct Node
+    int depth
+    Node next        # transpiler error — a struct cannot hold itself
+
+struct Tree
+    int depth
+    TreeOk left      # transpiler error — TreeOk wraps Tree
+
+type TreeOk(Tree val)
+    true
+```
+
+A struct may still hold a different struct, or a validator type over a different struct.
+
+**`avow` after destructuring.** Pulling a validator-typed field out with `in` gives a validator variable under the field's own name, so `avow` works on it directly. The check goes by name: `avow` is accepted on any variable that shares its name with a validator-typed struct field somewhere in the program, and Rust catches a real mismatch.
+
 In Rust the wrapper derives `Clone` but not `Copy` (a struct isn't `Copy`), and `(avow checked)` becomes `checked.clone().unwrap().0`.
 
 ---
