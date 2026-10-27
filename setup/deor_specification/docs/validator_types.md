@@ -168,6 +168,8 @@ ValidInt count = 5      # valid
 
 **Note:** Prefer a real, named predicate (`Temperature`, `Squarefeet`, etc.) over this generic pattern whenever the type actually has rules about what values it can't be. Reach for a bare `true`/sentinel predicate only for the rare case where you genuinely just need a nullable-ish type.
 
+The standard library ships this pattern ready-made for any type, structs included: see [`lib/optional.deor`](docs/libs.md#liboptionaldeor).
+
 ---
 
 ## Forced Unwrap — `avow`
@@ -291,6 +293,8 @@ Roll crit = find_best(val)
 if crit is valid
     int bonus = (avow crit)
 ```
+
+The returned value is bound as-is, and the same holds for a later reassignment (`crit = find_best(val)`). A validator type has no way to say *why* it is not valid; when the caller needs an error message, use [`lib/result.deor`](docs/libs.md#libresultdeor), which pairs a validator-typed value with a message.
 
 ---
 

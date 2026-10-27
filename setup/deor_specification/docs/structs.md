@@ -75,7 +75,15 @@ Mirrors destructuring: `in` pulls fields out of a struct, `= (field1, field2,...
 
 ### As an Expression
 
-`(fields)` can also appear as a bare expression in return position — no type annotation needed, since the function's declared return type already determines which struct is expected. See [Functions — Multiple return values](docs/functions.md#multiple-return-values) for the full worked example (`DivResult`/`divmod`).
+`(fields)` can also appear as a bare expression in return position — no type annotation needed. See [Functions — Multiple return values](docs/functions.md#multiple-return-values) for the full worked example (`DivResult`/`divmod`).
+
+**Caveat:** like the inferred `as` form, a bare `(fields)` finds its struct by matching field names — it does *not* use the function's declared return type. If two structs share the exact same field names, the one declared first wins, even when the function returns the other one (and `rustc` then reports a type mismatch). When field names alone don't identify the struct, bind it with an explicit type first and return the variable:
+
+```deor
+fn StringResult make_result(ValidText value, string message)
+    StringResult built = (value, message)    # explicit type — no guessing
+    return built
+```
 
 If you need a field name that differs from the variable you have, rename it first:
 

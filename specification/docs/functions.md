@@ -76,7 +76,7 @@ fn process(items: Vec<Item>, skip_invalid: bool) {
 
 ### Multiple return values
 
-There are no anonymous tuple return types. A function returning multiple values must declare a named struct for the return type. The struct is then constructed and destructured using the existing `as`/`in` syntax — no new keywords.
+There are no anonymous tuple return types. A function returning multiple values must declare a named struct for the return type. The struct is then constructed and destructured using the existing `as`/`in` syntax — no new keywords. A bare `return (fields)` finds its struct by field names, so if another struct has the same fields, bind an explicit type first — see [Structs — As an Expression](docs/structs.md#as-an-expression).
 
 Deor:
 ```deor
