@@ -1,0 +1,51 @@
+# validator_struct_fn_test.deor
+# A validator type over a struct used directly as a function parameter and as a return
+# type: the caller checks the returned value with is valid, and a function taking the
+# validator type can be handed it without avow.
+
+struct DateRange
+	int start_day
+	int end_day
+
+type ValidRange(DateRange val)
+	(start_day, end_day) in val
+	return start_day < end_day
+
+fn ValidRange make_range(int start_day, int end_day)
+	DateRange span = (start_day, end_day)
+	ValidRange checked = span
+
+	return checked
+
+fn int length_of(ValidRange checked)
+	DateRange span = (avow checked)
+	(start_day, end_day) in span
+
+	return end_day - start_day
+
+fn void main()
+	int first_start = 2
+	int first_end = 10
+	ValidRange good = make_range(first_start, first_end)
+
+	if good is valid
+		int days = length_of(good)
+		print(days)
+
+	int second_start = 10
+	int second_end = 2
+	ValidRange bad = make_range(second_start, second_end)
+
+	if bad is not valid
+		print("backwards range rejected")
+
+	# reassigning from a call that returns the validator type keeps its Option as-is
+	bad = make_range(first_start, first_end)
+
+	if bad is valid
+		print("reassigned from a call")
+
+# expect:
+# 8
+# backwards range rejected
+# reassigned from a call

@@ -113,9 +113,10 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 
 	strList mut_names = empty
 	strList validator_var_reg = empty
+	strList validator_fn_reg = collect_validator_fn_returns(tokens_ref, type_reg)
 	tokenList placeholder = empty
 	TokensRef tokens = tokens_wrap(move placeholder)
-	GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
+	GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg)
 	RcCtx ctx = make_rctx(move ctx_raw)
 
 	return ctx

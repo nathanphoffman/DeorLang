@@ -1,0 +1,39 @@
+# validator_type_fn_return_test.deor
+# A function returning a validator type hands back an Option<T>, so binding or reassigning
+# its result must not wrap it in T::new() a second time (the pattern from
+# docs/validator_types.md#functions-returning-validator-types).
+
+type Roll(int val)
+	val > 0
+
+fn Roll find_best(int val)
+	Roll best
+
+	if val > 0
+		best = val
+
+	return best
+
+fn void main()
+	int good_input = 5
+	Roll crit = find_best(good_input)
+
+	if crit is valid
+		int bonus = (avow crit)
+		print(bonus)
+
+	int bad_input = 0
+	Roll miss = find_best(bad_input)
+
+	if miss is not valid
+		print("no best")
+
+	miss = find_best(good_input)
+
+	if miss is valid
+		print("found on reassign")
+
+# expect:
+# 5
+# no best
+# found on reassign

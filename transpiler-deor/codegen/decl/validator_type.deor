@@ -17,7 +17,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	fn int locate_type_name(int kw_pos)
 		return kw_pos + 1
 
-	(variant_reg, shape_reg, struct_reg, enum_reg, type_reg, typed_enum_reg, typed_variant_reg) in ctx
+	(variant_reg, shape_reg, struct_reg, enum_reg, type_reg, typed_enum_reg, typed_variant_reg, validator_fn_reg) in ctx
 	int type_name_pos = locate_type_name(pos)
 
 	TokenCursor cur = cur_at_ref(tokens, type_name_pos)
@@ -52,7 +52,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 	# gen_unary_method (used for len(...)) read their tokens from the ctx, so build one that does.
 	strList mut_names = empty
 	strList validator_var_reg = empty
-	GenCtx expr_ctx_raw = (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
+	GenCtx expr_ctx_raw = (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg)
 	RcCtx expr_ctx = make_rctx(move expr_ctx_raw)
 
 	ParseResult pred_r = gen_expr(tokens, body_start, expr_ctx)
@@ -107,7 +107,7 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 		strList mut_names = collect_mut_names(body_tokens, zero, last)
 		strList validator_var_reg = collect_validator_var_types(body_tokens, type_reg)
 		TokensRef tokens = tokens_wrap(move body_tokens)
-		GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg)
+		GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg)
 		RcCtx pred_ctx = make_rctx(move ctx_raw)
 
 		int block_depth = 2

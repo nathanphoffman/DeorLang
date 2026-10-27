@@ -74,3 +74,40 @@ fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
 						result at end = maybe_type
 
 	return result
+
+# Scans every `fn ReturnType name(` declaration whose return type is a validator type and
+# builds [fnName, ReturnType] pairs. A binding or reassignment whose value is a call to one
+# of these functions already holds an Option<ReturnType>, so codegen must not wrap it in
+# ReturnType::new() again — and function bodies only see their own tokens, so this has to be
+# gathered here from the whole file.
+fn strList collect_validator_fn_returns(TokensRef tokens, strList type_reg)
+	unsafe_macro_run token_kinds
+
+	# ex: fn Roll {find_best}( — decl_pos+2 grabs the function name after the return type
+	fn int locate_fn_name(int decl_pos)
+		return decl_pos + 2
+
+	strList result = empty
+	int token_count = len(tokens)
+
+	for index in range(token_count)
+		Token decl_token = tokens at index
+		(kind) in decl_token
+
+		if kind is KW_FN
+			int type_pos = index + 1
+			int name_pos = locate_fn_name(index)
+
+			if name_pos < token_count
+				Token type_token = tokens at type_pos
+				Token name_token = tokens at name_pos
+				(value) in type_token
+				string return_type = value
+				(value) in name_token
+				string fn_name = value
+
+				if reg3_has(type_reg, return_type)
+					result at end = fn_name
+					result at end = return_type
+
+	return result

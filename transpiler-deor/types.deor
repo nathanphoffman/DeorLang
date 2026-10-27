@@ -55,6 +55,7 @@ struct GenCtx
 	strList typed_enum_reg
 	strList typed_variant_reg
 	strList validator_var_reg
+	strList validator_fn_reg
 
 # Cursor-style view into a token list. Used inside `using c` blocks during declaration
 # parsing to step through tokens one at a time without carrying raw indices everywhere.

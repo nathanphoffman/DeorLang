@@ -10,7 +10,7 @@ fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
 	fn int locate_next_token(int anchor)
 		return anchor + 1
 
-	(tokens, validator_var_reg) in ctx
+	(tokens, validator_var_reg, validator_fn_reg) in ctx
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 	Token name_token = tokens at pos
@@ -31,7 +31,13 @@ fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
 	string reassign_type = reg_get(validator_var_reg, ident_name)
 	string asgn_code = ""
 
-	if not is_empty(reassign_type)
+	string reassign_call_type = call_validator_return_type(tokens, val_pos, validator_fn_reg)
+	bool reassign_returns_validator = reassign_call_type is reassign_type and not is_empty(reassign_type)
+
+	if reassign_returns_validator
+		strList passthrough_parts = [pad, ident_name, RS_EQ, val_code, RS_SC]
+		asgn_code = s_join(passthrough_parts)
+	else if not is_empty(reassign_type)
 		string reassign_new_open = "::new("
 		string reassign_sc = ");\n"
 		strList reassign_parts = [pad, ident_name, RS_EQ, reassign_type, reassign_new_open, val_code, reassign_sc]

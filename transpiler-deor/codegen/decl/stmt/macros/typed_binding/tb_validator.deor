@@ -1,5 +1,7 @@
 
 # Handles `ValidatorType name = expr`: emits `let [mut] name: Option<ValidatorType> = ValidatorType::new(val)`.
+# When expr is a call to a function that itself returns ValidatorType, the call already yields
+# an Option<ValidatorType>, so it is bound as-is instead of being wrapped in ::new() again.
 macro tb_validator
 	ParseResult expr_result = gen_expr(tokens, val_pos, ctx)
 	move (code, new_pos) in expr_result
@@ -12,6 +14,15 @@ macro tb_validator
 	string validator_option_close = "> = "
 	string validator_new_open = "::new("
 	string validator_sc = ");\n"
+	string call_return_type = call_validator_return_type(tokens, val_pos, validator_fn_reg)
+	bool returns_validator = call_return_type is var_type
+
+	if returns_validator
+		string passthrough_close = ";\n"
+		string passthrough_code = s_join([pad, validator_let, mut_kw, var_name, validator_option_open, var_type, validator_option_close, val_code, passthrough_close])
+
+		return make_nl_result(move passthrough_code, val_end, tokens)
+
 	string validator_code = s_join([pad, validator_let, mut_kw, var_name, validator_option_open, var_type, validator_option_close, var_type, validator_new_open, val_code, val_suffix, validator_sc])
 
 	return make_nl_result(move validator_code, val_end, tokens)

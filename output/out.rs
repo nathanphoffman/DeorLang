@@ -53,6 +53,7 @@ struct GenCtx {
     typed_enum_reg: Vec<String>,
     typed_variant_reg: Vec<String>,
     validator_var_reg: Vec<String>,
+    validator_fn_reg: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -9735,6 +9736,101 @@ fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) -> Vec
     return result;
 }
 
+fn collect_validator_fn_returns(tokens: TokensRef, type_reg: Vec<String>) -> Vec<String> {
+    // macro: token_kinds (transpiler-deor/token_kinds.deor)
+    let COMMA: String = "COMMA".to_string();
+    let DEDENT: String = "DEDENT".to_string();
+    let EQUALS: String = "EQUALS".to_string();
+    let FLOAT: String = "FLOAT".to_string();
+    let IDENT: String = "IDENT".to_string();
+    let INDENT: String = "INDENT".to_string();
+    let KW_AND: String = "KW_AND".to_string();
+    let KW_AS: String = "KW_AS".to_string();
+    let KW_AT: String = "KW_AT".to_string();
+    let KW_AVOW: String = "KW_AVOW".to_string();
+    let KW_BLOCK: String = "KW_BLOCK".to_string();
+    let KW_BREAK: String = "KW_BREAK".to_string();
+    let KW_CONST: String = "KW_CONST".to_string();
+    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
+    let KW_ELSE: String = "KW_ELSE".to_string();
+    let KW_EMPTY: String = "KW_EMPTY".to_string();
+    let KW_END: String = "KW_END".to_string();
+    let KW_ENUM: String = "KW_ENUM".to_string();
+    let KW_FALSE: String = "KW_FALSE".to_string();
+    let KW_FN: String = "KW_FN".to_string();
+    let KW_FOR: String = "KW_FOR".to_string();
+    let KW_FUNC: String = "KW_FUNC".to_string();
+    let KW_IF: String = "KW_IF".to_string();
+    let KW_IMPORT: String = "KW_IMPORT".to_string();
+    let KW_IN: String = "KW_IN".to_string();
+    let KW_IS: String = "KW_IS".to_string();
+    let KW_LIST: String = "KW_LIST".to_string();
+    let KW_MACRO: String = "KW_MACRO".to_string();
+    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
+    let KW_MOVE: String = "KW_MOVE".to_string();
+    let KW_NONE: String = "KW_NONE".to_string();
+    let KW_NOT: String = "KW_NOT".to_string();
+    let KW_OF: String = "KW_OF".to_string();
+    let KW_OR: String = "KW_OR".to_string();
+    let KW_RAW: String = "KW_RAW".to_string();
+    let KW_REMOVE: String = "KW_REMOVE".to_string();
+    let KW_RETURN: String = "KW_RETURN".to_string();
+    let KW_RUST: String = "KW_RUST".to_string();
+    let KW_SHAPE: String = "KW_SHAPE".to_string();
+    let KW_STRUCT: String = "KW_STRUCT".to_string();
+    let KW_TO: String = "KW_TO".to_string();
+    let KW_TRUE: String = "KW_TRUE".to_string();
+    let KW_TYPE: String = "KW_TYPE".to_string();
+    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
+    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
+    let KW_VALID: String = "KW_VALID".to_string();
+    let KW_VOID: String = "KW_VOID".to_string();
+    let KW_WITH: String = "KW_WITH".to_string();
+    let LBRACKET: String = "LBRACKET".to_string();
+    let LPAREN: String = "LPAREN".to_string();
+    let MINUS: String = "MINUS".to_string();
+    let NEWLINE: String = "NEWLINE".to_string();
+    let PERCENT: String = "PERCENT".to_string();
+    let PLUS: String = "PLUS".to_string();
+    let RBRACKET: String = "RBRACKET".to_string();
+    let RPAREN: String = "RPAREN".to_string();
+    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
+    let SLASH: String = "SLASH".to_string();
+    let STAR: String = "STAR".to_string();
+    let STRING: String = "STRING".to_string();
+    // transpiler-deor/registry/validator_type.deor
+    fn locate_fn_name(decl_pos: i64) -> i64 {
+        return decl_pos + 2;
+    }
+    let mut result: Vec<String> = Vec::new();
+    let mut token_count: i64 = (tokens.len() as i64);
+    for index in 0..token_count {
+        // transpiler-deor/registry/validator_type.deor
+        let mut decl_token: Token = tokens[index as usize].clone();
+        let kind = decl_token.kind.clone();
+        if kind == KW_FN {
+            // transpiler-deor/registry/validator_type.deor
+            let mut type_pos: i64 = index + 1;
+            let mut name_pos: i64 = locate_fn_name(index.clone());
+            if name_pos < token_count {
+                // transpiler-deor/registry/validator_type.deor
+                let mut type_token: Token = tokens[type_pos as usize].clone();
+                let mut name_token: Token = tokens[name_pos as usize].clone();
+                let value = type_token.value.clone();
+                let mut return_type: String = value.clone();
+                let value = name_token.value.clone();
+                let mut fn_name: String = value.clone();
+                if reg3_has(type_reg.clone(), return_type.clone()) {
+                    // transpiler-deor/registry/validator_type.deor
+                    result.push(fn_name.clone());
+                    result.push(return_type.clone());
+                }
+            }
+        }
+    }
+    return result;
+}
+
 // transpiler-deor/registry/type_resolve.deor
 fn resolve_type(type_name: String, ctx: RcCtx) -> String {
     // transpiler-deor/registry/type_resolve.deor
@@ -10172,9 +10268,10 @@ fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     }
     let mut mut_names: Vec<String> = Vec::new();
     let mut validator_var_reg: Vec<String> = Vec::new();
+    let mut validator_fn_reg: Vec<String> = collect_validator_fn_returns(tokens_ref.clone(), type_reg.clone());
     let mut placeholder: Vec<Token> = Vec::new();
     let mut tokens: TokensRef = tokens_wrap(placeholder);
-    let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg };
+    let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg };
     let mut ctx: RcCtx = make_rctx(ctx_raw);
     return ctx;
 }
@@ -11557,6 +11654,91 @@ fn emit_val(val_code: String, val_kind: String) -> String {
         return [val_code.as_str(), RS_CLN.as_str()].concat();
     }
     return val_code;
+}
+
+fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_reg: Vec<String>) -> String {
+    // macro: token_kinds (transpiler-deor/token_kinds.deor)
+    let COMMA: String = "COMMA".to_string();
+    let DEDENT: String = "DEDENT".to_string();
+    let EQUALS: String = "EQUALS".to_string();
+    let FLOAT: String = "FLOAT".to_string();
+    let IDENT: String = "IDENT".to_string();
+    let INDENT: String = "INDENT".to_string();
+    let KW_AND: String = "KW_AND".to_string();
+    let KW_AS: String = "KW_AS".to_string();
+    let KW_AT: String = "KW_AT".to_string();
+    let KW_AVOW: String = "KW_AVOW".to_string();
+    let KW_BLOCK: String = "KW_BLOCK".to_string();
+    let KW_BREAK: String = "KW_BREAK".to_string();
+    let KW_CONST: String = "KW_CONST".to_string();
+    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
+    let KW_ELSE: String = "KW_ELSE".to_string();
+    let KW_EMPTY: String = "KW_EMPTY".to_string();
+    let KW_END: String = "KW_END".to_string();
+    let KW_ENUM: String = "KW_ENUM".to_string();
+    let KW_FALSE: String = "KW_FALSE".to_string();
+    let KW_FN: String = "KW_FN".to_string();
+    let KW_FOR: String = "KW_FOR".to_string();
+    let KW_FUNC: String = "KW_FUNC".to_string();
+    let KW_IF: String = "KW_IF".to_string();
+    let KW_IMPORT: String = "KW_IMPORT".to_string();
+    let KW_IN: String = "KW_IN".to_string();
+    let KW_IS: String = "KW_IS".to_string();
+    let KW_LIST: String = "KW_LIST".to_string();
+    let KW_MACRO: String = "KW_MACRO".to_string();
+    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
+    let KW_MOVE: String = "KW_MOVE".to_string();
+    let KW_NONE: String = "KW_NONE".to_string();
+    let KW_NOT: String = "KW_NOT".to_string();
+    let KW_OF: String = "KW_OF".to_string();
+    let KW_OR: String = "KW_OR".to_string();
+    let KW_RAW: String = "KW_RAW".to_string();
+    let KW_REMOVE: String = "KW_REMOVE".to_string();
+    let KW_RETURN: String = "KW_RETURN".to_string();
+    let KW_RUST: String = "KW_RUST".to_string();
+    let KW_SHAPE: String = "KW_SHAPE".to_string();
+    let KW_STRUCT: String = "KW_STRUCT".to_string();
+    let KW_TO: String = "KW_TO".to_string();
+    let KW_TRUE: String = "KW_TRUE".to_string();
+    let KW_TYPE: String = "KW_TYPE".to_string();
+    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
+    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
+    let KW_VALID: String = "KW_VALID".to_string();
+    let KW_VOID: String = "KW_VOID".to_string();
+    let KW_WITH: String = "KW_WITH".to_string();
+    let LBRACKET: String = "LBRACKET".to_string();
+    let LPAREN: String = "LPAREN".to_string();
+    let MINUS: String = "MINUS".to_string();
+    let NEWLINE: String = "NEWLINE".to_string();
+    let PERCENT: String = "PERCENT".to_string();
+    let PLUS: String = "PLUS".to_string();
+    let RBRACKET: String = "RBRACKET".to_string();
+    let RPAREN: String = "RPAREN".to_string();
+    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
+    let SLASH: String = "SLASH".to_string();
+    let STAR: String = "STAR".to_string();
+    let STRING: String = "STRING".to_string();
+    // transpiler-deor/codegen/decl/stmt/helpers.deor
+    let mut token_count: i64 = (tokens.len() as i64);
+    let mut paren_pos: i64 = val_pos + 1;
+    if paren_pos >= token_count {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        return "".to_string();
+    }
+    let mut callee_token: Token = tokens[val_pos as usize].clone();
+    let mut paren_token: Token = tokens[paren_pos as usize].clone();
+    let __destructure_src = callee_token.clone();
+    let kind = __destructure_src.kind.clone();
+    let value = __destructure_src.value.clone();
+    let mut callee_kind: String = kind.clone();
+    let mut callee_name: String = value.clone();
+    let kind = paren_token.kind.clone();
+    let mut is_call: bool = callee_kind == IDENT && kind == LPAREN;
+    if !is_call {
+        // transpiler-deor/codegen/decl/stmt/helpers.deor
+        return "".to_string();
+    }
+    return reg_get(validator_fn_reg.clone(), callee_name.clone());
 }
 
 fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> String {
@@ -13049,6 +13231,7 @@ fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let __destructure_src = ctx.clone();
     let tokens = __destructure_src.tokens.clone();
     let validator_var_reg = __destructure_src.validator_var_reg.clone();
+    let validator_fn_reg = __destructure_src.validator_fn_reg.clone();
     // macro: rust_strings (transpiler-deor/codegen/rust_strings.deor)
     let RS_IND: String = "    ".to_string();
     let RS_NL: String = "\n".to_string();
@@ -13095,7 +13278,13 @@ fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     }
     let mut reassign_type: String = reg_get(validator_var_reg.clone(), ident_name.clone());
     let mut asgn_code: String = "".to_string();
-    if !is_empty(reassign_type.clone()) {
+    let mut reassign_call_type: String = call_validator_return_type(tokens.clone(), val_pos.clone(), validator_fn_reg.clone());
+    let mut reassign_returns_validator: bool = reassign_call_type == reassign_type && !is_empty(reassign_type.clone());
+    if reassign_returns_validator {
+        // transpiler-deor/codegen/decl/stmt/reassign.deor
+        let mut passthrough_parts: Vec<String> = vec![pad.clone(), ident_name.clone(), RS_EQ.clone(), val_code.clone(), RS_SC.clone()];
+        asgn_code = s_join(passthrough_parts.clone());
+    } else if !is_empty(reassign_type.clone()) {
         // transpiler-deor/codegen/decl/stmt/reassign.deor
         let mut reassign_new_open: String = "::new(".to_string();
         let mut reassign_sc: String = ");\n".to_string();
@@ -13767,6 +13956,7 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let type_reg = __destructure_src.type_reg.clone();
     let mut_names = __destructure_src.mut_names.clone();
     let variant_reg = __destructure_src.variant_reg.clone();
+    let validator_fn_reg = __destructure_src.validator_fn_reg.clone();
     let mut token_count: i64 = (tokens.len() as i64);
     // macro: rust_strings (transpiler-deor/codegen/rust_strings.deor)
     let RS_IND: String = "    ".to_string();
@@ -14134,6 +14324,14 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let mut validator_option_close: String = "> = ".to_string();
             let mut validator_new_open: String = "::new(".to_string();
             let mut validator_sc: String = ");\n".to_string();
+            let mut call_return_type: String = call_validator_return_type(tokens.clone(), val_pos.clone(), validator_fn_reg.clone());
+            let mut returns_validator: bool = call_return_type == var_type;
+            if returns_validator {
+                // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_validator.deor
+                let mut passthrough_close: String = ";\n".to_string();
+                let mut passthrough_code: String = [pad.as_str(), validator_let.as_str(), mut_kw.as_str(), var_name.as_str(), validator_option_open.as_str(), var_type.as_str(), validator_option_close.as_str(), val_code.as_str(), passthrough_close.as_str()].concat();
+                return make_nl_result(passthrough_code, val_end.clone(), tokens.clone());
+            }
             let mut validator_code: String = [pad.as_str(), validator_let.as_str(), mut_kw.as_str(), var_name.as_str(), validator_option_open.as_str(), var_type.as_str(), validator_option_close.as_str(), var_type.as_str(), validator_new_open.as_str(), val_code.as_str(), val_suffix.as_str(), validator_sc.as_str()].concat();
             return make_nl_result(validator_code, val_end.clone(), tokens.clone());
         }
@@ -15218,6 +15416,7 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let type_reg = __destructure_src.type_reg.clone();
     let typed_enum_reg = __destructure_src.typed_enum_reg.clone();
     let typed_variant_reg = __destructure_src.typed_variant_reg.clone();
+    let validator_fn_reg = __destructure_src.validator_fn_reg.clone();
     let mut type_name_pos: i64 = locate_type_name(pos.clone());
     let mut cur: TokenCursor = cur_at_ref(tokens.clone(), type_name_pos.clone());
     let current = cur.current.clone();
@@ -15242,7 +15441,7 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let mut body_start: i64 = pos.clone();
     let mut mut_names: Vec<String> = Vec::new();
     let mut validator_var_reg: Vec<String> = Vec::new();
-    let mut expr_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), tokens: tokens.clone(), typed_enum_reg: typed_enum_reg.clone(), typed_variant_reg: typed_variant_reg.clone(), validator_var_reg: validator_var_reg.clone() };
+    let mut expr_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), tokens: tokens.clone(), typed_enum_reg: typed_enum_reg.clone(), typed_variant_reg: typed_variant_reg.clone(), validator_var_reg: validator_var_reg.clone(), validator_fn_reg: validator_fn_reg.clone() };
     let mut expr_ctx: RcCtx = make_rctx(expr_ctx_raw);
     let mut pred_r: ParseResult = gen_expr(tokens.clone(), body_start.clone(), expr_ctx.clone());
     let __destructure_src = pred_r;
@@ -15296,7 +15495,7 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         let mut mut_names: Vec<String> = collect_mut_names(body_tokens.clone(), zero.clone(), last.clone());
         let mut validator_var_reg: Vec<String> = collect_validator_var_types(body_tokens.clone(), type_reg.clone());
         let mut tokens: TokensRef = tokens_wrap(body_tokens);
-        let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg };
+        let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg };
         let mut pred_ctx: RcCtx = make_rctx(ctx_raw);
         let mut block_depth: i64 = 2;
         let mut block_r: ParseResult = gen_block(zero.clone(), block_depth.clone(), pred_ctx.clone());
@@ -15478,6 +15677,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let __destructure_src = ctx.clone();
     let typed_enum_reg = __destructure_src.typed_enum_reg.clone();
     let typed_variant_reg = __destructure_src.typed_variant_reg.clone();
+    let validator_fn_reg = __destructure_src.validator_fn_reg.clone();
     let mut body_end_pos: i64 = find_block_end_ref(fn_tokens.clone(), indent_pos.clone());
     let mut body_slice_end: i64 = body_end_pos + 1;
     let mut body_tokens_raw: Vec<Token> = l_slice_ref(fn_tokens.clone(), body_start.clone(), body_slice_end.clone());
@@ -15488,7 +15688,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let mut validator_var_reg: Vec<String> = collect_validator_var_types(body_tokens_raw.clone(), type_reg.clone());
     let mut tokens: TokensRef = tokens_wrap(body_tokens_raw);
     let mut detect_tokens: TokensRef = tokens.clone();
-    let mut body_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg };
+    let mut body_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg };
     let mut body_ctx: RcCtx = make_rctx(body_ctx_raw);
     let mut used_implicit_return: bool = false;
     let mut implicit_return_code: String = "".to_string();

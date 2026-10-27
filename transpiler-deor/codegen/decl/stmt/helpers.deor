@@ -14,6 +14,31 @@ fn string emit_val(string val_code, string val_kind)
 
 	return val_code
 
+# When the value starting at val_pos is a call to a function that returns a validator type,
+# returns that validator type's name, otherwise "" (validator_fn_reg holds [fnName, ReturnType]
+# pairs). A validator-typed binding or reassignment whose value is such a call already holds
+# an Option<T> and must not be wrapped in T::new() a second time.
+fn string call_validator_return_type(TokensRef tokens, int val_pos, strList validator_fn_reg)
+	unsafe_macro_run token_kinds
+	int token_count = len(tokens)
+	int paren_pos = val_pos + 1
+
+	if paren_pos >= token_count
+		return ""
+
+	Token callee_token = tokens at val_pos
+	Token paren_token = tokens at paren_pos
+	(kind, value) in callee_token
+	string callee_kind = kind
+	string callee_name = value
+	(kind) in paren_token
+	bool is_call = callee_kind is IDENT and kind is LPAREN
+
+	if not is_call
+		return ""
+
+	return reg_get(validator_fn_reg, callee_name)
+
 # The suffix a bound value needs to be an owned String/value: `.to_string()` for a string
 # literal, `.clone()` for a plain identifier, and none for calls, index reads and binary-op
 # chains (those already produce an owned value, and a suffix meant for a single token would
