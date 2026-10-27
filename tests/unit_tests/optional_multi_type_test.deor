@@ -1,0 +1,72 @@
+# optional_multi_type_test.deor
+# lib/optional.deor imported for an int, a float and a struct at once: each import stamps
+# out its own IntOptional / FloatOptional / PointOptional and its own o_int_* / o_float_* /
+# o_point_* functions, with no clash. A struct-based optional is a validator over a struct.
+
+import "lib/optional.deor" where T = int
+import "lib/optional.deor" where T = float
+import "lib/optional.deor" where T = Point
+
+struct Point
+	int pos_x
+	int pos_y
+
+fn IntOptional first_even(int left, int right)
+	int left_rem = left % 2
+
+	if left_rem is 0
+		return o_int_some(left)
+
+	int right_rem = right % 2
+
+	if right_rem is 0
+		return o_int_some(right)
+
+	return o_int_none()
+
+fn void main()
+	int odd_one = 3
+	int odd_two = 5
+	int even_two = 8
+	int zero_fallback = 0
+
+	IntOptional found = first_even(odd_one, even_two)
+	int found_value = o_int_or(found, zero_fallback)
+	print(found_value)
+
+	IntOptional missing = first_even(odd_one, odd_two)
+	int missing_value = o_int_or(missing, zero_fallback)
+	print(missing_value)
+
+	float half = 0.5
+	float unit = 1.0
+	FloatOptional ratio = o_float_some(half)
+	float ratio_value = o_float_or(ratio, unit)
+	print(ratio_value)
+
+	FloatOptional no_ratio = o_float_none()
+	float fallback_ratio = o_float_or(no_ratio, unit)
+	print(fallback_ratio)
+
+	int pos_x = 4
+	int pos_y = 7
+	Point spot = (pos_x, pos_y)
+	PointOptional held_point = o_point_some(spot)
+
+	if held_point is valid
+		Point out_point = (avow held_point)
+		(pos_x, pos_y) in out_point
+		print(pos_y)
+
+	PointOptional no_point = o_point_none()
+
+	if no_point is not valid
+		print("no point")
+
+# expect:
+# 8
+# 0
+# 0.5
+# 1
+# 7
+# no point

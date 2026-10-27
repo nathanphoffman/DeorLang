@@ -1,0 +1,60 @@
+# optional_test.deor
+# Exercises lib/optional.deor with T = string: o_string_some / o_string_none build
+# optionals, o_string_or falls back when nothing is held, and an optional works as a
+# struct field (a person with an optional middle name) and with is valid / avow.
+
+import "lib/optional.deor" where T = string
+
+struct Person
+	string first
+	StringOptional middle
+	string last
+
+fn string full_name(Person who)
+	(first, middle, last) in who
+	blank as ""
+	space as " "
+	string mid = o_string_or(middle, blank)
+
+	if mid is ""
+		return s_join([first, space, last])
+
+	return s_join([first, space, mid, space, last])
+
+fn void main()
+	first as "Ada"
+	given as "King"
+	StringOptional middle = o_string_some(given)
+	last as "Lovelace"
+	Person ada = (first, middle, last)
+
+	first = "Alan"
+	middle = o_string_none()
+	last = "Turing"
+	Person alan = (first, middle, last)
+
+	print(full_name(ada))
+	print(full_name(alan))
+
+	StringOptional held = o_string_some(given)
+
+	if held is valid
+		string inner = (avow held)
+		print(inner)
+
+	StringOptional nothing = o_string_none()
+
+	if nothing is not valid
+		print("nothing held")
+
+	StringOptional unset
+
+	if unset is not valid
+		print("unset is not valid")
+
+# expect:
+# Ada King Lovelace
+# Alan Turing
+# King
+# nothing held
+# unset is not valid

@@ -10,7 +10,7 @@ import "lib/string.deor"
 import "lib/math.deor"
 ```
 
-Five of the library files are **parameterized** — they use `where Placeholder = Type` to produce a concrete, type-safe version of the module. `T` is the conventional placeholder name but any valid identifier works. See [Parameterized Imports](#parameterized-imports) below.
+Six of the library files are **parameterized** — they use `where Placeholder = Type` to produce a concrete, type-safe version of the module. `T` is the conventional placeholder name but any valid identifier works. See [Parameterized Imports](#parameterized-imports) below.
 
 ## Do Not Edit `lib/` Files
 
@@ -174,7 +174,7 @@ The placeholder can be any valid identifier — `T` is the convention in the sta
 
 All Deor primitive types work as the concrete value: `int`, `float`, `string`, and `bool`.
 
-Five standard library files (`lib/list.deor`, `lib/list_order.deor`, `lib/list_numeric.deor`, `lib/result.deor`, `lib/tasks.deor`) are parameterized this way. See their sections below for details.
+Six standard library files (`lib/list.deor`, `lib/list_order.deor`, `lib/list_numeric.deor`, `lib/optional.deor`, `lib/result.deor`, `lib/tasks.deor`) are parameterized this way. See their sections below for details.
 
 ### Substitution rules
 
@@ -295,6 +295,45 @@ int best = l_int_max(scores)
 ```
 
 `l_T_sort`, `l_T_sum`, `l_T_min`, `l_T_max`, `l_T_contains`, `l_T_index_of`, and `l_T_unique` require the element type to implement `Ord` / `Hash` / `Clone` in the generated Rust. They work naturally for `int`, `float`, and `string`. For custom structs, use a `rust` block instead.
+
+---
+
+## `lib/optional.deor`
+
+A value that may be missing. It is a [validator type](docs/validator_types.md) over `T` whose rule accepts anything, so it is only not valid when nothing was assigned — the `ValidInt` pattern from [Replacing Null and Undefined](docs/validator_types.md#replacing-null-and-undefined), stamped out for any type, struct included.
+
+```deor
+import "lib/optional.deor" where T = string
+```
+
+After substitution with `T = string`:
+
+| Name | Kind | Description |
+|---|---|---|
+| `StringOptional` | validator type | wraps a `string`; not valid until a value is assigned |
+
+| Function | Signature | Description |
+|---|---|---|
+| `o_string_some` | `(string val) → StringOptional` | An optional holding `val` |
+| `o_string_none` | `() → StringOptional` | An optional holding nothing |
+| `o_string_or` | `(StringOptional opt, string fallback) → string` | The held value, or `fallback` when nothing is held |
+
+```deor
+struct Person
+    string first
+    StringOptional middle
+    string last
+
+StringOptional middle = o_string_some(given)
+StringOptional nobody = o_string_none()
+
+if middle is valid
+    string name = (avow middle)
+
+string shown = o_string_or(nobody, blank)    # blank — nothing is held
+```
+
+An optional is an ordinary validator type, so `is valid`, `is not valid`, `avow`, struct fields and function parameters and returns all work as documented. Import the file once per type and each gets its own names (`IntOptional` / `o_int_some`, `PointOptional` / `o_point_some`, and so on).
 
 ---
 
