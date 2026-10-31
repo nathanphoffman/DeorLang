@@ -6,6 +6,7 @@
 #                form. Binds only to the next primary (same rule as move), so `avow val + 2`
 #                parses as `(avow val) + 2` — no ambiguity, parens stay optional.
 #   not expr   — logical negation: prepends `!` to the inner expression code
+#   -expr      — unary negation: prepends `-` to the inner expression code
 macro primary_prefix_ops
 	# ex: move {expr} — kw_pos+1 grabs the expression after the prefix keyword
 	fn int locate_next_token(int kw_pos)
@@ -38,3 +39,14 @@ macro primary_prefix_ops
 		string not_code = s_join([bang, operand_code])
 
 		return make_result(move not_code, operand_end)
+
+	if kind is MINUS
+		int neg_pos = locate_next_token(pos)
+		ParseResult neg_result = gen_primary(tokens, neg_pos, ctx)
+		move (code, new_pos) in neg_result
+		neg_code as code
+		neg_end as new_pos
+		string minus_sign = "-"
+		string negated_code = s_join([minus_sign, neg_code])
+
+		return make_result(move negated_code, neg_end)

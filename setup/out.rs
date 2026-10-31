@@ -11046,6 +11046,19 @@ pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             let mut not_code: String = [bang.as_str(), operand_code.as_str()].concat();
             return make_result(not_code, operand_end.clone());
         }
+        if kind == MINUS {
+            // transpiler-deor/codegen/decl/stmt/expr/macros/prefix_ops.deor
+            let mut neg_pos: i64 = locate_next_token(pos.clone());
+            let mut neg_result: ParseResult = gen_primary(tokens.clone(), neg_pos.clone(), ctx.clone());
+            let __destructure_src = neg_result;
+            let code = __destructure_src.code;
+            let new_pos = __destructure_src.new_pos;
+            let neg_code = code.clone();
+            let neg_end = new_pos.clone();
+            let mut minus_sign: String = "-".to_string();
+            let mut negated_code: String = [minus_sign.as_str(), neg_code.as_str()].concat();
+            return make_result(negated_code, neg_end.clone());
+        }
     }
     // macro: primary_builtin_calls (transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor)
     {

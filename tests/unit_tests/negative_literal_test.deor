@@ -1,19 +1,57 @@
 # negative_literal_test.deor
-# Documents a real, currently-existing gap: unary minus has no handling in
-# codegen/decl/stmt/expr/macros/prefix_ops.deor (only move/avow/not are
-# handled there), so a negative literal falls all the way through to
-# primary.deor's "/* unknown_primary */" fallback. The Deor-level validator
-# doesn't catch this — it transpiles "successfully" — but the generated Rust
-# is `let mut val: i64 = /* unknown_primary */;` with the actual "5" left
-# over as a stray unhandled token, which rustc then rejects. This test
-# captures that actual behavior so a future fix (or a regression making it
-# worse) shows up here instead of going unnoticed. If unary minus ever gets
-# real codegen support, this test should be rewritten as `# expect:` with
-# the correct negative value printed.
+# Unary minus on literals used to emit `/* unknown_primary */` in Rust. Covers int and
+# float negatives in declarations, assignments, arguments, returns, comparisons and
+# validator constructor arguments.
+
+import "lib/convert.deor"
+
+type Positive(int val)
+	val > 0
+
+fn int double_it(int value)
+	return value * 2
+
+fn int neg_return()
+	return -7
+
+fn float neg_float_return()
+	return -1.5
 
 fn void main()
-	int val = -5
-	print(val)
+	int missing = -1
+	print(c_int_to_string(missing))
 
-# expect-rustc-error:
-# expected expression, found `;`
+	missing = -2
+	print(c_int_to_string(missing))
+
+	float offset = -1.5
+	print(c_float_to_string(offset))
+
+	offset = -2.5
+	print(c_float_to_string(offset))
+
+	print(c_int_to_string(double_it(-5)))
+	print(c_int_to_string(neg_return()))
+	print(c_float_to_string(neg_float_return()))
+
+	if missing > -3
+		print("greater than -3")
+
+	if missing < -1 and offset < -0.5
+		print("both negative")
+
+	Positive bad_num = -1
+	if bad_num is not valid
+		print("negative rejected")
+
+# expect:
+# -1
+# -2
+# -1.5
+# -2.5
+# -10
+# -7
+# -1.5
+# greater than -3
+# both negative
+# negative rejected
