@@ -12,7 +12,7 @@ macro fn_emit
 	if not is_empty(ret_type)
 		ret_suffix = s_join([RS_ARR, ret_type])
 
-	string fnc_kw = "fn "
+	string fnc_kw = "pub fn "
 
 	if used_implicit_return
 		string fn_code = s_join([fnc_kw, fn_name, RS_LP, params_code, RS_RP, ret_suffix, RS_OB, implicit_return_code, RS_FNC_CB])

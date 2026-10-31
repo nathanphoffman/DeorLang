@@ -56,7 +56,7 @@ fn ParseResult gen_enum_decl(TokensRef tokens, int pos)
 			variant_lines at end = s_join([RS_IND, value, RS_COM])
 
 	string variants_code = s_join_nl(variant_lines)
-	string enum_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum "
+	string enum_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\npub enum "
 	string decl = s_join([enum_prefix, rust_name, RS_OB, variants_code, RS_CB2])
 	(pos) in cur
 

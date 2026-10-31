@@ -123,6 +123,20 @@ Keep rust blocks small. If a rust block is growing large, it is a signal that th
 
 ---
 
+## Using Transpiled Deor from Rust
+
+Every top-level item Deor generates is `pub`, so the generated `.rs` file can be imported as a module from other Rust code:
+
+- functions (`pub fn`)
+- structs (`pub struct`), with every field `pub`
+- enums (`pub enum`)
+- shapes (`pub type` aliases)
+- validator types (`pub struct Name(pub T)`, with a `pub fn new`)
+
+Code inside `rust` blocks is copied verbatim, so any types or functions you define there stay private unless you write `pub` yourself.
+
+---
+
 ## External `.rs` Files
 
 If you have a large body of Rust code that does not belong inline, you can pull it in with `include!` inside a rust block:

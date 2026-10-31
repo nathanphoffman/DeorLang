@@ -122,17 +122,17 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 		final_pos = body_start + block_new_pos
 
 	# Copy is only valid when the wrapped Rust type is Copy — a String or a struct isn't.
-	string struct_prefix = "#[derive(Clone, PartialEq, Debug)]\nstruct "
+	string struct_prefix = "#[derive(Clone, PartialEq, Debug)]\npub struct "
 	bool is_copy_base = param_type is "int" or param_type is "float" or param_type is "bool"
 
 	if is_copy_base
-		struct_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct "
+		struct_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\npub struct "
 
-	string struct_paren_open = "("
+	string struct_paren_open = "(pub "
 	string struct_suffix = ");\n\n"
 	string struct_code = s_join([struct_prefix, type_name, struct_paren_open, rust_param_type, struct_suffix])
 	string impl_prefix = "impl "
-	string impl_fn_new_open = " {\n    fn new("
+	string impl_fn_new_open = " {\n    pub fn new("
 	string impl_colon = ": "
 	string impl_return_if_open = ") -> Option<Self> {\n        if "
 	string impl_some_open = " {\n            Some("

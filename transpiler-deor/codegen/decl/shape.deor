@@ -1,7 +1,7 @@
 
 # Builds the Rust source for `shape Foo = list of T` → `type Foo = Vec<T>;`
 fn string gen_list_shape_code(string rust_name, string rust_elem)
-	string list_prefix = "type "
+	string list_prefix = "pub type "
 	string list_mid = " = Vec<"
 	string list_suffix = ">;\n\n"
 
@@ -15,7 +15,7 @@ fn string gen_func_shape_code(string rust_name, string rust_in, string rust_out)
 		string out_prefix = " -> "
 		out_suffix = s_join([out_prefix, rust_out])
 
-	string func_prefix = "type "
+	string func_prefix = "pub type "
 	string func_mid = " = fn("
 	string func_paren_close = ")"
 	string func_suffix = ";\n\n"
