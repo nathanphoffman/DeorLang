@@ -1,7 +1,7 @@
 
 # Pre-scans the expression for any FLOAT literal. If found, enables float context so all
 # int literals in the expression auto-promote (e.g. 3 → 3.0). Stops at NEWLINE, EOF, or
-# an unmatched RPAREN. Records the prior float context in `pre_ctx_was` so the caller can
+# an unmatched RPAREN, or a top-level and/or. Records the prior float context in `pre_ctx_was` so the caller can
 # restore it after the expression is generated.
 unsafe_macro expr_float_prescan
 	bool pre_ctx_was = float_ctx_get()
@@ -20,6 +20,14 @@ unsafe_macro expr_float_prescan
 
 		if kind is NEWLINE
 			break
+
+		# and/or start a new operand group, so a float after them must not affect this one
+		if pre_depth is 0
+			if kind is KW_AND
+				break
+
+			if kind is KW_OR
+				break
 
 		if kind is "EOF"
 			break

@@ -11354,6 +11354,116 @@ pub fn map_op(operator: String) -> String {
     return operator;
 }
 
+pub fn segment_has_float(tokens: TokensRef, start: i64) -> bool {
+    // macro: token_kinds (transpiler-deor/token_kinds.deor)
+    let COMMA: String = "COMMA".to_string();
+    let DEDENT: String = "DEDENT".to_string();
+    let EQUALS: String = "EQUALS".to_string();
+    let FLOAT: String = "FLOAT".to_string();
+    let IDENT: String = "IDENT".to_string();
+    let INDENT: String = "INDENT".to_string();
+    let KW_AND: String = "KW_AND".to_string();
+    let KW_AS: String = "KW_AS".to_string();
+    let KW_AT: String = "KW_AT".to_string();
+    let KW_AVOW: String = "KW_AVOW".to_string();
+    let KW_BLOCK: String = "KW_BLOCK".to_string();
+    let KW_BREAK: String = "KW_BREAK".to_string();
+    let KW_CONST: String = "KW_CONST".to_string();
+    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
+    let KW_ELSE: String = "KW_ELSE".to_string();
+    let KW_EMPTY: String = "KW_EMPTY".to_string();
+    let KW_END: String = "KW_END".to_string();
+    let KW_ENUM: String = "KW_ENUM".to_string();
+    let KW_FALSE: String = "KW_FALSE".to_string();
+    let KW_FN: String = "KW_FN".to_string();
+    let KW_FOR: String = "KW_FOR".to_string();
+    let KW_FUNC: String = "KW_FUNC".to_string();
+    let KW_IF: String = "KW_IF".to_string();
+    let KW_IMPORT: String = "KW_IMPORT".to_string();
+    let KW_IN: String = "KW_IN".to_string();
+    let KW_IS: String = "KW_IS".to_string();
+    let KW_LIST: String = "KW_LIST".to_string();
+    let KW_MACRO: String = "KW_MACRO".to_string();
+    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
+    let KW_MOVE: String = "KW_MOVE".to_string();
+    let KW_NONE: String = "KW_NONE".to_string();
+    let KW_NOT: String = "KW_NOT".to_string();
+    let KW_OF: String = "KW_OF".to_string();
+    let KW_OR: String = "KW_OR".to_string();
+    let KW_RAW: String = "KW_RAW".to_string();
+    let KW_REMOVE: String = "KW_REMOVE".to_string();
+    let KW_RETURN: String = "KW_RETURN".to_string();
+    let KW_RUST: String = "KW_RUST".to_string();
+    let KW_SHAPE: String = "KW_SHAPE".to_string();
+    let KW_STRUCT: String = "KW_STRUCT".to_string();
+    let KW_TO: String = "KW_TO".to_string();
+    let KW_TRUE: String = "KW_TRUE".to_string();
+    let KW_TYPE: String = "KW_TYPE".to_string();
+    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
+    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
+    let KW_VALID: String = "KW_VALID".to_string();
+    let KW_VOID: String = "KW_VOID".to_string();
+    let KW_WITH: String = "KW_WITH".to_string();
+    let LBRACKET: String = "LBRACKET".to_string();
+    let LPAREN: String = "LPAREN".to_string();
+    let MINUS: String = "MINUS".to_string();
+    let NEWLINE: String = "NEWLINE".to_string();
+    let PERCENT: String = "PERCENT".to_string();
+    let PLUS: String = "PLUS".to_string();
+    let RBRACKET: String = "RBRACKET".to_string();
+    let RPAREN: String = "RPAREN".to_string();
+    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
+    let SLASH: String = "SLASH".to_string();
+    let STAR: String = "STAR".to_string();
+    let STRING: String = "STRING".to_string();
+    // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+    let mut token_count: i64 = (tokens.len() as i64);
+    let mut scan: i64 = start.clone();
+    let mut depth: i64 = 0;
+    while scan < token_count {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        let mut tok: Token = tokens[scan as usize].clone();
+        let kind = tok.kind.clone();
+        if kind == FLOAT {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            return true;
+        }
+        if kind == NEWLINE {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            break;
+        }
+        if kind == "EOF" {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            break;
+        }
+        if kind == LPAREN {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            depth = depth + 1;
+        }
+        if kind == RPAREN {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            if depth == 0 {
+                // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                break;
+            }
+            depth = depth - 1;
+        }
+        if depth == 0 {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            if kind == KW_AND {
+                // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                break;
+            }
+            if kind == KW_OR {
+                // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                break;
+            }
+        }
+        scan = scan + 1;
+    }
+    return false;
+}
+
 pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
@@ -11436,6 +11546,17 @@ pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/expr/macros/expr_float_prescan.deor
             break;
         }
+        if pre_depth == 0 {
+            // transpiler-deor/codegen/decl/stmt/expr/macros/expr_float_prescan.deor
+            if kind == KW_AND {
+                // transpiler-deor/codegen/decl/stmt/expr/macros/expr_float_prescan.deor
+                break;
+            }
+            if kind == KW_OR {
+                // transpiler-deor/codegen/decl/stmt/expr/macros/expr_float_prescan.deor
+                break;
+            }
+        }
         if kind == "EOF" {
             // transpiler-deor/codegen/decl/stmt/expr/macros/expr_float_prescan.deor
             break;
@@ -11477,6 +11598,28 @@ pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         }
         let mut operator_str: String = value.clone();
         let mut after_op: i64 = cur_pos + 1;
+        if kind == KW_AND {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            float_ctx_disable();
+        }
+        if kind == KW_OR {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            float_ctx_disable();
+        }
+        if kind == KW_AND {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            if segment_has_float(tokens.clone(), after_op.clone()) {
+                // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                float_ctx_enable();
+            }
+        }
+        if kind == KW_OR {
+            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+            if segment_has_float(tokens.clone(), after_op.clone()) {
+                // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+                float_ctx_enable();
+            }
+        }
         // macro: expr_is_special (transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor)
         {
             // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
@@ -11549,12 +11692,13 @@ pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         left_code = s_cat(left_code, rhs_code.clone());
         cur_pos = rhs_pos;
     }
-    if expr_has_float {
+    if pre_ctx_was {
         // transpiler-deor/codegen/decl/stmt/expr/expr.deor
-        if !pre_ctx_was {
-            // transpiler-deor/codegen/decl/stmt/expr/expr.deor
-            float_ctx_disable();
-        }
+        float_ctx_enable();
+    }
+    if !pre_ctx_was {
+        // transpiler-deor/codegen/decl/stmt/expr/expr.deor
+        float_ctx_disable();
     }
     return make_result(left_code, cur_pos.clone());
 }

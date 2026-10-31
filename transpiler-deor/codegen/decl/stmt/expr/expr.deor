@@ -69,6 +69,47 @@ fn string map_op(string operator)
 
 	return operator
 
+# Returns true if a FLOAT literal appears before the next NEWLINE, EOF, unmatched RPAREN,
+# or top-level and/or, starting at `start`.
+fn bool segment_has_float(TokensRef tokens, int start)
+	unsafe_macro_run token_kinds
+	int token_count = len(tokens)
+	int scan = start
+	int depth = 0
+
+	for if scan < token_count
+		Token tok = tokens at scan
+		(kind) in tok
+
+		if kind is FLOAT
+			return true
+
+		if kind is NEWLINE
+			break
+
+		if kind is "EOF"
+			break
+
+		if kind is LPAREN
+			depth = depth + 1
+
+		if kind is RPAREN
+			if depth is 0
+				break
+
+			depth = depth - 1
+
+		if depth is 0
+			if kind is KW_AND
+				break
+
+			if kind is KW_OR
+				break
+
+		scan = scan + 1
+
+	return false
+
 # Parses a full expression using a left-associative loop over binary operators. Calls
 # gen_primary for the left operand, then repeatedly folds in right operands as long as
 # the next token is a binary operator. Handles the two-token `is not` operator.
@@ -97,6 +138,22 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 
 		# ex: left is {right} — cur_pos+1 grabs the right-hand operand after the operator
 		int after_op = cur_pos + 1
+
+		# each and/or operand group decides its own float context
+		if kind is KW_AND
+			float_ctx_disable()
+
+		if kind is KW_OR
+			float_ctx_disable()
+
+		if kind is KW_AND
+			if segment_has_float(tokens, after_op)
+				float_ctx_enable()
+
+		if kind is KW_OR
+			if segment_has_float(tokens, after_op)
+				float_ctx_enable()
+
 		macro_run expr_is_special
 		ParseResult rhs_result = gen_primary(tokens, after_op, ctx)
 
@@ -111,8 +168,10 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 		left_code = s_cat(move left_code, rhs_code)
 		cur_pos = rhs_pos
 
-	if expr_has_float
-		if not pre_ctx_was
-			float_ctx_disable()
+	if pre_ctx_was
+		float_ctx_enable()
+
+	if not pre_ctx_was
+		float_ctx_disable()
 
 	return make_result(move left_code, cur_pos)
