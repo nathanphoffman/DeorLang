@@ -1,72 +1,72 @@
 #![allow(warnings)]
 // transpiler-deor/types.deor
-type TokenList = Vec<Token>;
+pub type TokenList = Vec<Token>;
 
-type StrList = Vec<String>;
+pub type StrList = Vec<String>;
 
 #[derive(Clone, PartialEq, Debug)]
-struct Token {
-    kind: String,
-    value: String,
-    line: i64,
-    file: String,
+pub struct Token {
+    pub kind: String,
+    pub value: String,
+    pub line: i64,
+    pub file: String,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct ParseResult {
-    code: String,
-    new_pos: i64,
+pub struct ParseResult {
+    pub code: String,
+    pub new_pos: i64,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct Reg2Scan {
-    matched: bool,
-    key: String,
-    val: String,
-    new_pos: i64,
+pub struct Reg2Scan {
+    pub matched: bool,
+    pub key: String,
+    pub val: String,
+    pub new_pos: i64,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct Reg3Scan {
-    matched: bool,
-    key: String,
-    val: String,
-    val2: String,
-    new_pos: i64,
+pub struct Reg3Scan {
+    pub matched: bool,
+    pub key: String,
+    pub val: String,
+    pub val2: String,
+    pub new_pos: i64,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct TokenMeta {
-    line: i64,
-    file: String,
+pub struct TokenMeta {
+    pub line: i64,
+    pub file: String,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct GenCtx {
-    variant_reg: Vec<String>,
-    shape_reg: Vec<String>,
-    struct_reg: Vec<String>,
-    enum_reg: Vec<String>,
-    mut_names: Vec<String>,
-    type_reg: Vec<String>,
-    tokens: TokensRef,
-    typed_enum_reg: Vec<String>,
-    typed_variant_reg: Vec<String>,
-    validator_var_reg: Vec<String>,
-    validator_fn_reg: Vec<String>,
+pub struct GenCtx {
+    pub variant_reg: Vec<String>,
+    pub shape_reg: Vec<String>,
+    pub struct_reg: Vec<String>,
+    pub enum_reg: Vec<String>,
+    pub mut_names: Vec<String>,
+    pub type_reg: Vec<String>,
+    pub tokens: TokensRef,
+    pub typed_enum_reg: Vec<String>,
+    pub typed_variant_reg: Vec<String>,
+    pub validator_var_reg: Vec<String>,
+    pub validator_fn_reg: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct TokenCursor {
-    token_count: i64,
-    pos: i64,
-    current: Token,
+pub struct TokenCursor {
+    pub token_count: i64,
+    pub pos: i64,
+    pub current: Token,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct DedupResult {
-    tokens: Vec<Token>,
-    enforce_macro_file_depth: i64,
+pub struct DedupResult {
+    pub tokens: Vec<Token>,
+    pub enforce_macro_file_depth: i64,
 }
 
 use std::rc::Rc;
@@ -81,88 +81,88 @@ type NameSet = Rc<std::collections::HashSet<String>>;
 fn name_set(names: Vec<String>) -> NameSet { Rc::new(names.into_iter().collect()) }
 fn name_set_has(set: NameSet, name: String) -> bool { set.contains(&name) }
 // transpiler-deor/lib/char.deor
-fn c_chars(source: String) -> Vec<String> {
+pub fn c_chars(source: String) -> Vec<String> {
     // transpiler-deor/lib/char.deor
     source.chars().map(|c| c.to_string()).collect()
 }
 
-fn c_alpha(character: String) -> bool {
+pub fn c_alpha(character: String) -> bool {
     // transpiler-deor/lib/char.deor
     character.chars().next().map(|ch| ch.is_alphabetic() || ch == '_').unwrap_or(false)
 }
 
-fn c_digit(character: String) -> bool {
+pub fn c_digit(character: String) -> bool {
     // transpiler-deor/lib/char.deor
     character.chars().next().map(|ch| ch.is_ascii_digit()).unwrap_or(false)
 }
 
-fn c_alnum(character: String) -> bool {
+pub fn c_alnum(character: String) -> bool {
     // transpiler-deor/lib/char.deor
     character.chars().next().map(|ch| ch.is_alphanumeric() || ch == '_').unwrap_or(false)
 }
 
 // transpiler-deor/lib/string.deor
-fn s_upper_char(chr: String) -> bool {
+pub fn s_upper_char(chr: String) -> bool {
     // transpiler-deor/lib/string.deor
     chr.chars().next().map(|c| c.is_uppercase()).unwrap_or(false)
 }
 
-fn s_lower_char(chr: String) -> bool {
+pub fn s_lower_char(chr: String) -> bool {
     // transpiler-deor/lib/string.deor
     chr.chars().next().map(|c| c.is_lowercase()).unwrap_or(false)
 }
 
-fn s_cat(left: String, right: String) -> String {
+pub fn s_cat(left: String, right: String) -> String {
     // transpiler-deor/lib/string.deor
     left + right.as_str()
 }
 
-fn s_join(parts: Vec<String>) -> String {
+pub fn s_join(parts: Vec<String>) -> String {
     // transpiler-deor/lib/string.deor
     parts.join("")
 }
 
-fn s_join_nl(parts: Vec<String>) -> String {
+pub fn s_join_nl(parts: Vec<String>) -> String {
     // transpiler-deor/lib/string.deor
     parts.join("\n")
 }
 
-fn s_join_with(parts: Vec<String>, sep: String) -> String {
+pub fn s_join_with(parts: Vec<String>, sep: String) -> String {
     // transpiler-deor/lib/string.deor
     parts.join(sep.as_str())
 }
 
-fn s_from(source: String, start: i64) -> String {
+pub fn s_from(source: String, start: i64) -> String {
     // transpiler-deor/lib/string.deor
     source.get(start as usize..).unwrap_or_default().to_string()
 }
 
-fn s_rtrim(source: String) -> String {
+pub fn s_rtrim(source: String) -> String {
     // transpiler-deor/lib/string.deor
     source.trim_end().to_string()
 }
 
-fn s_trim(source: String) -> String {
+pub fn s_trim(source: String) -> String {
     // transpiler-deor/lib/string.deor
     source.trim().to_string()
 }
 
-fn s_starts_with(source: String, prefix: String) -> bool {
+pub fn s_starts_with(source: String, prefix: String) -> bool {
     // transpiler-deor/lib/string.deor
     source.starts_with(prefix.as_str())
 }
 
-fn s_split(source: String, delimiter: String) -> Vec<String> {
+pub fn s_split(source: String, delimiter: String) -> Vec<String> {
     // transpiler-deor/lib/string.deor
     source.split(delimiter.as_str()).map(|s| s.to_string()).collect()
 }
 
-fn s_repeat(source: String, count: i64) -> String {
+pub fn s_repeat(source: String, count: i64) -> String {
     // transpiler-deor/lib/string.deor
     source.repeat(count as usize)
 }
 
-fn s_pascal(source: String) -> String {
+pub fn s_pascal(source: String) -> String {
     // transpiler-deor/lib/string.deor
     {
     	let mut chars = source.chars();
@@ -173,46 +173,46 @@ fn s_pascal(source: String) -> String {
     }
 }
 
-fn s_debug(source: String) -> String {
+pub fn s_debug(source: String) -> String {
     // transpiler-deor/lib/string.deor
     format!("{:?}", source)
 }
 
 // transpiler-deor/lib/num.deor
-fn n_parse(source: String) -> i64 {
+pub fn n_parse(source: String) -> i64 {
     // transpiler-deor/lib/num.deor
     source.parse::<i64>().unwrap_or(0)
 }
 
-fn n_to_str(number: i64) -> String {
+pub fn n_to_str(number: i64) -> String {
     // transpiler-deor/lib/num.deor
     number.to_string()
 }
 
 // transpiler-deor/lib/file.deor
-fn f_exists(path: String) -> bool {
+pub fn f_exists(path: String) -> bool {
     // transpiler-deor/lib/file.deor
     std::path::Path::new(path.as_str()).exists()
 }
 
-fn f_read(path: String) -> String {
+pub fn f_read(path: String) -> String {
     // transpiler-deor/lib/file.deor
     std::fs::read_to_string(path.as_str())
     	.unwrap_or_else(|e| panic!("cannot read file '{}': {}", path, e))
 }
 
-fn f_write(path: String, content: String) {
+pub fn f_write(path: String, content: String) {
     // transpiler-deor/lib/file.deor
     std::fs::write(path.as_str(), content.as_str()).expect("cannot write output file");
 }
 
-fn f_args() -> Vec<String> {
+pub fn f_args() -> Vec<String> {
     // transpiler-deor/lib/file.deor
     std::env::args().skip(1).collect()
 }
 
 // transpiler-deor/lib/list.deor
-fn l_slice_ref(tokens: TokensRef, start: i64, end_val: i64) -> Vec<Token> {
+pub fn l_slice_ref(tokens: TokensRef, start: i64, end_val: i64) -> Vec<Token> {
     // transpiler-deor/lib/list.deor
     {
     	let end = (end_val as usize).min(tokens.len());
@@ -221,13 +221,13 @@ fn l_slice_ref(tokens: TokensRef, start: i64, end_val: i64) -> Vec<Token> {
 }
 
 // transpiler-deor/utils.deor
-fn is_empty(source: String) -> bool {
+pub fn is_empty(source: String) -> bool {
     // transpiler-deor/utils.deor
     let mut length: i64 = (source.len() as i64);
     return length == 0;
 }
 
-fn list_has(items: Vec<String>, val: String) -> bool {
+pub fn list_has(items: Vec<String>, val: String) -> bool {
     // transpiler-deor/utils.deor
     let mut item_count: i64 = (items.len() as i64);
     for index in 0..item_count {
@@ -242,7 +242,7 @@ fn list_has(items: Vec<String>, val: String) -> bool {
 }
 
 // transpiler-deor/registry_lookup.deor
-fn reg_get_stride(pairs: Vec<String>, key: String, stride: i64) -> String {
+pub fn reg_get_stride(pairs: Vec<String>, key: String, stride: i64) -> String {
     // transpiler-deor/registry_lookup.deor
     let mut pairs_count: i64 = (pairs.len() as i64);
     let mut index: i64 = 0;
@@ -259,7 +259,7 @@ fn reg_get_stride(pairs: Vec<String>, key: String, stride: i64) -> String {
     return "".to_string();
 }
 
-fn reg_has_stride(pairs: Vec<String>, key: String, stride: i64) -> bool {
+pub fn reg_has_stride(pairs: Vec<String>, key: String, stride: i64) -> bool {
     // transpiler-deor/registry_lookup.deor
     let mut pairs_count: i64 = (pairs.len() as i64);
     let mut index: i64 = 0;
@@ -275,19 +275,19 @@ fn reg_has_stride(pairs: Vec<String>, key: String, stride: i64) -> bool {
     return false;
 }
 
-fn reg_get(pairs: Vec<String>, key: String) -> String {
+pub fn reg_get(pairs: Vec<String>, key: String) -> String {
     // transpiler-deor/registry_lookup.deor
     let mut two: i64 = 2;
     return reg_get_stride(pairs.clone(), key.clone(), two.clone());
 }
 
-fn reg_has(pairs: Vec<String>, key: String) -> bool {
+pub fn reg_has(pairs: Vec<String>, key: String) -> bool {
     // transpiler-deor/registry_lookup.deor
     let mut two: i64 = 2;
     return reg_has_stride(pairs.clone(), key.clone(), two.clone());
 }
 
-fn reg3_has(pairs: Vec<String>, key: String) -> bool {
+pub fn reg3_has(pairs: Vec<String>, key: String) -> bool {
     // transpiler-deor/registry_lookup.deor
     let mut thr: i64 = 3;
     return reg_has_stride(pairs.clone(), key.clone(), thr.clone());
@@ -308,49 +308,49 @@ thread_local! {
 }
 fn _verbose_get() -> bool { VERBOSE.with(|f| f.get()) }
 fn _verbose_set(v: bool) { VERBOSE.with(|f| f.set(v)); }
-fn float_ctx_get() -> bool {
+pub fn float_ctx_get() -> bool {
     // transpiler-deor/global_flags.deor
     _float_ctx_get()
 }
 
-fn float_ctx_enable() {
+pub fn float_ctx_enable() {
     // transpiler-deor/global_flags.deor
     _float_ctx_set(true)
 }
 
-fn float_ctx_disable() {
+pub fn float_ctx_disable() {
     // transpiler-deor/global_flags.deor
     _float_ctx_set(false)
 }
 
-fn verbose_get() -> bool {
+pub fn verbose_get() -> bool {
     // transpiler-deor/global_flags.deor
     _verbose_get()
 }
 
-fn verbose_enable() {
+pub fn verbose_enable() {
     // transpiler-deor/global_flags.deor
     _verbose_set(true)
 }
 
 // transpiler-deor/deor_helpers.deor
-fn pr_code(result: ParseResult) -> String {
+pub fn pr_code(result: ParseResult) -> String {
     // transpiler-deor/deor_helpers.deor
     result.code
 }
 
-fn pr_pos(result: ParseResult) -> i64 {
+pub fn pr_pos(result: ParseResult) -> i64 {
     // transpiler-deor/deor_helpers.deor
     result.new_pos
 }
 
-fn make_result(code: String, new_pos: i64) -> ParseResult {
+pub fn make_result(code: String, new_pos: i64) -> ParseResult {
     // transpiler-deor/deor_helpers.deor
     let result = ParseResult { code: code.clone(), new_pos: new_pos.clone() };
     return result;
 }
 
-fn adv_nl_ref(pos: i64, tokens: TokensRef) -> i64 {
+pub fn adv_nl_ref(pos: i64, tokens: TokensRef) -> i64 {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -426,7 +426,7 @@ fn adv_nl_ref(pos: i64, tokens: TokensRef) -> i64 {
     return pos;
 }
 
-fn adv_indent_ref(pos: i64, tokens: TokensRef) -> i64 {
+pub fn adv_indent_ref(pos: i64, tokens: TokensRef) -> i64 {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -502,27 +502,27 @@ fn adv_indent_ref(pos: i64, tokens: TokensRef) -> i64 {
     return pos;
 }
 
-fn skip_to_body_ref(tokens: TokensRef, pos: i64) -> i64 {
+pub fn skip_to_body_ref(tokens: TokensRef, pos: i64) -> i64 {
     // transpiler-deor/deor_helpers.deor
     let mut cur: i64 = adv_nl_ref(pos.clone(), tokens.clone());
     cur = adv_indent_ref(cur.clone(), tokens.clone());
     return cur;
 }
 
-fn make_nl_result(code: String, pos: i64, tokens: TokensRef) -> ParseResult {
+pub fn make_nl_result(code: String, pos: i64, tokens: TokensRef) -> ParseResult {
     // transpiler-deor/deor_helpers.deor
     let mut next_pos: i64 = adv_nl_ref(pos.clone(), tokens.clone());
     return make_result(code, next_pos.clone());
 }
 
 // transpiler-deor/importer/lexer/token_factory.deor
-fn make_meta(line: i64, file: String) -> TokenMeta {
+pub fn make_meta(line: i64, file: String) -> TokenMeta {
     // transpiler-deor/importer/lexer/token_factory.deor
     let meta = TokenMeta { line: line.clone(), file: file.clone() };
     return meta;
 }
 
-fn make_token(kind: String, value: String, meta: TokenMeta) -> Token {
+pub fn make_token(kind: String, value: String, meta: TokenMeta) -> Token {
     // transpiler-deor/importer/lexer/token_factory.deor
     let __destructure_src = meta.clone();
     let line = __destructure_src.line.clone();
@@ -532,7 +532,7 @@ fn make_token(kind: String, value: String, meta: TokenMeta) -> Token {
 }
 
 // transpiler-deor/importer/lexer/indent.deor
-fn count_tabs(line: String) -> i64 {
+pub fn count_tabs(line: String) -> i64 {
     // macro: limits (transpiler-deor/limits.deor)
     let MIN_NAME_LEN: i64 = 3;
     let MAX_FN_PARAMS: i64 = 3;
@@ -566,7 +566,7 @@ fn count_tabs(line: String) -> i64 {
 }
 
 // transpiler-deor/importer/lexer/string_literal.deor
-fn scan_string_literal(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
+pub fn scan_string_literal(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
     // transpiler-deor/importer/lexer/string_literal.deor
     let mut val: String = "".to_string();
     let mut escape_next: bool = false;
@@ -618,7 +618,7 @@ fn scan_string_literal(chars: Vec<String>, char_index: i64, char_count: i64) -> 
 }
 
 // transpiler-deor/importer/lexer/number_literal.deor
-fn scan_number(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
+pub fn scan_number(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
     // transpiler-deor/importer/lexer/number_literal.deor
     let mut first_char: String = chars[char_index as usize].clone();
     let mut empty_str: String = "".to_string();
@@ -685,7 +685,7 @@ fn scan_number(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseRes
 }
 
 // transpiler-deor/importer/lexer/word_token.deor
-fn word_to_kind(word: String) -> String {
+pub fn word_to_kind(word: String) -> String {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -919,7 +919,7 @@ fn word_to_kind(word: String) -> String {
     return IDENT;
 }
 
-fn scan_word(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
+pub fn scan_word(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
     // transpiler-deor/importer/lexer/word_token.deor
     let mut first_char: String = chars[char_index as usize].clone();
     let mut empty_str: String = "".to_string();
@@ -942,7 +942,7 @@ fn scan_word(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResul
 }
 
 // transpiler-deor/importer/lexer/tokenizer.deor
-fn tokenize(source: String, path: String) -> Vec<Token> {
+pub fn tokenize(source: String, path: String) -> Vec<Token> {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -1296,7 +1296,7 @@ fn tokenize(source: String, path: String) -> Vec<Token> {
 }
 
 // transpiler-deor/importer/scan.deor
-fn scan_import_new(tokens: Vec<Token>, pos: i64) -> ParseResult {
+pub fn scan_import_new(tokens: Vec<Token>, pos: i64) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -1383,7 +1383,7 @@ fn scan_import_new(tokens: Vec<Token>, pos: i64) -> ParseResult {
     return make_result(empty_str.clone(), pos.clone());
 }
 
-fn scan_import_where(tokens: Vec<Token>, pos: i64) -> ParseResult {
+pub fn scan_import_where(tokens: Vec<Token>, pos: i64) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -1493,7 +1493,7 @@ fn scan_import_where(tokens: Vec<Token>, pos: i64) -> ParseResult {
 }
 
 // transpiler-deor/importer/t_substitute.deor
-fn s_camel(source: String) -> String {
+pub fn s_camel(source: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     let mut chars = source.chars();
     match chars.next() {
@@ -1502,7 +1502,7 @@ fn s_camel(source: String) -> String {
     }
 }
 
-fn s_to_snake(source: String) -> String {
+pub fn s_to_snake(source: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     {
     	let mut result = String::new();
@@ -1518,17 +1518,17 @@ fn s_to_snake(source: String) -> String {
     }
 }
 
-fn s_contains(source: String, needle: String) -> bool {
+pub fn s_contains(source: String, needle: String) -> bool {
     // transpiler-deor/importer/t_substitute.deor
     source.contains(needle.as_str())
 }
 
-fn s_replace(source: String, from: String, output: String) -> String {
+pub fn s_replace(source: String, from: String, output: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     source.replace(from.as_str(), output.as_str())
 }
 
-fn apply_t_in_name(name: String, placeholder: String, concrete: String) -> String {
+pub fn apply_t_in_name(name: String, placeholder: String, concrete: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     if name == placeholder {
         // transpiler-deor/importer/t_substitute.deor
@@ -1577,7 +1577,7 @@ fn apply_t_in_name(name: String, placeholder: String, concrete: String) -> Strin
     return name;
 }
 
-fn replace_t_in_rust_block(content: String, placeholder: String, concrete: String) -> String {
+pub fn replace_t_in_rust_block(content: String, placeholder: String, concrete: String) -> String {
     // transpiler-deor/importer/t_substitute.deor
     {
     	fn pascal_str(s: &str) -> String {
@@ -1663,7 +1663,7 @@ fn replace_t_in_rust_block(content: String, placeholder: String, concrete: Strin
     }
 }
 
-fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: String) -> Vec<Token> {
+pub fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: String) -> Vec<Token> {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -1780,13 +1780,13 @@ fn resolve_lib_path(path: String) -> String {
 	}
 	path
 }
-fn fatal(msg: String) {
+pub fn fatal(msg: String) {
     // transpiler-deor/importer/load.deor
     println!("{}", msg.clone());
     std::process::exit(1);
 }
 
-fn fatal_at(path: String, msg: String) {
+pub fn fatal_at(path: String, msg: String) {
     // transpiler-deor/importer/load.deor
     let mut err_pre: String = "[error] ".to_string();
     let mut err_sep: String = ": ".to_string();
@@ -1794,13 +1794,13 @@ fn fatal_at(path: String, msg: String) {
     fatal(s_join(err_parts.clone()));
 }
 
-fn fatal_missing_import(imp_path: String) {
+pub fn fatal_missing_import(imp_path: String) {
     // transpiler-deor/importer/load.deor
     let mut err_pre: String = "[error] cannot find import: ".to_string();
     fatal(s_cat(err_pre.clone(), imp_path.clone()));
 }
 
-fn load_file(path: String) -> Vec<Token> {
+pub fn load_file(path: String) -> Vec<Token> {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -1997,7 +1997,7 @@ fn load_file(path: String) -> Vec<Token> {
 }
 
 // transpiler-deor/importer/macros/dedup/dd_error_duplicate.deor
-fn dd_error_duplicate(decl_name: String, name_token: Token, origin_file: String) {
+pub fn dd_error_duplicate(decl_name: String, name_token: Token, origin_file: String) {
     // transpiler-deor/importer/macros/dedup/dd_error_duplicate.deor
     let __destructure_src = name_token.clone();
     let file = __destructure_src.file.clone();
@@ -2014,7 +2014,7 @@ fn dd_error_duplicate(decl_name: String, name_token: Token, origin_file: String)
 }
 
 // transpiler-deor/importer/dedup.deor
-fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
+pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -2625,14 +2625,14 @@ fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
 }
 
 // transpiler-deor/importer/importer.deor
-fn collect_all_tokens_with_all_imports(path: String) -> DedupResult {
+pub fn collect_all_tokens_with_all_imports(path: String) -> DedupResult {
     // transpiler-deor/importer/importer.deor
     let mut merged: Vec<Token> = load_file(path.clone());
     return deduplicate_decls(merged.clone());
 }
 
 // transpiler-deor/tokens_validator/casing.deor
-fn is_pascal(name: String) -> bool {
+pub fn is_pascal(name: String) -> bool {
     // transpiler-deor/tokens_validator/casing.deor
     let mut chars: Vec<String> = c_chars(name.clone());
     let mut name_len: i64 = (chars.len() as i64);
@@ -2644,7 +2644,7 @@ fn is_pascal(name: String) -> bool {
     return s_upper_char(first.clone());
 }
 
-fn is_camel(name: String) -> bool {
+pub fn is_camel(name: String) -> bool {
     // transpiler-deor/tokens_validator/casing.deor
     let mut chars: Vec<String> = c_chars(name.clone());
     let mut name_len: i64 = (chars.len() as i64);
@@ -2670,7 +2670,7 @@ fn is_camel(name: String) -> bool {
     return true;
 }
 
-fn is_screaming_snake(name: String) -> bool {
+pub fn is_screaming_snake(name: String) -> bool {
     // transpiler-deor/tokens_validator/casing.deor
     let mut chars: Vec<String> = c_chars(name.clone());
     let mut name_len: i64 = (chars.len() as i64);
@@ -2687,7 +2687,7 @@ fn is_screaming_snake(name: String) -> bool {
     return true;
 }
 
-fn is_snake(name: String) -> bool {
+pub fn is_snake(name: String) -> bool {
     // transpiler-deor/tokens_validator/casing.deor
     let mut chars: Vec<String> = c_chars(name.clone());
     let mut name_len: i64 = (chars.len() as i64);
@@ -2705,7 +2705,7 @@ fn is_snake(name: String) -> bool {
 }
 
 // transpiler-deor/tokens_validator/arg_helpers.deor
-fn find_struct_field_str(reg: Vec<String>, name: String) -> String {
+pub fn find_struct_field_str(reg: Vec<String>, name: String) -> String {
     // transpiler-deor/tokens_validator/arg_helpers.deor
     let mut reg_count: i64 = (reg.len() as i64);
     let mut reg_index: i64 = 0;
@@ -2726,7 +2726,7 @@ fn find_struct_field_str(reg: Vec<String>, name: String) -> String {
     return "".to_string();
 }
 
-fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
+pub fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -2830,7 +2830,7 @@ fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
     return true;
 }
 
-fn find_matching_rparen(tokens: TokensRef, lp_pos: i64) -> i64 {
+pub fn find_matching_rparen(tokens: TokensRef, lp_pos: i64) -> i64 {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -2920,7 +2920,7 @@ fn find_matching_rparen(tokens: TokensRef, lp_pos: i64) -> i64 {
     return lp_pos;
 }
 
-fn count_call_args(tokens: TokensRef, lp_pos: i64) -> i64 {
+pub fn count_call_args(tokens: TokensRef, lp_pos: i64) -> i64 {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -3038,7 +3038,7 @@ fn count_call_args(tokens: TokensRef, lp_pos: i64) -> i64 {
 }
 
 // transpiler-deor/tokens_validator/error_handling.deor
-fn val_err(tok: Token, label: String, rule: String) -> String {
+pub fn val_err(tok: Token, label: String, rule: String) -> String {
     // transpiler-deor/tokens_validator/error_handling.deor
     let __destructure_src = tok.clone();
     let value = __destructure_src.value.clone();
@@ -3055,7 +3055,7 @@ fn val_err(tok: Token, label: String, rule: String) -> String {
     return s_join(parts.clone());
 }
 
-fn handle_errors(errors: Vec<String>) {
+pub fn handle_errors(errors: Vec<String>) {
     // transpiler-deor/tokens_validator/error_handling.deor
     let mut error_count: i64 = (errors.len() as i64);
     if error_count > 0 {
@@ -3072,7 +3072,7 @@ fn handle_errors(errors: Vec<String>) {
 }
 
 // transpiler-deor/macro_builder/macro_expander.deor
-fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<Token> {
+pub fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<Token> {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -3291,7 +3291,7 @@ fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<
 }
 
 // transpiler-deor/macro_builder/macro_validation.deor
-fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
+pub fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -3414,14 +3414,14 @@ fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
 }
 
 // transpiler-deor/macro_builder/macro_builder.deor
-fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<Token> {
+pub fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<Token> {
     // transpiler-deor/macro_builder/macro_builder.deor
     let mut validated: Vec<Token> = validate_macros(raw_tokens.clone());
     return expand_deor_macros(validated.clone(), enforce_macro_file_depth.clone());
 }
 
 // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
-fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
+pub fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -3540,7 +3540,7 @@ fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
     return false;
 }
 
-fn fold_moved_into(acc_vars: Vec<String>, moved_vars: Vec<String>) -> Vec<String> {
+pub fn fold_moved_into(acc_vars: Vec<String>, moved_vars: Vec<String>) -> Vec<String> {
     // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
     let mut folded_vars: Vec<String> = acc_vars.clone();
     let mut move_index: i64 = 0;
@@ -3559,7 +3559,7 @@ fn fold_moved_into(acc_vars: Vec<String>, moved_vars: Vec<String>) -> Vec<String
 }
 
 // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
-fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i64) -> bool {
+pub fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i64) -> bool {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -3677,7 +3677,7 @@ fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i
 }
 
 // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
-fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 {
+pub fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -3765,26 +3765,26 @@ fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 {
 }
 
 // transpiler-deor/tokens_validator/tokens_validation.deor
-type FnTestRule = fn(String) -> bool;
+pub type FnTestRule = fn(String) -> bool;
 
 #[derive(Clone, PartialEq, Debug)]
-struct UamFrame {
-    chain_depth: i64,
-    pre_vars: Vec<String>,
-    acc_vars: Vec<String>,
+pub struct UamFrame {
+    pub chain_depth: i64,
+    pub pre_vars: Vec<String>,
+    pub acc_vars: Vec<String>,
 }
 
-type FrameStack = Vec<UamFrame>;
+pub type FrameStack = Vec<UamFrame>;
 
 #[derive(Clone, PartialEq, Debug)]
-struct VoidFnFrame {
-    depth: i64,
-    prev_void: bool,
+pub struct VoidFnFrame {
+    pub depth: i64,
+    pub prev_void: bool,
 }
 
-type VoidFrameStack = Vec<VoidFnFrame>;
+pub type VoidFrameStack = Vec<VoidFnFrame>;
 
-fn validate_tokens(tokens: TokensRef) {
+pub fn validate_tokens(tokens: TokensRef) {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -8726,7 +8726,7 @@ fn validate_tokens(tokens: TokensRef) {
 }
 
 // transpiler-deor/codegen/type_map.deor
-fn render_rust_type(type_name: String) -> String {
+pub fn render_rust_type(type_name: String) -> String {
     // transpiler-deor/codegen/type_map.deor
     if type_name == "void" {
         // transpiler-deor/codegen/type_map.deor
@@ -8752,7 +8752,7 @@ fn render_rust_type(type_name: String) -> String {
 }
 
 // transpiler-deor/registry/struct.deor
-fn skip_to_block_start(tokens: TokensRef, start: i64) -> ParseResult {
+pub fn skip_to_block_start(tokens: TokensRef, start: i64) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -8831,7 +8831,7 @@ fn skip_to_block_start(tokens: TokensRef, start: i64) -> ParseResult {
     return make_result(empty_str.clone(), cur.clone());
 }
 
-fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
+pub fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -8927,7 +8927,7 @@ fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
     return make_result(fields_joined.clone(), cur.clone());
 }
 
-fn try_struct_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
+pub fn try_struct_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -9025,7 +9025,7 @@ fn try_struct_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
 }
 
 // transpiler-deor/registry/shape.deor
-fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
+pub fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -9195,7 +9195,7 @@ fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     return result;
 }
 
-fn try_raw_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
+pub fn try_raw_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     // transpiler-deor/registry/shape.deor
     fn locate_raw_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -9220,23 +9220,23 @@ fn try_raw_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
 
 // transpiler-deor/registry/enum.deor
 #[derive(Clone, PartialEq, Debug)]
-struct PairsScan {
-    pairs: Vec<String>,
-    new_pos: i64,
+pub struct PairsScan {
+    pub pairs: Vec<String>,
+    pub new_pos: i64,
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct EnumScan {
-    matched: bool,
-    is_typed: bool,
-    name: String,
-    rust_name: String,
-    val_type: String,
-    pairs: Vec<String>,
-    new_pos: i64,
+pub struct EnumScan {
+    pub matched: bool,
+    pub is_typed: bool,
+    pub name: String,
+    pub rust_name: String,
+    pub val_type: String,
+    pub pairs: Vec<String>,
+    pub new_pos: i64,
 }
 
-fn is_typed_enum_type(word: String) -> bool {
+pub fn is_typed_enum_type(word: String) -> bool {
     // transpiler-deor/registry/enum.deor
     if word == "string" {
         // transpiler-deor/registry/enum.deor
@@ -9257,17 +9257,17 @@ fn is_typed_enum_type(word: String) -> bool {
     return false;
 }
 
-fn ps_pairs(scan: PairsScan) -> Vec<String> {
+pub fn ps_pairs(scan: PairsScan) -> Vec<String> {
     // transpiler-deor/registry/enum.deor
     scan.pairs
 }
 
-fn ps_new_pos(scan: PairsScan) -> i64 {
+pub fn ps_new_pos(scan: PairsScan) -> i64 {
     // transpiler-deor/registry/enum.deor
     scan.new_pos
 }
 
-fn collect_variant_pairs(tokens: TokensRef, start: i64, rust_name: String) -> PairsScan {
+pub fn collect_variant_pairs(tokens: TokensRef, start: i64, rust_name: String) -> PairsScan {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -9360,7 +9360,7 @@ fn collect_variant_pairs(tokens: TokensRef, start: i64, rust_name: String) -> Pa
     return result;
 }
 
-fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: String) -> PairsScan {
+pub fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: String) -> PairsScan {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -9471,7 +9471,7 @@ fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: String)
     return result;
 }
 
-fn try_enum_entry(tokens: TokensRef, pos: i64) -> EnumScan {
+pub fn try_enum_entry(tokens: TokensRef, pos: i64) -> EnumScan {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -9602,7 +9602,7 @@ fn try_enum_entry(tokens: TokensRef, pos: i64) -> EnumScan {
 }
 
 // transpiler-deor/registry/validator_type.deor
-fn try_type_entry(tokens: TokensRef, pos: i64) -> Reg3Scan {
+pub fn try_type_entry(tokens: TokensRef, pos: i64) -> Reg3Scan {
     // transpiler-deor/registry/validator_type.deor
     fn locate_type_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -9639,7 +9639,7 @@ fn try_type_entry(tokens: TokensRef, pos: i64) -> Reg3Scan {
     return result;
 }
 
-fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) -> Vec<String> {
+pub fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) -> Vec<String> {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -9736,7 +9736,7 @@ fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) -> Vec
     return result;
 }
 
-fn collect_validator_fn_returns(tokens: TokensRef, type_reg: Vec<String>) -> Vec<String> {
+pub fn collect_validator_fn_returns(tokens: TokensRef, type_reg: Vec<String>) -> Vec<String> {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -9832,7 +9832,7 @@ fn collect_validator_fn_returns(tokens: TokensRef, type_reg: Vec<String>) -> Vec
 }
 
 // transpiler-deor/registry/type_resolve.deor
-fn resolve_type(type_name: String, ctx: RcCtx) -> String {
+pub fn resolve_type(type_name: String, ctx: RcCtx) -> String {
     // transpiler-deor/registry/type_resolve.deor
     let __destructure_src = ctx.clone();
     let shape_reg = __destructure_src.shape_reg.clone();
@@ -9882,7 +9882,7 @@ fn resolve_type(type_name: String, ctx: RcCtx) -> String {
 }
 
 // transpiler-deor/registry/mut_scan.deor
-fn find_block_end_ref(tokens: TokensRef, indent_pos: i64) -> i64 {
+pub fn find_block_end_ref(tokens: TokensRef, indent_pos: i64) -> i64 {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -9975,7 +9975,7 @@ fn find_block_end_ref(tokens: TokensRef, indent_pos: i64) -> i64 {
     return result;
 }
 
-fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<String> {
+pub fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<String> {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -10086,7 +10086,7 @@ fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<String
 }
 
 // transpiler-deor/registry/registry.deor
-fn build_registry(tokens_ref: TokensRef) -> RcCtx {
+pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -10277,7 +10277,7 @@ fn build_registry(tokens_ref: TokensRef) -> RcCtx {
 }
 
 // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
-fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
+pub fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
     let mut comma: String = ",".to_string();
     let mut input_count: i64 = (fields.len() as i64);
@@ -10318,7 +10318,7 @@ fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> Strin
     return "Unknown".to_string();
 }
 
-fn find_struct_for_field(struct_reg: Vec<String>, field: String) -> String {
+pub fn find_struct_for_field(struct_reg: Vec<String>, field: String) -> String {
     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
     let mut reg_count: i64 = (struct_reg.len() as i64);
     let mut next_is_val: bool = false;
@@ -10346,7 +10346,7 @@ fn find_struct_for_field(struct_reg: Vec<String>, field: String) -> String {
 }
 
 // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
-fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -10501,7 +10501,7 @@ fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
-fn gen_list_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_list_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -10629,7 +10629,7 @@ fn gen_list_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     return make_result(items_str, cur.clone());
 }
 
-fn gen_join_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_join_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -10756,7 +10756,7 @@ fn gen_join_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/expr/primary.deor
-fn gen_unary_method(args_pos: i64, suffix: String, ctx: RcCtx) -> ParseResult {
+pub fn gen_unary_method(args_pos: i64, suffix: String, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/expr/primary.deor
     let tokens = ctx.tokens.clone();
     let mut inner_result: ParseResult = gen_expr(tokens.clone(), args_pos.clone(), ctx.clone());
@@ -10769,7 +10769,7 @@ fn gen_unary_method(args_pos: i64, suffix: String, ctx: RcCtx) -> ParseResult {
     return make_result(result_code, close.clone());
 }
 
-fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -11203,7 +11203,7 @@ fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/expr/expr.deor
-fn is_binary_op(kind: String) -> bool {
+pub fn is_binary_op(kind: String) -> bool {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -11317,7 +11317,7 @@ fn is_binary_op(kind: String) -> bool {
     return false;
 }
 
-fn map_op(operator: String) -> String {
+pub fn map_op(operator: String) -> String {
     // transpiler-deor/codegen/decl/stmt/expr/expr.deor
     if operator == "is" {
         // transpiler-deor/codegen/decl/stmt/expr/expr.deor
@@ -11354,7 +11354,7 @@ fn map_op(operator: String) -> String {
     return operator;
 }
 
-fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -11560,7 +11560,7 @@ fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/helpers.deor
-fn emit_val(val_code: String, val_kind: String) -> String {
+pub fn emit_val(val_code: String, val_kind: String) -> String {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -11656,7 +11656,7 @@ fn emit_val(val_code: String, val_kind: String) -> String {
     return val_code;
 }
 
-fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_reg: Vec<String>) -> String {
+pub fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_reg: Vec<String>) -> String {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -11741,7 +11741,7 @@ fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_reg:
     return reg_get(validator_fn_reg.clone(), callee_name.clone());
 }
 
-fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> String {
+pub fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> String {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -11841,7 +11841,7 @@ fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> Stri
     return "".to_string();
 }
 
-fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
+pub fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -11934,7 +11934,7 @@ fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
 }
 
 // transpiler-deor/codegen/decl/stmt/destructure.deor
-fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -12367,7 +12367,7 @@ fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     return make_result(dest_code, after.clone());
 }
 
-fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -12549,7 +12549,7 @@ fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/block.deor
-fn gen_block(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_block(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -12695,7 +12695,7 @@ fn gen_block(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/if.deor
-fn gen_if_branch(cond_pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_if_branch(cond_pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/if.deor
     let tokens = ctx.tokens.clone();
     let mut cond_result: ParseResult = gen_expr(tokens.clone(), cond_pos.clone(), ctx.clone());
@@ -12740,7 +12740,7 @@ fn gen_if_branch(cond_pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     return make_result(combined, blk_end.clone());
 }
 
-fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -12908,7 +12908,7 @@ fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/for.deor
-fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -13162,7 +13162,7 @@ fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/reassign.deor
-fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -13299,7 +13299,7 @@ fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/as_binding.deor
-fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -13625,7 +13625,7 @@ fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/call_stmt.deor
-fn gen_call_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_call_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/call_stmt.deor
     fn locate_next_token(anchor: i64) -> i64 {
         return anchor + 1;
@@ -13695,7 +13695,7 @@ fn gen_call_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/list_mutation.deor
-fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -13880,7 +13880,7 @@ fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/stmt/typed_binding.deor
-fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -14397,7 +14397,7 @@ fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/cursor.deor
-fn c_at_end(cur: TokenCursor) -> bool {
+pub fn c_at_end(cur: TokenCursor) -> bool {
     // transpiler-deor/codegen/decl/cursor.deor
     let __destructure_src = cur.clone();
     let token_count = __destructure_src.token_count.clone();
@@ -14405,7 +14405,7 @@ fn c_at_end(cur: TokenCursor) -> bool {
     return pos >= token_count;
 }
 
-fn cur_at_ref(tokens: TokensRef, pos: i64) -> TokenCursor {
+pub fn cur_at_ref(tokens: TokensRef, pos: i64) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut current: Token = tokens[pos as usize].clone();
@@ -14413,7 +14413,7 @@ fn cur_at_ref(tokens: TokensRef, pos: i64) -> TokenCursor {
     return cur;
 }
 
-fn cur_next_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
+pub fn cur_next_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
     let __destructure_src = cur.clone();
     let token_count = __destructure_src.token_count.clone();
@@ -14428,7 +14428,7 @@ fn cur_next_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
     return TokenCursor { token_count, pos, current };
 }
 
-fn cur_skip_to_body_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
+pub fn cur_skip_to_body_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
     // transpiler-deor/codegen/decl/cursor.deor
     let pos = cur.pos.clone();
     let mut body_pos: i64 = adv_nl_ref(pos.clone(), tokens.clone());
@@ -14437,7 +14437,7 @@ fn cur_skip_to_body_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor {
 }
 
 // transpiler-deor/codegen/decl/stmt/stmt.deor
-fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -14885,7 +14885,7 @@ fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/struct.deor
-fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -15003,19 +15003,19 @@ fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             let value = current.value.clone();
             let mut field_name: String = value.clone();
             let mut rust_type: String = resolve_type(field_type.clone(), ctx.clone());
-            field_lines.push([RS_IND.as_str(), field_name.as_str(), RS_COL.as_str(), rust_type.as_str(), RS_COM.as_str()].concat().clone());
+            field_lines.push([RS_IND.as_str(), "pub ", field_name.as_str(), RS_COL.as_str(), rust_type.as_str(), RS_COM.as_str()].concat().clone());
             cur = cur_next_ref(cur.clone(), tokens.clone());
         }
     }
     let mut fields_code: String = s_join_nl(field_lines.clone());
-    let mut struct_prefix: String = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
+    let mut struct_prefix: String = "#[derive(Clone, PartialEq, Debug)]\npub struct ".to_string();
     let mut decl: String = [struct_prefix.as_str(), struct_name.as_str(), RS_OB.as_str(), fields_code.as_str(), RS_CB2.as_str()].concat();
     let pos = cur.pos.clone();
     return make_result(decl, pos.clone());
 }
 
 // transpiler-deor/codegen/decl/enum.deor
-fn gen_enum_decl(tokens: TokensRef, pos: i64) -> ParseResult {
+pub fn gen_enum_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -15151,22 +15151,22 @@ fn gen_enum_decl(tokens: TokensRef, pos: i64) -> ParseResult {
         }
     }
     let mut variants_code: String = s_join_nl(variant_lines.clone());
-    let mut enum_prefix: String = "#[derive(Clone, Copy, PartialEq, Debug)]\nenum ".to_string();
+    let mut enum_prefix: String = "#[derive(Clone, Copy, PartialEq, Debug)]\npub enum ".to_string();
     let mut decl: String = [enum_prefix.as_str(), rust_name.as_str(), RS_OB.as_str(), variants_code.as_str(), RS_CB2.as_str()].concat();
     let pos = cur.pos.clone();
     return make_result(decl, pos.clone());
 }
 
 // transpiler-deor/codegen/decl/shape.deor
-fn gen_list_shape_code(rust_name: String, rust_elem: String) -> String {
+pub fn gen_list_shape_code(rust_name: String, rust_elem: String) -> String {
     // transpiler-deor/codegen/decl/shape.deor
-    let mut list_prefix: String = "type ".to_string();
+    let mut list_prefix: String = "pub type ".to_string();
     let mut list_mid: String = " = Vec<".to_string();
     let mut list_suffix: String = ">;\n\n".to_string();
     return [list_prefix.as_str(), rust_name.as_str(), list_mid.as_str(), rust_elem.as_str(), list_suffix.as_str()].concat();
 }
 
-fn gen_func_shape_code(rust_name: String, rust_in: String, rust_out: String) -> String {
+pub fn gen_func_shape_code(rust_name: String, rust_in: String, rust_out: String) -> String {
     // transpiler-deor/codegen/decl/shape.deor
     let mut out_suffix: String = "".to_string();
     if !is_empty(rust_out.clone()) {
@@ -15174,14 +15174,14 @@ fn gen_func_shape_code(rust_name: String, rust_in: String, rust_out: String) -> 
         let mut out_prefix: String = " -> ".to_string();
         out_suffix = [out_prefix.as_str(), rust_out.as_str()].concat();
     }
-    let mut func_prefix: String = "type ".to_string();
+    let mut func_prefix: String = "pub type ".to_string();
     let mut func_mid: String = " = fn(".to_string();
     let mut func_paren_close: String = ")".to_string();
     let mut func_suffix: String = ";\n\n".to_string();
     return [func_prefix.as_str(), rust_name.as_str(), func_mid.as_str(), rust_in.as_str(), func_paren_close.as_str(), out_suffix.as_str(), func_suffix.as_str()].concat();
 }
 
-fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
+pub fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -15342,7 +15342,7 @@ fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/validator_type.deor
-fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -15509,17 +15509,17 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         final_pred_code = [closure_open.as_str(), block_code.as_str(), closure_close.as_str()].concat();
         final_pos = body_start + block_new_pos;
     }
-    let mut struct_prefix: String = "#[derive(Clone, PartialEq, Debug)]\nstruct ".to_string();
+    let mut struct_prefix: String = "#[derive(Clone, PartialEq, Debug)]\npub struct ".to_string();
     let mut is_copy_base: bool = param_type == "int" || param_type == "float" || param_type == "bool";
     if is_copy_base {
         // transpiler-deor/codegen/decl/validator_type.deor
-        struct_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\nstruct ".to_string();
+        struct_prefix = "#[derive(Clone, Copy, PartialEq, Debug)]\npub struct ".to_string();
     }
-    let mut struct_paren_open: String = "(".to_string();
+    let mut struct_paren_open: String = "(pub ".to_string();
     let mut struct_suffix: String = ");\n\n".to_string();
     let mut struct_code: String = [struct_prefix.as_str(), type_name.as_str(), struct_paren_open.as_str(), rust_param_type.as_str(), struct_suffix.as_str()].concat();
     let mut impl_prefix: String = "impl ".to_string();
-    let mut impl_fn_new_open: String = " {\n    fn new(".to_string();
+    let mut impl_fn_new_open: String = " {\n    pub fn new(".to_string();
     let mut impl_colon: String = ": ".to_string();
     let mut impl_return_if_open: String = ") -> Option<Self> {\n        if ".to_string();
     let mut impl_some_open: String = " {\n            Some(".to_string();
@@ -15531,7 +15531,7 @@ fn gen_type_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/function.deor
-fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
+pub fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -15794,7 +15794,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/macros/fn_emit.deor
             ret_suffix = [RS_ARR.as_str(), ret_type.as_str()].concat();
         }
-        let mut fnc_kw: String = "fn ".to_string();
+        let mut fnc_kw: String = "pub fn ".to_string();
         if used_implicit_return {
             // transpiler-deor/codegen/decl/macros/fn_emit.deor
             let mut fn_code: String = [fnc_kw.as_str(), fn_name.as_str(), RS_LP.as_str(), params_code.as_str(), RS_RP.as_str(), ret_suffix.as_str(), RS_OB.as_str(), implicit_return_code.as_str(), RS_FNC_CB.as_str()].concat();
@@ -15813,7 +15813,7 @@ fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 }
 
 // transpiler-deor/codegen/decl/raw.deor
-fn gen_raw_decl(tokens: TokensRef, pos: i64) -> ParseResult {
+pub fn gen_raw_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     // transpiler-deor/codegen/decl/raw.deor
     fn locate_raw_newline(kw_pos: i64) -> i64 {
         return kw_pos + 2;
@@ -15824,7 +15824,7 @@ fn gen_raw_decl(tokens: TokensRef, pos: i64) -> ParseResult {
 }
 
 // transpiler-deor/codegen/codegen.deor
-fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
+pub fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -16019,7 +16019,7 @@ fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
 }
 
 // transpiler-deor/main.deor
-fn strip_verbose_flags(raw_args: Vec<String>) -> Vec<String> {
+pub fn strip_verbose_flags(raw_args: Vec<String>) -> Vec<String> {
     // transpiler-deor/main.deor
     let mut verbose_long: String = "--verbose".to_string();
     let mut verbose_short: String = "-v".to_string();
@@ -16039,7 +16039,7 @@ fn strip_verbose_flags(raw_args: Vec<String>) -> Vec<String> {
     return cli_args;
 }
 
-fn main() {
+pub fn main() {
     // transpiler-deor/main.deor
     let mut raw_args: Vec<String> = f_args();
     let mut verbose_long: String = "--verbose".to_string();
