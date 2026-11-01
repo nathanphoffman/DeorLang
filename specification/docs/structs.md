@@ -124,6 +124,14 @@ let name = room.name.clone();
 
 Each extracted field becomes its own `let field = src.field.clone();` binding — not a Rust pattern destructure.
 
+**The new names are copies.** Assigning to one of them (`size = new_size`) changes only that variable, not the struct it came from. To get a changed struct, build a new one from named variables or use `with`:
+
+```deor
+(text, size) in line
+size = new_size
+resized as line with (size)
+```
+
 ### Partial Extraction
 You can extract a subset of a struct's fields. Any combination is valid — the struct may have more fields than you extract.
 
