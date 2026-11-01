@@ -1,0 +1,35 @@
+# return_tuple_happy_test.deor
+# Valid bare tuple returns must still pass the return-tuple check: locals named after
+# the struct's fields, and plain parenthesised expressions (no top-level comma).
+
+struct Span
+	float low
+	float high
+	bool wide
+
+fn Span make_span(float start, float finish)
+	float low = start
+	float high = finish
+	bool wide = false
+	return (low, high, wide)
+
+fn int paren_expr(int one, int two)
+	return (one + two)
+
+fn void main()
+	float start = 1.0
+	float finish = 2.0
+	Span result = make_span(start, finish)
+	(low, high, wide) in result
+	print(low)
+	print(high)
+	print(wide)
+	int one = 1
+	int two = 2
+	print(paren_expr(one, two))
+
+# expect:
+# 1
+# 2
+# false
+# 3

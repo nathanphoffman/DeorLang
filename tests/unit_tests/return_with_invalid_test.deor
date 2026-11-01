@@ -1,0 +1,20 @@
+# return_with_invalid_test.deor
+# `return x with (...)` is not a documented form — record update must be bound with `as`
+# first. It used to emit `return x;` plus `/* unhandled(KW_WITH) */` with no Deor error.
+
+struct Ship
+	float pos
+	string name
+
+fn Ship move_ship(Ship ship, float pos)
+	return ship with (pos)
+
+fn Ship move_ship_ok(Ship ship, float pos)
+	updated as ship with (pos)
+	return updated
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 10: fn 'with' - 'with' cannot be used directly in a return — bind the updated struct first

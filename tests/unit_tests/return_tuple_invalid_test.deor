@@ -1,0 +1,28 @@
+# return_tuple_invalid_test.deor
+# A bare `return (a, b, c)` must be made of named variables whose names are exactly one
+# struct's fields. Literals, expressions, calls and misnamed variables used to slip
+# through validation and emit `/* unhandled(...) */` into the Rust, failing only at rustc.
+
+struct Span
+	float low
+	float high
+	bool wide
+
+fn Span literal_item(float low, float high)
+	return (low, high, false)
+
+fn Span expr_item(float low, float high)
+	bool wide = false
+	return (low, high, wide + 1)
+
+fn Span wrong_names(float start, float finish)
+	bool wide = false
+	return (start, finish, wide)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 12: fn 'false' - every item in a returned '( )' field list must be a single named variable
+# line 16: fn 'wide' - every item in a returned '( )' field list must be a single named variable
+# line 20: fn '(' - returned '( )' field list does not match any struct

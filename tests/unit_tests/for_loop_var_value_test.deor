@@ -1,0 +1,135 @@
+import "lib/string.deor"
+
+# for_loop_var_value_test.deor
+# Regression: `for x in list` used to emit `for x in &list`, making x a Rust reference
+# (&bool, &f64, &String...) while Deor has no references — so reading, comparing,
+# assigning or passing the loop variable failed to compile (E0308 / E0277). The loop
+# variable must be a plain value of the element type, and the list must stay usable
+# after the loop.
+
+shape boolList = list of bool
+shape intList = list of int
+shape floatList = list of float
+shape stringList = list of string
+
+struct Item
+	string label
+	int qty
+
+shape itemList = list of Item
+
+fn int count_true(boolList flags)
+	int total = 0
+
+	for flag in flags
+		if flag
+			total = total + 1
+
+	return total
+
+fn int largest_int(intList values)
+	int best = 0
+
+	for value in values
+		if value > best
+			best = value
+
+	return best
+
+fn float largest_float(floatList values)
+	float best = 0.0
+
+	for value in values
+		if value > best
+			best = value
+
+	return best
+
+fn int count_match(stringList names, string other)
+	int total = 0
+
+	for name in names
+		if name is other
+			total = total + 1
+
+	return total
+
+fn int double_it(int num)
+	return num * 2
+
+fn string shout(string text)
+	string loud = s_to_upper(text)
+	return loud
+
+fn int item_qty(Item itm)
+	(qty) in itm
+	return qty
+
+fn void main()
+	boolList flags = [true, false, true, true]
+	print(count_true(flags))
+	print(len(flags))
+
+	intList nums = [3, 9, 4]
+	print(largest_int(nums))
+	int doubled_sum = 0
+
+	for num in nums
+		doubled_sum = doubled_sum + double_it(num)
+
+	print(doubled_sum)
+	print(len(nums))
+
+	floatList fls = [1.5, 3.5, 2.0]
+	print(largest_float(fls))
+	print(len(fls))
+
+	stringList words = ["ant", "bee", "ant"]
+	string ant = "ant"
+	print(count_match(words, ant))
+	stringList loud_words = empty
+
+	for word in words
+		string copy = word
+		string loud = shout(copy)
+		loud_words at end = loud
+
+	string joined = s_join(loud_words)
+
+	print(joined)
+	print(len(words))
+
+	string label = "a"
+	int qty = 2
+	Item first = (label, qty)
+	label = "b"
+	qty = 5
+	Item second = (label, qty)
+	itemList items = [first, second]
+	int qty_total = 0
+
+	for item in items
+		qty_total = qty_total + item_qty(item)
+
+		(label, qty) in item
+
+		if qty > 3
+			print(label)
+
+	print(qty_total)
+	print(len(items))
+
+# expect:
+# 3
+# 4
+# 9
+# 32
+# 3
+# 3.5
+# 3
+# 2
+# ANTBEEANT
+# 3
+# b
+# 7
+# 2

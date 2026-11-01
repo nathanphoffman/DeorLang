@@ -98,7 +98,18 @@ fn tokenList load_file(string path)
 		if at_root_depth
 			bool is_structural_kw = kind is KW_STRUCT or kind is KW_ENUM or kind is KW_SHAPE or kind is KW_TYPE
 
-			if is_structural_kw
+			# A declaration keyword is the first token on its line. The same word later
+			# on a line (e.g. a parameter named `shape`) is a misused name, left for the
+			# validator to report as a reserved word rather than blamed on declaration order.
+			bool at_line_start = pos is 0
+
+			if pos > 0
+				int prev_pos = pos - 1
+				Token prev_tok = tok_raw at prev_pos
+				(kind) in prev_tok
+				at_line_start = kind is NEWLINE or kind is INDENT or kind is DEDENT
+
+			if is_structural_kw and at_line_start
 				if decl_phase > 0
 					string struct_order_msg = "struct/enum/type/shape declarations must come before macros and functions"
 					fatal_at(path, struct_order_msg)

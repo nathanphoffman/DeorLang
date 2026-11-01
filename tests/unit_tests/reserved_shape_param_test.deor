@@ -1,0 +1,35 @@
+# reserved_shape_param_test.deor
+# Regression: a parameter (or function name) spelled like a declaration keyword
+# (shape/struct/enum/type) used to trigger "declarations must come before macros and
+# functions" — the load-time declaration-order check saw the keyword and blamed
+# ordering, even though the struct was declared first. It must instead report the
+# reserved word as a bad name.
+
+struct Curve
+	float power
+
+fn float strength(Curve shape, float distance)
+	return distance
+
+fn int type_param(int type)
+	return type
+
+fn int struct_param(int struct)
+	return struct
+
+fn int enum_param(int enum)
+	return enum
+
+fn int shape()
+	return 1
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 11: fn 'shape' - reserved keyword cannot be used as a name
+# line 11: variable 'shape' - reserved keyword cannot be used as a name
+# line 14: variable 'type' - reserved keyword cannot be used as a name
+# line 17: variable 'struct' - reserved keyword cannot be used as a name
+# line 20: variable 'enum' - reserved keyword cannot be used as a name
+# line 23: fn 'shape' - reserved keyword cannot be used as a name

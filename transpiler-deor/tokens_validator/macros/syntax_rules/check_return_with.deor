@@ -1,0 +1,27 @@
+# Flags `return x with (...)`. Record update is only documented as part of a binding
+# (`new_room as room with (area)` or `Type name = source with (...)`); in return position
+# codegen wrote `return x;` followed by `/* unhandled(KW_WITH) */`, so the mistake only
+# showed up as a rustc error. Bind the updated struct first, then return the variable.
+macro check_return_with
+	# ex: return {ship} with (pos) — kw_pos+1 starts the returned expression
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	if cur_kind is KW_RETURN
+		int scan_pos = locate_next_token(pos)
+		bool scanning = true
+
+		for if scanning
+			if scan_pos >= token_count
+				scanning = false
+			else
+				Token scan_token = tokens at scan_pos
+				(kind) in scan_token
+
+				if kind is NEWLINE or kind is INDENT or kind is DEDENT or kind is "EOF"
+					scanning = false
+				else if kind is KW_WITH
+					errors at end = val_err(scan_token, lbl_fn, rule_return_with)
+					scanning = false
+
+				scan_pos = scan_pos + 1

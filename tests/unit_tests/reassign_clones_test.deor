@@ -1,0 +1,55 @@
+# reassign_clones_test.deor
+# Regression: plain reassignment `a = b` emitted `a = b;` (a Rust move) with no `.clone()`,
+# unlike every other assignment/argument site. Using `b` afterwards failed with rustc
+# E0382 "borrow of moved value". Deor copies by default; only `move` opts out.
+
+shape intList = list of int
+
+struct Span
+	float low
+	float high
+
+fn void main()
+	string aaa = "x"
+	string bbb = "y"
+	aaa = bbb
+	print(aaa)
+	print(bbb)
+
+	intList lst_a = [1]
+	intList lst_b = [2, 3]
+	lst_a = lst_b
+	print(len(lst_a))
+	print(len(lst_b))
+
+	float low = 1.0
+	float high = 2.0
+	Span first = (low, high)
+	low = 5.0
+	high = 6.0
+	Span other = (low, high)
+	bool flag = true
+
+	if flag
+		first = other
+
+	(low, high) in other
+	print(low)
+	print(high)
+	(low, high) in first
+	print(low)
+
+	string moved_src = "m"
+	string moved_dst = "n"
+	moved_dst = move moved_src
+	print(moved_dst)
+
+# expect:
+# y
+# y
+# 2
+# 2
+# 5
+# 6
+# 5
+# m

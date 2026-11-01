@@ -11,6 +11,8 @@ macro check_common_token_rules
 	macro_run track_block_scope
 	macro_run check_void_return
 	macro_run check_return_invalid
+	macro_run check_return_tuple
+	macro_run check_return_with
 	macro_run check_move_target
 	macro_run track_copy_vars
 	macro_run check_use_after_move

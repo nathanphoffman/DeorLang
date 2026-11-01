@@ -1,6 +1,6 @@
 
 # Generates a plain reassignment `name = expr`. pos points to the identifier and the
-# token after it is '='. Emits `name = expr;`, or `name = TypeName::new(expr);` when the
+# token after it is '='. Emits `name = expr;` (`expr.clone()` for a plain variable), or `name = TypeName::new(expr);` when the
 # variable is validator-typed so the predicate re-runs — see
 # docs/validator_types.md#is-valid-is-not-valid
 fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
@@ -23,10 +23,10 @@ fn ParseResult gen_reassign(int pos, int depth, RcCtx ctx)
 	Token eq_val_token = tokens at val_pos
 	(kind) in eq_val_token
 	unsafe_macro_run gen_expr_r
-	string assign_suffix = ""
 
-	if kind is STRING
-		assign_suffix = ".to_string()"
+	# `.to_string()` for a string literal, `.clone()` for a plain variable (Deor copies on
+	# assignment unless the value is `move`d), nothing for calls, indexing, chains or `move x`.
+	string assign_suffix = value_ownership_suffix(tokens, val_pos, val_end)
 
 	string reassign_type = reg_get(validator_var_reg, ident_name)
 	string asgn_code = ""

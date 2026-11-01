@@ -102,4 +102,7 @@ unsafe_macro define_errors
 
 	# struct construction rules
 	string rule_struct_field_count = "wrong number of fields in struct construction — all fields must be provided"
+	string rule_return_with = "'with' cannot be used directly in a return — bind the updated struct first ('updated as ship with (pos)'), then 'return updated'"
+	string rule_return_tuple_item = "every item in a returned '( )' field list must be a single named variable whose name is a struct field — literals, expressions and calls need a local named after the field first (e.g. 'bool wide = false')"
+	string rule_return_tuple_fields = "returned '( )' field list does not match any struct — the variable names must be exactly the fields of one struct, so name each local after its field"
 	string rule_struct_field_name = "unknown field name in struct construction — variable name does not match any field in this struct"
