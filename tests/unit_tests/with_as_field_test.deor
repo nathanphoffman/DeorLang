@@ -1,0 +1,18 @@
+# with_as_field_test.deor
+# `with (value as field)` is not Deor syntax. The with-field scanner used to get
+# stuck on the `as` token and hang the compiler forever; it must now error.
+
+struct Traffic
+	int traders
+	int stations
+
+fn Traffic grow(Traffic traffic, int grown)
+	Traffic updated = traffic with (grown as traders)
+	return updated
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 10: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
+# line 10: variable 'traders' - used here but never declared anywhere

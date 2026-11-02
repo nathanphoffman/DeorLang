@@ -1,0 +1,28 @@
+# enum_dup_variant_test.deor
+# Two untyped enums sharing a variant name used to compile silently, with every
+# bare `Medium` resolving to whichever enum was declared first (rustc then
+# reported a type mismatch). Now it is a validation error on the later variant.
+
+enum RoomSize
+	Small
+	Medium
+	Large
+
+enum StretchKind
+	Short
+	Medium
+	Long
+
+enum ThirdKind
+	Large
+	Huge
+
+fn StretchKind pick()
+	return Medium
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 13: enum variant 'Medium' - enum variant name is already used by another enum
+# line 17: enum variant 'Large' - enum variant name is already used by another enum

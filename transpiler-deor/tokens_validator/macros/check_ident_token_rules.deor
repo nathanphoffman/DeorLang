@@ -20,6 +20,7 @@ macro check_ident_token_rules
 		if not is_fn_decl_name
 			macro_run check_call_args
 
+		macro_run check_rust_keyword_name
 		macro_run check_rust_generic
 		macro_run check_raw_in_binding
 		macro_run check_raw_reassign

@@ -113,6 +113,7 @@ import "transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_m
 import "transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move.deor"
 import "transpiler-deor/tokens_validator/macros/brackets_parens/check_keyword_in_parens.deor"
 import "transpiler-deor/tokens_validator/macros/idents/check_kw_as_name.deor"
+import "transpiler-deor/tokens_validator/macros/idents/check_rust_keyword_name.deor"
 import "transpiler-deor/tokens_validator/macros/idents/check_destructure_binding_kw.deor"
 import "transpiler-deor/tokens_validator/macros/brackets_parens/check_with_parens.deor"
 import "transpiler-deor/tokens_validator/macros/brackets_parens/check_empty_parens.deor"

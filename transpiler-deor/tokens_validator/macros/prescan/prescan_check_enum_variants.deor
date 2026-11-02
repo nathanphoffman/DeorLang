@@ -87,6 +87,13 @@ macro prescan_check_enum_variants
 						if kind is not EQUALS
 							errors at end = val_err(scan_token, lbl_variant, rule_typed_enum_eq)
 					else
+						# A bare variant name resolves through one global table, so two untyped
+						# enums sharing a name made the first-declared enum win silently.
+						if list_has(untyped_variant_names, value)
+							errors at end = val_err(scan_token, lbl_variant, rule_dup_variant)
+						else
+							untyped_variant_names at end = value
+
 						if kind is LPAREN
 							errors at end = val_err(scan_token, lbl_variant, rule_enum_data)
 

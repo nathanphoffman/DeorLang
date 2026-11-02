@@ -1,0 +1,85 @@
+# mut_destructure_more_test.deor
+# Related cases for the mut fixes: index assignment on a destructured list,
+# mutation inside nested blocks, several params mutated at once, a parameter
+# changed in a loop, and a param/list that is only read (must still compile).
+
+shape intList = list of int
+
+struct Bag
+	int label
+	intList items
+
+fn int set_index(Bag bag, int value)
+	(label, items) in bag
+	items at 0 = value
+
+	return items at 0
+
+fn int push_in_if(Bag bag, int value)
+	(label, items) in bag
+
+	if label is 1
+		items at end = value
+
+	return len(items)
+
+fn int push_in_loop(Bag bag, int value)
+	(label, items) in bag
+
+	for idx in range(3)
+		items at end = value
+
+	return len(items)
+
+fn int two_params(int left, int right)
+	left = left + 1
+	right = right + 2
+
+	return left + right
+
+fn int loop_param(int total)
+	for idx in range(3)
+		total = total + idx
+
+	return total
+
+fn int read_only(intList items, int count)
+	return len(items) + count
+
+fn int read_destructured(Bag bag)
+	(label, items) in bag
+
+	return len(items) + label
+
+fn void main()
+	int one = 1
+	int zero = 0
+	int seven = 7
+	int label = 1
+	intList items = [5, 6]
+	Bag bag = (label, items)
+	int set_res = set_index(bag, seven)
+	print(set_res)
+	int if_res = push_in_if(bag, seven)
+	print(if_res)
+	int loop_res = push_in_loop(bag, seven)
+	print(loop_res)
+	int two_res = two_params(one, one)
+	print(two_res)
+	print(one)
+	int loop_p = loop_param(zero)
+	print(loop_p)
+	int ro_res = read_only(items, one)
+	print(ro_res)
+	int rd_res = read_destructured(bag)
+	print(rd_res)
+
+# expect:
+# 7
+# 3
+# 5
+# 5
+# 1
+# 3
+# 3
+# 3

@@ -19,6 +19,7 @@ unsafe_macro prescan_declared_state
 	strList declared_var_names = empty
 	strList fn_names = empty
 	strList enum_variant_names = empty
+	strList untyped_variant_names = empty
 	strList enum_names = empty
 	int pre_i = 0
 

@@ -104,6 +104,8 @@ config = h_set(config, host_key, host_val)
 
 Every function that takes a `StringMap` parameter is handed the same underlying `Arc<Mutex<...>>`, not a copy of the map.
 
+**Borrowed Rust references can't live in a struct.** Deor has no lifetime syntax, so a type that is really a borrow (a handle written `&'a Game` in Rust) cannot be a struct field — the generated field would have no lifetime and `rustc` rejects it (E0106). Pass such a handle as its own function parameter instead, or wrap the underlying value in `Rc`/`Arc` and declare it as an owned `raw` type as shown above.
+
 Only reach for this pattern when you actually need reference-style sharing for performance — a large data structure threaded through many layers of calls, or a hot path where repeated cloning would be measurably slow. For everything else, plain function-to-function parameter passing is simpler, keeps ownership explicit, and should stay the default.
 
 ---

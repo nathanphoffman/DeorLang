@@ -1,0 +1,50 @@
+# mut_destructure_param_test.deor
+# Two spots that used to generate non-mut Rust bindings and fail rustc:
+#  - a list produced by destructuring, then pushed to / removed from
+#  - a function parameter that the body reassigns (changes only the local copy)
+
+shape intList = list of int
+
+struct Chunk
+	int low
+	intList vertices
+
+fn int grow_chunk(Chunk chunk, int item)
+	(low, vertices) in chunk
+	vertices at end = item
+	vertices at end = item
+	vertices remove at 0
+	int total = len(vertices)
+
+	return total
+
+fn int bump(int count)
+	count = count + 1
+
+	return count
+
+fn int fill(intList items, int item)
+	items at end = item
+
+	return len(items)
+
+fn void main()
+	intList vertices = empty
+	int low = 1
+	Chunk chunk = (low, vertices)
+	int item = 7
+	int total = grow_chunk(chunk, item)
+	print(total)
+	int start = 5
+	int bumped = bump(start)
+	print(bumped)
+	print(start)
+	intList nums = empty
+	int size = fill(nums, item)
+	print(size)
+
+# expect:
+# 1
+# 6
+# 5
+# 1

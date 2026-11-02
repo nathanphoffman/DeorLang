@@ -1,0 +1,7 @@
+# Flags an IDENT whose text is a Rust-only keyword (box, match, impl, ...). Deor
+# doesn't reserve these, so they pass every other check and then produce a .rs
+# file that rustc rejects. Deor has no use for these words outside `rust` blocks
+# (which are skipped before this runs), so any occurrence is a bad name.
+macro check_rust_keyword_name
+	if list_has(rust_only_keywords, cur_val)
+		errors at end = val_err(tok, lbl_var, rule_kw_in_parens)

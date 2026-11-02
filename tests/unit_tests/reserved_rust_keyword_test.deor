@@ -1,0 +1,29 @@
+# reserved_rust_keyword_test.deor
+# Rust-only keywords (box, match, impl, ...) are not Deor keywords, but using one
+# as a name produces a .rs file that doesn't compile. The validator rejects them.
+
+fn void test_box()
+	int box = 5
+	print(box)
+
+fn void test_match()
+	int match = 5
+	print(match)
+
+fn void test_param_impl(int impl)
+	print(impl)
+
+fn void test_loop_as()
+	loop as 5
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 6: variable 'box' - reserved keyword cannot be used as a name
+# line 7: variable 'box' - reserved keyword cannot be used as a name
+# line 10: variable 'match' - reserved keyword cannot be used as a name
+# line 11: variable 'match' - reserved keyword cannot be used as a name
+# line 13: variable 'impl' - reserved keyword cannot be used as a name
+# line 14: variable 'impl' - reserved keyword cannot be used as a name
+# line 17: variable 'loop' - reserved keyword cannot be used as a name

@@ -1,0 +1,39 @@
+# with_assign_test.deor
+# `name = source with (f)` (reassignment) has no codegen and used to emit
+# `/* unhandled(KW_WITH) */`. It is now a validation error; the declaring forms
+# (typed and `as`) stay valid — see typed_with_test.
+
+struct Pair
+	int left
+	int right
+
+fn Pair reassign_with(Pair pair, int left)
+	Pair updated = pair
+	updated = pair with (left)
+
+	return updated
+
+fn Pair reassign_in_if(Pair pair, int left)
+	Pair updated = pair
+
+	if left is 1
+		updated = pair with (left)
+
+	return updated
+
+fn Pair ok_typed(Pair pair, int left)
+	Pair typed = pair with (left)
+
+	return typed
+
+fn Pair ok_as(Pair pair, int left)
+	fresh as pair with (left)
+
+	return fresh
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 12: variable 'with' - 'with' only works when declaring a new variable
+# line 20: variable 'with' - 'with' only works when declaring a new variable

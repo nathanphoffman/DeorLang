@@ -142,6 +142,8 @@ Open an indented block when followed by a newline.
 
 ### Built-in Function Names
 
+Rust-only keywords (`box`, `match`, `impl`, `loop`, `ref`, `mod`, `trait`, `let`, `mut`, `pub`, `use`, `self`, `Self`, and the rest of Rust's reserved and future-reserved words) are also rejected as names: Deor doesn't reserve them, but they would produce Rust that fails to compile. Names that merely contain one (`boxes`, `looper`) are fine.
+
 `print`, `crash`, `len`, `range`, `args`, and `input` are not lexer keywords — they're plain identifiers wired to specific codegen behavior (see [Builtins](docs/builtins.md)). Despite not being reserved words, they cannot be used as a variable, parameter, function, struct, or type name, and cannot be shadowed — doing so is a transpiler error. This is a deliberate exception to normal [variable shadowing](docs/enforced_practices.md#variable-shadowing): every other identifier can be shadowed, but redefining a built-in's name would silently break the behavior every other use of it relies on.
 
 ### Banned Rust Type Names

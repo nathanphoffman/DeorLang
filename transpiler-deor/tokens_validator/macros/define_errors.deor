@@ -28,6 +28,8 @@ unsafe_macro define_errors
 
 	# declaration rules
 	string rule_enum_pascal = "enum variant must be PascalCase"
+	string rule_dup_variant = "enum variant name is already used by another enum — bare variant names must be unique across all untyped enums (rename one, e.g. prefix it with its enum's name)"
+	string rule_with_assign = "'with' only works when declaring a new variable — use 'Type name = source with (field)' or 'name as source with (field)', not 'name = source with (field)'"
 	string rule_enum_data = "enum variants cannot carry data — use a struct alongside the enum instead"
 	string rule_typed_enum_eq = "typed enum variant must have a value — add '= value' after the variant name"
 	string rule_untyped_enum_eq = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants"
@@ -70,6 +72,7 @@ unsafe_macro define_errors
 	string rule_valid = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned"
 	string rule_end = "'end' can only appear directly after 'at' (list at end / list at end = val) — it cannot be used as a variable name or expression"
 	string rule_with_parens = "'with' must be followed by a parenthesized field list — 'with (area)', not 'with area' — parens are required even for a single field"
+	string rule_with_fields = "'with (...)' accepts only existing variable names separated by commas — 'with (value as field)' is not supported. Assign the new value to a variable named after the field first, then use 'with (field)'"
 	string rule_unmatched_open_paren = "'(' is never closed — every open paren needs a matching ')'"
 	string rule_unmatched_close_paren = "')' has no matching '(' before it — remove the extra ')' or add the missing '('"
 	string rule_empty_parens = "'()' is not valid — parens must contain at least one item, except when declaring or calling a zero-parameter function"

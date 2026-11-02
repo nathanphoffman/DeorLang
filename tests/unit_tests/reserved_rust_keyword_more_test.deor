@@ -1,0 +1,40 @@
+# reserved_rust_keyword_more_test.deor
+# More Rust-only keywords in other name slots (for-loop var, struct field,
+# fn param, destructure binding). Names that merely contain a keyword
+# (boxes, matches, looper) must stay legal.
+
+shape intList = list of int
+
+struct Holder
+	int boxes
+	int matches
+
+fn void test_for_var()
+	for ref in range(3)
+		print(ref)
+
+fn void test_mod()
+	int mod = 5
+	print(mod)
+
+fn void test_trait_param(int trait)
+	print(trait)
+
+fn void test_ok_names()
+	int boxes = 1
+	int matches = 2
+	int looper = 3
+	print(boxes)
+	print(matches)
+	print(looper)
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 13: variable 'ref' - reserved keyword cannot be used as a name
+# line 14: variable 'ref' - reserved keyword cannot be used as a name
+# line 17: variable 'mod' - reserved keyword cannot be used as a name
+# line 18: variable 'mod' - reserved keyword cannot be used as a name
+# line 20: variable 'trait' - reserved keyword cannot be used as a name
+# line 21: variable 'trait' - reserved keyword cannot be used as a name

@@ -37,6 +37,8 @@ enum ColorTag {
 
 Any number of variants. Each is a plain name — no associated data.
 
+**Variant names must be unique across all untyped enums.** A bare variant name (`Medium`) is resolved through one table shared by every enum in the program, including imported files, so two untyped enums cannot both have a `Medium` — the second is a transpiler error. Rename one (for example `MediumStretch`). Typed enums are exempt: their variants are only read with `(Variant) in EnumName`, which names the enum explicitly.
+
 ---
 
 ## Assignment

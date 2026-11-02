@@ -1,0 +1,35 @@
+# with_as_field_more_test.deor
+# Other malformed `with (...)` lists must error instead of hanging the compiler.
+# The valid forms (single field, several fields) are covered by typed_with_test.
+
+struct Pair
+	int left
+	int right
+
+fn Pair bad_two(Pair pair, int grown, int more)
+	Pair first = pair with (grown as left, more as right)
+	return first
+
+fn Pair bad_mixed(Pair pair, int right, int grown)
+	Pair second = pair with (right, grown as left)
+	return second
+
+fn Pair bad_literal(Pair pair)
+	Pair third = pair with (5)
+	return third
+
+fn Pair bad_as_form(Pair pair, int grown)
+	changed as pair with (grown as left)
+	return changed
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 10: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
+# line 10: variable 'left' - used here but never declared anywhere
+# line 14: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
+# line 14: variable 'left' - used here but never declared anywhere
+# line 18: variable '5' - 'with (...)' accepts only existing variable names separated by commas
+# line 22: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
+# line 22: variable 'left' - used here but never declared anywhere

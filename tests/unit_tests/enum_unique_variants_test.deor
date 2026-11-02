@@ -1,0 +1,45 @@
+# enum_unique_variants_test.deor
+# Happy path: unique variant names across enums resolve to the right enum, and
+# typed enums (resolved at compile time, not through the bare-name table) may
+# still share a variant name with each other.
+
+enum RoomSize
+	Small
+	Medium
+	Large
+
+enum StretchKind
+	ShortStretch
+	MediumStretch
+	LongStretch
+
+enum string Warm
+	Red = "warm red"
+
+enum string Cool
+	Red = "cool red"
+
+fn StretchKind pick()
+	return MediumStretch
+
+fn RoomSize room()
+	return Medium
+
+fn void main()
+	StretchKind kind = pick()
+	RoomSize size = room()
+
+	if kind is MediumStretch
+		print("stretch")
+
+	if size is Medium
+		print("room")
+
+	(Red) in Warm
+	string warm = Red
+	print(warm)
+
+# expect:
+# stretch
+# room
+# warm red

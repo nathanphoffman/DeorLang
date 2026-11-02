@@ -10,6 +10,25 @@ macro check_with_parens
 		return kw_pos + 1
 
 	if cur_kind is KW_WITH
+		# ex: name {=} source with — `with` has no codegen for a plain reassignment
+		# (it needs the struct's Rust type), so only declarations may use it.
+		if pos >= 3
+			int eq_pos = pos - 2
+			Token eq_token = tokens at eq_pos
+			(kind) in eq_token
+
+			if kind is EQUALS
+				bool is_typed_decl = false
+
+				if pos >= 4
+					int type_pos = pos - 4
+					Token type_token = tokens at type_pos
+					(kind) in type_token
+					is_typed_decl = kind is IDENT
+
+				if not is_typed_decl
+					errors at end = val_err(tok, lbl_var, rule_with_assign)
+
 		bool with_ok = false
 		int next_pos = locate_next_token(pos)
 
@@ -20,3 +39,21 @@ macro check_with_parens
 
 		if not with_ok
 			errors at end = val_err(tok, lbl_var, rule_with_parens)
+
+		# The list may hold only field names and commas: `with (grown as traders)`
+		# leaves the codegen scanner stuck on `as` and hangs the compiler.
+		if with_ok
+			int scan_pos = next_pos + 1
+			bool scanning = true
+
+			for if scanning and scan_pos < token_count
+				Token scan_token = tokens at scan_pos
+				(kind) in scan_token
+
+				if kind is RPAREN
+					scanning = false
+				else if kind is IDENT or kind is COMMA
+					scan_pos = scan_pos + 1
+				else
+					errors at end = val_err(scan_token, lbl_var, rule_with_fields)
+					scanning = false

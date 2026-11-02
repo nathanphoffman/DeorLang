@@ -190,6 +190,8 @@ let name = "Bigger Office".to_string();
 let bigger_office = Room { area, name, ..office.clone() };
 ```
 
+**Declaration only.** `with` can only appear in a declaration (`Type name = source with (...)` or `name as source with (...)`). `name = source with (...)` is a transpiler error, and so is anything other than field names and commas inside the parens — `with (value as field)` is not supported. Assign the new value to a variable named after the field first, then use `with (field)`.
+
 **Conversion notes:** near 1:1 with Rust's built-in functional record update (`..` spread) syntax, except the spread source is cloned (`..room.clone()`, not `..room`) — every Deor struct derives `Clone`, so `with` never consumes the source; `room`/`office` are still fully usable after the update. Overridden fields that are validator types route through their constructor like any other assignment to that type. The `with` pattern mirrors `in` destructuring: `in` pulls fields out of a struct, `with` pushes variables into one.
 
 ---

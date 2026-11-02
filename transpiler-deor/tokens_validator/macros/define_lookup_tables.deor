@@ -14,6 +14,12 @@ unsafe_macro define_lookup_tables
 	# already handles that keyword's one legitimate position precisely.
 	strList reserved_keywords = [KW_AND, KW_AS, KW_AT, KW_AVOW, KW_BLOCK, KW_BREAK, KW_CONST, KW_CONTINUE, KW_ELSE, KW_EMPTY, KW_ENUM, KW_FALSE, KW_FN, KW_FOR, KW_FUNC, KW_IF, KW_IMPORT, KW_IN, KW_IS, KW_LIST, KW_MACRO, KW_MACRO_RUN, KW_UNSAFE_MACRO, KW_UNSAFE_MACRO_RUN, KW_MOVE, KW_NONE, KW_NOT, KW_OF, KW_OR, KW_RAW, KW_REMOVE, KW_RETURN, KW_RUST, KW_SHAPE, KW_STRUCT, KW_TO, KW_TRUE, KW_TYPE, KW_VALID, KW_VOID, KW_WITH]
 
+	# Rust keywords that Deor does not reserve — they lex as plain IDENTs, so a name
+	# like `box` passes validation but makes the generated .rs fail to compile.
+	# check_rust_keyword_name flags them. (A raw r#name escape would be the
+	# alternative, but self/Self/super/crate can't be raw, so reject instead.)
+	strList rust_only_keywords = ["abstract", "async", "await", "become", "box", "crate", "do", "dyn", "extern", "final", "gen", "impl", "let", "loop", "match", "mod", "mut", "override", "priv", "pub", "ref", "self", "Self", "static", "super", "trait", "try", "typeof", "unsafe", "unsized", "use", "virtual", "where", "while", "yield"]
+
 	# built-in function names — not lexer keywords, just plain IDENTs with special
 	# codegen meaning, but they must never be shadowed (see docs/syntax.md#built-in-function-names)
 	strList builtin_names = ["print", "crash", "len", "range", "args", "input"]

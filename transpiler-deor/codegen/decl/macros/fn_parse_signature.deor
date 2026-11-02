@@ -14,6 +14,7 @@ unsafe_macro fn_parse_signature
 	cur = cur_next_ref(cur, fn_tokens)
 	cur = cur_next_ref(cur, fn_tokens)   # skip LPAREN
 	strList param_strs = empty
+	strList param_names = empty
 
 	for if not c_at_end(cur)
 		(current) in cur
@@ -34,6 +35,7 @@ unsafe_macro fn_parse_signature
 			string rust_param_type = resolve_type(param_type, ctx)
 			string param_separator = ": "
 			param_strs at end = s_join([param_name, param_separator, rust_param_type])
+			param_names at end = param_name
 			cur = cur_next_ref(cur, fn_tokens)
 		else
 			cur = cur_next_ref(cur, fn_tokens)
