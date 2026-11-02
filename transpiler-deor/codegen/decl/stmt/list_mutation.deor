@@ -30,7 +30,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 	Token next_token = tokens at next_pos
 	(kind) in next_token
 
-	# name at end = val  OR  name at idx = val
+	# Both the append and the index-assign forms start with an `at` keyword, so branch here
 	if kind is KW_AT
 		int after_at = locate_next_token(next_pos)
 

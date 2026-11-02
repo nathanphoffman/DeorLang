@@ -78,7 +78,7 @@ macro check_use_after_move_var_move
 				(value) in next_token
 				string move_name = value
 
-				# name = f(move name) — a very common idiom in this codebase
+				# Reassigning a name from its own moved value is a very common idiom here
 				# (`result_code = s_cat(move result_code, ...)`): the old value
 				# is consumed to build the new one, and a completely fresh value
 				# occupies `name` once the statement finishes, so marking it
@@ -138,7 +138,7 @@ macro check_use_after_move_var_move
 					else
 						moved_vars at end = value
 			else if kind is LPAREN
-				# Type name = move (f1, f2, ...) — struct construction via move (see
+				# Building a struct via move (see
 				# docs/move.md#struct-construction): each named field is moved INTO the
 				# new struct. 'move (' also introduces two other, unrelated shapes that
 				# must NOT be treated as construction: 'move (f1, f2) in source' (partial

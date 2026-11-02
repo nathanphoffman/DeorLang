@@ -38,7 +38,7 @@ macro stmt_ident
 		if kind is EQUALS
 			return gen_reassign(pos, depth, ctx)
 
-		# Type name = expr  (typed binding)
+		# An identifier here means the statement is a typed binding
 		if kind is IDENT
 			# ex: Type name {=} val — next_pos+1 grabs the expected '=' after the var name
 			int eq_pos = locate_next_token(next_pos)

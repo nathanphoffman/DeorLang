@@ -82,7 +82,7 @@ macro check_use_after_move_var_ident
 				if kind is KW_MOVE
 					skip_read = true
 
-				# for move (item in {collection}) — collection here was just
+				# In a move-for loop header, the collection here was just
 				# marked moved by the KW_FOR handler above, in this very same
 				# pass; without this, this identical token gets re-visited
 				# as a plain read and flags itself as already-moved.
