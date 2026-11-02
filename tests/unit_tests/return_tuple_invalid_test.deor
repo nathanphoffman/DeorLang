@@ -13,10 +13,12 @@ fn Span literal_item(float low, float high)
 
 fn Span expr_item(float low, float high)
 	bool wide = false
+
 	return (low, high, wide + 1)
 
 fn Span wrong_names(float start, float finish)
 	bool wide = false
+
 	return (start, finish, wide)
 
 fn void main()

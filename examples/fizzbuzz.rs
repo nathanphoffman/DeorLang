@@ -6,9 +6,11 @@ fn fizzbuzz(num: i64) -> String {
     if num % 15 == 0 {
         return "FizzBuzz".to_string();
     }
+
     if num % 3 == 0 {
         return "Fizz".to_string();
     }
+
     if num % 5 == 0 {
         return "Buzz".to_string();
     }

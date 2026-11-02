@@ -11,6 +11,7 @@ struct DateRange
 
 type ValidRange(DateRange val)
 	(start_day, end_day) in val
+
 	return start_day < end_day
 
 fn void main()

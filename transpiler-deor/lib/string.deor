@@ -7,7 +7,6 @@ fn bool s_lower_char(string chr)
 	rust
 		chr.chars().next().map(|c| c.is_lowercase()).unwrap_or(false)
 
-
 # Concatenates two strings. Rust's `+` operator moves left, so right must be .as_str().
 fn string s_cat(string left, string right)
 	rust

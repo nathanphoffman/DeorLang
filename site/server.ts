@@ -1,72 +1,78 @@
-import { statSync } from 'fs';
-import { extname, join, normalize } from 'path';
+import { statSync } from "fs";
+import { extname, join, normalize } from "path";
 
-const dir = join(import.meta.dir, 'public');
+const dir = join(import.meta.dir, "public");
 const PORT = process.env.PORT ? Number(process.env.PORT) : 8080;
 
 const MIME: Record<string, string> = {
-  '.html': 'text/html',
-  '.js':   'application/javascript',
-  '.wasm': 'application/wasm',
-  '.md':   'text/plain',
-  '.css':  'text/css',
-  '.svg':  'image/svg+xml',
-  '.png':  'image/png',
-  '.jpg':  'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif':  'image/gif',
-  '.webp': 'image/webp',
+	".html": "text/html",
+	".js": "application/javascript",
+	".wasm": "application/wasm",
+	".md": "text/plain",
+	".css": "text/css",
+	".svg": "image/svg+xml",
+	".png": "image/png",
+	".jpg": "image/jpeg",
+	".jpeg": "image/jpeg",
+	".gif": "image/gif",
+	".webp": "image/webp",
 };
 
 function fileType(path: string) {
-  try {
-    const stat = statSync(path);
-    // Nested ternary: file if it is a file, otherwise dir if it is a directory, otherwise null.
-    return stat.isFile() ? 'file' : stat.isDirectory() ? 'dir' : null;
-  } catch (err) {
-    // A missing path (ENOENT) or a file used as a folder (ENOTDIR) is expected for a
-    // request to a URL that doesn't exist, so that returns null. Anything else (permissions, I/O) is a real problem and is rethrown.
-    const code = (err as NodeJS.ErrnoException).code;
-    if (code === 'ENOENT' || code === 'ENOTDIR') return null;
-    throw err;
-  }
+	try {
+		const stat = statSync(path);
+
+		// Nested ternary: file if it is a file, otherwise dir if it is a directory, otherwise null.
+		return stat.isFile() ? "file" : stat.isDirectory() ? "dir" : null;
+	} catch (err) {
+		// A missing path (ENOENT) or a file used as a folder (ENOTDIR) is expected for a
+		// request to a URL that doesn't exist, so that returns null. Anything else (permissions, I/O) is a real problem and is rethrown.
+		const code = (err as NodeJS.ErrnoException).code;
+
+		if (code === "ENOENT" || code === "ENOTDIR") return null;
+
+		throw err;
+	}
 }
 
 function serveFile(path: string) {
-  return new Response(Bun.file(path), {
-    headers: {
-      'Content-Type': MIME[extname(path)] || 'application/octet-stream',
-      'Cache-Control': 'no-store',
-    },
-  });
+	return new Response(Bun.file(path), {
+		headers: {
+			"Content-Type": MIME[extname(path)] || "application/octet-stream",
+			"Cache-Control": "no-store",
+		},
+	});
 }
 
 const server = Bun.serve({
-  port: PORT,
-  hostname: '0.0.0.0',
-  fetch(req) {
-    const url = new URL(req.url);
-    let pathname = decodeURIComponent(url.pathname);
-    if (pathname.length > 1 && pathname.endsWith('/')) pathname = pathname.slice(0, -1);
+	port: PORT,
+	hostname: "0.0.0.0",
+	fetch(req) {
+		const url = new URL(req.url);
+		let pathname = decodeURIComponent(url.pathname);
 
-    // resolve within `dir` only — reject any path that escapes it (e.g. "..")
-    const filePath = normalize(join(dir, pathname));
-    if (filePath !== dir && !filePath.startsWith(dir + '/')) {
-      return new Response('not found', { status: 404 });
-    }
+		if (pathname.length > 1 && pathname.endsWith("/"))
+			pathname = pathname.slice(0, -1);
 
-    if (pathname === '/') return serveFile(join(dir, 'index.html'));
+		// resolve within `dir` only — reject any path that escapes it (e.g. "..")
+		const filePath = normalize(join(dir, pathname));
 
-    // real file on disk — serve as-is
-    if (fileType(filePath) === 'file') return serveFile(filePath);
+		if (filePath !== dir && !filePath.startsWith(dir + "/")) {
+			return new Response("not found", { status: 404 });
+		}
 
-    // folder with its own index.html — e.g. /pico -> public/pico/index.html
-    if (fileType(join(filePath, 'index.html')) === 'file') {
-      return serveFile(join(filePath, 'index.html'));
-    }
+		if (pathname === "/") return serveFile(join(dir, "index.html"));
 
-    return new Response('not found', { status: 404 });
-  },
+		// real file on disk — serve as-is
+		if (fileType(filePath) === "file") return serveFile(filePath);
+
+		// folder with its own index.html — e.g. /pico -> public/pico/index.html
+		if (fileType(join(filePath, "index.html")) === "file") {
+			return serveFile(join(filePath, "index.html"));
+		}
+
+		return new Response("not found", { status: 404 });
+	},
 });
 
 console.log(`newweb → ${server.url}`);

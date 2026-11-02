@@ -8,6 +8,7 @@ struct Traffic
 
 fn Traffic grow(Traffic traffic, int grown)
 	Traffic updated = traffic with (grown as traders)
+
 	return updated
 
 fn void main()

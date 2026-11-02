@@ -41,6 +41,7 @@ fn void main()
 		print("both negative")
 
 	Positive bad_num = -1
+
 	if bad_num is not valid
 		print("negative rejected")
 

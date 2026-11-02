@@ -11,6 +11,7 @@ fn Ship move_ship(Ship ship, float pos)
 
 fn Ship move_ship_ok(Ship ship, float pos)
 	updated as ship with (pos)
+
 	return updated
 
 fn void main()

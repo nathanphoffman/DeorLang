@@ -9,6 +9,7 @@ struct DateRange
 
 type ValidRange(DateRange val)
 	(start_day, end_day) in val
+
 	return start_day < end_day
 
 fn ValidRange make_range(int start_day, int end_day)

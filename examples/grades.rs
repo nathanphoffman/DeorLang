@@ -26,9 +26,11 @@ fn letter_grade(score: i64) -> &'static str {
     if score >= 90 {
         return "A";
     }
+
     if score >= 80 {
         return "B";
     }
+
     if score >= 70 {
         return "C";
     }
@@ -46,6 +48,7 @@ fn main() {
 
     let mut top_name = "";
     let mut top_average = 0;
+
     for student in &students {
         let avg = average(&student.scores);
         let grade = letter_grade(avg);

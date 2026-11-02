@@ -17,15 +17,23 @@ const MIME = {
 // and don't ask for text/html
 function isNavigationRequest(req) {
   const mode = req.headers.get('sec-fetch-mode');
+
   if (mode) return mode === 'navigate';
+
   return (req.headers.get('accept') || '').includes('text/html');
 }
 
 function fileType(path) {
   try {
     const stat = statSync(path);
-    return stat.isFile() ? 'file' : stat.isDirectory() ? 'dir' : null;
+
+    if (stat.isFile()) return 'file';
+
+    if (stat.isDirectory()) return 'dir';
+
+    return null;
   } catch {
+    // a missing or unreadable path simply isn't servable, so report "neither"
     return null;
   }
 }
@@ -48,10 +56,12 @@ const server = Bun.serve({
   fetch(req) {
     const url = new URL(req.url);
     let pathname = decodeURIComponent(url.pathname);
+
     if (pathname.length > 1 && pathname.endsWith('/')) pathname = pathname.slice(0, -1);
 
     // resolve within `dir` only — reject any path that escapes it (e.g. "..")
     const filePath = normalize(join(dir, pathname));
+
     if (filePath !== dir && !filePath.startsWith(dir + '/')) {
       return notFound();
     }

@@ -43,6 +43,7 @@ macro for_iter_expr
 		move (code, new_pos) in expr_result
 		val_code as code
 		val_end as new_pos
+
 		# Cloned, not borrowed: Deor has no references, so the loop variable must be a
 		# plain element value (copy-everything rule), while the list stays usable after.
 		string cloned_suffix = ".iter().cloned()"

@@ -8,8 +8,11 @@ import "lib/string.deor"
 # after the loop.
 
 shape boolList = list of bool
+
 shape intList = list of int
+
 shape floatList = list of float
+
 shape stringList = list of string
 
 struct Item
@@ -59,10 +62,12 @@ fn int double_it(int num)
 
 fn string shout(string text)
 	string loud = s_to_upper(text)
+
 	return loud
 
 fn int item_qty(Item itm)
 	(qty) in itm
+
 	return qty
 
 fn void main()

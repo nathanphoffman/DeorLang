@@ -15,6 +15,7 @@ fn find_account(accounts: &[Account], wanted: &str) -> Option<usize> {
 
 fn apply(accounts: &mut Vec<Account>, command: &str) -> Result<(), &'static str> {
     let parts: Vec<&str> = command.split_whitespace().collect();
+
     if parts.len() < 3 {
         return Err("bad command");
     }
@@ -28,10 +29,12 @@ fn apply(accounts: &mut Vec<Account>, command: &str) -> Result<(), &'static str>
         if source.is_some() {
             return Err("account exists");
         }
+
         accounts.push(Account {
             owner: owner.to_string(),
             balance: amount,
         });
+
         return Ok(());
     }
 
@@ -39,6 +42,7 @@ fn apply(accounts: &mut Vec<Account>, command: &str) -> Result<(), &'static str>
 
     if action == "deposit" {
         accounts[source].balance += amount;
+
         return Ok(());
     }
 
@@ -54,6 +58,7 @@ fn apply(accounts: &mut Vec<Account>, command: &str) -> Result<(), &'static str>
             accounts[source].balance -= amount;
             accounts[target].balance += amount;
         }
+
         _ => return Err("unknown command"),
     }
 
@@ -75,6 +80,7 @@ fn main() {
 
     let mut ledger: Vec<Account> = Vec::new();
     let mut rejected = 0;
+
     for command in commands {
         match apply(&mut ledger, command) {
             Ok(()) => println!("{} -> ok", command),
@@ -87,6 +93,7 @@ fn main() {
 
     println!();
     println!("Final balances:");
+
     for account in &ledger {
         println!("{:<8}{}", account.owner, account.balance);
     }
