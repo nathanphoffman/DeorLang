@@ -1,0 +1,11 @@
+# Fixture for dedup_rust_block_sync_test.deor: a second, different top-level rust block,
+# then the same struct name as dedup_sync_a.deor (kept-first drops this one).
+rust
+	fn sync_helper_b(n: i64) -> i64 { n + 2 }
+
+struct Gadget
+	string label
+
+fn int helper_from_sync_b()
+	rust
+		sync_helper_b(1)

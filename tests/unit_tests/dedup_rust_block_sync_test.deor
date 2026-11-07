@@ -1,0 +1,23 @@
+# dedup_rust_block_sync_test.deor
+# Regression test: dd_handle_rust_block used to push a top-level rust block's key onto
+# `seen` but not onto `seen_files`, so the two parallel lists drifted apart by one per
+# rust block. The next repeated name then looked up `seen_files` with an index from
+# `seen` and the transpiler panicked ("index out of bounds") once enough rust blocks
+# had gone before it (two were enough here). With no pragma set the repeat must be
+# silently kept-first, as in duplicate_decl_default_loose_test.deor.
+
+import "tests/unit_tests/fixtures/dedup_sync_a.deor"
+import "tests/unit_tests/fixtures/dedup_sync_b.deor"
+
+fn void main()
+	int weight = 7
+	Gadget gadget = (weight)
+	(weight) in gadget
+	print(weight)
+	print(helper_from_sync_a())
+	print(helper_from_sync_b())
+
+# expect:
+# 7
+# 2
+# 3

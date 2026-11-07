@@ -18,6 +18,7 @@ macro dd_handle_rust_block
 	int content_pos = locate_content(pos)
 	bool is_block = false
 	string block_value = ""
+	string block_file = ""
 
 	if content_pos < token_count
 		Token newline_token = tokens at newline_pos
@@ -28,6 +29,8 @@ macro dd_handle_rust_block
 		bool block_ok = kind is RUST_BLOCK
 		is_block = newline_ok and block_ok
 		block_value = value
+		(file) in content_token
+		block_file = file
 
 	if is_block
 		string rust_key_prefix = "_rust_"
@@ -46,6 +49,8 @@ macro dd_handle_rust_block
 
 		if not already_seen
 			seen at end = decl_name
+			# seen_files must stay parallel to seen: dd_check_duplicate indexes it with a position found in seen.
+			seen_files at end = block_file
 
 			for copy_idx in range(3)
 				int copy_pos = pos + copy_idx

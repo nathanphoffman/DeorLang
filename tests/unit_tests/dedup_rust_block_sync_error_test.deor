@@ -1,0 +1,15 @@
+# dedup_rust_block_sync_error_test.deor
+# Same shape as dedup_rust_block_sync_test.deor, with ENFORCE_UNIQUE_IMPORT_DECLARATIONS
+# turned on: the error must name the file that really declared 'Gadget' first. Before the
+# seen_files fix the origin was read one slot off (or out of bounds), so this pins the
+# message's file as well as the error itself.
+
+import "tests/unit_tests/fixtures/dedup_sync_a.deor"
+import "tests/unit_tests/fixtures/dedup_sync_b.deor"
+
+fn void main()
+	ENFORCE_UNIQUE_IMPORT_DECLARATIONS
+	print("unreachable")
+
+# expect-error:
+# duplicate declaration 'Gadget' — already declared in tests/unit_tests/fixtures/dedup_sync_a.deor

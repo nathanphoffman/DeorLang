@@ -1,0 +1,11 @@
+# Fixture for dedup_rust_block_sync_test.deor: a top-level rust block that differs from
+# dedup_sync_b.deor's, then a struct both fixtures declare.
+rust
+	fn sync_helper_a(n: i64) -> i64 { n + 1 }
+
+struct Gadget
+	int weight
+
+fn int helper_from_sync_a()
+	rust
+		sync_helper_a(1)
