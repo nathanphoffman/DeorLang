@@ -3,7 +3,6 @@
 # String literals need `.to_string()`, identifiers need `.clone()`. Expressions
 # produced by calls or arithmetic are already owned and pass through unchanged.
 fn string emit_val(string val_code, string val_kind)
-	unsafe_macro_run token_kinds
 	unsafe_macro_run rust_strings
 
 	if val_kind is STRING
@@ -19,7 +18,6 @@ fn string emit_val(string val_code, string val_kind)
 # pairs). A validator-typed binding or reassignment whose value is such a call already holds
 # an Option<T> and must not be wrapped in T::new() a second time.
 fn string call_validator_return_type(TokensRef tokens, int val_pos, strList validator_fn_reg)
-	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	int paren_pos = val_pos + 1
 
@@ -44,8 +42,6 @@ fn string call_validator_return_type(TokensRef tokens, int val_pos, strList vali
 # chains (those already produce an owned value, and a suffix meant for a single token would
 # land on the chain's last operand). The value spans tokens [val_pos, val_end).
 fn string value_ownership_suffix(TokensRef tokens, int val_pos, int val_end)
-	unsafe_macro_run token_kinds
-
 	# ex: other{(}x) — anchor+1 checks for a call/index after the identifier
 	fn int locate_after_value(int anchor)
 		return anchor + 1
@@ -86,7 +82,6 @@ fn string value_ownership_suffix(TokensRef tokens, int val_pos, int val_end)
 # count. Used to skip the ownership-coercion suffix (.clone()/.to_string()), which
 # assumes a single token and would otherwise land on the chain's last operand.
 fn bool is_expr_chain(TokensRef tokens, int start, int stop)
-	unsafe_macro_run token_kinds
 	int depth = 0
 	int scan = start
 

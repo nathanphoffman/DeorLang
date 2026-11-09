@@ -3,7 +3,6 @@
 # All elements get `.clone()` or `.to_string()` applied because vec![] expects owned
 # values. Expression results are treated the same as identifiers here.
 fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
-	unsafe_macro_run token_kinds
 	strList item_codes = empty
 	int cur = pos
 	int token_count = len(tokens)
@@ -46,7 +45,6 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 # Like gen_list_items but generates `.as_str()` per item for use in [].concat() joins.
 # STRING items are already &str and need no suffix; everything else is String and gets .as_str().
 fn ParseResult gen_join_items(TokensRef tokens, int pos, RcCtx ctx)
-	unsafe_macro_run token_kinds
 	strList item_codes = empty
 	int cur = pos
 	int token_count = len(tokens)

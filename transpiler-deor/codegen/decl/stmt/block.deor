@@ -3,7 +3,6 @@
 # code strings. Used for function bodies, if/else branches, for/while bodies, and
 # using blocks — anywhere Deor uses indentation to define a scope.
 fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
-	unsafe_macro_run token_kinds
 	(tokens) in ctx
 	strList stmts = empty
 	int cur = pos

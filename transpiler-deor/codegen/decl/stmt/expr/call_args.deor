@@ -5,7 +5,6 @@
 # Skipped entirely when the arg is a binary-op chain (e.g. `a + &b + "c"`) — a chain
 # already produces a correctly owned value, and this suffix is meant for a single token.
 fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
-	unsafe_macro_run token_kinds
 	strList arg_codes = empty
 	int cur = pos
 	int token_count = len(tokens)

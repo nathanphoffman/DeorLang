@@ -9,8 +9,6 @@
 # build_registry's single-pass dispatch loop (registry.deor) rather than each registry
 # running its own full scan over every token.
 fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
-	unsafe_macro_run token_kinds
-
 	# ex: shape {Foo} = list of T — kw_pos+1 grabs the shape name
 	fn int locate_shape_name(int kw_pos)
 		return kw_pos + 1

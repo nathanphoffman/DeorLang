@@ -134,7 +134,6 @@ macro check_fn_declaration
 # right_paren_pos is the fn header's closing RPAREN. Expected layout when the
 # body is valid: RPAREN, NEWLINE, INDENT, KW_RETURN, ... NEWLINE, DEDENT.
 fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_count)
-	unsafe_macro_run token_kinds
 	int newline_pos = right_paren_pos + 1
 
 	if newline_pos >= token_count

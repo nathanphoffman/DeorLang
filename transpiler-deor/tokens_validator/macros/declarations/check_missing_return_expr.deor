@@ -129,7 +129,6 @@ macro check_missing_return_expr
 # Returns end_pos itself (never a valid depth-0 NEWLINE position) as the not-found
 # sentinel — unary minus has no codegen in Deor yet, so plain -1 isn't usable here.
 fn int first_depth0_newline(TokensRef tokens, int start, int end_pos)
-	unsafe_macro_run token_kinds
 	int depth = 0
 	int scan_pos = start
 

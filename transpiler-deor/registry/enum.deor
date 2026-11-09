@@ -59,7 +59,6 @@ fn int ps_new_pos(PairsScan scan)
 # Scans an untyped enum's variant list (already positioned at its opening INDENT) into
 # [variantName, rustEnumName] pairs.
 fn PairsScan collect_variant_pairs(TokensRef tokens, int start, string rust_name)
-	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	strList pairs = empty
 	int new_pos = start
@@ -86,7 +85,6 @@ fn PairsScan collect_variant_pairs(TokensRef tokens, int start, string rust_name
 # Scans a typed enum's variant list (already positioned at its opening INDENT) into
 # ["EnumName.VariantName", literalValue] pairs.
 fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enum_name)
-	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	strList pairs = empty
 	int new_pos = start
@@ -125,8 +123,6 @@ fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enu
 	return result
 
 fn EnumScan try_enum_entry(TokensRef tokens, int pos)
-	unsafe_macro_run token_kinds
-
 	# ex: enum {Color} — kw_pos+1 grabs the enum name (or type keyword if typed)
 	fn int locate_type_or_name(int kw_pos)
 		return kw_pos + 1

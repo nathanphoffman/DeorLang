@@ -21,8 +21,6 @@ fn string find_struct_field_str(strList reg, string name)
 	return ""
 
 fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
-	unsafe_macro_run token_kinds
-
 	# ex: move {data} — kw_pos+1 skips 'move' to reach the real arg name
 	fn int locate_after_move(int kw_pos)
 		return kw_pos + 1
@@ -65,8 +63,6 @@ fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 # Returns the position of the RPAREN matching the LPAREN at lp_pos. Falls back to
 # lp_pos itself if unmatched (shouldn't happen — check_paren_balance runs first).
 fn int find_matching_rparen(TokensRef tokens, int lp_pos)
-	unsafe_macro_run token_kinds
-
 	# ex: name({}arg) — kw_pos+1 grabs the first token after the opening paren
 	fn int locate_first_token(int kw_pos)
 		return kw_pos + 1
@@ -96,8 +92,6 @@ fn int find_matching_rparen(TokensRef tokens, int lp_pos)
 # Counts arguments between LPAREN at lp_pos and its matching RPAREN.
 # Returns 0 for empty calls, 1 for single-arg, N for N-arg calls.
 fn int count_call_args(TokensRef tokens, int lp_pos)
-	unsafe_macro_run token_kinds
-
 	# ex: name({}arg) — kw_pos+1 grabs the first token after the opening paren
 	fn int locate_first_token(int kw_pos)
 		return kw_pos + 1

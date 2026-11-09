@@ -5,8 +5,6 @@
 # Maps a raw identifier string to its token kind. Returns Deor keyword kinds
 # (KW_FN, KW_STRUCT, etc.) for reserved words and "IDENT" for everything else.
 fn string word_to_kind(string word)
-	unsafe_macro_run token_kinds
-
 	if word is "fn"
 		return KW_FN
 

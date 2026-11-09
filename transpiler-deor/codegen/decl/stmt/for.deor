@@ -5,8 +5,6 @@
 #   `for var in range(n)`    → `for var in 0..n { ... }` (or start..end)
 #   `for var in collection`  → `for var in collection { ... }`
 fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
-	unsafe_macro_run token_kinds
-
 	# Reused across the branches below for whatever "one token past X" is needed —
 	# each call site's comment documents what X is.
 	fn int locate_next_token(int anchor)

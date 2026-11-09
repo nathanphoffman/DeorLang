@@ -5,8 +5,6 @@
 #   name at idx = val     → `name[idx as usize] = val`
 #   name remove at idx    → `.remove(idx as usize)`
 fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
-	unsafe_macro_run token_kinds
-
 	# ex: name {at} end = val — anchor+1 grabs the mutation-kind keyword after the list name
 	fn int locate_next_token(int anchor)
 		return anchor + 1

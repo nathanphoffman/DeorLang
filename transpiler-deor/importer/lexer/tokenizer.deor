@@ -5,7 +5,6 @@
 # time. Each line is checked for indentation changes, rust blocks, and then scanned
 # character by character. Emits trailing DEDENTs and a terminal EOF when done.
 fn tokenList tokenize(string source, string path)
-	unsafe_macro_run token_kinds
 	tokenList tokens = empty
 	string empty_str = ""
 	string kind_newline = NEWLINE

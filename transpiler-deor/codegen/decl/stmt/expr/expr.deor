@@ -1,8 +1,6 @@
 
 # Returns true for token kinds that can appear as binary operators in an expression.
 fn bool is_binary_op(string kind)
-	unsafe_macro_run token_kinds
-
 	if kind is PLUS
 		return true
 
@@ -72,7 +70,6 @@ fn string map_op(string operator)
 # Returns true if a FLOAT literal appears before the next NEWLINE, EOF, unmatched RPAREN,
 # or top-level and/or, starting at `start`.
 fn bool segment_has_float(TokensRef tokens, int start)
-	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	int scan = start
 	int depth = 0
@@ -117,7 +114,6 @@ fn bool segment_has_float(TokensRef tokens, int start)
 # this runs, a '+' chain is always plain numeric arithmetic — string joining goes
 # through s_join/s_join_with (see gen_join_items) instead.
 fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
-	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 
 	unsafe_macro_run expr_float_prescan

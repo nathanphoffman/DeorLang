@@ -180,7 +180,6 @@ fn string replace_t_in_rust_block(string content, string placeholder, string con
 
 # Walks every token from an imported file and applies placeholder -> concrete substitution.
 fn tokenList apply_t_substitution(tokenList tokens, string placeholder, string concrete)
-	unsafe_macro_run token_kinds
 	tokenList result = empty
 	int token_count = len(tokens)
 

@@ -49,7 +49,6 @@ fn Reg3Scan try_type_entry(TokensRef tokens, int pos)
 # so a later bare reassignment (`varName = expr`) can look up which validator type to
 # re-run the predicate through — see gen_stmt's plain-reassignment branch in stmt.deor.
 fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
-	unsafe_macro_run token_kinds
 	strList result = empty
 	int token_count = len(tokens)
 
@@ -81,8 +80,6 @@ fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
 # ReturnType::new() again — and function bodies only see their own tokens, so this has to be
 # gathered here from the whole file.
 fn strList collect_validator_fn_returns(TokensRef tokens, strList type_reg)
-	unsafe_macro_run token_kinds
-
 	# ex: fn Roll {find_best}( — decl_pos+2 grabs the function name after the return type
 	fn int locate_fn_name(int decl_pos)
 		return decl_pos + 2

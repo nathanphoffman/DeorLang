@@ -17,8 +17,6 @@ fn ParseResult gen_if_branch(int cond_pos, int depth, RcCtx ctx)
 # Generates a complete Rust `if / else if / else` chain. Calls gen_if_branch for the
 # initial `if`, then loops consuming `else` tokens to append `else if` or `else` arms.
 fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
-	unsafe_macro_run token_kinds
-
 	# ex: if {cond} — kw_pos+1 grabs the condition expression after 'if'
 	fn int locate_if_cond(int kw_pos)
 		return kw_pos + 1

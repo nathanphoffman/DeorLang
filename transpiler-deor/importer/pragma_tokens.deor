@@ -13,7 +13,6 @@ fn bool is_pragma_name(string name)
 # single tokens, not the token list: arguments are cloned, and cloning the whole list for every
 # token made loading several times slower.
 fn bool is_pragma_token(Token current, Token previous, Token earlier)
-	unsafe_macro_run token_kinds
 	(kind, value) in current
 	string current_kind = kind
 

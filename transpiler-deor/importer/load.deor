@@ -52,7 +52,6 @@ fn void fatal_missing_import(string imp_path)
 	fatal(s_cat(err_pre, imp_path))
 
 fn tokenList load_file(string path)
-	unsafe_macro_run token_kinds
 	string source = f_read(path)
 	tokenList tok_raw = tokenize(source, path)
 	tokenList result = empty

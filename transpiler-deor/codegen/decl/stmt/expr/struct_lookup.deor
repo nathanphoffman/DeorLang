@@ -97,7 +97,6 @@ fn string cloned_field_pairs(strList fields)
 # True when the token at `move_pos` starts `move source with (...)`, the record update that
 # consumes its source instead of copying it.
 fn bool is_move_with(TokensRef tokens, int move_pos)
-	unsafe_macro_run token_kinds
 	int token_count = len(tokens)
 	int source_pos = move_pos + 1
 	int with_pos = move_pos + 2

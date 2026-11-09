@@ -3,8 +3,6 @@
 # return/break/continue — that arm never falls through to code after the if chain.
 # Skips trailing NEWLINEs, then walks back to the start of that last line.
 fn bool arm_ends_in_jump(TokensRef tokens, int pos)
-	unsafe_macro_run token_kinds
-
 	# ex: {else} / {DEDENT} — kw_pos-1 grabs the token just before it
 	fn int locate_prev_token(int kw_pos)
 		return kw_pos - 1

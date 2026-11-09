@@ -2,8 +2,6 @@
 # registry context from the main pipeline, then walks the token stream dispatching
 # each top-level declaration to its gen_* function and concatenating the results.
 fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
-	unsafe_macro_run token_kinds
-
 	# ex: rust\n{"fn foo() {}"} — kw_pos+2 grabs the RUST_BLOCK content token
 	fn int locate_rust_block_content(int kw_pos)
 		return kw_pos + 2

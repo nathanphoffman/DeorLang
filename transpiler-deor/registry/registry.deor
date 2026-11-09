@@ -20,7 +20,6 @@
 # start empty here — both are per-function, populated later (by collect_mut_names
 # and collect_validator_var_types) when each fn body is generated.
 fn RcCtx build_registry(TokensRef tokens_ref)
-	unsafe_macro_run token_kinds
 	strList struct_reg = empty
 	strList shape_reg = empty
 	strList enum_reg = empty

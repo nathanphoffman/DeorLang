@@ -4,8 +4,6 @@
 # Reports any macro_run that references a name not defined by a macro anywhere in
 # the merged token stream, then returns the token list unchanged.
 fn tokenList validate_macros(tokenList raw_tokens)
-	unsafe_macro_run token_kinds
-
 	# ex: macro {name} — kw_pos+1 grabs the macro name after the keyword
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1

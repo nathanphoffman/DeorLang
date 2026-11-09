@@ -11,8 +11,6 @@
 #                          immediately-invoked closure `(|| -> bool { ... })()` so the
 #                          predicate's `return` exits the closure, not the constructor.
 fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
-	unsafe_macro_run token_kinds
-
 	# ex: type {Positive}(int val) — kw_pos+1 grabs the validator type's name
 	fn int locate_type_name(int kw_pos)
 		return kw_pos + 1
