@@ -3,6 +3,7 @@
 #   crash(x)         — `panic!("{}", x)`
 #   s_join([a, b])   — `[a, b].concat()` (skips a wrapper call and its clones)
 #   list_has(a, b)   — `(a.contains(&b))` (skips copying the whole list)
+#   reg_get(a, b)    — `reg_get_ref(&a, &b)` (skips copying the registry)
 # Falls through when the identifier is not one of these, so primary_call_expr can take over.
 macro primary_builtin_calls
 	# ex: name{(}args) — kw_pos+1 grabs the token that decides call/index/plain
@@ -53,6 +54,15 @@ macro primary_builtin_calls
 						ParseResult has_result = gen_list_contains(tokens, args_pos, ctx)
 
 						return has_result
+
+				# reg_get(pairs, key) becomes reg_get_ref(&pairs, &key): same reason, the registries are big
+				if func_name is "reg_get"
+					bool get_simple_args = is_two_variable_args(tokens, args_pos)
+
+					if get_simple_args
+						ParseResult get_result = gen_registry_lookup(tokens, args_pos, ctx)
+
+						return get_result
 
 				# This is solely for optimization, it is rewritten as a .concat() so that no clones happen
 				#  clones happen because deor clones everything by default, and String is one of the few impacted

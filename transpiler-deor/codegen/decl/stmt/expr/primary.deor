@@ -26,7 +26,7 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 	fn int locate_next_token(int kw_pos)
 		return kw_pos + 1
 
-	(variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg) in ctx
+	(variant_reg, struct_reg) in ctx
 	int token_count = len(tokens)
 	Token token = tokens at pos
 	move (kind, value, line) in token

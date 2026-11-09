@@ -1,0 +1,65 @@
+# The Rust for two plain-variable call arguments, plus where parsing resumes.
+struct TwoArgCodes
+	string first_code
+	string second_code
+	int after_pos
+
+# True when a call's arguments are exactly `name, name)`: two plain variables. Only
+# that shape is safe to rewrite, since the expressions are then just variable reads.
+fn bool is_two_variable_args(TokensRef tokens, int args_pos)
+	int comma_pos = args_pos + 1
+	int second_pos = args_pos + 2
+	int close_pos = args_pos + 3
+	int token_count = len(tokens)
+
+	if close_pos >= token_count
+		return false
+
+	string first_kind = token_kind_at(tokens, args_pos)
+	string comma_kind = token_kind_at(tokens, comma_pos)
+	string second_kind = token_kind_at(tokens, second_pos)
+	string close_kind = token_kind_at(tokens, close_pos)
+	bool first_ok = first_kind is IDENT
+	bool comma_ok = comma_kind is COMMA
+	bool second_ok = second_kind is IDENT
+	bool close_ok = close_kind is RPAREN
+
+	return first_ok and comma_ok and second_ok and close_ok
+
+# Generates the two variable arguments without the `.clone()` a normal call adds.
+# args_pos is the first argument; after_pos is just past the closing ')'.
+fn TwoArgCodes gen_two_variable_args(TokensRef tokens, int args_pos, RcCtx ctx)
+	int second_pos = args_pos + 2
+	int after_pos = args_pos + 4
+	ParseResult first_result = gen_expr(tokens, args_pos, ctx)
+	move (code) in first_result
+	first_code as code
+	ParseResult second_result = gen_expr(tokens, second_pos, ctx)
+	move (code) in second_result
+	second_code as code
+
+	return (first_code, second_code, after_pos)
+
+# Generates `list_has(items, value)` as `(items.contains(&value))`. Deor passes
+# arguments by value, so the plain call would copy the whole list on every check.
+fn ParseResult gen_list_contains(TokensRef tokens, int args_pos, RcCtx ctx)
+	TwoArgCodes arg_codes = gen_two_variable_args(tokens, args_pos, ctx)
+	move (first_code, second_code, after_pos) in arg_codes
+	string paren_open = "("
+	string contains_open = ".contains(&"
+	string contains_close = "))"
+	string joined = s_join([paren_open, first_code, contains_open, second_code, contains_close])
+
+	return make_result(move joined, after_pos)
+
+# Generates `reg_get(pairs, key)` as `reg_get_ref(&pairs, &key)`, which looks the key
+# up in the registry in place instead of copying the whole registry list first.
+fn ParseResult gen_registry_lookup(TokensRef tokens, int args_pos, RcCtx ctx)
+	TwoArgCodes arg_codes = gen_two_variable_args(tokens, args_pos, ctx)
+	move (first_code, second_code, after_pos) in arg_codes
+	string call_open = "reg_get_ref(&"
+	string call_middle = ", &"
+	string call_close = ")"
+	string joined = s_join([call_open, first_code, call_middle, second_code, call_close])
+
+	return make_result(move joined, after_pos)

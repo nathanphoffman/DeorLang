@@ -88,6 +88,10 @@ rust
 	fn token_value_at(tokens: TokensRef, pos: i64) -> String { tokens[pos as usize].value.clone() }
 	fn token_file_at(tokens: TokensRef, pos: i64) -> String { tokens[pos as usize].file.clone() }
 	fn token_line_at(tokens: TokensRef, pos: i64) -> i64 { tokens[pos as usize].line }
+	// Borrowed stride-2 registry lookup: the value after the matching key, or "". Same result as reg_get without copying the list.
+	fn reg_get_ref(pairs: &Vec<String>, key: &String) -> String {
+		pairs.chunks(2).find(|pair| pair[0] == *key).and_then(|pair| pair.get(1)).cloned().unwrap_or_default()
+	}
 	fn name_set_has(set: NameSet, name: String) -> bool { set.contains(&name) }
 
 raw TokensRef
