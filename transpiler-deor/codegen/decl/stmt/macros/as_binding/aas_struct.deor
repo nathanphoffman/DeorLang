@@ -10,8 +10,7 @@ macro aas_struct
 	int peek_pos = locate_after_lparen(after_as)
 
 	for if peek_pos < token_count
-		Token peek_token = tokens at peek_pos
-		move (kind) in peek_token
+		kind as token_kind_at(tokens, peek_pos)
 
 		if kind is RPAREN
 			break
@@ -35,8 +34,8 @@ macro aas_struct
 		int scan_pos = locate_after_lparen(after_as)
 
 		for if scan_pos < token_count
-			Token scan_token = tokens at scan_pos
-			move (kind, value) in scan_token
+			kind as token_kind_at(tokens, scan_pos)
+			value as token_value_at(tokens, scan_pos)
 
 			if kind is RPAREN
 				scan_pos = scan_pos + 1

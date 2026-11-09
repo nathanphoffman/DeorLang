@@ -9,8 +9,7 @@ macro for_move
 
 	# ex: for move ({item} in collection) — lparen_pos+1 grabs the loop variable
 	int var_pos = locate_next_token(lparen_pos)
-	Token var_tok = tokens at var_pos
-	move (value) in var_tok
+	value as token_value_at(tokens, var_pos)
 	string move_var = value
 
 	# ex: for move (item {in} collection) — var_pos+1 grabs the in keyword

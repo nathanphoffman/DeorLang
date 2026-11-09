@@ -30,8 +30,7 @@ macro aas_default
 			int next_idx = locate_after_value(val_pos)
 
 			if next_idx < token_count
-				Token next_token = tokens at next_idx
-				(kind) in next_token
+				kind as token_kind_at(tokens, next_idx)
 				bool is_call = kind is LPAREN
 				bool is_idx = kind is KW_AT
 

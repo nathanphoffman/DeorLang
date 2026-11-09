@@ -15,15 +15,14 @@ macro prescan_collect_func_shapes
 		int form_pos = locate_form(pre_i)
 
 		if form_pos < token_count
-			Token form_token = tokens at form_pos
-			move (kind) in form_token
+			kind as token_kind_at(tokens, form_pos)
 
 			if kind is KW_FUNC
 				int name_pos = locate_name(pre_i)
 
 				if name_pos < token_count
-					Token name_token = tokens at name_pos
-					move (kind, value) in name_token
+					kind as token_kind_at(tokens, name_pos)
+					value as token_value_at(tokens, name_pos)
 
 					if kind is IDENT
 						func_shape_names at end = value

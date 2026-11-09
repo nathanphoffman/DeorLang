@@ -20,8 +20,7 @@ macro check_raw_reassign
 		int after_pos = locate_after_name(pos)
 
 		if after_pos < token_count
-			Token after_token = tokens at after_pos
-			move (kind) in after_token
+			kind as token_kind_at(tokens, after_pos)
 			bool is_eq = kind is EQUALS
 			bool is_as = kind is KW_AS
 
@@ -30,8 +29,7 @@ macro check_raw_reassign
 
 				if pos > 0
 					int before_pos = locate_before_name(pos)
-					Token before_token = tokens at before_pos
-					move (kind) in before_token
+					kind as token_kind_at(tokens, before_pos)
 					is_decl = kind is KW_RAW
 
 				if not is_decl

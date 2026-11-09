@@ -10,8 +10,7 @@ macro check_end_placement
 
 		if pos > 0
 			int prev_pos = locate_prev_token(pos)
-			Token prev_token = tokens at prev_pos
-			move (kind) in prev_token
+			kind as token_kind_at(tokens, prev_pos)
 			is_valid = kind is KW_AT
 
 		if not is_valid

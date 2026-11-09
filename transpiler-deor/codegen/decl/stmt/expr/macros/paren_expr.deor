@@ -13,8 +13,7 @@ macro primary_paren_expr
 		int peek_pos = locate_next_token(pos)
 
 		if peek_pos < token_count
-			Token peek_token = tokens at peek_pos
-			move (kind) in peek_token
+			kind as token_kind_at(tokens, peek_pos)
 
 			if kind is KW_AVOW
 				# ex: (avow {expr}) — peek_pos+1 grabs the expression after 'avow'
@@ -34,8 +33,7 @@ macro primary_paren_expr
 			int scan_pos = peek_pos
 
 			for if scan_pos < token_count
-				Token scan_token = tokens at scan_pos
-				move (kind) in scan_token
+				kind as token_kind_at(tokens, scan_pos)
 
 				if kind is RPAREN
 					break
@@ -59,8 +57,8 @@ macro primary_paren_expr
 				int field_scan_pos = peek_pos
 
 				for if field_scan_pos < token_count
-					Token field_token = tokens at field_scan_pos
-					move (kind, value) in field_token
+					kind as token_kind_at(tokens, field_scan_pos)
+					value as token_value_at(tokens, field_scan_pos)
 
 					if kind is RPAREN
 						field_scan_pos = field_scan_pos + 1

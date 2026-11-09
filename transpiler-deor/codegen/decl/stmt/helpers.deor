@@ -24,12 +24,11 @@ fn string call_validator_return_type(TokensRef tokens, int val_pos, ListRef vali
 	if paren_pos >= token_count
 		return ""
 
-	Token callee_token = tokens at val_pos
-	Token paren_token = tokens at paren_pos
-	move (kind, value) in callee_token
+	kind as token_kind_at(tokens, val_pos)
+	value as token_value_at(tokens, val_pos)
 	string callee_kind = kind
 	string callee_name = value
-	move (kind) in paren_token
+	kind as token_kind_at(tokens, paren_pos)
 	bool is_call = callee_kind is IDENT and kind is LPAREN
 
 	if not is_call
@@ -51,8 +50,7 @@ fn string value_ownership_suffix(TokensRef tokens, int val_pos, int val_end)
 	if is_chain
 		return ""
 
-	Token val_token = tokens at val_pos
-	move (kind) in val_token
+	kind as token_kind_at(tokens, val_pos)
 
 	if kind is STRING
 		return ".to_string()"
@@ -61,8 +59,7 @@ fn string value_ownership_suffix(TokensRef tokens, int val_pos, int val_end)
 		int val_next_idx = locate_after_value(val_pos)
 
 		if val_next_idx < len(tokens)
-			Token next_val_token = tokens at val_next_idx
-			move (kind) in next_val_token
+			kind as token_kind_at(tokens, val_next_idx)
 			bool val_is_call = kind is LPAREN
 			bool val_is_idx = kind is KW_AT
 
@@ -86,8 +83,7 @@ fn bool is_expr_chain(TokensRef tokens, int start, int stop)
 	int scan = start
 
 	for if scan < stop
-		Token scan_tok = tokens at scan
-		move (kind) in scan_tok
+		kind as token_kind_at(tokens, scan)
 
 		if kind is LPAREN
 			depth = depth + 1

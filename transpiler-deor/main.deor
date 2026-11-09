@@ -47,11 +47,11 @@ fn void main()
 		unsafe_macro_run timer_start
 		DedupResult dedup_r = collect_all_tokens_with_all_imports(input_path)
 		macro_run timer_end
-		(tokens, enforce_macro_file_depth) in dedup_r
+		move (tokens, enforce_macro_file_depth) in dedup_r
 
 		_timer_label = "[timer] macro-build: "
 		unsafe_macro_run timer_start
-		tokens = build_macros(tokens, enforce_macro_file_depth)
+		tokens = build_macros(move tokens, enforce_macro_file_depth)
 		macro_run timer_end
 
 		TokensRef tokens_ref = tokens_wrap(move tokens)

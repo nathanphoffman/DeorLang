@@ -19,10 +19,9 @@ macro check_var_decl
 
 	if equals_pos < token_count
 		Token name_token = tokens at name_pos
-		Token equals_token = tokens at equals_pos
 		(kind) in name_token
 		string name_kind = kind
-		move (kind) in equals_token
+		kind as token_kind_at(tokens, equals_pos)
 		string equals_kind = kind
 
 		if name_kind is IDENT and equals_kind is EQUALS
@@ -49,8 +48,7 @@ macro check_var_decl
 
 			if pos > 0
 				int const_check_pos = locate_const_check_pos(pos)
-				Token const_check_token = tokens at const_check_pos
-				move (kind) in const_check_token
+				kind as token_kind_at(tokens, const_check_pos)
 				is_const = kind is KW_CONST
 
 			if is_const

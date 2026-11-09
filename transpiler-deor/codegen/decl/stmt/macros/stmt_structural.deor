@@ -10,8 +10,7 @@ macro stmt_structural
 
 	if kind is KW_MOVE
 		int move_next = locate_next_token(pos)
-		Token move_next_token = tokens at move_next
-		move (kind) in move_next_token
+		kind as token_kind_at(tokens, move_next)
 
 		if kind is LPAREN
 			return gen_move_destructure(move_next, depth, ctx)
@@ -20,8 +19,7 @@ macro stmt_structural
 		int peek_pos = locate_next_token(pos)
 
 		if peek_pos < token_count
-			Token peek_token = tokens at peek_pos
-			move (kind) in peek_token
+			kind as token_kind_at(tokens, peek_pos)
 
 			if kind is KW_AVOW
 				# ex: (avow {expr}) — peek_pos+1 grabs the expression after avow

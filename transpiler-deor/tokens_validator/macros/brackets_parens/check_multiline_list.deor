@@ -15,8 +15,7 @@ macro check_multiline_list
 			if scan_pos >= token_count
 				break
 
-			Token scan_token = tokens at scan_pos
-			move (kind) in scan_token
+			kind as token_kind_at(tokens, scan_pos)
 
 			if kind is LBRACKET
 				depth = depth + 1

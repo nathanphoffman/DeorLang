@@ -57,4 +57,4 @@ unsafe_macro strip_enforce_pragmas
 			result_tokens at end = scan_token
 			scan_pos = scan_pos + 1
 
-	tokens = result_tokens
+	tokens = move result_tokens

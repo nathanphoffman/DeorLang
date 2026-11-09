@@ -20,8 +20,7 @@ macro stmt_ident
 
 			return make_result(move eof_code, next_pos)
 
-		Token next_token = tokens at next_pos
-		(kind) in next_token
+		kind as token_kind_at(tokens, next_pos)
 
 		if kind is KW_AS
 			return gen_as_binding(pos, depth, ctx)
@@ -44,14 +43,13 @@ macro stmt_ident
 			int eq_pos = locate_next_token(next_pos)
 
 			if eq_pos < token_count
-				Token eq_token = tokens at eq_pos
-				move (kind) in eq_token
+				kind as token_kind_at(tokens, eq_pos)
 
 				if kind is EQUALS
 					return gen_typed_binding(pos, depth, ctx)
 
 			# bare declaration: Type name  (no = → None for validator types)
-			(value) in next_token
+			value as token_value_at(tokens, next_pos)
 			string bare_var_name = value
 			string bare_rust_type = resolve_type(ident_name, ctx)
 			bool bare_is_validator = reg3_has(type_reg, ident_name)

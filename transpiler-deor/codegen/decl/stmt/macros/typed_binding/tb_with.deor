@@ -15,8 +15,7 @@ macro tb_with
 	int with_keyword_pos = locate_with_keyword(val_pos)
 
 	if with_keyword_pos < token_count
-		Token with_keyword_token = tokens at with_keyword_pos
-		move (kind) in with_keyword_token
+		kind as token_kind_at(tokens, with_keyword_pos)
 
 		if kind is KW_WITH
 			(value) in val_token
@@ -26,8 +25,8 @@ macro tb_with
 			int scan_pos = with_lparen_pos + 1
 
 			for if scan_pos < token_count
-				Token scan_token = tokens at scan_pos
-				move (kind, value) in scan_token
+				kind as token_kind_at(tokens, scan_pos)
+				value as token_value_at(tokens, scan_pos)
 
 				if kind is RPAREN
 					scan_pos = scan_pos + 1

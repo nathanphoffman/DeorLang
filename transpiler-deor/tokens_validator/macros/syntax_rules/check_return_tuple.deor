@@ -31,8 +31,8 @@ macro check_return_tuple
 					if scan_pos >= token_count
 						scanning = false
 					else
-						Token scan_token = tokens at scan_pos
-						move (kind, value) in scan_token
+						kind as token_kind_at(tokens, scan_pos)
+						value as token_value_at(tokens, scan_pos)
 						bool ends_item = false
 
 						if kind is LPAREN
@@ -52,8 +52,8 @@ macro check_return_tuple
 							bool is_single_name = false
 
 							if item_len is 1
-								Token item_token = tokens at item_start
-								move (kind, value) in item_token
+								kind as token_kind_at(tokens, item_start)
+								value as token_value_at(tokens, item_start)
 
 								if kind is IDENT
 									is_single_name = true

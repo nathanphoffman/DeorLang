@@ -26,12 +26,12 @@ macro check_string_plus_banned
 
 			if right_pos < token_count
 				int left_pos = locate_prev_token(pos)
-				Token left_token = tokens at left_pos
-				Token right_token = tokens at right_pos
-				move (kind, value) in left_token
+				kind as token_kind_at(tokens, left_pos)
+				value as token_value_at(tokens, left_pos)
 				string left_kind = kind
 				string left_value = value
-				move (kind, value) in right_token
+				kind as token_kind_at(tokens, right_pos)
+				value as token_value_at(tokens, right_pos)
 				string right_kind = kind
 				string right_value = value
 

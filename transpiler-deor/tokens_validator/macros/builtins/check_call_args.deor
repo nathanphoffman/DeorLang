@@ -8,8 +8,7 @@ macro check_call_args
 	int left_paren_pos = locate_next_token(pos)
 
 	if left_paren_pos < token_count
-		Token left_paren_token = tokens at left_paren_pos
-		move (kind) in left_paren_token
+		kind as token_kind_at(tokens, left_paren_pos)
 
 		if kind is LPAREN
 			int arg_count = count_call_args(tokens, left_paren_pos)
@@ -20,8 +19,7 @@ macro check_call_args
 				bool at_arg_start = true
 
 				for if scan_pos < token_count
-					Token scan_token = tokens at scan_pos
-					move (kind) in scan_token
+					kind as token_kind_at(tokens, scan_pos)
 
 					if kind is RPAREN
 						bool at_root = scan_depth is 0

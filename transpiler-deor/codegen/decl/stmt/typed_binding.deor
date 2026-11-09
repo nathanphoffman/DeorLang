@@ -21,12 +21,10 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	int token_count = len(tokens)
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
-	Token type_token = tokens at pos
-	move (value) in type_token
+	value as token_value_at(tokens, pos)
 	string var_type = value
 	int name_pos = locate_var_name(pos)
-	Token name_token = tokens at name_pos
-	move (value) in name_token
+	value as token_value_at(tokens, name_pos)
 	string var_name = value
 	int val_pos = locate_value(pos)
 	string rust_type = resolve_type(var_type, ctx)

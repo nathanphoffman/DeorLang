@@ -28,8 +28,9 @@ fn ParseResult gen_primary(TokensRef tokens, int pos, RcCtx ctx)
 
 	(variant_reg, struct_reg) in ctx
 	int token_count = len(tokens)
-	Token token = tokens at pos
-	move (kind, value, line) in token
+	kind as token_kind_at(tokens, pos)
+	value as token_value_at(tokens, pos)
+	line as token_line_at(tokens, pos)
 
 	macro_run primary_literals
 	macro_run primary_list_literal

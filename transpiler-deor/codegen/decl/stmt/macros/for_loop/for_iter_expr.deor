@@ -19,8 +19,7 @@ macro for_iter_expr
 		move (code, new_pos) in expr_result
 		val_code as code
 		val_end as new_pos
-		Token comma_token = tokens at val_end
-		move (kind) in comma_token
+		kind as token_kind_at(tokens, val_end)
 		bool has_start = kind is COMMA
 
 		if has_start

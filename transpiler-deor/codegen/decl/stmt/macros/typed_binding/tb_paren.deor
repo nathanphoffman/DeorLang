@@ -7,8 +7,7 @@ macro tb_paren
 		return anchor + 1
 
 	int peek_pos = locate_after_lparen(val_pos)
-	Token peek_token = tokens at peek_pos
-	move (kind) in peek_token
+	kind as token_kind_at(tokens, peek_pos)
 	bool is_avow_expr = kind is KW_AVOW
 	bool is_struct_type = reg_has(struct_reg, var_type)
 
@@ -18,8 +17,8 @@ macro tb_paren
 			int scan_pos = locate_after_lparen(val_pos)
 
 			for if scan_pos < token_count
-				Token scan_token = tokens at scan_pos
-				move (kind, value) in scan_token
+				kind as token_kind_at(tokens, scan_pos)
+				value as token_value_at(tokens, scan_pos)
 
 				if kind is RPAREN
 					scan_pos = scan_pos + 1
@@ -93,8 +92,8 @@ macro tb_paren
 		int cur_pos = after_rparen
 
 		for if cur_pos < token_count
-			Token operator_token = tokens at cur_pos
-			move (kind, value) in operator_token
+			kind as token_kind_at(tokens, cur_pos)
+			value as token_value_at(tokens, cur_pos)
 
 			if not is_binary_op(kind)
 				break

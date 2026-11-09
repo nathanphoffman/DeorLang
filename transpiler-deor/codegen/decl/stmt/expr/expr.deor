@@ -75,8 +75,7 @@ fn bool segment_has_float(TokensRef tokens, int start)
 	int depth = 0
 
 	for if scan < token_count
-		Token tok = tokens at scan
-		(kind) in tok
+		kind as token_kind_at(tokens, scan)
 
 		if kind is FLOAT
 			return true
@@ -124,8 +123,8 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 	int cur_pos = new_pos
 
 	for if cur_pos < token_count
-		Token operator_token = tokens at cur_pos
-		move (kind, value) in operator_token
+		kind as token_kind_at(tokens, cur_pos)
+		value as token_value_at(tokens, cur_pos)
 
 		if not is_binary_op(kind)
 			break

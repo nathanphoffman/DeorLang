@@ -2,7 +2,7 @@
 # Import path scanners used by load.deor.
 
 # Handles `import "path"` — KW_IMPORT is at pos, STRING path is at pos+1.
-fn ParseResult scan_import_new(tokenList tokens, int pos)
+fn ParseResult scan_import_new(TokensRef tokens, int pos)
 	# ex: import {"lib/json.deor"} — kw_pos+1 grabs the STRING path
 	fn int locate_path(int kw_pos)
 		return kw_pos + 1
@@ -31,7 +31,7 @@ fn ParseResult scan_import_new(tokenList tokens, int pos)
 # pos should be the token position right after the STRING path token.
 # Returns code="Placeholder|ConcreteType" and new_pos=position after the clause.
 # Returns code="" and new_pos=pos if no where clause is present.
-fn ParseResult scan_import_where(tokenList tokens, int pos)
+fn ParseResult scan_import_where(TokensRef tokens, int pos)
 	# ex: where {Placeholder} = ConcreteType — kw_pos+1 grabs the placeholder name
 	fn int locate_replacement(int kw_pos)
 		return kw_pos + 1

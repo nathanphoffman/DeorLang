@@ -29,14 +29,11 @@ macro check_struct_construction
 		int value_pos = locate_value_or_move(pos)
 
 		if value_pos < token_count
-			Token name_token = tokens at name_pos
-			Token equals_token = tokens at equals_pos
-			Token value_token = tokens at value_pos
-			move (kind) in name_token
+			kind as token_kind_at(tokens, name_pos)
 			string name_kind = kind
-			move (kind) in equals_token
+			kind as token_kind_at(tokens, equals_pos)
 			string equals_kind = kind
-			move (kind) in value_token
+			kind as token_kind_at(tokens, value_pos)
 			string value_kind = kind
 			bool is_var = name_kind is IDENT
 			bool is_eq = equals_kind is EQUALS
@@ -53,8 +50,7 @@ macro check_struct_construction
 					matched = true
 
 					if after_paren_pos < token_count
-						Token after_paren_token = tokens at after_paren_pos
-						move (kind) in after_paren_token
+						kind as token_kind_at(tokens, after_paren_pos)
 
 						if kind is KW_AVOW
 							matched = false
@@ -62,8 +58,7 @@ macro check_struct_construction
 					int move_paren_pos = locate_paren_after_move(pos)
 
 					if move_paren_pos < token_count
-						Token move_paren_token = tokens at move_paren_pos
-						move (kind) in move_paren_token
+						kind as token_kind_at(tokens, move_paren_pos)
 
 						if kind is LPAREN
 							matched = true
@@ -85,8 +80,8 @@ macro check_struct_construction
 						if scan_pos >= token_count
 							scanning = false
 						else
-							Token scan_token = tokens at scan_pos
-							move (kind, value) in scan_token
+							kind as token_kind_at(tokens, scan_pos)
+							value as token_value_at(tokens, scan_pos)
 
 							if kind is RPAREN
 								scanning = false

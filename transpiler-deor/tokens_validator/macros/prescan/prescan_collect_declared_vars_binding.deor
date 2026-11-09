@@ -22,20 +22,18 @@ macro prescan_collect_declared_vars_binding
 		int equals_pos = locate_equals(pre_i)
 
 		if equals_pos < token_count
-			Token name_token = tokens at name_pos
-			Token equals_token = tokens at equals_pos
-			move (kind, value) in name_token
+			kind as token_kind_at(tokens, name_pos)
+			value as token_value_at(tokens, name_pos)
 			string name_kind = kind
 			string name_value = value
-			move (kind) in equals_token
+			kind as token_kind_at(tokens, equals_pos)
 
 			if name_kind is IDENT and kind is EQUALS
 				declared_var_names at end = name_value
 
 		if name_pos < token_count
 			# ex: {name} as expr — name_pos grabs the 'as' keyword slot
-			Token as_token = tokens at name_pos
-			(kind) in as_token
+			kind as token_kind_at(tokens, name_pos)
 
 			if kind is KW_AS
 				(value) in pre_tok
@@ -49,5 +47,5 @@ macro prescan_collect_declared_vars_binding
 
 			if is_vtype
 				if kind is IDENT
-					move (value) in as_token
+					value as token_value_at(tokens, name_pos)
 					declared_var_names at end = value

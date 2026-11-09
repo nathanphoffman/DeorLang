@@ -33,8 +33,7 @@ fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 		check_pos = locate_after_move(scan_pos)
 
 		if check_pos < token_count
-			Token move_token = tokens at check_pos
-			move (kind) in move_token
+			kind as token_kind_at(tokens, check_pos)
 			check_kind = kind
 
 	if check_kind is not IDENT
@@ -44,8 +43,7 @@ fn bool arg_is_named(TokensRef tokens, int scan_pos, string kind)
 	int peek_pos = check_pos + 1
 
 	if peek_pos < token_count
-		Token peek_token = tokens at peek_pos
-		move (kind) in peek_token
+		kind as token_kind_at(tokens, peek_pos)
 		bool is_call = kind is LPAREN
 		bool is_idx = kind is KW_AT
 		bool is_plus = kind is PLUS
@@ -103,8 +101,7 @@ fn int count_call_args(TokensRef tokens, int lp_pos)
 	bool saw_token = false
 
 	for if cur < token_count
-		Token token = tokens at cur
-		move (kind) in token
+		kind as token_kind_at(tokens, cur)
 
 		if kind is RPAREN
 			bool at_root = depth is 0

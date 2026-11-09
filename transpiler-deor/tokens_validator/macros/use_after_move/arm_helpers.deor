@@ -10,8 +10,7 @@ fn bool arm_ends_in_jump(TokensRef tokens, int pos)
 	int line_scan = locate_prev_token(pos)
 
 	for if line_scan >= 0
-		Token line_scan_token = tokens at line_scan
-		move (kind) in line_scan_token
+		kind as token_kind_at(tokens, line_scan)
 
 		if kind is NEWLINE
 			line_scan = line_scan - 1
@@ -21,8 +20,7 @@ fn bool arm_ends_in_jump(TokensRef tokens, int pos)
 	int line_end = line_scan
 
 	for if line_scan >= 0
-		Token line_scan_token2 = tokens at line_scan
-		move (kind) in line_scan_token2
+		kind as token_kind_at(tokens, line_scan)
 
 		if kind is NEWLINE
 			break
@@ -38,8 +36,7 @@ fn bool arm_ends_in_jump(TokensRef tokens, int pos)
 	int line_start = line_scan + 1
 
 	if line_start <= line_end
-		Token line_first_token = tokens at line_start
-		move (kind) in line_first_token
+		kind as token_kind_at(tokens, line_start)
 
 		if kind is KW_RETURN
 			return true

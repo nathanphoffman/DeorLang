@@ -28,8 +28,7 @@ macro check_use_after_move_var_ident
 		bool is_binding = false
 
 		if next_pos < token_count
-			Token next_token = tokens at next_pos
-			(kind) in next_token
+			kind as token_kind_at(tokens, next_pos)
 
 			if kind is EQUALS
 				is_binding = true
@@ -59,8 +58,7 @@ macro check_use_after_move_var_ident
 			bool next_is_rparen = false
 
 			if next_pos < token_count
-				Token next_token2 = tokens at next_pos
-				move (kind) in next_token2
+				kind as token_kind_at(tokens, next_pos)
 
 				if kind is IDENT
 					skip_read = true
@@ -76,8 +74,7 @@ macro check_use_after_move_var_ident
 
 			if pos > 0
 				int prev_pos = locate_prev_token(pos)
-				Token prev_token = tokens at prev_pos
-				move (kind) in prev_token
+				kind as token_kind_at(tokens, prev_pos)
 
 				if kind is KW_MOVE
 					skip_read = true
@@ -149,8 +146,7 @@ macro check_use_after_move_var_ident
 			int dt_lparen_pos = 0
 
 			for if dt_scan_pos >= 0
-				Token dt_scan_token = tokens at dt_scan_pos
-				move (kind) in dt_scan_token
+				kind as token_kind_at(tokens, dt_scan_pos)
 
 				if kind is NEWLINE
 					break
@@ -173,8 +169,7 @@ macro check_use_after_move_var_ident
 
 				if dt_lparen_pos > 0
 					int dt_before_lparen = dt_lparen_pos - 1
-					Token dt_before_lparen_token = tokens at dt_before_lparen
-					move (kind) in dt_before_lparen_token
+					kind as token_kind_at(tokens, dt_before_lparen)
 
 					if kind is KW_MOVE
 						dt_preceded_by_move = true
@@ -183,8 +178,7 @@ macro check_use_after_move_var_ident
 				int dt_after_rparen = dt_rparen_pos + 1
 
 				if dt_after_rparen < token_count
-					Token dt_after_rparen_token = tokens at dt_after_rparen
-					move (kind) in dt_after_rparen_token
+					kind as token_kind_at(tokens, dt_after_rparen)
 
 					if kind is KW_IN
 						dt_followed_by_in = true

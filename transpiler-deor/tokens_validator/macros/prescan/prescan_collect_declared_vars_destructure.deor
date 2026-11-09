@@ -20,8 +20,7 @@ macro prescan_collect_declared_vars_destructure
 
 		if pre_i > 0
 			int prev_pos = locate_prev_token(pre_i)
-			Token prev_token = tokens at prev_pos
-			move (kind) in prev_token
+			kind as token_kind_at(tokens, prev_pos)
 			is_call = kind is IDENT
 
 		if not is_call
@@ -29,8 +28,7 @@ macro prescan_collect_declared_vars_destructure
 			int depth = 1
 
 			for if scan_pos < token_count
-				Token scan_token = tokens at scan_pos
-				move (kind) in scan_token
+				kind as token_kind_at(tokens, scan_pos)
 
 				if kind is LPAREN
 					depth = depth + 1
@@ -47,8 +45,7 @@ macro prescan_collect_declared_vars_destructure
 			bool is_destructure = false
 
 			if after_pos < token_count
-				Token after_token = tokens at after_pos
-				move (kind) in after_token
+				kind as token_kind_at(tokens, after_pos)
 				is_destructure = kind is KW_IN
 
 			if is_destructure
@@ -56,8 +53,8 @@ macro prescan_collect_declared_vars_destructure
 				bool at_name_slot = true
 
 				for if name_pos < scan_pos
-					Token name_token = tokens at name_pos
-					move (kind, value) in name_token
+					kind as token_kind_at(tokens, name_pos)
+					value as token_value_at(tokens, name_pos)
 
 					if kind is COMMA
 						at_name_slot = true

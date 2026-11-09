@@ -104,19 +104,16 @@ fn bool is_move_with(TokensRef tokens, int move_pos)
 	if with_pos >= token_count
 		return false
 
-	Token move_token = tokens at move_pos
-	move (kind) in move_token
+	kind as token_kind_at(tokens, move_pos)
 
 	if kind is not KW_MOVE
 		return false
 
-	Token source_token = tokens at source_pos
-	move (kind) in source_token
+	kind as token_kind_at(tokens, source_pos)
 
 	if kind is not "IDENT"
 		return false
 
-	Token with_token = tokens at with_pos
-	move (kind) in with_token
+	kind as token_kind_at(tokens, with_pos)
 
 	return kind is KW_WITH

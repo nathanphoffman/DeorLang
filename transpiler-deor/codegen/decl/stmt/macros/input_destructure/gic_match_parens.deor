@@ -10,15 +10,13 @@ macro gic_match_parens
 		return anchor + 1
 
 	if lparen_pos < token_count
-		Token lparen_token = tokens at lparen_pos
-		move (kind) in lparen_token
+		kind as token_kind_at(tokens, lparen_pos)
 
 		if kind is LPAREN
 			int rparen_pos = locate_next_token(lparen_pos)
 
 			if rparen_pos < token_count
-				Token rparen_token = tokens at rparen_pos
-				move (kind) in rparen_token
+				kind as token_kind_at(tokens, rparen_pos)
 
 				if kind is RPAREN
 					matched = true

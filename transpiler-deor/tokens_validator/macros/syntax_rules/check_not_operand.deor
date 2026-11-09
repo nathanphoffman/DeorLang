@@ -17,8 +17,7 @@ macro check_not_operand
 
 	if pos > 0
 		int before_pos = locate_previous_token(pos)
-		Token before_token = tokens at before_pos
-		move (kind) in before_token
+		kind as token_kind_at(tokens, before_pos)
 		is_is_not = kind is KW_IS
 
 	if cur_kind is KW_NOT and not is_is_not
@@ -39,8 +38,7 @@ macro check_not_operand
 				int peek_pos = locate_next_token(operand_pos)
 
 				if peek_pos < token_count
-					Token peek_token = tokens at peek_pos
-					move (kind) in peek_token
+					kind as token_kind_at(tokens, peek_pos)
 
 					# ex: not name{(}x) — a call; the result is checked by rustc, not here
 					if kind is LPAREN
@@ -66,8 +64,7 @@ macro check_not_operand
 			int after_pos = locate_next_token(operand_end)
 
 			if after_pos < token_count
-				Token after_token = tokens at after_pos
-				move (kind) in after_token
+				kind as token_kind_at(tokens, after_pos)
 				bool is_comparison = kind is "GT" or kind is "LT" or kind is "GTE" or kind is "LTE"
 				bool is_math = kind is PLUS or kind is MINUS or kind is STAR or kind is SLASH or kind is PERCENT
 

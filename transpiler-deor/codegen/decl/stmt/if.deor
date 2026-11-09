@@ -38,8 +38,7 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 		if cur >= token_count
 			break
 
-		Token else_token = tokens at cur
-		move (kind) in else_token
+		kind as token_kind_at(tokens, cur)
 
 		if kind is NEWLINE
 			cur = cur + 1
@@ -55,8 +54,7 @@ fn ParseResult gen_if(int pos, int depth, RcCtx ctx)
 		if after_else >= token_count
 			break
 
-		Token after_else_token = tokens at after_else
-		move (kind) in after_else_token
+		kind as token_kind_at(tokens, after_else)
 
 		if kind is KW_IF
 			# ex: else if {cond} — after_else+1 grabs the condition expression after 'else if'

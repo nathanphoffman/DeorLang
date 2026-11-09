@@ -12,8 +12,8 @@ macro prescan_check_struct_fields
 		int name_pos = locate_struct_name(pre_i)
 
 		if name_pos < token_count
-			Token name_token = tokens at name_pos
-			move (kind, value) in name_token
+			kind as token_kind_at(tokens, name_pos)
+			value as token_value_at(tokens, name_pos)
 
 			if kind is IDENT
 				struct_name = value
@@ -22,8 +22,7 @@ macro prescan_check_struct_fields
 		int scan_pos = locate_struct_name(pre_i)
 
 		for if scan_pos < token_count
-			Token scan_token = tokens at scan_pos
-			move (kind) in scan_token
+			kind as token_kind_at(tokens, scan_pos)
 
 			if kind is INDENT
 				break
@@ -40,8 +39,7 @@ macro prescan_check_struct_fields
 		int depth = 0
 
 		for if scan_pos < token_count
-			Token scan_token = tokens at scan_pos
-			(kind) in scan_token
+			kind as token_kind_at(tokens, scan_pos)
 
 			if kind is INDENT
 				depth = depth + 1
@@ -63,7 +61,7 @@ macro prescan_check_struct_fields
 						errors at end = val_err(raw_name_token, lbl_field, rule_no_raw_field)
 
 			if kind is IDENT
-				move (value) in scan_token
+				value as token_value_at(tokens, scan_pos)
 				string field_type = value
 				int field_name_pos = scan_pos + 1
 

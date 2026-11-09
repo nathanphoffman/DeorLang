@@ -34,11 +34,9 @@ macro track_non_bool_vars
 		int equals_pos = locate_equals(pos)
 
 		if equals_pos < token_count
-			Token name_token = tokens at name_pos
-			Token equals_token = tokens at equals_pos
-			(kind) in name_token
+			kind as token_kind_at(tokens, name_pos)
 			string name_kind = kind
-			(kind) in equals_token
+			kind as token_kind_at(tokens, equals_pos)
 			string equals_kind = kind
 
 			if name_kind is IDENT and equals_kind is EQUALS
@@ -47,11 +45,11 @@ macro track_non_bool_vars
 
 				if not is_bool
 					if not is_vtype
-						(value) in name_token
+						value as token_value_at(tokens, name_pos)
 						non_bool_var_names at end = value
 
 				if cur_val is "string"
-					move (value) in name_token
+					value as token_value_at(tokens, name_pos)
 					string_var_names at end = value
 
 			# ex: {name} as "literal" / name as other_str — name_kind is KW_AS, equals_kind is the RHS
@@ -60,7 +58,7 @@ macro track_non_bool_vars
 
 				if not as_is_str
 					if equals_kind is IDENT
-						move (value) in equals_token
+						value as token_value_at(tokens, equals_pos)
 						as_is_str = list_has(string_var_names, value)
 
 				if as_is_str
@@ -70,15 +68,14 @@ macro track_non_bool_vars
 		int left_paren_pos = locate_left_paren(pos)
 
 		if left_paren_pos < token_count
-			Token left_paren_token = tokens at left_paren_pos
-			move (kind) in left_paren_token
+			kind as token_kind_at(tokens, left_paren_pos)
 
 			if kind is LPAREN
 				int param_scan_pos = left_paren_pos + 1
 
 				for if param_scan_pos < token_count
-					Token param_scan_token = tokens at param_scan_pos
-					move (kind, value) in param_scan_token
+					kind as token_kind_at(tokens, param_scan_pos)
+					value as token_value_at(tokens, param_scan_pos)
 
 					if kind is RPAREN
 						break
@@ -93,8 +90,8 @@ macro track_non_bool_vars
 						int param_name_pos = param_scan_pos + 1
 
 						if param_name_pos < token_count
-							Token param_name_token = tokens at param_name_pos
-							move (kind, value) in param_name_token
+							kind as token_kind_at(tokens, param_name_pos)
+							value as token_value_at(tokens, param_name_pos)
 
 							if kind is IDENT
 								bool param_is_bool = param_type is "bool"

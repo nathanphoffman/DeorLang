@@ -68,8 +68,8 @@ fn PairsScan collect_variant_pairs(TokensRef tokens, int start, string rust_name
 		if new_pos >= token_count
 			scanning = false
 		else
-			Token variant_token = tokens at new_pos
-			move (kind, value) in variant_token
+			kind as token_kind_at(tokens, new_pos)
+			value as token_value_at(tokens, new_pos)
 			new_pos = new_pos + 1
 
 			if kind is DEDENT
@@ -94,8 +94,8 @@ fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enu
 		if new_pos >= token_count
 			scanning = false
 		else
-			Token variant_token = tokens at new_pos
-			move (kind, value) in variant_token
+			kind as token_kind_at(tokens, new_pos)
+			value as token_value_at(tokens, new_pos)
 			new_pos = new_pos + 1
 
 			if kind is DEDENT
@@ -104,14 +104,12 @@ fn PairsScan collect_typed_variant_pairs(TokensRef tokens, int start, string enu
 				string variant_name = value
 
 				if new_pos < token_count
-					Token equals_token = tokens at new_pos
-					move (kind) in equals_token
+					kind as token_kind_at(tokens, new_pos)
 					new_pos = new_pos + 1
 
 					if kind is EQUALS
 						if new_pos < token_count
-							Token literal_token = tokens at new_pos
-							move (value) in literal_token
+							value as token_value_at(tokens, new_pos)
 							new_pos = new_pos + 1
 							string dot = "."
 							string variant_key = s_join([enum_name, dot, variant_name])
@@ -151,8 +149,8 @@ fn EnumScan try_enum_entry(TokensRef tokens, int pos)
 	int type_pos = locate_type_or_name(pos)
 
 	if type_pos < token_count
-		Token type_token = tokens at type_pos
-		move (kind, value) in type_token
+		kind as token_kind_at(tokens, type_pos)
+		value as token_value_at(tokens, type_pos)
 
 		if kind is IDENT
 			bool word_is_typed = is_typed_enum_type(value)
@@ -164,8 +162,7 @@ fn EnumScan try_enum_entry(TokensRef tokens, int pos)
 				int name_pos = locate_typed_name(pos)
 
 				if name_pos < token_count
-					Token name_token = tokens at name_pos
-					move (value) in name_token
+					value as token_value_at(tokens, name_pos)
 					name = value
 					int body_start = locate_typed_body_start(pos)
 					ParseResult block_result = skip_to_block_start(tokens, body_start)

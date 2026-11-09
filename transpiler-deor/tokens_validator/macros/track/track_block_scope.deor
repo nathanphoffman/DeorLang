@@ -78,8 +78,7 @@ macro track_block_scope
 		bool is_void = false
 
 		if return_type_pos < token_count
-			Token return_type_token = tokens at return_type_pos
-			move (kind) in return_type_token
+			kind as token_kind_at(tokens, return_type_pos)
 
 			if kind is KW_VOID
 				is_void = true

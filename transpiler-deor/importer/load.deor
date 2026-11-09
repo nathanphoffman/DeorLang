@@ -53,7 +53,8 @@ fn void fatal_missing_import(string imp_path)
 
 fn tokenList load_file(string path)
 	string source = f_read(path)
-	tokenList tok_raw = tokenize(source, path)
+	tokenList tok_list = tokenize(source, path)
+	TokensRef tok_raw = tokens_wrap(move tok_list)
 	tokenList result = empty
 	int token_count = len(tok_raw)
 	int pos = 0

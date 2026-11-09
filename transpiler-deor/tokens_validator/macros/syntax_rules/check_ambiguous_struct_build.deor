@@ -24,14 +24,12 @@ macro check_ambiguous_struct_build
 				int paren_pos = locate_next_token(with_pos)
 
 				if paren_pos < token_count
-					Token with_token = tokens at with_pos
-					move (kind) in with_token
+					kind as token_kind_at(tokens, with_pos)
 					is_with_form = kind is KW_WITH
 					open_pos = paren_pos
 
 		if open_pos < token_count
-			Token open_token = tokens at open_pos
-			move (kind) in open_token
+			kind as token_kind_at(tokens, open_pos)
 
 			if kind is LPAREN
 				strList listed_fields = empty
@@ -39,8 +37,8 @@ macro check_ambiguous_struct_build
 				bool all_names = true
 
 				for if scan_pos < token_count
-					Token scan_token = tokens at scan_pos
-					move (kind, value) in scan_token
+					kind as token_kind_at(tokens, scan_pos)
+					value as token_value_at(tokens, scan_pos)
 
 					if kind is RPAREN
 						break

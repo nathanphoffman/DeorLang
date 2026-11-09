@@ -12,8 +12,7 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 		if cur >= token_count
 			break
 
-		Token token = tokens at cur
-		move (kind) in token
+		kind as token_kind_at(tokens, cur)
 
 		if kind is RBRACKET
 			break
@@ -27,8 +26,7 @@ fn ParseResult gen_list_items(TokensRef tokens, int pos, RcCtx ctx)
 		move (code, new_pos) in item_r
 		item_code as code
 		item_pos as new_pos
-		Token start_token = tokens at cur
-		move (kind) in start_token
+		kind as token_kind_at(tokens, cur)
 
 		if kind is STRING
 			item_code = s_join([item_code, RS_TOS])
@@ -54,8 +52,7 @@ fn ParseResult gen_join_items(TokensRef tokens, int pos, RcCtx ctx)
 		if cur >= token_count
 			break
 
-		Token token = tokens at cur
-		move (kind) in token
+		kind as token_kind_at(tokens, cur)
 
 		if kind is RBRACKET
 			break
@@ -69,8 +66,7 @@ fn ParseResult gen_join_items(TokensRef tokens, int pos, RcCtx ctx)
 		move (code, new_pos) in item_r
 		item_code as code
 		item_pos as new_pos
-		Token start_token = tokens at cur
-		move (kind) in start_token
+		kind as token_kind_at(tokens, cur)
 
 		if kind is not STRING
 			string ias_suf = ".as_str()"

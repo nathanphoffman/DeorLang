@@ -26,8 +26,7 @@ macro check_raw_assignment
 		int equals_pos = locate_equals(pos)
 
 		if equals_pos < token_count
-			Token equals_token = tokens at equals_pos
-			move (kind) in equals_token
+			kind as token_kind_at(tokens, equals_pos)
 
 			if kind is KW_AS
 				int as_name_pos = locate_name(pos)
@@ -44,15 +43,13 @@ macro check_raw_assignment
 					bool is_call = false
 
 					if call_pos < token_count
-						Token call_token = tokens at call_pos
-						move (kind) in call_token
+						kind as token_kind_at(tokens, call_pos)
 
 						if kind is IDENT
 							int lparen_pos = locate_call_lparen(pos)
 
 							if lparen_pos < token_count
-								Token lparen_token = tokens at lparen_pos
-								move (kind) in lparen_token
+								kind as token_kind_at(tokens, lparen_pos)
 								is_call = kind is LPAREN
 
 					if not is_call

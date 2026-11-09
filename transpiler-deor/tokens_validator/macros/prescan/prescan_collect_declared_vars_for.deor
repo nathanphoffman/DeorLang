@@ -37,12 +37,11 @@ macro prescan_collect_declared_vars_for
 		int in_pos = locate_in_keyword(pre_i)
 
 		if in_pos < token_count
-			Token loop_var_token = tokens at loop_var_pos
-			Token in_token = tokens at in_pos
-			move (kind, value) in loop_var_token
+			kind as token_kind_at(tokens, loop_var_pos)
+			value as token_value_at(tokens, loop_var_pos)
 			string loop_var_kind = kind
 			string loop_var_value = value
-			move (kind) in in_token
+			kind as token_kind_at(tokens, in_pos)
 
 			if loop_var_kind is IDENT and kind is KW_IN
 				declared_var_names at end = loop_var_value
@@ -52,8 +51,7 @@ macro prescan_collect_declared_vars_for
 		int move_pos = locate_move_keyword(pre_i)
 
 		if move_pos < token_count
-			Token move_token = tokens at move_pos
-			move (kind) in move_token
+			kind as token_kind_at(tokens, move_pos)
 
 			if kind is KW_MOVE
 				int move_lparen_pos = locate_move_lparen(pre_i)
@@ -61,15 +59,13 @@ macro prescan_collect_declared_vars_for
 				int move_in_pos = locate_move_in(pre_i)
 
 				if move_in_pos < token_count
-					Token move_lparen_token = tokens at move_lparen_pos
-					Token move_var_token = tokens at move_var_pos
-					Token move_in_token = tokens at move_in_pos
-					move (kind) in move_lparen_token
+					kind as token_kind_at(tokens, move_lparen_pos)
 					bool move_lparen_ok = kind is LPAREN
-					move (kind, value) in move_var_token
+					kind as token_kind_at(tokens, move_var_pos)
+					value as token_value_at(tokens, move_var_pos)
 					string move_var_kind = kind
 					string move_var_value = value
-					move (kind) in move_in_token
+					kind as token_kind_at(tokens, move_in_pos)
 
 					if move_lparen_ok and move_var_kind is IDENT and kind is KW_IN
 						declared_var_names at end = move_var_value

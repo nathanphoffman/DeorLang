@@ -13,15 +13,14 @@ macro prescan_collect_declared_vars_fn_params
 		int left_paren_pos = locate_left_paren(pre_i)
 
 		if left_paren_pos < token_count
-			Token left_paren_token = tokens at left_paren_pos
-			move (kind) in left_paren_token
+			kind as token_kind_at(tokens, left_paren_pos)
 
 			if kind is LPAREN
 				int param_scan_pos = left_paren_pos + 1
 
 				for if param_scan_pos < token_count
-					Token param_scan_token = tokens at param_scan_pos
-					move (kind, value) in param_scan_token
+					kind as token_kind_at(tokens, param_scan_pos)
+					value as token_value_at(tokens, param_scan_pos)
 
 					if kind is RPAREN
 						break
@@ -36,8 +35,8 @@ macro prescan_collect_declared_vars_fn_params
 						int param_name_pos = param_scan_pos + 1
 
 						if param_name_pos < token_count
-							Token param_name_token = tokens at param_name_pos
-							move (kind, value) in param_name_token
+							kind as token_kind_at(tokens, param_name_pos)
+							value as token_value_at(tokens, param_name_pos)
 
 							if kind is IDENT
 								declared_var_names at end = value

@@ -28,8 +28,7 @@ macro check_use_after_move_chain
 
 		if pos > 0
 			int prev_pos = locate_prev_token(pos)
-			Token prev_token = tokens at prev_pos
-			move (kind) in prev_token
+			kind as token_kind_at(tokens, prev_pos)
 
 			if kind is KW_ELSE
 				is_elseif = true
@@ -89,8 +88,7 @@ macro check_use_after_move_chain
 				int after_dedent = locate_next_token(pos)
 
 				if after_dedent < token_count
-					Token after_dedent_token = tokens at after_dedent
-					move (kind) in after_dedent_token
+					kind as token_kind_at(tokens, after_dedent)
 
 					if kind is KW_ELSE
 						next_is_else = true

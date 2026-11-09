@@ -12,8 +12,7 @@ fn ParseResult gen_call_stmt(int pos, int depth, RcCtx ctx)
 	int token_count = len(tokens)
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
-	Token name_token = tokens at pos
-	move (value) in name_token
+	value as token_value_at(tokens, pos)
 	string ident_name = value
 	int next_pos = locate_next_token(pos)
 

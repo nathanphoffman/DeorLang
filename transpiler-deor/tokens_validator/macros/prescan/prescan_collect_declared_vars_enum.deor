@@ -15,8 +15,8 @@ macro prescan_collect_declared_vars_enum
 		int type_keyword_pos = locate_type_keyword(pre_i)
 
 		if type_keyword_pos < token_count
-			Token type_keyword_token = tokens at type_keyword_pos
-			move (kind, value) in type_keyword_token
+			kind as token_kind_at(tokens, type_keyword_pos)
+			value as token_value_at(tokens, type_keyword_pos)
 			bool is_typed = false
 
 			if kind is IDENT
@@ -27,8 +27,7 @@ macro prescan_collect_declared_vars_enum
 				int indent_scan_pos = type_keyword_pos + 2
 
 				for if indent_scan_pos < token_count
-					Token indent_scan_token = tokens at indent_scan_pos
-					move (kind) in indent_scan_token
+					kind as token_kind_at(tokens, indent_scan_pos)
 
 					if kind is INDENT
 						break
@@ -40,8 +39,8 @@ macro prescan_collect_declared_vars_enum
 				int depth = 1
 
 				for if body_pos < token_count
-					Token body_token = tokens at body_pos
-					move (kind, value) in body_token
+					kind as token_kind_at(tokens, body_pos)
+					value as token_value_at(tokens, body_pos)
 
 					if kind is INDENT
 						depth = depth + 1
@@ -55,8 +54,7 @@ macro prescan_collect_declared_vars_enum
 						int equals_check_pos = body_pos + 1
 
 						if equals_check_pos < token_count
-							Token equals_check_token = tokens at equals_check_pos
-							move (kind) in equals_check_token
+							kind as token_kind_at(tokens, equals_check_pos)
 
 							if kind is EQUALS
 								declared_var_names at end = value

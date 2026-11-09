@@ -30,8 +30,7 @@ macro check_fn_declaration
 		int left_paren_pos = locate_fn_left_paren(pos)
 
 		if left_paren_pos < token_count
-			Token left_paren_token = tokens at left_paren_pos
-			move (kind) in left_paren_token
+			kind as token_kind_at(tokens, left_paren_pos)
 
 			if kind is LPAREN
 				int param_count = count_call_args(tokens, left_paren_pos)
@@ -108,10 +107,9 @@ macro check_fn_declaration
 
 		if after_return_type_pos < token_count
 			Token return_type_token = tokens at return_type_pos
-			Token after_return_type_token = tokens at after_return_type_pos
 			(kind) in return_type_token
 			string return_type_kind = kind
-			move (kind) in after_return_type_token
+			kind as token_kind_at(tokens, after_return_type_pos)
 
 			if return_type_kind is IDENT
 				if kind is LPAREN
@@ -139,8 +137,7 @@ fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_c
 	if newline_pos >= token_count
 		return false
 
-	Token newline_token = tokens at newline_pos
-	move (kind) in newline_token
+	kind as token_kind_at(tokens, newline_pos)
 
 	if kind is not NEWLINE
 		return false
@@ -150,8 +147,7 @@ fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_c
 	if indent_pos >= token_count
 		return false
 
-	Token indent_token = tokens at indent_pos
-	move (kind) in indent_token
+	kind as token_kind_at(tokens, indent_pos)
 
 	if kind is not INDENT
 		return false
@@ -161,8 +157,7 @@ fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_c
 	if return_pos >= token_count
 		return false
 
-	Token return_token = tokens at return_pos
-	move (kind) in return_token
+	kind as token_kind_at(tokens, return_pos)
 
 	if kind is not KW_RETURN
 		return false
@@ -170,8 +165,7 @@ fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_c
 	int scan_pos = return_pos + 1
 
 	for if scan_pos < token_count
-		Token scan_token = tokens at scan_pos
-		move (kind) in scan_token
+		kind as token_kind_at(tokens, scan_pos)
 
 		if kind is NEWLINE
 			break
@@ -183,7 +177,6 @@ fn bool is_single_return_body(TokensRef tokens, int right_paren_pos, int token_c
 	if after_stmt_pos >= token_count
 		return false
 
-	Token after_stmt_token = tokens at after_stmt_pos
-	move (kind) in after_stmt_token
+	kind as token_kind_at(tokens, after_stmt_pos)
 
 	return kind is DEDENT

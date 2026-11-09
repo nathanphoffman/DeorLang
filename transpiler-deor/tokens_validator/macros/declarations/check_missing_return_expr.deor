@@ -25,12 +25,11 @@ macro check_missing_return_expr
 		int left_paren_pos = locate_fn_left_paren(pos)
 
 		if left_paren_pos < token_count
-			Token return_type_token = tokens at return_type_pos
-			move (kind, value) in return_type_token
+			kind as token_kind_at(tokens, return_type_pos)
+			value as token_value_at(tokens, return_type_pos)
 			bool has_ret_type = kind is IDENT
 			bool is_void = value is "void"
-			Token left_paren_token = tokens at left_paren_pos
-			move (kind) in left_paren_token
+			kind as token_kind_at(tokens, left_paren_pos)
 			bool is_call_shape = kind is LPAREN
 
 			if has_ret_type and not is_void and is_call_shape
@@ -38,15 +37,13 @@ macro check_missing_return_expr
 				int newline_pos = right_paren_pos + 1
 
 				if newline_pos < token_count
-					Token newline_token = tokens at newline_pos
-					move (kind) in newline_token
+					kind as token_kind_at(tokens, newline_pos)
 
 					if kind is NEWLINE
 						int indent_pos = newline_pos + 1
 
 						if indent_pos < token_count
-							Token indent_token = tokens at indent_pos
-							move (kind) in indent_token
+							kind as token_kind_at(tokens, indent_pos)
 
 							if kind is INDENT
 								int body_first_pos = indent_pos + 1
@@ -72,8 +69,7 @@ macro check_missing_return_expr
 
 											if not at_boundary
 												int prev_pos = scan_pos - 1
-												Token prev_token = tokens at prev_pos
-												move (kind) in prev_token
+												kind as token_kind_at(tokens, prev_pos)
 												string prev_kind = kind
 												bool prev_is_boundary = prev_kind is NEWLINE
 
@@ -110,8 +106,7 @@ macro check_missing_return_expr
 													int next_pos = scan_pos + 1
 
 													if next_pos < body_end_pos
-														Token next_token = tokens at next_pos
-														(kind) in next_token
+														kind as token_kind_at(tokens, next_pos)
 														bool is_bare_expr = is_binary_op(kind)
 
 														if not is_bare_expr
@@ -133,8 +128,7 @@ fn int first_depth0_newline(TokensRef tokens, int start, int end_pos)
 	int scan_pos = start
 
 	for if scan_pos < end_pos
-		Token scan_token = tokens at scan_pos
-		move (kind) in scan_token
+		kind as token_kind_at(tokens, scan_pos)
 
 		if kind is INDENT
 			depth = depth + 1

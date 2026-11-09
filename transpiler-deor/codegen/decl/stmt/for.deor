@@ -17,8 +17,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 
 	# ex: for {if} cond — kw_pos+1 grabs the token after 'for' that decides the loop form
 	int next_pos = locate_next_token(pos)
-	Token next_token = tokens at next_pos
-	(kind) in next_token
+	kind as token_kind_at(tokens, next_pos)
 
 	if kind is KW_IF
 		macro_run for_while
@@ -33,7 +32,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 		# ex: for in {(}start, end) — next_pos+1 grabs the range expression after 'in'
 		iter_pos = locate_next_token(next_pos)
 	else
-		(value) in next_token
+		value as token_value_at(tokens, next_pos)
 		var_name = value
 
 		# ex: for {var} in expr — next_pos+1 grabs the expected 'in' keyword after the loop var
@@ -42,8 +41,8 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 		# ex: for var in {expr} — in_pos+1 grabs the iteration expression after 'in'
 		iter_pos = locate_next_token(in_pos)
 
-	Token iter_token = tokens at iter_pos
-	move (kind, value) in iter_token
+	kind as token_kind_at(tokens, iter_pos)
+	value as token_value_at(tokens, iter_pos)
 
 	string range_expr = ""
 	int body_tok_pos = 0

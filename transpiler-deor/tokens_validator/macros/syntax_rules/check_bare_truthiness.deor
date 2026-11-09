@@ -27,8 +27,7 @@ macro check_bare_truthiness
 				int after_pos = locate_next_token(next_pos)
 
 				if after_pos < token_count
-					Token after_token = tokens at after_pos
-					move (kind) in after_token
+					kind as token_kind_at(tokens, after_pos)
 
 					if kind is NEWLINE
 						bool is_non_bool = list_has(non_bool_var_names, value)

@@ -90,8 +90,7 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 
 		if kind is KW_RUST
 			int block_pos = locate_rust_block_content(pos)
-			Token block_token = all_ref at block_pos
-			move (value) in block_token
+			value as token_value_at(all_ref, block_pos)
 			string newline = "\n"
 			string rust_chunk = s_cat(value, newline)
 			parts at end = rust_chunk

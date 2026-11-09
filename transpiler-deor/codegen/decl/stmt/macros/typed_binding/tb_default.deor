@@ -36,8 +36,7 @@ macro tb_default
 			int val_next_idx = locate_after_value(val_pos)
 
 			if val_next_idx < token_count
-				Token next_val_token = tokens at val_next_idx
-				move (kind) in next_val_token
+				kind as token_kind_at(tokens, val_next_idx)
 				bool val_is_call = kind is LPAREN
 				bool val_is_idx = kind is KW_AT
 

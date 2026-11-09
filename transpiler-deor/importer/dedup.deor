@@ -8,7 +8,7 @@
 # loose behavior. Also captures ENFORCE_MACRO_FILE_DEPTH (see strip_enforce_pragmas) and
 # returns it alongside the deduped tokens for build_macros to enforce.
 fn DedupResult deduplicate_decls(tokenList tokens_in)
-	tokenList tokens = tokens_in
+	tokenList tokens = move tokens_in
 	unsafe_macro_run strip_enforce_pragmas
 	tokenList result = empty
 	strList seen = empty
@@ -55,7 +55,7 @@ fn DedupResult deduplicate_decls(tokenList tokens_in)
 			result at end = token
 			pos = pos + 1
 
-	tokens = result
-	DedupResult dedup_out = (tokens, enforce_macro_file_depth)
+	tokens = move result
+	DedupResult dedup_out = move (tokens, enforce_macro_file_depth)
 
 	return dedup_out

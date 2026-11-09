@@ -31,8 +31,9 @@ fn ParseResult gen_stmt(int pos, int depth, RcCtx ctx)
 
 	(mut_names, type_reg, tokens) in ctx
 	int token_count = len(tokens)
-	Token token = tokens at pos
-	move (kind, value, line) in token
+	kind as token_kind_at(tokens, pos)
+	value as token_value_at(tokens, pos)
+	line as token_line_at(tokens, pos)
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 
