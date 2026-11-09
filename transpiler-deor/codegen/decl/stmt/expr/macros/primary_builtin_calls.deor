@@ -2,6 +2,7 @@
 #   len(x)           — `(x.len() as i64)`
 #   crash(x)         — `panic!("{}", x)`
 #   s_join([a, b])   — `[a, b].concat()` (skips a wrapper call and its clones)
+#   list_has(a, b)   — `(a.contains(&b))` (skips copying the whole list)
 # Falls through when the identifier is not one of these, so primary_call_expr can take over.
 macro primary_builtin_calls
 	# ex: name{(}args) — kw_pos+1 grabs the token that decides call/index/plain
@@ -43,6 +44,15 @@ macro primary_builtin_calls
 					int after_crash = crash_end + 1
 
 					return make_result(move panic_code, after_crash)
+
+				# list_has(items, value) becomes items.contains(&value): the plain call would copy the whole list
+				if func_name is "list_has"
+					bool has_simple_args = is_two_variable_args(tokens, args_pos)
+
+					if has_simple_args
+						ParseResult has_result = gen_list_contains(tokens, args_pos, ctx)
+
+						return has_result
 
 				# This is solely for optimization, it is rewritten as a .concat() so that no clones happen
 				#  clones happen because deor clones everything by default, and String is one of the few impacted
