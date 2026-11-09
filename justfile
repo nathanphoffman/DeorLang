@@ -59,6 +59,12 @@ test-examples:
 build-and-test: build-transpiler rebuild-binary test-examples
 
 
+# Samples where the transpiler spends its time (needs gdb; perf is not required).
+# Report goes to output/profile.txt. Pass another .deor file to profile that instead.
+profile file="transpiler-deor/main.deor":
+    DEOR_LIB=lib PROFILE_OUT=output/profile.txt PROFILE_ARGS="{{file}} output/profile_run.rs" gdb -q -batch -ex "set pagination off" -ex "set confirm off" -ex "handle SIGINT stop nopass" -x tools/profile_sampler.py ./output/out < /dev/null > /dev/null 2>&1
+    @cat output/profile.txt
+
 # Runs the code quality checker, skipping the generated out.rs files.
 check:
     codequality . --full --exclude '*out.rs*'
