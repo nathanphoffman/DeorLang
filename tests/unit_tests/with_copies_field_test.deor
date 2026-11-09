@@ -1,0 +1,22 @@
+# with_copies_field_test.deor
+# `with (field)` copies the listed variable like every other Deor binding, so the variable is
+# still usable afterwards. It used to hand the variable over, which gave a rustc "borrow of
+# moved value" error when it was read again.
+
+struct Hold
+	string label
+	int count
+
+fn void main()
+	string label = "alpha"
+	int count = 1
+	Hold start = (label, count)
+	next as start with (label)
+	Hold typed = start with (label)
+	(count) in start
+	print(label)
+	print(count)
+
+# expect:
+# alpha
+# 1

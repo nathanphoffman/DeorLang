@@ -183,7 +183,9 @@ fn tokenList load_file(string path)
 
 				continue
 
-		if at_root_depth and kind is not NEWLINE
+		bool is_pragma_line_token = is_pragma_token(tok_raw, pos)
+
+		if at_root_depth and kind is not NEWLINE and not is_pragma_line_token
 			seen_decl = true
 
 		result at end = tok

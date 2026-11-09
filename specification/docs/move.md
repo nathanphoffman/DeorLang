@@ -105,6 +105,25 @@ See [Structs — Struct Construction](docs/structs.md#struct-construction).
 
 ---
 
+## Record Update
+
+Update a struct without copying the source:
+
+Deor:
+```deor
+Room new_room = move room with (area)
+# room is not accessible here and below
+```
+
+Rust:
+```rust
+let new_room: Room = Room { area: area.clone(), ..room };
+```
+
+Without `move`, `with` clones the source (and the listed fields). Only the typed form takes `move`; `new_room as move room with (area)` is a transpiler error, like any `as move`. See [Structs — Record Update](docs/structs.md#record-update-with).
+
+---
+
 ## Variable Assignment
 
 Transfer ownership into a new binding:

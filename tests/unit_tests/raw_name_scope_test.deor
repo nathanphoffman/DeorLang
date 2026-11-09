@@ -1,0 +1,22 @@
+# raw_name_scope_test.deor
+# A `raw` variable name belongs to its own function. A plain variable with the same name in a
+# later function used to be rejected as "raw variables cannot be reassigned".
+
+fn string make_dice(int seed)
+	return "dice"
+
+fn int first_fn(int seed)
+	raw dice = make_dice(seed)
+
+	return seed
+
+fn int second_fn(int seed)
+	string dice = make_dice(seed)
+
+	return seed
+
+fn void main()
+	print("ok")
+
+# expect:
+# ok

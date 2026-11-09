@@ -8,6 +8,8 @@ List operations assume a list shape has already been declared — see [Shapes](d
 ## Empty List
 To define an empty list use the `empty` keyword. `[]` is never valid for initializing an empty list — `[` and `]` are only used for list literals with items.
 
+A list literal must fit on one line. Splitting `["first",` and `"second"]` across lines is a transpiler error; for a long list, append the items one at a time with `list at end = item`.
+
 Deor:
 ```deor
 stringList list_names = empty

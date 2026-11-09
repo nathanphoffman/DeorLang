@@ -1,8 +1,10 @@
 
 # Fortran-IMPLICIT-style opt-in pragmas. If ENFORCE_UNIQUE_FILE_DECLARATIONS,
 # ENFORCE_UNIQUE_IMPORT_DECLARATIONS, and/or ENFORCE_MACRO_FILE_DEPTH appear as the first
-# statement(s) of fn void main() — in any order, any subset — they're consumed here and
-# never reach validation or codegen. Neither of the two unique-decl flags present means
+# lines of the entry file (before any import or declaration, for programs with no main, like a
+# library called from Rust) or as the first statement(s) of fn void main() — in any order, any
+# subset — they're consumed here and never reach validation or codegen. Both places can be
+# used together. Neither of the two unique-decl flags present means
 # fully loose: dedup.deor silently keeps the first declaration of any repeated name, same
 # as it always has.
 #   ENFORCE_UNIQUE_FILE_DECLARATIONS   — error on a name repeated within the same file
@@ -24,6 +26,9 @@ unsafe_macro strip_enforce_pragmas
 	tokenList result_tokens = empty
 	int token_count = len(tokens)
 	int scan_pos = 0
+
+	# Pragmas at the very top of the entry file, ahead of everything else
+	macro_run sep_scan_pragma_lines
 
 	for if scan_pos < token_count
 		Token scan_token = tokens at scan_pos

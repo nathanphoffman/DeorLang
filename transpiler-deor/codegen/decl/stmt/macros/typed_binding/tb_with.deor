@@ -43,14 +43,18 @@ macro tb_with
 					override_fields at end = value
 					scan_pos = scan_pos + 1
 
-			string fields_separator = ", "
-			string fields_code = s_join_with(override_fields, fields_separator)
+			string fields_code = cloned_field_pairs(override_fields)
 			unsafe_macro_run mut_guard
 			string let_kw = "let "
 			string equals_kw = " = "
 			string open_brace = " { "
 			string spread_prefix = ", .."
 			string clone_suffix = ".clone()"
+
+			# `move` hands the source over whole, so only the other fields travel with it
+			if moves_source
+				clone_suffix = ""
+
 			string close_brace = " };\n"
 			string with_code = s_join([pad, let_kw, mut_kw, var_name, equals_kw, rust_type, open_brace, fields_code, spread_prefix, source_name, clone_suffix, close_brace])
 

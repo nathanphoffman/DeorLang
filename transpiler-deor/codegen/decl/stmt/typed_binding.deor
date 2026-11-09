@@ -34,6 +34,17 @@ fn ParseResult gen_typed_binding(int pos, int depth, RcCtx ctx)
 	string rust_type = resolve_type(var_type, ctx)
 	Token val_token = tokens at val_pos
 	(kind) in val_token
+	bool moves_source = false
+
+	if kind is KW_MOVE
+		moves_source = is_move_with(tokens, val_pos)
+
+	# ex: Type name = {move} source with (f1) — step onto the source so tb_with sees it
+	if moves_source
+		val_pos = val_pos + 1
+		val_token = tokens at val_pos
+
+	(kind) in val_token
 
 	if kind is KW_EMPTY
 		macro_run tb_empty

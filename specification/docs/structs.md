@@ -51,7 +51,7 @@ Rust:
 let score = Score { label: label.clone(), points: points.clone() };
 ```
 
-**Caveat:** unlike the explicit-type form below, this inferred form has no validation against the struct registry. If no struct's field set matches the given names, it silently emits a bogus `Unknown { ... }` construction that only fails later at `rustc`. If more than one struct shares the exact same field set, it silently picks whichever was declared first in the file — no warning either way. Prefer the explicit-type form when field names alone don't uniquely identify the struct.
+**Ambiguity is an error.** The struct is found by matching the field names, so if more than one struct has exactly that field set, the transpiler stops with an error instead of guessing: bind it with the explicit-type form below. (If no struct matches at all, the inferred form still emits a bogus `Unknown { ... }` that only fails later at `rustc`.)
 
 ### Explicit Type
 
@@ -77,7 +77,7 @@ Mirrors destructuring: `in` pulls fields out of a struct, `= (field1, field2,...
 
 `(fields)` can also appear as a bare expression in return position — no type annotation needed. See [Functions — Multiple return values](docs/functions.md#multiple-return-values) for the full worked example (`DivResult`/`divmod`).
 
-**Caveat:** like the inferred `as` form, a bare `(fields)` finds its struct by matching field names — it does *not* use the function's declared return type. If two structs share the exact same field names, the one declared first wins, even when the function returns the other one (and `rustc` then reports a type mismatch). When field names alone don't identify the struct, bind it with an explicit type first and return the variable:
+**Ambiguity is an error.** Like the inferred `as` form, a bare `(fields)` finds its struct by matching field names — it does *not* use the function's declared return type. If two structs share the exact same field names, the transpiler reports an error. When field names alone don't identify the struct, bind it with an explicit type first and return the variable:
 
 ```deor
 fn StringResult make_result(ValidText value, string message)
@@ -183,16 +183,32 @@ bigger_office as office with (area, name)
 Rust:
 ```rust
 let mut area: Option<Squarefeet> = Squarefeet::new(2);
-let new_room = Room { area, ..room.clone() };
+let new_room = Room { area: area.clone(), ..room.clone() };
 
 area = Squarefeet::new(20);
 let name = "Bigger Office".to_string();
-let bigger_office = Room { area, name, ..office.clone() };
+let bigger_office = Room { area: area.clone(), name: name.clone(), ..office.clone() };
 ```
 
 **Declaration only.** `with` can only appear in a declaration (`Type name = source with (...)` or `name as source with (...)`). `name = source with (...)` is a transpiler error, and so is anything other than field names and commas inside the parens — `with (value as field)` is not supported. Assign the new value to a variable named after the field first, then use `with (field)`.
 
-**Conversion notes:** near 1:1 with Rust's built-in functional record update (`..` spread) syntax, except the spread source is cloned (`..room.clone()`, not `..room`) — every Deor struct derives `Clone`, so `with` never consumes the source; `room`/`office` are still fully usable after the update. Overridden fields that are validator types route through their constructor like any other assignment to that type. The `with` pattern mirrors `in` destructuring: `in` pulls fields out of a struct, `with` pushes variables into one.
+**Copying.** Like every other Deor binding, `with` copies by default: the source struct *and* the listed field variables are cloned, so `room`, `office`, `area` and `name` all stay usable afterwards.
+
+**Which struct.** For the `as` form, the struct is the one that has all the listed fields. If more than one struct has them, it's an error — use the typed form (`Room new_room = room with (area)`), which names the struct.
+
+**Moving the source.** The typed form can consume the source instead of copying it, which saves a full copy of a big struct. Only the typed form supports this; `as` always copies (`as move` is an error):
+
+```deor
+Room new_room = move room with (area)
+# room cannot be used after this point
+```
+
+Rust:
+```rust
+let new_room: Room = Room { area: area.clone(), ..room };
+```
+
+**Conversion notes:** near 1:1 with Rust's built-in functional record update (`..` spread) syntax, except the spread source and the listed fields are cloned (`..room.clone()`, `area: area.clone()`) unless the source is moved — every Deor struct derives `Clone`, so `with` never consumes anything on its own. Overridden fields that are validator types route through their constructor like any other assignment to that type. The `with` pattern mirrors `in` destructuring: `in` pulls fields out of a struct, `with` pushes variables into one.
 
 ---
 

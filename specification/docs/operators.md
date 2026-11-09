@@ -110,6 +110,18 @@ opposite as not original
 
 Don't reach for `not` to negate the result of a comparison, though — see [Comparison](#comparison) above for the `is not` rule.
 
+**`not` takes exactly one bool:** a variable, a call, a list item (`not flags at 0`) or a parenthesised group (`not (a > b)`). Anything else is a transpiler error, because `not` binds tighter than every operator after it:
+
+```deor
+if not apart > 24.0     # transpiler error — means (not apart) > 24.0
+if not count            # transpiler error — count is a number, not a bool
+if not (apart > 24.0)   # valid
+bool is_far = apart > 24.0
+if not is_far           # valid
+```
+
+The same goes for `+`, `-`, `*`, `/`, `%`, `<`, `>=`, `<=` and for literals (`not 5`). A `not` on a value whose type the transpiler can't see (a variable bound with `as`, a destructured field, or a call that returns a number) is still caught only by `rustc`.
+
 ---
 
 ## Banned Symbolic Operators

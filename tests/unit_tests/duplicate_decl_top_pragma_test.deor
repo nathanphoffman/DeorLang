@@ -1,0 +1,15 @@
+ENFORCE_UNIQUE_IMPORT_DECLARATIONS
+
+# duplicate_decl_top_pragma_test.deor
+# The same check as duplicate_decl_cross_file_test.deor, but the pragma sits at the very top
+# of the entry file instead of inside main(), so programs with no main (a library called from
+# Rust) can use it too. It must come before any import or declaration.
+
+import "tests/unit_tests/fixtures/dup_decl_a.deor"
+import "tests/unit_tests/fixtures/dup_decl_b.deor"
+
+fn void main()
+	print("unreachable")
+
+# expect-error:
+# duplicate declaration 'Widget' — already declared in tests/unit_tests/fixtures/dup_decl_a.deor

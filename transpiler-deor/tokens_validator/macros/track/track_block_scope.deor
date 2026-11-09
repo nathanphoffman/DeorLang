@@ -8,7 +8,7 @@
 # even opens), clearing both at the same DEDENT that closes the declaration — every IDENT in
 # either body is a type/field/variant name, never a variable read, so check_undefined_var_read
 # skips the check entirely while either flag is set.
-# Also clears validator_vars, non_bool_var_names, and string_var_names at the start of
+# Also clears validator_vars, raw_var_names, non_bool_var_names, and string_var_names at the start of
 # each top-level fn, so a tracked local in one function doesn't leak into matching
 # an unrelated same-named local in the next.
 # Also sets in_fn_body on any KW_FN (top-level or nested), clearing it at the same
@@ -63,6 +63,7 @@ macro track_block_scope
 		if block_depth is 0
 			rust
 				validator_vars.clear();
+				raw_var_names.clear();
 				non_bool_var_names.clear();
 				string_var_names.clear();
 				copy_var_names.clear();

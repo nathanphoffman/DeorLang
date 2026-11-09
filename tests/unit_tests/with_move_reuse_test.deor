@@ -1,0 +1,17 @@
+# with_move_reuse_test.deor
+# After `move source with (...)` the source is consumed, so reading it again is an error.
+
+struct Hold
+	string label
+	int count
+
+fn void main()
+	string label = "alpha"
+	int count = 1
+	Hold start = (label, count)
+	Hold moved = move start with (label)
+	(count) in start
+	print(count)
+
+# expect-error:
+# line 13: variable 'start' - used here but already moved earlier

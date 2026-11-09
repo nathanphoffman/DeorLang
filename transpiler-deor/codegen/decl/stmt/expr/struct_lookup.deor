@@ -78,3 +78,46 @@ fn string find_struct_containing_fields(strList struct_reg, strList fields)
 	string first_match = matches at 0
 
 	return first_match
+
+# Rust field list for a record update: `f1: f1.clone(), f2: f2.clone()`. `with` copies the
+# listed values like every other Deor binding, so the variables stay usable afterwards.
+fn string cloned_field_pairs(strList fields)
+	strList pairs = empty
+	string field_sep = ": "
+	string clone_suffix = ".clone()"
+	string pair_sep = ", "
+	int field_count = len(fields)
+
+	for index in range(field_count)
+		string field = fields at index
+		pairs at end = s_join([field, field_sep, field, clone_suffix])
+
+	return s_join_with(pairs, pair_sep)
+
+# True when the token at `move_pos` starts `move source with (...)`, the record update that
+# consumes its source instead of copying it.
+fn bool is_move_with(TokensRef tokens, int move_pos)
+	unsafe_macro_run token_kinds
+	int token_count = len(tokens)
+	int source_pos = move_pos + 1
+	int with_pos = move_pos + 2
+
+	if with_pos >= token_count
+		return false
+
+	Token move_token = tokens at move_pos
+	(kind) in move_token
+
+	if kind is not KW_MOVE
+		return false
+
+	Token source_token = tokens at source_pos
+	(kind) in source_token
+
+	if kind is not "IDENT"
+		return false
+
+	Token with_token = tokens at with_pos
+	(kind) in with_token
+
+	return kind is KW_WITH

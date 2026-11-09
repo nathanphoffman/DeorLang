@@ -127,7 +127,7 @@ int count = 0       # correct
 
 By default, declaring two top-level items with the same name is **not** an error — whichever one the importer merges in first silently wins, and the rest are dropped. This is deliberate: it's what lets the standard library have several `lib/*.deor` files each redeclare the same convenience alias (`shape stringList = list of string`, for example) so any one of them can be imported standalone.
 
-If you want stricter checking, opt in with a pragma as the very first statement(s) of `fn void main()`:
+If you want stricter checking, opt in with a pragma, either as the very first statement(s) of `fn void main()`:
 
 ```deor
 fn void main()
@@ -135,6 +135,17 @@ fn void main()
     ENFORCE_UNIQUE_IMPORT_DECLARATIONS
     ...
 ```
+
+or as the very first lines of the entry file, before any import or declaration. Use this form for a program with no `main` (for example a library that Rust calls into):
+
+```deor
+ENFORCE_UNIQUE_IMPORT_DECLARATIONS
+
+import "ships.deor"
+import "effects.deor"
+```
+
+Both places can be used together.
 
 - `ENFORCE_UNIQUE_FILE_DECLARATIONS` — a name declared twice **in the same file** is a hard transpiler error.
 - `ENFORCE_UNIQUE_IMPORT_DECLARATIONS` — a name declared in two **different** files is a hard transpiler error.

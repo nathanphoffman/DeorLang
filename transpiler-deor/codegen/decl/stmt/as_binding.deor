@@ -4,7 +4,7 @@
 # Four sub-cases dispatched by the token immediately after `as`:
 #   name as (f1, f2)              — struct construction binding
 #   name as empty                 — empty list: Vec::new()
-#   name as source with (f1, f2)  — record update spread: StructName { f1, f2, ..source }
+#   name as source with (f1, f2)  — record update spread: StructName { f1: f1.clone(), ..source.clone() }
 #   name as expr                  — regular let binding
 fn ParseResult gen_as_binding(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run token_kinds

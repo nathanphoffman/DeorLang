@@ -1,0 +1,23 @@
+# with_move_test.deor
+# `move` before the source of a typed record update hands the source over instead of copying it.
+# Only the typed form `Type name = move source with (...)` exists: `as` always copies.
+
+struct Hold
+	string label
+	int count
+
+fn void main()
+	string label = "alpha"
+	int count = 1
+	Hold start = (label, count)
+	label = "beta"
+	Hold moved = move start with (label)
+	label = "gamma"
+	Hold typed = move moved with (label)
+	(label, count) in typed
+	print(label)
+	print(count)
+
+# expect:
+# gamma
+# 1

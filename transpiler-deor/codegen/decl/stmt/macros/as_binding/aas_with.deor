@@ -41,8 +41,7 @@ macro aas_with
 					scan_pos = scan_pos + 1
 
 			string matched_struct_name = find_struct_containing_fields(struct_reg, override_fields)
-			string fields_separator = ", "
-			string fields_code = s_join_with(override_fields, fields_separator)
+			string fields_code = cloned_field_pairs(override_fields)
 			string var_name = ident_name
 			unsafe_macro_run mut_guard
 			string let_kw = "let "

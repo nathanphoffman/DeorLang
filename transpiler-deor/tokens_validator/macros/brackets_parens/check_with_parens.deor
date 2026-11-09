@@ -12,16 +12,28 @@ macro check_with_parens
 	if cur_kind is KW_WITH
 		# ex: name {=} source with — `with` has no codegen for a plain reassignment
 		# (it needs the struct's Rust type), so only declarations may use it.
+		# `name = move source with` has one more token between `=` and `with`.
+		int source_gap = 2
+
 		if pos >= 3
-			int eq_pos = pos - 2
+			int move_pos = pos - 2
+			Token move_token = tokens at move_pos
+			(kind) in move_token
+
+			if kind is KW_MOVE
+				source_gap = 3
+
+		if pos >= source_gap + 1
+			int eq_pos = pos - source_gap
 			Token eq_token = tokens at eq_pos
 			(kind) in eq_token
 
 			if kind is EQUALS
 				bool is_typed_decl = false
+				int type_gap = source_gap + 2
 
-				if pos >= 4
-					int type_pos = pos - 4
+				if pos >= type_gap
+					int type_pos = pos - type_gap
 					Token type_token = tokens at type_pos
 					(kind) in type_token
 					is_typed_decl = kind is IDENT
