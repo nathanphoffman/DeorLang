@@ -1,0 +1,32 @@
+# not_operand_test.deor
+# `not` takes one bool. `not a > b` means `(not a) > b` and `not count` flips the bits of an
+# int, so both are validator errors instead of confusing rustc errors. Names, calls, list
+# items and parenthesised groups stay valid.
+
+shape boolList = list of bool
+
+fn bool compare_after(int aaa, int bbb)
+	return not aaa > bbb
+
+fn bool less_after(int aaa, int bbb)
+	return not aaa < bbb
+
+fn bool on_number(int num)
+	return not num
+
+fn bool fine_group(int aaa, int bbb)
+	return not (aaa > bbb)
+
+fn bool fine_item(boolList flags)
+	return not flags at 0
+
+fn bool fine_and(bool aaa, bool bbb)
+	return not aaa and bbb
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 9: variable 'aaa' - 'not' binds tighter than the operator after it
+# line 12: variable 'aaa' - 'not' binds tighter than the operator after it
+# line 15: variable 'num' - 'not' only works on a bool

@@ -12,5 +12,6 @@ macro check_misc_token_rules
 	macro_run check_avow_target
 	macro_run check_validator_empty
 	macro_run check_empty_bracket
+	macro_run check_multiline_list
 	macro_run check_for_loop_var_name
 	macro_run check_bare_tuple_range

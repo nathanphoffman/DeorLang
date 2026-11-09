@@ -74,7 +74,11 @@ macro check_return_tuple
 						scan_pos = scan_pos + 1
 
 				if has_comma and all_named
-					string owner = find_struct_for_fields(struct_field_reg, item_names)
+					strList owners = structs_with_exact_fields(struct_field_reg, item_names)
+					int owner_count = len(owners)
 
-					if owner is "Unknown"
+					if owner_count is 0
 						errors at end = val_err(open_token, lbl_fn, rule_return_tuple_fields)
+
+					if owner_count > 1
+						errors at end = val_err(open_token, lbl_fn, rule_struct_ambiguous)

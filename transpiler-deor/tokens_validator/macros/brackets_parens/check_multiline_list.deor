@@ -1,0 +1,32 @@
+# Flags a `[...]` list literal that continues onto another line. The lexer ends every line
+# with a NEWLINE token (and may add INDENT/DEDENT) that the list parser can't skip, so a
+# split literal used to produce `/* unknown_primary */` in the Rust. Keep the literal on one
+# line, or append the items one at a time with `list at end = item`.
+macro check_multiline_list
+	# ex: [{a}, b] — kw_pos+1 grabs the token after the opening bracket
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	if cur_kind is LBRACKET
+		int depth = 1
+		int scan_pos = locate_next_token(pos)
+
+		for if depth > 0
+			if scan_pos >= token_count
+				break
+
+			Token scan_token = tokens at scan_pos
+			(kind) in scan_token
+
+			if kind is LBRACKET
+				depth = depth + 1
+
+			if kind is RBRACKET
+				depth = depth - 1
+
+			if kind is NEWLINE
+				errors at end = val_err(tok, lbl_var, rule_multiline_list)
+
+				break
+
+			scan_pos = scan_pos + 1

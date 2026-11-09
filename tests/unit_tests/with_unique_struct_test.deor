@@ -1,0 +1,25 @@
+# with_unique_struct_test.deor
+# `with` lists only a subset of fields, so it must pick the struct that has ALL of them,
+# not whichever struct has the first one. Rock and Dust both have `vel`; only Rock has `spin`.
+
+struct Rock
+	float spin
+	float vel
+
+struct Dust
+	float vel
+
+fn Rock speed_up(Rock piece, float spin, float vel)
+	updated as piece with (spin, vel)
+
+	return updated
+
+fn void main()
+	float spin = 1.0
+	float vel = 2.0
+	Rock start = (spin, vel)
+	Rock result = speed_up(start, spin, vel)
+	print("ok")
+
+# expect:
+# ok

@@ -1,0 +1,43 @@
+# struct_ambiguous_test.deor
+# When two structs share the same fields, the type-less forms (`as (...)`, bare `return (...)`,
+# `as source with (...)`) cannot tell which struct is meant and used to silently pick one.
+# They are now errors that point to the explicit-type form.
+
+struct Lamp
+	float pos
+	float size
+
+struct Blast
+	float pos
+	float size
+
+struct Rock
+	float spin
+	float vel
+
+struct Dust
+	float vel
+
+fn Blast bare_return(float pos, float size)
+	return (pos, size)
+
+fn void as_build(float pos, float size)
+	built as (pos, size)
+
+fn Dust shared_with(Dust piece, float vel)
+	updated as piece with (vel)
+
+	return updated
+
+fn Rock unique_with(Rock piece, float spin)
+	updated as piece with (spin)
+
+	return updated
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 22: fn '(' - more than one struct has these fields
+# line 25: variable 'as' - more than one struct has these fields
+# line 28: variable 'as' - more than one struct has these fields, so Deor cannot tell which one the source is

@@ -1,0 +1,70 @@
+# Flags the type-less struct forms `name as (a, b)` and `name as source with (a, b)` when
+# more than one struct could be meant. Deor picks the struct from the field names alone, so
+# a shared field set would silently build the wrong struct (rustc then fails far from the
+# cause, or worse, accepts it). The explicit forms `Type name = (a, b)` and
+# `Type name = source with (a, b)` name the struct and are never ambiguous.
+# A `with` list only has to be a subset of the struct's fields, a bare list must match exactly.
+macro check_ambiguous_struct_build
+	# ex: name {as} (a, b) / name {as} source with (a, b) — kw_pos+1 grabs the token after `as`
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	if cur_kind is KW_AS
+		int after_as_pos = locate_next_token(pos)
+		int open_pos = after_as_pos
+		bool is_with_form = false
+
+		if after_as_pos < token_count
+			Token after_as_token = tokens at after_as_pos
+			(kind) in after_as_token
+
+			# ex: name as source {with} (a, b) — three tokens after `as` is the with-form
+			if kind is IDENT
+				int with_pos = locate_next_token(after_as_pos)
+				int paren_pos = locate_next_token(with_pos)
+
+				if paren_pos < token_count
+					Token with_token = tokens at with_pos
+					(kind) in with_token
+					is_with_form = kind is KW_WITH
+					open_pos = paren_pos
+
+		if open_pos < token_count
+			Token open_token = tokens at open_pos
+			(kind) in open_token
+
+			if kind is LPAREN
+				strList listed_fields = empty
+				int scan_pos = locate_next_token(open_pos)
+				bool all_names = true
+
+				for if scan_pos < token_count
+					Token scan_token = tokens at scan_pos
+					(kind, value) in scan_token
+
+					if kind is RPAREN
+						break
+
+					if kind is IDENT
+						listed_fields at end = value
+					else if kind is not COMMA
+						all_names = false
+
+					scan_pos = scan_pos + 1
+
+				# Anything but plain names (`as (a + b)`) is a grouped expression, not a struct
+				if all_names
+					strList candidates = structs_with_exact_fields(struct_field_reg, listed_fields)
+
+					if is_with_form
+						candidates = structs_containing_fields(struct_field_reg, listed_fields)
+
+					int candidate_count = len(candidates)
+
+					if candidate_count > 1
+						Token as_name_token = tokens at pos
+
+						if is_with_form
+							errors at end = val_err(as_name_token, lbl_var, rule_with_ambiguous)
+						else
+							errors at end = val_err(as_name_token, lbl_var, rule_struct_ambiguous)

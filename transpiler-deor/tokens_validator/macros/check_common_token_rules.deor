@@ -13,6 +13,7 @@ macro check_common_token_rules
 	macro_run check_return_invalid
 	macro_run check_return_tuple
 	macro_run check_return_with
+	macro_run check_ambiguous_struct_build
 	macro_run check_move_target
 	macro_run track_copy_vars
 	macro_run check_use_after_move
@@ -23,6 +24,7 @@ macro check_common_token_rules
 	macro_run check_empty_parens
 	macro_run skip_rust_block
 	macro_run check_not_is_order
+	macro_run check_not_operand
 	macro_run check_bare_truthiness
 	macro_run check_string_plus_banned
 	macro_run check_double_equals

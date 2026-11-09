@@ -1,0 +1,75 @@
+# `not` takes exactly one bool value: a name, a call, a list item (`flags at 2`) or a
+# parenthesised group. Two mistakes slip through to rustc otherwise:
+#   - `not a > b` (or <, >=, <=, +, -, *, /, %): `not` binds tighter than the operator, so
+#     it means `(not a) > b` and the generated `!a > b` fails to compile.
+#   - `not count` on a number: Rust's `!` flips the bits of an int instead of negating it.
+# check_not_is_order handles the `is` form separately.
+macro check_not_operand
+	# ex: not {x} — kw_pos+1 grabs the token after `not`
+	fn int locate_next_token(int kw_pos)
+		return kw_pos + 1
+
+	# ex: x {is} not y — `is not` is one two-word operator, not a standalone `not`
+	fn int locate_previous_token(int kw_pos)
+		return kw_pos - 1
+
+	bool is_is_not = false
+
+	if pos > 0
+		int before_pos = locate_previous_token(pos)
+		Token before_token = tokens at before_pos
+		(kind) in before_token
+		is_is_not = kind is KW_IS
+
+	if cur_kind is KW_NOT and not is_is_not
+		int operand_pos = locate_next_token(pos)
+
+		if operand_pos < token_count
+			Token operand_token = tokens at operand_pos
+			(kind, value) in operand_token
+			string operand_kind = kind
+			string operand_value = value
+			int operand_end = operand_pos
+			bool is_bare_name = false
+
+			if operand_kind is LPAREN
+				operand_end = find_matching_rparen(tokens, operand_pos)
+			else if operand_kind is IDENT
+				is_bare_name = true
+				int peek_pos = locate_next_token(operand_pos)
+
+				if peek_pos < token_count
+					Token peek_token = tokens at peek_pos
+					(kind) in peek_token
+
+					# ex: not name{(}x) — a call; the result is checked by rustc, not here
+					if kind is LPAREN
+						is_bare_name = false
+						operand_end = find_matching_rparen(tokens, peek_pos)
+
+					# ex: not flags {at} 2 — a list item, also not checked here
+					if kind is KW_AT
+						is_bare_name = false
+						operand_end = locate_next_token(peek_pos)
+						operand_end = locate_next_token(operand_end)
+						operand_end = operand_end - 1
+
+			bool is_literal = operand_kind is "INT" or operand_kind is FLOAT or operand_kind is STRING
+			bool is_number_var = false
+
+			if is_bare_name
+				is_number_var = list_has(non_bool_var_names, operand_value)
+
+			if is_literal or is_number_var
+				errors at end = val_err(operand_token, lbl_var, rule_not_needs_bool)
+
+			int after_pos = locate_next_token(operand_end)
+
+			if after_pos < token_count
+				Token after_token = tokens at after_pos
+				(kind) in after_token
+				bool is_comparison = kind is "GT" or kind is "LT" or kind is "GTE" or kind is "LTE"
+				bool is_math = kind is PLUS or kind is MINUS or kind is STAR or kind is SLASH or kind is PERCENT
+
+				if is_comparison or is_math
+					errors at end = val_err(operand_token, lbl_var, rule_not_then_operator)

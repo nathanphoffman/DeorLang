@@ -1,0 +1,15 @@
+# multiline_list_test.deor
+# A list literal split over several lines used to emit `/* unknown_primary */` into the Rust.
+# It is now a clear validator error.
+
+shape stringList = list of string
+
+fn stringList split_literal()
+	return ["first",
+		"second"]
+
+fn void main()
+	print("should never reach here")
+
+# expect-error:
+# line 8: variable '[' - a list literal must stay on one line

@@ -1,63 +1,80 @@
+# True when every wanted field name appears in the struct's comma-separated field list.
+fn bool fields_all_present(strList wanted, strList have)
+	int wanted_count = len(wanted)
 
-# Given a set of field names, searches the struct registry for a struct whose field
-# set matches exactly. Used when an anonymous tuple (f1, f2) must resolve to a struct
-# type for construction — both in expressions and in statement-level typed bindings.
-fn string find_struct_for_fields(strList struct_reg, strList fields)
+	for index in range(wanted_count)
+		string field = wanted at index
+		bool found = list_has(have, field)
+
+		if not found
+			return false
+
+	return true
+
+# Names of every struct whose field set is exactly `fields` (order ignored). The struct
+# registry is a flat list of alternating name, "field,field,..." entries.
+# Used when a bare `(f1, f2)` must resolve to a struct for construction.
+fn strList structs_with_exact_fields(strList struct_reg, strList fields)
+	strList matches = empty
 	string comma = ","
-	int input_count = len(fields)
-	int reg_count = len(struct_reg)
-	bool next_is_val = false
-	string cur_name = ""
+	int wanted_count = len(fields)
+	int pair_count = len(struct_reg) / 2
 
-	for index in range(reg_count)
-		string item = struct_reg at index
+	for pair in range(pair_count)
+		int name_index = pair * 2
+		int fields_index = name_index + 1
+		string name = struct_reg at name_index
+		string fields_text = struct_reg at fields_index
+		strList have = s_split(fields_text, comma)
+		bool same_size = len(have) is wanted_count
+		bool all_present = fields_all_present(fields, have)
 
-		if next_is_val
-			strList reg_fields = s_split(item, comma)
-			int reg_count_f = len(reg_fields)
+		if same_size and all_present
+			matches at end = name
 
-			if reg_count_f is input_count
-				bool all_match = true
+	return matches
 
-				for fidx in range(input_count)
-					string field = fields at fidx
-					bool found = list_has(reg_fields, field)
+# Names of every struct that has at least the given fields. Used by `x with (f1, f2)`,
+# where only the overridden fields are visible and the rest come from the source struct.
+fn strList structs_containing_fields(strList struct_reg, strList fields)
+	strList matches = empty
+	string comma = ","
+	int pair_count = len(struct_reg) / 2
 
-					if not found
-						all_match = false
+	for pair in range(pair_count)
+		int name_index = pair * 2
+		int fields_index = name_index + 1
+		string name = struct_reg at name_index
+		string fields_text = struct_reg at fields_index
+		strList have = s_split(fields_text, comma)
+		bool all_present = fields_all_present(fields, have)
 
-				if all_match
-					return cur_name
+		if all_present
+			matches at end = name
 
-			next_is_val = false
-		else
-			cur_name = item
-			next_is_val = true
+	return matches
 
-	return "Unknown"
+# First struct whose field set matches exactly, or "Unknown". Ambiguous matches are
+# rejected earlier by the validator (check_ambiguous_struct_build).
+fn string find_struct_for_fields(strList struct_reg, strList fields)
+	strList matches = structs_with_exact_fields(struct_reg, fields)
+	string unknown = "Unknown"
 
-# Given a single field name, returns the first struct in the registry that contains it.
-# Used by the `with` record-update path where only one override field is visible and
-# the struct type must be inferred to emit `StructName { field, ..source }`.
-fn string find_struct_for_field(strList struct_reg, string field)
-	int reg_count = len(struct_reg)
-	bool next_is_val = false
-	string cur_name = ""
+	if matches is empty
+		return unknown
 
-	for index in range(reg_count)
-		string item = struct_reg at index
+	string first_match = matches at 0
 
-		if next_is_val
-			string comma = ","
-			strList fields = s_split(item, comma)
-			bool has_field = list_has(fields, field)
+	return first_match
 
-			if has_field
-				return cur_name
+# First struct containing all the given fields, or "Unknown". Same validator guarantee.
+fn string find_struct_containing_fields(strList struct_reg, strList fields)
+	strList matches = structs_containing_fields(struct_reg, fields)
+	string unknown = "Unknown"
 
-			next_is_val = false
-		else
-			cur_name = item
-			next_is_val = true
+	if matches is empty
+		return unknown
 
-	return "Unknown"
+	string first_match = matches at 0
+
+	return first_match
