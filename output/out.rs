@@ -1,4 +1,65 @@
 #![allow(warnings)]
+// transpiler-deor/token_kinds.deor
+pub const COMMA: &str = "COMMA";
+pub const DEDENT: &str = "DEDENT";
+pub const EQUALS: &str = "EQUALS";
+pub const FLOAT: &str = "FLOAT";
+pub const IDENT: &str = "IDENT";
+pub const INDENT: &str = "INDENT";
+pub const KW_AND: &str = "KW_AND";
+pub const KW_AS: &str = "KW_AS";
+pub const KW_AT: &str = "KW_AT";
+pub const KW_AVOW: &str = "KW_AVOW";
+pub const KW_BLOCK: &str = "KW_BLOCK";
+pub const KW_BREAK: &str = "KW_BREAK";
+pub const KW_CONST: &str = "KW_CONST";
+pub const KW_CONTINUE: &str = "KW_CONTINUE";
+pub const KW_ELSE: &str = "KW_ELSE";
+pub const KW_EMPTY: &str = "KW_EMPTY";
+pub const KW_END: &str = "KW_END";
+pub const KW_ENUM: &str = "KW_ENUM";
+pub const KW_FALSE: &str = "KW_FALSE";
+pub const KW_FN: &str = "KW_FN";
+pub const KW_FOR: &str = "KW_FOR";
+pub const KW_FUNC: &str = "KW_FUNC";
+pub const KW_IF: &str = "KW_IF";
+pub const KW_IMPORT: &str = "KW_IMPORT";
+pub const KW_IN: &str = "KW_IN";
+pub const KW_IS: &str = "KW_IS";
+pub const KW_LIST: &str = "KW_LIST";
+pub const KW_MACRO: &str = "KW_MACRO";
+pub const KW_MACRO_RUN: &str = "KW_MACRO_RUN";
+pub const KW_MOVE: &str = "KW_MOVE";
+pub const KW_NONE: &str = "KW_NONE";
+pub const KW_NOT: &str = "KW_NOT";
+pub const KW_OF: &str = "KW_OF";
+pub const KW_OR: &str = "KW_OR";
+pub const KW_RAW: &str = "KW_RAW";
+pub const KW_REMOVE: &str = "KW_REMOVE";
+pub const KW_RETURN: &str = "KW_RETURN";
+pub const KW_RUST: &str = "KW_RUST";
+pub const KW_SHAPE: &str = "KW_SHAPE";
+pub const KW_STRUCT: &str = "KW_STRUCT";
+pub const KW_TO: &str = "KW_TO";
+pub const KW_TRUE: &str = "KW_TRUE";
+pub const KW_TYPE: &str = "KW_TYPE";
+pub const KW_UNSAFE_MACRO: &str = "KW_UNSAFE_MACRO";
+pub const KW_UNSAFE_MACRO_RUN: &str = "KW_UNSAFE_MACRO_RUN";
+pub const KW_VALID: &str = "KW_VALID";
+pub const KW_VOID: &str = "KW_VOID";
+pub const KW_WITH: &str = "KW_WITH";
+pub const LBRACKET: &str = "LBRACKET";
+pub const LPAREN: &str = "LPAREN";
+pub const MINUS: &str = "MINUS";
+pub const NEWLINE: &str = "NEWLINE";
+pub const PERCENT: &str = "PERCENT";
+pub const PLUS: &str = "PLUS";
+pub const RBRACKET: &str = "RBRACKET";
+pub const RPAREN: &str = "RPAREN";
+pub const RUST_BLOCK: &str = "RUST_BLOCK";
+pub const SLASH: &str = "SLASH";
+pub const STAR: &str = "STAR";
+pub const STRING: &str = "STRING";
 // transpiler-deor/types.deor
 pub type TokenList = Vec<Token>;
 
@@ -351,67 +412,6 @@ pub fn make_result(code: String, new_pos: i64) -> ParseResult {
 }
 
 pub fn adv_nl_ref(pos: i64, tokens: TokensRef) -> i64 {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/deor_helpers.deor
     let mut token_count: i64 = (tokens.len() as i64);
     if pos < token_count {
@@ -427,67 +427,6 @@ pub fn adv_nl_ref(pos: i64, tokens: TokensRef) -> i64 {
 }
 
 pub fn adv_indent_ref(pos: i64, tokens: TokensRef) -> i64 {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/deor_helpers.deor
     let mut token_count: i64 = (tokens.len() as i64);
     if pos < token_count {
@@ -686,237 +625,176 @@ pub fn scan_number(chars: Vec<String>, char_index: i64, char_count: i64) -> Pars
 
 // transpiler-deor/importer/lexer/word_token.deor
 pub fn word_to_kind(word: String) -> String {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/lexer/word_token.deor
     if word == "fn" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_FN;
+        return "KW_FN".to_string();
     }
     if word == "as" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_AS;
+        return "KW_AS".to_string();
     }
     if word == "return" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_RETURN;
+        return "KW_RETURN".to_string();
     }
     if word == "if" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_IF;
+        return "KW_IF".to_string();
     }
     if word == "else" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_ELSE;
+        return "KW_ELSE".to_string();
     }
     if word == "for" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_FOR;
+        return "KW_FOR".to_string();
     }
     if word == "in" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_IN;
+        return "KW_IN".to_string();
     }
     if word == "break" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_BREAK;
+        return "KW_BREAK".to_string();
     }
     if word == "continue" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_CONTINUE;
+        return "KW_CONTINUE".to_string();
     }
     if word == "and" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_AND;
+        return "KW_AND".to_string();
     }
     if word == "or" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_OR;
+        return "KW_OR".to_string();
     }
     if word == "not" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_NOT;
+        return "KW_NOT".to_string();
     }
     if word == "is" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_IS;
+        return "KW_IS".to_string();
     }
     if word == "true" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_TRUE;
+        return "KW_TRUE".to_string();
     }
     if word == "false" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_FALSE;
+        return "KW_FALSE".to_string();
     }
     if word == "valid" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_VALID;
+        return "KW_VALID".to_string();
     }
     if word == "avow" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_AVOW;
+        return "KW_AVOW".to_string();
     }
     if word == "empty" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_EMPTY;
+        return "KW_EMPTY".to_string();
     }
     if word == "type" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_TYPE;
+        return "KW_TYPE".to_string();
     }
     if word == "struct" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_STRUCT;
+        return "KW_STRUCT".to_string();
     }
     if word == "shape" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_SHAPE;
+        return "KW_SHAPE".to_string();
     }
     if word == "list" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_LIST;
+        return "KW_LIST".to_string();
     }
     if word == "of" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_OF;
+        return "KW_OF".to_string();
     }
     if word == "enum" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_ENUM;
+        return "KW_ENUM".to_string();
     }
     if word == "at" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_AT;
+        return "KW_AT".to_string();
     }
     if word == "remove" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_REMOVE;
+        return "KW_REMOVE".to_string();
     }
     if word == "rust" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_RUST;
+        return "KW_RUST".to_string();
     }
     if word == "void" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_VOID;
+        return "KW_VOID".to_string();
     }
     if word == "with" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_WITH;
+        return "KW_WITH".to_string();
     }
     if word == "move" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_MOVE;
+        return "KW_MOVE".to_string();
     }
     if word == "raw" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_RAW;
+        return "KW_RAW".to_string();
     }
     if word == "macro" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_MACRO;
+        return "KW_MACRO".to_string();
     }
     if word == "macro_run" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_MACRO_RUN;
+        return "KW_MACRO_RUN".to_string();
     }
     if word == "unsafe_macro_run" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_UNSAFE_MACRO_RUN;
+        return "KW_UNSAFE_MACRO_RUN".to_string();
     }
     if word == "unsafe_macro" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_UNSAFE_MACRO;
+        return "KW_UNSAFE_MACRO".to_string();
     }
     if word == "import" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_IMPORT;
+        return "KW_IMPORT".to_string();
     }
     if word == "block" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_BLOCK;
+        return "KW_BLOCK".to_string();
     }
     if word == "const" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_CONST;
+        return "KW_CONST".to_string();
     }
     if word == "end" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_END;
+        return "KW_END".to_string();
     }
     if word == "func" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_FUNC;
+        return "KW_FUNC".to_string();
     }
     if word == "to" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_TO;
+        return "KW_TO".to_string();
     }
     if word == "none" {
         // transpiler-deor/importer/lexer/word_token.deor
-        return KW_NONE;
+        return "KW_NONE".to_string();
     }
-    return IDENT;
+    return "IDENT".to_string();
 }
 
 pub fn scan_word(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
@@ -943,72 +821,11 @@ pub fn scan_word(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseR
 
 // transpiler-deor/importer/lexer/tokenizer.deor
 pub fn tokenize(source: String, path: String) -> Vec<Token> {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/lexer/tokenizer.deor
     let mut tokens: Vec<Token> = Vec::new();
     let mut empty_str: String = "".to_string();
-    let mut kind_newline: String = NEWLINE.clone();
-    let mut kind_dedent: String = DEDENT.clone();
+    let mut kind_newline: String = "NEWLINE".to_string();
+    let mut kind_dedent: String = "DEDENT".to_string();
     let mut kind_eof: String = "EOF".to_string();
     let mut newline: String = "\n".to_string();
     let mut lines: Vec<String> = s_split(source.clone(), newline.clone());
@@ -1038,8 +855,8 @@ pub fn tokenize(source: String, path: String) -> Vec<Token> {
         // macro: emit_indent_or_dedent (transpiler-deor/importer/lexer/macros/emit_indent_or_dedent.deor)
         {
             // transpiler-deor/importer/lexer/macros/emit_indent_or_dedent.deor
-            let mut kind_indent: String = INDENT.clone();
-            let mut kind_dedent: String = DEDENT.clone();
+            let mut kind_indent: String = "INDENT".to_string();
+            let mut kind_dedent: String = "DEDENT".to_string();
             let mut empty_str: String = "".to_string();
             let mut stack_len: i64 = (indent_stack.len() as i64);
             let mut top_idx: i64 = stack_len - 1;
@@ -1073,10 +890,10 @@ pub fn tokenize(source: String, path: String) -> Vec<Token> {
             // macro: collect_rust_block (transpiler-deor/importer/lexer/macros/collect_rust_block.deor)
             {
                 // transpiler-deor/importer/lexer/macros/collect_rust_block.deor
-                let mut kind_kw_rust: String = KW_RUST.clone();
+                let mut kind_kw_rust: String = "KW_RUST".to_string();
                 let mut kw_rust_val: String = "rust".to_string();
-                let mut kind_newline: String = NEWLINE.clone();
-                let mut kind_rust_block: String = RUST_BLOCK.clone();
+                let mut kind_newline: String = "NEWLINE".to_string();
+                let mut kind_rust_block: String = "RUST_BLOCK".to_string();
                 let mut empty_str: String = "".to_string();
                 tokens.push(make_token(kind_kw_rust.clone(), kw_rust_val.clone(), meta.clone()).clone());
                 tokens.push(make_token(kind_newline.clone(), empty_str.clone(), meta.clone()).clone());
@@ -1149,7 +966,7 @@ pub fn tokenize(source: String, path: String) -> Vec<Token> {
             if character == "\"" {
                 // transpiler-deor/importer/lexer/tokenizer.deor
                 let mut string_result: ParseResult = scan_string_literal(chars.clone(), char_index.clone(), char_count.clone());
-                let mut kind_string: String = STRING.clone();
+                let mut kind_string: String = "STRING".to_string();
                 let mut str_val: String = pr_code(string_result.clone());
                 tokens.push(make_token(kind_string.clone(), str_val.clone(), meta.clone()).clone());
                 char_index = pr_pos(string_result.clone());
@@ -1165,7 +982,7 @@ pub fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut is_float: bool = (num_parts.len() as i64) > 1;
                 if is_float {
                     // transpiler-deor/importer/lexer/tokenizer.deor
-                    let mut kind_float: String = FLOAT.clone();
+                    let mut kind_float: String = "FLOAT".to_string();
                     tokens.push(make_token(kind_float.clone(), num_str.clone(), meta.clone()).clone());
                 } else {
                     // transpiler-deor/importer/lexer/tokenizer.deor
@@ -1190,31 +1007,31 @@ pub fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut op_val_gte: String = ">=".to_string();
                 let mut op_kind_lte: String = "LTE".to_string();
                 let mut op_val_lte: String = "<=".to_string();
-                let mut op_kind_plus: String = PLUS.clone();
+                let mut op_kind_plus: String = "PLUS".to_string();
                 let mut op_val_plus: String = "+".to_string();
-                let mut op_kind_minus: String = MINUS.clone();
+                let mut op_kind_minus: String = "MINUS".to_string();
                 let mut op_val_minus: String = "-".to_string();
-                let mut op_kind_star: String = STAR.clone();
+                let mut op_kind_star: String = "STAR".to_string();
                 let mut op_val_star: String = "*".to_string();
-                let mut op_kind_slash: String = SLASH.clone();
+                let mut op_kind_slash: String = "SLASH".to_string();
                 let mut op_val_slash: String = "/".to_string();
-                let mut op_kind_pct: String = PERCENT.clone();
+                let mut op_kind_pct: String = "PERCENT".to_string();
                 let mut op_val_pct: String = "%".to_string();
-                let mut op_kind_eq: String = EQUALS.clone();
+                let mut op_kind_eq: String = "EQUALS".to_string();
                 let mut op_val_eq: String = "=".to_string();
                 let mut op_kind_gt: String = "GT".to_string();
                 let mut op_val_gt: String = ">".to_string();
                 let mut op_kind_lt: String = "LT".to_string();
                 let mut op_val_lt: String = "<".to_string();
-                let mut op_kind_lp: String = LPAREN.clone();
+                let mut op_kind_lp: String = "LPAREN".to_string();
                 let mut op_val_lp: String = "(".to_string();
-                let mut op_kind_rp: String = RPAREN.clone();
+                let mut op_kind_rp: String = "RPAREN".to_string();
                 let mut op_val_rp: String = ")".to_string();
-                let mut op_kind_lb: String = LBRACKET.clone();
+                let mut op_kind_lb: String = "LBRACKET".to_string();
                 let mut op_val_lb: String = "[".to_string();
-                let mut op_kind_rb: String = RBRACKET.clone();
+                let mut op_kind_rb: String = "RBRACKET".to_string();
                 let mut op_val_rb: String = "]".to_string();
-                let mut op_kind_cm: String = COMMA.clone();
+                let mut op_kind_cm: String = "COMMA".to_string();
                 let mut op_val_cm: String = ",".to_string();
                 let mut op_invalid_chars: Vec<String> = vec!["&".to_string(), "|".to_string(), "^".to_string(), "!".to_string(), "{".to_string(), "}".to_string(), ".".to_string(), "~".to_string()];
                 let mut op_peek_idx: i64 = char_index + 1;
@@ -1297,67 +1114,6 @@ pub fn tokenize(source: String, path: String) -> Vec<Token> {
 
 // transpiler-deor/importer/scan.deor
 pub fn scan_import_new(tokens: Vec<Token>, pos: i64) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/scan.deor
     fn locate_path(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -1384,67 +1140,6 @@ pub fn scan_import_new(tokens: Vec<Token>, pos: i64) -> ParseResult {
 }
 
 pub fn scan_import_where(tokens: Vec<Token>, pos: i64) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/scan.deor
     fn locate_replacement(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -1664,67 +1359,6 @@ pub fn replace_t_in_rust_block(content: String, placeholder: String, concrete: S
 }
 
 pub fn apply_t_substitution(tokens: Vec<Token>, placeholder: String, concrete: String) -> Vec<Token> {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/t_substitute.deor
     let mut result: Vec<Token> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
@@ -1801,67 +1435,6 @@ pub fn fatal_missing_import(imp_path: String) {
 }
 
 pub fn load_file(path: String) -> Vec<Token> {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/load.deor
     let mut source: String = f_read(path.clone());
     let mut tok_raw: Vec<Token> = tokenize(source.clone(), path.clone());
@@ -2047,67 +1620,6 @@ pub fn is_pragma_name(name: String) -> bool {
 }
 
 pub fn is_pragma_token(current: Token, previous: Token, earlier: Token) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/pragma_tokens.deor
     let __destructure_src = current.clone();
     let kind = __destructure_src.kind.clone();
@@ -2135,67 +1647,6 @@ pub fn is_pragma_token(current: Token, previous: Token, earlier: Token) -> bool 
 
 // transpiler-deor/importer/dedup.deor
 pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/dedup.deor
     let mut tokens: Vec<Token> = tokens_in.clone();
     // macro: strip_enforce_pragmas (transpiler-deor/importer/macros/strip_enforce_pragmas.deor)
@@ -2926,67 +2377,6 @@ pub fn find_struct_field_str(reg: Vec<String>, name: String) -> String {
 }
 
 pub fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/tokens_validator/arg_helpers.deor
     fn locate_after_move(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -3030,67 +2420,6 @@ pub fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
 }
 
 pub fn find_matching_rparen(tokens: TokensRef, lp_pos: i64) -> i64 {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/tokens_validator/arg_helpers.deor
     fn locate_first_token(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -3120,67 +2449,6 @@ pub fn find_matching_rparen(tokens: TokensRef, lp_pos: i64) -> i64 {
 }
 
 pub fn count_call_args(tokens: TokensRef, lp_pos: i64) -> i64 {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/tokens_validator/arg_helpers.deor
     fn locate_first_token(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -3272,67 +2540,6 @@ pub fn handle_errors(errors: Vec<String>) {
 
 // transpiler-deor/macro_builder/macro_expander.deor
 pub fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Vec<Token> {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/macro_builder/macro_expander.deor
     let mut macros: std::collections::HashMap<String, (Vec<Token>, i32, bool)> = std::collections::HashMap::new();
     let mut result: Vec<Token> = vec![];
@@ -3491,67 +2698,6 @@ pub fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> 
 
 // transpiler-deor/macro_builder/macro_validation.deor
 pub fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/macro_builder/macro_validation.deor
     fn locate_next_token(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -3621,67 +2767,6 @@ pub fn build_macros(raw_tokens: Vec<Token>, enforce_macro_file_depth: i64) -> Ve
 
 // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
 pub fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
     fn locate_prev_token(kw_pos: i64) -> i64 {
         return kw_pos - 1;
@@ -3759,67 +2844,6 @@ pub fn fold_moved_into(acc_vars: Vec<String>, moved_vars: Vec<String>) -> Vec<St
 
 // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
 pub fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_count: i64) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
     let mut newline_pos: i64 = right_paren_pos + 1;
     if newline_pos >= token_count {
@@ -3877,67 +2901,6 @@ pub fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_coun
 
 // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
 pub fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
     let mut depth: i64 = 0;
     let mut scan_pos: i64 = start.clone();
@@ -3984,67 +2947,6 @@ pub struct VoidFnFrame {
 pub type VoidFrameStack = Vec<VoidFnFrame>;
 
 pub fn validate_tokens(tokens: TokensRef) {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/tokens_validator/tokens_validation.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut errors: Vec<String> = Vec::new();
@@ -4187,7 +3089,7 @@ pub fn validate_tokens(tokens: TokensRef) {
         }
         if depth > 0 {
             // transpiler-deor/tokens_validator/macros/brackets_parens/check_paren_balance.deor
-            let mut kind: String = LPAREN.clone();
+            let mut kind: String = "LPAREN".to_string();
             let mut value: String = "(".to_string();
             let mut line: i64 = open_line.clone();
             let mut file: String = open_file.clone();
@@ -4231,7 +3133,7 @@ pub fn validate_tokens(tokens: TokensRef) {
         }
         if depth > 0 {
             // transpiler-deor/tokens_validator/macros/brackets_parens/check_bracket_balance.deor
-            let mut kind: String = LBRACKET.clone();
+            let mut kind: String = "LBRACKET".to_string();
             let mut value: String = "[".to_string();
             let mut line: i64 = open_line.clone();
             let mut file: String = open_file.clone();
@@ -4246,10 +3148,11 @@ pub fn validate_tokens(tokens: TokensRef) {
     let MAX_FN_PARAMS: i64 = 3;
     let SPACES_PER_INDENT: i64 = 4;
     // macro: define_lookup_tables (transpiler-deor/tokens_validator/macros/define_lookup_tables.deor)
-    let mut forbidden_in_parens: Vec<String> = vec![KW_LIST.clone(), KW_STRUCT.clone(), KW_SHAPE.clone(), KW_ENUM.clone(), KW_TYPE.clone(), KW_FN.clone(), KW_OF.clone(), KW_FOR.clone(), KW_IF.clone(), KW_ELSE.clone(), KW_RETURN.clone(), KW_BREAK.clone(), KW_CONTINUE.clone(), KW_REMOVE.clone(), KW_RUST.clone(), KW_IMPORT.clone(), KW_MACRO.clone(), KW_UNSAFE_MACRO.clone(), KW_VOID.clone(), KW_RAW.clone()];
-    let mut reserved_keywords: Vec<String> = vec![KW_AND.clone(), KW_AS.clone(), KW_AT.clone(), KW_AVOW.clone(), KW_BLOCK.clone(), KW_BREAK.clone(), KW_CONST.clone(), KW_CONTINUE.clone(), KW_ELSE.clone(), KW_EMPTY.clone(), KW_ENUM.clone(), KW_FALSE.clone(), KW_FN.clone(), KW_FOR.clone(), KW_FUNC.clone(), KW_IF.clone(), KW_IMPORT.clone(), KW_IN.clone(), KW_IS.clone(), KW_LIST.clone(), KW_MACRO.clone(), KW_MACRO_RUN.clone(), KW_UNSAFE_MACRO.clone(), KW_UNSAFE_MACRO_RUN.clone(), KW_MOVE.clone(), KW_NONE.clone(), KW_NOT.clone(), KW_OF.clone(), KW_OR.clone(), KW_RAW.clone(), KW_REMOVE.clone(), KW_RETURN.clone(), KW_RUST.clone(), KW_SHAPE.clone(), KW_STRUCT.clone(), KW_TO.clone(), KW_TRUE.clone(), KW_TYPE.clone(), KW_VALID.clone(), KW_VOID.clone(), KW_WITH.clone()];
+    let mut forbidden_in_parens: Vec<String> = vec!["KW_LIST".to_string(), "KW_STRUCT".to_string(), "KW_SHAPE".to_string(), "KW_ENUM".to_string(), "KW_TYPE".to_string(), "KW_FN".to_string(), "KW_OF".to_string(), "KW_FOR".to_string(), "KW_IF".to_string(), "KW_ELSE".to_string(), "KW_RETURN".to_string(), "KW_BREAK".to_string(), "KW_CONTINUE".to_string(), "KW_REMOVE".to_string(), "KW_RUST".to_string(), "KW_IMPORT".to_string(), "KW_MACRO".to_string(), "KW_UNSAFE_MACRO".to_string(), "KW_VOID".to_string(), "KW_RAW".to_string()];
+    let mut reserved_keywords: Vec<String> = vec!["KW_AND".to_string(), "KW_AS".to_string(), "KW_AT".to_string(), "KW_AVOW".to_string(), "KW_BLOCK".to_string(), "KW_BREAK".to_string(), "KW_CONST".to_string(), "KW_CONTINUE".to_string(), "KW_ELSE".to_string(), "KW_EMPTY".to_string(), "KW_ENUM".to_string(), "KW_FALSE".to_string(), "KW_FN".to_string(), "KW_FOR".to_string(), "KW_FUNC".to_string(), "KW_IF".to_string(), "KW_IMPORT".to_string(), "KW_IN".to_string(), "KW_IS".to_string(), "KW_LIST".to_string(), "KW_MACRO".to_string(), "KW_MACRO_RUN".to_string(), "KW_UNSAFE_MACRO".to_string(), "KW_UNSAFE_MACRO_RUN".to_string(), "KW_MOVE".to_string(), "KW_NONE".to_string(), "KW_NOT".to_string(), "KW_OF".to_string(), "KW_OR".to_string(), "KW_RAW".to_string(), "KW_REMOVE".to_string(), "KW_RETURN".to_string(), "KW_RUST".to_string(), "KW_SHAPE".to_string(), "KW_STRUCT".to_string(), "KW_TO".to_string(), "KW_TRUE".to_string(), "KW_TYPE".to_string(), "KW_VALID".to_string(), "KW_VOID".to_string(), "KW_WITH".to_string()];
     let mut rust_only_keywords: Vec<String> = vec!["abstract".to_string(), "async".to_string(), "await".to_string(), "become".to_string(), "box".to_string(), "crate".to_string(), "do".to_string(), "dyn".to_string(), "extern".to_string(), "final".to_string(), "gen".to_string(), "impl".to_string(), "let".to_string(), "loop".to_string(), "match".to_string(), "mod".to_string(), "mut".to_string(), "override".to_string(), "priv".to_string(), "pub".to_string(), "ref".to_string(), "self".to_string(), "Self".to_string(), "static".to_string(), "super".to_string(), "trait".to_string(), "try".to_string(), "typeof".to_string(), "unsafe".to_string(), "unsized".to_string(), "use".to_string(), "virtual".to_string(), "where".to_string(), "while".to_string(), "yield".to_string()];
     let mut builtin_names: Vec<String> = vec!["print".to_string(), "crash".to_string(), "len".to_string(), "range".to_string(), "args".to_string(), "input".to_string()];
+    let mut token_kind_names: Vec<String> = vec!["COMMA".to_string(), "DEDENT".to_string(), "EQUALS".to_string(), "FLOAT".to_string(), "IDENT".to_string(), "INDENT".to_string(), "KW_AND".to_string(), "KW_AS".to_string(), "KW_AT".to_string(), "KW_AVOW".to_string(), "KW_BLOCK".to_string(), "KW_BREAK".to_string(), "KW_CONST".to_string(), "KW_CONTINUE".to_string(), "KW_ELSE".to_string(), "KW_EMPTY".to_string(), "KW_END".to_string(), "KW_ENUM".to_string(), "KW_FALSE".to_string(), "KW_FN".to_string(), "KW_FOR".to_string(), "KW_FUNC".to_string(), "KW_IF".to_string(), "KW_IMPORT".to_string(), "KW_IN".to_string(), "KW_IS".to_string(), "KW_LIST".to_string(), "KW_MACRO".to_string(), "KW_MACRO_RUN".to_string(), "KW_MOVE".to_string(), "KW_NONE".to_string(), "KW_NOT".to_string(), "KW_OF".to_string(), "KW_OR".to_string(), "KW_RAW".to_string(), "KW_REMOVE".to_string(), "KW_RETURN".to_string(), "KW_RUST".to_string(), "KW_SHAPE".to_string(), "KW_STRUCT".to_string(), "KW_TO".to_string(), "KW_TRUE".to_string(), "KW_TYPE".to_string(), "KW_UNSAFE_MACRO".to_string(), "KW_UNSAFE_MACRO_RUN".to_string(), "KW_VALID".to_string(), "KW_VOID".to_string(), "KW_WITH".to_string(), "LBRACKET".to_string(), "LPAREN".to_string(), "MINUS".to_string(), "NEWLINE".to_string(), "PERCENT".to_string(), "PLUS".to_string(), "RBRACKET".to_string(), "RPAREN".to_string(), "RUST_BLOCK".to_string(), "SLASH".to_string(), "STAR".to_string(), "STRING".to_string()];
     let mut primitive_type_names: Vec<String> = vec!["string".to_string(), "int".to_string(), "float".to_string(), "bool".to_string()];
     // macro: prescan_shapes_and_validator_types (transpiler-deor/tokens_validator/macros/prescan/prescan_shapes_and_validator_types.deor)
     let mut func_shape_names: Vec<String> = Vec::new();
@@ -6967,7 +5870,7 @@ pub fn validate_tokens(tokens: TokensRef) {
             }
             // transpiler-deor/tokens_validator/macros/declarations/check_struct_decl.deor
             let mut validate_indent_offset: i64 = 1;
-            let mut keyword: String = KW_STRUCT.clone();
+            let mut keyword: String = "KW_STRUCT".to_string();
             let mut lbl: String = lbl_struct.clone();
             let mut rule: String = rule_pascal.clone();
             let mut test_rule: fn(String) -> bool = is_pascal.clone();
@@ -7011,7 +5914,7 @@ pub fn validate_tokens(tokens: TokensRef) {
             fn locate_enum_type_keyword(kw_pos: i64) -> i64 {
                 return kw_pos + 1;
             }
-            let mut keyword: String = KW_ENUM.clone();
+            let mut keyword: String = "KW_ENUM".to_string();
             let mut lbl: String = lbl_enum.clone();
             let mut rule: String = rule_pascal.clone();
             let mut test_rule: fn(String) -> bool = is_pascal.clone();
@@ -7253,7 +6156,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                 }
             }
             // transpiler-deor/tokens_validator/macros/declarations/check_shape_decl.deor
-            let mut keyword: String = KW_SHAPE.clone();
+            let mut keyword: String = "KW_SHAPE".to_string();
             let mut lbl: String = lbl_shape.clone();
             let mut rule: String = rule_camel.clone();
             let mut test_rule: fn(String) -> bool = is_camel.clone();
@@ -7408,7 +6311,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                 }
             }
             // transpiler-deor/tokens_validator/macros/declarations/check_type_decl.deor
-            let mut keyword: String = KW_TYPE.clone();
+            let mut keyword: String = "KW_TYPE".to_string();
             let mut lbl: String = lbl_type.clone();
             let mut rule: String = rule_pascal.clone();
             let mut test_rule: fn(String) -> bool = is_pascal.clone();
@@ -7848,7 +6751,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                 }
             }
             // transpiler-deor/tokens_validator/macros/declarations/check_fn_decl.deor
-            let mut keyword: String = KW_FN.clone();
+            let mut keyword: String = "KW_FN".to_string();
             let mut lbl: String = lbl_fn.clone();
             let mut rule: String = rule_snake.clone();
             let mut test_rule: fn(String) -> bool = is_snake.clone();
@@ -9028,6 +7931,10 @@ pub fn validate_tokens(tokens: TokensRef) {
                         }
                         if !known {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
+                            known = list_has(token_kind_names.clone(), cur_val.clone());
+                        }
+                        if !known {
+                            // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
                             errors.push(val_err(tok.clone(), lbl_var.clone(), rule_undefined_var.clone()).clone());
                         }
                     }
@@ -9366,67 +8273,6 @@ pub fn render_rust_type(type_name: String) -> String {
 
 // transpiler-deor/registry/struct.deor
 pub fn skip_to_block_start(tokens: TokensRef, start: i64) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/struct.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut cur: i64 = start.clone();
@@ -9445,67 +8291,6 @@ pub fn skip_to_block_start(tokens: TokensRef, start: i64) -> ParseResult {
 }
 
 pub fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/struct.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut fields: Vec<String> = Vec::new();
@@ -9541,67 +8326,6 @@ pub fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
 }
 
 pub fn try_struct_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/struct.deor
     fn locate_struct_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -9639,67 +8363,6 @@ pub fn try_struct_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
 
 // transpiler-deor/registry/shape.deor
 pub fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/shape.deor
     fn locate_shape_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -9881,67 +8544,6 @@ pub fn ps_new_pos(scan: PairsScan) -> i64 {
 }
 
 pub fn collect_variant_pairs(tokens: TokensRef, start: i64, rust_name: String) -> PairsScan {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/enum.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut pairs: Vec<String> = Vec::new();
@@ -9974,67 +8576,6 @@ pub fn collect_variant_pairs(tokens: TokensRef, start: i64, rust_name: String) -
 }
 
 pub fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: String) -> PairsScan {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/enum.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut pairs: Vec<String> = Vec::new();
@@ -10085,67 +8626,6 @@ pub fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: Str
 }
 
 pub fn try_enum_entry(tokens: TokensRef, pos: i64) -> EnumScan {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/enum.deor
     fn locate_type_or_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -10253,67 +8733,6 @@ pub fn try_type_entry(tokens: TokensRef, pos: i64) -> Reg3Scan {
 }
 
 pub fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) -> Vec<String> {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/validator_type.deor
     let mut result: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
@@ -10350,67 +8769,6 @@ pub fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) ->
 }
 
 pub fn collect_validator_fn_returns(tokens: TokensRef, type_reg: Vec<String>) -> Vec<String> {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/validator_type.deor
     fn locate_fn_name(decl_pos: i64) -> i64 {
         return decl_pos + 2;
@@ -10496,67 +8854,6 @@ pub fn resolve_type(type_name: String, ctx: RcCtx) -> String {
 
 // transpiler-deor/registry/mut_scan.deor
 pub fn find_block_end_ref(tokens: TokensRef, indent_pos: i64) -> i64 {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/mut_scan.deor
     fn locate_block_body_start(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -10589,67 +8886,6 @@ pub fn find_block_end_ref(tokens: TokensRef, indent_pos: i64) -> i64 {
 }
 
 pub fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<String> {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/mut_scan.deor
     let mut result: Vec<String> = Vec::new();
     let mut const_names: Vec<String> = Vec::new();
@@ -10727,67 +8963,6 @@ pub fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<St
 
 // transpiler-deor/registry/registry.deor
 pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/registry/registry.deor
     let mut struct_reg: Vec<String> = Vec::new();
     let mut shape_reg: Vec<String> = Vec::new();
@@ -11016,67 +9191,6 @@ pub fn cloned_field_pairs(fields: Vec<String>) -> String {
 }
 
 pub fn is_move_with(tokens: TokensRef, move_pos: i64) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut source_pos: i64 = move_pos + 1;
@@ -11104,67 +9218,6 @@ pub fn is_move_with(tokens: TokensRef, move_pos: i64) -> bool {
 
 // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
 pub fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
     let mut arg_codes: Vec<String> = Vec::new();
     let mut cur: i64 = pos.clone();
@@ -11259,67 +9312,6 @@ pub fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
 pub fn gen_list_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
     let mut item_codes: Vec<String> = Vec::new();
     let mut cur: i64 = pos.clone();
@@ -11387,67 +9379,6 @@ pub fn gen_list_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 }
 
 pub fn gen_join_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
     let mut item_codes: Vec<String> = Vec::new();
     let mut cur: i64 = pos.clone();
@@ -11527,67 +9458,6 @@ pub fn gen_unary_method(args_pos: i64, suffix: String, ctx: RcCtx) -> ParseResul
 }
 
 pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/primary.deor
     fn locate_next_token(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -11974,67 +9844,6 @@ pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/expr/expr.deor
 pub fn is_binary_op(kind: String) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/expr.deor
     if kind == PLUS {
         // transpiler-deor/codegen/decl/stmt/expr/expr.deor
@@ -12125,67 +9934,6 @@ pub fn map_op(operator: String) -> String {
 }
 
 pub fn segment_has_float(tokens: TokensRef, start: i64) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/expr.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut scan: i64 = start.clone();
@@ -12235,67 +9983,6 @@ pub fn segment_has_float(tokens: TokensRef, start: i64) -> bool {
 }
 
 pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/expr/expr.deor
     let mut token_count: i64 = (tokens.len() as i64);
     // macro: expr_float_prescan (transpiler-deor/codegen/decl/stmt/expr/macros/expr_float_prescan.deor)
@@ -12475,67 +10162,6 @@ pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/helpers.deor
 pub fn emit_val(val_code: String, val_kind: String) -> String {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // macro: rust_strings (transpiler-deor/codegen/rust_strings.deor)
     let RS_IND: String = "    ".to_string();
     let RS_NL: String = "\n".to_string();
@@ -12571,67 +10197,6 @@ pub fn emit_val(val_code: String, val_kind: String) -> String {
 }
 
 pub fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_reg: Vec<String>) -> String {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/helpers.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut paren_pos: i64 = val_pos + 1;
@@ -12656,67 +10221,6 @@ pub fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_
 }
 
 pub fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> String {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/helpers.deor
     fn locate_after_value(anchor: i64) -> i64 {
         return anchor + 1;
@@ -12756,67 +10260,6 @@ pub fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> 
 }
 
 pub fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/helpers.deor
     let mut depth: i64 = 0;
     let mut scan: i64 = start.clone();
@@ -12849,67 +10292,6 @@ pub fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
 
 // transpiler-deor/codegen/decl/stmt/destructure.deor
 pub fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // macro: initialize_gen_destructure (transpiler-deor/codegen/decl/stmt/macros/initialize_gen_destructure.deor)
     fn locate_first_field(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -13282,67 +10664,6 @@ pub fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 pub fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // macro: initialize_gen_destructure (transpiler-deor/codegen/decl/stmt/macros/initialize_gen_destructure.deor)
     fn locate_first_field(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -13464,67 +10785,6 @@ pub fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/block.deor
 pub fn gen_block(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/block.deor
     let tokens = ctx.tokens.clone();
     let mut stmts: Vec<String> = Vec::new();
@@ -13655,67 +10915,6 @@ pub fn gen_if_branch(cond_pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 }
 
 pub fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/if.deor
     fn locate_if_cond(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -13823,67 +11022,6 @@ pub fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/for.deor
 pub fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/for.deor
     fn locate_next_token(anchor: i64) -> i64 {
         return anchor + 1;
@@ -14076,67 +11214,6 @@ pub fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/reassign.deor
 pub fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/reassign.deor
     fn locate_next_token(anchor: i64) -> i64 {
         return anchor + 1;
@@ -14209,67 +11286,6 @@ pub fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/as_binding.deor
 pub fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/as_binding.deor
     fn locate_after_as(kw_pos: i64) -> i64 {
         return kw_pos + 2;
@@ -14603,67 +11619,6 @@ pub fn gen_call_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/list_mutation.deor
 pub fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/list_mutation.deor
     fn locate_next_token(anchor: i64) -> i64 {
         return anchor + 1;
@@ -14788,67 +11743,6 @@ pub fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/stmt/typed_binding.deor
 pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/typed_binding.deor
     fn locate_var_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -15359,67 +12253,6 @@ pub fn cur_skip_to_body_ref(cur: TokenCursor, tokens: TokensRef) -> TokenCursor 
 
 // transpiler-deor/codegen/decl/stmt/stmt.deor
 pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/stmt/stmt.deor
     fn locate_next_token(anchor: i64) -> i64 {
         return anchor + 1;
@@ -15809,67 +12642,6 @@ pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/struct.deor
 pub fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/struct.deor
     fn locate_struct_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -15939,67 +12711,6 @@ pub fn gen_struct_decl(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
 
 // transpiler-deor/codegen/decl/enum.deor
 pub fn gen_enum_decl(tokens: TokensRef, pos: i64) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/enum.deor
     fn locate_enum_type_or_name_slot(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -16105,67 +12816,6 @@ pub fn gen_func_shape_code(rust_name: String, rust_in: String, rust_out: String)
 }
 
 pub fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/shape.deor
     fn locate_shape_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -16266,67 +12916,6 @@ pub fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
 
 // transpiler-deor/codegen/decl/validator_type.deor
 pub fn gen_type_decl(mut tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/validator_type.deor
     fn locate_type_name(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -16455,67 +13044,6 @@ pub fn gen_type_decl(mut tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult
 
 // transpiler-deor/codegen/decl/function.deor
 pub fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/decl/function.deor
     fn locate_fn_return_type(kw_pos: i64) -> i64 {
         return kw_pos + 1;
@@ -16761,67 +13289,6 @@ pub fn gen_raw_decl(tokens: TokensRef, pos: i64) -> ParseResult {
 
 // transpiler-deor/codegen/codegen.deor
 pub fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
     // transpiler-deor/codegen/codegen.deor
     fn locate_rust_block_content(kw_pos: i64) -> i64 {
         return kw_pos + 2;

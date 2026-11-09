@@ -38,7 +38,7 @@ macro check_paren_balance
 		scan_i = scan_i + 1
 
 	if depth > 0
-		string kind = LPAREN
+		string kind = "LPAREN"
 		string value = "("
 		int line = open_line
 		string file = open_file

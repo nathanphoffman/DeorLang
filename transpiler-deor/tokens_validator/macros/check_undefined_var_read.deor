@@ -131,4 +131,7 @@ macro check_undefined_var_read
 			known = list_has(builtin_names, cur_val)
 
 		if not known
+			known = list_has(token_kind_names, cur_val)
+
+		if not known
 			errors at end = val_err(tok, lbl_var, rule_undefined_var)

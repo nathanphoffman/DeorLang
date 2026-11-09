@@ -31,7 +31,7 @@ macro check_bracket_balance
 		scan_i = scan_i + 1
 
 	if depth > 0
-		string kind = LBRACKET
+		string kind = "LBRACKET"
 		string value = "["
 		int line = open_line
 		string file = open_file
