@@ -3,7 +3,7 @@
 # separators (1_000_000 becomes "1000000"). If a decimal point followed by digits
 # is found, includes those in the result. The caller distinguishes int from float
 # by checking whether the returned string contains a ".".
-fn ParseResult scan_number(strList chars, int char_index, int char_count)
+fn ParseResult scan_number(CharsRef chars, int char_index, int char_count)
 	string first_char = chars at char_index
 	string empty_str = ""
 	string num = s_cat(empty_str, first_char)

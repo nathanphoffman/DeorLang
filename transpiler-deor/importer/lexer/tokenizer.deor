@@ -43,7 +43,8 @@ fn tokenList tokenize(string source, string path)
 
 			continue
 
-		strList chars = c_chars(content)
+		strList line_chars = c_chars(content)
+		CharsRef chars = chars_wrap(move line_chars)
 		int char_count = len(chars)
 		int char_index = 0
 

@@ -133,6 +133,9 @@ pub struct DedupResult {
 use std::rc::Rc;
 type TokensRef = Rc<Vec<Token>>;
 type RcCtx = Rc<GenCtx>;
+// One line's characters, shared by the lexer's scan_* functions without copying the list per call.
+type CharsRef = Rc<Vec<String>>;
+fn chars_wrap(chars: Vec<String>) -> CharsRef { Rc::new(chars) }
 fn tokens_wrap(t: Vec<Token>) -> TokensRef { Rc::new(t) }
 fn make_rctx(ctx: GenCtx) -> RcCtx { Rc::new(ctx) }
 fn now_ms() -> i64 { std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as i64 }
@@ -514,7 +517,7 @@ pub fn count_tabs(line: String) -> i64 {
 }
 
 // transpiler-deor/importer/lexer/string_literal.deor
-pub fn scan_string_literal(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
+pub fn scan_string_literal(chars: CharsRef, char_index: i64, char_count: i64) -> ParseResult {
     // transpiler-deor/importer/lexer/string_literal.deor
     let mut val: String = "".to_string();
     let mut escape_next: bool = false;
@@ -566,7 +569,7 @@ pub fn scan_string_literal(chars: Vec<String>, char_index: i64, char_count: i64)
 }
 
 // transpiler-deor/importer/lexer/number_literal.deor
-pub fn scan_number(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
+pub fn scan_number(chars: CharsRef, char_index: i64, char_count: i64) -> ParseResult {
     // transpiler-deor/importer/lexer/number_literal.deor
     let mut first_char: String = chars[char_index as usize].clone();
     let mut empty_str: String = "".to_string();
@@ -806,7 +809,7 @@ pub fn word_to_kind(word: String) -> String {
     return "IDENT".to_string();
 }
 
-pub fn scan_word(chars: Vec<String>, char_index: i64, char_count: i64) -> ParseResult {
+pub fn scan_word(chars: CharsRef, char_index: i64, char_count: i64) -> ParseResult {
     // transpiler-deor/importer/lexer/word_token.deor
     let mut first_char: String = chars[char_index as usize].clone();
     let mut empty_str: String = "".to_string();
@@ -957,7 +960,8 @@ pub fn tokenize(source: String, path: String) -> Vec<Token> {
             // transpiler-deor/importer/lexer/tokenizer.deor
             continue;
         }
-        let mut chars: Vec<String> = c_chars(content.clone());
+        let mut line_chars: Vec<String> = c_chars(content.clone());
+        let mut chars: CharsRef = chars_wrap(line_chars);
         let mut char_count: i64 = (chars.len() as i64);
         let mut char_index: i64 = 0;
         while char_index < char_count {

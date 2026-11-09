@@ -2,7 +2,7 @@
 # Scans a double-quoted string literal starting at char_index (the opening quote).
 # Resolves escape sequences: \n, \t, \\, \". Returns the unescaped string content
 # and the position of the first character after the closing quote.
-fn ParseResult scan_string_literal(strList chars, int char_index, int char_count)
+fn ParseResult scan_string_literal(CharsRef chars, int char_index, int char_count)
 	string val = ""
 	bool escape_next = false
 	int str_start = char_index + 1

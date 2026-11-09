@@ -76,6 +76,9 @@ rust
 	use std::rc::Rc;
 	type TokensRef = Rc<Vec<Token>>;
 	type RcCtx = Rc<GenCtx>;
+	// One line's characters, shared by the lexer's scan_* functions without copying the list per call.
+	type CharsRef = Rc<Vec<String>>;
+	fn chars_wrap(chars: Vec<String>) -> CharsRef { Rc::new(chars) }
 	fn tokens_wrap(t: Vec<Token>) -> TokensRef { Rc::new(t) }
 	fn make_rctx(ctx: GenCtx) -> RcCtx { Rc::new(ctx) }
 	fn now_ms() -> i64 { std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_millis() as i64 }
@@ -97,3 +100,4 @@ rust
 raw TokensRef
 raw RcCtx
 raw NameSet
+raw CharsRef

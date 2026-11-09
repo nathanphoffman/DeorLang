@@ -139,7 +139,7 @@ fn string word_to_kind(string word)
 
 	return "IDENT"
 
-fn ParseResult scan_word(strList chars, int char_index, int char_count)
+fn ParseResult scan_word(CharsRef chars, int char_index, int char_count)
 	string first_char = chars at char_index
 	string empty_str = ""
 	string word = s_cat(empty_str, first_char)
