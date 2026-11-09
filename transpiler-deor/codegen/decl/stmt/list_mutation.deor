@@ -22,7 +22,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 	unsafe_macro_run rust_strings
 	string pad = s_repeat(RS_IND, depth)
 	Token name_token = tokens at pos
-	(value) in name_token
+	move (value) in name_token
 	string ident_name = value
 	int next_pos = locate_next_token(pos)
 	Token next_token = tokens at next_pos
@@ -34,13 +34,13 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 
 		if after_at < token_count
 			Token at_next_token = tokens at after_at
-			(kind, value) in at_next_token
+			move (kind, value) in at_next_token
 
 			if kind is KW_END
 				int val_pos = locate_value_after_end(after_at)
 				unsafe_macro_run gen_expr_r
 				Token val_tok = tokens at val_pos
-				(kind) in val_tok
+				move (kind) in val_tok
 				string push_val = emit_val(val_code, kind)
 				string push_prefix = ".push("
 				string push_code = s_join([pad, ident_name, push_prefix, push_val, RS_RP_SC])
@@ -53,7 +53,7 @@ fn ParseResult gen_list_mutation_stmt(int pos, int depth, RcCtx ctx)
 			int val_pos = val_end + 1
 			unsafe_macro_run gen_expr_r
 			Token val_tok = tokens at val_pos
-			(kind) in val_tok
+			move (kind) in val_tok
 			string idx_val = emit_val(val_code, kind)
 			string index_open = "["
 			string index_mid = " as usize] = "

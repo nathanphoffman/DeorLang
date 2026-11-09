@@ -16,7 +16,7 @@ macro check_multiline_list
 				break
 
 			Token scan_token = tokens at scan_pos
-			(kind) in scan_token
+			move (kind) in scan_token
 
 			if kind is LBRACKET
 				depth = depth + 1

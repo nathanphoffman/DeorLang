@@ -18,7 +18,7 @@ macro check_with_parens
 		if pos >= 3
 			int move_pos = pos - 2
 			Token move_token = tokens at move_pos
-			(kind) in move_token
+			move (kind) in move_token
 
 			if kind is KW_MOVE
 				source_gap = 3
@@ -26,7 +26,7 @@ macro check_with_parens
 		if pos >= source_gap + 1
 			int eq_pos = pos - source_gap
 			Token eq_token = tokens at eq_pos
-			(kind) in eq_token
+			move (kind) in eq_token
 
 			if kind is EQUALS
 				bool is_typed_decl = false
@@ -35,7 +35,7 @@ macro check_with_parens
 				if pos >= type_gap
 					int type_pos = pos - type_gap
 					Token type_token = tokens at type_pos
-					(kind) in type_token
+					move (kind) in type_token
 					is_typed_decl = kind is IDENT
 
 				if not is_typed_decl

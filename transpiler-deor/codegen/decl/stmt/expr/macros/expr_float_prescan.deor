@@ -11,7 +11,7 @@ unsafe_macro expr_float_prescan
 
 	for if pre_scan < token_count
 		Token pre_tok = tokens at pre_scan
-		(kind) in pre_tok
+		move (kind) in pre_tok
 
 		if kind is FLOAT
 			expr_has_float = true

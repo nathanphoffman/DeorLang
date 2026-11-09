@@ -105,18 +105,18 @@ fn bool is_move_with(TokensRef tokens, int move_pos)
 		return false
 
 	Token move_token = tokens at move_pos
-	(kind) in move_token
+	move (kind) in move_token
 
 	if kind is not KW_MOVE
 		return false
 
 	Token source_token = tokens at source_pos
-	(kind) in source_token
+	move (kind) in source_token
 
 	if kind is not "IDENT"
 		return false
 
 	Token with_token = tokens at with_pos
-	(kind) in with_token
+	move (kind) in with_token
 
 	return kind is KW_WITH

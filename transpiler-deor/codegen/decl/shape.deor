@@ -37,9 +37,9 @@ fn ParseResult gen_shape_decl(TokensRef tokens, int pos)
 	int form_pos = locate_shape_form(pos)
 	Token name_token = tokens at name_pos
 	Token form_token = tokens at form_pos
-	(value) in name_token
+	move (value) in name_token
 	string shape_name = value
-	(kind) in form_token
+	move (kind) in form_token
 	string rust_name = s_pascal(shape_name)
 	macro_run shape_list
 	macro_run shape_func

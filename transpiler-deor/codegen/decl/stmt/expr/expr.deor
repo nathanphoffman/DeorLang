@@ -125,7 +125,7 @@ fn ParseResult gen_expr(TokensRef tokens, int pos, RcCtx ctx)
 
 	for if cur_pos < token_count
 		Token operator_token = tokens at cur_pos
-		(kind, value) in operator_token
+		move (kind, value) in operator_token
 
 		if not is_binary_op(kind)
 			break

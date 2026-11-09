@@ -21,7 +21,7 @@ macro prescan_collect_type_names
 
 		if shape_name_pos < token_count
 			Token shape_name_token = tokens at shape_name_pos
-			(kind, value) in shape_name_token
+			move (kind, value) in shape_name_token
 
 			if kind is IDENT
 				declared_type_names at end = value
@@ -31,7 +31,7 @@ macro prescan_collect_type_names
 
 		if raw_name_pos < token_count
 			Token raw_name_token = tokens at raw_name_pos
-			(kind, value) in raw_name_token
+			move (kind, value) in raw_name_token
 
 			if kind is IDENT
 				# a top-level `raw TypeName` declaration is followed directly by NEWLINE —
@@ -41,7 +41,7 @@ macro prescan_collect_type_names
 
 				if after_name_pos < token_count
 					Token after_name_token = tokens at after_name_pos
-					(kind) in after_name_token
+					move (kind) in after_name_token
 
 					if kind is NEWLINE
 						declared_type_names at end = value

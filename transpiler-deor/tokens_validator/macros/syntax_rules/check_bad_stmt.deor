@@ -17,9 +17,9 @@ macro check_bad_stmt
 		if third_pos < token_count
 			Token second_token = tokens at second_pos
 			Token third_token = tokens at third_pos
-			(kind) in second_token
+			move (kind) in second_token
 			string second_kind = kind
-			(kind) in third_token
+			move (kind) in third_token
 			string third_kind = kind
 
 			if second_kind is IDENT

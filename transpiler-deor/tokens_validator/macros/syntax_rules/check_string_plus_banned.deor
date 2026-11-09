@@ -28,10 +28,10 @@ macro check_string_plus_banned
 				int left_pos = locate_prev_token(pos)
 				Token left_token = tokens at left_pos
 				Token right_token = tokens at right_pos
-				(kind, value) in left_token
+				move (kind, value) in left_token
 				string left_kind = kind
 				string left_value = value
-				(kind, value) in right_token
+				move (kind, value) in right_token
 				string right_kind = kind
 				string right_value = value
 

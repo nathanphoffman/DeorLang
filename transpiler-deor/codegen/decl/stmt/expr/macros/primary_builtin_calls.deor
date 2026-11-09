@@ -50,7 +50,7 @@ macro primary_builtin_calls
 				#  replace the function with concat()
 				if func_name is "s_join"
 					Token join_arg_token = tokens at args_pos
-					(kind) in join_arg_token
+					move (kind) in join_arg_token
 
 					if kind is LBRACKET
 						# ex: s_join([{a}, b]) — args_pos+1 grabs the first item after '['

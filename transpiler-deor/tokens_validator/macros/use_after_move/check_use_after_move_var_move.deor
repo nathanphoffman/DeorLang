@@ -40,7 +40,7 @@ macro check_use_after_move_var_move
 
 				for if scan_pos >= 0
 					Token scan_token = tokens at scan_pos
-					(kind) in scan_token
+					move (kind) in scan_token
 
 					if kind is NEWLINE
 						break
@@ -60,9 +60,9 @@ macro check_use_after_move_var_move
 								int func_pos = scan_pos - 2
 								Token lparen_token = tokens at lparen_pos
 								Token func_token = tokens at func_pos
-								(kind) in lparen_token
+								move (kind) in lparen_token
 								bool lparen_ok = kind is LPAREN
-								(kind, value) in func_token
+								move (kind, value) in func_token
 
 								if lparen_ok
 									if kind is IDENT
@@ -90,7 +90,7 @@ macro check_use_after_move_var_move
 
 				for if line_scan_pos >= 0
 					Token line_scan_token = tokens at line_scan_pos
-					(kind) in line_scan_token
+					move (kind) in line_scan_token
 
 					if kind is NEWLINE
 						break
@@ -107,7 +107,7 @@ macro check_use_after_move_var_move
 
 				if line_first_pos < pos
 					Token line_first_token = tokens at line_first_pos
-					(kind, value) in line_first_token
+					move (kind, value) in line_first_token
 
 					if kind is IDENT
 						string line_first_name = value
@@ -115,7 +115,7 @@ macro check_use_after_move_var_move
 
 						if line_first_next < token_count
 							Token line_first_next_token = tokens at line_first_next
-							(kind) in line_first_next_token
+							move (kind) in line_first_next_token
 
 							if kind is EQUALS
 								if line_first_name is move_name
@@ -157,7 +157,7 @@ macro check_use_after_move_var_move
 				if pos > 0
 					int before_move_pos = locate_prev_token(pos)
 					Token before_move_token = tokens at before_move_pos
-					(kind) in before_move_token
+					move (kind) in before_move_token
 
 					if kind is EQUALS
 						is_construct_position = true

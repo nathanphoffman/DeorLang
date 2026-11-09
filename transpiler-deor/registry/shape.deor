@@ -53,22 +53,22 @@ fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
 	if of_or_to_pos < token_count
 		Token name_token = tokens at name_pos
 		Token form_token = tokens at form_pos
-		(value) in name_token
+		move (value) in name_token
 		string shape_name = value
-		(kind) in form_token
+		move (kind) in form_token
 
 		if kind is KW_LIST
 			int elem_pos = locate_list_elem(pos)
 
 			if elem_pos < token_count
 				Token elem_token = tokens at elem_pos
-				(value) in elem_token
+				move (value) in elem_token
 				matched = true
 				key = shape_name
 				val = value
 		else
 			Token of_or_to_token = tokens at of_or_to_pos
-			(kind, value) in of_or_to_token
+			move (kind, value) in of_or_to_token
 			bool is_of = kind is KW_OF
 			bool is_to = kind is KW_TO
 			string in_type = ""
@@ -79,14 +79,14 @@ fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
 
 				if in_type_pos < token_count
 					Token in_type_token = tokens at in_type_pos
-					(value) in in_type_token
+					move (value) in in_type_token
 					in_type = value
 
 				int to_pos = locate_func_to_after_of(pos)
 
 				if to_pos < token_count
 					Token to_token = tokens at to_pos
-					(kind, value) in to_token
+					move (kind, value) in to_token
 					bool has_to = kind is KW_TO
 
 					if has_to
@@ -94,14 +94,14 @@ fn Reg2Scan try_shape_entry(TokensRef tokens, int pos)
 
 						if out_type_pos < token_count
 							Token out_type_token = tokens at out_type_pos
-							(value) in out_type_token
+							move (value) in out_type_token
 							out_type = value
 			else if is_to
 				int out_type_pos = locate_func_out_type_after_to(pos)
 
 				if out_type_pos < token_count
 					Token out_type_token = tokens at out_type_pos
-					(value) in out_type_token
+					move (value) in out_type_token
 					out_type = value
 
 			matched = true
@@ -128,7 +128,7 @@ fn Reg2Scan try_raw_entry(TokensRef tokens, int pos)
 
 	if name_pos < token_count
 		Token name_token = tokens at name_pos
-		(value) in name_token
+		move (value) in name_token
 		matched = true
 		key = value
 		val = "raw:"

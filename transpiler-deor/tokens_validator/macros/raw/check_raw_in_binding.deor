@@ -33,9 +33,9 @@ macro check_raw_in_binding
 			Token name_token = tokens at name_pos
 			Token equals_token = tokens at equals_pos
 			Token value_token = tokens at value_pos
-			(kind) in name_token
+			move (kind) in name_token
 			string name_kind = kind
-			(kind) in equals_token
+			move (kind) in equals_token
 			string equals_kind = kind
 			(kind, value) in value_token
 			bool is_binding = name_kind is IDENT
@@ -54,7 +54,7 @@ macro check_raw_in_binding
 		if as_value_pos < token_count
 			Token as_token = tokens at as_pos
 			Token as_value_token = tokens at as_value_pos
-			(kind) in as_token
+			move (kind) in as_token
 			bool is_as = kind is KW_AS
 			(kind, value) in as_value_token
 			bool as_value_is_ident = kind is IDENT

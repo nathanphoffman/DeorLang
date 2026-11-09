@@ -24,10 +24,10 @@ macro prescan_collect_declared_vars_binding
 		if equals_pos < token_count
 			Token name_token = tokens at name_pos
 			Token equals_token = tokens at equals_pos
-			(kind, value) in name_token
+			move (kind, value) in name_token
 			string name_kind = kind
 			string name_value = value
-			(kind) in equals_token
+			move (kind) in equals_token
 
 			if name_kind is IDENT and kind is EQUALS
 				declared_var_names at end = name_value
@@ -49,5 +49,5 @@ macro prescan_collect_declared_vars_binding
 
 			if is_vtype
 				if kind is IDENT
-					(value) in as_token
+					move (value) in as_token
 					declared_var_names at end = value

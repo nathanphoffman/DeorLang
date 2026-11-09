@@ -19,7 +19,7 @@ macro check_void_var
 		if pos > 0
 			int before_void_pos = locate_before_void(pos)
 			Token before_void_token = tokens at before_void_pos
-			(kind) in before_void_token
+			move (kind) in before_void_token
 			preceded_by_fn = kind is KW_FN
 
 		if not preceded_by_fn
@@ -29,9 +29,9 @@ macro check_void_var
 			if void_equals_pos < token_count
 				Token void_name_token = tokens at void_name_pos
 				Token void_equals_token = tokens at void_equals_pos
-				(kind) in void_name_token
+				move (kind) in void_name_token
 				string void_name_kind = kind
-				(kind) in void_equals_token
+				move (kind) in void_equals_token
 
 				if void_name_kind is IDENT
 					if kind is EQUALS

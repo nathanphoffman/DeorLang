@@ -22,9 +22,9 @@ macro skip_rust_block
 		if block_pos < token_count
 			Token newline_token = tokens at newline_pos
 			Token block_token = tokens at block_pos
-			(kind) in newline_token
+			move (kind) in newline_token
 			bool newline_ok = kind is NEWLINE
-			(kind) in block_token
+			move (kind) in block_token
 			bool block_ok = kind is RUST_BLOCK
 			is_block = newline_ok and block_ok
 

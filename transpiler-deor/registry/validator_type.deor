@@ -32,11 +32,11 @@ fn Reg3Scan try_type_entry(TokensRef tokens, int pos)
 		Token param_type_token = tokens at param_type_pos
 		Token param_name_token = tokens at param_name_pos
 		matched = true
-		(value) in name_token
+		move (value) in name_token
 		key = value
-		(value) in param_type_token
+		move (value) in param_type_token
 		val = value
-		(value) in param_name_token
+		move (value) in param_name_token
 		val2 = value
 
 	Reg3Scan result = (matched, key, val, val2, new_pos)
@@ -54,7 +54,7 @@ fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
 
 	for index in range(token_count)
 		Token token = tokens at index
-		(kind, value) in token
+		move (kind, value) in token
 
 		if kind is IDENT
 			string maybe_type = value
@@ -89,7 +89,7 @@ fn strList collect_validator_fn_returns(TokensRef tokens, strList type_reg)
 
 	for index in range(token_count)
 		Token decl_token = tokens at index
-		(kind) in decl_token
+		move (kind) in decl_token
 
 		if kind is KW_FN
 			int type_pos = index + 1
@@ -98,9 +98,9 @@ fn strList collect_validator_fn_returns(TokensRef tokens, strList type_reg)
 			if name_pos < token_count
 				Token type_token = tokens at type_pos
 				Token name_token = tokens at name_pos
-				(value) in type_token
+				move (value) in type_token
 				string return_type = value
-				(value) in name_token
+				move (value) in name_token
 				string fn_name = value
 
 				if reg3_has(type_reg, return_type)

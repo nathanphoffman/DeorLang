@@ -10,14 +10,14 @@ macro gic_match_kw_and_name
 		return anchor + 1
 
 	Token in_token = tokens at cur
-	(kind) in in_token
+	move (kind) in in_token
 
 	if kind is KW_IN
 		int name_pos = locate_next_token(cur)
 
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
-			(kind, value) in name_token
+			move (kind, value) in name_token
 
 			if kind is IDENT
 				if value is "input"

@@ -16,7 +16,7 @@ fn ParseResult gen_block(int pos, int depth, RcCtx ctx)
 			break
 
 		Token token = tokens at cur
-		(kind, value, file) in token
+		move (kind, value, file) in token
 
 		if kind is DEDENT or kind is "EOF"
 			if kind is DEDENT

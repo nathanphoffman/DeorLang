@@ -20,7 +20,7 @@ macro check_destructure_binding_kw
 		if pos > 0
 			int prev_pos = locate_prev_token(pos)
 			Token prev_token = tokens at prev_pos
-			(kind) in prev_token
+			move (kind) in prev_token
 			is_call = kind is IDENT
 
 		if not is_call
@@ -29,7 +29,7 @@ macro check_destructure_binding_kw
 
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
-				(kind) in scan_token
+				move (kind) in scan_token
 
 				if kind is LPAREN
 					depth = depth + 1
@@ -47,7 +47,7 @@ macro check_destructure_binding_kw
 
 			if after_pos < token_count
 				Token after_token = tokens at after_pos
-				(kind) in after_token
+				move (kind) in after_token
 				is_destructure = kind is KW_IN
 
 			if is_destructure

@@ -49,7 +49,7 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 
 			if const_name_pos < end_pos
 				Token const_name_token = tokens at const_name_pos
-				(value) in const_name_token
+				move (value) in const_name_token
 
 				if not list_has(const_names, value)
 					const_names at end = value
@@ -63,7 +63,7 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 
 			if after_name_pos < end_pos
 				Token after_name_token = tokens at after_name_pos
-				(kind) in after_name_token
+				move (kind) in after_name_token
 				bool next_is_at = kind is KW_AT
 				bool next_is_remove = kind is KW_REMOVE
 				bool at_stmt_start = raw_i is start
@@ -71,7 +71,7 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 				if raw_i > start
 					int before_name_pos = raw_i - 1
 					Token before_name_token = tokens at before_name_pos
-					(kind) in before_name_token
+					move (kind) in before_name_token
 					at_stmt_start = kind is NEWLINE or kind is INDENT or kind is DEDENT
 
 				bool is_list_mutation = next_is_at or next_is_remove
@@ -86,7 +86,7 @@ fn strList collect_mut_names(tokenList tokens, int start, int end_pos)
 
 			if prev_pos >= start
 				Token prev_token = tokens at prev_pos
-				(kind, value) in prev_token
+				move (kind, value) in prev_token
 
 				if kind is IDENT
 					if not list_has(result, value)

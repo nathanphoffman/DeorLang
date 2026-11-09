@@ -2,7 +2,7 @@ macro for_collect_fields_into_fields_list
 	# collects fields names of the struct destructure into fields
 	for if cur < token_count
 		Token field_token = tokens at cur
-		(kind, value) in field_token
+		move (kind, value) in field_token
 
 		if kind is RPAREN
 			cur = cur + 1

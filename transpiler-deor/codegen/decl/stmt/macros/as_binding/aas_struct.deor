@@ -11,7 +11,7 @@ macro aas_struct
 
 	for if peek_pos < token_count
 		Token peek_token = tokens at peek_pos
-		(kind) in peek_token
+		move (kind) in peek_token
 
 		if kind is RPAREN
 			break
@@ -36,7 +36,7 @@ macro aas_struct
 
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
-			(kind, value) in scan_token
+			move (kind, value) in scan_token
 
 			if kind is RPAREN
 				scan_pos = scan_pos + 1

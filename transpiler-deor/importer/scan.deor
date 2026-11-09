@@ -16,7 +16,7 @@ fn ParseResult scan_import_new(tokenList tokens, int pos)
 
 	if path_pos < token_count
 		Token path_token = tokens at path_pos
-		(kind, value) in path_token
+		move (kind, value) in path_token
 
 		if kind is STRING
 			int after_path = locate_after_path(pos)
@@ -56,21 +56,21 @@ fn ParseResult scan_import_where(tokenList tokens, int pos)
 
 	if concrete_pos < token_count
 		Token where_token = tokens at where_pos
-		(kind, value) in where_token
+		move (kind, value) in where_token
 		bool is_where = kind is IDENT and value is "where"
 
 		if is_where
 			Token eq_token = tokens at eq_pos
 			Token concrete_token = tokens at concrete_pos
 			Token replacement_token = tokens at replacement_pos
-			(kind) in eq_token
+			move (kind) in eq_token
 			bool is_eq = kind is EQUALS
 
 			if is_eq
-				(value) in replacement_token
+				move (value) in replacement_token
 				replacement_value as value
 
-				(value) in concrete_token
+				move (value) in concrete_token
 				int after_where = locate_after_where(pos)
 
 				replace_with as s_join([replacement_value, "|", value])

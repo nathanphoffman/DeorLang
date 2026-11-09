@@ -48,17 +48,17 @@ unsafe_macro fn_build_body_ctx
 			int last_idx = body_len - 1
 			int second_last_idx = body_len - 2
 			Token last_tok = detect_tokens at last_idx
-			(kind) in last_tok
+			move (kind) in last_tok
 			bool ends_in_dedent = kind is DEDENT
 			Token second_last_tok = detect_tokens at second_last_idx
-			(kind) in second_last_tok
+			move (kind) in second_last_tok
 			bool second_last_is_newline = kind is NEWLINE
 
 			# Both checks together confirm the body is exactly one line long: statement
 			# tokens, then NEWLINE, then immediately the DEDENT that closes the function.
 			if ends_in_dedent and second_last_is_newline
 				Token first_tok = detect_tokens at zero
-				(kind) in first_tok
+				move (kind) in first_tok
 				string first_kind = kind
 
 				# Statement forms gen_stmt already handles correctly on their own — skip

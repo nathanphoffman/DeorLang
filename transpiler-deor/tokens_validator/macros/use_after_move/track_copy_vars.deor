@@ -39,10 +39,10 @@ macro track_copy_vars
 				Token equals_token = tokens at equals_pos
 				(kind) in name_token
 				string name_kind = kind
-				(kind) in equals_token
+				move (kind) in equals_token
 
 				if name_kind is IDENT and kind is EQUALS
-					(value) in name_token
+					move (value) in name_token
 					copy_var_names at end = value
 
 	if cur_kind is KW_FN
@@ -50,14 +50,14 @@ macro track_copy_vars
 
 		if left_paren_pos < token_count
 			Token left_paren_token = tokens at left_paren_pos
-			(kind) in left_paren_token
+			move (kind) in left_paren_token
 
 			if kind is LPAREN
 				int param_scan_pos = left_paren_pos + 1
 
 				for if param_scan_pos < token_count
 					Token param_scan_token = tokens at param_scan_pos
-					(kind, value) in param_scan_token
+					move (kind, value) in param_scan_token
 
 					if kind is RPAREN
 						break
@@ -81,7 +81,7 @@ macro track_copy_vars
 
 						if param_name_pos < token_count
 							Token param_name_token = tokens at param_name_pos
-							(kind, value) in param_name_token
+							move (kind, value) in param_name_token
 
 							if kind is IDENT
 								if param_is_copy

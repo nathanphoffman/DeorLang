@@ -13,7 +13,7 @@ macro stmt_raw_const
 	if kind is KW_RAW
 		int raw_name_pos = locate_next_token(pos)
 		Token raw_name_tok = tokens at raw_name_pos
-		(value) in raw_name_tok
+		move (value) in raw_name_tok
 		string raw_var_name = value
 		int val_pos = locate_raw_value(pos)
 

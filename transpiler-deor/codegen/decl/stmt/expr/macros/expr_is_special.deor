@@ -10,7 +10,7 @@ macro expr_is_special
 	if kind is KW_IS
 		if after_op < token_count
 			Token maybe_not = tokens at after_op
-			(kind) in maybe_not
+			move (kind) in maybe_not
 
 			if kind is KW_NOT
 				operator_str = "is not"
@@ -33,7 +33,7 @@ macro expr_is_special
 	if operator_str is "is not"
 		if after_op < token_count
 			Token maybe_empty = tokens at after_op
-			(kind) in maybe_empty
+			move (kind) in maybe_empty
 
 			if kind is KW_EMPTY
 				string not_empty_prefix = "!"

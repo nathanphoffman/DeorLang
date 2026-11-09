@@ -15,7 +15,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 			break
 
 		Token token = tokens at cur
-		(kind) in token
+		move (kind) in token
 
 		if kind is RPAREN
 			break
@@ -38,7 +38,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 		bool ca_is_chain = is_expr_chain(tokens, cur, arg_pos)
 
 		Token start_token = tokens at cur
-		(kind) in start_token
+		move (kind) in start_token
 
 		if not ca_is_chain
 			if kind is STRING
@@ -50,7 +50,7 @@ fn ParseResult gen_call_args(TokensRef tokens, int pos, RcCtx ctx)
 
 				if next_cur < token_count
 					Token next_tok = tokens at next_cur
-					(kind) in next_tok
+					move (kind) in next_tok
 					peek_is_call = kind is LPAREN
 					peek_is_idx = kind is KW_AT
 

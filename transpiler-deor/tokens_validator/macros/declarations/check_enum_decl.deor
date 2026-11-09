@@ -16,7 +16,7 @@ macro check_enum_decl
 
 		if type_keyword_pos < token_count
 			Token type_keyword_token = tokens at type_keyword_pos
-			(value) in type_keyword_token
+			move (value) in type_keyword_token
 
 			if list_has(primitive_type_names, value)
 				validate_indent_offset = 2

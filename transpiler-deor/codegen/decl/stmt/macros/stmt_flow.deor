@@ -14,7 +14,7 @@ macro stmt_flow
 	if kind is KW_RETURN
 		int val_pos = locate_next_token(pos)
 		Token val_token = tokens at val_pos
-		(kind) in val_token
+		move (kind) in val_token
 		ParseResult val_result = gen_expr(tokens, val_pos, ctx)
 		move (code, new_pos) in val_result
 		val_code as code

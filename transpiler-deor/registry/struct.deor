@@ -9,7 +9,7 @@ fn ParseResult skip_to_block_start(TokensRef tokens, int start)
 
 	for skip_index in range(start, token_count)
 		Token skip_token = tokens at skip_index
-		(kind) in skip_token
+		move (kind) in skip_token
 		cur = skip_index + 1
 
 		if kind is INDENT
@@ -26,7 +26,7 @@ fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 
 	for field_index in range(start, token_count)
 		Token field_token = tokens at field_index
-		(kind) in field_token
+		move (kind) in field_token
 
 		if kind is DEDENT
 			cur = field_index + 1
@@ -38,7 +38,7 @@ fn ParseResult collect_struct_fields(TokensRef tokens, int start)
 
 			if field_name_pos < token_count
 				Token field_name_token = tokens at field_name_pos
-				(kind, value) in field_name_token
+				move (kind, value) in field_name_token
 
 				if kind is IDENT
 					fields at end = value
@@ -70,7 +70,7 @@ fn Reg2Scan try_struct_entry(TokensRef tokens, int pos)
 
 	if name_pos < token_count
 		Token name_token = tokens at name_pos
-		(kind, value) in name_token
+		move (kind, value) in name_token
 
 		if kind is IDENT
 			matched = true

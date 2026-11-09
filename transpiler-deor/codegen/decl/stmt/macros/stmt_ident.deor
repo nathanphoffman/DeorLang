@@ -45,7 +45,7 @@ macro stmt_ident
 
 			if eq_pos < token_count
 				Token eq_token = tokens at eq_pos
-				(kind) in eq_token
+				move (kind) in eq_token
 
 				if kind is EQUALS
 					return gen_typed_binding(pos, depth, ctx)

@@ -55,5 +55,5 @@ unsafe_macro dd_check_duplicate
 			dd_error_duplicate(decl_name, name_token, origin_file)
 	else
 		seen at end = lookup_name
-		(file) in name_token
+		move (file) in name_token
 		seen_files at end = file

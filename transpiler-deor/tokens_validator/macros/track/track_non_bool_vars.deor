@@ -51,7 +51,7 @@ macro track_non_bool_vars
 						non_bool_var_names at end = value
 
 				if cur_val is "string"
-					(value) in name_token
+					move (value) in name_token
 					string_var_names at end = value
 
 			# ex: {name} as "literal" / name as other_str — name_kind is KW_AS, equals_kind is the RHS
@@ -60,7 +60,7 @@ macro track_non_bool_vars
 
 				if not as_is_str
 					if equals_kind is IDENT
-						(value) in equals_token
+						move (value) in equals_token
 						as_is_str = list_has(string_var_names, value)
 
 				if as_is_str
@@ -71,14 +71,14 @@ macro track_non_bool_vars
 
 		if left_paren_pos < token_count
 			Token left_paren_token = tokens at left_paren_pos
-			(kind) in left_paren_token
+			move (kind) in left_paren_token
 
 			if kind is LPAREN
 				int param_scan_pos = left_paren_pos + 1
 
 				for if param_scan_pos < token_count
 					Token param_scan_token = tokens at param_scan_pos
-					(kind, value) in param_scan_token
+					move (kind, value) in param_scan_token
 
 					if kind is RPAREN
 						break
@@ -94,7 +94,7 @@ macro track_non_bool_vars
 
 						if param_name_pos < token_count
 							Token param_name_token = tokens at param_name_pos
-							(kind, value) in param_name_token
+							move (kind, value) in param_name_token
 
 							if kind is IDENT
 								bool param_is_bool = param_type is "bool"

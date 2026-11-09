@@ -20,7 +20,7 @@ macro check_struct_field_types
 
 		for if scan_pos < token_count
 			Token indent_scan_token = tokens at scan_pos
-			(kind) in indent_scan_token
+			move (kind) in indent_scan_token
 
 			if kind is INDENT
 				break
@@ -51,7 +51,7 @@ macro check_struct_field_types
 
 				if field_name_pos < token_count
 					Token field_name_token = tokens at field_name_pos
-					(kind) in field_name_token
+					move (kind) in field_name_token
 
 					if kind is IDENT
 						bool is_known_field_type = list_has(primitive_type_names, field_type) or list_has(declared_type_names, field_type)

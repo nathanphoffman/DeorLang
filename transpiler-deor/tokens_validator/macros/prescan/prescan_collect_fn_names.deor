@@ -14,7 +14,7 @@ macro prescan_collect_fn_names
 
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
-			(kind, value) in name_token
+			move (kind, value) in name_token
 
 			if kind is IDENT
 				fn_names at end = value

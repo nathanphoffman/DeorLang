@@ -13,7 +13,7 @@ macro dd_handle_block_decl
 
 	for if scan_pos < token_count
 		Token scan_token = tokens at scan_pos
-		(kind) in scan_token
+		move (kind) in scan_token
 		scan_pos = scan_pos + 1
 
 		if kind is INDENT

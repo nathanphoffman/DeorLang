@@ -30,12 +30,12 @@ macro sep_check_main_signature
 		Token name_token = tokens at name_pos
 		Token left_paren_token = tokens at left_paren_pos
 		Token right_paren_token = tokens at right_paren_pos
-		(kind) in void_token
+		move (kind) in void_token
 		bool is_void = kind is KW_VOID
-		(kind, value) in name_token
+		move (kind, value) in name_token
 		bool is_main_name = kind is IDENT and value is "main"
-		(kind) in left_paren_token
+		move (kind) in left_paren_token
 		bool is_lparen = kind is LPAREN
-		(kind) in right_paren_token
+		move (kind) in right_paren_token
 		bool is_rparen = kind is RPAREN
 		is_main = is_void and is_main_name and is_lparen and is_rparen

@@ -21,8 +21,8 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 		if pos >= token_count
 			break
 
-		Token token = all_ref at pos
-		(kind, file) in token
+		string kind = token_kind_at(all_ref, pos)
+		string file = token_file_at(all_ref, pos)
 
 		if kind is "EOF"
 			break
@@ -91,7 +91,7 @@ fn string generate_rust_from_tokens(TokensRef all_ref, RcCtx ctx)
 		if kind is KW_RUST
 			int block_pos = locate_rust_block_content(pos)
 			Token block_token = all_ref at block_pos
-			(value) in block_token
+			move (value) in block_token
 			string newline = "\n"
 			string rust_chunk = s_cat(value, newline)
 			parts at end = rust_chunk

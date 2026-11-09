@@ -28,7 +28,7 @@ fn int adv_nl_ref(int pos, TokensRef tokens)
 
 	if pos < token_count
 		Token cur_token = tokens at pos
-		(kind) in cur_token
+		move (kind) in cur_token
 
 		if kind is NEWLINE
 			return pos + 1
@@ -42,7 +42,7 @@ fn int adv_indent_ref(int pos, TokensRef tokens)
 
 	if pos < token_count
 		Token cur_token = tokens at pos
-		(kind) in cur_token
+		move (kind) in cur_token
 
 		if kind is INDENT
 			return pos + 1

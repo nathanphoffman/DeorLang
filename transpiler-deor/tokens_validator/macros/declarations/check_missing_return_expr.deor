@@ -26,11 +26,11 @@ macro check_missing_return_expr
 
 		if left_paren_pos < token_count
 			Token return_type_token = tokens at return_type_pos
-			(kind, value) in return_type_token
+			move (kind, value) in return_type_token
 			bool has_ret_type = kind is IDENT
 			bool is_void = value is "void"
 			Token left_paren_token = tokens at left_paren_pos
-			(kind) in left_paren_token
+			move (kind) in left_paren_token
 			bool is_call_shape = kind is LPAREN
 
 			if has_ret_type and not is_void and is_call_shape
@@ -39,14 +39,14 @@ macro check_missing_return_expr
 
 				if newline_pos < token_count
 					Token newline_token = tokens at newline_pos
-					(kind) in newline_token
+					move (kind) in newline_token
 
 					if kind is NEWLINE
 						int indent_pos = newline_pos + 1
 
 						if indent_pos < token_count
 							Token indent_token = tokens at indent_pos
-							(kind) in indent_token
+							move (kind) in indent_token
 
 							if kind is INDENT
 								int body_first_pos = indent_pos + 1
@@ -73,7 +73,7 @@ macro check_missing_return_expr
 											if not at_boundary
 												int prev_pos = scan_pos - 1
 												Token prev_token = tokens at prev_pos
-												(kind) in prev_token
+												move (kind) in prev_token
 												string prev_kind = kind
 												bool prev_is_boundary = prev_kind is NEWLINE
 
@@ -134,7 +134,7 @@ fn int first_depth0_newline(TokensRef tokens, int start, int end_pos)
 
 	for if scan_pos < end_pos
 		Token scan_token = tokens at scan_pos
-		(kind) in scan_token
+		move (kind) in scan_token
 
 		if kind is INDENT
 			depth = depth + 1

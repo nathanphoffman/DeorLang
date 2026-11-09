@@ -28,7 +28,7 @@ macro prescan_check_enum_variants
 
 		if scan_pos < token_count
 			Token type_keyword_token = tokens at scan_pos
-			(value) in type_keyword_token
+			move (value) in type_keyword_token
 			is_typed = list_has(primitive_type_names, value)
 
 		# the enum's own name sits one slot further in for a typed enum
@@ -39,7 +39,7 @@ macro prescan_check_enum_variants
 
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
-			(kind, value) in name_token
+			move (kind, value) in name_token
 
 			if kind is IDENT
 				enum_names at end = value
@@ -50,7 +50,7 @@ macro prescan_check_enum_variants
 		# Scan forward to INDENT (works for both typed and untyped)
 		for if scan_pos < token_count
 			Token scan_token = tokens at scan_pos
-			(kind) in scan_token
+			move (kind) in scan_token
 
 			if kind is INDENT
 				break
@@ -81,7 +81,7 @@ macro prescan_check_enum_variants
 
 				if after_variant_pos < token_count
 					Token after_variant_token = tokens at after_variant_pos
-					(kind) in after_variant_token
+					move (kind) in after_variant_token
 
 					if is_typed
 						if kind is not EQUALS

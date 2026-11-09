@@ -33,7 +33,7 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 
 	for if pos < token_count
 		Token token = tokens_ref at pos
-		(kind) in token
+		move (kind) in token
 
 		if kind is KW_STRUCT
 			Reg2Scan scan = try_struct_entry(tokens_ref, pos)

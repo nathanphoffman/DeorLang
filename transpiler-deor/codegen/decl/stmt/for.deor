@@ -43,7 +43,7 @@ fn ParseResult gen_for(int pos, int depth, RcCtx ctx)
 		iter_pos = locate_next_token(in_pos)
 
 	Token iter_token = tokens at iter_pos
-	(kind, value) in iter_token
+	move (kind, value) in iter_token
 
 	string range_expr = ""
 	int body_tok_pos = 0

@@ -14,7 +14,7 @@ macro aas_with
 
 	if with_keyword_pos < token_count
 		Token with_keyword_token = tokens at with_keyword_pos
-		(kind) in with_keyword_token
+		move (kind) in with_keyword_token
 
 		if kind is KW_WITH
 			string source_name = after_as_value
@@ -24,7 +24,7 @@ macro aas_with
 
 			for if scan_pos < token_count
 				Token scan_token = tokens at scan_pos
-				(kind, value) in scan_token
+				move (kind, value) in scan_token
 
 				if kind is RPAREN
 					scan_pos = scan_pos + 1

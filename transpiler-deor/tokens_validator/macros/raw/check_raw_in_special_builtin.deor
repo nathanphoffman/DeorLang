@@ -19,7 +19,7 @@ macro check_raw_in_special_builtin
 
 			if left_paren_pos < token_count
 				Token left_paren_token = tokens at left_paren_pos
-				(kind) in left_paren_token
+				move (kind) in left_paren_token
 
 				if kind is LPAREN
 					int scan_pos = left_paren_pos + 1

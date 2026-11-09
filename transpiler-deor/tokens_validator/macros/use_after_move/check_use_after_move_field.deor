@@ -48,7 +48,7 @@ macro check_use_after_move_field
 
 		if move_next_pos < token_count
 			Token move_next_token = tokens at move_next_pos
-			(kind) in move_next_token
+			move (kind) in move_next_token
 
 			if kind is LPAREN
 				strList move_fields = empty
@@ -58,7 +58,7 @@ macro check_use_after_move_field
 				for if scanning
 					if scan_pos < token_count
 						Token scan_token = tokens at scan_pos
-						(kind, value) in scan_token
+						move (kind, value) in scan_token
 
 						if kind is IDENT
 							move_fields at end = value
@@ -73,7 +73,7 @@ macro check_use_after_move_field
 				# scan_pos now sits just past the RPAREN — ex: move (f1, f2) {in} source
 				if scan_pos < token_count
 					Token in_token = tokens at scan_pos
-					(kind) in in_token
+					move (kind) in in_token
 
 					if kind is KW_IN
 						int source_pos = scan_pos + 1
@@ -84,7 +84,7 @@ macro check_use_after_move_field
 
 							if kind is IDENT
 								string source_name = value
-								(line, file) in source_token
+								move (line, file) in source_token
 								string line_str = n_to_str(line)
 								int field_index = 0
 								int field_count = len(move_fields)
@@ -114,7 +114,7 @@ macro check_use_after_move_field
 		if pos > 0
 			int prev_pos = locate_prev_token(pos)
 			Token prev_token = tokens at prev_pos
-			(kind) in prev_token
+			move (kind) in prev_token
 
 			if kind is RPAREN
 				int next_pos = locate_next_token(pos)
@@ -129,7 +129,7 @@ macro check_use_after_move_field
 
 						if after_pos < token_count
 							Token after_token = tokens at after_pos
-							(kind) in after_token
+							move (kind) in after_token
 
 							if kind is LPAREN
 								is_bare = false
@@ -142,7 +142,7 @@ macro check_use_after_move_field
 
 							for if backscan_pos >= 0
 								Token backscan_token = tokens at backscan_pos
-								(kind, value) in backscan_token
+								move (kind, value) in backscan_token
 
 								if kind is RPAREN
 									paren_depth = paren_depth + 1
@@ -162,7 +162,7 @@ macro check_use_after_move_field
 							if backscan_pos > 0
 								int before_lparen_pos = backscan_pos - 1
 								Token before_lparen_token = tokens at before_lparen_pos
-								(kind) in before_lparen_token
+								move (kind) in before_lparen_token
 
 								if kind is KW_MOVE
 									is_move_stmt = true

@@ -30,7 +30,7 @@ macro stmt_blocks
 	if kind is KW_RUST
 		int rust_block_pos = locate_rust_block_content(pos)
 		Token rust_block_token = tokens at rust_block_pos
-		(value) in rust_block_token
+		move (value) in rust_block_token
 		string rust_content = value
 		strList rust_lines = s_split(rust_content, RS_NL)
 		strList padded_lines = empty

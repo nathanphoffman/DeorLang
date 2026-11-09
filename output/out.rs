@@ -140,6 +140,11 @@ fn elapsed_ms(start: i64) -> i64 { now_ms() - start }
 // Hash set for hot name lookups: cloning an Rc is cheap, unlike list_has's by-value strList.
 type NameSet = Rc<std::collections::HashSet<String>>;
 fn name_set(names: Vec<String>) -> NameSet { Rc::new(names.into_iter().collect()) }
+// Single-field token reads: one small copy instead of cloning the whole Token and destructuring it.
+fn token_kind_at(tokens: TokensRef, pos: i64) -> String { tokens[pos as usize].kind.clone() }
+fn token_value_at(tokens: TokensRef, pos: i64) -> String { tokens[pos as usize].value.clone() }
+fn token_file_at(tokens: TokensRef, pos: i64) -> String { tokens[pos as usize].file.clone() }
+fn token_line_at(tokens: TokensRef, pos: i64) -> i64 { tokens[pos as usize].line }
 fn name_set_has(set: NameSet, name: String) -> bool { set.contains(&name) }
 // transpiler-deor/lib/char.deor
 pub fn c_chars(source: String) -> Vec<String> {
@@ -417,7 +422,7 @@ pub fn adv_nl_ref(pos: i64, tokens: TokensRef) -> i64 {
     if pos < token_count {
         // transpiler-deor/deor_helpers.deor
         let mut cur_token: Token = tokens[pos as usize].clone();
-        let kind = cur_token.kind.clone();
+        let kind = cur_token.kind;
         if kind == NEWLINE {
             // transpiler-deor/deor_helpers.deor
             return pos + 1;
@@ -432,7 +437,7 @@ pub fn adv_indent_ref(pos: i64, tokens: TokensRef) -> i64 {
     if pos < token_count {
         // transpiler-deor/deor_helpers.deor
         let mut cur_token: Token = tokens[pos as usize].clone();
-        let kind = cur_token.kind.clone();
+        let kind = cur_token.kind;
         if kind == INDENT {
             // transpiler-deor/deor_helpers.deor
             return pos + 1;
@@ -1126,9 +1131,9 @@ pub fn scan_import_new(tokens: Vec<Token>, pos: i64) -> ParseResult {
     if path_pos < token_count {
         // transpiler-deor/importer/scan.deor
         let mut path_token: Token = tokens[path_pos as usize].clone();
-        let __destructure_src = path_token.clone();
-        let kind = __destructure_src.kind.clone();
-        let value = __destructure_src.value.clone();
+        let __destructure_src = path_token;
+        let kind = __destructure_src.kind;
+        let value = __destructure_src.value;
         if kind == STRING {
             // transpiler-deor/importer/scan.deor
             let mut after_path: i64 = locate_after_path(pos.clone());
@@ -1161,22 +1166,22 @@ pub fn scan_import_where(tokens: Vec<Token>, pos: i64) -> ParseResult {
     if concrete_pos < token_count {
         // transpiler-deor/importer/scan.deor
         let mut where_token: Token = tokens[where_pos as usize].clone();
-        let __destructure_src = where_token.clone();
-        let kind = __destructure_src.kind.clone();
-        let value = __destructure_src.value.clone();
+        let __destructure_src = where_token;
+        let kind = __destructure_src.kind;
+        let value = __destructure_src.value;
         let mut is_where: bool = kind == IDENT && value == "where";
         if is_where {
             // transpiler-deor/importer/scan.deor
             let mut eq_token: Token = tokens[eq_pos as usize].clone();
             let mut concrete_token: Token = tokens[concrete_pos as usize].clone();
             let mut replacement_token: Token = tokens[replacement_pos as usize].clone();
-            let kind = eq_token.kind.clone();
+            let kind = eq_token.kind;
             let mut is_eq: bool = kind == EQUALS;
             if is_eq {
                 // transpiler-deor/importer/scan.deor
-                let value = replacement_token.value.clone();
+                let value = replacement_token.value;
                 let replacement_value = value.clone();
-                let value = concrete_token.value.clone();
+                let value = concrete_token.value;
                 let mut after_where: i64 = locate_after_where(pos.clone());
                 let replace_with = [replacement_value.as_str(), "|", value.as_str()].concat();
                 return make_result(replace_with.clone(), after_where.clone());
@@ -1480,7 +1485,7 @@ pub fn load_file(path: String) -> Vec<Token> {
                 // transpiler-deor/importer/load.deor
                 let mut prev_pos: i64 = pos - 1;
                 let mut prev_tok: Token = tok_raw[prev_pos as usize].clone();
-                let kind = prev_tok.kind.clone();
+                let kind = prev_tok.kind;
                 at_line_start = kind == NEWLINE || kind == INDENT || kind == DEDENT;
             }
             if is_structural_kw && at_line_start {
@@ -1669,9 +1674,9 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
             if scan_pos < token_count {
                 // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
                 let mut pragma_token: Token = tokens[scan_pos as usize].clone();
-                let __destructure_src = pragma_token.clone();
-                let kind = __destructure_src.kind.clone();
-                let value = __destructure_src.value.clone();
+                let __destructure_src = pragma_token;
+                let kind = __destructure_src.kind;
+                let value = __destructure_src.value;
                 let mut is_file_flag: bool = kind == IDENT && value == "ENFORCE_UNIQUE_FILE_DECLARATIONS";
                 let mut is_import_flag: bool = kind == IDENT && value == "ENFORCE_UNIQUE_IMPORT_DECLARATIONS";
                 let mut is_depth_flag: bool = kind == IDENT && value == "ENFORCE_MACRO_FILE_DEPTH";
@@ -1682,7 +1687,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     if newline_pos < token_count {
                         // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
                         let mut pragma_newline_token: Token = tokens[newline_pos as usize].clone();
-                        let kind = pragma_newline_token.kind.clone();
+                        let kind = pragma_newline_token.kind;
                         newline_ok = kind == NEWLINE;
                     }
                     if newline_ok {
@@ -1707,16 +1712,16 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     if depth_newline_pos < token_count {
                         // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
                         let mut equals_token: Token = tokens[equals_pos as usize].clone();
-                        let kind = equals_token.kind.clone();
+                        let kind = equals_token.kind;
                         let mut eq_ok: bool = kind == EQUALS;
                         let mut value_token: Token = tokens[value_pos as usize].clone();
-                        let __destructure_src = value_token.clone();
-                        let kind = __destructure_src.kind.clone();
-                        let value = __destructure_src.value.clone();
+                        let __destructure_src = value_token;
+                        let kind = __destructure_src.kind;
+                        let value = __destructure_src.value;
                         let mut val_ok: bool = kind == "INT";
                         depth_str = value.clone();
                         let mut depth_newline_token: Token = tokens[depth_newline_pos as usize].clone();
-                        let kind = depth_newline_token.kind.clone();
+                        let kind = depth_newline_token.kind;
                         let mut depth_newline_ok: bool = kind == NEWLINE;
                         depth_ok = eq_ok && val_ok && depth_newline_ok;
                     }
@@ -1762,15 +1767,15 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     let mut name_token: Token = tokens[name_pos as usize].clone();
                     let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
                     let mut right_paren_token: Token = tokens[right_paren_pos as usize].clone();
-                    let kind = void_token.kind.clone();
+                    let kind = void_token.kind;
                     let mut is_void: bool = kind == KW_VOID;
-                    let __destructure_src = name_token.clone();
-                    let kind = __destructure_src.kind.clone();
-                    let value = __destructure_src.value.clone();
+                    let __destructure_src = name_token;
+                    let kind = __destructure_src.kind;
+                    let value = __destructure_src.value;
                     let mut is_main_name: bool = kind == IDENT && value == "main";
-                    let kind = left_paren_token.kind.clone();
+                    let kind = left_paren_token.kind;
                     let mut is_lparen: bool = kind == LPAREN;
-                    let kind = right_paren_token.kind.clone();
+                    let kind = right_paren_token.kind;
                     let mut is_rparen: bool = kind == RPAREN;
                     is_main = is_void && is_main_name && is_lparen && is_rparen;
                 }
@@ -1795,7 +1800,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 if scan_pos < token_count {
                     // transpiler-deor/importer/macros/sep_copy_main_opener.deor
                     let mut newline_token: Token = tokens[scan_pos as usize].clone();
-                    let kind = newline_token.kind.clone();
+                    let kind = newline_token.kind;
                     newline_present = kind == NEWLINE;
                 }
                 if newline_present {
@@ -1807,7 +1812,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     if scan_pos < token_count {
                         // transpiler-deor/importer/macros/sep_copy_main_opener.deor
                         let mut indent_token: Token = tokens[scan_pos as usize].clone();
-                        let kind = indent_token.kind.clone();
+                        let kind = indent_token.kind;
                         indent_present = kind == INDENT;
                     }
                     if indent_present {
@@ -1834,9 +1839,9 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                         if scan_pos < token_count {
                             // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
                             let mut pragma_token: Token = tokens[scan_pos as usize].clone();
-                            let __destructure_src = pragma_token.clone();
-                            let kind = __destructure_src.kind.clone();
-                            let value = __destructure_src.value.clone();
+                            let __destructure_src = pragma_token;
+                            let kind = __destructure_src.kind;
+                            let value = __destructure_src.value;
                             let mut is_file_flag: bool = kind == IDENT && value == "ENFORCE_UNIQUE_FILE_DECLARATIONS";
                             let mut is_import_flag: bool = kind == IDENT && value == "ENFORCE_UNIQUE_IMPORT_DECLARATIONS";
                             let mut is_depth_flag: bool = kind == IDENT && value == "ENFORCE_MACRO_FILE_DEPTH";
@@ -1847,7 +1852,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                                 if newline_pos < token_count {
                                     // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
                                     let mut pragma_newline_token: Token = tokens[newline_pos as usize].clone();
-                                    let kind = pragma_newline_token.kind.clone();
+                                    let kind = pragma_newline_token.kind;
                                     newline_ok = kind == NEWLINE;
                                 }
                                 if newline_ok {
@@ -1872,16 +1877,16 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                                 if depth_newline_pos < token_count {
                                     // transpiler-deor/importer/macros/sep_scan_pragma_lines.deor
                                     let mut equals_token: Token = tokens[equals_pos as usize].clone();
-                                    let kind = equals_token.kind.clone();
+                                    let kind = equals_token.kind;
                                     let mut eq_ok: bool = kind == EQUALS;
                                     let mut value_token: Token = tokens[value_pos as usize].clone();
-                                    let __destructure_src = value_token.clone();
-                                    let kind = __destructure_src.kind.clone();
-                                    let value = __destructure_src.value.clone();
+                                    let __destructure_src = value_token;
+                                    let kind = __destructure_src.kind;
+                                    let value = __destructure_src.value;
                                     let mut val_ok: bool = kind == "INT";
                                     depth_str = value.clone();
                                     let mut depth_newline_token: Token = tokens[depth_newline_pos as usize].clone();
-                                    let kind = depth_newline_token.kind.clone();
+                                    let kind = depth_newline_token.kind;
                                     let mut depth_newline_ok: bool = kind == NEWLINE;
                                     depth_ok = eq_ok && val_ok && depth_newline_ok;
                                 }
@@ -1994,7 +1999,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 } else {
                     // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     seen.push(lookup_name.clone());
-                    let file = name_token.file.clone();
+                    let file = name_token.file;
                     seen_files.push(file.clone());
                 }
                 // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
@@ -2004,7 +2009,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 while scan_pos < token_count {
                     // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
                     let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                    let kind = scan_token.kind.clone();
+                    let kind = scan_token.kind;
                     scan_pos = scan_pos + 1;
                     if kind == INDENT {
                         // transpiler-deor/importer/macros/dedup/dd_handle_block_decl.deor
@@ -2082,7 +2087,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 } else {
                     // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     seen.push(lookup_name.clone());
-                    let file = name_token.file.clone();
+                    let file = name_token.file;
                     seen_files.push(file.clone());
                 }
                 // macro: dd_copy_single_line_decl (transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor)
@@ -2092,7 +2097,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     while scan_pos < token_count {
                         // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                        let kind = scan_token.kind.clone();
+                        let kind = scan_token.kind;
                         scan_pos = scan_pos + 1;
                         if kind == NEWLINE {
                             // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
@@ -2167,7 +2172,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                 } else {
                     // transpiler-deor/importer/macros/dedup/dd_check_duplicate.deor
                     seen.push(lookup_name.clone());
-                    let file = name_token.file.clone();
+                    let file = name_token.file;
                     seen_files.push(file.clone());
                 }
                 // macro: dd_copy_single_line_decl (transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor)
@@ -2177,7 +2182,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     while scan_pos < token_count {
                         // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                        let kind = scan_token.kind.clone();
+                        let kind = scan_token.kind;
                         scan_pos = scan_pos + 1;
                         if kind == NEWLINE {
                             // transpiler-deor/importer/macros/dedup/dd_copy_single_line_decl.deor
@@ -2217,7 +2222,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     // transpiler-deor/importer/macros/dedup/dd_handle_rust_block.deor
                     let mut newline_token: Token = tokens[newline_pos as usize].clone();
                     let mut content_token: Token = tokens[content_pos as usize].clone();
-                    let kind = newline_token.kind.clone();
+                    let kind = newline_token.kind;
                     let mut newline_ok: bool = kind == NEWLINE;
                     let __destructure_src = content_token.clone();
                     let kind = __destructure_src.kind.clone();
@@ -2225,7 +2230,7 @@ pub fn deduplicate_decls(tokens_in: Vec<Token>) -> DedupResult {
                     let mut block_ok: bool = kind == RUST_BLOCK;
                     is_block = newline_ok && block_ok;
                     block_value = value.clone();
-                    let file = content_token.file.clone();
+                    let file = content_token.file;
                     block_file = file.clone();
                 }
                 if is_block {
@@ -2390,7 +2395,7 @@ pub fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
         if check_pos < token_count {
             // transpiler-deor/tokens_validator/arg_helpers.deor
             let mut move_token: Token = tokens[check_pos as usize].clone();
-            let kind = move_token.kind.clone();
+            let kind = move_token.kind;
             check_kind = kind.clone();
         }
     }
@@ -2402,7 +2407,7 @@ pub fn arg_is_named(tokens: TokensRef, scan_pos: i64, kind: String) -> bool {
     if peek_pos < token_count {
         // transpiler-deor/tokens_validator/arg_helpers.deor
         let mut peek_token: Token = tokens[peek_pos as usize].clone();
-        let kind = peek_token.kind.clone();
+        let kind = peek_token.kind;
         let mut is_call: bool = kind == LPAREN;
         let mut is_idx: bool = kind == KW_AT;
         let mut is_plus: bool = kind == PLUS;
@@ -2461,7 +2466,7 @@ pub fn count_call_args(tokens: TokensRef, lp_pos: i64) -> i64 {
     while cur < token_count {
         // transpiler-deor/tokens_validator/arg_helpers.deor
         let mut token: Token = tokens[cur as usize].clone();
-        let kind = token.kind.clone();
+        let kind = token.kind;
         if kind == RPAREN {
             // transpiler-deor/tokens_validator/arg_helpers.deor
             let mut at_root: bool = depth == 0;
@@ -2716,9 +2721,9 @@ pub fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
             if name_pos < token_count {
                 // transpiler-deor/macro_builder/macro_validation.deor
                 let mut name_token: Token = raw_tokens[name_pos as usize].clone();
-                let __destructure_src = name_token.clone();
-                let kind = __destructure_src.kind.clone();
-                let value = __destructure_src.value.clone();
+                let __destructure_src = name_token;
+                let kind = __destructure_src.kind;
+                let value = __destructure_src.value;
                 if kind == IDENT {
                     // transpiler-deor/macro_builder/macro_validation.deor
                     macro_names.push(value.clone());
@@ -2775,7 +2780,7 @@ pub fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
     while line_scan >= 0 {
         // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
         let mut line_scan_token: Token = tokens[line_scan as usize].clone();
-        let kind = line_scan_token.kind.clone();
+        let kind = line_scan_token.kind;
         if kind == NEWLINE {
             // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
             line_scan = line_scan - 1;
@@ -2788,7 +2793,7 @@ pub fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
     while line_scan >= 0 {
         // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
         let mut line_scan_token2: Token = tokens[line_scan as usize].clone();
-        let kind = line_scan_token2.kind.clone();
+        let kind = line_scan_token2.kind;
         if kind == NEWLINE {
             // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
             break;
@@ -2807,7 +2812,7 @@ pub fn arm_ends_in_jump(tokens: TokensRef, pos: i64) -> bool {
     if line_start <= line_end {
         // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
         let mut line_first_token: Token = tokens[line_start as usize].clone();
-        let kind = line_first_token.kind.clone();
+        let kind = line_first_token.kind;
         if kind == KW_RETURN {
             // transpiler-deor/tokens_validator/macros/use_after_move/arm_helpers.deor
             return true;
@@ -2851,7 +2856,7 @@ pub fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_coun
         return false;
     }
     let mut newline_token: Token = tokens[newline_pos as usize].clone();
-    let kind = newline_token.kind.clone();
+    let kind = newline_token.kind;
     if kind != NEWLINE {
         // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
         return false;
@@ -2862,7 +2867,7 @@ pub fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_coun
         return false;
     }
     let mut indent_token: Token = tokens[indent_pos as usize].clone();
-    let kind = indent_token.kind.clone();
+    let kind = indent_token.kind;
     if kind != INDENT {
         // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
         return false;
@@ -2873,7 +2878,7 @@ pub fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_coun
         return false;
     }
     let mut return_token: Token = tokens[return_pos as usize].clone();
-    let kind = return_token.kind.clone();
+    let kind = return_token.kind;
     if kind != KW_RETURN {
         // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
         return false;
@@ -2882,7 +2887,7 @@ pub fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_coun
     while scan_pos < token_count {
         // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-        let kind = scan_token.kind.clone();
+        let kind = scan_token.kind;
         if kind == NEWLINE {
             // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
             break;
@@ -2895,7 +2900,7 @@ pub fn is_single_return_body(tokens: TokensRef, right_paren_pos: i64, token_coun
         return false;
     }
     let mut after_stmt_token: Token = tokens[after_stmt_pos as usize].clone();
-    let kind = after_stmt_token.kind.clone();
+    let kind = after_stmt_token.kind;
     return kind == DEDENT;
 }
 
@@ -2907,7 +2912,7 @@ pub fn first_depth0_newline(tokens: TokensRef, start: i64, end_pos: i64) -> i64 
     while scan_pos < end_pos {
         // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-        let kind = scan_token.kind.clone();
+        let kind = scan_token.kind;
         if kind == INDENT {
             // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
             depth = depth + 1;
@@ -3163,7 +3168,7 @@ pub fn validate_tokens(tokens: TokensRef) {
     while pre_i < token_count {
         // transpiler-deor/tokens_validator/macros/prescan/prescan_shapes_and_validator_types.deor
         let mut pre_tok: Token = tokens[pre_i as usize].clone();
-        let mut kind = pre_tok.kind.clone();
+        let mut kind = pre_tok.kind;
         // macro: prescan_collect_func_shapes (transpiler-deor/tokens_validator/macros/prescan/prescan_collect_func_shapes.deor)
         {
             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_func_shapes.deor
@@ -3179,16 +3184,16 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if form_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_func_shapes.deor
                     let mut form_token: Token = tokens[form_pos as usize].clone();
-                    let mut kind = form_token.kind.clone();
+                    let mut kind = form_token.kind;
                     if kind == KW_FUNC {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_func_shapes.deor
                         let mut name_pos: i64 = locate_name(pre_i.clone());
                         if name_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_func_shapes.deor
                             let mut name_token: Token = tokens[name_pos as usize].clone();
-                            let __destructure_src = name_token.clone();
-                            let mut kind = __destructure_src.kind.clone();
-                            let mut value = __destructure_src.value.clone();
+                            let __destructure_src = name_token;
+                            let mut kind = __destructure_src.kind;
+                            let mut value = __destructure_src.value;
                             if kind == IDENT {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_func_shapes.deor
                                 func_shape_names.push(value.clone());
@@ -3214,9 +3219,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_validator_types.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
-                    let __destructure_src = name_token.clone();
-                    let mut kind = __destructure_src.kind.clone();
-                    let mut value = __destructure_src.value.clone();
+                    let __destructure_src = name_token;
+                    let mut kind = __destructure_src.kind;
+                    let mut value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_validator_types.deor
                         validator_type_names.push(value.clone());
@@ -3225,7 +3230,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_validator_types.deor
                             let mut validator_name: String = value.clone();
                             let mut base_token: Token = tokens[base_pos as usize].clone();
-                            let mut value = base_token.value.clone();
+                            let mut value = base_token.value;
                             validator_base_reg.push(validator_name.clone());
                             validator_base_reg.push(value.clone());
                         }
@@ -3248,9 +3253,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if shape_name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
                     let mut shape_name_token: Token = tokens[shape_name_pos as usize].clone();
-                    let __destructure_src = shape_name_token.clone();
-                    let mut kind = __destructure_src.kind.clone();
-                    let mut value = __destructure_src.value.clone();
+                    let __destructure_src = shape_name_token;
+                    let mut kind = __destructure_src.kind;
+                    let mut value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
                         declared_type_names.push(value.clone());
@@ -3263,16 +3268,16 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if raw_name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
                     let mut raw_name_token: Token = tokens[raw_name_pos as usize].clone();
-                    let __destructure_src = raw_name_token.clone();
-                    let mut kind = __destructure_src.kind.clone();
-                    let mut value = __destructure_src.value.clone();
+                    let __destructure_src = raw_name_token;
+                    let mut kind = __destructure_src.kind;
+                    let mut value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
                         let mut after_name_pos: i64 = raw_name_pos + 1;
                         if after_name_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
                             let mut after_name_token: Token = tokens[after_name_pos as usize].clone();
-                            let mut kind = after_name_token.kind.clone();
+                            let mut kind = after_name_token.kind;
                             if kind == NEWLINE {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_type_names.deor
                                 declared_type_names.push(value.clone());
@@ -3306,7 +3311,7 @@ pub fn validate_tokens(tokens: TokensRef) {
     while pre_i < token_count {
         // transpiler-deor/tokens_validator/macros/prescan/prescan_declared_state.deor
         let mut pre_tok: Token = tokens[pre_i as usize].clone();
-        let mut kind = pre_tok.kind.clone();
+        let mut kind = pre_tok.kind;
         // macro: prescan_collect_const_names (transpiler-deor/tokens_validator/macros/prescan/prescan_collect_const_names.deor)
         {
             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_const_names.deor
@@ -3319,9 +3324,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_const_names.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
-                    let __destructure_src = name_token.clone();
-                    let mut kind = __destructure_src.kind.clone();
-                    let mut value = __destructure_src.value.clone();
+                    let __destructure_src = name_token;
+                    let mut kind = __destructure_src.kind;
+                    let mut value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_const_names.deor
                         if !list_has(const_var_names.clone(), value.clone()) {
@@ -3351,12 +3356,12 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_binding.deor
                         let mut name_token: Token = tokens[name_pos as usize].clone();
                         let mut equals_token: Token = tokens[equals_pos as usize].clone();
-                        let __destructure_src = name_token.clone();
-                        let mut kind = __destructure_src.kind.clone();
-                        let mut value = __destructure_src.value.clone();
+                        let __destructure_src = name_token;
+                        let mut kind = __destructure_src.kind;
+                        let mut value = __destructure_src.value;
                         let mut name_kind: String = kind.clone();
                         let mut name_value: String = value.clone();
-                        let mut kind = equals_token.kind.clone();
+                        let mut kind = equals_token.kind;
                         if name_kind == IDENT && kind == EQUALS {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_binding.deor
                             declared_var_names.push(name_value.clone());
@@ -3377,7 +3382,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_binding.deor
                             if kind == IDENT {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_binding.deor
-                                let mut value = as_token.value.clone();
+                                let mut value = as_token.value;
                                 declared_var_names.push(value.clone());
                             }
                         }
@@ -3401,12 +3406,12 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_raw.deor
                         let mut name_token: Token = tokens[name_pos as usize].clone();
                         let mut equals_token: Token = tokens[equals_pos as usize].clone();
-                        let __destructure_src = name_token.clone();
-                        let mut kind = __destructure_src.kind.clone();
-                        let mut value = __destructure_src.value.clone();
+                        let __destructure_src = name_token;
+                        let mut kind = __destructure_src.kind;
+                        let mut value = __destructure_src.value;
                         let mut name_kind: String = kind.clone();
                         let mut name_value: String = value.clone();
-                        let mut kind = equals_token.kind.clone();
+                        let mut kind = equals_token.kind;
                         if name_kind == IDENT && kind == EQUALS {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_raw.deor
                             declared_var_names.push(name_value.clone());
@@ -3431,12 +3436,12 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_validator_param.deor
                         let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
                         let mut param_name_token: Token = tokens[param_name_pos as usize].clone();
-                        let mut kind = left_paren_token.kind.clone();
+                        let mut kind = left_paren_token.kind;
                         if kind == LPAREN {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_validator_param.deor
-                            let __destructure_src = param_name_token.clone();
-                            let mut kind = __destructure_src.kind.clone();
-                            let mut value = __destructure_src.value.clone();
+                            let __destructure_src = param_name_token;
+                            let mut kind = __destructure_src.kind;
+                            let mut value = __destructure_src.value;
                             if kind == IDENT {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_validator_param.deor
                                 declared_var_names.push(value.clone());
@@ -3474,12 +3479,12 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_for.deor
                         let mut loop_var_token: Token = tokens[loop_var_pos as usize].clone();
                         let mut in_token: Token = tokens[in_pos as usize].clone();
-                        let __destructure_src = loop_var_token.clone();
-                        let mut kind = __destructure_src.kind.clone();
-                        let mut value = __destructure_src.value.clone();
+                        let __destructure_src = loop_var_token;
+                        let mut kind = __destructure_src.kind;
+                        let mut value = __destructure_src.value;
                         let mut loop_var_kind: String = kind.clone();
                         let mut loop_var_value: String = value.clone();
-                        let mut kind = in_token.kind.clone();
+                        let mut kind = in_token.kind;
                         if loop_var_kind == IDENT && kind == KW_IN {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_for.deor
                             declared_var_names.push(loop_var_value.clone());
@@ -3489,7 +3494,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if move_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_for.deor
                         let mut move_token: Token = tokens[move_pos as usize].clone();
-                        let mut kind = move_token.kind.clone();
+                        let mut kind = move_token.kind;
                         if kind == KW_MOVE {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_for.deor
                             let mut move_lparen_pos: i64 = locate_move_lparen(pre_i.clone());
@@ -3500,14 +3505,14 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 let mut move_lparen_token: Token = tokens[move_lparen_pos as usize].clone();
                                 let mut move_var_token: Token = tokens[move_var_pos as usize].clone();
                                 let mut move_in_token: Token = tokens[move_in_pos as usize].clone();
-                                let mut kind = move_lparen_token.kind.clone();
+                                let mut kind = move_lparen_token.kind;
                                 let mut move_lparen_ok: bool = kind == LPAREN;
-                                let __destructure_src = move_var_token.clone();
-                                let mut kind = __destructure_src.kind.clone();
-                                let mut value = __destructure_src.value.clone();
+                                let __destructure_src = move_var_token;
+                                let mut kind = __destructure_src.kind;
+                                let mut value = __destructure_src.value;
                                 let mut move_var_kind: String = kind.clone();
                                 let mut move_var_value: String = value.clone();
-                                let mut kind = move_in_token.kind.clone();
+                                let mut kind = move_in_token.kind;
                                 if move_lparen_ok && move_var_kind == IDENT && kind == KW_IN {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_for.deor
                                     declared_var_names.push(move_var_value.clone());
@@ -3529,16 +3534,16 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if left_paren_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_fn_params.deor
                         let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                        let mut kind = left_paren_token.kind.clone();
+                        let mut kind = left_paren_token.kind;
                         if kind == LPAREN {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_fn_params.deor
                             let mut param_scan_pos: i64 = left_paren_pos + 1;
                             while param_scan_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_fn_params.deor
                                 let mut param_scan_token: Token = tokens[param_scan_pos as usize].clone();
-                                let __destructure_src = param_scan_token.clone();
-                                let mut kind = __destructure_src.kind.clone();
-                                let mut value = __destructure_src.value.clone();
+                                let __destructure_src = param_scan_token;
+                                let mut kind = __destructure_src.kind;
+                                let mut value = __destructure_src.value;
                                 if kind == RPAREN {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_fn_params.deor
                                     break;
@@ -3554,9 +3559,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if param_name_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_fn_params.deor
                                         let mut param_name_token: Token = tokens[param_name_pos as usize].clone();
-                                        let __destructure_src = param_name_token.clone();
-                                        let mut kind = __destructure_src.kind.clone();
-                                        let mut value = __destructure_src.value.clone();
+                                        let __destructure_src = param_name_token;
+                                        let mut kind = __destructure_src.kind;
+                                        let mut value = __destructure_src.value;
                                         if kind == IDENT {
                                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_fn_params.deor
                                             declared_var_names.push(value.clone());
@@ -3582,9 +3587,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if type_keyword_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_enum.deor
                         let mut type_keyword_token: Token = tokens[type_keyword_pos as usize].clone();
-                        let __destructure_src = type_keyword_token.clone();
-                        let mut kind = __destructure_src.kind.clone();
-                        let mut value = __destructure_src.value.clone();
+                        let __destructure_src = type_keyword_token;
+                        let mut kind = __destructure_src.kind;
+                        let mut value = __destructure_src.value;
                         let mut is_typed: bool = false;
                         if kind == IDENT {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_enum.deor
@@ -3596,7 +3601,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             while indent_scan_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_enum.deor
                                 let mut indent_scan_token: Token = tokens[indent_scan_pos as usize].clone();
-                                let mut kind = indent_scan_token.kind.clone();
+                                let mut kind = indent_scan_token.kind;
                                 if kind == INDENT {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_enum.deor
                                     break;
@@ -3608,9 +3613,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                             while body_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_enum.deor
                                 let mut body_token: Token = tokens[body_pos as usize].clone();
-                                let __destructure_src = body_token.clone();
-                                let mut kind = __destructure_src.kind.clone();
-                                let mut value = __destructure_src.value.clone();
+                                let __destructure_src = body_token;
+                                let mut kind = __destructure_src.kind;
+                                let mut value = __destructure_src.value;
                                 if kind == INDENT {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_enum.deor
                                     depth = depth + 1;
@@ -3627,7 +3632,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if equals_check_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_enum.deor
                                         let mut equals_check_token: Token = tokens[equals_check_pos as usize].clone();
-                                        let mut kind = equals_check_token.kind.clone();
+                                        let mut kind = equals_check_token.kind;
                                         if kind == EQUALS {
                                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_enum.deor
                                             declared_var_names.push(value.clone());
@@ -3656,7 +3661,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_destructure.deor
                         let mut prev_pos: i64 = locate_prev_token(pre_i.clone());
                         let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                        let mut kind = prev_token.kind.clone();
+                        let mut kind = prev_token.kind;
                         is_call = kind == IDENT;
                     }
                     if !is_call {
@@ -3666,7 +3671,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         while scan_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_destructure.deor
                             let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                            let mut kind = scan_token.kind.clone();
+                            let mut kind = scan_token.kind;
                             if kind == LPAREN {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_destructure.deor
                                 depth = depth + 1;
@@ -3685,7 +3690,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         if after_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_destructure.deor
                             let mut after_token: Token = tokens[after_pos as usize].clone();
-                            let mut kind = after_token.kind.clone();
+                            let mut kind = after_token.kind;
                             is_destructure = kind == KW_IN;
                         }
                         if is_destructure {
@@ -3695,9 +3700,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                             while name_pos < scan_pos {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_destructure.deor
                                 let mut name_token: Token = tokens[name_pos as usize].clone();
-                                let __destructure_src = name_token.clone();
-                                let mut kind = __destructure_src.kind.clone();
-                                let mut value = __destructure_src.value.clone();
+                                let __destructure_src = name_token;
+                                let mut kind = __destructure_src.kind;
+                                let mut value = __destructure_src.value;
                                 if kind == COMMA {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_declared_vars_destructure.deor
                                     at_name_slot = true;
@@ -3728,9 +3733,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_fn_names.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
-                    let __destructure_src = name_token.clone();
-                    let mut kind = __destructure_src.kind.clone();
-                    let mut value = __destructure_src.value.clone();
+                    let __destructure_src = name_token;
+                    let mut kind = __destructure_src.kind;
+                    let mut value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_collect_fn_names.deor
                         fn_names.push(value.clone());
@@ -3832,9 +3837,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
-                    let __destructure_src = name_token.clone();
-                    let mut kind = __destructure_src.kind.clone();
-                    let mut value = __destructure_src.value.clone();
+                    let __destructure_src = name_token;
+                    let mut kind = __destructure_src.kind;
+                    let mut value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                         struct_name = value.clone();
@@ -3844,7 +3849,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                 while scan_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                     let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                    let mut kind = scan_token.kind.clone();
+                    let mut kind = scan_token.kind;
                     if kind == INDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
                         break;
@@ -3887,7 +3892,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     }
                     if kind == IDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                        let mut value = scan_token.value.clone();
+                        let mut value = scan_token.value;
                         let mut field_type: String = value.clone();
                         let mut field_name_pos: i64 = scan_pos + 1;
                         if field_name_pos < token_count {
@@ -3964,7 +3969,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if scan_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                     let mut type_keyword_token: Token = tokens[scan_pos as usize].clone();
-                    let mut value = type_keyword_token.value.clone();
+                    let mut value = type_keyword_token.value;
                     is_typed = list_has(primitive_type_names.clone(), value.clone());
                 }
                 let mut name_pos: i64 = locate_enum_type_or_name_slot(pre_i.clone());
@@ -3975,9 +3980,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if name_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
-                    let __destructure_src = name_token.clone();
-                    let mut kind = __destructure_src.kind.clone();
-                    let mut value = __destructure_src.value.clone();
+                    let __destructure_src = name_token;
+                    let mut kind = __destructure_src.kind;
+                    let mut value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                         enum_names.push(value.clone());
@@ -3990,7 +3995,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                 while scan_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                     let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                    let mut kind = scan_token.kind.clone();
+                    let mut kind = scan_token.kind;
                     if kind == INDENT {
                         // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                         break;
@@ -4022,7 +4027,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         if after_variant_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                             let mut after_variant_token: Token = tokens[after_variant_pos as usize].clone();
-                            let mut kind = after_variant_token.kind.clone();
+                            let mut kind = after_variant_token.kind;
                             if is_typed {
                                 // transpiler-deor/tokens_validator/macros/prescan/prescan_check_enum_variants.deor
                                 if kind != EQUALS {
@@ -4067,11 +4072,10 @@ pub fn validate_tokens(tokens: TokensRef) {
     while pos < token_count {
         // transpiler-deor/tokens_validator/tokens_validation.deor
         let mut tok: Token = tokens[pos as usize].clone();
-        let __destructure_src = tok.clone();
-        let mut kind = __destructure_src.kind.clone();
-        let mut value = __destructure_src.value.clone();
-        let mut line = __destructure_src.line.clone();
-        let mut file = __destructure_src.file.clone();
+        let mut kind: String = token_kind_at(tokens.clone(), pos.clone());
+        let mut value: String = token_value_at(tokens.clone(), pos.clone());
+        let mut line: i64 = token_line_at(tokens.clone(), pos.clone());
+        let mut file: String = token_file_at(tokens.clone(), pos.clone());
         let mut cur_kind: String = kind.clone();
         let mut cur_val: String = value.clone();
         let mut cur_line: i64 = line.clone();
@@ -4161,7 +4165,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if return_type_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/track/track_block_scope.deor
                         let mut return_type_token: Token = tokens[return_type_pos as usize].clone();
-                        let mut kind = return_type_token.kind.clone();
+                        let mut kind = return_type_token.kind;
                         if kind == KW_VOID {
                             // transpiler-deor/tokens_validator/macros/track/track_block_scope.deor
                             is_void = true;
@@ -4236,9 +4240,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 } else {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_return_tuple.deor
                                     let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                                    let __destructure_src = scan_token.clone();
-                                    let mut kind = __destructure_src.kind.clone();
-                                    let mut value = __destructure_src.value.clone();
+                                    let __destructure_src = scan_token;
+                                    let mut kind = __destructure_src.kind;
+                                    let mut value = __destructure_src.value;
                                     let mut ends_item: bool = false;
                                     if kind == LPAREN {
                                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_return_tuple.deor
@@ -4265,9 +4269,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         if item_len == 1 {
                                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_return_tuple.deor
                                             let mut item_token: Token = tokens[item_start as usize].clone();
-                                            let __destructure_src = item_token.clone();
-                                            let mut kind = __destructure_src.kind.clone();
-                                            let mut value = __destructure_src.value.clone();
+                                            let __destructure_src = item_token;
+                                            let mut kind = __destructure_src.kind;
+                                            let mut value = __destructure_src.value;
                                             if kind == IDENT {
                                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_return_tuple.deor
                                                 is_single_name = true;
@@ -4355,7 +4359,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if after_as_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
                         let mut after_as_token: Token = tokens[after_as_pos as usize].clone();
-                        let mut kind = after_as_token.kind.clone();
+                        let mut kind = after_as_token.kind;
                         if kind == IDENT {
                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
                             let mut with_pos: i64 = locate_next_token(after_as_pos.clone());
@@ -4363,7 +4367,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if paren_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
                                 let mut with_token: Token = tokens[with_pos as usize].clone();
-                                let mut kind = with_token.kind.clone();
+                                let mut kind = with_token.kind;
                                 is_with_form = kind == KW_WITH;
                                 open_pos = paren_pos.clone();
                             }
@@ -4372,7 +4376,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if open_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
                         let mut open_token: Token = tokens[open_pos as usize].clone();
-                        let mut kind = open_token.kind.clone();
+                        let mut kind = open_token.kind;
                         if kind == LPAREN {
                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
                             let mut listed_fields: Vec<String> = Vec::new();
@@ -4381,9 +4385,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                             while scan_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
                                 let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                                let __destructure_src = scan_token.clone();
-                                let mut kind = __destructure_src.kind.clone();
-                                let mut value = __destructure_src.value.clone();
+                                let __destructure_src = scan_token;
+                                let mut kind = __destructure_src.kind;
+                                let mut value = __destructure_src.value;
                                 if kind == RPAREN {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
                                     break;
@@ -4477,10 +4481,10 @@ pub fn validate_tokens(tokens: TokensRef) {
                             let mut equals_token: Token = tokens[equals_pos as usize].clone();
                             let mut kind = name_token.kind.clone();
                             let mut name_kind: String = kind.clone();
-                            let mut kind = equals_token.kind.clone();
+                            let mut kind = equals_token.kind;
                             if name_kind == IDENT && kind == EQUALS {
                                 // transpiler-deor/tokens_validator/macros/use_after_move/track_copy_vars.deor
-                                let mut value = name_token.value.clone();
+                                let mut value = name_token.value;
                                 copy_var_names.push(value.clone());
                             }
                         }
@@ -4492,16 +4496,16 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if left_paren_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/use_after_move/track_copy_vars.deor
                         let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                        let mut kind = left_paren_token.kind.clone();
+                        let mut kind = left_paren_token.kind;
                         if kind == LPAREN {
                             // transpiler-deor/tokens_validator/macros/use_after_move/track_copy_vars.deor
                             let mut param_scan_pos: i64 = left_paren_pos + 1;
                             while param_scan_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/use_after_move/track_copy_vars.deor
                                 let mut param_scan_token: Token = tokens[param_scan_pos as usize].clone();
-                                let __destructure_src = param_scan_token.clone();
-                                let mut kind = __destructure_src.kind.clone();
-                                let mut value = __destructure_src.value.clone();
+                                let __destructure_src = param_scan_token;
+                                let mut kind = __destructure_src.kind;
+                                let mut value = __destructure_src.value;
                                 if kind == RPAREN {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/track_copy_vars.deor
                                     break;
@@ -4527,9 +4531,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if param_name_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/track_copy_vars.deor
                                         let mut param_name_token: Token = tokens[param_name_pos as usize].clone();
-                                        let __destructure_src = param_name_token.clone();
-                                        let mut kind = __destructure_src.kind.clone();
-                                        let mut value = __destructure_src.value.clone();
+                                        let __destructure_src = param_name_token;
+                                        let mut kind = __destructure_src.kind;
+                                        let mut value = __destructure_src.value;
                                         if kind == IDENT {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/track_copy_vars.deor
                                             if param_is_copy {
@@ -4564,7 +4568,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
                             let mut prev_pos: i64 = locate_prev_token(pos.clone());
                             let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                            let mut kind = prev_token.kind.clone();
+                            let mut kind = prev_token.kind;
                             if kind == KW_ELSE {
                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
                                 is_elseif = true;
@@ -4621,7 +4625,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 if after_dedent < token_count {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
                                     let mut after_dedent_token: Token = tokens[after_dedent as usize].clone();
-                                    let mut kind = after_dedent_token.kind.clone();
+                                    let mut kind = after_dedent_token.kind;
                                     if kind == KW_ELSE {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_chain.deor
                                         next_is_else = true;
@@ -4671,7 +4675,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         if move_next_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                             let mut move_next_token: Token = tokens[move_next_pos as usize].clone();
-                            let mut kind = move_next_token.kind.clone();
+                            let mut kind = move_next_token.kind;
                             if kind == LPAREN {
                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                 let mut move_fields: Vec<String> = Vec::new();
@@ -4682,9 +4686,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if scan_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                                        let __destructure_src = scan_token.clone();
-                                        let mut kind = __destructure_src.kind.clone();
-                                        let mut value = __destructure_src.value.clone();
+                                        let __destructure_src = scan_token;
+                                        let mut kind = __destructure_src.kind;
+                                        let mut value = __destructure_src.value;
                                         if kind == IDENT {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                             move_fields.push(value.clone());
@@ -4702,7 +4706,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 if scan_pos < token_count {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                     let mut in_token: Token = tokens[scan_pos as usize].clone();
-                                    let mut kind = in_token.kind.clone();
+                                    let mut kind = in_token.kind;
                                     if kind == KW_IN {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                         let mut source_pos: i64 = scan_pos + 1;
@@ -4715,9 +4719,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                             if kind == IDENT {
                                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                                 let mut source_name: String = value.clone();
-                                                let __destructure_src = source_token.clone();
-                                                let mut line = __destructure_src.line.clone();
-                                                let mut file = __destructure_src.file.clone();
+                                                let __destructure_src = source_token;
+                                                let mut line = __destructure_src.line;
+                                                let mut file = __destructure_src.file;
                                                 let mut line_str: String = n_to_str(line.clone());
                                                 let mut field_index: i64 = 0;
                                                 let mut field_count: i64 = (move_fields.len() as i64);
@@ -4749,7 +4753,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                             let mut prev_pos: i64 = locate_prev_token(pos.clone());
                             let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                            let mut kind = prev_token.kind.clone();
+                            let mut kind = prev_token.kind;
                             if kind == RPAREN {
                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                 let mut next_pos: i64 = locate_next_token(pos.clone());
@@ -4766,7 +4770,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         if after_pos < token_count {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                             let mut after_token: Token = tokens[after_pos as usize].clone();
-                                            let mut kind = after_token.kind.clone();
+                                            let mut kind = after_token.kind;
                                             if kind == LPAREN {
                                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                                 is_bare = false;
@@ -4781,9 +4785,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                             while backscan_pos >= 0 {
                                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                                 let mut backscan_token: Token = tokens[backscan_pos as usize].clone();
-                                                let __destructure_src = backscan_token.clone();
-                                                let mut kind = __destructure_src.kind.clone();
-                                                let mut value = __destructure_src.value.clone();
+                                                let __destructure_src = backscan_token;
+                                                let mut kind = __destructure_src.kind;
+                                                let mut value = __destructure_src.value;
                                                 if kind == RPAREN {
                                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                                     paren_depth = paren_depth + 1;
@@ -4808,7 +4812,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                                 let mut before_lparen_pos: i64 = backscan_pos - 1;
                                                 let mut before_lparen_token: Token = tokens[before_lparen_pos as usize].clone();
-                                                let mut kind = before_lparen_token.kind.clone();
+                                                let mut kind = before_lparen_token.kind;
                                                 if kind == KW_MOVE {
                                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_field.deor
                                                     is_move_stmt = true;
@@ -4856,7 +4860,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if move_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_for.deor
                                 let mut move_token: Token = tokens[move_pos as usize].clone();
-                                let mut kind = move_token.kind.clone();
+                                let mut kind = move_token.kind;
                                 if kind == KW_MOVE {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_for.deor
                                     let mut var_pos: i64 = move_pos + 2;
@@ -4875,7 +4879,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                             if after_collection < token_count {
                                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_for.deor
                                                 let mut after_token: Token = tokens[after_collection as usize].clone();
-                                                let mut kind = after_token.kind.clone();
+                                                let mut kind = after_token.kind;
                                                 if kind == LPAREN {
                                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_for.deor
                                                     collection_is_bare = false;
@@ -4924,7 +4928,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     while scan_pos >= 0 {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                                        let mut kind = scan_token.kind.clone();
+                                        let mut kind = scan_token.kind;
                                         if kind == NEWLINE {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                             break;
@@ -4950,11 +4954,11 @@ pub fn validate_tokens(tokens: TokensRef) {
                                                     let mut func_pos: i64 = scan_pos - 2;
                                                     let mut lparen_token: Token = tokens[lparen_pos as usize].clone();
                                                     let mut func_token: Token = tokens[func_pos as usize].clone();
-                                                    let mut kind = lparen_token.kind.clone();
+                                                    let mut kind = lparen_token.kind;
                                                     let mut lparen_ok: bool = kind == LPAREN;
-                                                    let __destructure_src = func_token.clone();
-                                                    let mut kind = __destructure_src.kind.clone();
-                                                    let mut value = __destructure_src.value.clone();
+                                                    let __destructure_src = func_token;
+                                                    let mut kind = __destructure_src.kind;
+                                                    let mut value = __destructure_src.value;
                                                     if lparen_ok {
                                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                                         if kind == IDENT {
@@ -4981,7 +4985,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     while line_scan_pos >= 0 {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                         let mut line_scan_token: Token = tokens[line_scan_pos as usize].clone();
-                                        let mut kind = line_scan_token.kind.clone();
+                                        let mut kind = line_scan_token.kind;
                                         if kind == NEWLINE {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                             break;
@@ -5000,9 +5004,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if line_first_pos < pos {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                         let mut line_first_token: Token = tokens[line_first_pos as usize].clone();
-                                        let __destructure_src = line_first_token.clone();
-                                        let mut kind = __destructure_src.kind.clone();
-                                        let mut value = __destructure_src.value.clone();
+                                        let __destructure_src = line_first_token;
+                                        let mut kind = __destructure_src.kind;
+                                        let mut value = __destructure_src.value;
                                         if kind == IDENT {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                             let mut line_first_name: String = value.clone();
@@ -5010,7 +5014,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                             if line_first_next < token_count {
                                                 // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                                 let mut line_first_next_token: Token = tokens[line_first_next as usize].clone();
-                                                let mut kind = line_first_next_token.kind.clone();
+                                                let mut kind = line_first_next_token.kind;
                                                 if kind == EQUALS {
                                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                                     if line_first_name == move_name {
@@ -5049,7 +5053,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                         let mut before_move_pos: i64 = locate_prev_token(pos.clone());
                                         let mut before_move_token: Token = tokens[before_move_pos as usize].clone();
-                                        let mut kind = before_move_token.kind.clone();
+                                        let mut kind = before_move_token.kind;
                                         if kind == EQUALS {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_move.deor
                                             is_construct_position = true;
@@ -5130,7 +5134,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 if next_pos < token_count {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                     let mut next_token2: Token = tokens[next_pos as usize].clone();
-                                    let mut kind = next_token2.kind.clone();
+                                    let mut kind = next_token2.kind;
                                     if kind == IDENT {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                         skip_read = true;
@@ -5152,7 +5156,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                     let mut prev_pos: i64 = locate_prev_token(pos.clone());
                                     let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                                    let mut kind = prev_token.kind.clone();
+                                    let mut kind = prev_token.kind;
                                     if kind == KW_MOVE {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                         skip_read = true;
@@ -5222,7 +5226,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 while dt_scan_pos >= 0 {
                                     // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                     let mut dt_scan_token: Token = tokens[dt_scan_pos as usize].clone();
-                                    let mut kind = dt_scan_token.kind.clone();
+                                    let mut kind = dt_scan_token.kind;
                                     if kind == NEWLINE {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                         break;
@@ -5251,7 +5255,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                         let mut dt_before_lparen: i64 = dt_lparen_pos - 1;
                                         let mut dt_before_lparen_token: Token = tokens[dt_before_lparen as usize].clone();
-                                        let mut kind = dt_before_lparen_token.kind.clone();
+                                        let mut kind = dt_before_lparen_token.kind;
                                         if kind == KW_MOVE {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                             dt_preceded_by_move = true;
@@ -5262,7 +5266,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if dt_after_rparen < token_count {
                                         // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                         let mut dt_after_rparen_token: Token = tokens[dt_after_rparen as usize].clone();
-                                        let mut kind = dt_after_rparen_token.kind.clone();
+                                        let mut kind = dt_after_rparen_token.kind;
                                         if kind == KW_IN {
                                             // transpiler-deor/tokens_validator/macros/use_after_move/check_use_after_move_var_ident.deor
                                             dt_followed_by_in = true;
@@ -5352,7 +5356,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/idents/check_destructure_binding_kw.deor
                         let mut prev_pos: i64 = locate_prev_token(pos.clone());
                         let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                        let mut kind = prev_token.kind.clone();
+                        let mut kind = prev_token.kind;
                         is_call = kind == IDENT;
                     }
                     if !is_call {
@@ -5362,7 +5366,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         while scan_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/idents/check_destructure_binding_kw.deor
                             let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                            let mut kind = scan_token.kind.clone();
+                            let mut kind = scan_token.kind;
                             if kind == LPAREN {
                                 // transpiler-deor/tokens_validator/macros/idents/check_destructure_binding_kw.deor
                                 depth = depth + 1;
@@ -5381,7 +5385,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         if after_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/idents/check_destructure_binding_kw.deor
                             let mut after_token: Token = tokens[after_pos as usize].clone();
-                            let mut kind = after_token.kind.clone();
+                            let mut kind = after_token.kind;
                             is_destructure = kind == KW_IN;
                         }
                         if is_destructure {
@@ -5430,7 +5434,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/brackets_parens/check_with_parens.deor
                         let mut move_pos: i64 = pos - 2;
                         let mut move_token: Token = tokens[move_pos as usize].clone();
-                        let mut kind = move_token.kind.clone();
+                        let mut kind = move_token.kind;
                         if kind == KW_MOVE {
                             // transpiler-deor/tokens_validator/macros/brackets_parens/check_with_parens.deor
                             source_gap = 3;
@@ -5440,7 +5444,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/brackets_parens/check_with_parens.deor
                         let mut eq_pos: i64 = pos - source_gap;
                         let mut eq_token: Token = tokens[eq_pos as usize].clone();
-                        let mut kind = eq_token.kind.clone();
+                        let mut kind = eq_token.kind;
                         if kind == EQUALS {
                             // transpiler-deor/tokens_validator/macros/brackets_parens/check_with_parens.deor
                             let mut is_typed_decl: bool = false;
@@ -5449,7 +5453,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/brackets_parens/check_with_parens.deor
                                 let mut type_pos: i64 = pos - type_gap;
                                 let mut type_token: Token = tokens[type_pos as usize].clone();
-                                let mut kind = type_token.kind.clone();
+                                let mut kind = type_token.kind;
                                 is_typed_decl = kind == IDENT;
                             }
                             if !is_typed_decl {
@@ -5519,7 +5523,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/brackets_parens/check_empty_parens.deor
                                 let mut prev_pos: i64 = locate_prev_token(pos.clone());
                                 let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                                let mut kind = prev_token.kind.clone();
+                                let mut kind = prev_token.kind;
                                 let mut prev_is_ident: bool = kind == IDENT;
                                 if prev_is_ident {
                                     // transpiler-deor/tokens_validator/macros/brackets_parens/check_empty_parens.deor
@@ -5528,7 +5532,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/brackets_parens/check_empty_parens.deor
                                         let mut prev2_pos: i64 = locate_prev2(pos.clone());
                                         let mut prev2_token: Token = tokens[prev2_pos as usize].clone();
-                                        let mut kind = prev2_token.kind.clone();
+                                        let mut kind = prev2_token.kind;
                                         is_type_decl = kind == KW_TYPE;
                                     }
                                     is_fn = !is_type_decl;
@@ -5560,9 +5564,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/skip_rust_block.deor
                         let mut newline_token: Token = tokens[newline_pos as usize].clone();
                         let mut block_token: Token = tokens[block_pos as usize].clone();
-                        let mut kind = newline_token.kind.clone();
+                        let mut kind = newline_token.kind;
                         let mut newline_ok: bool = kind == NEWLINE;
-                        let mut kind = block_token.kind.clone();
+                        let mut kind = block_token.kind;
                         let mut block_ok: bool = kind == RUST_BLOCK;
                         is_block = newline_ok && block_ok;
                     }
@@ -5596,7 +5600,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if peek_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_not_is_order.deor
                                 let mut peek_token: Token = tokens[peek_pos as usize].clone();
-                                let mut kind = peek_token.kind.clone();
+                                let mut kind = peek_token.kind;
                                 if kind == LPAREN {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_not_is_order.deor
                                     end_pos = find_matching_rparen(tokens.clone(), peek_pos.clone());
@@ -5607,7 +5611,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         if after_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_not_is_order.deor
                             let mut after_token: Token = tokens[after_pos as usize].clone();
-                            let mut kind = after_token.kind.clone();
+                            let mut kind = after_token.kind;
                             if kind == KW_IS {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_not_is_order.deor
                                 errors.push(val_err(next_token.clone(), lbl_var.clone(), rule_not_is.clone()).clone());
@@ -5630,7 +5634,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_not_operand.deor
                     let mut before_pos: i64 = locate_previous_token(pos.clone());
                     let mut before_token: Token = tokens[before_pos as usize].clone();
-                    let mut kind = before_token.kind.clone();
+                    let mut kind = before_token.kind;
                     is_is_not = kind == KW_IS;
                 }
                 if cur_kind == KW_NOT && !is_is_not {
@@ -5656,7 +5660,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if peek_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_not_operand.deor
                                 let mut peek_token: Token = tokens[peek_pos as usize].clone();
-                                let mut kind = peek_token.kind.clone();
+                                let mut kind = peek_token.kind;
                                 if kind == LPAREN {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_not_operand.deor
                                     is_bare_name = false;
@@ -5685,7 +5689,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         if after_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_not_operand.deor
                             let mut after_token: Token = tokens[after_pos as usize].clone();
-                            let mut kind = after_token.kind.clone();
+                            let mut kind = after_token.kind;
                             let mut is_comparison: bool = kind == "GT" || kind == "LT" || kind == "GTE" || kind == "LTE";
                             let mut is_math: bool = kind == PLUS || kind == MINUS || kind == STAR || kind == SLASH || kind == PERCENT;
                             if is_comparison || is_math {
@@ -5717,7 +5721,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if after_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_bare_truthiness.deor
                                 let mut after_token: Token = tokens[after_pos as usize].clone();
-                                let mut kind = after_token.kind.clone();
+                                let mut kind = after_token.kind;
                                 if kind == NEWLINE {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_bare_truthiness.deor
                                     let mut is_non_bool: bool = list_has(non_bool_var_names.clone(), value.clone());
@@ -5751,14 +5755,14 @@ pub fn validate_tokens(tokens: TokensRef) {
                             let mut left_pos: i64 = locate_prev_token(pos.clone());
                             let mut left_token: Token = tokens[left_pos as usize].clone();
                             let mut right_token: Token = tokens[right_pos as usize].clone();
-                            let __destructure_src = left_token.clone();
-                            let mut kind = __destructure_src.kind.clone();
-                            let mut value = __destructure_src.value.clone();
+                            let __destructure_src = left_token;
+                            let mut kind = __destructure_src.kind;
+                            let mut value = __destructure_src.value;
                             let mut left_kind: String = kind.clone();
                             let mut left_value: String = value.clone();
-                            let __destructure_src = right_token.clone();
-                            let mut kind = __destructure_src.kind.clone();
-                            let mut value = __destructure_src.value.clone();
+                            let __destructure_src = right_token;
+                            let mut kind = __destructure_src.kind;
+                            let mut value = __destructure_src.value;
                             let mut right_kind: String = kind.clone();
                             let mut right_value: String = value.clone();
                             let mut left_is_str: bool = left_kind == STRING;
@@ -5820,7 +5824,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     while scan_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
                         let mut indent_scan_token: Token = tokens[scan_pos as usize].clone();
-                        let mut kind = indent_scan_token.kind.clone();
+                        let mut kind = indent_scan_token.kind;
                         if kind == INDENT {
                             // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
                             break;
@@ -5853,7 +5857,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if field_name_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
                                 let mut field_name_token: Token = tokens[field_name_pos as usize].clone();
-                                let mut kind = field_name_token.kind.clone();
+                                let mut kind = field_name_token.kind;
                                 if kind == IDENT {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_struct_field_types.deor
                                     let mut is_known_field_type: bool = list_has(primitive_type_names.clone(), field_type.clone()) || list_has(declared_type_names.clone(), field_type.clone());
@@ -5925,7 +5929,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if type_keyword_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/declarations/check_enum_decl.deor
                     let mut type_keyword_token: Token = tokens[type_keyword_pos as usize].clone();
-                    let mut value = type_keyword_token.value.clone();
+                    let mut value = type_keyword_token.value;
                     if list_has(primitive_type_names.clone(), value.clone()) {
                         // transpiler-deor/tokens_validator/macros/declarations/check_enum_decl.deor
                         validate_indent_offset = 2;
@@ -5995,21 +5999,21 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if form_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                         let mut form_token: Token = tokens[form_pos as usize].clone();
-                        let mut kind = form_token.kind.clone();
+                        let mut kind = form_token.kind;
                         if kind == KW_FUNC {
                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                             let mut of_or_to_pos: i64 = locate_func_of_or_to(pos.clone());
                             if of_or_to_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                 let mut of_or_to_token: Token = tokens[of_or_to_pos as usize].clone();
-                                let mut kind = of_or_to_token.kind.clone();
+                                let mut kind = of_or_to_token.kind;
                                 if kind == KW_OF {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                     let mut in_type_pos: i64 = locate_func_in_type(pos.clone());
                                     if in_type_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                         let mut in_type_token: Token = tokens[in_type_pos as usize].clone();
-                                        let mut kind = in_type_token.kind.clone();
+                                        let mut kind = in_type_token.kind;
                                         if kind == LPAREN {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                             errors.push(val_err(tok.clone(), lbl_shape.clone(), rule_func_shape_multi_param.clone()).clone());
@@ -6019,14 +6023,14 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if to_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                         let mut to_token: Token = tokens[to_pos as usize].clone();
-                                        let mut kind = to_token.kind.clone();
+                                        let mut kind = to_token.kind;
                                         if kind == KW_TO {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                             let mut out_type_pos: i64 = locate_func_out_type_after_of(pos.clone());
                                             if out_type_pos < token_count {
                                                 // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                                 let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
-                                                let mut kind = out_type_token.kind.clone();
+                                                let mut kind = out_type_token.kind;
                                                 if kind == LPAREN {
                                                     // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                                     errors.push(val_err(tok.clone(), lbl_shape.clone(), rule_func_shape_multi_param.clone()).clone());
@@ -6040,7 +6044,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if out_type_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                         let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
-                                        let mut kind = out_type_token.kind.clone();
+                                        let mut kind = out_type_token.kind;
                                         if kind == LPAREN {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_func_shape_multi_param.deor
                                             errors.push(val_err(tok.clone(), lbl_shape.clone(), rule_func_shape_multi_param.clone()).clone());
@@ -6082,7 +6086,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if form_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
                         let mut form_token: Token = tokens[form_pos as usize].clone();
-                        let mut kind = form_token.kind.clone();
+                        let mut kind = form_token.kind;
                         if kind == KW_LIST {
                             // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
                             let mut elem_pos: i64 = locate_list_elem(pos.clone());
@@ -6102,7 +6106,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if of_or_to_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
                                 let mut of_or_to_token: Token = tokens[of_or_to_pos as usize].clone();
-                                let mut kind = of_or_to_token.kind.clone();
+                                let mut kind = of_or_to_token.kind;
                                 if kind == KW_OF {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
                                     let mut in_type_pos: i64 = locate_func_in_type(pos.clone());
@@ -6120,7 +6124,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if to_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
                                         let mut to_token: Token = tokens[to_pos as usize].clone();
-                                        let mut kind = to_token.kind.clone();
+                                        let mut kind = to_token.kind;
                                         if kind == KW_TO {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_shape_referenced_types.deor
                                             let mut out_type_pos: i64 = locate_func_out_type_after_of(pos.clone());
@@ -6212,7 +6216,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if base_type_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/declarations/check_type_base_primitive.deor
                         let mut base_type_token: Token = tokens[base_type_pos as usize].clone();
-                        let mut value = base_type_token.value.clone();
+                        let mut value = base_type_token.value;
                         let mut is_primitive: bool = list_has(primitive_type_names.clone(), value.clone());
                         let mut is_struct_base: bool = reg_has(struct_field_reg.clone(), value.clone());
                         let mut is_allowed_base: bool = is_primitive || is_struct_base;
@@ -6262,10 +6266,10 @@ pub fn validate_tokens(tokens: TokensRef) {
                         let mut kind = __destructure_src.kind.clone();
                         let mut value = __destructure_src.value.clone();
                         let mut type_name: String = value.clone();
-                        let mut kind = left_paren_token.kind.clone();
+                        let mut kind = left_paren_token.kind;
                         if kind == LPAREN {
                             // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
-                            let mut value = param_type_token.value.clone();
+                            let mut value = param_type_token.value;
                             let mut param_type: String = value.clone();
                             let __destructure_src = param_name_token.clone();
                             let mut kind = __destructure_src.kind.clone();
@@ -6291,11 +6295,11 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if body_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
                                 let mut newline_token: Token = tokens[newline_pos as usize].clone();
-                                let mut kind = newline_token.kind.clone();
+                                let mut kind = newline_token.kind;
                                 if kind == NEWLINE {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
                                     let mut body_token: Token = tokens[body_pos as usize].clone();
-                                    let mut kind = body_token.kind.clone();
+                                    let mut kind = body_token.kind;
                                     if kind == INDENT {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_validator_declaration.deor
                                         has_body = true;
@@ -6388,7 +6392,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         }
                         if cur_val == "string" {
                             // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
-                            let mut value = name_token.value.clone();
+                            let mut value = name_token.value;
                             string_var_names.push(value.clone());
                         }
                     }
@@ -6399,7 +6403,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
                             if equals_kind == IDENT {
                                 // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
-                                let mut value = equals_token.value.clone();
+                                let mut value = equals_token.value;
                                 as_is_str = list_has(string_var_names.clone(), value.clone());
                             }
                         }
@@ -6416,16 +6420,16 @@ pub fn validate_tokens(tokens: TokensRef) {
                 if left_paren_pos < token_count {
                     // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
                     let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                    let mut kind = left_paren_token.kind.clone();
+                    let mut kind = left_paren_token.kind;
                     if kind == LPAREN {
                         // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
                         let mut param_scan_pos: i64 = left_paren_pos + 1;
                         while param_scan_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
                             let mut param_scan_token: Token = tokens[param_scan_pos as usize].clone();
-                            let __destructure_src = param_scan_token.clone();
-                            let mut kind = __destructure_src.kind.clone();
-                            let mut value = __destructure_src.value.clone();
+                            let __destructure_src = param_scan_token;
+                            let mut kind = __destructure_src.kind;
+                            let mut value = __destructure_src.value;
                             if kind == RPAREN {
                                 // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
                                 break;
@@ -6442,9 +6446,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 if param_name_pos < token_count {
                                     // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
                                     let mut param_name_token: Token = tokens[param_name_pos as usize].clone();
-                                    let __destructure_src = param_name_token.clone();
-                                    let mut kind = __destructure_src.kind.clone();
-                                    let mut value = __destructure_src.value.clone();
+                                    let __destructure_src = param_name_token;
+                                    let mut kind = __destructure_src.kind;
+                                    let mut value = __destructure_src.value;
                                     if kind == IDENT {
                                         // transpiler-deor/tokens_validator/macros/track/track_non_bool_vars.deor
                                         let mut param_is_bool: bool = param_type == "bool";
@@ -6500,7 +6504,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if left_paren_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
                         let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                        let mut kind = left_paren_token.kind.clone();
+                        let mut kind = left_paren_token.kind;
                         if kind == LPAREN {
                             // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
                             let mut param_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
@@ -6594,7 +6598,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         let mut after_return_type_token: Token = tokens[after_return_type_pos as usize].clone();
                         let mut kind = return_type_token.kind.clone();
                         let mut return_type_kind: String = kind.clone();
-                        let mut kind = after_return_type_token.kind.clone();
+                        let mut kind = after_return_type_token.kind;
                         if return_type_kind == IDENT {
                             // transpiler-deor/tokens_validator/macros/declarations/check_fn_declaration.deor
                             if kind == LPAREN {
@@ -6633,13 +6637,13 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if left_paren_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                         let mut return_type_token: Token = tokens[return_type_pos as usize].clone();
-                        let __destructure_src = return_type_token.clone();
-                        let mut kind = __destructure_src.kind.clone();
-                        let mut value = __destructure_src.value.clone();
+                        let __destructure_src = return_type_token;
+                        let mut kind = __destructure_src.kind;
+                        let mut value = __destructure_src.value;
                         let mut has_ret_type: bool = kind == IDENT;
                         let mut is_void: bool = value == "void";
                         let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                        let mut kind = left_paren_token.kind.clone();
+                        let mut kind = left_paren_token.kind;
                         let mut is_call_shape: bool = kind == LPAREN;
                         if has_ret_type && !is_void && is_call_shape {
                             // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
@@ -6648,14 +6652,14 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if newline_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                 let mut newline_token: Token = tokens[newline_pos as usize].clone();
-                                let mut kind = newline_token.kind.clone();
+                                let mut kind = newline_token.kind;
                                 if kind == NEWLINE {
                                     // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                     let mut indent_pos: i64 = newline_pos + 1;
                                     if indent_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                         let mut indent_token: Token = tokens[indent_pos as usize].clone();
-                                        let mut kind = indent_token.kind.clone();
+                                        let mut kind = indent_token.kind;
                                         if kind == INDENT {
                                             // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                             let mut body_first_pos: i64 = indent_pos + 1;
@@ -6680,7 +6684,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                                             // transpiler-deor/tokens_validator/macros/declarations/check_missing_return_expr.deor
                                                             let mut prev_pos: i64 = scan_pos - 1;
                                                             let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                                                            let mut kind = prev_token.kind.clone();
+                                                            let mut kind = prev_token.kind;
                                                             let mut prev_kind: String = kind.clone();
                                                             let mut prev_is_boundary: bool = prev_kind == NEWLINE;
                                                             if !prev_is_boundary {
@@ -6821,7 +6825,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if equals_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/raw/check_raw_assignment.deor
                         let mut equals_token: Token = tokens[equals_pos as usize].clone();
-                        let mut kind = equals_token.kind.clone();
+                        let mut kind = equals_token.kind;
                         if kind == KW_AS {
                             // transpiler-deor/tokens_validator/macros/raw/check_raw_assignment.deor
                             let mut as_name_pos: i64 = locate_name(pos.clone());
@@ -6842,14 +6846,14 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 if call_pos < token_count {
                                     // transpiler-deor/tokens_validator/macros/raw/check_raw_assignment.deor
                                     let mut call_token: Token = tokens[call_pos as usize].clone();
-                                    let mut kind = call_token.kind.clone();
+                                    let mut kind = call_token.kind;
                                     if kind == IDENT {
                                         // transpiler-deor/tokens_validator/macros/raw/check_raw_assignment.deor
                                         let mut lparen_pos: i64 = locate_call_lparen(pos.clone());
                                         if lparen_pos < token_count {
                                             // transpiler-deor/tokens_validator/macros/raw/check_raw_assignment.deor
                                             let mut lparen_token: Token = tokens[lparen_pos as usize].clone();
-                                            let mut kind = lparen_token.kind.clone();
+                                            let mut kind = lparen_token.kind;
                                             is_call = kind == LPAREN;
                                         }
                                     }
@@ -6911,7 +6915,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if left_paren_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
                                 let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                                let mut kind = left_paren_token.kind.clone();
+                                let mut kind = left_paren_token.kind;
                                 if kind == LPAREN {
                                     // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
                                     let mut arg_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
@@ -6948,7 +6952,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if left_paren_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
                                 let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                                let mut kind = left_paren_token.kind.clone();
+                                let mut kind = left_paren_token.kind;
                                 if kind == LPAREN {
                                     // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
                                     let mut arg_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
@@ -6985,7 +6989,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if left_paren_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
                                 let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                                let mut kind = left_paren_token.kind.clone();
+                                let mut kind = left_paren_token.kind;
                                 if kind == LPAREN {
                                     // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
                                     let mut arg_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
@@ -7022,7 +7026,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if left_paren_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
                                 let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                                let mut kind = left_paren_token.kind.clone();
+                                let mut kind = left_paren_token.kind;
                                 if kind == LPAREN {
                                     // transpiler-deor/tokens_validator/macros/builtins/check_builtin_arg_count.deor
                                     let mut arg_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
@@ -7075,9 +7079,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/declarations/check_validator_empty.deor
                         let mut type_pos: i64 = locate_type_before_empty(pos.clone());
                         let mut type_token: Token = tokens[type_pos as usize].clone();
-                        let __destructure_src = type_token.clone();
-                        let mut kind = __destructure_src.kind.clone();
-                        let mut value = __destructure_src.value.clone();
+                        let __destructure_src = type_token;
+                        let mut kind = __destructure_src.kind;
+                        let mut value = __destructure_src.value;
                         if kind == IDENT {
                             // transpiler-deor/tokens_validator/macros/declarations/check_validator_empty.deor
                             let mut is_validator: bool = list_has(validator_type_names.clone(), value.clone());
@@ -7126,7 +7130,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             break;
                         }
                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                        let mut kind = scan_token.kind.clone();
+                        let mut kind = scan_token.kind;
                         if kind == LBRACKET {
                             // transpiler-deor/tokens_validator/macros/brackets_parens/check_multiline_list.deor
                             depth = depth + 1;
@@ -7237,7 +7241,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     // transpiler-deor/tokens_validator/macros/check_ident_token_rules.deor
                     let mut prev2_pos: i64 = locate_prev2(pos.clone());
                     let mut prev2_token: Token = tokens[prev2_pos as usize].clone();
-                    let mut kind = prev2_token.kind.clone();
+                    let mut kind = prev2_token.kind;
                     is_fn_decl_name = kind == KW_FN;
                 }
                 if !is_fn_decl_name {
@@ -7251,7 +7255,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         if left_paren_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/builtins/check_call_args.deor
                             let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                            let mut kind = left_paren_token.kind.clone();
+                            let mut kind = left_paren_token.kind;
                             if kind == LPAREN {
                                 // transpiler-deor/tokens_validator/macros/builtins/check_call_args.deor
                                 let mut arg_count: i64 = count_call_args(tokens.clone(), left_paren_pos.clone());
@@ -7263,7 +7267,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     while scan_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/builtins/check_call_args.deor
                                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                                        let mut kind = scan_token.kind.clone();
+                                        let mut kind = scan_token.kind;
                                         if kind == RPAREN {
                                             // transpiler-deor/tokens_validator/macros/builtins/check_call_args.deor
                                             let mut at_root: bool = scan_depth == 0;
@@ -7354,9 +7358,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                             let mut name_token: Token = tokens[name_pos as usize].clone();
                             let mut equals_token: Token = tokens[equals_pos as usize].clone();
                             let mut value_token: Token = tokens[value_pos as usize].clone();
-                            let mut kind = name_token.kind.clone();
+                            let mut kind = name_token.kind;
                             let mut name_kind: String = kind.clone();
-                            let mut kind = equals_token.kind.clone();
+                            let mut kind = equals_token.kind;
                             let mut equals_kind: String = kind.clone();
                             let __destructure_src = value_token.clone();
                             let mut kind = __destructure_src.kind.clone();
@@ -7379,7 +7383,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/raw/check_raw_in_binding.deor
                             let mut as_token: Token = tokens[as_pos as usize].clone();
                             let mut as_value_token: Token = tokens[as_value_pos as usize].clone();
-                            let mut kind = as_token.kind.clone();
+                            let mut kind = as_token.kind;
                             let mut is_as: bool = kind == KW_AS;
                             let __destructure_src = as_value_token.clone();
                             let mut kind = __destructure_src.kind.clone();
@@ -7412,7 +7416,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         if after_pos < token_count {
                             // transpiler-deor/tokens_validator/macros/reassign/check_raw_reassign.deor
                             let mut after_token: Token = tokens[after_pos as usize].clone();
-                            let mut kind = after_token.kind.clone();
+                            let mut kind = after_token.kind;
                             let mut is_eq: bool = kind == EQUALS;
                             let mut is_as: bool = kind == KW_AS;
                             if is_eq || is_as {
@@ -7422,7 +7426,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     // transpiler-deor/tokens_validator/macros/reassign/check_raw_reassign.deor
                                     let mut before_pos: i64 = locate_before_name(pos.clone());
                                     let mut before_token: Token = tokens[before_pos as usize].clone();
-                                    let mut kind = before_token.kind.clone();
+                                    let mut kind = before_token.kind;
                                     is_decl = kind == KW_RAW;
                                 }
                                 if !is_decl {
@@ -7460,7 +7464,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/raw/check_raw_operator_use.deor
                                 let mut prev_pos: i64 = locate_prev_token(pos.clone());
                                 let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                                let mut kind = prev_token.kind.clone();
+                                let mut kind = prev_token.kind;
                                 prev_is_op = is_binary_op(kind.clone());
                             }
                             if next_is_op || prev_is_op {
@@ -7486,7 +7490,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if left_paren_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/raw/check_raw_in_special_builtin.deor
                                 let mut left_paren_token: Token = tokens[left_paren_pos as usize].clone();
-                                let mut kind = left_paren_token.kind.clone();
+                                let mut kind = left_paren_token.kind;
                                 if kind == LPAREN {
                                     // transpiler-deor/tokens_validator/macros/raw/check_raw_in_special_builtin.deor
                                     let mut scan_pos: i64 = left_paren_pos + 1;
@@ -7552,7 +7556,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if after_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/reassign/check_bare_reassign.deor
                                 let mut after_token: Token = tokens[after_pos as usize].clone();
-                                let mut kind = after_token.kind.clone();
+                                let mut kind = after_token.kind;
                                 let mut is_eq: bool = false;
                                 if allow_eq {
                                     // transpiler-deor/tokens_validator/macros/reassign/check_bare_reassign.deor
@@ -7570,7 +7574,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/reassign/check_bare_reassign.deor
                                         let mut before_pos: i64 = locate_before_name(pos.clone());
                                         let mut before_token: Token = tokens[before_pos as usize].clone();
-                                        let mut kind = before_token.kind.clone();
+                                        let mut kind = before_token.kind;
                                         is_decl = kind == IDENT;
                                     }
                                     if !is_decl {
@@ -7605,7 +7609,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if after_pos < token_count {
                                 // transpiler-deor/tokens_validator/macros/reassign/check_bare_reassign.deor
                                 let mut after_token: Token = tokens[after_pos as usize].clone();
-                                let mut kind = after_token.kind.clone();
+                                let mut kind = after_token.kind;
                                 let mut is_eq: bool = false;
                                 if allow_eq {
                                     // transpiler-deor/tokens_validator/macros/reassign/check_bare_reassign.deor
@@ -7623,7 +7627,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/reassign/check_bare_reassign.deor
                                         let mut before_pos: i64 = locate_before_name(pos.clone());
                                         let mut before_token: Token = tokens[before_pos as usize].clone();
-                                        let mut kind = before_token.kind.clone();
+                                        let mut kind = before_token.kind;
                                         is_decl = kind == IDENT;
                                     }
                                     if !is_decl {
@@ -7655,7 +7659,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         let mut equals_token: Token = tokens[equals_pos as usize].clone();
                         let mut kind = name_token.kind.clone();
                         let mut name_kind: String = kind.clone();
-                        let mut kind = equals_token.kind.clone();
+                        let mut kind = equals_token.kind;
                         let mut equals_kind: String = kind.clone();
                         if name_kind == IDENT && equals_kind == EQUALS {
                             // transpiler-deor/tokens_validator/macros/declarations/check_var_decl.deor
@@ -7687,7 +7691,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_var_decl.deor
                                 let mut const_check_pos: i64 = locate_const_check_pos(pos.clone());
                                 let mut const_check_token: Token = tokens[const_check_pos as usize].clone();
-                                let mut kind = const_check_token.kind.clone();
+                                let mut kind = const_check_token.kind;
                                 is_const = kind == KW_CONST;
                             }
                             if is_const {
@@ -7739,9 +7743,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_bad_stmt.deor
                             let mut second_token: Token = tokens[second_pos as usize].clone();
                             let mut third_token: Token = tokens[third_pos as usize].clone();
-                            let mut kind = second_token.kind.clone();
+                            let mut kind = second_token.kind;
                             let mut second_kind: String = kind.clone();
-                            let mut kind = third_token.kind.clone();
+                            let mut kind = third_token.kind;
                             let mut third_kind: String = kind.clone();
                             if second_kind == IDENT {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_bad_stmt.deor
@@ -7781,7 +7785,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                     if after_pos < token_count {
                         // transpiler-deor/tokens_validator/macros/reassign/check_undeclared_reassign.deor
                         let mut after_token: Token = tokens[after_pos as usize].clone();
-                        let mut kind = after_token.kind.clone();
+                        let mut kind = after_token.kind;
                         if kind == EQUALS {
                             // transpiler-deor/tokens_validator/macros/reassign/check_undeclared_reassign.deor
                             let mut is_decl: bool = false;
@@ -7789,7 +7793,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                 // transpiler-deor/tokens_validator/macros/reassign/check_undeclared_reassign.deor
                                 let mut before_pos: i64 = locate_before_name(pos.clone());
                                 let mut before_token: Token = tokens[before_pos as usize].clone();
-                                let mut kind = before_token.kind.clone();
+                                let mut kind = before_token.kind;
                                 let mut before_kind: String = kind.clone();
                                 is_decl = before_kind == IDENT;
                                 if before_kind == KW_RAW {
@@ -7860,7 +7864,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
                         let mut prev_pos: i64 = locate_prev_token(pos.clone());
                         let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                        let mut kind = prev_token.kind.clone();
+                        let mut kind = prev_token.kind;
                         if kind == KW_STRUCT {
                             // transpiler-deor/tokens_validator/macros/check_undefined_var_read.deor
                             skip = true;
@@ -7981,11 +7985,11 @@ pub fn validate_tokens(tokens: TokensRef) {
                             let mut name_token: Token = tokens[name_pos as usize].clone();
                             let mut equals_token: Token = tokens[equals_pos as usize].clone();
                             let mut value_token: Token = tokens[value_pos as usize].clone();
-                            let mut kind = name_token.kind.clone();
+                            let mut kind = name_token.kind;
                             let mut name_kind: String = kind.clone();
-                            let mut kind = equals_token.kind.clone();
+                            let mut kind = equals_token.kind;
                             let mut equals_kind: String = kind.clone();
-                            let mut kind = value_token.kind.clone();
+                            let mut kind = value_token.kind;
                             let mut value_kind: String = kind.clone();
                             let mut is_var: bool = name_kind == IDENT;
                             let mut is_eq: bool = equals_kind == EQUALS;
@@ -8001,7 +8005,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if after_paren_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                         let mut after_paren_token: Token = tokens[after_paren_pos as usize].clone();
-                                        let mut kind = after_paren_token.kind.clone();
+                                        let mut kind = after_paren_token.kind;
                                         if kind == KW_AVOW {
                                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                             matched = false;
@@ -8013,7 +8017,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     if move_paren_pos < token_count {
                                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                         let mut move_paren_token: Token = tokens[move_paren_pos as usize].clone();
-                                        let mut kind = move_paren_token.kind.clone();
+                                        let mut kind = move_paren_token.kind;
                                         if kind == LPAREN {
                                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                             matched = true;
@@ -8042,9 +8046,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         } else {
                                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                             let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                                            let __destructure_src = scan_token.clone();
-                                            let mut kind = __destructure_src.kind.clone();
-                                            let mut value = __destructure_src.value.clone();
+                                            let __destructure_src = scan_token;
+                                            let mut kind = __destructure_src.kind;
+                                            let mut value = __destructure_src.value;
                                             if kind == RPAREN {
                                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                                 scanning = false;
@@ -8109,12 +8113,12 @@ pub fn validate_tokens(tokens: TokensRef) {
                                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                                         let mut prev_pos: i64 = locate_prev_token(pos.clone());
                                         let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                                        let mut kind = prev_token.kind.clone();
+                                        let mut kind = prev_token.kind;
                                         if kind == KW_IN {
                                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                                             let mut prev2_pos: i64 = locate_prev2(pos.clone());
                                             let mut prev2_token: Token = tokens[prev2_pos as usize].clone();
-                                            let mut kind = prev2_token.kind.clone();
+                                            let mut kind = prev2_token.kind;
                                             if kind == KW_FOR {
                                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                                                 is_valid = true;
@@ -8124,7 +8128,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                                                     let mut prev3_pos: i64 = locate_prev3(pos.clone());
                                                     let mut prev3_token: Token = tokens[prev3_pos as usize].clone();
-                                                    let mut kind = prev3_token.kind.clone();
+                                                    let mut kind = prev3_token.kind;
                                                     if kind == KW_FOR {
                                                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_range_placement.deor
                                                         is_valid = true;
@@ -8165,7 +8169,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/declarations/check_void_var.deor
                         let mut before_void_pos: i64 = locate_before_void(pos.clone());
                         let mut before_void_token: Token = tokens[before_void_pos as usize].clone();
-                        let mut kind = before_void_token.kind.clone();
+                        let mut kind = before_void_token.kind;
                         preceded_by_fn = kind == KW_FN;
                     }
                     if !preceded_by_fn {
@@ -8176,9 +8180,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                             // transpiler-deor/tokens_validator/macros/declarations/check_void_var.deor
                             let mut void_name_token: Token = tokens[void_name_pos as usize].clone();
                             let mut void_equals_token: Token = tokens[void_equals_pos as usize].clone();
-                            let mut kind = void_name_token.kind.clone();
+                            let mut kind = void_name_token.kind;
                             let mut void_name_kind: String = kind.clone();
-                            let mut kind = void_equals_token.kind.clone();
+                            let mut kind = void_equals_token.kind;
                             if void_name_kind == IDENT {
                                 // transpiler-deor/tokens_validator/macros/declarations/check_void_var.deor
                                 if kind == EQUALS {
@@ -8203,7 +8207,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_valid_placement.deor
                         let mut prev_pos: i64 = locate_prev_token(pos.clone());
                         let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                        let mut kind = prev_token.kind.clone();
+                        let mut kind = prev_token.kind;
                         is_valid = kind == KW_IS;
                         if !is_valid {
                             // transpiler-deor/tokens_validator/macros/syntax_rules/check_valid_placement.deor
@@ -8229,7 +8233,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         // transpiler-deor/tokens_validator/macros/syntax_rules/check_end_placement.deor
                         let mut prev_pos: i64 = locate_prev_token(pos.clone());
                         let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                        let mut kind = prev_token.kind.clone();
+                        let mut kind = prev_token.kind;
                         is_valid = kind == KW_AT;
                     }
                     if !is_valid {
@@ -8279,7 +8283,7 @@ pub fn skip_to_block_start(tokens: TokensRef, start: i64) -> ParseResult {
     for skip_index in start..token_count {
         // transpiler-deor/registry/struct.deor
         let mut skip_token: Token = tokens[skip_index as usize].clone();
-        let kind = skip_token.kind.clone();
+        let kind = skip_token.kind;
         cur = skip_index + 1;
         if kind == INDENT {
             // transpiler-deor/registry/struct.deor
@@ -8298,7 +8302,7 @@ pub fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
     for field_index in start..token_count {
         // transpiler-deor/registry/struct.deor
         let mut field_token: Token = tokens[field_index as usize].clone();
-        let kind = field_token.kind.clone();
+        let kind = field_token.kind;
         if kind == DEDENT {
             // transpiler-deor/registry/struct.deor
             cur = field_index + 1;
@@ -8309,9 +8313,9 @@ pub fn collect_struct_fields(tokens: TokensRef, start: i64) -> ParseResult {
             if field_name_pos < token_count {
                 // transpiler-deor/registry/struct.deor
                 let mut field_name_token: Token = tokens[field_name_pos as usize].clone();
-                let __destructure_src = field_name_token.clone();
-                let kind = __destructure_src.kind.clone();
-                let value = __destructure_src.value.clone();
+                let __destructure_src = field_name_token;
+                let kind = __destructure_src.kind;
+                let value = __destructure_src.value;
                 if kind == IDENT {
                     // transpiler-deor/registry/struct.deor
                     fields.push(value.clone());
@@ -8342,9 +8346,9 @@ pub fn try_struct_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     if name_pos < token_count {
         // transpiler-deor/registry/struct.deor
         let mut name_token: Token = tokens[name_pos as usize].clone();
-        let __destructure_src = name_token.clone();
-        let kind = __destructure_src.kind.clone();
-        let value = __destructure_src.value.clone();
+        let __destructure_src = name_token;
+        let kind = __destructure_src.kind;
+        let value = __destructure_src.value;
         if kind == IDENT {
             // transpiler-deor/registry/struct.deor
             matched = true;
@@ -8400,16 +8404,16 @@ pub fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
         // transpiler-deor/registry/shape.deor
         let mut name_token: Token = tokens[name_pos as usize].clone();
         let mut form_token: Token = tokens[form_pos as usize].clone();
-        let value = name_token.value.clone();
+        let value = name_token.value;
         let mut shape_name: String = value.clone();
-        let kind = form_token.kind.clone();
+        let kind = form_token.kind;
         if kind == KW_LIST {
             // transpiler-deor/registry/shape.deor
             let mut elem_pos: i64 = locate_list_elem(pos.clone());
             if elem_pos < token_count {
                 // transpiler-deor/registry/shape.deor
                 let mut elem_token: Token = tokens[elem_pos as usize].clone();
-                let value = elem_token.value.clone();
+                let value = elem_token.value;
                 matched = true;
                 key = shape_name.clone();
                 val = value.clone();
@@ -8417,9 +8421,9 @@ pub fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
         } else {
             // transpiler-deor/registry/shape.deor
             let mut of_or_to_token: Token = tokens[of_or_to_pos as usize].clone();
-            let __destructure_src = of_or_to_token.clone();
-            let kind = __destructure_src.kind.clone();
-            let value = __destructure_src.value.clone();
+            let __destructure_src = of_or_to_token;
+            let kind = __destructure_src.kind;
+            let value = __destructure_src.value;
             let mut is_of: bool = kind == KW_OF;
             let mut is_to: bool = kind == KW_TO;
             let mut in_type: String = "".to_string();
@@ -8430,16 +8434,16 @@ pub fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
                 if in_type_pos < token_count {
                     // transpiler-deor/registry/shape.deor
                     let mut in_type_token: Token = tokens[in_type_pos as usize].clone();
-                    let value = in_type_token.value.clone();
+                    let value = in_type_token.value;
                     in_type = value.clone();
                 }
                 let mut to_pos: i64 = locate_func_to_after_of(pos.clone());
                 if to_pos < token_count {
                     // transpiler-deor/registry/shape.deor
                     let mut to_token: Token = tokens[to_pos as usize].clone();
-                    let __destructure_src = to_token.clone();
-                    let kind = __destructure_src.kind.clone();
-                    let value = __destructure_src.value.clone();
+                    let __destructure_src = to_token;
+                    let kind = __destructure_src.kind;
+                    let value = __destructure_src.value;
                     let mut has_to: bool = kind == KW_TO;
                     if has_to {
                         // transpiler-deor/registry/shape.deor
@@ -8447,7 +8451,7 @@ pub fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
                         if out_type_pos < token_count {
                             // transpiler-deor/registry/shape.deor
                             let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
-                            let value = out_type_token.value.clone();
+                            let value = out_type_token.value;
                             out_type = value.clone();
                         }
                     }
@@ -8458,7 +8462,7 @@ pub fn try_shape_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
                 if out_type_pos < token_count {
                     // transpiler-deor/registry/shape.deor
                     let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
-                    let value = out_type_token.value.clone();
+                    let value = out_type_token.value;
                     out_type = value.clone();
                 }
             }
@@ -8485,7 +8489,7 @@ pub fn try_raw_entry(tokens: TokensRef, pos: i64) -> Reg2Scan {
     if name_pos < token_count {
         // transpiler-deor/registry/shape.deor
         let mut name_token: Token = tokens[name_pos as usize].clone();
-        let value = name_token.value.clone();
+        let value = name_token.value;
         matched = true;
         key = value.clone();
         val = "raw:".to_string();
@@ -8557,9 +8561,9 @@ pub fn collect_variant_pairs(tokens: TokensRef, start: i64, rust_name: String) -
         } else {
             // transpiler-deor/registry/enum.deor
             let mut variant_token: Token = tokens[new_pos as usize].clone();
-            let __destructure_src = variant_token.clone();
-            let kind = __destructure_src.kind.clone();
-            let value = __destructure_src.value.clone();
+            let __destructure_src = variant_token;
+            let kind = __destructure_src.kind;
+            let value = __destructure_src.value;
             new_pos = new_pos + 1;
             if kind == DEDENT {
                 // transpiler-deor/registry/enum.deor
@@ -8589,9 +8593,9 @@ pub fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: Str
         } else {
             // transpiler-deor/registry/enum.deor
             let mut variant_token: Token = tokens[new_pos as usize].clone();
-            let __destructure_src = variant_token.clone();
-            let kind = __destructure_src.kind.clone();
-            let value = __destructure_src.value.clone();
+            let __destructure_src = variant_token;
+            let kind = __destructure_src.kind;
+            let value = __destructure_src.value;
             new_pos = new_pos + 1;
             if kind == DEDENT {
                 // transpiler-deor/registry/enum.deor
@@ -8602,14 +8606,14 @@ pub fn collect_typed_variant_pairs(tokens: TokensRef, start: i64, enum_name: Str
                 if new_pos < token_count {
                     // transpiler-deor/registry/enum.deor
                     let mut equals_token: Token = tokens[new_pos as usize].clone();
-                    let kind = equals_token.kind.clone();
+                    let kind = equals_token.kind;
                     new_pos = new_pos + 1;
                     if kind == EQUALS {
                         // transpiler-deor/registry/enum.deor
                         if new_pos < token_count {
                             // transpiler-deor/registry/enum.deor
                             let mut literal_token: Token = tokens[new_pos as usize].clone();
-                            let value = literal_token.value.clone();
+                            let value = literal_token.value;
                             new_pos = new_pos + 1;
                             let mut dot: String = ".".to_string();
                             let mut variant_key: String = [enum_name.as_str(), dot.as_str(), variant_name.as_str()].concat();
@@ -8651,9 +8655,9 @@ pub fn try_enum_entry(tokens: TokensRef, pos: i64) -> EnumScan {
     if type_pos < token_count {
         // transpiler-deor/registry/enum.deor
         let mut type_token: Token = tokens[type_pos as usize].clone();
-        let __destructure_src = type_token.clone();
-        let kind = __destructure_src.kind.clone();
-        let value = __destructure_src.value.clone();
+        let __destructure_src = type_token;
+        let kind = __destructure_src.kind;
+        let value = __destructure_src.value;
         if kind == IDENT {
             // transpiler-deor/registry/enum.deor
             let mut word_is_typed: bool = is_typed_enum_type(value.clone());
@@ -8666,7 +8670,7 @@ pub fn try_enum_entry(tokens: TokensRef, pos: i64) -> EnumScan {
                 if name_pos < token_count {
                     // transpiler-deor/registry/enum.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
-                    let value = name_token.value.clone();
+                    let value = name_token.value;
                     name = value.clone();
                     let mut body_start: i64 = locate_typed_body_start(pos.clone());
                     let mut block_result: ParseResult = skip_to_block_start(tokens.clone(), body_start.clone());
@@ -8721,11 +8725,11 @@ pub fn try_type_entry(tokens: TokensRef, pos: i64) -> Reg3Scan {
         let mut param_type_token: Token = tokens[param_type_pos as usize].clone();
         let mut param_name_token: Token = tokens[param_name_pos as usize].clone();
         matched = true;
-        let value = name_token.value.clone();
+        let value = name_token.value;
         key = value.clone();
-        let value = param_type_token.value.clone();
+        let value = param_type_token.value;
         val = value.clone();
-        let value = param_name_token.value.clone();
+        let value = param_name_token.value;
         val2 = value.clone();
     }
     let mut result = Reg3Scan { matched: matched.clone(), key: key.clone(), val: val.clone(), val2: val2.clone(), new_pos: new_pos.clone() };
@@ -8739,9 +8743,9 @@ pub fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) ->
     for index in 0..token_count {
         // transpiler-deor/registry/validator_type.deor
         let mut token: Token = tokens[index as usize].clone();
-        let __destructure_src = token.clone();
-        let kind = __destructure_src.kind.clone();
-        let value = __destructure_src.value.clone();
+        let __destructure_src = token;
+        let kind = __destructure_src.kind;
+        let value = __destructure_src.value;
         if kind == IDENT {
             // transpiler-deor/registry/validator_type.deor
             let mut maybe_type: String = value.clone();
@@ -8778,7 +8782,7 @@ pub fn collect_validator_fn_returns(tokens: TokensRef, type_reg: Vec<String>) ->
     for index in 0..token_count {
         // transpiler-deor/registry/validator_type.deor
         let mut decl_token: Token = tokens[index as usize].clone();
-        let kind = decl_token.kind.clone();
+        let kind = decl_token.kind;
         if kind == KW_FN {
             // transpiler-deor/registry/validator_type.deor
             let mut type_pos: i64 = index + 1;
@@ -8787,9 +8791,9 @@ pub fn collect_validator_fn_returns(tokens: TokensRef, type_reg: Vec<String>) ->
                 // transpiler-deor/registry/validator_type.deor
                 let mut type_token: Token = tokens[type_pos as usize].clone();
                 let mut name_token: Token = tokens[name_pos as usize].clone();
-                let value = type_token.value.clone();
+                let value = type_token.value;
                 let mut return_type: String = value.clone();
-                let value = name_token.value.clone();
+                let value = name_token.value;
                 let mut fn_name: String = value.clone();
                 if reg3_has(type_reg.clone(), return_type.clone()) {
                     // transpiler-deor/registry/validator_type.deor
@@ -8902,7 +8906,7 @@ pub fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<St
             if const_name_pos < end_pos {
                 // transpiler-deor/registry/mut_scan.deor
                 let mut const_name_token: Token = tokens[const_name_pos as usize].clone();
-                let value = const_name_token.value.clone();
+                let value = const_name_token.value;
                 if !list_has(const_names.clone(), value.clone()) {
                     // transpiler-deor/registry/mut_scan.deor
                     const_names.push(value.clone());
@@ -8915,7 +8919,7 @@ pub fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<St
             if after_name_pos < end_pos {
                 // transpiler-deor/registry/mut_scan.deor
                 let mut after_name_token: Token = tokens[after_name_pos as usize].clone();
-                let kind = after_name_token.kind.clone();
+                let kind = after_name_token.kind;
                 let mut next_is_at: bool = kind == KW_AT;
                 let mut next_is_remove: bool = kind == KW_REMOVE;
                 let mut at_stmt_start: bool = raw_i == start;
@@ -8923,7 +8927,7 @@ pub fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<St
                     // transpiler-deor/registry/mut_scan.deor
                     let mut before_name_pos: i64 = raw_i - 1;
                     let mut before_name_token: Token = tokens[before_name_pos as usize].clone();
-                    let kind = before_name_token.kind.clone();
+                    let kind = before_name_token.kind;
                     at_stmt_start = kind == NEWLINE || kind == INDENT || kind == DEDENT;
                 }
                 let mut is_list_mutation: bool = next_is_at || next_is_remove;
@@ -8942,9 +8946,9 @@ pub fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<St
             if prev_pos >= start {
                 // transpiler-deor/registry/mut_scan.deor
                 let mut prev_token: Token = tokens[prev_pos as usize].clone();
-                let __destructure_src = prev_token.clone();
-                let kind = __destructure_src.kind.clone();
-                let value = __destructure_src.value.clone();
+                let __destructure_src = prev_token;
+                let kind = __destructure_src.kind;
+                let value = __destructure_src.value;
                 if kind == IDENT {
                     // transpiler-deor/registry/mut_scan.deor
                     if !list_has(result.clone(), value.clone()) {
@@ -8976,7 +8980,7 @@ pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     while pos < token_count {
         // transpiler-deor/registry/registry.deor
         let mut token: Token = tokens_ref[pos as usize].clone();
-        let kind = token.kind.clone();
+        let kind = token.kind;
         if kind == KW_STRUCT {
             // transpiler-deor/registry/registry.deor
             let mut scan: Reg2Scan = try_struct_entry(tokens_ref.clone(), pos.clone());
@@ -9200,19 +9204,19 @@ pub fn is_move_with(tokens: TokensRef, move_pos: i64) -> bool {
         return false;
     }
     let mut move_token: Token = tokens[move_pos as usize].clone();
-    let kind = move_token.kind.clone();
+    let kind = move_token.kind;
     if kind != KW_MOVE {
         // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
         return false;
     }
     let mut source_token: Token = tokens[source_pos as usize].clone();
-    let kind = source_token.kind.clone();
+    let kind = source_token.kind;
     if kind != "IDENT" {
         // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
         return false;
     }
     let mut with_token: Token = tokens[with_pos as usize].clone();
-    let kind = with_token.kind.clone();
+    let kind = with_token.kind;
     return kind == KW_WITH;
 }
 
@@ -9252,7 +9256,7 @@ pub fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             break;
         }
         let mut token: Token = tokens[cur as usize].clone();
-        let kind = token.kind.clone();
+        let kind = token.kind;
         if kind == RPAREN {
             // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
             break;
@@ -9276,7 +9280,7 @@ pub fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         let arg_pos = new_pos.clone();
         let mut ca_is_chain: bool = is_expr_chain(tokens.clone(), cur.clone(), arg_pos.clone());
         let mut start_token: Token = tokens[cur as usize].clone();
-        let kind = start_token.kind.clone();
+        let kind = start_token.kind;
         if !ca_is_chain {
             // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
             if kind == STRING {
@@ -9290,7 +9294,7 @@ pub fn gen_call_args(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                 if next_cur < token_count {
                     // transpiler-deor/codegen/decl/stmt/expr/call_args.deor
                     let mut next_tok: Token = tokens[next_cur as usize].clone();
-                    let kind = next_tok.kind.clone();
+                    let kind = next_tok.kind;
                     peek_is_call = kind == LPAREN;
                     peek_is_idx = kind == KW_AT;
                 }
@@ -9346,7 +9350,7 @@ pub fn gen_list_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             break;
         }
         let mut token: Token = tokens[cur as usize].clone();
-        let kind = token.kind.clone();
+        let kind = token.kind;
         if kind == RBRACKET {
             // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
             break;
@@ -9363,7 +9367,7 @@ pub fn gen_list_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         let mut item_code = code.clone();
         let item_pos = new_pos.clone();
         let mut start_token: Token = tokens[cur as usize].clone();
-        let kind = start_token.kind.clone();
+        let kind = start_token.kind;
         if kind == STRING {
             // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
             item_code = [item_code.as_str(), RS_TOS.as_str()].concat();
@@ -9413,7 +9417,7 @@ pub fn gen_join_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             break;
         }
         let mut token: Token = tokens[cur as usize].clone();
-        let kind = token.kind.clone();
+        let kind = token.kind;
         if kind == RBRACKET {
             // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
             break;
@@ -9430,7 +9434,7 @@ pub fn gen_join_items(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
         let mut item_code = code.clone();
         let item_pos = new_pos.clone();
         let mut start_token: Token = tokens[cur as usize].clone();
-        let kind = start_token.kind.clone();
+        let kind = start_token.kind;
         if kind != STRING {
             // transpiler-deor/codegen/decl/stmt/expr/list_items.deor
             let mut ias_suf: String = ".as_str()".to_string();
@@ -9471,10 +9475,10 @@ pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let type_reg = __destructure_src.type_reg.clone();
     let mut token_count: i64 = (tokens.len() as i64);
     let mut token: Token = tokens[pos as usize].clone();
-    let __destructure_src = token.clone();
-    let kind = __destructure_src.kind.clone();
-    let value = __destructure_src.value.clone();
-    let line = __destructure_src.line.clone();
+    let __destructure_src = token;
+    let kind = __destructure_src.kind;
+    let value = __destructure_src.value;
+    let line = __destructure_src.line;
     // macro: primary_literals (transpiler-deor/codegen/decl/stmt/expr/macros/literals.deor)
     {
         // transpiler-deor/codegen/decl/stmt/expr/macros/literals.deor
@@ -9551,7 +9555,7 @@ pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             if peek_pos < token_count {
                 // transpiler-deor/codegen/decl/stmt/expr/macros/paren_expr.deor
                 let mut peek_token: Token = tokens[peek_pos as usize].clone();
-                let kind = peek_token.kind.clone();
+                let kind = peek_token.kind;
                 if kind == KW_AVOW {
                     // transpiler-deor/codegen/decl/stmt/expr/macros/paren_expr.deor
                     let mut avow_expr_pos: i64 = locate_next_token(peek_pos.clone());
@@ -9570,7 +9574,7 @@ pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                 while scan_pos < token_count {
                     // transpiler-deor/codegen/decl/stmt/expr/macros/paren_expr.deor
                     let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                    let kind = scan_token.kind.clone();
+                    let kind = scan_token.kind;
                     if kind == RPAREN {
                         // transpiler-deor/codegen/decl/stmt/expr/macros/paren_expr.deor
                         break;
@@ -9595,9 +9599,9 @@ pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                     while field_scan_pos < token_count {
                         // transpiler-deor/codegen/decl/stmt/expr/macros/paren_expr.deor
                         let mut field_token: Token = tokens[field_scan_pos as usize].clone();
-                        let __destructure_src = field_token.clone();
-                        let kind = __destructure_src.kind.clone();
-                        let value = __destructure_src.value.clone();
+                        let __destructure_src = field_token;
+                        let kind = __destructure_src.kind;
+                        let value = __destructure_src.value;
                         if kind == RPAREN {
                             // transpiler-deor/codegen/decl/stmt/expr/macros/paren_expr.deor
                             field_scan_pos = field_scan_pos + 1;
@@ -9734,7 +9738,7 @@ pub fn gen_primary(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                     if func_name == "s_join" {
                         // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
                         let mut join_arg_token: Token = tokens[args_pos as usize].clone();
-                        let kind = join_arg_token.kind.clone();
+                        let kind = join_arg_token.kind;
                         if kind == LBRACKET {
                             // transpiler-deor/codegen/decl/stmt/expr/macros/primary_builtin_calls.deor
                             let mut join_inner_pos: i64 = locate_next_token(args_pos.clone());
@@ -9993,7 +9997,7 @@ pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     while pre_scan < token_count {
         // transpiler-deor/codegen/decl/stmt/expr/macros/expr_float_prescan.deor
         let mut pre_tok: Token = tokens[pre_scan as usize].clone();
-        let kind = pre_tok.kind.clone();
+        let kind = pre_tok.kind;
         if kind == FLOAT {
             // transpiler-deor/codegen/decl/stmt/expr/macros/expr_float_prescan.deor
             expr_has_float = true;
@@ -10046,9 +10050,9 @@ pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     while cur_pos < token_count {
         // transpiler-deor/codegen/decl/stmt/expr/expr.deor
         let mut operator_token: Token = tokens[cur_pos as usize].clone();
-        let __destructure_src = operator_token.clone();
-        let kind = __destructure_src.kind.clone();
-        let value = __destructure_src.value.clone();
+        let __destructure_src = operator_token;
+        let kind = __destructure_src.kind;
+        let value = __destructure_src.value;
         if !is_binary_op(kind.clone()) {
             // transpiler-deor/codegen/decl/stmt/expr/expr.deor
             break;
@@ -10085,7 +10089,7 @@ pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                 if after_op < token_count {
                     // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
                     let mut maybe_not: Token = tokens[after_op as usize].clone();
-                    let kind = maybe_not.kind.clone();
+                    let kind = maybe_not.kind;
                     if kind == KW_NOT {
                         // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
                         operator_str = "is not".to_string();
@@ -10112,7 +10116,7 @@ pub fn gen_expr(tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
                 if after_op < token_count {
                     // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
                     let mut maybe_empty: Token = tokens[after_op as usize].clone();
-                    let kind = maybe_empty.kind.clone();
+                    let kind = maybe_empty.kind;
                     if kind == KW_EMPTY {
                         // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
                         let mut not_empty_prefix: String = "!".to_string();
@@ -10206,12 +10210,12 @@ pub fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_
     }
     let mut callee_token: Token = tokens[val_pos as usize].clone();
     let mut paren_token: Token = tokens[paren_pos as usize].clone();
-    let __destructure_src = callee_token.clone();
-    let kind = __destructure_src.kind.clone();
-    let value = __destructure_src.value.clone();
+    let __destructure_src = callee_token;
+    let kind = __destructure_src.kind;
+    let value = __destructure_src.value;
     let mut callee_kind: String = kind.clone();
     let mut callee_name: String = value.clone();
-    let kind = paren_token.kind.clone();
+    let kind = paren_token.kind;
     let mut is_call: bool = callee_kind == IDENT && kind == LPAREN;
     if !is_call {
         // transpiler-deor/codegen/decl/stmt/helpers.deor
@@ -10231,7 +10235,7 @@ pub fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> 
         return "".to_string();
     }
     let mut val_token: Token = tokens[val_pos as usize].clone();
-    let kind = val_token.kind.clone();
+    let kind = val_token.kind;
     if kind == STRING {
         // transpiler-deor/codegen/decl/stmt/helpers.deor
         return ".to_string()".to_string();
@@ -10242,7 +10246,7 @@ pub fn value_ownership_suffix(tokens: TokensRef, val_pos: i64, val_end: i64) -> 
         if val_next_idx < (tokens.len() as i64) {
             // transpiler-deor/codegen/decl/stmt/helpers.deor
             let mut next_val_token: Token = tokens[val_next_idx as usize].clone();
-            let kind = next_val_token.kind.clone();
+            let kind = next_val_token.kind;
             let mut val_is_call: bool = kind == LPAREN;
             let mut val_is_idx: bool = kind == KW_AT;
             if val_is_call {
@@ -10266,7 +10270,7 @@ pub fn is_expr_chain(tokens: TokensRef, start: i64, stop: i64) -> bool {
     while scan < stop {
         // transpiler-deor/codegen/decl/stmt/helpers.deor
         let mut scan_tok: Token = tokens[scan as usize].clone();
-        let kind = scan_tok.kind.clone();
+        let kind = scan_tok.kind;
         if kind == LPAREN {
             // transpiler-deor/codegen/decl/stmt/helpers.deor
             depth = depth + 1;
@@ -10313,9 +10317,9 @@ pub fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         while cur < token_count {
             // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
             let mut field_token: Token = tokens[cur as usize].clone();
-            let __destructure_src = field_token.clone();
-            let kind = __destructure_src.kind.clone();
-            let value = __destructure_src.value.clone();
+            let __destructure_src = field_token;
+            let kind = __destructure_src.kind;
+            let value = __destructure_src.value;
             if kind == RPAREN {
                 // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 cur = cur + 1;
@@ -10350,16 +10354,16 @@ pub fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 return anchor + 1;
             }
             let mut in_token: Token = tokens[cur as usize].clone();
-            let kind = in_token.kind.clone();
+            let kind = in_token.kind;
             if kind == KW_IN {
                 // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                 let mut name_pos: i64 = locate_next_token(cur.clone());
                 if name_pos < token_count {
                     // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
-                    let __destructure_src = name_token.clone();
-                    let kind = __destructure_src.kind.clone();
-                    let value = __destructure_src.value.clone();
+                    let __destructure_src = name_token;
+                    let kind = __destructure_src.kind;
+                    let value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_kw_and_name.deor
                         if value == "input" {
@@ -10389,14 +10393,14 @@ pub fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 if lparen_pos < token_count {
                     // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                     let mut lparen_token: Token = tokens[lparen_pos as usize].clone();
-                    let kind = lparen_token.kind.clone();
+                    let kind = lparen_token.kind;
                     if kind == LPAREN {
                         // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                         let mut rparen_pos: i64 = locate_next_token(lparen_pos.clone());
                         if rparen_pos < token_count {
                             // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                             let mut rparen_token: Token = tokens[rparen_pos as usize].clone();
-                            let kind = rparen_token.kind.clone();
+                            let kind = rparen_token.kind;
                             if kind == RPAREN {
                                 // transpiler-deor/codegen/decl/stmt/macros/input_destructure/gic_match_parens.deor
                                 matched = true;
@@ -10511,16 +10515,16 @@ pub fn gen_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         if cur < token_count {
             // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
             let mut in_token: Token = tokens[cur as usize].clone();
-            let kind = in_token.kind.clone();
+            let kind = in_token.kind;
             if kind == KW_IN {
                 // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
                 let mut name_pos: i64 = locate_next_token(cur.clone());
                 if name_pos < token_count {
                     // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
                     let mut name_token: Token = tokens[name_pos as usize].clone();
-                    let __destructure_src = name_token.clone();
-                    let kind = __destructure_src.kind.clone();
-                    let value = __destructure_src.value.clone();
+                    let __destructure_src = name_token;
+                    let kind = __destructure_src.kind;
+                    let value = __destructure_src.value;
                     if kind == IDENT {
                         // transpiler-deor/codegen/decl/stmt/macros/gen_enum_extract_check.deor
                         let mut val_type: String = reg_get(typed_enum_reg.clone(), value.clone());
@@ -10685,9 +10689,9 @@ pub fn gen_move_destructure(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         while cur < token_count {
             // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
             let mut field_token: Token = tokens[cur as usize].clone();
-            let __destructure_src = field_token.clone();
-            let kind = __destructure_src.kind.clone();
-            let value = __destructure_src.value.clone();
+            let __destructure_src = field_token;
+            let kind = __destructure_src.kind;
+            let value = __destructure_src.value;
             if kind == RPAREN {
                 // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_collect_fields.deor
                 cur = cur + 1;
@@ -10822,10 +10826,10 @@ pub fn gen_block(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             break;
         }
         let mut token: Token = tokens[cur as usize].clone();
-        let __destructure_src = token.clone();
-        let kind = __destructure_src.kind.clone();
-        let value = __destructure_src.value.clone();
-        let file = __destructure_src.file.clone();
+        let __destructure_src = token;
+        let kind = __destructure_src.kind;
+        let value = __destructure_src.value;
+        let file = __destructure_src.file;
         if kind == DEDENT || kind == "EOF" {
             // transpiler-deor/codegen/decl/stmt/block.deor
             if kind == DEDENT {
@@ -10962,7 +10966,7 @@ pub fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             break;
         }
         let mut else_token: Token = tokens[cur as usize].clone();
-        let kind = else_token.kind.clone();
+        let kind = else_token.kind;
         if kind == NEWLINE {
             // transpiler-deor/codegen/decl/stmt/if.deor
             cur = cur + 1;
@@ -10978,7 +10982,7 @@ pub fn gen_if(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             break;
         }
         let mut after_else_token: Token = tokens[after_else as usize].clone();
-        let kind = after_else_token.kind.clone();
+        let kind = after_else_token.kind;
         if kind == KW_IF {
             // transpiler-deor/codegen/decl/stmt/if.deor
             let mut else_if_cond_pos: i64 = after_else + 1;
@@ -11098,7 +11102,7 @@ pub fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let mut lparen_pos: i64 = locate_next_token(next_pos.clone());
             let mut var_pos: i64 = locate_next_token(lparen_pos.clone());
             let mut var_tok: Token = tokens[var_pos as usize].clone();
-            let value = var_tok.value.clone();
+            let value = var_tok.value;
             let mut move_var: String = value.clone();
             let mut in_pos: i64 = locate_next_token(var_pos.clone());
             let mut iter_pos: i64 = locate_next_token(in_pos.clone());
@@ -11137,9 +11141,9 @@ pub fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         iter_pos = locate_next_token(in_pos.clone());
     }
     let mut iter_token: Token = tokens[iter_pos as usize].clone();
-    let __destructure_src = iter_token.clone();
-    let kind = __destructure_src.kind.clone();
-    let value = __destructure_src.value.clone();
+    let __destructure_src = iter_token;
+    let kind = __destructure_src.kind;
+    let value = __destructure_src.value;
     let mut range_expr: String = "".to_string();
     let mut body_tok_pos: i64 = 0;
     // macro: for_iter_expr (transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor)
@@ -11160,7 +11164,7 @@ pub fn gen_for(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let val_code = code.clone();
             let val_end = new_pos.clone();
             let mut comma_token: Token = tokens[val_end as usize].clone();
-            let kind = comma_token.kind.clone();
+            let kind = comma_token.kind;
             let mut has_start: bool = kind == COMMA;
             if has_start {
                 // transpiler-deor/codegen/decl/stmt/macros/for_loop/for_iter_expr.deor
@@ -11247,12 +11251,12 @@ pub fn gen_reassign(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/reassign.deor
     let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
     let mut name_token: Token = tokens[pos as usize].clone();
-    let value = name_token.value.clone();
+    let value = name_token.value;
     let mut ident_name: String = value.clone();
     let mut next_pos: i64 = locate_next_token(pos.clone());
     let mut val_pos: i64 = locate_next_token(next_pos.clone());
     let mut eq_val_token: Token = tokens[val_pos as usize].clone();
-    let kind = eq_val_token.kind.clone();
+    let kind = eq_val_token.kind;
     // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
     let mut expr_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
     let __destructure_src = expr_result;
@@ -11320,12 +11324,12 @@ pub fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/as_binding.deor
     let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
     let mut name_token: Token = tokens[pos as usize].clone();
-    let value = name_token.value.clone();
+    let value = name_token.value;
     let mut ident_name: String = value.clone();
     let mut after_as: i64 = locate_after_as(pos.clone());
     let mut after_as_token: Token = tokens[after_as as usize].clone();
     let kind = after_as_token.kind.clone();
-    let value = after_as_token.value.clone();
+    let value = after_as_token.value;
     let mut after_as_value: String = value.clone();
     if kind == LPAREN {
         // macro: aas_struct (transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor)
@@ -11339,7 +11343,7 @@ pub fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             while peek_pos < token_count {
                 // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                 let mut peek_token: Token = tokens[peek_pos as usize].clone();
-                let kind = peek_token.kind.clone();
+                let kind = peek_token.kind;
                 if kind == RPAREN {
                     // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                     break;
@@ -11364,9 +11368,9 @@ pub fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 while scan_pos < token_count {
                     // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                     let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                    let __destructure_src = scan_token.clone();
-                    let kind = __destructure_src.kind.clone();
-                    let value = __destructure_src.value.clone();
+                    let __destructure_src = scan_token;
+                    let kind = __destructure_src.kind;
+                    let value = __destructure_src.value;
                     if kind == RPAREN {
                         // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_struct.deor
                         scan_pos = scan_pos + 1;
@@ -11438,7 +11442,7 @@ pub fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             if with_keyword_pos < token_count {
                 // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                 let mut with_keyword_token: Token = tokens[with_keyword_pos as usize].clone();
-                let kind = with_keyword_token.kind.clone();
+                let kind = with_keyword_token.kind;
                 if kind == KW_WITH {
                     // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                     let mut source_name: String = after_as_value.clone();
@@ -11448,9 +11452,9 @@ pub fn gen_as_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                     while scan_pos < token_count {
                         // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                        let __destructure_src = scan_token.clone();
-                        let kind = __destructure_src.kind.clone();
-                        let value = __destructure_src.value.clone();
+                        let __destructure_src = scan_token;
+                        let kind = __destructure_src.kind;
+                        let value = __destructure_src.value;
                         if kind == RPAREN {
                             // transpiler-deor/codegen/decl/stmt/macros/as_binding/aas_with.deor
                             scan_pos = scan_pos + 1;
@@ -11582,7 +11586,7 @@ pub fn gen_call_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/call_stmt.deor
     let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
     let mut name_token: Token = tokens[pos as usize].clone();
-    let value = name_token.value.clone();
+    let value = name_token.value;
     let mut ident_name: String = value.clone();
     let mut next_pos: i64 = locate_next_token(pos.clone());
     let mut args_pos: i64 = locate_next_token(next_pos.clone());
@@ -11656,7 +11660,7 @@ pub fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/list_mutation.deor
     let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
     let mut name_token: Token = tokens[pos as usize].clone();
-    let value = name_token.value.clone();
+    let value = name_token.value;
     let mut ident_name: String = value.clone();
     let mut next_pos: i64 = locate_next_token(pos.clone());
     let mut next_token: Token = tokens[next_pos as usize].clone();
@@ -11667,9 +11671,9 @@ pub fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         if after_at < token_count {
             // transpiler-deor/codegen/decl/stmt/list_mutation.deor
             let mut at_next_token: Token = tokens[after_at as usize].clone();
-            let __destructure_src = at_next_token.clone();
-            let kind = __destructure_src.kind.clone();
-            let value = __destructure_src.value.clone();
+            let __destructure_src = at_next_token;
+            let kind = __destructure_src.kind;
+            let value = __destructure_src.value;
             if kind == KW_END {
                 // transpiler-deor/codegen/decl/stmt/list_mutation.deor
                 let mut val_pos: i64 = locate_value_after_end(after_at.clone());
@@ -11682,7 +11686,7 @@ pub fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 let val_end = new_pos.clone();
                 // transpiler-deor/codegen/decl/stmt/list_mutation.deor
                 let mut val_tok: Token = tokens[val_pos as usize].clone();
-                let kind = val_tok.kind.clone();
+                let kind = val_tok.kind;
                 let mut push_val: String = emit_val(val_code.clone(), kind.clone());
                 let mut push_prefix: String = ".push(".to_string();
                 let mut push_code: String = [pad.as_str(), ident_name.as_str(), push_prefix.as_str(), push_val.as_str(), RS_RP_SC.as_str()].concat();
@@ -11708,7 +11712,7 @@ pub fn gen_list_mutation_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             let val_end = new_pos.clone();
             // transpiler-deor/codegen/decl/stmt/list_mutation.deor
             let mut val_tok: Token = tokens[val_pos as usize].clone();
-            let kind = val_tok.kind.clone();
+            let kind = val_tok.kind;
             let mut idx_val: String = emit_val(val_code.clone(), kind.clone());
             let mut index_open: String = "[".to_string();
             let mut index_mid: String = " as usize] = ".to_string();
@@ -11784,11 +11788,11 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     // transpiler-deor/codegen/decl/stmt/typed_binding.deor
     let mut pad: String = s_repeat(RS_IND.clone(), depth.clone());
     let mut type_token: Token = tokens[pos as usize].clone();
-    let value = type_token.value.clone();
+    let value = type_token.value;
     let mut var_type: String = value.clone();
     let mut name_pos: i64 = locate_var_name(pos.clone());
     let mut name_token: Token = tokens[name_pos as usize].clone();
-    let value = name_token.value.clone();
+    let value = name_token.value;
     let mut var_name: String = value.clone();
     let mut val_pos: i64 = locate_value(pos.clone());
     let mut rust_type: String = resolve_type(var_type.clone(), ctx.clone());
@@ -11804,7 +11808,7 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
         val_pos = val_pos + 1;
         val_token = tokens[val_pos as usize].clone();
     }
-    let kind = val_token.kind.clone();
+    let kind = val_token.kind;
     if kind == KW_EMPTY {
         // macro: tb_empty (transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_empty.deor)
         {
@@ -11837,7 +11841,7 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             }
             let mut peek_pos: i64 = locate_after_lparen(val_pos.clone());
             let mut peek_token: Token = tokens[peek_pos as usize].clone();
-            let kind = peek_token.kind.clone();
+            let kind = peek_token.kind;
             let mut is_avow_expr: bool = kind == KW_AVOW;
             let mut is_struct_type: bool = reg_has(struct_reg.clone(), var_type.clone());
             if !is_avow_expr {
@@ -11849,9 +11853,9 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                     while scan_pos < token_count {
                         // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                        let __destructure_src = scan_token.clone();
-                        let kind = __destructure_src.kind.clone();
-                        let value = __destructure_src.value.clone();
+                        let __destructure_src = scan_token;
+                        let kind = __destructure_src.kind;
+                        let value = __destructure_src.value;
                         if kind == RPAREN {
                             // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                             scan_pos = scan_pos + 1;
@@ -11935,9 +11939,9 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 while cur_pos < token_count {
                     // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                     let mut operator_token: Token = tokens[cur_pos as usize].clone();
-                    let __destructure_src = operator_token.clone();
-                    let kind = __destructure_src.kind.clone();
-                    let value = __destructure_src.value.clone();
+                    let __destructure_src = operator_token;
+                    let kind = __destructure_src.kind;
+                    let value = __destructure_src.value;
                     if !is_binary_op(kind.clone()) {
                         // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_paren.deor
                         break;
@@ -11952,7 +11956,7 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                             if after_op < token_count {
                                 // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
                                 let mut maybe_not: Token = tokens[after_op as usize].clone();
-                                let kind = maybe_not.kind.clone();
+                                let kind = maybe_not.kind;
                                 if kind == KW_NOT {
                                     // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
                                     operator_str = "is not".to_string();
@@ -11979,7 +11983,7 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                             if after_op < token_count {
                                 // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
                                 let mut maybe_empty: Token = tokens[after_op as usize].clone();
-                                let kind = maybe_empty.kind.clone();
+                                let kind = maybe_empty.kind;
                                 if kind == KW_EMPTY {
                                     // transpiler-deor/codegen/decl/stmt/expr/macros/expr_is_special.deor
                                     let mut not_empty_prefix: String = "!".to_string();
@@ -12059,7 +12063,7 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             if with_keyword_pos < token_count {
                 // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                 let mut with_keyword_token: Token = tokens[with_keyword_pos as usize].clone();
-                let kind = with_keyword_token.kind.clone();
+                let kind = with_keyword_token.kind;
                 if kind == KW_WITH {
                     // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                     let value = val_token.value.clone();
@@ -12070,9 +12074,9 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                     while scan_pos < token_count {
                         // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                         let mut scan_token: Token = tokens[scan_pos as usize].clone();
-                        let __destructure_src = scan_token.clone();
-                        let kind = __destructure_src.kind.clone();
-                        let value = __destructure_src.value.clone();
+                        let __destructure_src = scan_token;
+                        let kind = __destructure_src.kind;
+                        let value = __destructure_src.value;
                         if kind == RPAREN {
                             // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_with.deor
                             scan_pos = scan_pos + 1;
@@ -12193,7 +12197,7 @@ pub fn gen_typed_binding(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 if val_next_idx < token_count {
                     // transpiler-deor/codegen/decl/stmt/macros/typed_binding/tb_default.deor
                     let mut next_val_token: Token = tokens[val_next_idx as usize].clone();
-                    let kind = next_val_token.kind.clone();
+                    let kind = next_val_token.kind;
                     let mut val_is_call: bool = kind == LPAREN;
                     let mut val_is_idx: bool = kind == KW_AT;
                     if !val_is_call {
@@ -12268,10 +12272,10 @@ pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
     let validator_var_reg = __destructure_src.validator_var_reg.clone();
     let mut token_count: i64 = (tokens.len() as i64);
     let mut token: Token = tokens[pos as usize].clone();
-    let __destructure_src = token.clone();
-    let kind = __destructure_src.kind.clone();
-    let value = __destructure_src.value.clone();
-    let line = __destructure_src.line.clone();
+    let __destructure_src = token;
+    let kind = __destructure_src.kind;
+    let value = __destructure_src.value;
+    let line = __destructure_src.line;
     // macro: rust_strings (transpiler-deor/codegen/rust_strings.deor)
     let RS_IND: String = "    ".to_string();
     let RS_NL: String = "\n".to_string();
@@ -12306,7 +12310,7 @@ pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/macros/stmt_flow.deor
             let mut val_pos: i64 = locate_next_token(pos.clone());
             let mut val_token: Token = tokens[val_pos as usize].clone();
-            let kind = val_token.kind.clone();
+            let kind = val_token.kind;
             let mut val_result: ParseResult = gen_expr(tokens.clone(), val_pos.clone(), ctx.clone());
             let __destructure_src = val_result;
             let code = __destructure_src.code;
@@ -12373,7 +12377,7 @@ pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/macros/stmt_blocks.deor
             let mut rust_block_pos: i64 = locate_rust_block_content(pos.clone());
             let mut rust_block_token: Token = tokens[rust_block_pos as usize].clone();
-            let value = rust_block_token.value.clone();
+            let value = rust_block_token.value;
             let mut rust_content: String = value.clone();
             let mut rust_lines: Vec<String> = s_split(rust_content.clone(), RS_NL.clone());
             let mut padded_lines: Vec<String> = Vec::new();
@@ -12406,7 +12410,7 @@ pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/macros/stmt_structural.deor
             let mut move_next: i64 = locate_next_token(pos.clone());
             let mut move_next_token: Token = tokens[move_next as usize].clone();
-            let kind = move_next_token.kind.clone();
+            let kind = move_next_token.kind;
             if kind == LPAREN {
                 // transpiler-deor/codegen/decl/stmt/macros/stmt_structural.deor
                 return gen_move_destructure(move_next.clone(), depth.clone(), ctx.clone());
@@ -12418,7 +12422,7 @@ pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             if peek_pos < token_count {
                 // transpiler-deor/codegen/decl/stmt/macros/stmt_structural.deor
                 let mut peek_token: Token = tokens[peek_pos as usize].clone();
-                let kind = peek_token.kind.clone();
+                let kind = peek_token.kind;
                 if kind == KW_AVOW {
                     // transpiler-deor/codegen/decl/stmt/macros/stmt_structural.deor
                     let mut expr_pos: i64 = locate_next_token(peek_pos.clone());
@@ -12449,7 +12453,7 @@ pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
             // transpiler-deor/codegen/decl/stmt/macros/stmt_raw_const.deor
             let mut raw_name_pos: i64 = locate_next_token(pos.clone());
             let mut raw_name_tok: Token = tokens[raw_name_pos as usize].clone();
-            let value = raw_name_tok.value.clone();
+            let value = raw_name_tok.value;
             let mut raw_var_name: String = value.clone();
             let mut val_pos: i64 = locate_raw_value(pos.clone());
             // macro: gen_expr_r (transpiler-deor/codegen/decl/stmt/macros/gen_expr_r.deor)
@@ -12611,7 +12615,7 @@ pub fn gen_stmt(pos: i64, depth: i64, ctx: RcCtx) -> ParseResult {
                 if eq_pos < token_count {
                     // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
                     let mut eq_token: Token = tokens[eq_pos as usize].clone();
-                    let kind = eq_token.kind.clone();
+                    let kind = eq_token.kind;
                     if kind == EQUALS {
                         // transpiler-deor/codegen/decl/stmt/macros/stmt_ident.deor
                         return gen_typed_binding(pos.clone(), depth.clone(), ctx.clone());
@@ -12827,9 +12831,9 @@ pub fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
     let mut form_pos: i64 = locate_shape_form(pos.clone());
     let mut name_token: Token = tokens[name_pos as usize].clone();
     let mut form_token: Token = tokens[form_pos as usize].clone();
-    let value = name_token.value.clone();
+    let value = name_token.value;
     let mut shape_name: String = value.clone();
-    let kind = form_token.kind.clone();
+    let kind = form_token.kind;
     let mut rust_name: String = s_pascal(shape_name.clone());
     // macro: shape_list (transpiler-deor/codegen/decl/macros/shape_list.deor)
     {
@@ -12841,7 +12845,7 @@ pub fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
             // transpiler-deor/codegen/decl/macros/shape_list.deor
             let mut elem_pos: i64 = locate_list_elem(pos.clone());
             let mut elem_token: Token = tokens[elem_pos as usize].clone();
-            let value = elem_token.value.clone();
+            let value = elem_token.value;
             let mut elem_type: String = value.clone();
             let mut rust_elem: String = render_rust_type(elem_type.clone());
             let mut decl: String = gen_list_shape_code(rust_name.clone(), rust_elem.clone());
@@ -12869,9 +12873,9 @@ pub fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
         }
         let mut of_or_to_pos: i64 = locate_func_of_or_to(pos.clone());
         let mut of_or_to_token: Token = tokens[of_or_to_pos as usize].clone();
-        let __destructure_src = of_or_to_token.clone();
-        let kind = __destructure_src.kind.clone();
-        let value = __destructure_src.value.clone();
+        let __destructure_src = of_or_to_token;
+        let kind = __destructure_src.kind;
+        let value = __destructure_src.value;
         let mut is_of: bool = kind == KW_OF;
         let mut is_to: bool = kind == KW_TO;
         let mut in_type: String = "".to_string();
@@ -12881,20 +12885,20 @@ pub fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
             // transpiler-deor/codegen/decl/macros/shape_func.deor
             let mut in_type_pos: i64 = locate_func_in_type(pos.clone());
             let mut in_type_token: Token = tokens[in_type_pos as usize].clone();
-            let value = in_type_token.value.clone();
+            let value = in_type_token.value;
             in_type = value.clone();
             let mut to_pos: i64 = locate_func_to_after_of(pos.clone());
             let mut to_token: Token = tokens[to_pos as usize].clone();
-            let __destructure_src = to_token.clone();
-            let kind = __destructure_src.kind.clone();
-            let value = __destructure_src.value.clone();
+            let __destructure_src = to_token;
+            let kind = __destructure_src.kind;
+            let value = __destructure_src.value;
             let mut has_to: bool = kind == KW_TO;
             func_end = to_pos.clone();
             if has_to {
                 // transpiler-deor/codegen/decl/macros/shape_func.deor
                 let mut out_type_pos: i64 = locate_func_out_type_after_of(pos.clone());
                 let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
-                let value = out_type_token.value.clone();
+                let value = out_type_token.value;
                 out_type = value.clone();
                 func_end = out_type_pos.clone();
             }
@@ -12902,7 +12906,7 @@ pub fn gen_shape_decl(tokens: TokensRef, pos: i64) -> ParseResult {
             // transpiler-deor/codegen/decl/macros/shape_func.deor
             let mut out_type_pos: i64 = locate_func_out_type_after_to(pos.clone());
             let mut out_type_token: Token = tokens[out_type_pos as usize].clone();
-            let value = out_type_token.value.clone();
+            let value = out_type_token.value;
             out_type = value.clone();
             func_end = out_type_pos.clone();
         }
@@ -13165,15 +13169,15 @@ pub fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
             let mut last_idx: i64 = body_len - 1;
             let mut second_last_idx: i64 = body_len - 2;
             let mut last_tok: Token = detect_tokens[last_idx as usize].clone();
-            let kind = last_tok.kind.clone();
+            let kind = last_tok.kind;
             let mut ends_in_dedent: bool = kind == DEDENT;
             let mut second_last_tok: Token = detect_tokens[second_last_idx as usize].clone();
-            let kind = second_last_tok.kind.clone();
+            let kind = second_last_tok.kind;
             let mut second_last_is_newline: bool = kind == NEWLINE;
             if ends_in_dedent && second_last_is_newline {
                 // transpiler-deor/codegen/decl/macros/fn_build_body_ctx.deor
                 let mut first_tok: Token = detect_tokens[zero as usize].clone();
-                let kind = first_tok.kind.clone();
+                let kind = first_tok.kind;
                 let mut first_kind: String = kind.clone();
                 let mut skip_leading: bool = false;
                 if first_kind == KW_RETURN {
@@ -13311,10 +13315,8 @@ pub fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
             // transpiler-deor/codegen/codegen.deor
             break;
         }
-        let mut token: Token = all_ref[pos as usize].clone();
-        let __destructure_src = token.clone();
-        let kind = __destructure_src.kind.clone();
-        let file = __destructure_src.file.clone();
+        let mut kind: String = token_kind_at(all_ref.clone(), pos.clone());
+        let mut file: String = token_file_at(all_ref.clone(), pos.clone());
         if kind == "EOF" {
             // transpiler-deor/codegen/codegen.deor
             break;
@@ -13397,7 +13399,7 @@ pub fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
             // transpiler-deor/codegen/codegen.deor
             let mut block_pos: i64 = locate_rust_block_content(pos.clone());
             let mut block_token: Token = all_ref[block_pos as usize].clone();
-            let value = block_token.value.clone();
+            let value = block_token.value;
             let mut newline: String = "\n".to_string();
             let mut rust_chunk: String = s_cat(value.clone(), newline.clone());
             parts.push(rust_chunk.clone());

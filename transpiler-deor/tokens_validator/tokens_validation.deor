@@ -62,7 +62,10 @@ fn void validate_tokens(TokensRef tokens)
 
 	for if pos < token_count
 		Token tok = tokens at pos
-		(kind, value, line, file) in tok
+		string kind = token_kind_at(tokens, pos)
+		string value = token_value_at(tokens, pos)
+		int line = token_line_at(tokens, pos)
+		string file = token_file_at(tokens, pos)
 		string cur_kind = kind
 		string cur_val = value
 		int cur_line = line

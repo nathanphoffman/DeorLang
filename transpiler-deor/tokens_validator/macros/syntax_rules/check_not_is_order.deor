@@ -29,7 +29,7 @@ macro check_not_is_order
 
 				if peek_pos < token_count
 					Token peek_token = tokens at peek_pos
-					(kind) in peek_token
+					move (kind) in peek_token
 
 					if kind is LPAREN
 						end_pos = find_matching_rparen(tokens, peek_pos)
@@ -38,7 +38,7 @@ macro check_not_is_order
 
 			if after_pos < token_count
 				Token after_token = tokens at after_pos
-				(kind) in after_token
+				move (kind) in after_token
 
 				if kind is KW_IS
 					errors at end = val_err(next_token, lbl_var, rule_not_is)

@@ -32,7 +32,7 @@ macro check_empty_parens
 				if pos > 0
 					int prev_pos = locate_prev_token(pos)
 					Token prev_token = tokens at prev_pos
-					(kind) in prev_token
+					move (kind) in prev_token
 					bool prev_is_ident = kind is IDENT
 
 					if prev_is_ident
@@ -41,7 +41,7 @@ macro check_empty_parens
 						if pos > 1
 							int prev2_pos = locate_prev2(pos)
 							Token prev2_token = tokens at prev2_pos
-							(kind) in prev2_token
+							move (kind) in prev2_token
 							is_type_decl = kind is KW_TYPE
 
 						is_fn = not is_type_decl

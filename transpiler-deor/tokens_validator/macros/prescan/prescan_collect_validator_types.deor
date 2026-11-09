@@ -18,7 +18,7 @@ macro prescan_collect_validator_types
 
 		if name_pos < token_count
 			Token name_token = tokens at name_pos
-			(kind, value) in name_token
+			move (kind, value) in name_token
 
 			if kind is IDENT
 				validator_type_names at end = value
@@ -27,6 +27,6 @@ macro prescan_collect_validator_types
 				if base_pos < token_count
 					string validator_name = value
 					Token base_token = tokens at base_pos
-					(value) in base_token
+					move (value) in base_token
 					validator_base_reg at end = validator_name
 					validator_base_reg at end = value

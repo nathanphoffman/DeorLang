@@ -77,7 +77,7 @@ macro check_undefined_var_read
 	if pos > 0
 		int prev_pos = locate_prev_token(pos)
 		Token prev_token = tokens at prev_pos
-		(kind) in prev_token
+		move (kind) in prev_token
 
 		if kind is KW_STRUCT
 			skip = true

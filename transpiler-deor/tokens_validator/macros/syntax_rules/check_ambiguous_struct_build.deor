@@ -16,7 +16,7 @@ macro check_ambiguous_struct_build
 
 		if after_as_pos < token_count
 			Token after_as_token = tokens at after_as_pos
-			(kind) in after_as_token
+			move (kind) in after_as_token
 
 			# ex: name as source {with} (a, b) — three tokens after `as` is the with-form
 			if kind is IDENT
@@ -25,13 +25,13 @@ macro check_ambiguous_struct_build
 
 				if paren_pos < token_count
 					Token with_token = tokens at with_pos
-					(kind) in with_token
+					move (kind) in with_token
 					is_with_form = kind is KW_WITH
 					open_pos = paren_pos
 
 		if open_pos < token_count
 			Token open_token = tokens at open_pos
-			(kind) in open_token
+			move (kind) in open_token
 
 			if kind is LPAREN
 				strList listed_fields = empty
@@ -40,7 +40,7 @@ macro check_ambiguous_struct_build
 
 				for if scan_pos < token_count
 					Token scan_token = tokens at scan_pos
-					(kind, value) in scan_token
+					move (kind, value) in scan_token
 
 					if kind is RPAREN
 						break

@@ -83,6 +83,11 @@ rust
 	// Hash set for hot name lookups: cloning an Rc is cheap, unlike list_has's by-value strList.
 	type NameSet = Rc<std::collections::HashSet<String>>;
 	fn name_set(names: Vec<String>) -> NameSet { Rc::new(names.into_iter().collect()) }
+	// Single-field token reads: one small copy instead of cloning the whole Token and destructuring it.
+	fn token_kind_at(tokens: TokensRef, pos: i64) -> String { tokens[pos as usize].kind.clone() }
+	fn token_value_at(tokens: TokensRef, pos: i64) -> String { tokens[pos as usize].value.clone() }
+	fn token_file_at(tokens: TokensRef, pos: i64) -> String { tokens[pos as usize].file.clone() }
+	fn token_line_at(tokens: TokensRef, pos: i64) -> i64 { tokens[pos as usize].line }
 	fn name_set_has(set: NameSet, name: String) -> bool { set.contains(&name) }
 
 raw TokensRef

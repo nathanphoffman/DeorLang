@@ -37,10 +37,10 @@ macro check_validator_declaration
 			Token param_name_token = tokens at param_name_pos
 			(kind, value) in type_name_token
 			string type_name = value
-			(kind) in left_paren_token
+			move (kind) in left_paren_token
 
 			if kind is LPAREN
-				(value) in param_type_token
+				move (value) in param_type_token
 				string param_type = value
 				(kind, value) in param_name_token
 
@@ -63,11 +63,11 @@ macro check_validator_declaration
 
 				if body_pos < token_count
 					Token newline_token = tokens at newline_pos
-					(kind) in newline_token
+					move (kind) in newline_token
 
 					if kind is NEWLINE
 						Token body_token = tokens at body_pos
-						(kind) in body_token
+						move (kind) in body_token
 
 						if kind is INDENT
 							has_body = true

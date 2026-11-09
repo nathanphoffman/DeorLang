@@ -105,7 +105,7 @@ fn tokenList load_file(string path)
 			if pos > 0
 				int prev_pos = pos - 1
 				Token prev_tok = tok_raw at prev_pos
-				(kind) in prev_tok
+				move (kind) in prev_tok
 				at_line_start = kind is NEWLINE or kind is INDENT or kind is DEDENT
 
 			if is_structural_kw and at_line_start

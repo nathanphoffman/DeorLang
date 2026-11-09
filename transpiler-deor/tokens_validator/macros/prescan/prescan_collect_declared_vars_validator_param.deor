@@ -26,10 +26,10 @@ macro prescan_collect_declared_vars_validator_param
 		if param_name_pos < token_count
 			Token left_paren_token = tokens at left_paren_pos
 			Token param_name_token = tokens at param_name_pos
-			(kind) in left_paren_token
+			move (kind) in left_paren_token
 
 			if kind is LPAREN
-				(kind, value) in param_name_token
+				move (kind, value) in param_name_token
 
 				if kind is IDENT
 					declared_var_names at end = value

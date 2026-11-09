@@ -16,7 +16,7 @@ macro check_builtin_arg_count
 
 			if left_paren_pos < token_count
 				Token left_paren_token = tokens at left_paren_pos
-				(kind) in left_paren_token
+				move (kind) in left_paren_token
 
 				if kind is LPAREN
 					int arg_count = count_call_args(tokens, left_paren_pos)
