@@ -6,43 +6,28 @@ fn bool is_pragma_name(string name)
 
 	return is_file_flag or is_import_flag or is_depth_flag
 
-# True when the token just before `pos` is the ENFORCE_MACRO_FILE_DEPTH name.
-fn bool depth_name_before(tokenList tokens, int pos)
+# True when `current` belongs to an ENFORCE_* pragma line: the pragma name, the `=` after
+# ENFORCE_MACRO_FILE_DEPTH, or the number after that `=`. `previous` and `earlier` are the one
+# and two tokens before it. The importer uses this so a pragma written above the imports at the
+# top of the entry file doesn't count as a declaration ("imports must come first"). It takes
+# single tokens, not the token list: arguments are cloned, and cloning the whole list for every
+# token made loading several times slower.
+fn bool is_pragma_token(Token current, Token previous, Token earlier)
 	unsafe_macro_run token_kinds
-
-	if pos < 1
-		return false
-
-	int name_pos = pos - 1
-	Token name_token = tokens at name_pos
-	(kind, value) in name_token
-
-	return kind is IDENT and value is "ENFORCE_MACRO_FILE_DEPTH"
-
-# True when the token at `pos` belongs to an ENFORCE_* pragma line: the pragma name, the `=`
-# after ENFORCE_MACRO_FILE_DEPTH, or the number after that `=`. The importer uses it so a pragma
-# written above the imports at the top of the entry file doesn't count as a declaration
-# ("imports must come first").
-fn bool is_pragma_token(tokenList tokens, int pos)
-	unsafe_macro_run token_kinds
-	Token current = tokens at pos
 	(kind, value) in current
+	string current_kind = kind
 
-	if kind is IDENT
+	if current_kind is IDENT
 		return is_pragma_name(value)
 
-	if kind is EQUALS
-		return depth_name_before(tokens, pos)
+	(kind, value) in previous
+	bool previous_is_depth_name = kind is IDENT and value is "ENFORCE_MACRO_FILE_DEPTH"
+	bool previous_is_equals = kind is EQUALS
 
-	if kind is "INT"
-		int equals_pos = pos - 1
-		bool after_equals = false
+	if current_kind is EQUALS
+		return previous_is_depth_name
 
-		if equals_pos > 0
-			Token equals_token = tokens at equals_pos
-			(kind) in equals_token
-			after_equals = kind is EQUALS and depth_name_before(tokens, equals_pos)
+	(kind, value) in earlier
+	bool earlier_is_depth_name = kind is IDENT and value is "ENFORCE_MACRO_FILE_DEPTH"
 
-		return after_equals
-
-	return false
+	return current_kind is "INT" and previous_is_equals and earlier_is_depth_name

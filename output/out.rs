@@ -1994,10 +1994,25 @@ pub fn load_file(path: String) -> Vec<Token> {
                 continue;
             }
         }
-        let mut is_pragma_line_token: bool = is_pragma_token(tok_raw.clone(), pos.clone());
-        if at_root_depth && kind != NEWLINE && !is_pragma_line_token {
+        if at_root_depth && kind != NEWLINE {
             // transpiler-deor/importer/load.deor
-            seen_decl = true;
+            let mut previous_token: Token = tok.clone();
+            let mut earlier_token: Token = tok.clone();
+            if pos > 0 {
+                // transpiler-deor/importer/load.deor
+                let mut previous_pos: i64 = pos - 1;
+                previous_token = tok_raw[previous_pos as usize].clone();
+            }
+            if pos > 1 {
+                // transpiler-deor/importer/load.deor
+                let mut earlier_pos: i64 = pos - 2;
+                earlier_token = tok_raw[earlier_pos as usize].clone();
+            }
+            let mut is_pragma_line_token: bool = is_pragma_token(tok.clone(), previous_token.clone(), earlier_token.clone());
+            if !is_pragma_line_token {
+                // transpiler-deor/importer/load.deor
+                seen_decl = true;
+            }
         }
         result.push(tok.clone());
         pos = pos + 1;
@@ -2031,7 +2046,7 @@ pub fn is_pragma_name(name: String) -> bool {
     return is_file_flag || is_import_flag || is_depth_flag;
 }
 
-pub fn depth_name_before(tokens: Vec<Token>, pos: i64) -> bool {
+pub fn is_pragma_token(current: Token, previous: Token, earlier: Token) -> bool {
     // macro: token_kinds (transpiler-deor/token_kinds.deor)
     let COMMA: String = "COMMA".to_string();
     let DEDENT: String = "DEDENT".to_string();
@@ -2094,106 +2109,28 @@ pub fn depth_name_before(tokens: Vec<Token>, pos: i64) -> bool {
     let STAR: String = "STAR".to_string();
     let STRING: String = "STRING".to_string();
     // transpiler-deor/importer/pragma_tokens.deor
-    if pos < 1 {
-        // transpiler-deor/importer/pragma_tokens.deor
-        return false;
-    }
-    let mut name_pos: i64 = pos - 1;
-    let mut name_token: Token = tokens[name_pos as usize].clone();
-    let __destructure_src = name_token.clone();
-    let kind = __destructure_src.kind.clone();
-    let value = __destructure_src.value.clone();
-    return kind == IDENT && value == "ENFORCE_MACRO_FILE_DEPTH";
-}
-
-pub fn is_pragma_token(tokens: Vec<Token>, pos: i64) -> bool {
-    // macro: token_kinds (transpiler-deor/token_kinds.deor)
-    let COMMA: String = "COMMA".to_string();
-    let DEDENT: String = "DEDENT".to_string();
-    let EQUALS: String = "EQUALS".to_string();
-    let FLOAT: String = "FLOAT".to_string();
-    let IDENT: String = "IDENT".to_string();
-    let INDENT: String = "INDENT".to_string();
-    let KW_AND: String = "KW_AND".to_string();
-    let KW_AS: String = "KW_AS".to_string();
-    let KW_AT: String = "KW_AT".to_string();
-    let KW_AVOW: String = "KW_AVOW".to_string();
-    let KW_BLOCK: String = "KW_BLOCK".to_string();
-    let KW_BREAK: String = "KW_BREAK".to_string();
-    let KW_CONST: String = "KW_CONST".to_string();
-    let KW_CONTINUE: String = "KW_CONTINUE".to_string();
-    let KW_ELSE: String = "KW_ELSE".to_string();
-    let KW_EMPTY: String = "KW_EMPTY".to_string();
-    let KW_END: String = "KW_END".to_string();
-    let KW_ENUM: String = "KW_ENUM".to_string();
-    let KW_FALSE: String = "KW_FALSE".to_string();
-    let KW_FN: String = "KW_FN".to_string();
-    let KW_FOR: String = "KW_FOR".to_string();
-    let KW_FUNC: String = "KW_FUNC".to_string();
-    let KW_IF: String = "KW_IF".to_string();
-    let KW_IMPORT: String = "KW_IMPORT".to_string();
-    let KW_IN: String = "KW_IN".to_string();
-    let KW_IS: String = "KW_IS".to_string();
-    let KW_LIST: String = "KW_LIST".to_string();
-    let KW_MACRO: String = "KW_MACRO".to_string();
-    let KW_MACRO_RUN: String = "KW_MACRO_RUN".to_string();
-    let KW_MOVE: String = "KW_MOVE".to_string();
-    let KW_NONE: String = "KW_NONE".to_string();
-    let KW_NOT: String = "KW_NOT".to_string();
-    let KW_OF: String = "KW_OF".to_string();
-    let KW_OR: String = "KW_OR".to_string();
-    let KW_RAW: String = "KW_RAW".to_string();
-    let KW_REMOVE: String = "KW_REMOVE".to_string();
-    let KW_RETURN: String = "KW_RETURN".to_string();
-    let KW_RUST: String = "KW_RUST".to_string();
-    let KW_SHAPE: String = "KW_SHAPE".to_string();
-    let KW_STRUCT: String = "KW_STRUCT".to_string();
-    let KW_TO: String = "KW_TO".to_string();
-    let KW_TRUE: String = "KW_TRUE".to_string();
-    let KW_TYPE: String = "KW_TYPE".to_string();
-    let KW_UNSAFE_MACRO: String = "KW_UNSAFE_MACRO".to_string();
-    let KW_UNSAFE_MACRO_RUN: String = "KW_UNSAFE_MACRO_RUN".to_string();
-    let KW_VALID: String = "KW_VALID".to_string();
-    let KW_VOID: String = "KW_VOID".to_string();
-    let KW_WITH: String = "KW_WITH".to_string();
-    let LBRACKET: String = "LBRACKET".to_string();
-    let LPAREN: String = "LPAREN".to_string();
-    let MINUS: String = "MINUS".to_string();
-    let NEWLINE: String = "NEWLINE".to_string();
-    let PERCENT: String = "PERCENT".to_string();
-    let PLUS: String = "PLUS".to_string();
-    let RBRACKET: String = "RBRACKET".to_string();
-    let RPAREN: String = "RPAREN".to_string();
-    let RUST_BLOCK: String = "RUST_BLOCK".to_string();
-    let SLASH: String = "SLASH".to_string();
-    let STAR: String = "STAR".to_string();
-    let STRING: String = "STRING".to_string();
-    // transpiler-deor/importer/pragma_tokens.deor
-    let mut current: Token = tokens[pos as usize].clone();
     let __destructure_src = current.clone();
     let kind = __destructure_src.kind.clone();
     let value = __destructure_src.value.clone();
-    if kind == IDENT {
+    let mut current_kind: String = kind.clone();
+    if current_kind == IDENT {
         // transpiler-deor/importer/pragma_tokens.deor
         return is_pragma_name(value.clone());
     }
-    if kind == EQUALS {
+    let __destructure_src = previous.clone();
+    let kind = __destructure_src.kind.clone();
+    let value = __destructure_src.value.clone();
+    let mut previous_is_depth_name: bool = kind == IDENT && value == "ENFORCE_MACRO_FILE_DEPTH";
+    let mut previous_is_equals: bool = kind == EQUALS;
+    if current_kind == EQUALS {
         // transpiler-deor/importer/pragma_tokens.deor
-        return depth_name_before(tokens.clone(), pos.clone());
+        return previous_is_depth_name;
     }
-    if kind == "INT" {
-        // transpiler-deor/importer/pragma_tokens.deor
-        let mut equals_pos: i64 = pos - 1;
-        let mut after_equals: bool = false;
-        if equals_pos > 0 {
-            // transpiler-deor/importer/pragma_tokens.deor
-            let mut equals_token: Token = tokens[equals_pos as usize].clone();
-            let kind = equals_token.kind.clone();
-            after_equals = kind == EQUALS && depth_name_before(tokens.clone(), equals_pos.clone());
-        }
-        return after_equals;
-    }
-    return false;
+    let __destructure_src = earlier.clone();
+    let kind = __destructure_src.kind.clone();
+    let value = __destructure_src.value.clone();
+    let mut earlier_is_depth_name: bool = kind == IDENT && value == "ENFORCE_MACRO_FILE_DEPTH";
+    return current_kind == "INT" && previous_is_equals && earlier_is_depth_name;
 }
 
 // transpiler-deor/importer/dedup.deor

@@ -183,10 +183,22 @@ fn tokenList load_file(string path)
 
 				continue
 
-		bool is_pragma_line_token = is_pragma_token(tok_raw, pos)
+		if at_root_depth and kind is not NEWLINE
+			Token previous_token = tok
+			Token earlier_token = tok
 
-		if at_root_depth and kind is not NEWLINE and not is_pragma_line_token
-			seen_decl = true
+			if pos > 0
+				int previous_pos = pos - 1
+				previous_token = tok_raw at previous_pos
+
+			if pos > 1
+				int earlier_pos = pos - 2
+				earlier_token = tok_raw at earlier_pos
+
+			bool is_pragma_line_token = is_pragma_token(tok, previous_token, earlier_token)
+
+			if not is_pragma_line_token
+				seen_decl = true
 
 		result at end = tok
 		pos = pos + 1
