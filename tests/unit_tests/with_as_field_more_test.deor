@@ -32,8 +32,8 @@ fn void main()
 # expect-error:
 # line 10: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
 # line 10: variable 'left' - used here but never declared anywhere
-# line 14: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
-# line 14: variable 'left' - used here but never declared anywhere
-# line 18: variable '5' - 'with (...)' accepts only existing variable names separated by commas
-# line 22: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
-# line 22: variable 'left' - used here but never declared anywhere
+# line 15: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
+# line 15: variable 'left' - used here but never declared anywhere
+# line 20: variable '5' - 'with (...)' accepts only existing variable names separated by commas
+# line 25: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
+# line 25: variable 'left' - used here but never declared anywhere

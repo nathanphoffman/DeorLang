@@ -26,5 +26,5 @@ fn void main()
 
 # expect-error:
 # line 12: fn 'false' - every item in a returned '( )' field list must be a single named variable
-# line 16: fn 'wide' - every item in a returned '( )' field list must be a single named variable
-# line 20: fn '(' - returned '( )' field list does not match any struct
+# line 17: fn 'wide' - every item in a returned '( )' field list must be a single named variable
+# line 22: fn '(' - returned '( )' field list does not match any struct
