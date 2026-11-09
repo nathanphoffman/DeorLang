@@ -20,13 +20,13 @@
 # start empty here — both are per-function, populated later (by collect_mut_names
 # and collect_validator_var_types) when each fn body is generated.
 fn RcCtx build_registry(TokensRef tokens_ref)
-	strList struct_reg = empty
-	strList shape_reg = empty
-	strList enum_reg = empty
-	strList variant_reg = empty
-	strList type_reg = empty
-	strList typed_enum_reg = empty
-	strList typed_variant_reg = empty
+	strList struct_reg_list = empty
+	strList shape_reg_list = empty
+	strList enum_reg_list = empty
+	strList variant_reg_list = empty
+	strList type_reg_list = empty
+	strList typed_enum_reg_list = empty
+	strList typed_variant_reg_list = empty
 
 	int token_count = len(tokens_ref)
 	int pos = 0
@@ -40,8 +40,8 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 			move (matched, key, val, new_pos) in scan
 
 			if matched
-				struct_reg at end = key
-				struct_reg at end = val
+				struct_reg_list at end = key
+				struct_reg_list at end = val
 
 			pos = new_pos
 
@@ -52,8 +52,8 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 			move (matched, key, val, new_pos) in scan
 
 			if matched
-				shape_reg at end = key
-				shape_reg at end = val
+				shape_reg_list at end = key
+				shape_reg_list at end = val
 
 			pos = new_pos
 
@@ -64,8 +64,8 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 			move (matched, key, val, new_pos) in scan
 
 			if matched
-				shape_reg at end = key
-				shape_reg at end = val
+				shape_reg_list at end = key
+				shape_reg_list at end = val
 
 			pos = new_pos
 
@@ -76,9 +76,9 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 			move (matched, key, val, val2, new_pos) in scan
 
 			if matched
-				type_reg at end = key
-				type_reg at end = val
-				type_reg at end = val2
+				type_reg_list at end = key
+				type_reg_list at end = val
+				type_reg_list at end = val2
 
 			pos = new_pos
 
@@ -90,19 +90,19 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 
 			if matched
 				if is_typed
-					typed_enum_reg at end = name
-					typed_enum_reg at end = val_type
+					typed_enum_reg_list at end = name
+					typed_enum_reg_list at end = val_type
 					int typed_variant_count = len(pairs)
 
 					for typed_variant_index in range(typed_variant_count)
-						typed_variant_reg at end = pairs at typed_variant_index
+						typed_variant_reg_list at end = pairs at typed_variant_index
 				else
-					enum_reg at end = name
-					enum_reg at end = rust_name
+					enum_reg_list at end = name
+					enum_reg_list at end = rust_name
 					int variant_count = len(pairs)
 
 					for variant_index in range(variant_count)
-						variant_reg at end = pairs at variant_index
+						variant_reg_list at end = pairs at variant_index
 
 			pos = new_pos
 
@@ -110,9 +110,19 @@ fn RcCtx build_registry(TokensRef tokens_ref)
 
 		pos = pos + 1
 
-	strList mut_names = empty
-	strList validator_var_reg = empty
-	strList validator_fn_reg = collect_validator_fn_returns(tokens_ref, type_reg)
+	strList mut_names_list = empty
+	strList validator_var_reg_list = empty
+	ListRef struct_reg = list_wrap(move struct_reg_list)
+	ListRef shape_reg = list_wrap(move shape_reg_list)
+	ListRef enum_reg = list_wrap(move enum_reg_list)
+	ListRef variant_reg = list_wrap(move variant_reg_list)
+	ListRef type_reg = list_wrap(move type_reg_list)
+	strList validator_fn_reg_list = collect_validator_fn_returns(tokens_ref, type_reg)
+	ListRef typed_enum_reg = list_wrap(move typed_enum_reg_list)
+	ListRef typed_variant_reg = list_wrap(move typed_variant_reg_list)
+	ListRef mut_names = list_wrap(move mut_names_list)
+	ListRef validator_var_reg = list_wrap(move validator_var_reg_list)
+	ListRef validator_fn_reg = list_wrap(move validator_fn_reg_list)
 	tokenList placeholder = empty
 	TokensRef tokens = tokens_wrap(move placeholder)
 	GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg)

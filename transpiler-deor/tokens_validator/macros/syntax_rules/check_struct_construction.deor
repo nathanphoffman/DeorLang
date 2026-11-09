@@ -71,7 +71,7 @@ macro check_struct_construction
 
 			if matched
 				string sep = ","
-				string fields_str = find_struct_field_str(struct_field_reg, cur_val)
+				string fields_str = find_struct_field_str(struct_field_ref, cur_val)
 				bool is_struct = fields_str is not ""
 
 				if is_struct

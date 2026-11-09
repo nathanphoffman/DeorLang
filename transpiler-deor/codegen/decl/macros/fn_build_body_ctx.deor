@@ -10,7 +10,7 @@ unsafe_macro fn_build_body_ctx
 	int body_len = len(body_tokens_raw)
 	int zero = 0
 	int body_last = body_len - 1
-	strList mut_names = collect_mut_names(body_tokens_raw, zero, body_last)
+	strList mut_names_list = collect_mut_names(body_tokens_raw, zero, body_last)
 
 	# A parameter the body reassigns or mutates needs `mut` in the Rust signature
 	# (E0384 otherwise). It only changes the function's own copy, never the caller's.
@@ -19,12 +19,14 @@ unsafe_macro fn_build_body_ctx
 	for param_idx in range(param_total)
 		string mut_param_name = param_names at param_idx
 
-		if list_has(mut_names, mut_param_name)
+		if list_has(mut_names_list, mut_param_name)
 			string mut_param_str = param_strs at param_idx
 			string mut_prefix = "mut "
 			param_strs at param_idx = s_cat(mut_prefix, mut_param_str)
 
-	strList validator_var_reg = collect_validator_var_types(body_tokens_raw, type_reg)
+	ListRef mut_names = list_wrap(move mut_names_list)
+	strList validator_var_reg_list = collect_validator_var_types(body_tokens_raw, type_reg)
+	ListRef validator_var_reg = list_wrap(move validator_var_reg_list)
 	TokensRef tokens = tokens_wrap(move body_tokens_raw)
 	TokensRef detect_tokens = tokens
 	GenCtx body_ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg)

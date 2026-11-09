@@ -48,8 +48,10 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 
 	# The ctx handed to gen_type_decl doesn't carry this file's tokens, but helpers like
 	# gen_unary_method (used for len(...)) read their tokens from the ctx, so build one that does.
-	strList mut_names = empty
-	strList validator_var_reg = empty
+	strList mut_names_list = empty
+	strList validator_var_reg_list = empty
+	ListRef mut_names = list_wrap(move mut_names_list)
+	ListRef validator_var_reg = list_wrap(move validator_var_reg_list)
 	GenCtx expr_ctx_raw = (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg)
 	RcCtx expr_ctx = make_rctx(move expr_ctx_raw)
 
@@ -102,8 +104,10 @@ fn ParseResult gen_type_decl(TokensRef tokens, int pos, RcCtx ctx)
 		tokenList body_tokens = l_slice_ref(tokens, body_start, body_slice_end)
 		int zero = 0
 		int last = len(body_tokens) - 1
-		strList mut_names = collect_mut_names(body_tokens, zero, last)
-		strList validator_var_reg = collect_validator_var_types(body_tokens, type_reg)
+		strList mut_names_list = collect_mut_names(body_tokens, zero, last)
+		ListRef mut_names = list_wrap(move mut_names_list)
+		strList validator_var_reg_list = collect_validator_var_types(body_tokens, type_reg)
+		ListRef validator_var_reg = list_wrap(move validator_var_reg_list)
 		TokensRef tokens = tokens_wrap(move body_tokens)
 		GenCtx ctx_raw = move (variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg)
 		RcCtx pred_ctx = make_rctx(move ctx_raw)

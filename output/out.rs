@@ -104,17 +104,17 @@ pub struct TokenMeta {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct GenCtx {
-    pub variant_reg: Vec<String>,
-    pub shape_reg: Vec<String>,
-    pub struct_reg: Vec<String>,
-    pub enum_reg: Vec<String>,
-    pub mut_names: Vec<String>,
-    pub type_reg: Vec<String>,
+    pub variant_reg: ListRef,
+    pub shape_reg: ListRef,
+    pub struct_reg: ListRef,
+    pub enum_reg: ListRef,
+    pub mut_names: ListRef,
+    pub type_reg: ListRef,
     pub tokens: TokensRef,
-    pub typed_enum_reg: Vec<String>,
-    pub typed_variant_reg: Vec<String>,
-    pub validator_var_reg: Vec<String>,
-    pub validator_fn_reg: Vec<String>,
+    pub typed_enum_reg: ListRef,
+    pub typed_variant_reg: ListRef,
+    pub validator_var_reg: ListRef,
+    pub validator_fn_reg: ListRef,
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -133,6 +133,9 @@ pub struct DedupResult {
 use std::rc::Rc;
 type TokensRef = Rc<Vec<Token>>;
 type RcCtx = Rc<GenCtx>;
+// A shared, read-only registry list: cloning copies a pointer, not every entry.
+type ListRef = Rc<Vec<String>>;
+fn list_wrap(items: Vec<String>) -> ListRef { Rc::new(items) }
 // One line's characters, shared by the lexer's scan_* functions without copying the list per call.
 type CharsRef = Rc<Vec<String>>;
 fn chars_wrap(chars: Vec<String>) -> CharsRef { Rc::new(chars) }
@@ -332,7 +335,7 @@ pub fn reg_get_stride(pairs: Vec<String>, key: String, stride: i64) -> String {
     return "".to_string();
 }
 
-pub fn reg_has_stride(pairs: Vec<String>, key: String, stride: i64) -> bool {
+pub fn reg_has_stride(pairs: ListRef, key: String, stride: i64) -> bool {
     // transpiler-deor/registry_lookup.deor
     let mut pairs_count: i64 = (pairs.len() as i64);
     let mut index: i64 = 0;
@@ -354,13 +357,13 @@ pub fn reg_get(pairs: Vec<String>, key: String) -> String {
     return reg_get_stride(pairs.clone(), key.clone(), two.clone());
 }
 
-pub fn reg_has(pairs: Vec<String>, key: String) -> bool {
+pub fn reg_has(pairs: ListRef, key: String) -> bool {
     // transpiler-deor/registry_lookup.deor
     let mut two: i64 = 2;
     return reg_has_stride(pairs.clone(), key.clone(), two.clone());
 }
 
-pub fn reg3_has(pairs: Vec<String>, key: String) -> bool {
+pub fn reg3_has(pairs: ListRef, key: String) -> bool {
     // transpiler-deor/registry_lookup.deor
     let mut thr: i64 = 3;
     return reg_has_stride(pairs.clone(), key.clone(), thr.clone());
@@ -2368,7 +2371,7 @@ pub fn is_snake(name: String) -> bool {
 }
 
 // transpiler-deor/tokens_validator/arg_helpers.deor
-pub fn find_struct_field_str(reg: Vec<String>, name: String) -> String {
+pub fn find_struct_field_str(reg: ListRef, name: String) -> String {
     // transpiler-deor/tokens_validator/arg_helpers.deor
     let mut reg_count: i64 = (reg.len() as i64);
     let mut reg_index: i64 = 0;
@@ -3298,6 +3301,7 @@ pub fn validate_tokens(tokens: TokensRef) {
         // transpiler-deor/tokens_validator/macros/prescan/prescan_shapes_and_validator_types.deor
         pre_i = pre_i + 1;
     }
+    let mut validator_base_ref: ListRef = list_wrap(validator_base_reg);
     // macro: prescan_declared_state (transpiler-deor/tokens_validator/macros/prescan/prescan_declared_state.deor)
     let mut struct_field_reg: Vec<String> = Vec::new();
     let mut validator_vars: Vec<String> = Vec::new();
@@ -3928,9 +3932,9 @@ pub fn validate_tokens(tokens: TokensRef) {
                                     validator_field_names.push(value.clone());
                                 }
                                 let mut field_base: String = field_type.clone();
-                                if reg_has(validator_base_reg.clone(), field_type.clone()) {
+                                if reg_has(validator_base_ref.clone(), field_type.clone()) {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
-                                    field_base = reg_get_ref(&validator_base_reg, &field_type);
+                                    field_base = reg_get_ref(&validator_base_ref, &field_type);
                                 }
                                 if field_base == struct_name {
                                     // transpiler-deor/tokens_validator/macros/prescan/prescan_check_struct_fields.deor
@@ -4072,6 +4076,7 @@ pub fn validate_tokens(tokens: TokensRef) {
         // transpiler-deor/tokens_validator/macros/prescan/prescan_declared_state.deor
         pre_i = pre_i + 1;
     }
+    let mut struct_field_ref: ListRef = list_wrap(struct_field_reg);
     // transpiler-deor/tokens_validator/tokens_validation.deor
     let mut declared_var_set: NameSet = name_set(declared_var_names.clone());
     let mut fn_name_set: NameSet = name_set(fn_names.clone());
@@ -4306,7 +4311,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             }
                             if has_comma && all_named {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_return_tuple.deor
-                                let mut owners: Vec<String> = structs_with_exact_fields(struct_field_reg.clone(), item_names.clone());
+                                let mut owners: Vec<String> = structs_with_exact_fields(struct_field_ref.clone(), item_names.clone());
                                 let mut owner_count: i64 = (owners.len() as i64);
                                 if owner_count == 0 {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_return_tuple.deor
@@ -4411,10 +4416,10 @@ pub fn validate_tokens(tokens: TokensRef) {
                             }
                             if all_names {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
-                                let mut candidates: Vec<String> = structs_with_exact_fields(struct_field_reg.clone(), listed_fields.clone());
+                                let mut candidates: Vec<String> = structs_with_exact_fields(struct_field_ref.clone(), listed_fields.clone());
                                 if is_with_form {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_ambiguous_struct_build.deor
-                                    candidates = structs_containing_fields(struct_field_reg.clone(), listed_fields.clone());
+                                    candidates = structs_containing_fields(struct_field_ref.clone(), listed_fields.clone());
                                 }
                                 let mut candidate_count: i64 = (candidates.len() as i64);
                                 if candidate_count > 1 {
@@ -6226,7 +6231,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                         let mut base_type_token: Token = tokens[base_type_pos as usize].clone();
                         let mut value = base_type_token.value;
                         let mut is_primitive: bool = (primitive_type_names.contains(&value));
-                        let mut is_struct_base: bool = reg_has(struct_field_reg.clone(), value.clone());
+                        let mut is_struct_base: bool = reg_has(struct_field_ref.clone(), value.clone());
                         let mut is_allowed_base: bool = is_primitive || is_struct_base;
                         if !is_allowed_base {
                             // transpiler-deor/tokens_validator/macros/declarations/check_type_base_primitive.deor
@@ -8037,7 +8042,7 @@ pub fn validate_tokens(tokens: TokensRef) {
                             if matched {
                                 // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
                                 let mut sep: String = ",".to_string();
-                                let mut fields_str: String = find_struct_field_str(struct_field_reg.clone(), cur_val.clone());
+                                let mut fields_str: String = find_struct_field_str(struct_field_ref.clone(), cur_val.clone());
                                 let mut is_struct: bool = fields_str != "";
                                 if is_struct {
                                     // transpiler-deor/tokens_validator/macros/syntax_rules/check_struct_construction.deor
@@ -8744,7 +8749,7 @@ pub fn try_type_entry(tokens: TokensRef, pos: i64) -> Reg3Scan {
     return result;
 }
 
-pub fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) -> Vec<String> {
+pub fn collect_validator_var_types(tokens: Vec<Token>, type_reg: ListRef) -> Vec<String> {
     // transpiler-deor/registry/validator_type.deor
     let mut result: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens.len() as i64);
@@ -8780,7 +8785,7 @@ pub fn collect_validator_var_types(tokens: Vec<Token>, type_reg: Vec<String>) ->
     return result;
 }
 
-pub fn collect_validator_fn_returns(tokens: TokensRef, type_reg: Vec<String>) -> Vec<String> {
+pub fn collect_validator_fn_returns(tokens: TokensRef, type_reg: ListRef) -> Vec<String> {
     // transpiler-deor/registry/validator_type.deor
     fn locate_fn_name(decl_pos: i64) -> i64 {
         return decl_pos + 2;
@@ -8976,13 +8981,13 @@ pub fn collect_mut_names(tokens: Vec<Token>, start: i64, end_pos: i64) -> Vec<St
 // transpiler-deor/registry/registry.deor
 pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
     // transpiler-deor/registry/registry.deor
-    let mut struct_reg: Vec<String> = Vec::new();
-    let mut shape_reg: Vec<String> = Vec::new();
-    let mut enum_reg: Vec<String> = Vec::new();
-    let mut variant_reg: Vec<String> = Vec::new();
-    let mut type_reg: Vec<String> = Vec::new();
-    let mut typed_enum_reg: Vec<String> = Vec::new();
-    let mut typed_variant_reg: Vec<String> = Vec::new();
+    let mut struct_reg_list: Vec<String> = Vec::new();
+    let mut shape_reg_list: Vec<String> = Vec::new();
+    let mut enum_reg_list: Vec<String> = Vec::new();
+    let mut variant_reg_list: Vec<String> = Vec::new();
+    let mut type_reg_list: Vec<String> = Vec::new();
+    let mut typed_enum_reg_list: Vec<String> = Vec::new();
+    let mut typed_variant_reg_list: Vec<String> = Vec::new();
     let mut token_count: i64 = (tokens_ref.len() as i64);
     let mut pos: i64 = 0;
     while pos < token_count {
@@ -8999,8 +9004,8 @@ pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
             let new_pos = __destructure_src.new_pos;
             if matched {
                 // transpiler-deor/registry/registry.deor
-                struct_reg.push(key.clone());
-                struct_reg.push(val.clone());
+                struct_reg_list.push(key.clone());
+                struct_reg_list.push(val.clone());
             }
             pos = new_pos.clone();
             continue;
@@ -9015,8 +9020,8 @@ pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
             let new_pos = __destructure_src.new_pos;
             if matched {
                 // transpiler-deor/registry/registry.deor
-                shape_reg.push(key.clone());
-                shape_reg.push(val.clone());
+                shape_reg_list.push(key.clone());
+                shape_reg_list.push(val.clone());
             }
             pos = new_pos.clone();
             continue;
@@ -9031,8 +9036,8 @@ pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
             let new_pos = __destructure_src.new_pos;
             if matched {
                 // transpiler-deor/registry/registry.deor
-                shape_reg.push(key.clone());
-                shape_reg.push(val.clone());
+                shape_reg_list.push(key.clone());
+                shape_reg_list.push(val.clone());
             }
             pos = new_pos.clone();
             continue;
@@ -9048,9 +9053,9 @@ pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
             let new_pos = __destructure_src.new_pos;
             if matched {
                 // transpiler-deor/registry/registry.deor
-                type_reg.push(key.clone());
-                type_reg.push(val.clone());
-                type_reg.push(val2.clone());
+                type_reg_list.push(key.clone());
+                type_reg_list.push(val.clone());
+                type_reg_list.push(val2.clone());
             }
             pos = new_pos.clone();
             continue;
@@ -9070,21 +9075,21 @@ pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
                 // transpiler-deor/registry/registry.deor
                 if is_typed {
                     // transpiler-deor/registry/registry.deor
-                    typed_enum_reg.push(name.clone());
-                    typed_enum_reg.push(val_type.clone());
+                    typed_enum_reg_list.push(name.clone());
+                    typed_enum_reg_list.push(val_type.clone());
                     let mut typed_variant_count: i64 = (pairs.len() as i64);
                     for typed_variant_index in 0..typed_variant_count {
                         // transpiler-deor/registry/registry.deor
-                        typed_variant_reg.push(pairs[typed_variant_index as usize].clone().clone());
+                        typed_variant_reg_list.push(pairs[typed_variant_index as usize].clone().clone());
                     }
                 } else {
                     // transpiler-deor/registry/registry.deor
-                    enum_reg.push(name.clone());
-                    enum_reg.push(rust_name.clone());
+                    enum_reg_list.push(name.clone());
+                    enum_reg_list.push(rust_name.clone());
                     let mut variant_count: i64 = (pairs.len() as i64);
                     for variant_index in 0..variant_count {
                         // transpiler-deor/registry/registry.deor
-                        variant_reg.push(pairs[variant_index as usize].clone().clone());
+                        variant_reg_list.push(pairs[variant_index as usize].clone().clone());
                     }
                 }
             }
@@ -9093,9 +9098,19 @@ pub fn build_registry(tokens_ref: TokensRef) -> RcCtx {
         }
         pos = pos + 1;
     }
-    let mut mut_names: Vec<String> = Vec::new();
-    let mut validator_var_reg: Vec<String> = Vec::new();
-    let mut validator_fn_reg: Vec<String> = collect_validator_fn_returns(tokens_ref.clone(), type_reg.clone());
+    let mut mut_names_list: Vec<String> = Vec::new();
+    let mut validator_var_reg_list: Vec<String> = Vec::new();
+    let mut struct_reg: ListRef = list_wrap(struct_reg_list);
+    let mut shape_reg: ListRef = list_wrap(shape_reg_list);
+    let mut enum_reg: ListRef = list_wrap(enum_reg_list);
+    let mut variant_reg: ListRef = list_wrap(variant_reg_list);
+    let mut type_reg: ListRef = list_wrap(type_reg_list);
+    let mut validator_fn_reg_list: Vec<String> = collect_validator_fn_returns(tokens_ref.clone(), type_reg.clone());
+    let mut typed_enum_reg: ListRef = list_wrap(typed_enum_reg_list);
+    let mut typed_variant_reg: ListRef = list_wrap(typed_variant_reg_list);
+    let mut mut_names: ListRef = list_wrap(mut_names_list);
+    let mut validator_var_reg: ListRef = list_wrap(validator_var_reg_list);
+    let mut validator_fn_reg: ListRef = list_wrap(validator_fn_reg_list);
     let mut placeholder: Vec<Token> = Vec::new();
     let mut tokens: TokensRef = tokens_wrap(placeholder);
     let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg };
@@ -9119,7 +9134,7 @@ pub fn fields_all_present(wanted: Vec<String>, have: Vec<String>) -> bool {
     return true;
 }
 
-pub fn structs_with_exact_fields(struct_reg: Vec<String>, fields: Vec<String>) -> Vec<String> {
+pub fn structs_with_exact_fields(struct_reg: ListRef, fields: Vec<String>) -> Vec<String> {
     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
     let mut matches: Vec<String> = Vec::new();
     let mut comma: String = ",".to_string();
@@ -9142,7 +9157,7 @@ pub fn structs_with_exact_fields(struct_reg: Vec<String>, fields: Vec<String>) -
     return matches;
 }
 
-pub fn structs_containing_fields(struct_reg: Vec<String>, fields: Vec<String>) -> Vec<String> {
+pub fn structs_containing_fields(struct_reg: ListRef, fields: Vec<String>) -> Vec<String> {
     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
     let mut matches: Vec<String> = Vec::new();
     let mut comma: String = ",".to_string();
@@ -9163,7 +9178,7 @@ pub fn structs_containing_fields(struct_reg: Vec<String>, fields: Vec<String>) -
     return matches;
 }
 
-pub fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
+pub fn find_struct_for_fields(struct_reg: ListRef, fields: Vec<String>) -> String {
     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
     let mut matches: Vec<String> = structs_with_exact_fields(struct_reg.clone(), fields.clone());
     let mut unknown: String = "Unknown".to_string();
@@ -9175,7 +9190,7 @@ pub fn find_struct_for_fields(struct_reg: Vec<String>, fields: Vec<String>) -> S
     return first_match;
 }
 
-pub fn find_struct_containing_fields(struct_reg: Vec<String>, fields: Vec<String>) -> String {
+pub fn find_struct_containing_fields(struct_reg: ListRef, fields: Vec<String>) -> String {
     // transpiler-deor/codegen/decl/stmt/expr/struct_lookup.deor
     let mut matches: Vec<String> = structs_containing_fields(struct_reg.clone(), fields.clone());
     let mut unknown: String = "Unknown".to_string();
@@ -10292,7 +10307,7 @@ pub fn emit_val(val_code: String, val_kind: String) -> String {
     return val_code;
 }
 
-pub fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_reg: Vec<String>) -> String {
+pub fn call_validator_return_type(tokens: TokensRef, val_pos: i64, validator_fn_reg: ListRef) -> String {
     // transpiler-deor/codegen/decl/stmt/helpers.deor
     let mut token_count: i64 = (tokens.len() as i64);
     let mut paren_pos: i64 = val_pos + 1;
@@ -13029,8 +13044,10 @@ pub fn gen_type_decl(mut tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult
     cur = cur_skip_to_body_ref(cur.clone(), tokens.clone());
     let pos = cur.pos.clone();
     let mut body_start: i64 = pos.clone();
-    let mut mut_names: Vec<String> = Vec::new();
-    let mut validator_var_reg: Vec<String> = Vec::new();
+    let mut mut_names_list: Vec<String> = Vec::new();
+    let mut validator_var_reg_list: Vec<String> = Vec::new();
+    let mut mut_names: ListRef = list_wrap(mut_names_list);
+    let mut validator_var_reg: ListRef = list_wrap(validator_var_reg_list);
     let mut expr_ctx_raw = GenCtx { variant_reg: variant_reg.clone(), shape_reg: shape_reg.clone(), struct_reg: struct_reg.clone(), enum_reg: enum_reg.clone(), mut_names: mut_names.clone(), type_reg: type_reg.clone(), tokens: tokens.clone(), typed_enum_reg: typed_enum_reg.clone(), typed_variant_reg: typed_variant_reg.clone(), validator_var_reg: validator_var_reg.clone(), validator_fn_reg: validator_fn_reg.clone() };
     let mut expr_ctx: RcCtx = make_rctx(expr_ctx_raw);
     let mut pred_r: ParseResult = gen_expr(tokens.clone(), body_start.clone(), expr_ctx.clone());
@@ -13082,8 +13099,10 @@ pub fn gen_type_decl(mut tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult
         let mut body_tokens: Vec<Token> = l_slice_ref(tokens.clone(), body_start.clone(), body_slice_end.clone());
         let mut zero: i64 = 0;
         let mut last: i64 = (body_tokens.len() as i64) - 1;
-        let mut mut_names: Vec<String> = collect_mut_names(body_tokens.clone(), zero.clone(), last.clone());
-        let mut validator_var_reg: Vec<String> = collect_validator_var_types(body_tokens.clone(), type_reg.clone());
+        let mut mut_names_list: Vec<String> = collect_mut_names(body_tokens.clone(), zero.clone(), last.clone());
+        let mut mut_names: ListRef = list_wrap(mut_names_list);
+        let mut validator_var_reg_list: Vec<String> = collect_validator_var_types(body_tokens.clone(), type_reg.clone());
+        let mut validator_var_reg: ListRef = list_wrap(validator_var_reg_list);
         let mut tokens: TokensRef = tokens_wrap(body_tokens);
         let mut ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg };
         let mut pred_ctx: RcCtx = make_rctx(ctx_raw);
@@ -13214,19 +13233,21 @@ pub fn gen_fn_decl(fn_tokens: TokensRef, pos: i64, ctx: RcCtx) -> ParseResult {
     let mut body_len: i64 = (body_tokens_raw.len() as i64);
     let mut zero: i64 = 0;
     let mut body_last: i64 = body_len - 1;
-    let mut mut_names: Vec<String> = collect_mut_names(body_tokens_raw.clone(), zero.clone(), body_last.clone());
+    let mut mut_names_list: Vec<String> = collect_mut_names(body_tokens_raw.clone(), zero.clone(), body_last.clone());
     let mut param_total: i64 = (param_names.len() as i64);
     for param_idx in 0..param_total {
         // transpiler-deor/codegen/decl/macros/fn_build_body_ctx.deor
         let mut mut_param_name: String = param_names[param_idx as usize].clone();
-        if (mut_names.contains(&mut_param_name)) {
+        if (mut_names_list.contains(&mut_param_name)) {
             // transpiler-deor/codegen/decl/macros/fn_build_body_ctx.deor
             let mut mut_param_str: String = param_strs[param_idx as usize].clone();
             let mut mut_prefix: String = "mut ".to_string();
             param_strs[param_idx as usize] = s_cat(mut_prefix.clone(), mut_param_str.clone()).clone();
         }
     }
-    let mut validator_var_reg: Vec<String> = collect_validator_var_types(body_tokens_raw.clone(), type_reg.clone());
+    let mut mut_names: ListRef = list_wrap(mut_names_list);
+    let mut validator_var_reg_list: Vec<String> = collect_validator_var_types(body_tokens_raw.clone(), type_reg.clone());
+    let mut validator_var_reg: ListRef = list_wrap(validator_var_reg_list);
     let mut tokens: TokensRef = tokens_wrap(body_tokens_raw);
     let mut detect_tokens: TokensRef = tokens.clone();
     let mut body_ctx_raw: GenCtx = GenCtx { variant_reg, shape_reg, struct_reg, enum_reg, mut_names, type_reg, tokens, typed_enum_reg, typed_variant_reg, validator_var_reg, validator_fn_reg };

@@ -45,17 +45,17 @@ struct TokenMeta
 	string file
 
 struct GenCtx
-	strList variant_reg
-	strList shape_reg
-	strList struct_reg
-	strList enum_reg
-	strList mut_names
-	strList type_reg
+	ListRef variant_reg
+	ListRef shape_reg
+	ListRef struct_reg
+	ListRef enum_reg
+	ListRef mut_names
+	ListRef type_reg
 	TokensRef tokens
-	strList typed_enum_reg
-	strList typed_variant_reg
-	strList validator_var_reg
-	strList validator_fn_reg
+	ListRef typed_enum_reg
+	ListRef typed_variant_reg
+	ListRef validator_var_reg
+	ListRef validator_fn_reg
 
 # Cursor-style view into a token list. Used inside `using c` blocks during declaration
 # parsing to step through tokens one at a time without carrying raw indices everywhere.
@@ -76,6 +76,9 @@ rust
 	use std::rc::Rc;
 	type TokensRef = Rc<Vec<Token>>;
 	type RcCtx = Rc<GenCtx>;
+	// A shared, read-only registry list: cloning copies a pointer, not every entry.
+	type ListRef = Rc<Vec<String>>;
+	fn list_wrap(items: Vec<String>) -> ListRef { Rc::new(items) }
 	// One line's characters, shared by the lexer's scan_* functions without copying the list per call.
 	type CharsRef = Rc<Vec<String>>;
 	fn chars_wrap(chars: Vec<String>) -> CharsRef { Rc::new(chars) }
@@ -100,4 +103,5 @@ rust
 raw TokensRef
 raw RcCtx
 raw NameSet
+raw ListRef
 raw CharsRef

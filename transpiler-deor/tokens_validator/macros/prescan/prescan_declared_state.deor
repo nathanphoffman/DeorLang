@@ -33,3 +33,6 @@ unsafe_macro prescan_declared_state
 		macro_run prescan_check_struct_fields
 		macro_run prescan_check_enum_variants
 		pre_i = pre_i + 1
+
+	# Read-only from here on, so share it instead of copying it at every lookup
+	ListRef struct_field_ref = list_wrap(move struct_field_reg)

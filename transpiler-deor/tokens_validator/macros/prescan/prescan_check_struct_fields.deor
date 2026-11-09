@@ -90,8 +90,8 @@ macro prescan_check_struct_fields
 						# infinite size in Rust
 						string field_base = field_type
 
-						if reg_has(validator_base_reg, field_type)
-							field_base = reg_get(validator_base_reg, field_type)
+						if reg_has(validator_base_ref, field_type)
+							field_base = reg_get(validator_base_ref, field_type)
 
 						if field_base is struct_name
 							errors at end = val_err(field_name_token, lbl_field, rule_recursive_struct_field)

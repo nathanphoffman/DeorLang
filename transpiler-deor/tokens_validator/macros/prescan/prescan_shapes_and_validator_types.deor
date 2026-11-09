@@ -19,3 +19,6 @@ unsafe_macro prescan_shapes_and_validator_types
 		macro_run prescan_collect_validator_types
 		macro_run prescan_collect_type_names
 		pre_i = pre_i + 1
+
+	# Read-only from here on, so share it instead of copying it at every lookup
+	ListRef validator_base_ref = list_wrap(move validator_base_reg)

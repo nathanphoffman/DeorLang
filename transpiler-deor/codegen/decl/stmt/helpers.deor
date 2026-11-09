@@ -17,7 +17,7 @@ fn string emit_val(string val_code, string val_kind)
 # returns that validator type's name, otherwise "" (validator_fn_reg holds [fnName, ReturnType]
 # pairs). A validator-typed binding or reassignment whose value is such a call already holds
 # an Option<T> and must not be wrapped in T::new() a second time.
-fn string call_validator_return_type(TokensRef tokens, int val_pos, strList validator_fn_reg)
+fn string call_validator_return_type(TokensRef tokens, int val_pos, ListRef validator_fn_reg)
 	int token_count = len(tokens)
 	int paren_pos = val_pos + 1
 

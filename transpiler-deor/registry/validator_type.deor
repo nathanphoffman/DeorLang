@@ -48,7 +48,7 @@ fn Reg3Scan try_type_entry(TokensRef tokens, int pos)
 # form both match — only the leading pair matters here). Builds [varName, TypeName] pairs
 # so a later bare reassignment (`varName = expr`) can look up which validator type to
 # re-run the predicate through — see gen_stmt's plain-reassignment branch in stmt.deor.
-fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
+fn strList collect_validator_var_types(tokenList tokens, ListRef type_reg)
 	strList result = empty
 	int token_count = len(tokens)
 
@@ -79,7 +79,7 @@ fn strList collect_validator_var_types(tokenList tokens, strList type_reg)
 # of these functions already holds an Option<ReturnType>, so codegen must not wrap it in
 # ReturnType::new() again — and function bodies only see their own tokens, so this has to be
 # gathered here from the whole file.
-fn strList collect_validator_fn_returns(TokensRef tokens, strList type_reg)
+fn strList collect_validator_fn_returns(TokensRef tokens, ListRef type_reg)
 	# ex: fn Roll {find_best}( — decl_pos+2 grabs the function name after the return type
 	fn int locate_fn_name(int decl_pos)
 		return decl_pos + 2

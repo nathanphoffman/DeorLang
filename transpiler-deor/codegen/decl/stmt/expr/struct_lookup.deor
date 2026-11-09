@@ -14,7 +14,7 @@ fn bool fields_all_present(strList wanted, strList have)
 # Names of every struct whose field set is exactly `fields` (order ignored). The struct
 # registry is a flat list of alternating name, "field,field,..." entries.
 # Used when a bare `(f1, f2)` must resolve to a struct for construction.
-fn strList structs_with_exact_fields(strList struct_reg, strList fields)
+fn strList structs_with_exact_fields(ListRef struct_reg, strList fields)
 	strList matches = empty
 	string comma = ","
 	int wanted_count = len(fields)
@@ -36,7 +36,7 @@ fn strList structs_with_exact_fields(strList struct_reg, strList fields)
 
 # Names of every struct that has at least the given fields. Used by `x with (f1, f2)`,
 # where only the overridden fields are visible and the rest come from the source struct.
-fn strList structs_containing_fields(strList struct_reg, strList fields)
+fn strList structs_containing_fields(ListRef struct_reg, strList fields)
 	strList matches = empty
 	string comma = ","
 	int pair_count = len(struct_reg) / 2
@@ -56,7 +56,7 @@ fn strList structs_containing_fields(strList struct_reg, strList fields)
 
 # First struct whose field set matches exactly, or "Unknown". Ambiguous matches are
 # rejected earlier by the validator (check_ambiguous_struct_build).
-fn string find_struct_for_fields(strList struct_reg, strList fields)
+fn string find_struct_for_fields(ListRef struct_reg, strList fields)
 	strList matches = structs_with_exact_fields(struct_reg, fields)
 	string unknown = "Unknown"
 
@@ -68,7 +68,7 @@ fn string find_struct_for_fields(strList struct_reg, strList fields)
 	return first_match
 
 # First struct containing all the given fields, or "Unknown". Same validator guarantee.
-fn string find_struct_containing_fields(strList struct_reg, strList fields)
+fn string find_struct_containing_fields(ListRef struct_reg, strList fields)
 	strList matches = structs_containing_fields(struct_reg, fields)
 	string unknown = "Unknown"
 

@@ -54,10 +54,10 @@ macro check_ambiguous_struct_build
 
 				# Anything but plain names (`as (a + b)`) is a grouped expression, not a struct
 				if all_names
-					strList candidates = structs_with_exact_fields(struct_field_reg, listed_fields)
+					strList candidates = structs_with_exact_fields(struct_field_ref, listed_fields)
 
 					if is_with_form
-						candidates = structs_containing_fields(struct_field_reg, listed_fields)
+						candidates = structs_containing_fields(struct_field_ref, listed_fields)
 
 					int candidate_count = len(candidates)
 
