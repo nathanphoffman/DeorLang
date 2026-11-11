@@ -7,5 +7,4 @@ import "lib/definitely_not_a_real_file.deor"
 fn void main()
 	print("hi")
 
-# expect-error:
-# cannot find import: lib/definitely_not_a_real_file.deor
+# error-elsewhere: missing_import

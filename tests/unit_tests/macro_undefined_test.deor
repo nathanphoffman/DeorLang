@@ -5,15 +5,12 @@
 # needs to be isolated from other macro-system test cases.
 
 fn void run()
-	macro_run this_macro_does_not_exist
+	macro_run this_macro_does_not_exist  # error: macro_run
 
 fn void run_unsafe()
-	unsafe_macro_run this_other_macro_does_not_exist_either
+	unsafe_macro_run this_other_macro_does_not_exist_either  # error: macro_run
 
 fn void main()
 	run()
 	run_unsafe()
 
-# expect-error:
-# macro_run 'this_macro_does_not_exist' - macro is not defined
-# macro_run 'this_other_macro_does_not_exist_either' - macro is not defined

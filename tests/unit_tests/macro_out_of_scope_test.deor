@@ -14,7 +14,5 @@ fn void define_and_call_locally()
 
 fn void main()
 	define_and_call_locally()
-	macro_run local_only
+	macro_run local_only  # error: macro_out_of_scope
 
-# expect-error:
-# line 17: macro_run 'local_only' - 'local_only' is defined locally but not visible here

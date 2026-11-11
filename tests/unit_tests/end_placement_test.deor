@@ -2,17 +2,17 @@
 # 'end' is reserved — only valid directly after 'at' (list at end / list at end = val).
 # Each case below misuses it as a plain identifier and should be rejected.
 
-fn int sum_range(int start, int end)
+fn int sum_range(int start, int end)  # error: undefined_var, end
 	total as 0
 
-	for idx in (start, end)
+	for idx in (start, end)  # error: bare_tuple_range, end
 		total = total + idx
 
 	return total
 
 fn void bad_bare_use()
-	int end = 5
-	print(end)
+	int end = 5  # error: undefined_var, end
+	print(end)  # error: end
 
 fn void main()
 	int range_start = 3
@@ -20,8 +20,3 @@ fn void main()
 	int total = sum_range(range_start, range_end)
 	print(total)
 
-# expect-error:
-# line 5: variable 'end' - 'end' can only appear directly after 'at'
-# line 8: variable 'end' - 'end' can only appear directly after 'at'
-# line 14: variable 'end' - 'end' can only appear directly after 'at'
-# line 15: variable 'end' - 'end' can only appear directly after 'at'

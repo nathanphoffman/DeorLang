@@ -5,8 +5,6 @@
 shape intList = list of int
 
 fn void main()
-	intList nums = [1, 2
+	intList nums = [1, 2  # error: unmatched_open_bracket
 	print("hi")
 
-# expect-error:
-# line 8: variable '[' - '[' is never closed

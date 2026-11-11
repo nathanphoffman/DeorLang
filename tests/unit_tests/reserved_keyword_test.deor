@@ -10,52 +10,41 @@
 shape intList = list of int
 
 fn void test_typed_raw()
-	int raw = 5
-	print(raw)
+	int raw = 5  # error: undefined_var, kw_in_parens
+	print(raw)  # error: kw_in_parens
 
 fn void test_typed_remove()
-	intList remove = [1, 2, 3]
-	int cnt = len(remove)
+	intList remove = [1, 2, 3]  # error: undefined_var, kw_in_parens
+	int cnt = len(remove)  # error: kw_in_parens
 	print(cnt)
 
 fn void test_typed_avow()
-	int avow = 5
+	int avow = 5  # error: undefined_var, kw_in_parens
 	print(avow)
 
 fn void test_typed_empty()
-	int empty = 5
+	int empty = 5  # error: undefined_var, kw_in_parens
 	print(empty)
 
 fn void test_typed_none()
-	int none = 5
+	int none = 5  # error: undefined_var, kw_in_parens
 	print(none)
 
 fn void test_as_binding()
-	raw as 5
+	raw as 5  # error: kw_in_parens
 
-fn void test_param_avow(int avow)
+fn void test_param_avow(int avow)  # error: kw_in_parens, undefined_var
 	print(avow)
 
-fn void test_param_empty(int empty)
+fn void test_param_empty(int empty)  # error: kw_in_parens, undefined_var
 	print(empty)
 
-fn void test_param_none(int none)
+fn void test_param_none(int none)  # error: kw_in_parens, undefined_var
 	print(none)
 
-fn void test_param_const(int const)
+fn void test_param_const(int const)  # error: kw_in_parens, undefined_var
 	print(const)
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 13: variable 'raw' - reserved keyword cannot be used as a name
-# line 17: variable 'remove' - reserved keyword cannot be used as a name
-# line 22: variable 'avow' - reserved keyword cannot be used as a name
-# line 26: variable 'empty' - reserved keyword cannot be used as a name
-# line 30: variable 'none' - reserved keyword cannot be used as a name
-# line 34: variable 'raw' - reserved keyword cannot be used as a name
-# line 36: fn 'avow' - reserved keyword cannot be used as a name
-# line 39: fn 'empty' - reserved keyword cannot be used as a name
-# line 42: fn 'none' - reserved keyword cannot be used as a name
-# line 45: fn 'const' - reserved keyword cannot be used as a name

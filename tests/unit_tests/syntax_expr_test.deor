@@ -11,71 +11,58 @@ shape intList = list of int
 
 fn void test_bracket_indexing()
 	intList nums = [1, 2, 3]
-	int first = nums[0]
+	int first = nums[0]  # error: bracket_index
 
 fn void test_empty_bracket()
-	intList empty_list = []
+	intList empty_list = []  # error: empty_bracket
 
 fn void test_kw_in_parens()
-	print(if)
+	print(if)  # error: kw_in_parens
 
 fn void test_not_is_order()
 	bool flag = true
 
-	if not flag is true
+	if not flag is true  # error: not_is
 		print("bad order")
 
 fn void test_not_is_order_paren()
 	int low = 3
 	int high = 4
 
-	if not (low > high) is true
+	if not (low > high) is true  # error: not_is
 		print("bad order paren")
 
 fn void test_not_is_order_call()
-	if not get_flag() is true
+	if not get_flag() is true  # error: not_is
 		print("bad order call")
 
 fn bool get_flag()
 	return true
 
 fn void test_range_assigned()
-	int bad_assign = range(5)
+	int bad_assign = range(5)  # error: range_placement
 	print(bad_assign)
 
 fn void test_range_as_arg()
-	print(range(3))
+	print(range(3))  # error: range_placement
 
 fn void test_bare_truthiness()
 	int my_count = 5
 
-	if my_count
+	if my_count  # error: bare_truthiness
 		print("bad truthiness")
 
 fn void test_rust_generic()
-	Option bad_type = 5
+	Option bad_type = 5  # error: no_option, unknown_type
 
 fn void test_bare_tuple_range()
-	for idx2 in (1, 5)
+	for idx2 in (1, 5)  # error: bare_tuple_range
 		print(idx2)
 
 fn void test_bare_tuple_range_no_var()
-	for in (1, 5)
+	for in (1, 5)  # error: bare_tuple_range
 		print("iter")
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 14: variable 'nums' - bracket indexing is not valid in Deor
-# line 17: variable '[' - use 'empty' to initialize an empty list
-# line 20: variable 'if' - reserved keyword cannot be used as a name
-# line 25: variable 'flag' - use 'x is not y' instead of 'not x is y'
-# line 32: variable '(' - use 'x is not y' instead of 'not x is y'
-# line 36: variable 'get_flag' - use 'x is not y' instead of 'not x is y'
-# line 43: call to 'range' - 'range' can only be used as a for-loop's iterator expression
-# line 47: call to 'range' - 'range' can only be used as a for-loop's iterator expression
-# line 52: variable 'my_count' - only bool and validator types have truthiness
-# line 56: identifier 'Option' - Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor
-# line 59: call to '(' - bare tuple range
-# line 63: call to '(' - bare tuple range

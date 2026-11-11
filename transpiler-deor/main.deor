@@ -1,19 +1,20 @@
 import "transpiler-deor/imports.deor"
 import "transpiler-deor/macros/timer.deor"
 
-# Removes --verbose/-v from the raw args and returns the rest (input and output paths).
-fn strList strip_verbose_flags(strList raw_args)
+# Removes --verbose/-v and --test from the raw args and returns the rest (input and output paths).
+fn strList strip_flags(strList raw_args)
 	string verbose_long = "--verbose"
 	string verbose_short = "-v"
+	string test_flag = "--test"
 	strList cli_args = empty
 	int raw_count = len(raw_args)
 	int raw_i = 0
 
 	for if raw_i < raw_count
 		string raw_arg = raw_args at raw_i
-		bool is_verbose_flag = raw_arg is verbose_long or raw_arg is verbose_short
+		bool is_flag = raw_arg is verbose_long or raw_arg is verbose_short or raw_arg is test_flag
 
-		if not is_verbose_flag
+		if not is_flag
 			cli_args at end = raw_arg
 
 		raw_i = raw_i + 1
@@ -34,10 +35,18 @@ fn void main()
 	if verbose
 		verbose_enable()
 
-	strList cli_args = strip_verbose_flags(raw_args)
+	string test_flag = "--test"
+	bool test_mode = list_has(raw_args, test_flag)
+	strList cli_args = strip_flags(raw_args)
 	int arg_count = len(cli_args)
+	string first_arg = ""
 
-	if arg_count < 2
+	if arg_count > 0
+		first_arg = cli_args at 0
+
+	if first_arg is "test"
+		run_test_command(cli_args)
+	else if arg_count < 2
 		crash("usage: deor input.deor output.rs [--verbose|-v]")
 	else
 		string input_path = cli_args at 0
@@ -70,6 +79,10 @@ fn void main()
 		unsafe_macro_run timer_start
 		string rust_code = generate_rust_from_tokens(tokens_ref, ctx)
 		macro_run timer_end
+
+		if test_mode
+			string runner_code = generate_test_runner(tokens_ref, input_path)
+			rust_code = s_cat(rust_code, runner_code)
 
 		string allow_warnings = "#![allow(warnings)]\n"
 		rust_code = s_cat(allow_warnings, rust_code)

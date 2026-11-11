@@ -14,8 +14,8 @@
 #    'myField' fires: "name must be lower_snake_case"
 # -----------------------------------------------------------------------
 struct BadFields
-	string x
-	string myField
+	string x  # error: min3
+	string myField  # error: snake
 
 # -----------------------------------------------------------------------
 # 2. Enum variant naming — lowercase AND too short
@@ -24,8 +24,8 @@ struct BadFields
 #    'East' and 'West' are correct, no error expected
 # -----------------------------------------------------------------------
 enum Direction
-	north
-	ab
+	north  # error: enum_pascal
+	ab  # error: min3, enum_pascal
 	East
 	West
 
@@ -35,14 +35,14 @@ enum Direction
 # -----------------------------------------------------------------------
 enum Message
 	Quit
-	Move(int)
+	Move(int)  # error: enum_data, enum_pascal
 
 # -----------------------------------------------------------------------
 # 4. void used as variable type
 #    'void result = 5' fires: "'void' is not a valid variable type"
 # -----------------------------------------------------------------------
 fn void test_void_var()
-	void result = 5
+	void result = 5  # error: void_var, undeclared_reassign
 
 # -----------------------------------------------------------------------
 # 5. return inside a void function
@@ -51,7 +51,7 @@ fn void test_void_var()
 fn void test_void_return()
 	int num = 5
 
-	return num
+	return num  # error: void_return
 
 # -----------------------------------------------------------------------
 # 6. move applied to a literal
@@ -60,13 +60,13 @@ fn void test_void_return()
 fn int test_move_literal()
 	int val = 5
 
-	return move 5
+	return move 5  # error: move
 
 # -----------------------------------------------------------------------
 # 7. Parameter name same as its type
 #    second param 'string string' fires: "parameter name cannot be the same as its type"
 # -----------------------------------------------------------------------
-fn void test_param_shadow(int count, string string)
+fn void test_param_shadow(int count, string string)  # error: param_shadow
 	int unused = 0
 
 # -----------------------------------------------------------------------
@@ -75,7 +75,7 @@ fn void test_param_shadow(int count, string string)
 # -----------------------------------------------------------------------
 fn void test_typed_as()
 	int src = 5
-	int val as src
+	int val as src  # error: typed_as
 
 # -----------------------------------------------------------------------
 # 9. as + move (redundant move)
@@ -83,16 +83,5 @@ fn void test_typed_as()
 # -----------------------------------------------------------------------
 fn void test_as_move()
 	int src = 5
-	val as move src
+	val as move src  # error: as_move
 
-# expect-error:
-# name must be at least 3 characters
-# name must be lower_snake_case
-# enum variant must be PascalCase
-# enum variants cannot carry data
-# 'void' is not a valid variable type
-# void functions must not use return
-# 'move' can only precede a variable name
-# parameter name cannot be the same as its type
-# typed `as` bindings are not supported
-# `as` already transfers ownership

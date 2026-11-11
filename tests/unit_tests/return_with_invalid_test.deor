@@ -7,7 +7,7 @@ struct Ship
 	string name
 
 fn Ship move_ship(Ship ship, float pos)
-	return ship with (pos)
+	return ship with (pos)  # error: return_with
 
 fn Ship move_ship_ok(Ship ship, float pos)
 	updated as ship with (pos)
@@ -17,5 +17,3 @@ fn Ship move_ship_ok(Ship ship, float pos)
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 10: fn 'with' - 'with' cannot be used directly in a return — bind the updated struct first

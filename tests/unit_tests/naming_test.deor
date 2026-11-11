@@ -3,33 +3,26 @@
 # isn't PascalCase, a shape name that isn't camelCase, and a const name that
 # isn't SCREAMING_SNAKE_CASE.
 
-struct badname
+struct badname  # error: pascal
 	int val
 
-shape BadShape = list of int
+shape BadShape = list of int  # error: camel
 
-enum badenum
+enum badenum  # error: pascal
 	Alpha
 	Beta
 
 fn void test_const_screaming()
-	const string bad_name = "x"
+	const string bad_name = "x"  # error: screaming
 
 fn void test_for_var_short()
-	for ab in [1, 2, 3]
+	for ab in [1, 2, 3]  # error: min3
 		print(ab)
 
 fn void test_for_var_bad_case()
-	for myVar in [1, 2, 3]
+	for myVar in [1, 2, 3]  # error: snake
 		print(myVar)
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 6: struct 'badname' - name must be PascalCase
-# line 9: shape 'BadShape' - name must be camelCase
-# line 11: enum 'badenum' - name must be PascalCase
-# line 16: variable 'bad_name' - const name must be SCREAMING_SNAKE_CASE
-# line 19: variable 'ab' - name must be at least 3 characters
-# line 23: variable 'myVar' - name must be lower_snake_case

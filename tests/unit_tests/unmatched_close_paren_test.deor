@@ -5,8 +5,6 @@
 # the file — the stray token was otherwise ignored and the file built anyway.
 
 fn void main()
-	int total = 1 + 2)
+	int total = 1 + 2)  # error: unmatched_close_paren
 	print(total)
 
-# expect-error:
-# line 8: variable ')' - ')' has no matching '(' before it

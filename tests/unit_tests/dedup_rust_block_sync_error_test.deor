@@ -11,5 +11,4 @@ fn void main()
 	ENFORCE_UNIQUE_IMPORT_DECLARATIONS
 	print("unreachable")
 
-# expect-error:
-# duplicate declaration 'Gadget' — already declared in tests/unit_tests/fixtures/dedup_sync_a.deor
+# error-elsewhere: duplicate_declaration

@@ -5,10 +5,8 @@
 # consuming the rest of the file as its "body" — main() would silently vanish
 # into a never-called macro instead of erroring.
 
-macro empty_macro
+macro empty_macro  # error: macro_empty_body
 
 fn void main()
 	print("hi")
 
-# expect-error:
-# macro 'empty_macro' - must have an indented body

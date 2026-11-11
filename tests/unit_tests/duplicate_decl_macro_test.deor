@@ -8,12 +8,10 @@
 macro greet
 	print("first")
 
-macro greet
+macro greet  # error: duplicate_declaration
 	print("second")
 
 fn void main()
 	ENFORCE_UNIQUE_FILE_DECLARATIONS
 	macro_run greet
 
-# expect-error:
-# duplicate declaration 'greet' — already declared in tests/unit_tests/duplicate_decl_macro_test.deor

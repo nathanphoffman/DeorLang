@@ -33,7 +33,7 @@ fn tokenList validate_macros(tokenList raw_tokens)
 
 	# pass 2: verify every macro_run/unsafe_macro_run references a collected name
 	string lbl_macro = "macro_run"
-	string rule_macro_run = "macro is not defined — check the name or add a 'macro <name>' definition"
+	string rule_macro_run = "macro is not defined — check the name or add a 'macro <name>' definition [macro_run]"
 	int run_index = 0
 
 	for if run_index < token_count

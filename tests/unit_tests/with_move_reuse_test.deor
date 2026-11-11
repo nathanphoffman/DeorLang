@@ -10,8 +10,6 @@ fn void main()
 	int count = 1
 	Hold start = (label, count)
 	Hold moved = move start with (label)
-	(count) in start
+	(count) in start  # error: use_after_move
 	print(count)
 
-# expect-error:
-# line 13: variable 'start' - used here but already moved earlier

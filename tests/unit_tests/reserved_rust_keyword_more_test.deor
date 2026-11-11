@@ -10,15 +10,15 @@ struct Holder
 	int matches
 
 fn void test_for_var()
-	for ref in range(3)
-		print(ref)
+	for ref in range(3)  # error: kw_in_parens
+		print(ref)  # error: kw_in_parens
 
 fn void test_mod()
-	int mod = 5
-	print(mod)
+	int mod = 5  # error: kw_in_parens
+	print(mod)  # error: kw_in_parens
 
-fn void test_trait_param(int trait)
-	print(trait)
+fn void test_trait_param(int trait)  # error: kw_in_parens
+	print(trait)  # error: kw_in_parens
 
 fn void test_ok_names()
 	int boxes = 1
@@ -31,10 +31,3 @@ fn void test_ok_names()
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 13: variable 'ref' - reserved keyword cannot be used as a name
-# line 14: variable 'ref' - reserved keyword cannot be used as a name
-# line 17: variable 'mod' - reserved keyword cannot be used as a name
-# line 18: variable 'mod' - reserved keyword cannot be used as a name
-# line 20: variable 'trait' - reserved keyword cannot be used as a name
-# line 21: variable 'trait' - reserved keyword cannot be used as a name

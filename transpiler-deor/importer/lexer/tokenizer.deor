@@ -90,7 +90,8 @@ fn tokenList tokenize(string source, string path)
 				string word = pr_code(word_result)
 				char_index = pr_pos(word_result)
 				string word_kind = word_to_kind(word)
-				tokens at end = make_token(word_kind, word, meta)
+				string word_value = word_to_value(word)
+				tokens at end = make_token(word_kind, word_value, meta)
 
 				continue
 

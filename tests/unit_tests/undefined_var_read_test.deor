@@ -7,20 +7,16 @@
 # check must NOT flag.
 
 fn void test_decl_rhs()
-	int result = this_is_not_anywhere
+	int result = this_is_not_anywhere  # error: undefined_var
 	print(result)
 
 fn void test_call_arg()
-	print(also_missing)
+	print(also_missing)  # error: undefined_var
 
 fn int test_return_value()
-	return still_missing
+	return still_missing  # error: undefined_var
 
 fn void main()
 	test_decl_rhs()
 	test_call_arg()
 
-# expect-error:
-# line 10: variable 'this_is_not_anywhere' - used here but never declared anywhere
-# line 14: variable 'also_missing' - used here but never declared anywhere
-# line 17: variable 'still_missing' - used here but never declared anywhere

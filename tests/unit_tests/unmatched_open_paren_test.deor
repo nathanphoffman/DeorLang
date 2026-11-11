@@ -6,7 +6,7 @@
 # unrelated noise instead of one clear error about the real problem.
 
 fn void main()
-	int total = (1 + 2
+	int total = (1 + 2  # error: unmatched_open_paren
 	print(total)
 
 	if total > 0
@@ -14,5 +14,3 @@ fn void main()
 	else
 		print(total)
 
-# expect-error:
-# line 9: variable '(' - '(' is never closed

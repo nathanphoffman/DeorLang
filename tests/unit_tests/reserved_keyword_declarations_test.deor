@@ -10,36 +10,30 @@
 # still real bug: a keyword-named variant was silently dropped from the
 # generated enum with zero error, rather than just failing a naming check.
 
-struct raw
+struct raw  # error: kw_in_parens
 	int val
 
-enum avow
+enum avow  # error: kw_in_parens
 	VariantA
 	VariantB
 
 enum Color
 	Red
-	empty
+	empty  # error: kw_in_parens
 	Blue
 
 struct Settings
-	int const
+	int const  # error: kw_in_parens
 
 struct Point
 	int pos_x
 	int pos_y
 
 fn void test_destructure_binding()
-	Point pt_a = (3, 4)
-	(pos_x, none) in pt_a
+	Point pt_a = (3, 4)  # error: struct_field_count
+	(pos_x, none) in pt_a  # error: kw_in_parens
 	print(pos_x)
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 13: struct 'raw' - reserved keyword cannot be used as a name
-# line 16: enum 'avow' - reserved keyword cannot be used as a name
-# line 22: enum variant 'empty' - reserved keyword cannot be used as a name
-# line 26: struct field 'const' - reserved keyword cannot be used as a name
-# line 34: variable 'none' - reserved keyword cannot be used as a name

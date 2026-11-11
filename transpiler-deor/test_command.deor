@@ -1,0 +1,61 @@
+# `deor test [path]` — finds every *.test.deor file under the current directory (or
+# under `path`), builds each into its own test binary, runs it, and prints the results.
+# Gitignored files are skipped by asking git for the file list, so this needs a git repo.
+# Exits non-zero when any test file fails to build or has a failing test.
+
+# Transpiles one test file to Rust (in test mode, so it gets a generated main).
+# `rust_path` is where the generated Rust is written.
+fn bool transpile_test_file(string test_file, string rust_path)
+	string deor_binary = current_binary_path()
+	string test_flag = "--test"
+	strList transpile_args = [test_file, rust_path, test_flag]
+
+	return run_inherited(deor_binary, transpile_args)
+
+# Builds and runs one test file. Returns true when it built and every test passed.
+fn bool run_test_file(string test_file, int file_index)
+	string folder = test_build_folder()
+	string index_text = n_to_str(file_index)
+	string rust_path = s_join([folder, "/test_", index_text, ".rs"])
+	string binary_path = s_join([folder, "/test_", index_text])
+	string compiler = "rustc"
+	string output_flag = "-o"
+	strList compile_args = [rust_path, output_flag, binary_path]
+	strList no_args = empty
+
+	print(test_file)
+	f_make_folder(folder)
+
+	if not transpile_test_file(test_file, rust_path)
+		return false
+
+	if not run_inherited(compiler, compile_args)
+		return false
+
+	return run_inherited(binary_path, no_args)
+
+# Entry point for `deor test [path]`. The optional path narrows the search to one
+# file or folder; without it the current directory is searched.
+fn void run_test_command(strList cli_args)
+	string search_path = "."
+	int arg_count = len(cli_args)
+
+	if arg_count > 1
+		search_path = cli_args at 1
+
+	strList test_files = find_test_files(search_path)
+	int file_count = len(test_files)
+	int failed_count = 0
+	int file_index = 0
+
+	if file_count is 0
+		print("no *.test.deor files found")
+	else
+		for test_file in test_files
+			if not run_test_file(test_file, file_index)
+				failed_count = failed_count + 1
+
+			file_index = file_index + 1
+
+		if failed_count > 0
+			exit_with_code(1)

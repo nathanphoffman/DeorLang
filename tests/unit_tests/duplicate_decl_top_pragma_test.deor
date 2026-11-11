@@ -11,5 +11,4 @@ import "tests/unit_tests/fixtures/dup_decl_b.deor"
 fn void main()
 	print("unreachable")
 
-# expect-error:
-# duplicate declaration 'Widget' — already declared in tests/unit_tests/fixtures/dup_decl_a.deor
+# error-elsewhere: duplicate_declaration

@@ -49,6 +49,10 @@ sync-setup:
     cd deor-vscode && npx --yes vsce package --allow-missing-repository
     cp "$(ls -t deor-vscode/*.vsix | head -1)" setup/deor-lang.vsix
 
+# Runs every *.test.deor file under the current directory (see test_framework_plan.md).
+test path=".":
+    DEOR_LIB=lib ./output/out test {{path}}
+
 test-examples:
     DEOR_LIB=lib ./output/out tests/unit_tester.deor output/test_runner.rs
     rustc -O output/test_runner.rs -o output/test_runner

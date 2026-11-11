@@ -11,35 +11,26 @@ enum string Color
 	Red = "red"
 
 struct BadField
-	Bogus1 thing_here
+	Bogus1 thing_here  # error: unknown_type
 
-shape badList = list of Bogus2
+shape badList = list of Bogus2  # error: unknown_type
 
-shape badFunc = func of Bogus3 to Bogus4
+shape badFunc = func of Bogus3 to Bogus4  # error: unknown_type
 
-fn Bogus5 make_thing()
+fn Bogus5 make_thing()  # error: unknown_type
 	return 5
 
-fn void takes_bad(Bogus6 val)
+fn void takes_bad(Bogus6 val)  # error: unknown_type
 	print("hi")
 
 fn void test_var_decl()
-	Bogus7 thing = 5
+	Bogus7 thing = 5  # error: unknown_type
 	print(thing)
 
 fn void test_typed_enum_as_type()
-	Color background = Red
+	Color background = Red  # error: unknown_type
 	print("hi")
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 14: struct field 'Bogus1' - not a known type
-# line 16: shape 'Bogus2' - not a known type
-# line 18: shape 'Bogus3' - not a known type
-# line 18: shape 'Bogus4' - not a known type
-# line 20: fn 'Bogus5' - not a known type
-# line 23: fn 'Bogus6' - not a known type
-# line 27: variable 'Bogus7' - not a known type
-# line 31: variable 'Color' - not a known type

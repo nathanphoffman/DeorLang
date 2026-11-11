@@ -8,11 +8,9 @@
 struct Broken
 	int val
 
-	fn bool inner(int val)
+	fn bool inner(int val)  # error: nested_fn
 		return val > 0
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 11: fn 'inner' - functions may only be declared at the top level of a file

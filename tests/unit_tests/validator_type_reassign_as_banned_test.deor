@@ -9,7 +9,5 @@ type Positive(int val)
 
 fn void main()
 	Positive good = 5
-	good as 6
+	good as 6  # error: validator_reassign
 
-# expect-error:
-# cannot reassign a validator type variable with 'as'

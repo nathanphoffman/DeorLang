@@ -9,12 +9,10 @@ struct Player
 	string name
 	int score
 
-struct Player
+struct Player  # error: duplicate_declaration
 	string label
 
 fn void main()
 	ENFORCE_UNIQUE_FILE_DECLARATIONS
 	print("unreachable")
 
-# expect-error:
-# duplicate declaration 'Player' — already declared in tests/unit_tests/duplicate_decl_same_file_test.deor

@@ -5,7 +5,7 @@
 # silently falls through to broken codegen / a confusing rustc failure.
 
 fn void outer()
-	fn int bad(int num)
+	fn int bad(int num)  # error: nested_fn_body_shape
 		int extra = num + 1
 
 		return extra
@@ -15,5 +15,3 @@ fn void outer()
 fn void main()
 	outer()
 
-# expect-error:
-# line 8: fn 'bad' - a fn nested inside another fn must have a body of exactly one 'return expr' statement

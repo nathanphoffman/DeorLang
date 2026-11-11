@@ -19,13 +19,13 @@ struct Dust
 	float vel
 
 fn Blast bare_return(float pos, float size)
-	return (pos, size)
+	return (pos, size)  # error: struct_ambiguous
 
 fn void as_build(float pos, float size)
-	built as (pos, size)
+	built as (pos, size)  # error: struct_ambiguous
 
 fn Dust shared_with(Dust piece, float vel)
-	updated as piece with (vel)
+	updated as piece with (vel)  # error: with_ambiguous
 
 	return updated
 
@@ -37,7 +37,3 @@ fn Rock unique_with(Rock piece, float spin)
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 22: fn '(' - more than one struct has these fields
-# line 25: variable 'as' - more than one struct has these fields
-# line 28: variable 'as' - more than one struct has these fields, so Deor cannot tell which one the source is

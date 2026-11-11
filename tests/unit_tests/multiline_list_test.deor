@@ -5,11 +5,9 @@
 shape stringList = list of string
 
 fn stringList split_literal()
-	return ["first",
+	return ["first",  # error: multiline_list
 		"second"]
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 8: variable '[' - a list literal must stay on one line

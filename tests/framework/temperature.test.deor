@@ -1,0 +1,21 @@
+fn int celsius_to_kelvin(int celsius)
+	return celsius + 273
+
+fn string test_freezing_point_in_kelvin()
+	int celsius = 0
+	int expected = 273
+	int actual = celsius_to_kelvin(celsius)
+
+	if actual is not expected
+		return "0 celsius should be 273 kelvin"
+
+	return SUCCESS
+
+fn string test_absolute_zero_is_zero_kelvin()
+	int celsius = -273
+	int actual = celsius_to_kelvin(celsius)
+
+	if actual is not 0
+		return "absolute zero should be 0 kelvin"
+
+	return SUCCESS

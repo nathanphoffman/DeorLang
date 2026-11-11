@@ -6,13 +6,13 @@
 shape boolList = list of bool
 
 fn bool compare_after(int aaa, int bbb)
-	return not aaa > bbb
+	return not aaa > bbb  # error: not_needs_bool, not_then_operator
 
 fn bool less_after(int aaa, int bbb)
-	return not aaa < bbb
+	return not aaa < bbb  # error: not_needs_bool, not_then_operator
 
 fn bool on_number(int num)
-	return not num
+	return not num  # error: not_needs_bool
 
 fn bool fine_group(int aaa, int bbb)
 	return not (aaa > bbb)
@@ -26,7 +26,3 @@ fn bool fine_and(bool aaa, bool bbb)
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 9: variable 'aaa' - 'not' binds tighter than the operator after it
-# line 12: variable 'aaa' - 'not' binds tighter than the operator after it
-# line 15: variable 'num' - 'not' only works on a bool

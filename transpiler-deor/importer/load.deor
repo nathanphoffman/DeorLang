@@ -49,7 +49,9 @@ fn void fatal_at(string path, string msg)
 # Fatal error for an import path that doesn't resolve to an existing file.
 fn void fatal_missing_import(string imp_path)
 	string err_pre = "[error] cannot find import: "
-	fatal(s_cat(err_pre, imp_path))
+	string err_code = " [missing_import]"
+	string err_msg = s_join([err_pre, imp_path, err_code])
+	fatal(err_msg)
 
 fn tokenList load_file(string path)
 	string source = f_read(path)
@@ -111,12 +113,12 @@ fn tokenList load_file(string path)
 
 			if is_structural_kw and at_line_start
 				if decl_phase > 0
-					string struct_order_msg = "struct/enum/type/shape declarations must come before macros and functions"
+					string struct_order_msg = "struct/enum/type/shape declarations must come before macros and functions [structure_after_macro_or_fn]"
 					fatal_at(path, struct_order_msg)
 
 			if kind is KW_MACRO or kind is KW_UNSAFE_MACRO
 				if decl_phase is 2
-					string macro_order_msg = "macros must be declared before functions"
+					string macro_order_msg = "macros must be declared before functions [macro_after_fn]"
 					fatal_at(path, macro_order_msg)
 				else if decl_phase < 1
 					decl_phase = 1
@@ -148,7 +150,7 @@ fn tokenList load_file(string path)
 
 			if not is_empty(import_path)
 				if seen_decl
-					string import_order_msg = "imports must appear at the top of the file before any declarations"
+					string import_order_msg = "imports must appear at the top of the file before any declarations [import_not_first]"
 					fatal_at(path, import_order_msg)
 
 				string dedup_key = import_path

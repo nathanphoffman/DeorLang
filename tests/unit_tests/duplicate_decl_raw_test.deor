@@ -8,7 +8,7 @@
 
 raw Counter
 
-raw Counter
+raw Counter  # error: duplicate_declaration
 
 rust
 	#[derive(Clone)]
@@ -23,5 +23,3 @@ fn void main()
 	Counter ctr = c_make()
 	print("unreachable")
 
-# expect-error:
-# duplicate declaration 'Counter' — already declared in tests/unit_tests/duplicate_decl_raw_test.deor

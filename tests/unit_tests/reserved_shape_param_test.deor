@@ -8,28 +8,21 @@
 struct Curve
 	float power
 
-fn float strength(Curve shape, float distance)
+fn float strength(Curve shape, float distance)  # error: kw_in_parens, undefined_var
 	return distance
 
-fn int type_param(int type)
-	return type
+fn int type_param(int type)  # error: kw_in_parens, undefined_var, non_primitive_validator
+	return type  # error: non_primitive_validator
 
-fn int struct_param(int struct)
+fn int struct_param(int struct)  # error: kw_in_parens, undefined_var
 	return struct
 
-fn int enum_param(int enum)
-	return enum
+fn int enum_param(int enum)  # error: kw_in_parens, undefined_var
+	return enum  # error: kw_in_parens
 
-fn int shape()
-	return 1
+fn int shape()  # error: kw_in_parens, empty_parens
+	return 1  # error: kw_in_parens
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 11: fn 'shape' - reserved keyword cannot be used as a name
-# line 11: variable 'shape' - reserved keyword cannot be used as a name
-# line 14: variable 'type' - reserved keyword cannot be used as a name
-# line 17: variable 'struct' - reserved keyword cannot be used as a name
-# line 20: variable 'enum' - reserved keyword cannot be used as a name
-# line 23: fn 'shape' - reserved keyword cannot be used as a name

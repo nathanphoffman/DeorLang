@@ -8,6 +8,10 @@ build:
     DEOR_LIB=lib deor main.deor build/main.rs
     cargo build
 
+# Runs every *.test.deor file in this project (optionally narrowed to a path).
+test path=".":
+    DEOR_LIB=lib deor test {{path}}
+
 run-spec:
     cd deor_specification && bun server.js
 

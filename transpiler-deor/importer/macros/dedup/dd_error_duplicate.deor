@@ -9,7 +9,8 @@ fn void dd_error_duplicate(string decl_name, Token name_token, string origin_fil
 	string error_line = " line "
 	string error_mid = ": duplicate declaration '"
 	string error_end = "' — already declared in "
-	strList error_parts = [error_prefix, file, error_line, line_str, error_mid, decl_name, error_end, origin_file]
+	string error_code = " [duplicate_declaration]"
+	strList error_parts = [error_prefix, file, error_line, line_str, error_mid, decl_name, error_end, origin_file, error_code]
 	string error_msg = s_join(error_parts)
 	print(error_msg)
 

@@ -7,9 +7,9 @@
 struct Room
 	int area
 
-shape badInput = func of (Room, string) to bool
+shape badInput = func of (Room, string) to bool  # error: func_shape_multi_param, unknown_type, undefined_var
 
-shape badOutput = func of Room to (bool, string)
+shape badOutput = func of Room to (bool, string)  # error: func_shape_multi_param, unknown_type, undefined_var
 
 shape roomFunc = func of Room to bool
 
@@ -24,6 +24,3 @@ fn void main()
 	roomFunc worker = check_room
 	print("ok")
 
-# expect-error:
-# line 10: shape 'shape' - func shapes accept at most one input type and one output type
-# line 12: shape 'shape' - func shapes accept at most one input type and one output type

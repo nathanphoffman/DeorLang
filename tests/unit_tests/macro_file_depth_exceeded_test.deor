@@ -13,6 +13,4 @@ fn void main()
 	ENFORCE_MACRO_FILE_DEPTH = 2
 	macro_run macro1
 
-# expect-error:
-# crosses into 'tests/unit_tests/fixtures/macro_file_depth_c.deor'
-# exceeds ENFORCE_MACRO_FILE_DEPTH limit of 2
+# error-elsewhere: macro_file_depth_exceeded

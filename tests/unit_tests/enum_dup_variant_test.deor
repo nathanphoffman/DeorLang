@@ -10,11 +10,11 @@ enum RoomSize
 
 enum StretchKind
 	Short
-	Medium
+	Medium  # error: dup_variant
 	Long
 
 enum ThirdKind
-	Large
+	Large  # error: dup_variant
 	Huge
 
 fn StretchKind pick()
@@ -23,6 +23,3 @@ fn StretchKind pick()
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 13: enum variant 'Medium' - enum variant name is already used by another enum
-# line 17: enum variant 'Large' - enum variant name is already used by another enum

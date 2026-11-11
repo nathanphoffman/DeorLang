@@ -14,11 +14,11 @@ type NodeOk(Node val)
 
 struct Node
 	int depth
-	Node next
+	Node next  # error: recursive_struct_field
 
 struct Tree
 	int depth
-	TreeOk left
+	TreeOk left  # error: recursive_struct_field
 
 type TreeOk(Tree val)
 	true
@@ -30,6 +30,3 @@ struct Wrapper
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 17: struct field 'next' - a struct cannot hold itself, directly or inside a validator type
-# line 21: struct field 'left' - a struct cannot hold itself, directly or inside a validator type

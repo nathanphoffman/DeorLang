@@ -5,7 +5,7 @@
 
 unsafe_macro outer_leak
 	int outer_val = 1
-	unsafe_macro_run inner_leak
+	unsafe_macro_run inner_leak  # error: unsafe_macro_called_from_macro
 
 unsafe_macro inner_leak
 	int inner_val = 2
@@ -14,5 +14,3 @@ fn void main()
 	unsafe_macro_run outer_leak
 	print(outer_val)
 
-# expect-error:
-# unsafe_macro 'inner_leak' - cannot be called here

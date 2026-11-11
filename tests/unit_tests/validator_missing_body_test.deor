@@ -8,13 +8,10 @@
 # and an end-of-file case (nothing at all follows the header) — the two failure shapes
 # the original crash depended on.
 
-type Empty1(int val)
+type Empty1(int val)  # error: validator_missing_body
 
-type Empty2(int val)
+type Empty2(int val)  # error: validator_missing_body
 
 fn void main()
 	print("unreachable")
 
-# expect-error:
-# line 11: type 'Empty1' - validator type is missing a predicate body
-# line 13: type 'Empty2' - validator type is missing a predicate body

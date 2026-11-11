@@ -9,8 +9,8 @@
 shape intList = list of int
 
 struct Pair
-	int fa
-	int fb
+	int fa  # error: min3
+	int fb  # error: min3
 
 fn int add_one(int left)
 	left = left + 1
@@ -31,14 +31,14 @@ fn void test_for_loop_reassign()
 		item = item + 1
 
 fn void test_destructure_reassign()
-	Pair pair = (1, 2)
+	Pair pair = (1, 2)  # error: struct_field_count
 	(fa, fb) in pair
 	fa = fa + 1
 	print(fa)
 
 fn void test_undeclared_reassign()
-	hello = "world"
-	print(hello)
+	hello = "world"  # error: undeclared_reassign
+	print(hello)  # error: undefined_var
 
 fn void main()
 	print(add_one(1))
@@ -47,5 +47,3 @@ fn void main()
 	test_for_loop_reassign()
 	test_destructure_reassign()
 
-# expect-error:
-# line 40: variable 'hello' - 'name = expr' only works for reassigning an existing variable

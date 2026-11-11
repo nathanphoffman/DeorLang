@@ -1,0 +1,63 @@
+# Helpers for inline error markers in compiler tests. Two kinds of marker:
+#   # error: code            at the end of the line that should produce that error
+#                            (several codes on one line: `# error: a, b`)
+#   # error-elsewhere: code  for an error that has no line in this file: one about the
+#                            file as a whole (declaration order) or raised in a file it
+#                            imports (a duplicate declaration in a fixture)
+# The code is the bracketed name ending the transpiler's message, for example
+# `[max_params]`. Both sides are reduced to sorted "line code" text (line is `*` for
+# an elsewhere error) so the runner can compare them directly. Inserting or removing
+# lines above a marker never breaks a test. A line and code count once however many
+# times the transpiler reports them (two bad arguments on one line, say).
+
+# Lists "line code" for every marker in the source, sorted, one per text line.
+fn string collect_markers(string source)
+	rust
+		{
+			let mut found: Vec<String> = Vec::new();
+			for (index, line) in source.lines().enumerate() {
+				// Checked first: "# error-elsewhere:" does not contain "# error:", but this keeps the two apart.
+				let (marker, place) = if line.contains("# error-elsewhere:") {
+					("# error-elsewhere:", "*".to_string())
+				} else if line.contains("# error:") {
+					("# error:", (index + 1).to_string())
+				} else {
+					continue;
+				};
+				let start = line.find(marker).unwrap_or(0) + marker.len();
+				// Everything after the marker is a comma-separated list of codes.
+				for code in line[start..].split(',') {
+					found.push(format!("{} {}", place, code.trim()));
+				}
+			}
+			found.sort();
+			found.dedup();
+			found.join("\n")
+		}
+
+# Lists "line code" for every error the transpiler reported, sorted. Errors raised at
+# a line of `path` get that line number; all others get `*`. An error line with no
+# bracketed code shows up as "? <the line>" so it fails the comparison instead of
+# being silently ignored.
+fn string collect_reported_errors(string output, string path)
+	rust
+		{
+			let prefixes = ["[validation] ", "[error] "];
+			let mut found: Vec<String> = Vec::new();
+			for line in output.lines() {
+				let Some(rest) = prefixes.iter().find_map(|prefix| line.strip_prefix(prefix)) else { continue };
+				let Some(code) = line.trim_end().rsplit_once('[').and_then(|(_, tail)| tail.strip_suffix(']')) else {
+					found.push(format!("? {}", line));
+					continue;
+				};
+				// "<path> line N: ..." means the error is on line N of this very file.
+				let own_line = rest.strip_prefix(path.as_str())
+					.and_then(|after| after.strip_prefix(" line "))
+					.and_then(|after| after.split_once(':'))
+					.map(|(number, _)| number.to_string());
+				found.push(format!("{} {}", own_line.unwrap_or_else(|| "*".to_string()), code));
+			}
+			found.sort();
+			found.dedup();
+			found.join("\n")
+		}

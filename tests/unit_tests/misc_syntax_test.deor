@@ -6,34 +6,27 @@
 # after 'is'.
 
 fn int test_return_empty()
-	return empty
+	return empty  # error: return_empty
 
 fn int test_return_none()
-	return none
+	return none  # error: return_none
 
 fn void test_bad_stmt()
-	string greeting "hello"
+	string greeting "hello"  # error: bad_stmt, undefined_var
 
 fn void test_invalid_char()
-	int val_a = 5 & 3
+	int val_a = 5 & 3  # error: invalid_char
 	print(val_a)
 
 fn void test_invalid_not_equal()
 	int val_b = 5
 
-	if val_b != 5
+	if val_b != 5  # error: invalid_char
 		print("bad")
 
 fn void test_valid_misuse()
-	bool result = valid
+	bool result = valid  # error: valid
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 9: fn 'empty' - cannot return 'empty'
-# line 12: fn 'none' - none is not a Deor keyword
-# line 15: variable 'string' - literal cannot follow 'name ident'
-# line 18: identifier '&' - character is not valid in Deor
-# line 24: identifier '!' - character is not valid in Deor
-# line 28: variable 'valid' - 'valid' can only appear after 'is' or 'is not'

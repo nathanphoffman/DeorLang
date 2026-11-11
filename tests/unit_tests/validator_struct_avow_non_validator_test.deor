@@ -15,9 +15,7 @@ fn void main()
 	Holder held = (count, size)
 	(count, size) in held
 	int good_total = (avow count)
-	int bad_total = (avow size)
+	int bad_total = (avow size)  # error: avow
 	print(good_total)
 	print(bad_total)
 
-# expect-error:
-# line 18: variable 'size' - avow can only be used on a validator type variable

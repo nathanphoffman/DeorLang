@@ -20,8 +20,6 @@ fn void main()
 	name as "main"
 	Kitchen kitchen = (occupied, name)
 	bool occupied = true
-	kitchen.occupied = true
+	kitchen.occupied = true  # error: invalid_char
 	print("after")
 
-# expect-error:
-# line 23: identifier '.' - character is not valid in Deor

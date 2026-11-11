@@ -7,13 +7,10 @@ struct Traffic
 	int stations
 
 fn Traffic grow(Traffic traffic, int grown)
-	Traffic updated = traffic with (grown as traders)
+	Traffic updated = traffic with (grown as traders)  # error: with_fields, undefined_var
 
 	return updated
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 10: variable 'as' - 'with (...)' accepts only existing variable names separated by commas
-# line 10: variable 'traders' - used here but never declared anywhere

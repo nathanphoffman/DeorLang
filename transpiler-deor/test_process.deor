@@ -1,0 +1,60 @@
+# Process and file-system helpers for `deor test`: asking git for the test files,
+# running programs with their output shown, and a scratch folder for build output.
+
+rust
+	use std::process::{Command, Stdio};
+
+	const TEST_FILE_SUFFIX: &str = ".test.deor";
+
+# Asks git for every tracked or untracked-but-not-ignored file under `path`, and keeps
+# the ones ending in .test.deor, sorted. Crashes with a clear message outside a git repo.
+fn strList find_test_files(string path)
+	rust
+		{
+			let output = Command::new("git")
+				.args(["ls-files", "--cached", "--others", "--exclude-standard", "--", path.as_str()])
+				.output()
+				.unwrap_or_else(|e| panic!("could not run git: {}", e));
+			if !output.status.success() {
+				panic!("deor test must run inside a git repository: {}", String::from_utf8_lossy(&output.stderr));
+			}
+			// One file per line; keep only the test files.
+			let mut files: Vec<String> = String::from_utf8_lossy(&output.stdout)
+				.lines()
+				.filter(|line| line.ends_with(TEST_FILE_SUFFIX))
+				.map(|line| line.to_string())
+				.collect();
+			files.sort();
+			files
+		}
+
+# Runs `program args...` and returns whether it succeeded. Its output goes straight to
+# the terminal, so build errors and test results appear as they happen.
+fn bool run_inherited(string program, strList program_args)
+	rust
+		Command::new(program.as_str())
+			.args(&program_args)
+			.stdin(Stdio::null())
+			.status()
+			.map(|status| status.success())
+			.unwrap_or(false)
+
+# The scratch folder that holds the generated Rust and binaries for test runs.
+fn string test_build_folder()
+	rust
+		std::env::temp_dir().join("deor_tests").to_string_lossy().to_string()
+
+# The path of the running deor binary, so tests are transpiled by the same version.
+fn string current_binary_path()
+	rust
+		std::env::current_exe().expect("cannot find the deor binary").to_string_lossy().to_string()
+
+# Creates the folder (and parents) if it does not exist.
+fn void f_make_folder(string folder)
+	rust
+		std::fs::create_dir_all(folder.as_str()).expect("cannot create test build folder");
+
+# Ends the process with the given exit code, so scripts and CI can see test failures.
+fn void exit_with_code(int code)
+	rust
+		std::process::exit(code as i32)

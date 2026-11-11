@@ -11,19 +11,15 @@ struct Point
 type PointOk(Point val)
 	true
 
-type ShapeBase(intList val)
+type ShapeBase(intList val)  # error: non_primitive_validator
 	true
 
-type MissingBase(Nowhere val)
+type MissingBase(Nowhere val)  # error: non_primitive_validator
 	true
 
-type NestedBase(PointOk val)
+type NestedBase(PointOk val)  # error: non_primitive_validator
 	true
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 14: type 'ShapeBase' - validator base type must be a primitive
-# line 17: type 'MissingBase' - validator base type must be a primitive
-# line 20: type 'NestedBase' - validator base type must be a primitive

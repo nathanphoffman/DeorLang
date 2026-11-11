@@ -137,7 +137,28 @@ fn string word_to_kind(string word)
 	if word is "none"
 		return "KW_NONE"
 
+	# Test-framework constants: lexed as string literals (see word_to_value) so they
+	# behave exactly like "" and "(No Message)" in every context, with no Rust global.
+	if word is "SUCCESS"
+		return "STRING"
+
+	if word is "FAILURE"
+		return "STRING"
+
 	return "IDENT"
+
+# Maps a raw identifier string to its token value. Normally the word itself; the
+# test-framework constants become the string they stand for. SUCCESS is the empty
+# string (a passing test returns nothing to say), FAILURE is a visible placeholder
+# so a failing test with no message is still non-empty.
+fn string word_to_value(string word)
+	if word is "SUCCESS"
+		return ""
+
+	if word is "FAILURE"
+		return "(No Message)"
+
+	return word
 
 fn ParseResult scan_word(CharsRef chars, int char_index, int char_count)
 	string first_char = chars at char_index

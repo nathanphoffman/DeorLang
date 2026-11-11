@@ -6,7 +6,5 @@ macro say_hello
 	print("hi")
 
 fn void main()
-	unsafe_macro_run say_hello
+	unsafe_macro_run say_hello  # error: unsafe_macro_run_on_macro
 
-# expect-error:
-# unsafe_macro_run 'say_hello' - calls an ordinary macro, not an unsafe_macro — use macro_run instead

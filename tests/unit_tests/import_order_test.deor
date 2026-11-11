@@ -11,5 +11,4 @@ import "lib/string.deor"
 fn void main()
 	helper()
 
-# expect-error:
-# imports must appear at the top of the file before any declarations
+# error-elsewhere: import_not_first

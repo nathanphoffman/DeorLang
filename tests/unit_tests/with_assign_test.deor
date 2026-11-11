@@ -9,7 +9,7 @@ struct Pair
 
 fn Pair reassign_with(Pair pair, int left)
 	Pair updated = pair
-	updated = pair with (left)
+	updated = pair with (left)  # error: with_assign
 
 	return updated
 
@@ -17,7 +17,7 @@ fn Pair reassign_in_if(Pair pair, int left)
 	Pair updated = pair
 
 	if left is 1
-		updated = pair with (left)
+		updated = pair with (left)  # error: with_assign
 
 	return updated
 
@@ -34,6 +34,3 @@ fn Pair ok_as(Pair pair, int left)
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 12: variable 'with' - 'with' only works when declaring a new variable
-# line 20: variable 'with' - 'with' only works when declaring a new variable

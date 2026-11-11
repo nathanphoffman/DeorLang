@@ -11,5 +11,4 @@ macro late_macro
 fn void main()
 	helper()
 
-# expect-error:
-# macros must be declared before functions
+# error-elsewhere: macro_after_fn

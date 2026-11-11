@@ -7,11 +7,9 @@
 fn void test_double_equals_in_if()
 	int val = 5
 
-	if val == 5
+	if val == 5  # error: double_equals
 		print("should never reach here")
 
 fn void main()
 	print("should never reach here")
 
-# expect-error:
-# line 10: variable '=' - '==' is not valid in Deor — use 'is' for equality comparison

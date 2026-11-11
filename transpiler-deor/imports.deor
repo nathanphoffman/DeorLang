@@ -247,3 +247,8 @@ import "transpiler-deor/codegen/decl/function.deor"
 import "transpiler-deor/codegen/decl/raw.deor"
 import "transpiler-deor/codegen/decl/decl.deor"
 import "transpiler-deor/codegen/codegen.deor"
+
+# test framework
+import "transpiler-deor/test_runner.deor"
+import "transpiler-deor/test_process.deor"
+import "transpiler-deor/test_command.deor"

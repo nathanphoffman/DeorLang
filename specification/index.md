@@ -44,6 +44,8 @@
 
 [Syntax](docs/syntax.md) — block structure, keywords, comments
 
+[Testing](docs/testing.md) — `*.test.deor` files, `test_*` functions, `SUCCESS`/`FAILURE`, `deor test`
+
 [Validator Types](docs/validator_types.md) — `type` over primitives or structs, `is valid`/`is not valid`, `avow`, struct fields, function returns
 
 [Variables and Data Types](docs/variables.md) — primitives, `raw` variables, truthiness, `as`, explicit typing, reassignment
