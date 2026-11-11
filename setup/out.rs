@@ -809,7 +809,28 @@ pub fn word_to_kind(word: String) -> String {
         // transpiler-deor/importer/lexer/word_token.deor
         return "KW_NONE".to_string();
     }
+    if word == "SUCCESS" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "STRING".to_string();
+    }
+    if word == "FAILURE" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "STRING".to_string();
+    }
     return "IDENT".to_string();
+}
+
+pub fn word_to_value(word: String) -> String {
+    // transpiler-deor/importer/lexer/word_token.deor
+    if word == "SUCCESS" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "".to_string();
+    }
+    if word == "FAILURE" {
+        // transpiler-deor/importer/lexer/word_token.deor
+        return "(No Message)".to_string();
+    }
+    return word;
 }
 
 pub fn scan_word(chars: CharsRef, char_index: i64, char_count: i64) -> ParseResult {
@@ -1013,7 +1034,8 @@ pub fn tokenize(source: String, path: String) -> Vec<Token> {
                 let mut word: String = pr_code(word_result.clone());
                 char_index = pr_pos(word_result.clone());
                 let mut word_kind: String = word_to_kind(word.clone());
-                tokens.push(make_token(word_kind.clone(), word.clone(), meta.clone()).clone());
+                let mut word_value: String = word_to_value(word.clone());
+                tokens.push(make_token(word_kind.clone(), word_value.clone(), meta.clone()).clone());
                 continue;
             }
             // macro: emit_operator_token (transpiler-deor/importer/lexer/macros/emit_operator_token.deor)
@@ -1447,7 +1469,9 @@ pub fn fatal_at(path: String, msg: String) {
 pub fn fatal_missing_import(imp_path: String) {
     // transpiler-deor/importer/load.deor
     let mut err_pre: String = "[error] cannot find import: ".to_string();
-    fatal(s_cat(err_pre.clone(), imp_path.clone()));
+    let mut err_code: String = " [missing_import]".to_string();
+    let mut err_msg: String = [err_pre.as_str(), imp_path.as_str(), err_code.as_str()].concat();
+    fatal(err_msg.clone());
 }
 
 pub fn load_file(path: String) -> Vec<Token> {
@@ -1504,7 +1528,7 @@ pub fn load_file(path: String) -> Vec<Token> {
                 // transpiler-deor/importer/load.deor
                 if decl_phase > 0 {
                     // transpiler-deor/importer/load.deor
-                    let mut struct_order_msg: String = "struct/enum/type/shape declarations must come before macros and functions".to_string();
+                    let mut struct_order_msg: String = "struct/enum/type/shape declarations must come before macros and functions [structure_after_macro_or_fn]".to_string();
                     fatal_at(path.clone(), struct_order_msg.clone());
                 }
             }
@@ -1512,7 +1536,7 @@ pub fn load_file(path: String) -> Vec<Token> {
                 // transpiler-deor/importer/load.deor
                 if decl_phase == 2 {
                     // transpiler-deor/importer/load.deor
-                    let mut macro_order_msg: String = "macros must be declared before functions".to_string();
+                    let mut macro_order_msg: String = "macros must be declared before functions [macro_after_fn]".to_string();
                     fatal_at(path.clone(), macro_order_msg.clone());
                 } else if decl_phase < 1 {
                     // transpiler-deor/importer/load.deor
@@ -1547,7 +1571,7 @@ pub fn load_file(path: String) -> Vec<Token> {
                 // transpiler-deor/importer/load.deor
                 if seen_decl {
                     // transpiler-deor/importer/load.deor
-                    let mut import_order_msg: String = "imports must appear at the top of the file before any declarations".to_string();
+                    let mut import_order_msg: String = "imports must appear at the top of the file before any declarations [import_not_first]".to_string();
                     fatal_at(path.clone(), import_order_msg.clone());
                 }
                 let mut dedup_key: String = import_path.clone();
@@ -1621,7 +1645,8 @@ pub fn dd_error_duplicate(decl_name: String, name_token: Token, origin_file: Str
     let mut error_line: String = " line ".to_string();
     let mut error_mid: String = ": duplicate declaration '".to_string();
     let mut error_end: String = "' — already declared in ".to_string();
-    let mut error_parts: Vec<String> = vec![error_prefix.clone(), file.clone(), error_line.clone(), line_str.clone(), error_mid.clone(), decl_name.clone(), error_end.clone(), origin_file.clone()];
+    let mut error_code: String = " [duplicate_declaration]".to_string();
+    let mut error_parts: Vec<String> = vec![error_prefix.clone(), file.clone(), error_line.clone(), line_str.clone(), error_mid.clone(), decl_name.clone(), error_end.clone(), origin_file.clone(), error_code.clone()];
     let mut error_msg: String = s_join(error_parts.clone());
     println!("{}", error_msg.clone());
     std::process::exit(1);
@@ -2588,7 +2613,7 @@ pub fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> 
     		let has_body = queue.front().map(|t| t.kind == INDENT).unwrap_or(false);
     		if !has_body {
     			let err_tok = name_tok.clone().unwrap_or(cur.clone());
-    			handle_errors(vec![val_err(err_tok, def_label.clone(), format!("must have an indented body — an empty '{} <name>' with no block is not valid", def_label))]);
+    			handle_errors(vec![val_err(err_tok, def_label.clone(), format!("must have an indented body — an empty '{} <name>' with no block is not valid [macro_empty_body]", def_label))]);
     		}
     		// skip INDENT
     		while queue.front().map(|t| t.kind == INDENT).unwrap_or(false) { queue.pop_front(); }
@@ -2601,7 +2626,7 @@ pub fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> 
     				Some(t) => {
     					if t.kind == KW_MACRO || t.kind == KW_UNSAFE_MACRO {
     						let name_tok = queue.pop_front().unwrap_or(t.clone());
-    						handle_errors(vec![val_err(name_tok, "macro".to_string(), "cannot be defined inside another macro body — use macro_run to call an existing macro".to_string())]);
+    						handle_errors(vec![val_err(name_tok, "macro".to_string(), "cannot be defined inside another macro body — use macro_run to call an existing macro [macro_nested_definition]".to_string())]);
     					} else if t.kind == INDENT {
     						depth += 1;
     						body.push(t);
@@ -2650,17 +2675,17 @@ pub fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> 
     			let target_is_unsafe = *target_is_unsafe;
     			if target_is_unsafe && !is_unsafe_call {
     				let err_tok = name_tok.clone().unwrap_or(cur.clone());
-    				handle_errors(vec![val_err(err_tok, "macro_run".to_string(), "calls an unsafe_macro — use unsafe_macro_run instead".to_string())]);
+    				handle_errors(vec![val_err(err_tok, "macro_run".to_string(), "calls an unsafe_macro — use unsafe_macro_run instead [macro_run_on_unsafe_macro]".to_string())]);
     			}
     			if !target_is_unsafe && is_unsafe_call {
     				let err_tok = name_tok.clone().unwrap_or(cur.clone());
-    				handle_errors(vec![val_err(err_tok, "unsafe_macro_run".to_string(), "calls an ordinary macro, not an unsafe_macro — use macro_run instead".to_string())]);
+    				handle_errors(vec![val_err(err_tok, "unsafe_macro_run".to_string(), "calls an ordinary macro, not an unsafe_macro — use macro_run instead [unsafe_macro_run_on_macro]".to_string())]);
     			}
     			if target_is_unsafe {
     				if let Some(open_depth) = unsafe_open.last() {
     					if *open_depth == scope_depth {
     						let err_tok = name_tok.clone().unwrap_or(cur.clone());
-    						handle_errors(vec![val_err(err_tok, "unsafe_macro".to_string(), "cannot be called here — an unsafe_macro cannot call, or be called from inside, another unsafe_macro".to_string())]);
+    						handle_errors(vec![val_err(err_tok, "unsafe_macro".to_string(), "cannot be called here — an unsafe_macro cannot call, or be called from inside, another unsafe_macro [unsafe_macro_called_from_macro]".to_string())]);
     					}
     				}
     			}
@@ -2672,7 +2697,7 @@ pub fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> 
     					let new_depth = cross_file_depth + 1;
     					if new_depth > enforce_macro_file_depth {
     						let err_tok = name_tok.clone().unwrap_or(cur.clone());
-    						handle_errors(vec![val_err(err_tok, "macro_run".to_string(), format!("calling '{}' crosses into '{}', taking the cross-file macro chain to depth {} — exceeds ENFORCE_MACRO_FILE_DEPTH limit of {}", name, marker_file, new_depth, enforce_macro_file_depth))]);
+    						handle_errors(vec![val_err(err_tok, "macro_run".to_string(), format!("calling '{}' crosses into '{}', taking the cross-file macro chain to depth {} — exceeds ENFORCE_MACRO_FILE_DEPTH limit of {} [macro_file_depth_exceeded]", name, marker_file, new_depth, enforce_macro_file_depth))]);
     					}
     					cross_file_depth = new_depth;
     					did_increment = true;
@@ -2691,7 +2716,7 @@ pub fn expand_deor_macros(tokens: Vec<Token>, enforce_macro_file_depth: i64) -> 
     			// this branch the call silently vanished: no error, and the tokens consumed
     			// above (name, trailing NEWLINE) were simply dropped from the output.
     			let err_tok = name_tok.clone().unwrap_or(cur.clone());
-    			handle_errors(vec![val_err(err_tok, "macro_run".to_string(), format!("'{}' is defined locally but not visible here -- it went out of scope (a local macro is only visible inside the block it's declared in)", name))]);
+    			handle_errors(vec![val_err(err_tok, "macro_run".to_string(), format!("'{}' is defined locally but not visible here -- it went out of scope (a local macro is only visible inside the block it's declared in) [macro_out_of_scope]", name))]);
     		}
     		continue;
     	}
@@ -2742,7 +2767,7 @@ pub fn validate_macros(raw_tokens: Vec<Token>) -> Vec<Token> {
         def_index = def_index + 1;
     }
     let mut lbl_macro: String = "macro_run".to_string();
-    let mut rule_macro_run: String = "macro is not defined — check the name or add a 'macro <name>' definition".to_string();
+    let mut rule_macro_run: String = "macro is not defined — check the name or add a 'macro <name>' definition [macro_run]".to_string();
     let mut run_index: i64 = 0;
     while run_index < token_count {
         // transpiler-deor/macro_builder/macro_validation.deor
@@ -2977,87 +3002,87 @@ pub fn validate_tokens(tokens: TokensRef) {
     let mut lbl_field: String = "struct field".to_string();
     let mut lbl_variant: String = "enum variant".to_string();
     let mut lbl_stmt: String = "statement".to_string();
-    let mut rule_min3: String = "name must be at least 3 characters".to_string();
-    let mut rule_no_option: String = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types".to_string();
-    let mut rule_pascal: String = "name must be PascalCase (start with uppercase letter)".to_string();
-    let mut rule_camel: String = "name must be camelCase (start lowercase, no underscores)".to_string();
-    let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters)".to_string();
-    let mut rule_screaming: String = "const name must be SCREAMING_SNAKE_CASE (all caps, underscores between words)".to_string();
-    let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args".to_string();
-    let mut rule_unknown_type: String = "not a known type — must be a primitive (int, float, string, bool), or a declared struct, shape, raw type, validator type, or untyped enum name".to_string();
-    let mut rule_enum_pascal: String = "enum variant must be PascalCase".to_string();
-    let mut rule_dup_variant: String = "enum variant name is already used by another enum — bare variant names must be unique across all untyped enums (rename one, e.g. prefix it with its enum's name)".to_string();
-    let mut rule_with_assign: String = "'with' only works when declaring a new variable — use 'Type name = source with (field)' or 'name as source with (field)', not 'name = source with (field)'".to_string();
-    let mut rule_enum_data: String = "enum variants cannot carry data — use a struct alongside the enum instead".to_string();
-    let mut rule_typed_enum_eq: String = "typed enum variant must have a value — add '= value' after the variant name".to_string();
-    let mut rule_untyped_enum_eq: String = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants".to_string();
-    let mut rule_non_primitive_validator: String = "validator base type must be a primitive (int, float, string, bool) or a struct — list shapes and other validator types cannot be used".to_string();
-    let mut rule_validator_missing_body: String = "validator type is missing a predicate body — add an indented block that returns a bool, e.g. 'return val > 0'".to_string();
-    let mut rule_missing_return_expr: String = "looks like a value meant to be returned, but 'return' is missing — only a function body that's a single expression implicitly returns; add 'return' here".to_string();
-    let mut rule_max_params: String = "functions may have at most 3 parameters".to_string();
-    let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name".to_string();
-    let mut rule_type_param_shadow: String = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num'".to_string();
-    let mut rule_no_ret: String = "missing return type — use 'fn void name()' for functions that return nothing".to_string();
-    let mut rule_nested_fn: String = "functions may only be declared at the top level of a file or nested directly inside another fn — not inside a struct/enum/shape/macro body".to_string();
-    let mut rule_nested_fn_body_shape: String = "a fn nested inside another fn must have a body of exactly one 'return expr' statement — no local variables, moves, or other statements".to_string();
-    let mut rule_void_return: String = "void functions must not use return — remove the return statement and let the function fall through".to_string();
-    let mut rule_return_empty: String = "cannot return 'empty' — declare a validator type variable without a value and return it to signal not-valid".to_string();
-    let mut rule_return_none: String = "none is not a Deor keyword — declare a validator type variable without a value and return it to signal not-valid".to_string();
-    let mut rule_void_var: String = "'void' is not a valid variable type — only functions can return void".to_string();
-    let mut rule_crash: String = "crash takes exactly 1 string argument".to_string();
-    let mut rule_print_args: String = "print takes 1 argument, or 2 arguments where the second replaces the trailing newline".to_string();
-    let mut rule_range_args: String = "range takes 1 argument (range(count)) or 2 arguments (range(start, end))".to_string();
-    let mut rule_len_args: String = "len takes exactly 1 argument".to_string();
-    let mut rule_avow: String = "avow can only be used on a validator type variable".to_string();
-    let mut rule_invalid_char: String = "character is not valid in Deor — use Deor operators and keywords; raw Rust syntax belongs inside a 'rust' block".to_string();
-    let mut rule_validator_empty: String = "empty is not valid for validator types — declare without a value to start as not valid: 'Roll best'".to_string();
-    let mut rule_bad_stmt: String = "literal cannot follow 'name ident' — capture in a named variable first".to_string();
-    let mut rule_undeclared_reassign: String = "'name = expr' only works for reassigning an existing variable — this name was never declared. Prefix it with a type to declare it (e.g. 'string hello = expr'), or use 'as' instead of '=' if it's a fresh binding and moving/copying ownership is fine (e.g. 'hello as expr')".to_string();
-    let mut rule_undefined_var: String = "used here but never declared anywhere — check for a typo, or declare it first ('string name = expr', 'name as expr', a function parameter, or a for-loop variable)".to_string();
-    let mut rule_typed_as: String = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move".to_string();
-    let mut rule_as_move: String = "`as` already transfers ownership — use `a as b` instead of `a as move b`".to_string();
-    let mut rule_bracket_index: String = "bracket indexing is not valid in Deor — use 'name at index' instead".to_string();
-    let mut rule_multiline_list: String = "a list literal must stay on one line — keep [a, b, c] on a single line, or append the items one at a time with 'list at end = item'".to_string();
-    let mut rule_empty_bracket: String = "use 'empty' to initialize an empty list — [] is only valid with items inside".to_string();
-    let mut rule_move: String = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid".to_string();
-    let mut rule_use_after_move: String = "used here but already moved earlier — the value was consumed by an earlier 'move' and cannot be read again".to_string();
-    let mut rule_double_move: String = "already moved earlier — 'move' cannot consume the same variable twice".to_string();
-    let mut rule_not_needs_bool: String = "'not' only works on a bool — a number or string has no true/false to flip (compare it first, e.g. 'count is not 0')".to_string();
-    let mut rule_not_then_operator: String = "'not' binds tighter than the operator after it, so 'not a > b' means '(not a) > b' — compare first ('bool big = a > b') and then use 'not big'".to_string();
-    let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves".to_string();
-    let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name".to_string();
-    let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned".to_string();
-    let mut rule_end: String = "'end' can only appear directly after 'at' (list at end / list at end = val) — it cannot be used as a variable name or expression".to_string();
-    let mut rule_with_parens: String = "'with' must be followed by a parenthesized field list — 'with (area)', not 'with area' — parens are required even for a single field".to_string();
-    let mut rule_with_fields: String = "'with (...)' accepts only existing variable names separated by commas — 'with (value as field)' is not supported. Assign the new value to a variable named after the field first, then use 'with (field)'".to_string();
-    let mut rule_unmatched_open_paren: String = "'(' is never closed — every open paren needs a matching ')'".to_string();
-    let mut rule_unmatched_close_paren: String = "')' has no matching '(' before it — remove the extra ')' or add the missing '('".to_string();
-    let mut rule_empty_parens: String = "'()' is not valid — parens must contain at least one item, except when declaring or calling a zero-parameter function".to_string();
-    let mut rule_unmatched_open_bracket: String = "'[' is never closed — every open bracket needs a matching ']'".to_string();
-    let mut rule_unmatched_close_bracket: String = "']' has no matching '[' before it — remove the extra ']' or add the missing '['".to_string();
-    let mut rule_builtin_shadow: String = "this name belongs to a built-in function (print, crash, len, range, args, input) and cannot be shadowed or redeclared".to_string();
-    let mut rule_range_placement: String = "'range' can only be used as a for-loop's iterator expression ('for var in range(n)' or 'for in range(n)') — it cannot be assigned to a variable or passed as an argument".to_string();
-    let mut rule_bare_tuple_range: String = "bare tuple range ('for var in (start, end)') is not valid — use 'for var in range(start, end)' instead".to_string();
-    let mut rule_bare_truthiness: String = "only bool and validator types have truthiness — use an explicit comparison ('is not 0', 'is not \"\"', 'is valid', etc.)".to_string();
-    let mut rule_func_shape_multi_param: String = "func shapes accept at most one input type and one output type — bundle multiple values into a struct instead".to_string();
-    let mut rule_string_plus_banned: String = "'+' cannot be used with strings — use s_join([a, b, ...]) or s_join_with(list, sep) instead".to_string();
-    let mut rule_double_equals: String = "'==' is not valid in Deor — use 'is' for equality comparison".to_string();
-    let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable".to_string();
-    let mut rule_validator_reassign: String = "cannot reassign a validator type variable with 'as' — it skips the predicate check; use 'name = expr' to re-validate, or 'TypeName name = expr' for a fresh declaration".to_string();
-    let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block".to_string();
-    let mut rule_raw_reassign: String = "raw variables cannot be reassigned — declare a new 'raw name = expr' instead".to_string();
-    let mut rule_raw_assignment: String = "raw variables can only be assigned from a function call — use 'raw name = some_function()', not a literal or an inline rust block".to_string();
-    let mut rule_raw_as: String = "raw declarations must use '=', not 'as' — 'raw name = call()' declares an opaque value from a function call".to_string();
-    let mut rule_no_func_field: String = "func shapes cannot be struct fields — pass the func shape as a function parameter instead".to_string();
-    let mut rule_recursive_struct_field: String = "a struct cannot hold itself, directly or inside a validator type — it would have infinite size".to_string();
-    let mut rule_no_raw_field: String = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs".to_string();
-    let mut rule_struct_field_count: String = "wrong number of fields in struct construction — all fields must be provided".to_string();
-    let mut rule_return_with: String = "'with' cannot be used directly in a return — bind the updated struct first ('updated as ship with (pos)'), then 'return updated'".to_string();
-    let mut rule_return_tuple_item: String = "every item in a returned '( )' field list must be a single named variable whose name is a struct field — literals, expressions and calls need a local named after the field first (e.g. 'bool wide = false')".to_string();
-    let mut rule_struct_ambiguous: String = "more than one struct has these fields, so Deor cannot tell which one you mean — build it with an explicit type ('Type name = (fields)') and return that variable".to_string();
-    let mut rule_with_ambiguous: String = "more than one struct has these fields, so Deor cannot tell which one the source is — use the explicit form 'Type name = source with (fields)'".to_string();
-    let mut rule_return_tuple_fields: String = "returned '( )' field list does not match any struct — the variable names must be exactly the fields of one struct, so name each local after its field".to_string();
-    let mut rule_struct_field_name: String = "unknown field name in struct construction — variable name does not match any field in this struct".to_string();
+    let mut rule_min3: String = "name must be at least 3 characters [min3]".to_string();
+    let mut rule_no_option: String = "Rust generic types (Option/Vec/Box/Rc/Arc/Result) are not valid in Deor — use shapes or validator types [no_option]".to_string();
+    let mut rule_pascal: String = "name must be PascalCase (start with uppercase letter) [pascal]".to_string();
+    let mut rule_camel: String = "name must be camelCase (start lowercase, no underscores) [camel]".to_string();
+    let mut rule_snake: String = "name must be lower_snake_case (no uppercase letters) [snake]".to_string();
+    let mut rule_screaming: String = "const name must be SCREAMING_SNAKE_CASE (all caps, underscores between words) [screaming]".to_string();
+    let mut rule_named_arg: String = "each arg must be a named variable when passing 2 or more args [named_arg]".to_string();
+    let mut rule_unknown_type: String = "not a known type — must be a primitive (int, float, string, bool), or a declared struct, shape, raw type, validator type, or untyped enum name [unknown_type]".to_string();
+    let mut rule_enum_pascal: String = "enum variant must be PascalCase [enum_pascal]".to_string();
+    let mut rule_dup_variant: String = "enum variant name is already used by another enum — bare variant names must be unique across all untyped enums (rename one, e.g. prefix it with its enum's name) [dup_variant]".to_string();
+    let mut rule_with_assign: String = "'with' only works when declaring a new variable — use 'Type name = source with (field)' or 'name as source with (field)', not 'name = source with (field)' [with_assign]".to_string();
+    let mut rule_enum_data: String = "enum variants cannot carry data — use a struct alongside the enum instead [enum_data]".to_string();
+    let mut rule_typed_enum_eq: String = "typed enum variant must have a value — add '= value' after the variant name [typed_enum_eq]".to_string();
+    let mut rule_untyped_enum_eq: String = "untyped enum variant cannot have a value — use 'enum string/int Name' to associate values with variants [untyped_enum_eq]".to_string();
+    let mut rule_non_primitive_validator: String = "validator base type must be a primitive (int, float, string, bool) or a struct — list shapes and other validator types cannot be used [non_primitive_validator]".to_string();
+    let mut rule_validator_missing_body: String = "validator type is missing a predicate body — add an indented block that returns a bool, e.g. 'return val > 0' [validator_missing_body]".to_string();
+    let mut rule_missing_return_expr: String = "looks like a value meant to be returned, but 'return' is missing — only a function body that's a single expression implicitly returns; add 'return' here [missing_return_expr]".to_string();
+    let mut rule_max_params: String = "functions may have at most 3 parameters [max_params]".to_string();
+    let mut rule_param_shadow: String = "parameter name cannot be the same as its type — choose a descriptive name [param_shadow]".to_string();
+    let mut rule_type_param_shadow: String = "validator parameter name cannot be the same as the type name — use a descriptive name like 'val' or 'num' [type_param_shadow]".to_string();
+    let mut rule_no_ret: String = "missing return type — use 'fn void name()' for functions that return nothing [no_ret]".to_string();
+    let mut rule_nested_fn: String = "functions may only be declared at the top level of a file or nested directly inside another fn — not inside a struct/enum/shape/macro body [nested_fn]".to_string();
+    let mut rule_nested_fn_body_shape: String = "a fn nested inside another fn must have a body of exactly one 'return expr' statement — no local variables, moves, or other statements [nested_fn_body_shape]".to_string();
+    let mut rule_void_return: String = "void functions must not use return — remove the return statement and let the function fall through [void_return]".to_string();
+    let mut rule_return_empty: String = "cannot return 'empty' — declare a validator type variable without a value and return it to signal not-valid [return_empty]".to_string();
+    let mut rule_return_none: String = "none is not a Deor keyword — declare a validator type variable without a value and return it to signal not-valid [return_none]".to_string();
+    let mut rule_void_var: String = "'void' is not a valid variable type — only functions can return void [void_var]".to_string();
+    let mut rule_crash: String = "crash takes exactly 1 string argument [crash]".to_string();
+    let mut rule_print_args: String = "print takes 1 argument, or 2 arguments where the second replaces the trailing newline [print_args]".to_string();
+    let mut rule_range_args: String = "range takes 1 argument (range(count)) or 2 arguments (range(start, end)) [range_args]".to_string();
+    let mut rule_len_args: String = "len takes exactly 1 argument [len_args]".to_string();
+    let mut rule_avow: String = "avow can only be used on a validator type variable [avow]".to_string();
+    let mut rule_invalid_char: String = "character is not valid in Deor — use Deor operators and keywords; raw Rust syntax belongs inside a 'rust' block [invalid_char]".to_string();
+    let mut rule_validator_empty: String = "empty is not valid for validator types — declare without a value to start as not valid: 'Roll best' [validator_empty]".to_string();
+    let mut rule_bad_stmt: String = "literal cannot follow 'name ident' — capture in a named variable first [bad_stmt]".to_string();
+    let mut rule_undeclared_reassign: String = "'name = expr' only works for reassigning an existing variable — this name was never declared. Prefix it with a type to declare it (e.g. 'string hello = expr'), or use 'as' instead of '=' if it's a fresh binding and moving/copying ownership is fine (e.g. 'hello as expr') [undeclared_reassign]".to_string();
+    let mut rule_undefined_var: String = "used here but never declared anywhere — check for a typo, or declare it first ('string name = expr', 'name as expr', a function parameter, or a for-loop variable) [undefined_var]".to_string();
+    let mut rule_typed_as: String = "typed `as` bindings are not supported — use `a as b` to transfer ownership, or `Type a = move b` for an explicit typed move [typed_as]".to_string();
+    let mut rule_as_move: String = "`as` already transfers ownership — use `a as b` instead of `a as move b` [as_move]".to_string();
+    let mut rule_bracket_index: String = "bracket indexing is not valid in Deor — use 'name at index' instead [bracket_index]".to_string();
+    let mut rule_multiline_list: String = "a list literal must stay on one line — keep [a, b, c] on a single line, or append the items one at a time with 'list at end = item' [multiline_list]".to_string();
+    let mut rule_empty_bracket: String = "use 'empty' to initialize an empty list — [] is only valid with items inside [empty_bracket]".to_string();
+    let mut rule_move: String = "'move' can only precede a variable name — 'move 5' or 'move \"hello\"' are not valid [move]".to_string();
+    let mut rule_use_after_move: String = "used here but already moved earlier — the value was consumed by an earlier 'move' and cannot be read again [use_after_move]".to_string();
+    let mut rule_double_move: String = "already moved earlier — 'move' cannot consume the same variable twice [double_move]".to_string();
+    let mut rule_not_needs_bool: String = "'not' only works on a bool — a number or string has no true/false to flip (compare it first, e.g. 'count is not 0') [not_needs_bool]".to_string();
+    let mut rule_not_then_operator: String = "'not' binds tighter than the operator after it, so 'not a > b' means '(not a) > b' — compare first ('bool big = a > b') and then use 'not big' [not_then_operator]".to_string();
+    let mut rule_not_is: String = "use 'x is not y' instead of 'not x is y' — 'not' binds before 'is' resolves [not_is]".to_string();
+    let mut rule_kw_in_parens: String = "reserved keyword cannot be used as a name — choose a different variable name [kw_in_parens]".to_string();
+    let mut rule_valid: String = "'valid' can only appear after 'is' or 'is not' — it cannot be assigned or returned [valid]".to_string();
+    let mut rule_end: String = "'end' can only appear directly after 'at' (list at end / list at end = val) — it cannot be used as a variable name or expression [end]".to_string();
+    let mut rule_with_parens: String = "'with' must be followed by a parenthesized field list — 'with (area)', not 'with area' — parens are required even for a single field [with_parens]".to_string();
+    let mut rule_with_fields: String = "'with (...)' accepts only existing variable names separated by commas — 'with (value as field)' is not supported. Assign the new value to a variable named after the field first, then use 'with (field)' [with_fields]".to_string();
+    let mut rule_unmatched_open_paren: String = "'(' is never closed — every open paren needs a matching ')' [unmatched_open_paren]".to_string();
+    let mut rule_unmatched_close_paren: String = "')' has no matching '(' before it — remove the extra ')' or add the missing '(' [unmatched_close_paren]".to_string();
+    let mut rule_empty_parens: String = "'()' is not valid — parens must contain at least one item, except when declaring or calling a zero-parameter function [empty_parens]".to_string();
+    let mut rule_unmatched_open_bracket: String = "'[' is never closed — every open bracket needs a matching ']' [unmatched_open_bracket]".to_string();
+    let mut rule_unmatched_close_bracket: String = "']' has no matching '[' before it — remove the extra ']' or add the missing '[' [unmatched_close_bracket]".to_string();
+    let mut rule_builtin_shadow: String = "this name belongs to a built-in function (print, crash, len, range, args, input) and cannot be shadowed or redeclared [builtin_shadow]".to_string();
+    let mut rule_range_placement: String = "'range' can only be used as a for-loop's iterator expression ('for var in range(n)' or 'for in range(n)') — it cannot be assigned to a variable or passed as an argument [range_placement]".to_string();
+    let mut rule_bare_tuple_range: String = "bare tuple range ('for var in (start, end)') is not valid — use 'for var in range(start, end)' instead [bare_tuple_range]".to_string();
+    let mut rule_bare_truthiness: String = "only bool and validator types have truthiness — use an explicit comparison ('is not 0', 'is not \"\"', 'is valid', etc.) [bare_truthiness]".to_string();
+    let mut rule_func_shape_multi_param: String = "func shapes accept at most one input type and one output type — bundle multiple values into a struct instead [func_shape_multi_param]".to_string();
+    let mut rule_string_plus_banned: String = "'+' cannot be used with strings — use s_join([a, b, ...]) or s_join_with(list, sep) instead [string_plus_banned]".to_string();
+    let mut rule_double_equals: String = "'==' is not valid in Deor — use 'is' for equality comparison [double_equals]".to_string();
+    let mut rule_const_reassign: String = "cannot reassign a const variable — const bindings are immutable [const_reassign]".to_string();
+    let mut rule_validator_reassign: String = "cannot reassign a validator type variable with 'as' — it skips the predicate check; use 'name = expr' to re-validate, or 'TypeName name = expr' for a fresh declaration [validator_reassign]".to_string();
+    let mut rule_raw_in_expr: String = "raw variables cannot be used in Deor operators, builtins, or rebindings — pass them to a function or consume them inside a rust block [raw_in_expr]".to_string();
+    let mut rule_raw_reassign: String = "raw variables cannot be reassigned — declare a new 'raw name = expr' instead [raw_reassign]".to_string();
+    let mut rule_raw_assignment: String = "raw variables can only be assigned from a function call — use 'raw name = some_function()', not a literal or an inline rust block [raw_assignment]".to_string();
+    let mut rule_raw_as: String = "raw declarations must use '=', not 'as' — 'raw name = call()' declares an opaque value from a function call [raw_as]".to_string();
+    let mut rule_no_func_field: String = "func shapes cannot be struct fields — pass the func shape as a function parameter instead [no_func_field]".to_string();
+    let mut rule_recursive_struct_field: String = "a struct cannot hold itself, directly or inside a validator type — it would have infinite size [recursive_struct_field]".to_string();
+    let mut rule_no_raw_field: String = "raw cannot be a struct field — raw values are opaque and cannot be stored in structs [no_raw_field]".to_string();
+    let mut rule_struct_field_count: String = "wrong number of fields in struct construction — all fields must be provided [struct_field_count]".to_string();
+    let mut rule_return_with: String = "'with' cannot be used directly in a return — bind the updated struct first ('updated as ship with (pos)'), then 'return updated' [return_with]".to_string();
+    let mut rule_return_tuple_item: String = "every item in a returned '( )' field list must be a single named variable whose name is a struct field — literals, expressions and calls need a local named after the field first (e.g. 'bool wide = false') [return_tuple_item]".to_string();
+    let mut rule_struct_ambiguous: String = "more than one struct has these fields, so Deor cannot tell which one you mean — build it with an explicit type ('Type name = (fields)') and return that variable [struct_ambiguous]".to_string();
+    let mut rule_with_ambiguous: String = "more than one struct has these fields, so Deor cannot tell which one the source is — use the explicit form 'Type name = source with (fields)' [with_ambiguous]".to_string();
+    let mut rule_return_tuple_fields: String = "returned '( )' field list does not match any struct — the variable names must be exactly the fields of one struct, so name each local after its field [return_tuple_fields]".to_string();
+    let mut rule_struct_field_name: String = "unknown field name in struct construction — variable name does not match any field in this struct [struct_field_name]".to_string();
     // macro: check_paren_balance (transpiler-deor/tokens_validator/macros/brackets_parens/check_paren_balance.deor)
     {
         // transpiler-deor/tokens_validator/macros/brackets_parens/check_paren_balance.deor
@@ -13157,19 +13182,499 @@ pub fn generate_rust_from_tokens(all_ref: TokensRef, ctx: RcCtx) -> String {
     return s_join(parts.clone());
 }
 
+// transpiler-deor/test_runner.deor
+pub const TEST_RUNNER_SOURCE: &str = r#"
+fn deor_panic_message(payload: Box<dyn std::any::Any + Send>) -> String {
+    if let Some(text) = payload.downcast_ref::<String>() {
+        return text.clone();
+    }
+    if let Some(text) = payload.downcast_ref::<&str>() {
+        return text.to_string();
+    }
+    "(no panic message)".to_string()
+}
+
+fn deor_run_tests(tests: Vec<(&str, fn() -> String)>) -> i32 {
+    // The default panic printout is silenced; each crash is reported per test instead.
+    std::panic::set_hook(Box::new(|_| {}));
+    let mut failed = 0;
+    for (name, test) in &tests {
+        match std::panic::catch_unwind(*test) {
+            Ok(message) if message.is_empty() => println!("  SUCCESS: {}", name),
+            Ok(message) => {
+                failed += 1;
+                println!("  FAIL: {} - {}", name, message);
+            }
+            Err(payload) => {
+                failed += 1;
+                println!("  FAIL: {} - crashed: {}", name, deor_panic_message(payload));
+            }
+        }
+    }
+    println!("{} ran, {} failed", tests.len(), failed);
+    if failed > 0 { 1 } else { 0 }
+}
+"#;
+pub fn test_runner_source() -> String {
+    // transpiler-deor/test_runner.deor
+    TEST_RUNNER_SOURCE.to_string()
+}
+
+pub fn check_test_signature(tokens: TokensRef, fn_pos: i64) {
+    // transpiler-deor/test_runner.deor
+    let mut type_pos: i64 = fn_pos + 1;
+    let mut name_pos: i64 = fn_pos + 2;
+    let mut close_pos: i64 = fn_pos + 4;
+    let mut return_type: String = token_value_at(tokens.clone(), type_pos.clone());
+    let mut close_kind: String = token_kind_at(tokens.clone(), close_pos.clone());
+    let mut returns_string: bool = return_type == "string";
+    let mut takes_nothing: bool = close_kind == RPAREN;
+    if !returns_string || !takes_nothing {
+        // transpiler-deor/test_runner.deor
+        let mut test_name: String = token_value_at(tokens.clone(), name_pos.clone());
+        let mut problem: String = ["test function '", test_name.as_str(), "' must be written 'fn string ", test_name.as_str(), "()' - it returns a message and takes no arguments"].concat();
+        panic!("{}", problem.clone());
+    }
+}
+
+pub fn find_test_names(tokens: TokensRef, entry_file: String) -> Vec<String> {
+    // transpiler-deor/test_runner.deor
+    let mut names: Vec<String> = Vec::new();
+    let mut token_count: i64 = (tokens.len() as i64);
+    let mut first_pos: i64 = 0;
+    let mut prefix: String = "test_".to_string();
+    for pos in first_pos..token_count {
+        // transpiler-deor/test_runner.deor
+        let mut kind: String = token_kind_at(tokens.clone(), pos.clone());
+        let mut file: String = token_file_at(tokens.clone(), pos.clone());
+        if kind != KW_FN || file != entry_file {
+            // transpiler-deor/test_runner.deor
+            continue;
+        }
+        let mut name_pos: i64 = pos + 2;
+        let mut name: String = token_value_at(tokens.clone(), name_pos.clone());
+        if s_starts_with(name.clone(), prefix.clone()) {
+            // transpiler-deor/test_runner.deor
+            check_test_signature(tokens.clone(), pos.clone());
+            names.push(name.clone());
+        }
+    }
+    return names;
+}
+
+pub fn build_test_main(names: Vec<String>) -> String {
+    // transpiler-deor/test_runner.deor
+    let mut entries: Vec<String> = Vec::new();
+    for name in names.iter().cloned() {
+        // transpiler-deor/test_runner.deor
+        let mut entry: String = ["(\"", name.as_str(), "\", ", name.as_str(), " as fn() -> String)"].concat();
+        entries.push(entry.clone());
+    }
+    let mut separator: String = ", ".to_string();
+    let mut entry_list: String = s_join_with(entries.clone(), separator.clone());
+    return ["\nfn main() {\n    std::process::exit(deor_run_tests(vec![", entry_list.as_str(), "]));\n}\n"].concat();
+}
+
+pub fn generate_test_runner(tokens: TokensRef, entry_file: String) -> String {
+    // transpiler-deor/test_runner.deor
+    let mut names: Vec<String> = find_test_names(tokens.clone(), entry_file.clone());
+    let mut runner_source: String = test_runner_source();
+    let mut main_code: String = build_test_main(names.clone());
+    return s_cat(runner_source.clone(), main_code.clone());
+}
+
+// transpiler-deor/test_process.deor
+use std::process::{Command, Stdio};
+pub fn find_files_with_suffix(path: String, suffix: String) -> Vec<String> {
+    // transpiler-deor/test_process.deor
+    {
+    	let output = Command::new("git")
+    		.args(["ls-files", "--cached", "--others", "--exclude-standard", "--", path.as_str()])
+    		.output()
+    		.unwrap_or_else(|e| panic!("could not run git: {}", e));
+    	if !output.status.success() {
+    		panic!("deor test must run inside a git repository: {}", String::from_utf8_lossy(&output.stderr));
+    	}
+    	// One file per line; keep only the files with the wanted ending.
+    	let mut files: Vec<String> = String::from_utf8_lossy(&output.stdout)
+    		.lines()
+    		.filter(|line| line.ends_with(suffix.as_str()))
+    		.map(|line| line.to_string())
+    		.collect();
+    	files.sort();
+    	files
+    }
+}
+
+pub fn run_inherited(program: String, program_args: Vec<String>) -> bool {
+    // transpiler-deor/test_process.deor
+    Command::new(program.as_str())
+    	.args(&program_args)
+    	.stdin(Stdio::null())
+    	.status()
+    	.map(|status| status.success())
+    	.unwrap_or(false)
+}
+
+pub fn test_build_folder() -> String {
+    // transpiler-deor/test_process.deor
+    std::env::temp_dir().join("deor_tests").to_string_lossy().to_string()
+}
+
+pub fn current_binary_path() -> String {
+    // transpiler-deor/test_process.deor
+    std::env::current_exe().expect("cannot find the deor binary").to_string_lossy().to_string()
+}
+
+pub fn f_make_folder(folder: String) {
+    // transpiler-deor/test_process.deor
+    std::fs::create_dir_all(folder.as_str()).expect("cannot create test build folder");
+}
+
+pub fn exit_with_code(code: i64) {
+    // transpiler-deor/test_process.deor
+    std::process::exit(code as i32)
+}
+
+// transpiler-deor/test_command.deor
+pub fn transpile_test_file(test_file: String, rust_path: String) -> bool {
+    // transpiler-deor/test_command.deor
+    let mut deor_binary: String = current_binary_path();
+    let mut test_flag: String = "--test".to_string();
+    let mut transpile_args: Vec<String> = vec![test_file.clone(), rust_path.clone(), test_flag.clone()];
+    return run_inherited(deor_binary.clone(), transpile_args.clone());
+}
+
+pub fn run_test_file(test_file: String, file_index: i64) -> bool {
+    // transpiler-deor/test_command.deor
+    let mut folder: String = test_build_folder();
+    let mut index_text: String = n_to_str(file_index.clone());
+    let mut rust_path: String = [folder.as_str(), "/test_", index_text.as_str(), ".rs"].concat();
+    let mut binary_path: String = [folder.as_str(), "/test_", index_text.as_str()].concat();
+    let mut compiler: String = "rustc".to_string();
+    let mut output_flag: String = "-o".to_string();
+    let mut compile_args: Vec<String> = vec![rust_path.clone(), output_flag.clone(), binary_path.clone()];
+    let mut no_args: Vec<String> = Vec::new();
+    println!("{}", test_file.clone());
+    f_make_folder(folder.clone());
+    if !transpile_test_file(test_file.clone(), rust_path.clone()) {
+        // transpiler-deor/test_command.deor
+        return false;
+    }
+    if !run_inherited(compiler.clone(), compile_args.clone()) {
+        // transpiler-deor/test_command.deor
+        return false;
+    }
+    return run_inherited(binary_path.clone(), no_args.clone());
+}
+
+pub fn run_test_command(cli_args: Vec<String>) {
+    // transpiler-deor/test_command.deor
+    let mut search_path: String = ".".to_string();
+    let mut arg_count: i64 = (cli_args.len() as i64);
+    if arg_count > 1 {
+        // transpiler-deor/test_command.deor
+        search_path = cli_args[1 as usize].clone();
+    }
+    let mut test_suffix: String = ".test.deor".to_string();
+    let mut test_files: Vec<String> = find_files_with_suffix(search_path.clone(), test_suffix.clone());
+    let mut file_count: i64 = (test_files.len() as i64);
+    let mut failed_count: i64 = 0;
+    let mut file_index: i64 = 0;
+    if file_count == 0 {
+        // transpiler-deor/test_command.deor
+        println!("{}", "no *.test.deor files found".to_string());
+    } else {
+        // transpiler-deor/test_command.deor
+        for test_file in test_files.iter().cloned() {
+            // transpiler-deor/test_command.deor
+            if !run_test_file(test_file.clone(), file_index.clone()) {
+                // transpiler-deor/test_command.deor
+                failed_count = failed_count + 1;
+            }
+            file_index = file_index + 1;
+        }
+        if failed_count > 0 {
+            // transpiler-deor/test_command.deor
+            exit_with_code(1);
+        }
+    }
+}
+
+// lib/meta.deor
+#[derive(Clone, PartialEq, Debug)]
+pub struct MetaField {
+    pub key: String,
+    pub value: String,
+}
+
+pub type MetaFieldList = Vec<MetaField>;
+
+pub type MetaWarningList = Vec<String>;
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct MetaTag {
+    pub line: i64,
+    pub attached_line: i64,
+    pub fields: Vec<MetaField>,
+    pub kind: String,
+    pub target: String,
+    pub warnings: Vec<String>,
+}
+
+pub type MetaTagList = Vec<MetaTag>;
+
+const META_OPENER: &str = "# meta(";
+const META_MAX_FIELDS: usize = 3;
+
+// The declaration keyword at the start of every unindented line, remembered for the
+// lines under it so an indented line inside a struct reads as a field.
+fn meta_top_kinds(lines: &[&str]) -> Vec<String> {
+	let mut current = String::new();
+	let mut kinds = Vec::new();
+	for line in lines {
+		let unindented = !line.starts_with(char::is_whitespace) && !line.starts_with('#');
+		if unindented && !line.trim().is_empty() {
+			current = line.split_whitespace().next().unwrap_or("").to_string();
+		}
+		kinds.push(current.clone());
+	}
+	kinds
+}
+
+// What a line of code is: (kind, name).
+fn meta_describe(line: &str, top_kind: &str) -> (String, String) {
+	let words: Vec<&str> = line.split_whitespace().collect();
+	let first = words.first().copied().unwrap_or("");
+	let word_at = |index: usize| words.get(index).copied().unwrap_or("").to_string();
+	if line.starts_with(char::is_whitespace) {
+		return match top_kind {
+			"struct" => ("field".to_string(), words.last().copied().unwrap_or("").to_string()),
+			"enum" => ("variant".to_string(), word_at(0)),
+			_ => ("statement".to_string(), String::new()),
+		};
+	}
+	match first {
+		// `fn type name(args)`: the name is the third word, up to the parenthesis.
+		"fn" => ("function".to_string(), word_at(2).split('(').next().unwrap_or("").to_string()),
+		// `enum Name` or `enum string Name`: the name is the first capitalised word.
+		"enum" => ("enum".to_string(), words.iter().skip(1).find(|word| word.starts_with(char::is_uppercase)).copied().unwrap_or("").to_string()),
+		"struct" | "shape" | "type" | "raw" => (first.to_string(), word_at(1)),
+		"macro" | "unsafe_macro" => ("macro".to_string(), word_at(1)),
+		"import" => ("import".to_string(), word_at(1).trim_matches('"').to_string()),
+		_ => ("statement".to_string(), String::new()),
+	}
+}
+
+// Splits the text inside the parentheses into key: value fields, noting anything odd.
+fn meta_parse_inner(inner: &str, warnings: &mut Vec<String>) -> Vec<MetaField> {
+	let mut fields = Vec::new();
+	for part in inner.split(',') {
+		let part = part.trim();
+		match part.split_once(':') {
+			Some((key, value)) => fields.push(MetaField { key: key.trim().to_string(), value: value.trim().to_string() }),
+			None => {
+				warnings.push(format!("inner: '{}' is not a key: value pair", part));
+				fields.push(MetaField { key: String::new(), value: part.to_string() });
+			}
+		}
+	}
+	if fields.len() > META_MAX_FIELDS {
+		warnings.push(format!("inner: {} fields, more than the recommended {}", fields.len(), META_MAX_FIELDS));
+	}
+	fields
+}
+
+// Finds the line a tag describes and what that line is: (line number, kind, name).
+// A tag with code before it on its own line describes that line; otherwise the next line with code.
+fn meta_attachment(lines: &[&str], top_kinds: &[String], index: usize, code_before: &str) -> (i64, String, String) {
+	if !code_before.is_empty() {
+		let (kind, name) = meta_describe(code_before.trim_end(), &top_kinds[index]);
+		return ((index + 1) as i64, kind, name);
+	}
+	for next in (index + 1)..lines.len() {
+		let trimmed = lines[next].trim();
+		if !trimmed.is_empty() && !trimmed.starts_with('#') {
+			let (kind, name) = meta_describe(lines[next].trim_end(), &top_kinds[next]);
+			return ((next + 1) as i64, kind, name);
+		}
+	}
+	(0, "none".to_string(), String::new())
+}
+pub fn read_meta_tags(source: String) -> Vec<MetaTag> {
+    // lib/meta.deor
+    {
+    	let lines: Vec<&str> = source.lines().collect();
+    	let top_kinds = meta_top_kinds(&lines);
+    	let mut tags: Vec<MetaTag> = Vec::new();
+    	for (index, line) in lines.iter().enumerate() {
+    		let Some(start) = line.find(META_OPENER) else { continue };
+    		let rest = line[start + META_OPENER.len()..].trim_end();
+    		let mut warnings: Vec<String> = Vec::new();
+    		let inner = match rest.strip_suffix(')') {
+    			Some(inner) => inner,
+    			None => {
+    				warnings.push("malformed: no closing parenthesis".to_string());
+    				rest
+    			}
+    		};
+    		let fields = meta_parse_inner(inner, &mut warnings);
+    		let (attached_line, kind, target) = meta_attachment(&lines, &top_kinds, index, &line[..start]);
+    		tags.push(MetaTag { line: (index + 1) as i64, attached_line, fields, kind, target, warnings });
+    	}
+    	tags
+    }
+}
+
+// transpiler-deor/meta_format.deor
+pub fn json_escape(text: String) -> String {
+    // transpiler-deor/meta_format.deor
+    {
+    	let mut escaped = String::new();
+    	for character in text.chars() {
+    		match character {
+    			'"' => escaped.push_str("\\\""),
+    			'\\' => escaped.push_str("\\\\"),
+    			'\n' => escaped.push_str("\\n"),
+    			'\r' => escaped.push_str("\\r"),
+    			'\t' => escaped.push_str("\\t"),
+    			// Any other control character must be written as a \u escape.
+    			control if (control as u32) < 0x20 => escaped.push_str(&format!("\\u{:04x}", control as u32)),
+    			other => escaped.push(other),
+    		}
+    	}
+    	escaped
+    }
+}
+
+pub fn format_tags_text(file: String, tags: Vec<MetaTag>) -> String {
+    // transpiler-deor/meta_format.deor
+    {
+    	let mut text = String::new();
+    	for tag in tags.iter() {
+    		let fields: Vec<String> = tag.fields.iter()
+    			.map(|field| if field.key.is_empty() { field.value.clone() } else { format!("{}: {}", field.key, field.value) })
+    			.collect();
+    		let target = match tag.kind.as_str() {
+    			"none" => "nothing".to_string(),
+    			"statement" => format!("statement (line {})", tag.attached_line),
+    			kind => format!("{} {}", kind, tag.target),
+    		};
+    		text.push_str(&format!("{} line {}  {}  -> {}\n", file, tag.line, fields.join(", "), target));
+    		for warning in tag.warnings.iter() {
+    			text.push_str(&format!("    warning: {}\n", warning));
+    		}
+    	}
+    	text
+    }
+}
+
+pub fn format_tags_json(file: String, tags: Vec<MetaTag>) -> String {
+    // transpiler-deor/meta_format.deor
+    {
+    	let quote = |text: &str| format!("\"{}\"", json_escape(text.to_string()));
+    	let mut objects: Vec<String> = Vec::new();
+    	for tag in tags.iter() {
+    		let fields: Vec<String> = tag.fields.iter()
+    			.map(|field| format!("{{\"key\":{},\"value\":{}}}", quote(&field.key), quote(&field.value)))
+    			.collect();
+    		let warnings: Vec<String> = tag.warnings.iter().map(|warning| quote(warning)).collect();
+    		objects.push(format!(
+    			"{{\"file\":{},\"line\":{},\"attached_line\":{},\"kind\":{},\"target\":{},\"fields\":[{}],\"warnings\":[{}]}}",
+    			quote(&file), tag.line, tag.attached_line, quote(&tag.kind), quote(&tag.target), fields.join(","), warnings.join(",")
+    		));
+    	}
+    	objects.join(",")
+    }
+}
+
+// transpiler-deor/meta_command.deor
+pub fn drop_ignored_warnings(tags: Vec<MetaTag>, ignored_prefixes: Vec<String>) -> Vec<MetaTag> {
+    // transpiler-deor/meta_command.deor
+    {
+    	let mut kept = tags;
+    	for tag in kept.iter_mut() {
+    		tag.warnings.retain(|warning| !ignored_prefixes.iter().any(|prefix| warning.starts_with(prefix.as_str())));
+    	}
+    	kept
+    }
+}
+
+pub fn ignored_warning_prefixes() -> Vec<String> {
+    // transpiler-deor/meta_command.deor
+    let mut raw_args: Vec<String> = f_args();
+    let mut malformed_flag: String = "--ignore-malformed".to_string();
+    let mut inner_flag: String = "--ignore-inner".to_string();
+    let mut prefixes: Vec<String> = Vec::new();
+    if (raw_args.contains(&malformed_flag)) {
+        // transpiler-deor/meta_command.deor
+        prefixes.push("malformed: ".to_string());
+    }
+    if (raw_args.contains(&inner_flag)) {
+        // transpiler-deor/meta_command.deor
+        prefixes.push("inner: ".to_string());
+    }
+    return prefixes;
+}
+
+pub fn format_file_tags(file: String, as_json: bool) -> String {
+    // transpiler-deor/meta_command.deor
+    let mut source: String = f_read(file.clone());
+    let mut ignored: Vec<String> = ignored_warning_prefixes();
+    let mut tags: Vec<MetaTag> = read_meta_tags(source.clone());
+    let mut shown: Vec<MetaTag> = drop_ignored_warnings(tags.clone(), ignored.clone());
+    if as_json {
+        // transpiler-deor/meta_command.deor
+        return format_tags_json(file.clone(), shown.clone());
+    }
+    return format_tags_text(file.clone(), shown.clone());
+}
+
+pub fn run_meta_command(cli_args: Vec<String>) {
+    // transpiler-deor/meta_command.deor
+    let mut search_path: String = ".".to_string();
+    let mut arg_count: i64 = (cli_args.len() as i64);
+    let mut raw_args: Vec<String> = f_args();
+    let mut json_flag: String = "--json".to_string();
+    let mut as_json: bool = (raw_args.contains(&json_flag));
+    let mut suffix: String = ".deor".to_string();
+    if arg_count > 1 {
+        // transpiler-deor/meta_command.deor
+        search_path = cli_args[1 as usize].clone();
+    }
+    let mut files: Vec<String> = find_files_with_suffix(search_path.clone(), suffix.clone());
+    let mut chunks: Vec<String> = Vec::new();
+    for file in files.iter().cloned() {
+        // transpiler-deor/meta_command.deor
+        let mut chunk: String = format_file_tags(file.clone(), as_json.clone());
+        if !is_empty(chunk.clone()) {
+            // transpiler-deor/meta_command.deor
+            chunks.push(chunk.clone());
+        }
+    }
+    if as_json {
+        // transpiler-deor/meta_command.deor
+        let mut separator: String = ",".to_string();
+        let mut joined: String = s_join_with(chunks.clone(), separator.clone());
+        println!("{}", ["[", joined.as_str(), "]"].concat());
+    } else {
+        // transpiler-deor/meta_command.deor
+        println!("{}", s_join(chunks.clone()));
+    }
+}
+
 // transpiler-deor/main.deor
-pub fn strip_verbose_flags(raw_args: Vec<String>) -> Vec<String> {
+pub fn strip_flags(raw_args: Vec<String>) -> Vec<String> {
     // transpiler-deor/main.deor
-    let mut verbose_long: String = "--verbose".to_string();
-    let mut verbose_short: String = "-v".to_string();
+    let mut known_flags: Vec<String> = vec!["--verbose".to_string(), "-v".to_string(), "--test".to_string(), "--json".to_string(), "--ignore-malformed".to_string(), "--ignore-inner".to_string()];
     let mut cli_args: Vec<String> = Vec::new();
     let mut raw_count: i64 = (raw_args.len() as i64);
     let mut raw_i: i64 = 0;
     while raw_i < raw_count {
         // transpiler-deor/main.deor
         let mut raw_arg: String = raw_args[raw_i as usize].clone();
-        let mut is_verbose_flag: bool = raw_arg == verbose_long || raw_arg == verbose_short;
-        if !is_verbose_flag {
+        let mut is_flag: bool = (known_flags.contains(&raw_arg));
+        if !is_flag {
             // transpiler-deor/main.deor
             cli_args.push(raw_arg.clone());
         }
@@ -13188,9 +13693,22 @@ pub fn main() {
         // transpiler-deor/main.deor
         verbose_enable();
     }
-    let mut cli_args: Vec<String> = strip_verbose_flags(raw_args.clone());
+    let mut test_flag: String = "--test".to_string();
+    let mut test_mode: bool = (raw_args.contains(&test_flag));
+    let mut cli_args: Vec<String> = strip_flags(raw_args.clone());
     let mut arg_count: i64 = (cli_args.len() as i64);
-    if arg_count < 2 {
+    let mut first_arg: String = "".to_string();
+    if arg_count > 0 {
+        // transpiler-deor/main.deor
+        first_arg = cli_args[0 as usize].clone();
+    }
+    if first_arg == "test" {
+        // transpiler-deor/main.deor
+        run_test_command(cli_args.clone());
+    } else if first_arg == "meta" {
+        // transpiler-deor/main.deor
+        run_meta_command(cli_args.clone());
+    } else if arg_count < 2 {
         // transpiler-deor/main.deor
         panic!("{}", "usage: deor input.deor output.rs [--verbose|-v]".to_string());
     } else {
@@ -13286,6 +13804,11 @@ pub fn main() {
             }
         }
         // transpiler-deor/main.deor
+        if test_mode {
+            // transpiler-deor/main.deor
+            let mut runner_code: String = generate_test_runner(tokens_ref.clone(), input_path.clone());
+            rust_code = s_cat(rust_code.clone(), runner_code.clone());
+        }
         let mut allow_warnings: String = "#![allow(warnings)]\n".to_string();
         rust_code = s_cat(allow_warnings.clone(), rust_code.clone());
         f_write(output_path.clone(), rust_code.clone());

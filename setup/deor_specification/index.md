@@ -30,6 +30,8 @@
 
 [Macros](docs/macros.md) — macros for organizing code, useful for avoiding clone
 
+[Meta Tags](docs/meta.md) — `# meta(key: value)` comments for tools, `deor meta`
+
 [Move](docs/move.md) — `move` keyword, ownership transfer without cloning
 
 [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded
@@ -43,6 +45,8 @@
 [Structs](docs/structs.md) — declaration, construction, destructuring (`in`), record update (`with`)
 
 [Syntax](docs/syntax.md) — block structure, keywords, comments
+
+[Testing](docs/testing.md) — `*.test.deor` files, `test_*` functions, `SUCCESS`/`FAILURE`, `deor test`
 
 [Validator Types](docs/validator_types.md) — `type` over primitives or structs, `is valid`/`is not valid`, `avow`, struct fields, function returns
 
