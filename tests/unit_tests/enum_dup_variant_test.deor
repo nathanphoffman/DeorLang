@@ -10,11 +10,11 @@ enum RoomSize
 
 enum StretchKind
 	Short
-	Medium  # error: dup_variant
+	Medium  # meta(error: dup_variant)
 	Long
 
 enum ThirdKind
-	Large  # error: dup_variant
+	Large  # meta(error: dup_variant)
 	Huge
 
 fn StretchKind pick()

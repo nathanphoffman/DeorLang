@@ -11,4 +11,4 @@ struct Room
 fn void main()
 	helper()
 
-# error-elsewhere: structure_after_macro_or_fn
+# meta(error: structure_after_macro_or_fn, where: elsewhere)

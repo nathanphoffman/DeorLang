@@ -11,35 +11,35 @@ shape intList = list of int
 type Positive(int val)
 	val > 0
 
-type Roll(int Roll)  # error: type_param_shadow
+type Roll(int Roll)  # meta(error: type_param_shadow)
 	Roll > 0
 
-type Weight(int int)  # error: param_shadow
+type Weight(int int)  # meta(error: param_shadow)
 	int > 0
 
-type BadValidator(intList vals)  # error: non_primitive_validator
+type BadValidator(intList vals)  # meta(error: non_primitive_validator)
 	true
 
-type SelfValidator(SelfValidator vals)  # error: non_primitive_validator
+type SelfValidator(SelfValidator vals)  # meta(error: non_primitive_validator)
 	true
 
-type BuiltinShadowValidator(int print)  # error: builtin_shadow
+type BuiltinShadowValidator(int print)  # meta(error: builtin_shadow)
 	print > 0
 
 fn void test_const_reassign()
 	const string PIPE = "|"
-	PIPE = "/"  # error: const_reassign
+	PIPE = "/"  # meta(error: const_reassign)
 
 fn void test_validator_empty()
-	Positive pos_val = empty  # error: validator_empty
+	Positive pos_val = empty  # meta(error: validator_empty)
 
 fn void test_validator_reassign()
 	Positive pos_val = 5
-	pos_val as 6  # error: validator_reassign
+	pos_val as 6  # meta(error: validator_reassign)
 
 fn void test_avow_non_validator()
 	int plain = 5
-	int result = (avow plain)  # error: avow
+	int result = (avow plain)  # meta(error: avow)
 
 fn void main()
 	test_const_reassign()

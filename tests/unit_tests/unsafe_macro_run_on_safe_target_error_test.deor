@@ -6,5 +6,5 @@ macro say_hello
 	print("hi")
 
 fn void main()
-	unsafe_macro_run say_hello  # error: unsafe_macro_run_on_macro
+	unsafe_macro_run say_hello  # meta(error: unsafe_macro_run_on_macro)
 

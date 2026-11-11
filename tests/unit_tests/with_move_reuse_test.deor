@@ -10,6 +10,6 @@ fn void main()
 	int count = 1
 	Hold start = (label, count)
 	Hold moved = move start with (label)
-	(count) in start  # error: use_after_move
+	(count) in start  # meta(error: use_after_move)
 	print(count)
 

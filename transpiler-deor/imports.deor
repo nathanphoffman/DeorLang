@@ -252,3 +252,8 @@ import "transpiler-deor/codegen/codegen.deor"
 import "transpiler-deor/test_runner.deor"
 import "transpiler-deor/test_process.deor"
 import "transpiler-deor/test_command.deor"
+
+# meta tags
+import "lib/meta.deor"
+import "transpiler-deor/meta_format.deor"
+import "transpiler-deor/meta_command.deor"

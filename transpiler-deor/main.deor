@@ -1,18 +1,16 @@
 import "transpiler-deor/imports.deor"
 import "transpiler-deor/macros/timer.deor"
 
-# Removes --verbose/-v and --test from the raw args and returns the rest (input and output paths).
+# Removes the known flags (--verbose/-v, --test, and the deor meta flags) from the raw args and returns the rest (input and output paths).
 fn strList strip_flags(strList raw_args)
-	string verbose_long = "--verbose"
-	string verbose_short = "-v"
-	string test_flag = "--test"
+	strList known_flags = ["--verbose", "-v", "--test", "--json", "--ignore-malformed", "--ignore-inner"]
 	strList cli_args = empty
 	int raw_count = len(raw_args)
 	int raw_i = 0
 
 	for if raw_i < raw_count
 		string raw_arg = raw_args at raw_i
-		bool is_flag = raw_arg is verbose_long or raw_arg is verbose_short or raw_arg is test_flag
+		bool is_flag = list_has(known_flags, raw_arg)
 
 		if not is_flag
 			cli_args at end = raw_arg
@@ -46,6 +44,8 @@ fn void main()
 
 	if first_arg is "test"
 		run_test_command(cli_args)
+	else if first_arg is "meta"
+		run_meta_command(cli_args)
 	else if arg_count < 2
 		crash("usage: deor input.deor output.rs [--verbose|-v]")
 	else

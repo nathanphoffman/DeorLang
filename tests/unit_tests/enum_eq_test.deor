@@ -4,10 +4,10 @@
 
 enum string Status
 	Active = "on"
-	Inactive  # error: typed_enum_eq
+	Inactive  # meta(error: typed_enum_eq)
 
 enum Mode
-	Fast = 1  # error: untyped_enum_eq, undeclared_reassign
+	Fast = 1  # meta(error: untyped_enum_eq, error: undeclared_reassign)
 	Slow
 
 fn void main()

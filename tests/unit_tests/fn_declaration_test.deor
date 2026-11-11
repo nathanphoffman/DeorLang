@@ -3,16 +3,16 @@
 # than 3 parameters, and a function missing its return type token entirely
 # (fn name() instead of fn void name() / fn RetType name()).
 
-fn void too_many_params(int first, int second, int third, int fourth)  # error: max_params
+fn void too_many_params(int first, int second, int third, int fourth)  # meta(error: max_params)
 	print(first)
 
-fn missing_return_type()  # error: no_ret
+fn missing_return_type()  # meta(error: no_ret)
 	print("no return type")
 
-fn void test_short_param(int ab)  # error: min3
+fn void test_short_param(int ab)  # meta(error: min3)
 	print(ab)
 
-fn void test_bad_case_param(int badCase)  # error: snake
+fn void test_bad_case_param(int badCase)  # meta(error: snake)
 	print(badCase)
 
 fn void main()

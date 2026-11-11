@@ -7,16 +7,16 @@ fn void takes_two(int first, int second)
 	print(first)
 
 fn void test_named_arg()
-	takes_two(1, 2)  # error: named_arg
+	takes_two(1, 2)  # meta(error: named_arg)
 
 fn void test_crash_args()
-	crash()  # error: crash
+	crash()  # meta(error: crash)
 
 fn void test_print_args()
 	int val_a = 1
 	int val_b = 2
 	int val_c = 3
-	print(val_a, val_b, val_c)  # error: print_args
+	print(val_a, val_b, val_c)  # meta(error: print_args)
 
 fn void main()
 	print("should never reach here")

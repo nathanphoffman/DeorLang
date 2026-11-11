@@ -7,4 +7,4 @@ import "lib/definitely_not_a_real_file.deor"
 fn void main()
 	print("hi")
 
-# error-elsewhere: missing_import
+# meta(error: missing_import, where: elsewhere)

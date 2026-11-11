@@ -7,10 +7,10 @@
 shape mathFunc = func of int to int
 
 struct Calculator
-	mathFunc operation  # error: no_func_field
+	mathFunc operation  # meta(error: no_func_field)
 
 struct Wrapper
-	raw handle  # error: no_raw_field
+	raw handle  # meta(error: no_raw_field)
 
 struct Point
 	int pos_x
@@ -18,21 +18,21 @@ struct Point
 
 fn void test_wrong_field_count()
 	int pos_x = 1
-	Point bad_point = move (pos_x)  # error: struct_field_count
+	Point bad_point = move (pos_x)  # meta(error: struct_field_count)
 
 fn void test_wrong_field_name()
 	int pos_x = 1
 	int stray_val = 2
-	Point bad_point2 = move (pos_x, stray_val)  # error: struct_field_name
+	Point bad_point2 = move (pos_x, stray_val)  # meta(error: struct_field_name)
 
 fn void test_wrong_field_count_no_move()
 	int pos_x = 1
-	Point bad_point3 = (pos_x)  # error: struct_field_count
+	Point bad_point3 = (pos_x)  # meta(error: struct_field_count)
 
 fn void test_wrong_field_name_no_move()
 	int pos_x = 1
 	int stray_val = 2
-	Point bad_point4 = (pos_x, stray_val)  # error: struct_field_name
+	Point bad_point4 = (pos_x, stray_val)  # meta(error: struct_field_name)
 
 fn void main()
 	print("should never reach here")

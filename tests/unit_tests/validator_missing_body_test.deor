@@ -8,9 +8,9 @@
 # and an end-of-file case (nothing at all follows the header) — the two failure shapes
 # the original crash depended on.
 
-type Empty1(int val)  # error: validator_missing_body
+type Empty1(int val)  # meta(error: validator_missing_body)
 
-type Empty2(int val)  # error: validator_missing_body
+type Empty2(int val)  # meta(error: validator_missing_body)
 
 fn void main()
 	print("unreachable")

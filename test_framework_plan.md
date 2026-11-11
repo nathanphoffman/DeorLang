@@ -57,3 +57,14 @@ Known gap: errors from the importer (`[error] ...`, such as duplicate declaratio
 3. The 79 `expect:` output tests stay as they are.
 4. No renaming to `.test.deor`: that suffix is for files `deor test` runs, and these files contain Deor that is meant not to compile, so `deor test` would report them as broken.
 5. `tests/unit_tester.deor` stays, with the unused `# expect-error:` and `# expect-rustc-error:` modes removed. It now handles `# expect:`, `# expect-panic:` and the error markers.
+
+## Phase 4: meta tags (`# meta(...)`) (DONE)
+
+A meta tag is an ordinary comment that tools can read. The transpiler never reads it. Replaces the `# error:` markers.
+
+- Form: `# meta(key: value, key: value)`. Exactly `# meta(` with one space after the `#`; `#meta(` is an ordinary comment. The recommended inside is up to 3 `key: value` pairs.
+- Placement: anywhere. At the end of a line it attaches to that line; on its own line it attaches to the next line with code (so tags stack).
+- `lib/meta.deor`: reads source text and returns each tag: line, attached line, fields, what it is attached to (function, struct, enum, shape, type, macro, raw, import, field, variant, statement, or none) and its name, and warnings.
+- Warnings live in the reader only. `malformed`: no closing `)`. `inner`: not `key: value` pairs, a comma inside a value, or more than 3 fields. Flags: `--ignore-malformed`, `--ignore-inner`.
+- `deor meta [path]` (same file search as `deor test`) prints tags and warnings; `--json` prints JSON (a small std-only `json_escape`, no crate).
+- Compiler error tests use `# meta(error: code)`; an error with no line in the test file is `# meta(error: code, where: elsewhere)`. A test with a malformed tag fails.

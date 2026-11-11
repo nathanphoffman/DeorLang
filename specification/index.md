@@ -30,6 +30,8 @@
 
 [Macros](docs/macros.md) — macros for organizing code, useful for avoiding clone
 
+[Meta Tags](docs/meta.md) — `# meta(key: value)` comments for tools, `deor meta`
+
 [Move](docs/move.md) — `move` keyword, ownership transfer without cloning
 
 [Operators](docs/operators.md) — arithmetic, comparison, logical, what's excluded

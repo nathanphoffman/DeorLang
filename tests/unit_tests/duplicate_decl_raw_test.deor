@@ -8,7 +8,7 @@
 
 raw Counter
 
-raw Counter  # error: duplicate_declaration
+raw Counter  # meta(error: duplicate_declaration)
 
 rust
 	#[derive(Clone)]

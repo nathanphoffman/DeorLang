@@ -15,7 +15,7 @@ fn void main()
 	Holder held = (count, size)
 	(count, size) in held
 	int good_total = (avow count)
-	int bad_total = (avow size)  # error: avow
+	int bad_total = (avow size)  # meta(error: avow)
 	print(good_total)
 	print(bad_total)
 

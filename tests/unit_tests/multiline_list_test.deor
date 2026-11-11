@@ -5,7 +5,7 @@
 shape stringList = list of string
 
 fn stringList split_literal()
-	return ["first",  # error: multiline_list
+	return ["first",  # meta(error: multiline_list)
 		"second"]
 
 fn void main()

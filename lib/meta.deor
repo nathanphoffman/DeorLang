@@ -1,0 +1,137 @@
+# Reads `# meta(key: value, ...)` tags out of Deor source text. A meta tag is an
+# ordinary comment the transpiler never looks at; tools (docs generators, the test
+# runner, component frameworks) read the source text with read_meta_tags instead.
+#
+# A tag is exactly `# meta(` (one space after the #) up to the last `)` on the line.
+# At the end of a line it describes that line. On its own line it describes the next
+# line with code, so several tags can stack above one declaration.
+#
+# Each tag comes back with what it describes (kind and name) and any warnings. A
+# warning starts with its type: "malformed: " (no closing parenthesis) or "inner: "
+# (not key: value pairs, or more than 3 fields). The reader never fails; the tool
+# using it decides what to do with warnings.
+
+struct MetaField
+	string key
+	string value
+
+shape metaFieldList = list of MetaField
+
+shape metaWarningList = list of string
+
+# kind is one of: function, struct, enum, shape, type, macro, raw, import, field,
+# variant, statement, none. target is the name (empty for a statement or none).
+# attached_line is 0 when the tag describes nothing (it ends the file).
+struct MetaTag
+	int line
+	int attached_line
+	metaFieldList fields
+	string kind
+	string target
+	metaWarningList warnings
+
+shape metaTagList = list of MetaTag
+
+rust
+	const META_OPENER: &str = "# meta(";
+	const META_MAX_FIELDS: usize = 3;
+
+	// The declaration keyword at the start of every unindented line, remembered for the
+	// lines under it so an indented line inside a struct reads as a field.
+	fn meta_top_kinds(lines: &[&str]) -> Vec<String> {
+		let mut current = String::new();
+		let mut kinds = Vec::new();
+		for line in lines {
+			let unindented = !line.starts_with(char::is_whitespace) && !line.starts_with('#');
+			if unindented && !line.trim().is_empty() {
+				current = line.split_whitespace().next().unwrap_or("").to_string();
+			}
+			kinds.push(current.clone());
+		}
+		kinds
+	}
+
+	// What a line of code is: (kind, name).
+	fn meta_describe(line: &str, top_kind: &str) -> (String, String) {
+		let words: Vec<&str> = line.split_whitespace().collect();
+		let first = words.first().copied().unwrap_or("");
+		let word_at = |index: usize| words.get(index).copied().unwrap_or("").to_string();
+		if line.starts_with(char::is_whitespace) {
+			return match top_kind {
+				"struct" => ("field".to_string(), words.last().copied().unwrap_or("").to_string()),
+				"enum" => ("variant".to_string(), word_at(0)),
+				_ => ("statement".to_string(), String::new()),
+			};
+		}
+		match first {
+			// `fn type name(args)`: the name is the third word, up to the parenthesis.
+			"fn" => ("function".to_string(), word_at(2).split('(').next().unwrap_or("").to_string()),
+			// `enum Name` or `enum string Name`: the name is the first capitalised word.
+			"enum" => ("enum".to_string(), words.iter().skip(1).find(|word| word.starts_with(char::is_uppercase)).copied().unwrap_or("").to_string()),
+			"struct" | "shape" | "type" | "raw" => (first.to_string(), word_at(1)),
+			"macro" | "unsafe_macro" => ("macro".to_string(), word_at(1)),
+			"import" => ("import".to_string(), word_at(1).trim_matches('"').to_string()),
+			_ => ("statement".to_string(), String::new()),
+		}
+	}
+
+	// Splits the text inside the parentheses into key: value fields, noting anything odd.
+	fn meta_parse_inner(inner: &str, warnings: &mut Vec<String>) -> Vec<MetaField> {
+		let mut fields = Vec::new();
+		for part in inner.split(',') {
+			let part = part.trim();
+			match part.split_once(':') {
+				Some((key, value)) => fields.push(MetaField { key: key.trim().to_string(), value: value.trim().to_string() }),
+				None => {
+					warnings.push(format!("inner: '{}' is not a key: value pair", part));
+					fields.push(MetaField { key: String::new(), value: part.to_string() });
+				}
+			}
+		}
+		if fields.len() > META_MAX_FIELDS {
+			warnings.push(format!("inner: {} fields, more than the recommended {}", fields.len(), META_MAX_FIELDS));
+		}
+		fields
+	}
+
+	// Finds the line a tag describes and what that line is: (line number, kind, name).
+	// A tag with code before it on its own line describes that line; otherwise the next line with code.
+	fn meta_attachment(lines: &[&str], top_kinds: &[String], index: usize, code_before: &str) -> (i64, String, String) {
+		if !code_before.is_empty() {
+			let (kind, name) = meta_describe(code_before.trim_end(), &top_kinds[index]);
+			return ((index + 1) as i64, kind, name);
+		}
+		for next in (index + 1)..lines.len() {
+			let trimmed = lines[next].trim();
+			if !trimmed.is_empty() && !trimmed.starts_with('#') {
+				let (kind, name) = meta_describe(lines[next].trim_end(), &top_kinds[next]);
+				return ((next + 1) as i64, kind, name);
+			}
+		}
+		(0, "none".to_string(), String::new())
+	}
+
+# Returns every meta tag in the source text, in order.
+fn metaTagList read_meta_tags(string source)
+	rust
+		{
+			let lines: Vec<&str> = source.lines().collect();
+			let top_kinds = meta_top_kinds(&lines);
+			let mut tags: Vec<MetaTag> = Vec::new();
+			for (index, line) in lines.iter().enumerate() {
+				let Some(start) = line.find(META_OPENER) else { continue };
+				let rest = line[start + META_OPENER.len()..].trim_end();
+				let mut warnings: Vec<String> = Vec::new();
+				let inner = match rest.strip_suffix(')') {
+					Some(inner) => inner,
+					None => {
+						warnings.push("malformed: no closing parenthesis".to_string());
+						rest
+					}
+				};
+				let fields = meta_parse_inner(inner, &mut warnings);
+				let (attached_line, kind, target) = meta_attachment(&lines, &top_kinds, index, &line[..start]);
+				tags.push(MetaTag { line: (index + 1) as i64, attached_line, fields, kind, target, warnings });
+			}
+			tags
+		}

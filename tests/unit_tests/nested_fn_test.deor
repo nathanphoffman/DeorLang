@@ -8,7 +8,7 @@
 struct Broken
 	int val
 
-	fn bool inner(int val)  # error: nested_fn
+	fn bool inner(int val)  # meta(error: nested_fn)
 		return val > 0
 
 fn void main()

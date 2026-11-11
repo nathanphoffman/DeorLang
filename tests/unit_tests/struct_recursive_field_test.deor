@@ -14,11 +14,11 @@ type NodeOk(Node val)
 
 struct Node
 	int depth
-	Node next  # error: recursive_struct_field
+	Node next  # meta(error: recursive_struct_field)
 
 struct Tree
 	int depth
-	TreeOk left  # error: recursive_struct_field
+	TreeOk left  # meta(error: recursive_struct_field)
 
 type TreeOk(Tree val)
 	true

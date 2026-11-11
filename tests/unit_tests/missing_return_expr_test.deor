@@ -10,11 +10,11 @@
 
 fn int trailing_bare_expr(int left, int right)
 	int total = left + right
-	total  # error: missing_return_expr
+	total  # meta(error: missing_return_expr)
 
 fn int nested_bare_expr(int val)
 	if val > 0
-		val * 2  # error: missing_return_expr
+		val * 2  # meta(error: missing_return_expr)
 
 	return 0
 

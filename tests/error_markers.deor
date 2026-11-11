@@ -1,37 +1,47 @@
-# Helpers for inline error markers in compiler tests. Two kinds of marker:
-#   # error: code            at the end of the line that should produce that error
-#                            (several codes on one line: `# error: a, b`)
-#   # error-elsewhere: code  for an error that has no line in this file: one about the
-#                            file as a whole (declaration order) or raised in a file it
-#                            imports (a duplicate declaration in a fixture)
+# Helpers for the compiler's error tests. A line that should produce a transpiler
+# error carries a meta tag (see lib/meta.deor):
+#   # meta(error: code)                       at the end of the line that should fail
+#   # meta(error: a, error: b)                several errors on one line
+#   # meta(error: code, where: elsewhere)     an error with no line in this file: one about
+#                                             the file as a whole (declaration order) or
+#                                             raised in a file it imports (a fixture)
 # The code is the bracketed name ending the transpiler's message, for example
-# `[max_params]`. Both sides are reduced to sorted "line code" text (line is `*` for
-# an elsewhere error) so the runner can compare them directly. Inserting or removing
+# `[max_params]`. Both sides are reduced to sorted "line code" text (line is `*` for an
+# elsewhere error) so the runner can compare them directly. Inserting or removing
 # lines above a marker never breaks a test. A line and code count once however many
 # times the transpiler reports them (two bad arguments on one line, say).
 
-# Lists "line code" for every marker in the source, sorted, one per text line.
+import "lib/meta.deor"
+
+# Lists "line code" for every `error` field in the source's meta tags, sorted.
 fn string collect_markers(string source)
 	rust
 		{
 			let mut found: Vec<String> = Vec::new();
-			for (index, line) in source.lines().enumerate() {
-				// Checked first: "# error-elsewhere:" does not contain "# error:", but this keeps the two apart.
-				let (marker, place) = if line.contains("# error-elsewhere:") {
-					("# error-elsewhere:", "*".to_string())
-				} else if line.contains("# error:") {
-					("# error:", (index + 1).to_string())
-				} else {
-					continue;
-				};
-				let start = line.find(marker).unwrap_or(0) + marker.len();
-				// Everything after the marker is a comma-separated list of codes.
-				for code in line[start..].split(',') {
-					found.push(format!("{} {}", place, code.trim()));
+			for tag in read_meta_tags(source) {
+				// A tag marked `where: elsewhere` has no line in this file.
+				let elsewhere = tag.fields.iter().any(|field| field.key == "where" && field.value == "elsewhere");
+				let place = if elsewhere { "*".to_string() } else { tag.attached_line.to_string() };
+				for field in tag.fields.iter().filter(|field| field.key == "error") {
+					found.push(format!("{} {}", place, field.value));
 				}
 			}
 			found.sort();
 			found.dedup();
+			found.join("\n")
+		}
+
+# Lists every warning the meta reader gave for the source, as "line N: warning" text.
+# A test file with a malformed tag must fail, so the runner checks this is empty.
+fn string collect_marker_warnings(string source)
+	rust
+		{
+			let mut found: Vec<String> = Vec::new();
+			for tag in read_meta_tags(source) {
+				for warning in tag.warnings.iter() {
+					found.push(format!("line {}: {}", tag.line, warning));
+				}
+			}
 			found.join("\n")
 		}
 

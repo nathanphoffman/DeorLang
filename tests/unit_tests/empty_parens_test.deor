@@ -9,22 +9,22 @@ struct Room
 # A validator type's parens are never allowed to be empty, unlike a zero-param
 # fn declaration or call — check_empty_parens' ep_is_type_decl branch exists
 # specifically to keep this case from being wrongly exempted alongside those.
-type EmptyValidator()  # error: non_primitive_validator, validator_missing_body, empty_parens
+type EmptyValidator()  # meta(error: non_primitive_validator, error: validator_missing_body, error: empty_parens)
 	true
 
 fn void greet()
 	print("hi")
 
 fn void test_with_empty()
-	Room room = (5, "Office")  # error: struct_field_count
-	Room updated = room with ()  # error: empty_parens
+	Room room = (5, "Office")  # meta(error: struct_field_count)
+	Room updated = room with ()  # meta(error: empty_parens)
 
 fn int test_return_empty()
-	return ()  # error: empty_parens
+	return ()  # meta(error: empty_parens)
 
 fn void test_move_empty()
-	int x = 5  # error: min3
-	int y = move ()  # error: min3, empty_parens
+	int x = 5  # meta(error: min3)
+	int y = move ()  # meta(error: min3, error: empty_parens)
 
 fn void main()
 	greet()

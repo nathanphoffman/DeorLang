@@ -6,26 +6,26 @@
 # after 'is'.
 
 fn int test_return_empty()
-	return empty  # error: return_empty
+	return empty  # meta(error: return_empty)
 
 fn int test_return_none()
-	return none  # error: return_none
+	return none  # meta(error: return_none)
 
 fn void test_bad_stmt()
-	string greeting "hello"  # error: bad_stmt, undefined_var
+	string greeting "hello"  # meta(error: bad_stmt, error: undefined_var)
 
 fn void test_invalid_char()
-	int val_a = 5 & 3  # error: invalid_char
+	int val_a = 5 & 3  # meta(error: invalid_char)
 	print(val_a)
 
 fn void test_invalid_not_equal()
 	int val_b = 5
 
-	if val_b != 5  # error: invalid_char
+	if val_b != 5  # meta(error: invalid_char)
 		print("bad")
 
 fn void test_valid_misuse()
-	bool result = valid  # error: valid
+	bool result = valid  # meta(error: valid)
 
 fn void main()
 	print("should never reach here")

@@ -5,6 +5,6 @@
 shape intList = list of int
 
 fn void main()
-	intList nums = [1, 2  # error: unmatched_open_bracket
+	intList nums = [1, 2  # meta(error: unmatched_open_bracket)
 	print("hi")
 

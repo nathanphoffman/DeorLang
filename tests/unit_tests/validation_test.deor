@@ -14,8 +14,8 @@
 #    'myField' fires: "name must be lower_snake_case"
 # -----------------------------------------------------------------------
 struct BadFields
-	string x  # error: min3
-	string myField  # error: snake
+	string x  # meta(error: min3)
+	string myField  # meta(error: snake)
 
 # -----------------------------------------------------------------------
 # 2. Enum variant naming — lowercase AND too short
@@ -24,8 +24,8 @@ struct BadFields
 #    'East' and 'West' are correct, no error expected
 # -----------------------------------------------------------------------
 enum Direction
-	north  # error: enum_pascal
-	ab  # error: min3, enum_pascal
+	north  # meta(error: enum_pascal)
+	ab  # meta(error: min3, error: enum_pascal)
 	East
 	West
 
@@ -35,14 +35,14 @@ enum Direction
 # -----------------------------------------------------------------------
 enum Message
 	Quit
-	Move(int)  # error: enum_data, enum_pascal
+	Move(int)  # meta(error: enum_data, error: enum_pascal)
 
 # -----------------------------------------------------------------------
 # 4. void used as variable type
 #    'void result = 5' fires: "'void' is not a valid variable type"
 # -----------------------------------------------------------------------
 fn void test_void_var()
-	void result = 5  # error: void_var, undeclared_reassign
+	void result = 5  # meta(error: void_var, error: undeclared_reassign)
 
 # -----------------------------------------------------------------------
 # 5. return inside a void function
@@ -51,7 +51,7 @@ fn void test_void_var()
 fn void test_void_return()
 	int num = 5
 
-	return num  # error: void_return
+	return num  # meta(error: void_return)
 
 # -----------------------------------------------------------------------
 # 6. move applied to a literal
@@ -60,13 +60,13 @@ fn void test_void_return()
 fn int test_move_literal()
 	int val = 5
 
-	return move 5  # error: move
+	return move 5  # meta(error: move)
 
 # -----------------------------------------------------------------------
 # 7. Parameter name same as its type
 #    second param 'string string' fires: "parameter name cannot be the same as its type"
 # -----------------------------------------------------------------------
-fn void test_param_shadow(int count, string string)  # error: param_shadow
+fn void test_param_shadow(int count, string string)  # meta(error: param_shadow)
 	int unused = 0
 
 # -----------------------------------------------------------------------
@@ -75,7 +75,7 @@ fn void test_param_shadow(int count, string string)  # error: param_shadow
 # -----------------------------------------------------------------------
 fn void test_typed_as()
 	int src = 5
-	int val as src  # error: typed_as
+	int val as src  # meta(error: typed_as)
 
 # -----------------------------------------------------------------------
 # 9. as + move (redundant move)
@@ -83,5 +83,5 @@ fn void test_typed_as()
 # -----------------------------------------------------------------------
 fn void test_as_move()
 	int src = 5
-	val as move src  # error: as_move
+	val as move src  # meta(error: as_move)
 

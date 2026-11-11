@@ -19,13 +19,13 @@ struct Dust
 	float vel
 
 fn Blast bare_return(float pos, float size)
-	return (pos, size)  # error: struct_ambiguous
+	return (pos, size)  # meta(error: struct_ambiguous)
 
 fn void as_build(float pos, float size)
-	built as (pos, size)  # error: struct_ambiguous
+	built as (pos, size)  # meta(error: struct_ambiguous)
 
 fn Dust shared_with(Dust piece, float vel)
-	updated as piece with (vel)  # error: with_ambiguous
+	updated as piece with (vel)  # meta(error: with_ambiguous)
 
 	return updated
 

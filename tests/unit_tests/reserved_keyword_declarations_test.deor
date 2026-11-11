@@ -10,28 +10,28 @@
 # still real bug: a keyword-named variant was silently dropped from the
 # generated enum with zero error, rather than just failing a naming check.
 
-struct raw  # error: kw_in_parens
+struct raw  # meta(error: kw_in_parens)
 	int val
 
-enum avow  # error: kw_in_parens
+enum avow  # meta(error: kw_in_parens)
 	VariantA
 	VariantB
 
 enum Color
 	Red
-	empty  # error: kw_in_parens
+	empty  # meta(error: kw_in_parens)
 	Blue
 
 struct Settings
-	int const  # error: kw_in_parens
+	int const  # meta(error: kw_in_parens)
 
 struct Point
 	int pos_x
 	int pos_y
 
 fn void test_destructure_binding()
-	Point pt_a = (3, 4)  # error: struct_field_count
-	(pos_x, none) in pt_a  # error: kw_in_parens
+	Point pt_a = (3, 4)  # meta(error: struct_field_count)
+	(pos_x, none) in pt_a  # meta(error: kw_in_parens)
 	print(pos_x)
 
 fn void main()

@@ -5,7 +5,7 @@
 
 unsafe_macro outer_leak
 	int outer_val = 1
-	unsafe_macro_run inner_leak  # error: unsafe_macro_called_from_macro
+	unsafe_macro_run inner_leak  # meta(error: unsafe_macro_called_from_macro)
 
 unsafe_macro inner_leak
 	int inner_val = 2

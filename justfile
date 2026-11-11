@@ -53,6 +53,10 @@ sync-setup:
 test path=".":
     DEOR_LIB=lib ./output/out test {{path}}
 
+# Lists every `# meta(...)` tag in the project (see specification/docs/meta.md).
+meta path=".":
+    DEOR_LIB=lib ./output/out meta {{path}}
+
 test-examples:
     DEOR_LIB=lib ./output/out tests/unit_tester.deor output/test_runner.rs
     rustc -O output/test_runner.rs -o output/test_runner

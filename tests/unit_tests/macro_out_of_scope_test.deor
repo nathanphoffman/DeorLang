@@ -14,5 +14,5 @@ fn void define_and_call_locally()
 
 fn void main()
 	define_and_call_locally()
-	macro_run local_only  # error: macro_out_of_scope
+	macro_run local_only  # meta(error: macro_out_of_scope)
 

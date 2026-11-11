@@ -3,18 +3,18 @@
 # as a name produces a .rs file that doesn't compile. The validator rejects them.
 
 fn void test_box()
-	int box = 5  # error: kw_in_parens
-	print(box)  # error: kw_in_parens
+	int box = 5  # meta(error: kw_in_parens)
+	print(box)  # meta(error: kw_in_parens)
 
 fn void test_match()
-	int match = 5  # error: kw_in_parens
-	print(match)  # error: kw_in_parens
+	int match = 5  # meta(error: kw_in_parens)
+	print(match)  # meta(error: kw_in_parens)
 
-fn void test_param_impl(int impl)  # error: kw_in_parens
-	print(impl)  # error: kw_in_parens
+fn void test_param_impl(int impl)  # meta(error: kw_in_parens)
+	print(impl)  # meta(error: kw_in_parens)
 
 fn void test_loop_as()
-	loop as 5  # error: kw_in_parens
+	loop as 5  # meta(error: kw_in_parens)
 
 fn void main()
 	print("should never reach here")

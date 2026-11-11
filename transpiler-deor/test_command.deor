@@ -43,7 +43,8 @@ fn void run_test_command(strList cli_args)
 	if arg_count > 1
 		search_path = cli_args at 1
 
-	strList test_files = find_test_files(search_path)
+	string test_suffix = ".test.deor"
+	strList test_files = find_files_with_suffix(search_path, test_suffix)
 	int file_count = len(test_files)
 	int failed_count = 0
 	int file_index = 0

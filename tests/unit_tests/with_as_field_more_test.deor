@@ -7,22 +7,22 @@ struct Pair
 	int right
 
 fn Pair bad_two(Pair pair, int grown, int more)
-	Pair first = pair with (grown as left, more as right)  # error: with_fields, undefined_var
+	Pair first = pair with (grown as left, more as right)  # meta(error: with_fields, error: undefined_var)
 
 	return first
 
 fn Pair bad_mixed(Pair pair, int right, int grown)
-	Pair second = pair with (right, grown as left)  # error: with_fields, undefined_var
+	Pair second = pair with (right, grown as left)  # meta(error: with_fields, error: undefined_var)
 
 	return second
 
 fn Pair bad_literal(Pair pair)
-	Pair third = pair with (5)  # error: with_fields
+	Pair third = pair with (5)  # meta(error: with_fields)
 
 	return third
 
 fn Pair bad_as_form(Pair pair, int grown)
-	changed as pair with (grown as left)  # error: with_fields, undefined_var
+	changed as pair with (grown as left)  # meta(error: with_fields, error: undefined_var)
 
 	return changed
 

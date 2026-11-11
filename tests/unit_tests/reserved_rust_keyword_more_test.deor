@@ -10,15 +10,15 @@ struct Holder
 	int matches
 
 fn void test_for_var()
-	for ref in range(3)  # error: kw_in_parens
-		print(ref)  # error: kw_in_parens
+	for ref in range(3)  # meta(error: kw_in_parens)
+		print(ref)  # meta(error: kw_in_parens)
 
 fn void test_mod()
-	int mod = 5  # error: kw_in_parens
-	print(mod)  # error: kw_in_parens
+	int mod = 5  # meta(error: kw_in_parens)
+	print(mod)  # meta(error: kw_in_parens)
 
-fn void test_trait_param(int trait)  # error: kw_in_parens
-	print(trait)  # error: kw_in_parens
+fn void test_trait_param(int trait)  # meta(error: kw_in_parens)
+	print(trait)  # meta(error: kw_in_parens)
 
 fn void test_ok_names()
 	int boxes = 1

@@ -13,4 +13,4 @@ fn void main()
 	ENFORCE_MACRO_FILE_DEPTH = 2
 	macro_run macro1
 
-# error-elsewhere: macro_file_depth_exceeded
+# meta(error: macro_file_depth_exceeded, where: elsewhere)

@@ -8,7 +8,7 @@
 macro greet
 	print("first")
 
-macro greet  # error: duplicate_declaration
+macro greet  # meta(error: duplicate_declaration)
 	print("second")
 
 fn void main()

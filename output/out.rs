@@ -13285,9 +13285,7 @@ pub fn generate_test_runner(tokens: TokensRef, entry_file: String) -> String {
 
 // transpiler-deor/test_process.deor
 use std::process::{Command, Stdio};
-
-const TEST_FILE_SUFFIX: &str = ".test.deor";
-pub fn find_test_files(path: String) -> Vec<String> {
+pub fn find_files_with_suffix(path: String, suffix: String) -> Vec<String> {
     // transpiler-deor/test_process.deor
     {
     	let output = Command::new("git")
@@ -13297,10 +13295,10 @@ pub fn find_test_files(path: String) -> Vec<String> {
     	if !output.status.success() {
     		panic!("deor test must run inside a git repository: {}", String::from_utf8_lossy(&output.stderr));
     	}
-    	// One file per line; keep only the test files.
+    	// One file per line; keep only the files with the wanted ending.
     	let mut files: Vec<String> = String::from_utf8_lossy(&output.stdout)
     		.lines()
-    		.filter(|line| line.ends_with(TEST_FILE_SUFFIX))
+    		.filter(|line| line.ends_with(suffix.as_str()))
     		.map(|line| line.to_string())
     		.collect();
     	files.sort();
@@ -13378,7 +13376,8 @@ pub fn run_test_command(cli_args: Vec<String>) {
         // transpiler-deor/test_command.deor
         search_path = cli_args[1 as usize].clone();
     }
-    let mut test_files: Vec<String> = find_test_files(search_path.clone());
+    let mut test_suffix: String = ".test.deor".to_string();
+    let mut test_files: Vec<String> = find_files_with_suffix(search_path.clone(), test_suffix.clone());
     let mut file_count: i64 = (test_files.len() as i64);
     let mut failed_count: i64 = 0;
     let mut file_index: i64 = 0;
@@ -13402,19 +13401,279 @@ pub fn run_test_command(cli_args: Vec<String>) {
     }
 }
 
+// lib/meta.deor
+#[derive(Clone, PartialEq, Debug)]
+pub struct MetaField {
+    pub key: String,
+    pub value: String,
+}
+
+pub type MetaFieldList = Vec<MetaField>;
+
+pub type MetaWarningList = Vec<String>;
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct MetaTag {
+    pub line: i64,
+    pub attached_line: i64,
+    pub fields: Vec<MetaField>,
+    pub kind: String,
+    pub target: String,
+    pub warnings: Vec<String>,
+}
+
+pub type MetaTagList = Vec<MetaTag>;
+
+const META_OPENER: &str = "# meta(";
+const META_MAX_FIELDS: usize = 3;
+
+// The declaration keyword at the start of every unindented line, remembered for the
+// lines under it so an indented line inside a struct reads as a field.
+fn meta_top_kinds(lines: &[&str]) -> Vec<String> {
+	let mut current = String::new();
+	let mut kinds = Vec::new();
+	for line in lines {
+		let unindented = !line.starts_with(char::is_whitespace) && !line.starts_with('#');
+		if unindented && !line.trim().is_empty() {
+			current = line.split_whitespace().next().unwrap_or("").to_string();
+		}
+		kinds.push(current.clone());
+	}
+	kinds
+}
+
+// What a line of code is: (kind, name).
+fn meta_describe(line: &str, top_kind: &str) -> (String, String) {
+	let words: Vec<&str> = line.split_whitespace().collect();
+	let first = words.first().copied().unwrap_or("");
+	let word_at = |index: usize| words.get(index).copied().unwrap_or("").to_string();
+	if line.starts_with(char::is_whitespace) {
+		return match top_kind {
+			"struct" => ("field".to_string(), words.last().copied().unwrap_or("").to_string()),
+			"enum" => ("variant".to_string(), word_at(0)),
+			_ => ("statement".to_string(), String::new()),
+		};
+	}
+	match first {
+		// `fn type name(args)`: the name is the third word, up to the parenthesis.
+		"fn" => ("function".to_string(), word_at(2).split('(').next().unwrap_or("").to_string()),
+		// `enum Name` or `enum string Name`: the name is the first capitalised word.
+		"enum" => ("enum".to_string(), words.iter().skip(1).find(|word| word.starts_with(char::is_uppercase)).copied().unwrap_or("").to_string()),
+		"struct" | "shape" | "type" | "raw" => (first.to_string(), word_at(1)),
+		"macro" | "unsafe_macro" => ("macro".to_string(), word_at(1)),
+		"import" => ("import".to_string(), word_at(1).trim_matches('"').to_string()),
+		_ => ("statement".to_string(), String::new()),
+	}
+}
+
+// Splits the text inside the parentheses into key: value fields, noting anything odd.
+fn meta_parse_inner(inner: &str, warnings: &mut Vec<String>) -> Vec<MetaField> {
+	let mut fields = Vec::new();
+	for part in inner.split(',') {
+		let part = part.trim();
+		match part.split_once(':') {
+			Some((key, value)) => fields.push(MetaField { key: key.trim().to_string(), value: value.trim().to_string() }),
+			None => {
+				warnings.push(format!("inner: '{}' is not a key: value pair", part));
+				fields.push(MetaField { key: String::new(), value: part.to_string() });
+			}
+		}
+	}
+	if fields.len() > META_MAX_FIELDS {
+		warnings.push(format!("inner: {} fields, more than the recommended {}", fields.len(), META_MAX_FIELDS));
+	}
+	fields
+}
+
+// Finds the line a tag describes and what that line is: (line number, kind, name).
+// A tag with code before it on its own line describes that line; otherwise the next line with code.
+fn meta_attachment(lines: &[&str], top_kinds: &[String], index: usize, code_before: &str) -> (i64, String, String) {
+	if !code_before.is_empty() {
+		let (kind, name) = meta_describe(code_before.trim_end(), &top_kinds[index]);
+		return ((index + 1) as i64, kind, name);
+	}
+	for next in (index + 1)..lines.len() {
+		let trimmed = lines[next].trim();
+		if !trimmed.is_empty() && !trimmed.starts_with('#') {
+			let (kind, name) = meta_describe(lines[next].trim_end(), &top_kinds[next]);
+			return ((next + 1) as i64, kind, name);
+		}
+	}
+	(0, "none".to_string(), String::new())
+}
+pub fn read_meta_tags(source: String) -> Vec<MetaTag> {
+    // lib/meta.deor
+    {
+    	let lines: Vec<&str> = source.lines().collect();
+    	let top_kinds = meta_top_kinds(&lines);
+    	let mut tags: Vec<MetaTag> = Vec::new();
+    	for (index, line) in lines.iter().enumerate() {
+    		let Some(start) = line.find(META_OPENER) else { continue };
+    		let rest = line[start + META_OPENER.len()..].trim_end();
+    		let mut warnings: Vec<String> = Vec::new();
+    		let inner = match rest.strip_suffix(')') {
+    			Some(inner) => inner,
+    			None => {
+    				warnings.push("malformed: no closing parenthesis".to_string());
+    				rest
+    			}
+    		};
+    		let fields = meta_parse_inner(inner, &mut warnings);
+    		let (attached_line, kind, target) = meta_attachment(&lines, &top_kinds, index, &line[..start]);
+    		tags.push(MetaTag { line: (index + 1) as i64, attached_line, fields, kind, target, warnings });
+    	}
+    	tags
+    }
+}
+
+// transpiler-deor/meta_format.deor
+pub fn json_escape(text: String) -> String {
+    // transpiler-deor/meta_format.deor
+    {
+    	let mut escaped = String::new();
+    	for character in text.chars() {
+    		match character {
+    			'"' => escaped.push_str("\\\""),
+    			'\\' => escaped.push_str("\\\\"),
+    			'\n' => escaped.push_str("\\n"),
+    			'\r' => escaped.push_str("\\r"),
+    			'\t' => escaped.push_str("\\t"),
+    			// Any other control character must be written as a \u escape.
+    			control if (control as u32) < 0x20 => escaped.push_str(&format!("\\u{:04x}", control as u32)),
+    			other => escaped.push(other),
+    		}
+    	}
+    	escaped
+    }
+}
+
+pub fn format_tags_text(file: String, tags: Vec<MetaTag>) -> String {
+    // transpiler-deor/meta_format.deor
+    {
+    	let mut text = String::new();
+    	for tag in tags.iter() {
+    		let fields: Vec<String> = tag.fields.iter()
+    			.map(|field| if field.key.is_empty() { field.value.clone() } else { format!("{}: {}", field.key, field.value) })
+    			.collect();
+    		let target = match tag.kind.as_str() {
+    			"none" => "nothing".to_string(),
+    			"statement" => format!("statement (line {})", tag.attached_line),
+    			kind => format!("{} {}", kind, tag.target),
+    		};
+    		text.push_str(&format!("{} line {}  {}  -> {}\n", file, tag.line, fields.join(", "), target));
+    		for warning in tag.warnings.iter() {
+    			text.push_str(&format!("    warning: {}\n", warning));
+    		}
+    	}
+    	text
+    }
+}
+
+pub fn format_tags_json(file: String, tags: Vec<MetaTag>) -> String {
+    // transpiler-deor/meta_format.deor
+    {
+    	let quote = |text: &str| format!("\"{}\"", json_escape(text.to_string()));
+    	let mut objects: Vec<String> = Vec::new();
+    	for tag in tags.iter() {
+    		let fields: Vec<String> = tag.fields.iter()
+    			.map(|field| format!("{{\"key\":{},\"value\":{}}}", quote(&field.key), quote(&field.value)))
+    			.collect();
+    		let warnings: Vec<String> = tag.warnings.iter().map(|warning| quote(warning)).collect();
+    		objects.push(format!(
+    			"{{\"file\":{},\"line\":{},\"attached_line\":{},\"kind\":{},\"target\":{},\"fields\":[{}],\"warnings\":[{}]}}",
+    			quote(&file), tag.line, tag.attached_line, quote(&tag.kind), quote(&tag.target), fields.join(","), warnings.join(",")
+    		));
+    	}
+    	objects.join(",")
+    }
+}
+
+// transpiler-deor/meta_command.deor
+pub fn drop_ignored_warnings(tags: Vec<MetaTag>, ignored_prefixes: Vec<String>) -> Vec<MetaTag> {
+    // transpiler-deor/meta_command.deor
+    {
+    	let mut kept = tags;
+    	for tag in kept.iter_mut() {
+    		tag.warnings.retain(|warning| !ignored_prefixes.iter().any(|prefix| warning.starts_with(prefix.as_str())));
+    	}
+    	kept
+    }
+}
+
+pub fn ignored_warning_prefixes() -> Vec<String> {
+    // transpiler-deor/meta_command.deor
+    let mut raw_args: Vec<String> = f_args();
+    let mut malformed_flag: String = "--ignore-malformed".to_string();
+    let mut inner_flag: String = "--ignore-inner".to_string();
+    let mut prefixes: Vec<String> = Vec::new();
+    if (raw_args.contains(&malformed_flag)) {
+        // transpiler-deor/meta_command.deor
+        prefixes.push("malformed: ".to_string());
+    }
+    if (raw_args.contains(&inner_flag)) {
+        // transpiler-deor/meta_command.deor
+        prefixes.push("inner: ".to_string());
+    }
+    return prefixes;
+}
+
+pub fn format_file_tags(file: String, as_json: bool) -> String {
+    // transpiler-deor/meta_command.deor
+    let mut source: String = f_read(file.clone());
+    let mut ignored: Vec<String> = ignored_warning_prefixes();
+    let mut tags: Vec<MetaTag> = read_meta_tags(source.clone());
+    let mut shown: Vec<MetaTag> = drop_ignored_warnings(tags.clone(), ignored.clone());
+    if as_json {
+        // transpiler-deor/meta_command.deor
+        return format_tags_json(file.clone(), shown.clone());
+    }
+    return format_tags_text(file.clone(), shown.clone());
+}
+
+pub fn run_meta_command(cli_args: Vec<String>) {
+    // transpiler-deor/meta_command.deor
+    let mut search_path: String = ".".to_string();
+    let mut arg_count: i64 = (cli_args.len() as i64);
+    let mut raw_args: Vec<String> = f_args();
+    let mut json_flag: String = "--json".to_string();
+    let mut as_json: bool = (raw_args.contains(&json_flag));
+    let mut suffix: String = ".deor".to_string();
+    if arg_count > 1 {
+        // transpiler-deor/meta_command.deor
+        search_path = cli_args[1 as usize].clone();
+    }
+    let mut files: Vec<String> = find_files_with_suffix(search_path.clone(), suffix.clone());
+    let mut chunks: Vec<String> = Vec::new();
+    for file in files.iter().cloned() {
+        // transpiler-deor/meta_command.deor
+        let mut chunk: String = format_file_tags(file.clone(), as_json.clone());
+        if !is_empty(chunk.clone()) {
+            // transpiler-deor/meta_command.deor
+            chunks.push(chunk.clone());
+        }
+    }
+    if as_json {
+        // transpiler-deor/meta_command.deor
+        let mut separator: String = ",".to_string();
+        let mut joined: String = s_join_with(chunks.clone(), separator.clone());
+        println!("{}", ["[", joined.as_str(), "]"].concat());
+    } else {
+        // transpiler-deor/meta_command.deor
+        println!("{}", s_join(chunks.clone()));
+    }
+}
+
 // transpiler-deor/main.deor
 pub fn strip_flags(raw_args: Vec<String>) -> Vec<String> {
     // transpiler-deor/main.deor
-    let mut verbose_long: String = "--verbose".to_string();
-    let mut verbose_short: String = "-v".to_string();
-    let mut test_flag: String = "--test".to_string();
+    let mut known_flags: Vec<String> = vec!["--verbose".to_string(), "-v".to_string(), "--test".to_string(), "--json".to_string(), "--ignore-malformed".to_string(), "--ignore-inner".to_string()];
     let mut cli_args: Vec<String> = Vec::new();
     let mut raw_count: i64 = (raw_args.len() as i64);
     let mut raw_i: i64 = 0;
     while raw_i < raw_count {
         // transpiler-deor/main.deor
         let mut raw_arg: String = raw_args[raw_i as usize].clone();
-        let mut is_flag: bool = raw_arg == verbose_long || raw_arg == verbose_short || raw_arg == test_flag;
+        let mut is_flag: bool = (known_flags.contains(&raw_arg));
         if !is_flag {
             // transpiler-deor/main.deor
             cli_args.push(raw_arg.clone());
@@ -13446,6 +13705,9 @@ pub fn main() {
     if first_arg == "test" {
         // transpiler-deor/main.deor
         run_test_command(cli_args.clone());
+    } else if first_arg == "meta" {
+        // transpiler-deor/main.deor
+        run_meta_command(cli_args.clone());
     } else if arg_count < 2 {
         // transpiler-deor/main.deor
         panic!("{}", "usage: deor input.deor output.rs [--verbose|-v]".to_string());

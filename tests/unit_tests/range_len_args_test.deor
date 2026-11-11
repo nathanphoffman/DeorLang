@@ -11,21 +11,21 @@ fn void test_range_too_many_args()
 	end_val as 5
 	extra_val as 9
 
-	for idx in range(start_val, end_val, extra_val)  # error: range_args
+	for idx in range(start_val, end_val, extra_val)  # meta(error: range_args)
 		print(idx)
 
 fn void test_range_zero_args()
-	for idx in range()  # error: range_args
+	for idx in range()  # meta(error: range_args)
 		print(idx)
 
 fn void test_len_zero_args()
-	int size = len()  # error: len_args
+	int size = len()  # meta(error: len_args)
 	print(size)
 
 fn void test_len_too_many_args()
 	nums as [1, 2, 3]
 	extra_val as 5
-	int size = len(nums, extra_val)  # error: len_args
+	int size = len(nums, extra_val)  # meta(error: len_args)
 	print(size)
 
 fn void main()

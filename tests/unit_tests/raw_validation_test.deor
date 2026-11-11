@@ -13,54 +13,54 @@ fn int make_thing()
 #    An inline rust block and a bare literal are both rejected.
 # -----------------------------------------------------------------------
 fn void test_raw_assignment_rust_block()
-	raw bad_a = rust  # error: raw_assignment
+	raw bad_a = rust  # meta(error: raw_assignment)
 		42
 
 fn void test_raw_assignment_literal()
-	raw bad_b = 5  # error: raw_assignment
+	raw bad_b = 5  # meta(error: raw_assignment)
 
 fn void test_raw_as_binding()
-	raw bad_h as 0  # error: raw_as
+	raw bad_h as 0  # meta(error: raw_as)
 
 # -----------------------------------------------------------------------
 # 2. raw cannot be given another type — typed binding or 'as' rebind
 # -----------------------------------------------------------------------
 fn void test_raw_typed_binding()
 	raw good_a = make_thing()
-	int captured = good_a  # error: raw_in_expr
+	int captured = good_a  # meta(error: raw_in_expr)
 
 fn void test_raw_as_capture()
 	raw good_b = make_thing()
-	copy as good_b  # error: raw_in_expr
+	copy as good_b  # meta(error: raw_in_expr)
 
 # -----------------------------------------------------------------------
 # 3. raw cannot be reassigned
 # -----------------------------------------------------------------------
 fn void test_raw_reassign()
 	raw good_c = make_thing()
-	good_c = make_thing()  # error: raw_reassign
+	good_c = make_thing()  # meta(error: raw_reassign)
 
 # -----------------------------------------------------------------------
 # 4. raw cannot be used with operators
 # -----------------------------------------------------------------------
 fn void test_raw_operator()
 	raw good_d = make_thing()
-	int total = 1 + good_d  # error: raw_in_expr
+	int total = 1 + good_d  # meta(error: raw_in_expr)
 
 # -----------------------------------------------------------------------
 # 5. raw cannot be passed to the special-cased builtins len / crash / s_join
 # -----------------------------------------------------------------------
 fn void test_raw_len()
 	raw good_e = make_thing()
-	int cnt = len(good_e)  # error: raw_in_expr
+	int cnt = len(good_e)  # meta(error: raw_in_expr)
 
 fn void test_raw_crash()
 	raw good_f = make_thing()
-	crash(good_f)  # error: raw_in_expr
+	crash(good_f)  # meta(error: raw_in_expr)
 
 fn void test_raw_sjoin()
 	raw good_g = make_thing()
-	string joined = s_join([good_g, "x"])  # error: raw_in_expr
+	string joined = s_join([good_g, "x"])  # meta(error: raw_in_expr)
 
 # -----------------------------------------------------------------------
 # 6. raw assignment RHS must be a call — a bare ident (no parens) is also
@@ -68,14 +68,14 @@ fn void test_raw_sjoin()
 # -----------------------------------------------------------------------
 fn void test_raw_assignment_bare_ident()
 	int some_var = 5
-	raw bad_c = some_var  # error: raw_assignment
+	raw bad_c = some_var  # meta(error: raw_assignment)
 
 # -----------------------------------------------------------------------
 # 7. raw reassignment via 'as' is rejected the same as '='.
 # -----------------------------------------------------------------------
 fn void test_raw_reassign_as()
 	raw good_h = make_thing()
-	good_h as make_thing()  # error: raw_reassign
+	good_h as make_thing()  # meta(error: raw_reassign)
 
 # -----------------------------------------------------------------------
 # 8. raw operator use beyond '+' — 'is' comparison between two raw vars.
@@ -83,7 +83,7 @@ fn void test_raw_reassign_as()
 fn void test_raw_is_operator()
 	raw good_i = make_thing()
 	raw good_j = make_thing()
-	bool flag_x = good_i is good_j  # error: raw_in_expr
+	bool flag_x = good_i is good_j  # meta(error: raw_in_expr)
 
 fn void main()
 	print("should never reach here")

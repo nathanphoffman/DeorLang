@@ -5,7 +5,7 @@
 # silently falls through to broken codegen / a confusing rustc failure.
 
 fn void outer()
-	fn int bad(int num)  # error: nested_fn_body_shape
+	fn int bad(int num)  # meta(error: nested_fn_body_shape)
 		int extra = num + 1
 
 		return extra

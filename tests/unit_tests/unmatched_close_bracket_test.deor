@@ -3,6 +3,6 @@
 # equivalent of unmatched_close_paren_test.deor's extra-')' check.
 
 fn void main()
-	int total = 1 + 2]  # error: unmatched_close_bracket
+	int total = 1 + 2]  # meta(error: unmatched_close_bracket)
 	print(total)
 

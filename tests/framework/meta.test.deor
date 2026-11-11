@@ -1,0 +1,84 @@
+import "lib/string.deor"
+import "lib/meta.deor"
+import "transpiler-deor/meta_format.deor"
+
+fn string test_json_escape_quotes()
+	string text = "say \"hi\""
+	string expected = "say \\\"hi\\\""
+	string actual = json_escape(text)
+
+	if actual is not expected
+		return actual
+
+	return SUCCESS
+
+fn string test_json_escape_newline_and_backslash()
+	string text = "a\nb\\c"
+	string expected = "a\\nb\\\\c"
+	string actual = json_escape(text)
+
+	if actual is not expected
+		return actual
+
+	return SUCCESS
+
+fn string test_end_of_line_tag_describes_its_own_line()
+	string source = "fn void main()\n\tint val = 5  # meta(error: double_equals)\n"
+	metaTagList tags = read_meta_tags(source)
+	MetaTag tag = tags at 0
+	(line, attached_line, kind) in tag
+
+	if line is not 2 or attached_line is not 2
+		return "tag should be on line 2 and describe line 2"
+
+	if kind is not "statement"
+		return "a plain code line should be a statement"
+
+	return SUCCESS
+
+fn string test_stacked_tags_describe_the_function_below()
+	string source = "# meta(a: one)\n# meta(b: two)\nfn int add(int left)\n\treturn left\n"
+	metaTagList tags = read_meta_tags(source)
+	MetaTag tag = tags at 1
+	(attached_line, kind, target) in tag
+
+	if attached_line is not 3 or kind is not "function"
+		return "both tags should describe the function on line 3"
+
+	if target is not "add"
+		return "the function name should be add"
+
+	return SUCCESS
+
+fn string test_missing_paren_gives_a_malformed_warning()
+	string source = "int val = 1  # meta(error: oops\n"
+	metaTagList tags = read_meta_tags(source)
+	MetaTag tag = tags at 0
+	(warnings) in tag
+	string first_warning = warnings at 0
+	string prefix = "malformed: "
+
+	if not s_starts_with(first_warning, prefix)
+		return first_warning
+
+	return SUCCESS
+
+fn string test_no_space_after_hash_is_not_a_tag()
+	string source = "int val = 1  #meta(error: oops)\n"
+	metaTagList tags = read_meta_tags(source)
+
+	if len(tags) is not 0
+		return "#meta( without the space must be an ordinary comment"
+
+	return SUCCESS
+
+fn string test_more_than_three_fields_warns()
+	string source = "int val = 1  # meta(a: 1, b: 2, c: 3, d: 4)\n"
+	metaTagList tags = read_meta_tags(source)
+	MetaTag tag = tags at 0
+	(warnings) in tag
+
+	if len(warnings) is not 1
+		return "four fields should give exactly one inner warning"
+
+	return SUCCESS

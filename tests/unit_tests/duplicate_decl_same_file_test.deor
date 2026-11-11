@@ -9,7 +9,7 @@ struct Player
 	string name
 	int score
 
-struct Player  # error: duplicate_declaration
+struct Player  # meta(error: duplicate_declaration)
 	string label
 
 fn void main()

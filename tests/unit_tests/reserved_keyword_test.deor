@@ -10,39 +10,39 @@
 shape intList = list of int
 
 fn void test_typed_raw()
-	int raw = 5  # error: undefined_var, kw_in_parens
-	print(raw)  # error: kw_in_parens
+	int raw = 5  # meta(error: undefined_var, error: kw_in_parens)
+	print(raw)  # meta(error: kw_in_parens)
 
 fn void test_typed_remove()
-	intList remove = [1, 2, 3]  # error: undefined_var, kw_in_parens
-	int cnt = len(remove)  # error: kw_in_parens
+	intList remove = [1, 2, 3]  # meta(error: undefined_var, error: kw_in_parens)
+	int cnt = len(remove)  # meta(error: kw_in_parens)
 	print(cnt)
 
 fn void test_typed_avow()
-	int avow = 5  # error: undefined_var, kw_in_parens
+	int avow = 5  # meta(error: undefined_var, error: kw_in_parens)
 	print(avow)
 
 fn void test_typed_empty()
-	int empty = 5  # error: undefined_var, kw_in_parens
+	int empty = 5  # meta(error: undefined_var, error: kw_in_parens)
 	print(empty)
 
 fn void test_typed_none()
-	int none = 5  # error: undefined_var, kw_in_parens
+	int none = 5  # meta(error: undefined_var, error: kw_in_parens)
 	print(none)
 
 fn void test_as_binding()
-	raw as 5  # error: kw_in_parens
+	raw as 5  # meta(error: kw_in_parens)
 
-fn void test_param_avow(int avow)  # error: kw_in_parens, undefined_var
+fn void test_param_avow(int avow)  # meta(error: kw_in_parens, error: undefined_var)
 	print(avow)
 
-fn void test_param_empty(int empty)  # error: kw_in_parens, undefined_var
+fn void test_param_empty(int empty)  # meta(error: kw_in_parens, error: undefined_var)
 	print(empty)
 
-fn void test_param_none(int none)  # error: kw_in_parens, undefined_var
+fn void test_param_none(int none)  # meta(error: kw_in_parens, error: undefined_var)
 	print(none)
 
-fn void test_param_const(int const)  # error: kw_in_parens, undefined_var
+fn void test_param_const(int const)  # meta(error: kw_in_parens, error: undefined_var)
 	print(const)
 
 fn void main()

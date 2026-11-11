@@ -1,0 +1,70 @@
+# `deor meta [path] [--json] [--ignore-malformed] [--ignore-inner]` — lists every
+# `# meta(...)` tag in the .deor files under the current directory (or under `path`),
+# skipping gitignored files, with what each tag is attached to and any warnings.
+# Warnings never change the exit code; the flags hide a type of warning.
+
+# Removes the warnings whose text starts with any of the ignored prefixes.
+fn metaTagList drop_ignored_warnings(metaTagList tags, strList ignored_prefixes)
+	rust
+		{
+			let mut kept = tags;
+			for tag in kept.iter_mut() {
+				tag.warnings.retain(|warning| !ignored_prefixes.iter().any(|prefix| warning.starts_with(prefix.as_str())));
+			}
+			kept
+		}
+
+# The warning prefixes switched off by the command-line flags.
+fn strList ignored_warning_prefixes()
+	strList raw_args = f_args()
+	string malformed_flag = "--ignore-malformed"
+	string inner_flag = "--ignore-inner"
+	strList prefixes = empty
+
+	if list_has(raw_args, malformed_flag)
+		prefixes at end = "malformed: "
+
+	if list_has(raw_args, inner_flag)
+		prefixes at end = "inner: "
+
+	return prefixes
+
+# Reads one file and formats its tags as text or JSON objects.
+fn string format_file_tags(string file, bool as_json)
+	string source = f_read(file)
+	strList ignored = ignored_warning_prefixes()
+	metaTagList tags = read_meta_tags(source)
+	metaTagList shown = drop_ignored_warnings(tags, ignored)
+
+	if as_json
+		return format_tags_json(file, shown)
+
+	return format_tags_text(file, shown)
+
+# Entry point for `deor meta [path]`.
+fn void run_meta_command(strList cli_args)
+	string search_path = "."
+	int arg_count = len(cli_args)
+	strList raw_args = f_args()
+	string json_flag = "--json"
+	bool as_json = list_has(raw_args, json_flag)
+	string suffix = ".deor"
+
+	if arg_count > 1
+		search_path = cli_args at 1
+
+	strList files = find_files_with_suffix(search_path, suffix)
+	strList chunks = empty
+
+	for file in files
+		string chunk = format_file_tags(file, as_json)
+
+		if not is_empty(chunk)
+			chunks at end = chunk
+
+	if as_json
+		string separator = ","
+		string joined = s_join_with(chunks, separator)
+		print(s_join(["[", joined, "]"]))
+	else
+		print(s_join(chunks))

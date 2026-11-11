@@ -5,10 +5,10 @@
 # needs to be isolated from other macro-system test cases.
 
 fn void run()
-	macro_run this_macro_does_not_exist  # error: macro_run
+	macro_run this_macro_does_not_exist  # meta(error: macro_run)
 
 fn void run_unsafe()
-	unsafe_macro_run this_other_macro_does_not_exist_either  # error: macro_run
+	unsafe_macro_run this_other_macro_does_not_exist_either  # meta(error: macro_run)
 
 fn void main()
 	run()

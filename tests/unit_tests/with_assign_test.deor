@@ -9,7 +9,7 @@ struct Pair
 
 fn Pair reassign_with(Pair pair, int left)
 	Pair updated = pair
-	updated = pair with (left)  # error: with_assign
+	updated = pair with (left)  # meta(error: with_assign)
 
 	return updated
 
@@ -17,7 +17,7 @@ fn Pair reassign_in_if(Pair pair, int left)
 	Pair updated = pair
 
 	if left is 1
-		updated = pair with (left)  # error: with_assign
+		updated = pair with (left)  # meta(error: with_assign)
 
 	return updated
 

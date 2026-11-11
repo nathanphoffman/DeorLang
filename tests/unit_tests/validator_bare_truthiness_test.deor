@@ -14,7 +14,7 @@ type Positive(int val)
 fn void test_bare_validator_if()
 	Positive good_num = 5
 
-	if good_num  # error: bare_truthiness
+	if good_num  # meta(error: bare_truthiness)
 		print("should never reach here")
 
 fn void main()

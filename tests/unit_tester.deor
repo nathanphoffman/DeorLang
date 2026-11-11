@@ -9,12 +9,14 @@ import "tests/error_markers.deor"
 #                       exact expected stdout, one Deor comment line each.
 #   # expect-panic:   — program should compile but panic at runtime; lines
 #                       after this are required substrings in the crash output.
-#   # error: code     — inline marker at the end of a line that should produce that
+#   # meta(error: code) — inline marker at the end of a line that should produce that
 #                       transpiler error (code is the [bracketed] name ending the message).
 #                       Used instead of an expect block. The marker moves with its
-#                       line, so adding lines above it never breaks the test.
-#   # error-elsewhere: code — same, for an error with no line in this file (declaration
-#                       order, or an error raised in an imported fixture file).
+#                       line, so adding lines above it never breaks the test. A line may
+#                       list several errors (# meta(error: a, error: b)). An error with
+#                       no line in this file (declaration order, or raised in an imported
+#                       fixture) is # meta(error: code, where: elsewhere). A malformed
+#                       tag fails the test.
 #   # stdin:          — optional, precedes the expect block; lines fed to the
 #                       program's stdin (for tests using input()).
 #   # args:           — optional, precedes the expect block; lines passed as
@@ -98,7 +100,7 @@ fn stringList list_deor_files(string dir)
 			v
 		}
 
-# Extracts the # stdin: / # args: / # expect: / # expect-panic: block / # error: markers
+# Extracts the # stdin: / # args: / # expect: / # expect-panic: block / # meta(error: ...) markers
 # from a raw source file, before it's ever tokenized.
 fn ParsedSpec parse_spec(string source)
 	rust
@@ -154,13 +156,10 @@ fn ParsedSpec parse_spec(string source)
 				i += 1;
 			}
 			let mut expected = expected_lines.join("\n");
-			// No expect block: if the file carries inline `# error: code` markers, test it that way.
-			if mode == "skip" {
-				let markers = collect_markers(source.clone());
-				if !markers.is_empty() {
-					mode = "markers".to_string();
-					expected = markers;
-				}
+			// No expect block: if the file carries meta tags, test it by its error markers.
+			if mode == "skip" && source.contains("# meta(") {
+				mode = "markers".to_string();
+				expected = collect_markers(source.clone());
 			}
 			let mut stdin_data = stdin_lines.join("\n");
 			if !stdin_data.is_empty() { stdin_data.push('\n'); }
@@ -215,10 +214,11 @@ fn bool run_one(string path, ParsedSpec spec)
 
 	if mode is "markers"
 		string reported = collect_reported_errors(transpile_combined, path)
-		bool markers_match = reported is expected
+		string tag_warnings = collect_marker_warnings(f_read(path))
+		bool markers_match = reported is expected and tag_warnings is ""
 
 		if not markers_match
-			print(s_join(["  expected errors (line code):\n", expected, "\n  got:\n", reported]))
+			print(s_join(["  expected errors (line code):\n", expected, "\n  got:\n", reported, "\n  meta tag warnings:\n", tag_warnings]))
 
 		return markers_match
 

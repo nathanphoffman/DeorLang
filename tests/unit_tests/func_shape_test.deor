@@ -7,9 +7,9 @@
 struct Room
 	int area
 
-shape badInput = func of (Room, string) to bool  # error: func_shape_multi_param, unknown_type, undefined_var
+shape badInput = func of (Room, string) to bool  # meta(error: func_shape_multi_param, error: unknown_type, error: undefined_var)
 
-shape badOutput = func of Room to (bool, string)  # error: func_shape_multi_param, unknown_type, undefined_var
+shape badOutput = func of Room to (bool, string)  # meta(error: func_shape_multi_param, error: unknown_type, error: undefined_var)
 
 shape roomFunc = func of Room to bool
 

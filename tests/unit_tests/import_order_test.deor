@@ -11,4 +11,4 @@ import "lib/string.deor"
 fn void main()
 	helper()
 
-# error-elsewhere: import_not_first
+# meta(error: import_not_first, where: elsewhere)

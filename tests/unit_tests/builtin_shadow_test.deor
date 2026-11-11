@@ -6,35 +6,35 @@
 
 shape intList = list of int
 
-shape range = list of int  # error: builtin_shadow
+shape range = list of int  # meta(error: builtin_shadow)
 
-enum string print  # error: builtin_shadow, pascal
+enum string print  # meta(error: builtin_shadow, error: pascal)
 	Foo = "Foo"
 
 struct Item
-	int range  # error: builtin_shadow
+	int range  # meta(error: builtin_shadow)
 
-fn void crash()  # error: builtin_shadow, crash
+fn void crash()  # meta(error: builtin_shadow, error: crash)
 	print("hi")
 
 fn void test_local_var()
-	int print = 5  # error: builtin_shadow
+	int print = 5  # meta(error: builtin_shadow)
 
-fn void test_param(int len)  # error: builtin_shadow
+fn void test_param(int len)  # meta(error: builtin_shadow)
 	print("hi")
 
 fn void test_for_loop()
 	intList items = [1, 2, 3]
 
-	for input in items  # error: builtin_shadow
+	for input in items  # meta(error: builtin_shadow)
 		print("hi")
 
 fn void test_destructure()
-	Item thing = (5)  # error: struct_field_count
-	(args) in thing  # error: builtin_shadow
+	Item thing = (5)  # meta(error: struct_field_count)
+	(args) in thing  # meta(error: builtin_shadow)
 
 fn void main()
-	crash()  # error: crash
+	crash()  # meta(error: crash)
 	test_local_var()
 	test_param(5)
 	test_for_loop()

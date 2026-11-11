@@ -11,4 +11,4 @@ macro late_macro
 fn void main()
 	helper()
 
-# error-elsewhere: macro_after_fn
+# meta(error: macro_after_fn, where: elsewhere)

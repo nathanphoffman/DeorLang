@@ -15,12 +15,12 @@ struct Score
 fn void test_read_after_move()
 	string message = "hello"
 	string taken = move message
-	print(message)  # error: use_after_move
+	print(message)  # meta(error: use_after_move)
 
 fn void test_double_move()
 	string first_val = "hello"
 	string second_val = move first_val
-	string third_val = move first_val  # error: double_move
+	string third_val = move first_val  # meta(error: double_move)
 
 fn void test_move_in_bare_if_then_read()
 	string val_a = "a"
@@ -28,7 +28,7 @@ fn void test_move_in_bare_if_then_read()
 	if true
 		string taken_a = move val_a
 
-	print(val_a)  # error: use_after_move
+	print(val_a)  # meta(error: use_after_move)
 
 fn void test_move_in_one_arm_then_read_after_chain()
 	string val_b = "b"
@@ -38,7 +38,7 @@ fn void test_move_in_one_arm_then_read_after_chain()
 	else
 		print(val_b)
 
-	print(val_b)  # error: use_after_move
+	print(val_b)  # meta(error: use_after_move)
 
 fn void test_move_in_elseif_arm_then_read_after_chain()
 	string val_c = "c"
@@ -50,26 +50,26 @@ fn void test_move_in_elseif_arm_then_read_after_chain()
 	else
 		print(val_c)
 
-	print(val_c)  # error: use_after_move
+	print(val_c)  # meta(error: use_after_move)
 
 fn void test_redestructure_moved_field()
 	label as "x"
 	points as 5
 	Score score = (label, points)
 	move (label, points) in score
-	move (label) in score  # error: double_move
+	move (label) in score  # meta(error: double_move)
 
 fn void test_read_after_move_construct()
 	label as "high"
 	int points = 100
 	Score built = move (label, points)
-	print(label)  # error: use_after_move
+	print(label)  # meta(error: use_after_move)
 
 fn void test_double_move_via_construct()
 	label as "high"
 	int points = 100
 	Score first_built = move (label, points)
-	Score second_built = move (label, points)  # error: double_move
+	Score second_built = move (label, points)  # meta(error: double_move)
 
 fn void main()
 	test_read_after_move()

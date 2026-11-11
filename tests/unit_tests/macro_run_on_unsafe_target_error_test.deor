@@ -6,6 +6,6 @@ unsafe_macro set_greeting
 	string greeting = "hi"
 
 fn void main()
-	macro_run set_greeting  # error: macro_run_on_unsafe_macro
+	macro_run set_greeting  # meta(error: macro_run_on_unsafe_macro)
 	print(greeting)
 

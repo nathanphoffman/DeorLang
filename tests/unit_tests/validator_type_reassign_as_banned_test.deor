@@ -9,5 +9,5 @@ type Positive(int val)
 
 fn void main()
 	Positive good = 5
-	good as 6  # error: validator_reassign
+	good as 6  # meta(error: validator_reassign)
 

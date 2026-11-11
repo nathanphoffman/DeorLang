@@ -7,7 +7,7 @@ struct Traffic
 	int stations
 
 fn Traffic grow(Traffic traffic, int grown)
-	Traffic updated = traffic with (grown as traders)  # error: with_fields, undefined_var
+	Traffic updated = traffic with (grown as traders)  # meta(error: with_fields, error: undefined_var)
 
 	return updated
 

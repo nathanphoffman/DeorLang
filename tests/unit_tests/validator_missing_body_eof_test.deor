@@ -8,5 +8,5 @@
 # missing-main check would matter, and this locks in that the validator check fires
 # first regardless.
 
-type TrailingEmpty(int val)  # error: validator_missing_body
+type TrailingEmpty(int val)  # meta(error: validator_missing_body)
 

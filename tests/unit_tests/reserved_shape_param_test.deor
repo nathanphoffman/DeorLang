@@ -8,20 +8,20 @@
 struct Curve
 	float power
 
-fn float strength(Curve shape, float distance)  # error: kw_in_parens, undefined_var
+fn float strength(Curve shape, float distance)  # meta(error: kw_in_parens, error: undefined_var)
 	return distance
 
-fn int type_param(int type)  # error: kw_in_parens, undefined_var, non_primitive_validator
-	return type  # error: non_primitive_validator
+fn int type_param(int type)  # meta(error: kw_in_parens, error: undefined_var, error: non_primitive_validator)
+	return type  # meta(error: non_primitive_validator)
 
-fn int struct_param(int struct)  # error: kw_in_parens, undefined_var
+fn int struct_param(int struct)  # meta(error: kw_in_parens, error: undefined_var)
 	return struct
 
-fn int enum_param(int enum)  # error: kw_in_parens, undefined_var
-	return enum  # error: kw_in_parens
+fn int enum_param(int enum)  # meta(error: kw_in_parens, error: undefined_var)
+	return enum  # meta(error: kw_in_parens)
 
-fn int shape()  # error: kw_in_parens, empty_parens
-	return 1  # error: kw_in_parens
+fn int shape()  # meta(error: kw_in_parens, error: empty_parens)
+	return 1  # meta(error: kw_in_parens)
 
 fn void main()
 	print("should never reach here")

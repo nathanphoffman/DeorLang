@@ -1,0 +1,62 @@
+# Output formats for `deor meta`: readable text lines, or JSON for other tools.
+
+# Escapes text for use inside a JSON string: quotes, backslashes and control characters.
+fn string json_escape(string text)
+	rust
+		{
+			let mut escaped = String::new();
+			for character in text.chars() {
+				match character {
+					'"' => escaped.push_str("\\\""),
+					'\\' => escaped.push_str("\\\\"),
+					'\n' => escaped.push_str("\\n"),
+					'\r' => escaped.push_str("\\r"),
+					'\t' => escaped.push_str("\\t"),
+					// Any other control character must be written as a \u escape.
+					control if (control as u32) < 0x20 => escaped.push_str(&format!("\\u{:04x}", control as u32)),
+					other => escaped.push(other),
+				}
+			}
+			escaped
+		}
+
+# One text line per tag (plus an indented line per warning), ending in a newline.
+fn string format_tags_text(string file, metaTagList tags)
+	rust
+		{
+			let mut text = String::new();
+			for tag in tags.iter() {
+				let fields: Vec<String> = tag.fields.iter()
+					.map(|field| if field.key.is_empty() { field.value.clone() } else { format!("{}: {}", field.key, field.value) })
+					.collect();
+				let target = match tag.kind.as_str() {
+					"none" => "nothing".to_string(),
+					"statement" => format!("statement (line {})", tag.attached_line),
+					kind => format!("{} {}", kind, tag.target),
+				};
+				text.push_str(&format!("{} line {}  {}  -> {}\n", file, tag.line, fields.join(", "), target));
+				for warning in tag.warnings.iter() {
+					text.push_str(&format!("    warning: {}\n", warning));
+				}
+			}
+			text
+		}
+
+# One JSON object per tag, separated by commas (the caller adds the surrounding [ ]).
+fn string format_tags_json(string file, metaTagList tags)
+	rust
+		{
+			let quote = |text: &str| format!("\"{}\"", json_escape(text.to_string()));
+			let mut objects: Vec<String> = Vec::new();
+			for tag in tags.iter() {
+				let fields: Vec<String> = tag.fields.iter()
+					.map(|field| format!("{{\"key\":{},\"value\":{}}}", quote(&field.key), quote(&field.value)))
+					.collect();
+				let warnings: Vec<String> = tag.warnings.iter().map(|warning| quote(warning)).collect();
+				objects.push(format!(
+					"{{\"file\":{},\"line\":{},\"attached_line\":{},\"kind\":{},\"target\":{},\"fields\":[{}],\"warnings\":[{}]}}",
+					quote(&file), tag.line, tag.attached_line, quote(&tag.kind), quote(&tag.target), fields.join(","), warnings.join(",")
+				));
+			}
+			objects.join(",")
+		}

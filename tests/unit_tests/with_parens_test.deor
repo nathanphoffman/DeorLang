@@ -12,14 +12,14 @@ fn void test_as_with_no_parens()
 	int area = 5
 	string name = "Office"
 	room as (area, name)
-	new_room as room with area  # error: with_parens
+	new_room as room with area  # meta(error: with_parens)
 	print(area)
 
 fn void test_typed_with_no_parens()
 	int area = 5
 	string name = "Office"
 	Room room = (area, name)
-	Room new_room = room with area  # error: with_parens
+	Room new_room = room with area  # meta(error: with_parens)
 	print(area)
 
 fn void main()

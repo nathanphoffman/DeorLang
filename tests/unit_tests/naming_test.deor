@@ -3,24 +3,24 @@
 # isn't PascalCase, a shape name that isn't camelCase, and a const name that
 # isn't SCREAMING_SNAKE_CASE.
 
-struct badname  # error: pascal
+struct badname  # meta(error: pascal)
 	int val
 
-shape BadShape = list of int  # error: camel
+shape BadShape = list of int  # meta(error: camel)
 
-enum badenum  # error: pascal
+enum badenum  # meta(error: pascal)
 	Alpha
 	Beta
 
 fn void test_const_screaming()
-	const string bad_name = "x"  # error: screaming
+	const string bad_name = "x"  # meta(error: screaming)
 
 fn void test_for_var_short()
-	for ab in [1, 2, 3]  # error: min3
+	for ab in [1, 2, 3]  # meta(error: min3)
 		print(ab)
 
 fn void test_for_var_bad_case()
-	for myVar in [1, 2, 3]  # error: snake
+	for myVar in [1, 2, 3]  # meta(error: snake)
 		print(myVar)
 
 fn void main()

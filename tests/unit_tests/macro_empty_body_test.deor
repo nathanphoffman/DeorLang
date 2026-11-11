@@ -5,7 +5,7 @@
 # consuming the rest of the file as its "body" — main() would silently vanish
 # into a never-called macro instead of erroring.
 
-macro empty_macro  # error: macro_empty_body
+macro empty_macro  # meta(error: macro_empty_body)
 
 fn void main()
 	print("hi")

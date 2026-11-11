@@ -20,6 +20,6 @@ fn void main()
 	name as "main"
 	Kitchen kitchen = (occupied, name)
 	bool occupied = true
-	kitchen.occupied = true  # error: invalid_char
+	kitchen.occupied = true  # meta(error: invalid_char)
 	print("after")
 

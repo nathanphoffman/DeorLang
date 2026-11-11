@@ -6,7 +6,7 @@
 # unrelated noise instead of one clear error about the real problem.
 
 fn void main()
-	int total = (1 + 2  # error: unmatched_open_paren
+	int total = (1 + 2  # meta(error: unmatched_open_paren)
 	print(total)
 
 	if total > 0

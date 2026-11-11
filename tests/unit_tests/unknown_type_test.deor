@@ -11,24 +11,24 @@ enum string Color
 	Red = "red"
 
 struct BadField
-	Bogus1 thing_here  # error: unknown_type
+	Bogus1 thing_here  # meta(error: unknown_type)
 
-shape badList = list of Bogus2  # error: unknown_type
+shape badList = list of Bogus2  # meta(error: unknown_type)
 
-shape badFunc = func of Bogus3 to Bogus4  # error: unknown_type
+shape badFunc = func of Bogus3 to Bogus4  # meta(error: unknown_type)
 
-fn Bogus5 make_thing()  # error: unknown_type
+fn Bogus5 make_thing()  # meta(error: unknown_type)
 	return 5
 
-fn void takes_bad(Bogus6 val)  # error: unknown_type
+fn void takes_bad(Bogus6 val)  # meta(error: unknown_type)
 	print("hi")
 
 fn void test_var_decl()
-	Bogus7 thing = 5  # error: unknown_type
+	Bogus7 thing = 5  # meta(error: unknown_type)
 	print(thing)
 
 fn void test_typed_enum_as_type()
-	Color background = Red  # error: unknown_type
+	Color background = Red  # meta(error: unknown_type)
 	print("hi")
 
 fn void main()

@@ -12,6 +12,10 @@ build:
 test path=".":
     DEOR_LIB=lib deor test {{path}}
 
+# Lists every `# meta(...)` tag in this project (optionally narrowed to a path).
+meta path=".":
+    DEOR_LIB=lib deor meta {{path}}
+
 run-spec:
     cd deor_specification && bun server.js
 

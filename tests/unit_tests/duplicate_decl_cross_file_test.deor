@@ -13,4 +13,4 @@ fn void main()
 	ENFORCE_UNIQUE_IMPORT_DECLARATIONS
 	print("unreachable")
 
-# error-elsewhere: duplicate_declaration
+# meta(error: duplicate_declaration, where: elsewhere)

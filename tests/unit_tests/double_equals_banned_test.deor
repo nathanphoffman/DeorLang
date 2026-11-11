@@ -7,7 +7,7 @@
 fn void test_double_equals_in_if()
 	int val = 5
 
-	if val == 5  # error: double_equals
+	if val == 5  # meta(error: double_equals)
 		print("should never reach here")
 
 fn void main()

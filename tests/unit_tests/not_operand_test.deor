@@ -6,13 +6,13 @@
 shape boolList = list of bool
 
 fn bool compare_after(int aaa, int bbb)
-	return not aaa > bbb  # error: not_needs_bool, not_then_operator
+	return not aaa > bbb  # meta(error: not_needs_bool, error: not_then_operator)
 
 fn bool less_after(int aaa, int bbb)
-	return not aaa < bbb  # error: not_needs_bool, not_then_operator
+	return not aaa < bbb  # meta(error: not_needs_bool, error: not_then_operator)
 
 fn bool on_number(int num)
-	return not num  # error: not_needs_bool
+	return not num  # meta(error: not_needs_bool)
 
 fn bool fine_group(int aaa, int bbb)
 	return not (aaa > bbb)
