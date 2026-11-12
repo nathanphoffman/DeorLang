@@ -250,6 +250,7 @@ import "transpiler-deor/codegen/codegen.deor"
 
 # test framework
 import "transpiler-deor/test_runner.deor"
+import "transpiler-deor/cargo_test_wrappers.deor"
 import "transpiler-deor/test_process.deor"
 import "transpiler-deor/test_command.deor"
 

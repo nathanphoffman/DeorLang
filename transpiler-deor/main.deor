@@ -1,9 +1,9 @@
 import "transpiler-deor/imports.deor"
 import "transpiler-deor/macros/timer.deor"
 
-# Removes the known flags (--verbose/-v, --test, and the deor meta flags) from the raw args and returns the rest (input and output paths).
+# Removes the known flags (--verbose/-v, --test, --cargo-test, and the deor meta flags) from the raw args and returns the rest (input and output paths).
 fn strList strip_flags(strList raw_args)
-	strList known_flags = ["--verbose", "-v", "--test", "--json", "--ignore-malformed", "--ignore-inner"]
+	strList known_flags = ["--verbose", "-v", "--test", "--cargo-test", "--json", "--ignore-malformed", "--ignore-inner"]
 	strList cli_args = empty
 	int raw_count = len(raw_args)
 	int raw_i = 0
@@ -35,6 +35,8 @@ fn void main()
 
 	string test_flag = "--test"
 	bool test_mode = list_has(raw_args, test_flag)
+	string cargo_test_flag = "--cargo-test"
+	bool cargo_test_mode = list_has(raw_args, cargo_test_flag)
 	strList cli_args = strip_flags(raw_args)
 	int arg_count = len(cli_args)
 	string first_arg = ""
@@ -83,6 +85,10 @@ fn void main()
 		if test_mode
 			string runner_code = generate_test_runner(tokens_ref, input_path)
 			rust_code = s_cat(rust_code, runner_code)
+
+		if cargo_test_mode
+			string wrapper_code = generate_cargo_test_wrappers(tokens_ref, input_path)
+			rust_code = s_cat(rust_code, wrapper_code)
 
 		string allow_warnings = "#![allow(warnings)]\n"
 		rust_code = s_cat(allow_warnings, rust_code)

@@ -34,3 +34,7 @@ tests/temperature.test.deor
 Every test runs even if an earlier one fails or crashes. The exit code is non-zero if any test failed or a test file did not build.
 
 A function named `test_*` that does not read `fn string name()` is a transpile error.
+
+## Running inside a larger crate
+
+`deor input.test.deor output.rs --cargo-test` writes the file's Rust with no `main`. Each `test_*` function gets a `#[cfg(test)] #[test]` wrapper named `test_name_as_cargo_test`, so the output can be part of a bigger Rust crate and run with `cargo test`. A test passes when it returns `SUCCESS`; any other string fails with that message.

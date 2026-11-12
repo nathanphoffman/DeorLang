@@ -1,0 +1,19 @@
+# Cargo-test code generation for `deor input.test.deor output.rs --cargo-test`.
+# Instead of a standalone main(), each test_* function gets a Rust #[test] wrapper, so
+# the file can live inside a bigger crate (like the game) and run under `cargo test`.
+# Same rule as `deor test`: an empty string passes, any other string fails with that message.
+
+# The wrapper name differs from the test's own name so the two never collide.
+fn string cargo_test_wrapper(string name)
+	return s_join(["\n#[cfg(test)]\n#[test]\nfn ", name, "_as_cargo_test() {\n    let message = ", name, "();\n    assert!(message.is_empty(), \"{}\", message);\n}\n"])
+
+# Returns the Rust to append to a test file: one #[test] wrapper per test_* function.
+fn string generate_cargo_test_wrappers(TokensRef tokens, string entry_file)
+	strList names = find_test_names(tokens, entry_file)
+	string wrappers = ""
+
+	for name in names
+		string wrapper = cargo_test_wrapper(name)
+		wrappers = s_cat(wrappers, wrapper)
+
+	return wrappers
