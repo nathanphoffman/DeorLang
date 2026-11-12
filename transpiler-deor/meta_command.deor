@@ -9,6 +9,7 @@ fn metaTagList drop_ignored_warnings(metaTagList tags, strList ignored_prefixes)
 		{
 			let mut kept = tags;
 			for tag in kept.iter_mut() {
+				// keeps a warning only if none of the ignored prefixes starts it
 				tag.warnings.retain(|warning| !ignored_prefixes.iter().any(|prefix| warning.starts_with(prefix.as_str())));
 			}
 			kept
