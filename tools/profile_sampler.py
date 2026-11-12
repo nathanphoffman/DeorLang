@@ -86,9 +86,7 @@ def take_sample():
         return
 
     own_prefix = crate_name + "::"
-    own_names = [
-        name for name in names if name.startswith(own_prefix) and "closure" not in name
-    ]
+    own_names = [name for name in names if name.startswith(own_prefix) and "closure" not in name]
 
     nearest = own_names[0] if own_names else "(runtime)"
     self_counts[names[0]] += 1
