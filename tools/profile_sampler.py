@@ -45,8 +45,8 @@ def demangle(mangled):
     while re.match(r"^\d+", rest):
         length_text = re.match(r"^\d+", rest).group(0)
         start = len(length_text)
-        parts.append(rest[start:start + int(length_text)])
-        rest = rest[start + int(length_text):]
+        parts.append(rest[start : start + int(length_text)])
+        rest = rest[start + int(length_text) :]
 
     return "::".join(parts) if parts else mangled
 
@@ -86,7 +86,10 @@ def take_sample():
         return
 
     own_prefix = crate_name + "::"
-    own_names = [name for name in names if name.startswith(own_prefix) and "closure" not in name]
+    own_names = [
+        name for name in names if name.startswith(own_prefix) and "closure" not in name
+    ]
+
     nearest = own_names[0] if own_names else "(runtime)"
     self_counts[names[0]] += 1
     nearest_counts[nearest] += 1
@@ -121,7 +124,13 @@ def write_section(report, title, counter, limit):
 def write_report(path):
     with open(path, "w") as report:
         report.write("samples %d\n" % sample_total)
-        write_section(report, "where the time is spent (nearest transpiler function)", nearest_counts, 25)
+        write_section(
+            report,
+            "where the time is spent (nearest transpiler function)",
+            nearest_counts,
+            25,
+        )
+
         write_section(report, "whole-list clones, by caller", list_clone_counts, 15)
         write_section(report, "self time (what the CPU was executing)", self_counts, 20)
 

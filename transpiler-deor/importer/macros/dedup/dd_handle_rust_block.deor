@@ -49,6 +49,7 @@ macro dd_handle_rust_block
 
 		if not already_seen
 			seen at end = decl_name
+
 			# seen_files must stay parallel to seen: dd_check_duplicate indexes it with a position found in seen.
 			seen_files at end = block_file
 
