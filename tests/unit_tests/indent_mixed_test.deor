@@ -1,0 +1,4 @@
+# A tab followed by spaces in the same indent must be rejected.
+
+fn void main()
+	  print("tab then spaces")  # meta(error: mixed_indent)

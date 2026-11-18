@@ -9,6 +9,8 @@ macro emit_indent_or_dedent
 	int top = n_parse(indent_stack at top_idx)
 
 	if indent > top
+		int indent_step = indent - top
+		check_indent_step(path, cur_line, indent_step)
 		tokens at end = make_token(kind_indent, empty_str, meta)
 		string indent_str = n_to_str(indent)
 		indent_stack at end = indent_str

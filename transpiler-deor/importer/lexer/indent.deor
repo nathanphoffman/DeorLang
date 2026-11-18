@@ -24,3 +24,51 @@ fn int count_tabs(string line)
 			break
 
 	return count
+
+# Returns an error message when a line's leading whitespace mixes tabs with spaces or
+# uses spaces that don't make whole groups of SPACES_PER_INDENT. "" means it's fine.
+fn string indent_problem(string line)
+	unsafe_macro_run limits
+	strList chars = c_chars(line)
+	int char_count = len(chars)
+	int tab_count = 0
+	int space_count = 0
+
+	for index in range(char_count)
+		string character = chars at index
+
+		if character is "\t"
+			tab_count = tab_count + 1
+		else if character is " "
+			space_count = space_count + 1
+		else
+			break
+
+	string message = ""
+	int leftover_spaces = space_count % SPACES_PER_INDENT
+
+	if tab_count > 0 and space_count > 0
+		message = "indentation mixes tabs and spaces [mixed_indent]"
+	else if leftover_spaces > 0
+		message = "spaces must come in groups of 4 [bad_indent_width]"
+
+	return message
+
+# Stops with "[error] path line N: message". Used for indentation mistakes, which
+# would otherwise silently change which block a line belongs to.
+fn void fatal_indent(string path, int line_number, string message)
+	string err_pre = "[error] "
+	string line_sep = " line "
+	string colon_sep = ": "
+	string line_text = n_to_str(line_number)
+	strList parts = [err_pre, path, line_sep, line_text, colon_sep, message]
+	fatal(s_join(parts))
+
+# Stops if a line is indented more than one level deeper than the line before it.
+# Without this, a skipped level opens one block but later closes two.
+fn void check_indent_step(string path, int line_number, int step)
+	unsafe_macro_run limits
+	string message = "indent jumps more than one level [indent_jump]"
+
+	if step > MAX_INDENT_STEP
+		fatal_indent(path, line_number, message)

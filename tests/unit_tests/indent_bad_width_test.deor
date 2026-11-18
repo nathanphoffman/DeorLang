@@ -1,0 +1,4 @@
+# Spaces that do not make whole groups of 4 must be rejected, not rounded down.
+
+fn void main()
+  print("two spaces")  # meta(error: bad_indent_width)

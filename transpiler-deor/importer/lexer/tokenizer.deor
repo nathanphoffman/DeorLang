@@ -35,6 +35,11 @@ fn tokenList tokenize(string source, string path)
 		if is_empty(content)
 			continue
 
+		string indent_message = indent_problem(line)
+
+		if not is_empty(indent_message)
+			fatal_indent(path, cur_line, indent_message)
+
 		int indent = count_tabs(line)
 		macro_run emit_indent_or_dedent
 

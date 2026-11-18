@@ -1,0 +1,5 @@
+# A line indented two levels deeper than the one before it must be rejected,
+# not silently open one block and close two.
+
+fn void main()
+		print("skipped a level")  # meta(error: indent_jump)
