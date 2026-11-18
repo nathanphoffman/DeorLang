@@ -160,7 +160,7 @@
 
     # Macros are ways you can insert code (as seen below with macro_run) as part of the transpiler,
     #  it is as if you had written it that way. Consts can't be global, so this is a useful pattern.
-    macro use_print_consts
+    unsafe_macro use_print_consts
     	const string SEPARATOR = "): "
     	const string NONE = ""
 
@@ -188,14 +188,14 @@
     	(min, max) in chunk
     	# In addition to using as, you can also spell out types, this is recommended as a best practice
     	#  if the type of the value is not acutely obvious from what is being assigned to it
-    	float value = perform_liebniz_computation(min, max)
+    	float value = perform_leibniz_computation(min, max)
     	# Here we are using a 'with' this clones the struct and replaces the matching field
     	PiChunk chunk_with_value = chunk with (value)
 
     	return chunk_with_value
 
 
-    fn float perform_liebniz_computation(int start_iter, int end_iter)
+    fn float perform_leibniz_computation(int start_iter, int end_iter)
     	float value = 0.0
 
     	# Loops use ranges like other languages such as Python these can be used in various ways, here it
@@ -226,12 +226,12 @@
     		min as current - iterations_per_thread
     		PiChunk chunk = (min, max, value)
     		list_of_chunks at end = move chunk
-        
+
     	return list_of_chunks
 
 
     fn int ask_for_threads()
-    	macro_run use_print_consts
+    	unsafe_macro_run use_print_consts
     	const int DEFAULT = 8
 
     	for if true
@@ -260,7 +260,7 @@
 
 
     fn int ask_for_iterations()
-    	macro_run use_print_consts
+    	unsafe_macro_run use_print_consts
     	const int DEFAULT = 10
 
     	# Something not mentioned yet is that there is no `while`; for = loop, so "for if" = while
@@ -289,15 +289,15 @@
     	for res in results
     		(min, max, value) in res
     		net_value = net_value + value
-        
+
     	return net_value
 
 
     fn void main()
-        
+
     	# Deor supports _ separators for readability in numbers, they can be put anywhere and are dropped
     	const float MILLIONS = 1_000_000.0
-    	const float LIEBNIZ_COEFFICIENT = 4
+    	const float LEIBNIZ_COEFFICIENT = 4.0
 
     	threads as ask_for_threads()
     	float_threads as c_int_to_float(threads)
@@ -307,23 +307,19 @@
     	iterations_per_thread as m_floor(float_iterations/float_threads)
 
     	total_iterations as iterations_per_thread * threads
-    	print("Performing " + c_int_to_string(total_iterations) + " iterations")
-        
+    	message as s_join(["Performing ", c_int_to_string(total_iterations), " iterations"])
+    	print(message)
+
     	# Multithreading makes use of a task system, a wrapped rust library that exposes these features
     	#  It is very basic in use and requires a list of the substituted value (T-sub you saw earlier)
     	TaskPool pool = t_pool_make()
     	list_of_chunks as build_chunk(total_iterations, iterations_per_thread)
     	# When complete, it will output that same list-type as a result when all threads finish
     	piChunkList results = t_pi_chunk_run_all(pool, list_of_chunks, compute_pi_chunk)
-        
+
     	net_value as total_final_results(move results)
-    	float pi_value = LIEBNIZ_COEFFICIENT * net_value
+    	float pi_value = LEIBNIZ_COEFFICIENT * net_value
     	print(s_join(["Pi was calculated to be: ", c_float_to_string(pi_value)]))
-
-
-
-
-
         </code>
         </pre>
         </div>
